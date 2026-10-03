@@ -2,7 +2,7 @@
   "audit": "M5.5",
   "audit_status": "COMPLETE",
   "gate": "FAILED",
-  "root_revision_at_receipt": "6f0d41503fd27e234e5ec513590f373ce14e7d74",
+  "root_revision_at_receipt": "999768149dcab1595621fb353f6c37315e794087",
   "revision_note": "Receipt commit is later; production identity is the manifest/tree hashes, not this documentary parent.",
   "branch": "audit/m5-conformance",
   "baseline_tag": "pre-takeover-m5-claimed",
@@ -57,8 +57,7 @@
     "cdda_cases": {
       "pass": 1067,
       "total": 1068,
-      "rng_seed": 42,
-      "failure": "overmap_terrain_coverage: 30 missing terrain types"
+      "rng_seed": 42
     },
     "cdda_assertions": {
       "pass": 33638783,
@@ -67,7 +66,8 @@
     "luanti_individual_tests": {
       "pass": 302,
       "total": 302,
-      "modules": 47
+      "modules": 47,
+      "failed_modules": 0
     },
     "mineclonia_ci": {
       "lua_files": 461,
@@ -740,6 +740,23 @@
         "Hash matches establish content identity; they do not resolve license obligations.",
         "Review per-mod media notices and authors; the existing generator does not validate them."
       ]
+    },
+    "final-reconstruction/reconstruction.json": {
+      "cdda": {
+        "tree_sha256": "955759c5ce92e7d2a18aadc57e39a9934ded38c3494f84990ba3bc4b6242a864",
+        "file_count": 8577,
+        "status": "PASS"
+      },
+      "luanti": {
+        "tree_sha256": "63df6364a31166e473aa539e4a96f0b63f7d5bf329291b4890b2c370c4a795f3",
+        "file_count": 2251,
+        "status": "PASS"
+      },
+      "mineclonia": {
+        "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36",
+        "file_count": 9359,
+        "status": "PASS"
+      }
     },
     "deps/ci-luacheck/manifest.json": {
       "digest": "sha256:c63facd26a4a797255d72381bb10c5bdcdfd67944be0da6d647cd1474817c4ab",
@@ -2238,6 +2255,23 @@
         "status": "PASS",
         "log": "verification_python_syntax.log",
         "log_sha256": "52efd1ad10381bc0a93f0cfd1817a9ae3add1e5398273560871c35c09095fc14"
+      },
+      {
+        "name": "final_source_reconstruction",
+        "command": [
+          "/usr/bin/python3",
+          "/home/dannhill/Projects/cdda-mineclonia/tools/takeover_baseline.py",
+          "reconstruct",
+          "--destination",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/final-reconstruction/workspace"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia",
+        "exit_code": 0,
+        "timeout": false,
+        "seconds": 16.248,
+        "status": "PASS",
+        "log": "final_source_reconstruction.log",
+        "log_sha256": "eaa0a7940c104809f2b0e9d48c7b7c9c10abdac7d9371794c18e41092fea72a8"
       }
     ],
     "root-build/commands.json": [
@@ -3092,8 +3126,12 @@
       "bytes": 252
     },
     "evidence/repro-checks/commands.json": {
-      "sha256": "dbdb53fe3370aef0dcf9a1646acc4c6c6dc72874a31fb55c09e76fc05b623b63",
-      "bytes": 2133
+      "sha256": "85b8bbd013f45332ffda476dd52cfa8332e8a16979cb9d61bdde91260b00e90b",
+      "bytes": 2739
+    },
+    "evidence/repro-checks/final_source_reconstruction.log": {
+      "sha256": "eaa0a7940c104809f2b0e9d48c7b7c9c10abdac7d9371794c18e41092fea72a8",
+      "bytes": 586
     },
     "evidence/repro-checks/unit_root.log": {
       "sha256": "7c2685be9bb399d5a1b3076d50f784b2ab57fbd0181dbc832e580a85a6059e96",
@@ -3138,6 +3176,10 @@
     "evidence/verified-source-and-binaries.json": {
       "sha256": "e3079a855d85d6f7ea3cf118002602602e8c9064616728721d7a9ef7c9c30164",
       "bytes": 1271
+    },
+    "final-reconstruction/reconstruction.json": {
+      "sha256": "a74ba104e46f62aeb213e3b8c6716592722befe444bd7ec191cdd74764834dd2",
+      "bytes": 458
     },
     "deps/ci-luacheck/manifest.json": {
       "sha256": "6a9a53fa46a27b07dff17c33feb3c5a514081a11c226b2b06a6154faf22831c0",

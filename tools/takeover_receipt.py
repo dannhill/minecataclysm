@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+import re
 import subprocess
 
 
@@ -13,6 +14,32 @@ def sha(path):
         for block in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(block)
     return digest.hexdigest()
+
+
+def native_summary(evidence):
+    def matched(relative, pattern):
+        result = re.search(pattern, (evidence / relative).read_text(errors="replace"))
+        if not result:
+            raise RuntimeError("Cannot extract test totals from " + relative)
+        return [int(value) for value in result.groups()]
+
+    _, protocol_failed, protocol_total = matched("unit_protocol.log", r"(\d+)% tests passed, (\d+) tests failed out of (\d+)")
+    cases_total, cases_pass = matched("native-tests/unit_cdda.log", r"test cases:\s+(\d+)\s+\|\s+(\d+) passed")
+    assertions_total, assertions_pass = matched("native-tests/unit_cdda.log", r"assertions:\s+(\d+)\s+\|\s+(\d+) passed")
+    seed, = matched("native-tests/unit_cdda.log", r"Randomness seeded to:\s*(\d+)")
+    modules_failed, modules_total, tests_failed, tests_total = matched("native-tests/unit_luanti.log",
+        r"(\d+) / (\d+) failed modules \((\d+) / (\d+) failed individual tests\)")
+    warnings, errors, files = matched("mineclonia-ci/mineclonia_ci_lint.log", r"Total: (\d+) warnings / (\d+) errors in (\d+) files")
+    root_log = (evidence / "root-build/unit_root.log").read_text()
+    if "No tests were found" not in root_log:
+        raise RuntimeError("Root CTest evidence changed; review classification")
+    return {"protocol_cases": {"pass": protocol_total-protocol_failed, "total": protocol_total},
+        "cdda_cases": {"pass": cases_pass, "total": cases_total, "rng_seed": seed},
+        "cdda_assertions": {"pass": assertions_pass, "total": assertions_total},
+        "luanti_individual_tests": {"pass": tests_total-tests_failed, "total": tests_total,
+                                    "modules": modules_total, "failed_modules": modules_failed},
+        "mineclonia_ci": {"lua_files": files, "warnings": warnings, "errors": errors},
+        "root_ctest": {"status": "EMPTY", "process_exit_code": 0, "discovered_tests": 0}}
 
 
 def main():
@@ -64,13 +91,7 @@ def main():
         "artifact_root": str(artifacts),
         "production_exceptions": ["53ec1d4", "6f0d415"],
         "manifest": json.loads((root / "baseline/manifest.json").read_text()),
-        "native_summary": {"protocol_cases": {"pass": 2, "total": 2},
-            "cdda_cases": {"pass": 1067, "total": 1068, "rng_seed": 42,
-                            "failure": "overmap_terrain_coverage: 30 missing terrain types"},
-            "cdda_assertions": {"pass": 33638783, "total": 33638784},
-            "luanti_individual_tests": {"pass": 302, "total": 302, "modules": 47},
-            "mineclonia_ci": {"lua_files": 461, "warnings": 0, "errors": 0},
-            "root_ctest": {"status": "EMPTY", "process_exit_code": 0, "discovered_tests": 0}},
+        "native_summary": native_summary(evidence),
         "evidence_selection": {"primary_runtime": "conformance/runtime",
             "primary_save": "conformance/save001", "primary_render": "render-camera",
             "superseded": {"oracle-preflight": "Fork-linked development oracle/invalid initial control fixture.",
