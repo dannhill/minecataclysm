@@ -50,7 +50,8 @@ legitimate pause; the client does not invent movement to hide one.
 ## Verification
 
 Commands, exact source/binary identities and artifact hashes are recorded in
-`projection-and-movement-evidence.json`. Artifacts are isolated beneath
+[`projection-and-movement-evidence.json`](projection-and-movement-evidence.json).
+Artifacts are isolated beneath
 `artifacts/projection-movement/`. Existing user saves are not used by these tests.
 
 ```sh
@@ -70,6 +71,17 @@ window. It measures camera coordinates and request timestamps, independent of
 the legacy HUD's fixed FPS field. FPS settings are limits, not evidence that
 120 FPS was achieved. CDDA catalog/action tests and the real isolated launch
 provide separate evidence for the production exporter/runtime.
+
+Final results: native CDDA 3/3 cases, 3,339 assertions; Luanti 303/303 native
+tests including mesh result ordering; protocol Debug 2/2; real renderer/input
+48/48 checks across four scenarios; actual launcher/world 8/8 checks. The
+camera has zero stationary/settled position variation in these fixtures.
+Measured moving speed has a median of approximately five tiles/second at
+actual frame rates near 30 and 60 FPS; the 120 FPS limit achieved about 60 FPS.
+A delayed result introduces one pause and no queued burst. Both window faces
+are captured, and a one-tile batched update removes glass without full terrain.
+The frozen audit workspace, including its binaries, was restored; a fresh
+final reconstruction verifies every fork source against the committed inventory.
 
 Geometry is still approximate: trees/fences/rocks use a solid placeholder,
 furniture uses wooden boxes and climbable/damaged walls use low obstacles.

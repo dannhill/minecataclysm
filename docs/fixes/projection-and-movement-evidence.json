@@ -1,0 +1,492 @@
+{
+  "format_version": 1,
+  "recorded_utc": "2026-10-03T20:59:16.930862+00:00",
+  "scope": "Structural projection, camera and held-key movement repair; not a full M5.5 conformance release.",
+  "source_commit": "8571704cbb199964b42afb4834728d0fa558af1e",
+  "source_trees": {
+    "cdda": "73052f395dd7680e1952c675f59279d64da2cf93fa7afeb9a19c74b891c56189",
+    "luanti": "21f688a57b5745ac6c438afdcdb82ca8c1222a21735a93528c198366a1272ac3",
+    "mineclonia": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36"
+  },
+  "installed_and_tested_binaries": {
+    "cdda/build/src/cdda-server": "c9ca4a75cb425e3e98291bc6ee45d304ac9a5219c7fe34c30899eeb767e733b0",
+    "luanti/bin/luanti": "62bfdef88f90bbf51ddd080d33cac63e6468e3908c47251b677748affd37e082",
+    "native_cdda_test": "b453249eaea1d3348d6888d0a81377cb15cd8502d4255510593c54a4f37c7716"
+  },
+  "build_mode": "Incremental component builds. CDDA reused the clean M5.5 common objects; copied changed CWM/test sources and matching generated bindings into that reconstructed workspace, then restored its source trees and original binaries. Luanti release O3, LTO off, native tests enabled. Final protocol tests built in Debug. No full fresh CDDA core rebuild is claimed.",
+  "environment": {
+    "os": "Linux 7.0.11-76070011-generic x86_64 GNU/Linux",
+    "compiler": "c++ (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0",
+    "cmake": "cmake version 3.22.1",
+    "flatc": "flatc version 24.3.25",
+    "gui": "X11; xdotool and ImageMagick; worlds/configs and Unix sockets isolated"
+  },
+  "commands": [
+    {
+      "purpose": "CDDA production and focused native tests",
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia",
+      "argv": [
+        "cmake",
+        "--build",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/cdda/build",
+        "--target",
+        "cdda-server",
+        "cata_test",
+        "--parallel",
+        "2"
+      ]
+    },
+    {
+      "purpose": "Luanti production including native tests",
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia",
+      "argv": [
+        "cmake",
+        "--build",
+        "luanti/build",
+        "--target",
+        "luanti",
+        "--parallel",
+        "2"
+      ]
+    },
+    {
+      "purpose": "native CDDA semantics",
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/projection-movement/reconstruction/workspace/cdda",
+      "argv": [
+        "build/tests/cata_test",
+        "[cwm]",
+        "--rng-seed",
+        "42",
+        "--user-dir=/home/dannhill/Projects/cdda-mineclonia/artifacts/projection-movement/reconstructed-native-user"
+      ]
+    },
+    {
+      "purpose": "native Luanti tests",
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/projection-movement/reconstruction/workspace",
+      "argv": [
+        "luanti/bin/luanti",
+        "--run-unittests"
+      ]
+    },
+    {
+      "purpose": "real renderer/input regression",
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia",
+      "argv": [
+        "python3",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/projection-movement/reconstruction/workspace/tests/presentation_regression.py",
+        "--workspace",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/projection-movement/reconstruction/workspace",
+        "--artifacts",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/projection-movement/acceptance-gui"
+      ]
+    },
+    {
+      "purpose": "real isolated launcher/gameplay smoke",
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia",
+      "argv": [
+        "python3",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/projection-movement/reconstruction/workspace/tests/startup_visibility_test.py",
+        "--workspace",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/projection-movement/reconstruction/workspace",
+        "--artifacts",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/projection-movement/acceptance-startup",
+        "--movement"
+      ]
+    },
+    {
+      "purpose": "protocol debug tests",
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/projection-movement/reconstruction/workspace",
+      "argv": [
+        "ctest",
+        "--test-dir",
+        "protocol/build",
+        "--output-on-failure"
+      ]
+    },
+    {
+      "purpose": "fresh final source reconstruction",
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia",
+      "argv": [
+        "python3",
+        "tools/takeover_baseline.py",
+        "reconstruct",
+        "--destination",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/projection-movement/final-reconstruction/workspace"
+      ]
+    }
+  ],
+  "results": {
+    "native_cdda": {
+      "status": "PASS",
+      "cases": 3,
+      "assertions": 3339
+    },
+    "native_luanti": {
+      "status": "PASS",
+      "modules": 47,
+      "cases": 303,
+      "mesh_result_order_case": "executed and passed"
+    },
+    "protocol_debug": {
+      "status": "PASS",
+      "cases": 2
+    },
+    "actual_render_input": {
+      "status": "PASS",
+      "scenarios": 4,
+      "checks": 48,
+      "results": [
+        {
+          "fps_limit": 60,
+          "delayed_result": true,
+          "checks": {
+            "runtime_clean_exit": true,
+            "no_server_error": true,
+            "no_outstanding_command_overlap": true,
+            "no_catchup_bursts": true,
+            "held_key_rate": true,
+            "no_commands_after_release": true,
+            "stationary_camera_stable": true,
+            "released_camera_stable": true,
+            "camera_never_reverses": true,
+            "camera_height_stable": true,
+            "rejected_action_exercised": true
+          },
+          "requests": 14,
+          "intervals_seconds": [
+            0.20077478501480073,
+            0.202261472993996,
+            0.6884586429805495,
+            0.20179671302321367,
+            0.20089506398653612,
+            0.20387193601345643,
+            0.20031329299672507,
+            0.20073239199700765,
+            0.20267793198581785,
+            0.20026391101418994,
+            0.2011183509894181,
+            0.20097174801048823,
+            0.203291559999343
+          ],
+          "stationary_span": 0.0,
+          "stopped_span": 0.0,
+          "vertical_span": 0.0,
+          "backwards_frames": 0,
+          "frames": 463,
+          "measured_median_fps": 59.75631315738107,
+          "server_errors": [],
+          "limitations": "Synthetic CWM authority; native CDDA semantics tested separately. FPS setting is a limit, not guaranteed achieved throughput."
+        },
+        {
+          "fps_limit": 120,
+          "delayed_result": false,
+          "checks": {
+            "runtime_clean_exit": true,
+            "no_server_error": true,
+            "no_outstanding_command_overlap": true,
+            "no_catchup_bursts": true,
+            "held_key_rate": true,
+            "no_commands_after_release": true,
+            "stationary_camera_stable": true,
+            "released_camera_stable": true,
+            "camera_never_reverses": true,
+            "camera_height_stable": true,
+            "rejected_action_exercised": true
+          },
+          "requests": 16,
+          "intervals_seconds": [
+            0.2026112409948837,
+            0.21477280801627785,
+            0.20025311800418422,
+            0.21616485799313523,
+            0.2167034139856696,
+            0.21614064302411862,
+            0.2003864759753924,
+            0.2031361990084406,
+            0.2135307030112017,
+            0.20129851999809034,
+            0.2173957169870846,
+            0.19998918499913998,
+            0.2165452600165736,
+            0.20129316099337302,
+            0.21473740399233066
+          ],
+          "stationary_span": 0.0,
+          "stopped_span": 0.0,
+          "vertical_span": 0.0,
+          "backwards_frames": 0,
+          "frames": 467,
+          "measured_median_fps": 59.82532739335634,
+          "server_errors": [],
+          "limitations": "Synthetic CWM authority; native CDDA semantics tested separately. FPS setting is a limit, not guaranteed achieved throughput."
+        },
+        {
+          "fps_limit": 30,
+          "delayed_result": false,
+          "checks": {
+            "runtime_clean_exit": true,
+            "no_server_error": true,
+            "no_outstanding_command_overlap": true,
+            "no_catchup_bursts": true,
+            "held_key_rate": true,
+            "no_commands_after_release": true,
+            "stationary_camera_stable": true,
+            "released_camera_stable": true,
+            "camera_never_reverses": true,
+            "camera_height_stable": true,
+            "rejected_action_exercised": true
+          },
+          "requests": 17,
+          "intervals_seconds": [
+            0.2003074529930018,
+            0.20062831399263814,
+            0.2001686849980615,
+            0.20042617799481377,
+            0.20033330100704916,
+            0.20198302500648424,
+            0.20176600900595076,
+            0.19885789000545628,
+            0.20478849799837917,
+            0.1996769459801726,
+            0.20044432202121243,
+            0.20120077100000344,
+            0.20024741897941567,
+            0.20165273500606418,
+            0.19986629599588923,
+            0.20049614101299085
+          ],
+          "stationary_span": 0.0,
+          "stopped_span": 0.0,
+          "vertical_span": 0.0,
+          "backwards_frames": 0,
+          "frames": 233,
+          "measured_median_fps": 29.936345898670467,
+          "server_errors": [],
+          "limitations": "Synthetic CWM authority; native CDDA semantics tested separately. FPS setting is a limit, not guaranteed achieved throughput."
+        },
+        {
+          "fps_limit": 60,
+          "delayed_result": false,
+          "checks": {
+            "runtime_clean_exit": true,
+            "no_server_error": true,
+            "no_outstanding_command_overlap": true,
+            "no_catchup_bursts": true,
+            "held_key_rate": true,
+            "no_commands_after_release": true,
+            "stationary_camera_stable": true,
+            "released_camera_stable": true,
+            "camera_never_reverses": true,
+            "camera_height_stable": true,
+            "rejected_action_exercised": true,
+            "mouse_look_and_opposite_side_exercised": true,
+            "glass_frame_visible_on_both_sides": true,
+            "open_window_removes_glass": true,
+            "batched_tile_update_without_full_resend": true
+          },
+          "requests": 17,
+          "intervals_seconds": [
+            0.2007967829995323,
+            0.2010153229930438,
+            0.20127754198620096,
+            0.20128756301710382,
+            0.20039788700523786,
+            0.20186713797738776,
+            0.20056439700420015,
+            0.20221722801215947,
+            0.20070935200783424,
+            0.20123504599905573,
+            0.20157766999909654,
+            0.20051510399207473,
+            0.20219287800136954,
+            0.2006426680018194,
+            0.20077054598368704,
+            0.20066286600194871
+          ],
+          "stationary_span": 0.0,
+          "stopped_span": 0.0,
+          "vertical_span": 0.0,
+          "backwards_frames": 0,
+          "frames": 1087,
+          "measured_median_fps": 59.75968062753402,
+          "server_errors": [],
+          "limitations": "Synthetic CWM authority; native CDDA semantics tested separately. FPS setting is a limit, not guaranteed achieved throughput."
+        }
+      ]
+    },
+    "actual_startup": {
+      "status": "PASS",
+      "checks": [
+        {
+          "name": "backend_failure_prevents_empty_client",
+          "pass": true
+        },
+        {
+          "name": "backend_exit_is_preserved",
+          "pass": true,
+          "exit_code": 23
+        },
+        {
+          "name": "actual_cdda_projection_received",
+          "pass": true
+        },
+        {
+          "name": "actual_luanti_window",
+          "pass": true
+        },
+        {
+          "name": "actual_movement_commands_completed",
+          "pass": true,
+          "distinct_commands": 16
+        },
+        {
+          "name": "actual_camera_settles_without_jitter",
+          "pass": true,
+          "position_spans": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "name": "actual_native_cache_updates",
+          "pass": true,
+          "restored_blocks": 10
+        },
+        {
+          "name": "actual_runtime_survives",
+          "pass": true
+        }
+      ]
+    },
+    "visual_speed": [
+      {
+        "scenario": "delayed",
+        "samples": 118,
+        "p10_tiles_per_second": 4.914782047909695,
+        "median": 5.0054061275286905,
+        "p90": 5.316923530848794,
+        "within_20_percent_of_five": true
+      },
+      {
+        "scenario": "fps-30",
+        "samples": 63,
+        "p10_tiles_per_second": 4.933557419191489,
+        "median": 5.001351113505951,
+        "p90": 5.165484645858558,
+        "within_20_percent_of_five": true
+      },
+      {
+        "scenario": "fps-120",
+        "samples": 147,
+        "p10_tiles_per_second": 4.9683463620865345,
+        "median": 5.000073208848364,
+        "p90": 5.031582249672486,
+        "within_20_percent_of_five": true
+      },
+      {
+        "scenario": "fps-60",
+        "samples": 157,
+        "p10_tiles_per_second": 4.9444724191313,
+        "median": 4.999218909197826,
+        "p90": 5.041783217386969,
+        "within_20_percent_of_five": true
+      }
+    ],
+    "fresh_reconstruction": {
+      "status": "PASS",
+      "trees": {
+        "cdda": {
+          "tree_sha256": "73052f395dd7680e1952c675f59279d64da2cf93fa7afeb9a19c74b891c56189",
+          "file_count": 8577,
+          "status": "PASS"
+        },
+        "luanti": {
+          "tree_sha256": "21f688a57b5745ac6c438afdcdb82ca8c1222a21735a93528c198366a1272ac3",
+          "file_count": 2251,
+          "status": "PASS"
+        },
+        "mineclonia": {
+          "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36",
+          "file_count": 9359,
+          "status": "PASS"
+        }
+      }
+    },
+    "historical_audit_workspace_restored": {
+      "cdda": {
+        "tree_sha256": "955759c5ce92e7d2a18aadc57e39a9934ded38c3494f84990ba3bc4b6242a864"
+      },
+      "luanti": {
+        "tree_sha256": "63df6364a31166e473aa539e4a96f0b63f7d5bf329291b4890b2c370c4a795f3"
+      },
+      "mineclonia": {
+        "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36"
+      },
+      "binaries": {
+        "cdda/build/src/cdda-server": "f4d7193a5c76fc0e8feb9a78ca4c5f729657e87235845d14e9d9ce37effa204c",
+        "cdda/build/tests/cata_test": "1f3d4b2180ca92b570322467851f97813306eb2991ab19f6c99449ee18e4cd7f",
+        "luanti/bin/luanti": "8cebced8a8608fde05fc25b5f9994a9c41e7d43890ad7d62f93ee2dbc26d6a80"
+      }
+    }
+  },
+  "retained_non_acceptance_artifacts": {
+    "cdda-native-test.log": "Initial catalog expectation incorrectly treated editing sentinel f_clear as present furniture; fixed to compare actual stored CDDA furniture. No production workaround.",
+    "gui-locked-tests.log": "Initial pure-white pixel threshold omitted most of the off-white glass frame. Final test excludes sky and counts the actual off-white texture; screenshots retained.",
+    "earlier_build_logs": "An initial CWM test compilation selected bundled legacy FlatBuffers headers; focused sources now resolve the matching 24.3.25 include directory."
+  },
+  "limits": [
+    "Geometry placeholders remain for fences/trees/rocks, furniture, damaged/climbable walls, stairs and roof detail.",
+    "Configured 120 FPS was measured near 60 FPS; actual tested frame rates were about 30 and 60, with independent request/camera timestamps.",
+    "A slow authoritative result or a blocked/opening action can legitimately pause movement; no predicted CDDA movement is introduced.",
+    "No complete thread sanitizer, dense-entity/vehicle rendering, canonical inherited-save compatibility or protocol recovery certification. M5.5 remains FAILED."
+  ],
+  "artifacts": {
+    "artifacts/projection-movement/runtime-binaries.json": "8260c202b884e74f1cae5cfb380e6fd4237bec48f3ea53c7d28266f5bf36863a",
+    "artifacts/projection-movement/reconstructed-final-sources.json": "b2e76073cedaefa559b6d22ac45389f3f4b8ad908233889b2335f093bb444a6d",
+    "artifacts/projection-movement/final-reconstruction.log": "fe8cb27313ada0a674cf2e5ae58ed1b17a816cc7cc043b080277e3f5507babf2",
+    "artifacts/projection-movement/final-reconstruction/reconstruction.json": "25d18c1232860e290467ea29d8fbb560092dc4b9bcf215a8a08018fe8bef8a42",
+    "artifacts/projection-movement/restored-audit-workspace.json": "e5589cc6e2b19398fdb3eb6f2f8278759e4d745003a516eb0d78267536777a82",
+    "artifacts/projection-movement/baseline-check.log": "1d10ae37d7ce74d3097b9d205d05a1db718d3fda1a2d2f9de000936450c5c3ea",
+    "artifacts/projection-movement/cdda-configure.log": "ead02c320dd6ac9679d01026a8da6d6f4823962653c02150eba90938ad37048b",
+    "artifacts/projection-movement/cdda-final-build.log": "fd09c7d02759051d0460f76762e98d618eecdc7e11bfcaa353233aa57d4d503c",
+    "artifacts/projection-movement/cdda-test-final-build.log": "1d8a79ae0c92f2435267de9f6f3e74565bf5ca52267cccbf353f08ae9cbc2974",
+    "artifacts/projection-movement/luanti-configure.log": "275875b28d9bfe150e8e8281e4e6968b20c2f8fe4255c57415c3aba5f556b2ce",
+    "artifacts/projection-movement/luanti-final-build.log": "e6e7f433c4ae8e1092832be3bafa0f381814ff30044c05e849436fb30544ed61",
+    "artifacts/projection-movement/reconstructed-protocol-configure.log": "6e235505a7188eda030d09bf2f6c5ead6e57552ca9aa22f9faea6bb7482ef6b8",
+    "artifacts/projection-movement/reconstructed-protocol-build.log": "c2c95552b1fb9a152d1538d27c06b227cf653a5b2ddee87ded07077dc18a99e9",
+    "artifacts/projection-movement/reconstructed-protocol-test.log": "0294fba1f5b757cf2fe4a0bc5f0e84c5741ae9edb67eb8b8f8e31aadf266008e",
+    "artifacts/projection-movement/reconstructed-native-test.log": "00c04dbb96cef0c840671a68f11fffc16a15a44f8722d6e64c18b4ffdfc23f7c",
+    "artifacts/projection-movement/acceptance-luanti-unit.log": "89be83ab3b498ae9bafc561f492544266f7952fb212b1b5a559baa227a927bb3",
+    "artifacts/projection-movement/acceptance-startup.log": "d9b44cdadc38fb2fee29190c7d643cbda8cd47ecb4cd6a5972780e8759f7d43e",
+    "artifacts/projection-movement/acceptance-startup/checks.json": "d9b44cdadc38fb2fee29190c7d643cbda8cd47ecb4cd6a5972780e8759f7d43e",
+    "artifacts/projection-movement/acceptance-visual-speed.json": "3bb8af13e3cb8c4dc453ee92b9dce682989d212609af9872658432dc2c41d291",
+    "artifacts/projection-movement/acceptance-gui/delayed/camera.csv": "b03efb2d8b433280260d10238000578fa925a24951a01e40f3f096ed0a2f6470",
+    "artifacts/projection-movement/acceptance-gui/delayed/events.json": "4de9ad9019f86d68592d9e9ea522e8042a6ae5d7c2bc136602af2a30a1a28df2",
+    "artifacts/projection-movement/acceptance-gui/delayed/result.json": "2a69fac0cef3259ee43120baf60cf496e3fd32ea7c951d31c9f0ec0b6b7faef4",
+    "artifacts/projection-movement/acceptance-gui/delayed/console.log": "6f46198df76038344bfcb2331cde2d792d83d21c8b275a0a1d110ccb6f346d4c",
+    "artifacts/projection-movement/acceptance-gui/delayed/engine.log": "fa46bde34e27b1edcabbc29e4919f8ef61c6d50553392aa5ac6d282c9d5df23a",
+    "artifacts/projection-movement/acceptance-gui/fps-30/camera.csv": "81714ef55910ac9c66e1d3d40ca5c7958f78ad8446cc91ca959f244c2dc7d149",
+    "artifacts/projection-movement/acceptance-gui/fps-30/events.json": "73a4d150f38a391e0b2f869091f6b906d6960d640587f570dc3d80d730e7e8cd",
+    "artifacts/projection-movement/acceptance-gui/fps-30/result.json": "6b94696c19e5f24c1e4765063c79ffba99f2090d05e0c071a2b77ffe57a0b0c0",
+    "artifacts/projection-movement/acceptance-gui/fps-30/console.log": "0a0b1d4a4601e51f0eddc81e44c0253e2f07fad0a179b2c73efa72fe7eeaf9f7",
+    "artifacts/projection-movement/acceptance-gui/fps-30/engine.log": "ab812f6ad101408d027e879a97ddfca94c1f4c7369e997db02c87fd2a9598bb0",
+    "artifacts/projection-movement/acceptance-gui/fps-120/camera.csv": "7a2a2bfa37cbd692a03334e5a9f5c9d03b4b3634e05a222443de7f6dcbfc6392",
+    "artifacts/projection-movement/acceptance-gui/fps-120/events.json": "f039fcd07e3915205260d897403c92e53553d7d552774ff9c5eded3db4ad477f",
+    "artifacts/projection-movement/acceptance-gui/fps-120/result.json": "8149e15ba79d079771005579e29e3dba5b510669f4eb5ec000301ba3c118ad37",
+    "artifacts/projection-movement/acceptance-gui/fps-120/console.log": "10c1dcbcdd52541d3262fd395b5dbf1abf4bb35cac42bd7fee9ede57125bd62f",
+    "artifacts/projection-movement/acceptance-gui/fps-120/engine.log": "5596ee4ffc1118b49d35c41ba7b0f4930bb6a12fc648fe1a0f3bd076384c352f",
+    "artifacts/projection-movement/acceptance-gui/fps-60/camera.csv": "f79907872eafc2a6ff059a616768269e42587edd7009ce58632469585c778b03",
+    "artifacts/projection-movement/acceptance-gui/fps-60/events.json": "7c3c93582139352b09c83b57df4007eb9acfd024d40912dedb800c120c2f8882",
+    "artifacts/projection-movement/acceptance-gui/fps-60/result.json": "03a1611303359b7942d602ee2fad07c12827499d0dc6b6fc29afe0cb07e08d4b",
+    "artifacts/projection-movement/acceptance-gui/fps-60/window-outside.png": "f2938488879d55a852b354d561990458f4989949e0da1ea55d152971676cd731",
+    "artifacts/projection-movement/acceptance-gui/fps-60/window-inside-later.png": "89c9d359b5ccce79a923438ddbeb1bff93275aad1d4f017809ecafa300f2e6cb",
+    "artifacts/projection-movement/acceptance-gui/fps-60/console.log": "82cfed1f2691efbc151ffa7d354466e32afed0e2e2eb5feb8a5b2352a354a1db",
+    "artifacts/projection-movement/acceptance-gui/fps-60/window-inside.png": "eb24b2f71d637329b2ba1f2311a185b33015479e5fa351cdaccea2279bef3b1f",
+    "artifacts/projection-movement/acceptance-gui/fps-60/engine.log": "868a87eb8fbd423b5eaaebeb0abb1408e213568300a503d740a64ad096c06bf2",
+    "artifacts/projection-movement/acceptance-gui/fps-60/window-open.png": "fb6f0bdec0d7135c9f3b063c4b8bc2976494f81ea5ab417c05fc70b8743383c9",
+    "artifacts/projection-movement/acceptance-startup/actual-scene.png": "f15d6aa8276bdd157b6107ea115f667f23f34903ee934e2d7250cdc9e6641ef1",
+    "artifacts/projection-movement/acceptance-startup/actual-scene-later.png": "f15d6aa8276bdd157b6107ea115f667f23f34903ee934e2d7250cdc9e6641ef1",
+    "artifacts/projection-movement/acceptance-startup/actual-after-movement.png": "e965d5c972fbac59ec68c419a2ac5eda8b2b7fbe2293ee395e0e86e31366de06"
+  }
+}
