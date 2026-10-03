@@ -43,10 +43,10 @@ index c25584e..5384627 100644
          friend event_bus &get_event_bus();
 diff --git a/src/cwm/cwm_main.cpp b/src/cwm/cwm_main.cpp
 new file mode 100644
-index 0000000..7e703dc
+index 0000000..bf631fa
 --- /dev/null
 +++ b/src/cwm/cwm_main.cpp
-@@ -0,0 +1,217 @@
+@@ -0,0 +1,221 @@
 +// CDDA Headless CWM Server Entrypoint
 +// Licensed under Apache-2.0
 +
@@ -206,6 +206,10 @@ index 0000000..7e703dc
 +    loading_ui ui(false);
 +    g->load_core_data(ui);
 +    g->load_world_modfiles(ui);
++
++    // map caches depend on dynamic registries (notably trap::count()).
++    // Match upstream's headless test setup before start_game loads submaps.
++    get_map() = map();
 +
 +    avatar& u = get_avatar();
 +    u = avatar();
