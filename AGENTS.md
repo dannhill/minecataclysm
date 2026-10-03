@@ -2,9 +2,14 @@
 
 This workspace integrates CDDA, Luanti and selected Mineclonia presentation content.
 Read `ARCHITECTURE.md`, `IMPLEMENTATION_STATUS.md`, `docs/invariants.md`, and the
-original specification and amendments in `docs/source/` before changing behavior.
+original specification, amendments and current user scope directive in
+`docs/source/` before changing behavior.
 
 - CDDA owns gameplay, simulation time and canonical persistence. Luanti owns presentation only.
+- The integrated product is the target. Unused upstream code, internal APIs
+  and standalone functionality may be removed or substantially changed when
+  beneficial. Do not preserve standalone behavior for its own sake; see
+  `docs/source/project-scope-2026-10-03.md`.
 - Keep CWM independent of Luanti structures and the underlying transport.
 - A missing delta requires a full authoritative resynchronization; never infer missing state.
 - Preserve the upstream pins and complete patches in `baseline/manifest.json`.

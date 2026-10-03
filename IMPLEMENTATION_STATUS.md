@@ -1,18 +1,40 @@
 # Implementation status
 
-M5.5 takeover: **IN PROGRESS**. No historical milestone is certified by the
-previous agents' claims. The captured baseline includes changes after their
-reported M5 completion.
+**M5.5 takeover audit: COMPLETE. Architectural conformance gate: FAILED.**
+The findings are documented in [the audit](docs/audits/M5.5.md), with
+[persistent evidence](docs/audits/M5.5-evidence.json) and a
+[prioritized remediation / M6 plan](docs/audits/M5.5-remediation.md).
 
-The original roadmap defines M5 as interaction and M6 as vehicles. agy's
-compressed M5 combined vehicle scaffolding, an overlay and a heartbeat
-benchmark. That claim is recorded, not adopted as verification.
+The frozen claimed-M5 baseline is `1c37927`, tagged
+`pre-takeover-m5-claimed`. Work is on `audit/m5-conformance`. Only two production
+changes were made to enable verification: trap-registry/map initialization
+(`53ec1d4`) and the native `main` declaration (`6f0d415`). Complete fork patches,
+upstream pins and source identities are in `baseline/manifest.json`.
 
-Known before clean verification: original root was not a Git repository;
-CDDA/Luanti forks contained uncommitted and untracked integration code; upstream
-clones are shallow. Existing CDDA/Luanti builds had unit tests disabled.
-The two cached CWM tests passed, which does not establish clean-build or
-renderer conformance. SAVE-001's old script checks artifacts and process exit,
-not semantic preservation in standard CDDA.
+Clean component builds pass. Protocol tests pass 2/2; Luanti native tests pass
+302/302; CDDA's native default suite passes 1,067/1,068 cases; Mineclonia's
+upstream CI lint command passes for 461 Lua files. Root CTest discovers zero
+tests. The final legacy integration run passes 3/6 scripts with timing and
+message-order assumptions explained in the audit.
 
-Final evidence and priorities will be recorded in `docs/audits/M5.5.md`.
+Product blockers include lost inherited avatar/time, an incomplete simulation
+turn loop, unchecked actions, process aborts on oversized frames, missing
+command deduplication/resynchronization and an actual bridge crash on an absent
+snapshot origin. Spatial projection, entity instantiation, interaction wiring,
+lifecycle/threading and full performance acceptance are incomplete.
+
+SAVE-001 fails. The clean native oracle restores its control fixture; the actual
+3D attempt sends three accepted moves and produces a natively readable save,
+but replaces the original avatar and resets its calendar. Full semantic
+preservation is not certified.
+
+Original M0–M9 applies: M5 is interaction, M6 is vehicles. The recovered agy
+plan used compressed milestone labels and its claims are historical evidence.
+M0–M5 remain IN PROGRESS under the original acceptance criteria; M6–M9 remain
+PLANNED. No historical milestone is promoted to VERIFIED.
+
+The [current scope directive](docs/source/project-scope-2026-10-03.md) gives
+the integrated product priority. Unused CDDA/Luanti/Mineclonia logic, internal
+APIs and standalone capabilities may be removed or substantially transformed
+when beneficial. Authoritative gameplay, canonical persistence and recovery
+invariants remain requirements.

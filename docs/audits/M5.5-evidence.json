@@ -1,0 +1,3147 @@
+{
+  "audit": "M5.5",
+  "audit_status": "COMPLETE",
+  "gate": "FAILED",
+  "root_revision_at_receipt": "6f0d41503fd27e234e5ec513590f373ce14e7d74",
+  "revision_note": "Receipt commit is later; production identity is the manifest/tree hashes, not this documentary parent.",
+  "branch": "audit/m5-conformance",
+  "baseline_tag": "pre-takeover-m5-claimed",
+  "artifact_root": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover",
+  "production_exceptions": [
+    "53ec1d4",
+    "6f0d415"
+  ],
+  "manifest": {
+    "format_version": 1,
+    "repositories": {
+      "cdda": {
+        "url": "https://github.com/CleverRaven/Cataclysm-DDA.git",
+        "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+        "shallow": true,
+        "patch": "baseline/patches/cdda.patch",
+        "patch_sha256": "88c7ba2966f9377dab52a908b0405d86716366392448c8e5184bc770623d6138",
+        "tree_inventory": "baseline/trees/cdda.json",
+        "tree_sha256": "955759c5ce92e7d2a18aadc57e39a9934ded38c3494f84990ba3bc4b6242a864",
+        "file_count": 8577,
+        "original_status": " M src/CMakeLists.txt\n M src/game.h\n?? src/cwm/cwm_main.cpp\n?? src/cwm/cwm_map_exporter.cpp\n?? src/cwm/cwm_map_exporter.h\n?? src/cwm/cwm_server.cpp\n?? src/cwm/cwm_server.h\n?? src/cwm/cwm_types.h\n"
+      },
+      "luanti": {
+        "url": "https://github.com/luanti-org/luanti.git",
+        "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
+        "shallow": true,
+        "patch": "baseline/patches/luanti.patch",
+        "patch_sha256": "54355e454d9d835495afed1aef23b75d161484440eb860136afc7c30c838c39b",
+        "tree_inventory": "baseline/trees/luanti.json",
+        "tree_sha256": "63df6364a31166e473aa539e4a96f0b63f7d5bf329291b4890b2c370c4a795f3",
+        "file_count": 2251,
+        "original_status": " M src/CMakeLists.txt\n M src/client/CMakeLists.txt\n M src/client/game.cpp\n?? src/cdda/cdda_bridge.cpp\n?? src/cdda/cdda_bridge.h\n"
+      },
+      "mineclonia": {
+        "url": "https://github.com/mark-wiemer/mineclonia.git",
+        "commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+        "shallow": true,
+        "patch": "baseline/patches/mineclonia.patch",
+        "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "tree_inventory": "baseline/trees/mineclonia.json",
+        "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36",
+        "file_count": 9359,
+        "original_status": ""
+      }
+    }
+  },
+  "native_summary": {
+    "protocol_cases": {
+      "pass": 2,
+      "total": 2
+    },
+    "cdda_cases": {
+      "pass": 1067,
+      "total": 1068,
+      "rng_seed": 42,
+      "failure": "overmap_terrain_coverage: 30 missing terrain types"
+    },
+    "cdda_assertions": {
+      "pass": 33638783,
+      "total": 33638784
+    },
+    "luanti_individual_tests": {
+      "pass": 302,
+      "total": 302,
+      "modules": 47
+    },
+    "mineclonia_ci": {
+      "lua_files": 461,
+      "warnings": 0,
+      "errors": 0
+    },
+    "root_ctest": {
+      "status": "EMPTY",
+      "process_exit_code": 0,
+      "discovered_tests": 0
+    }
+  },
+  "evidence_selection": {
+    "primary_runtime": "conformance/runtime",
+    "primary_save": "conformance/save001",
+    "primary_render": "render-camera",
+    "superseded": {
+      "oracle-preflight": "Fork-linked development oracle/invalid initial control fixture.",
+      "conformance/render": "First render had a Python builder error; not production rendering evidence.",
+      "render-final": "Corrected builder, superseded camera pose."
+    }
+  },
+  "limits": [
+    "SAVE-001 failed preconditions; full semantic equivalence was not completed.",
+    "Synthetic render fixtures measure real frame cadence, not populated CDDA benchmark acceptance.",
+    "Static lifecycle/mesh-thread concerns are not a reproduced race or complete sanitizer certification.",
+    "Hidden opt-in tests, Windows and unrelated upstream capabilities are not claimed verified."
+  ],
+  "summaries": {
+    "environment.json": {
+      "platform": "Linux-7.0.11-76070011-generic-x86_64-with-glibc2.35",
+      "python": "3.10.12 (main, Mar  3 2026, 11:56:32) [GCC 11.4.0]",
+      "workspace": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+      "jobs": 2,
+      "compiler": "c++ (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0\nCopyright (C) 2021 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+      "cmake": "cmake version 3.22.1\n\nCMake suite maintained and supported by Kitware (kitware.com/cmake).\n",
+      "flatc": "flatc version 24.3.25\n",
+      "cpu": "Architecture:                            x86_64\nCPU op-mode(s):                          32-bit, 64-bit\nAddress sizes:                           39 bits physical, 48 bits virtual\nByte Order:                              Little Endian\nCPU(s):                                  8\nOn-line CPU(s) list:                     0-7\nVendor ID:                               GenuineIntel\nModel name:                              Intel(R) Core(TM) i7-7700K CPU @ 4.20GHz\nCPU family:                              6\nModel:                                   158\nThread(s) per core:                      2\nCore(s) per socket:                      4\nSocket(s):                               1\nStepping:                                9\nCPU max MHz:                             4500.0000\nCPU min MHz:                             800.0000\nBogoMIPS:                                8400.00\nFlags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc art arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf pni pclmulqdq dtes64 monitor ds_cpl est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm 3dnowprefetch cpuid_fault epb pti ssbd ibrs ibpb stibp fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid mpx rdseed adx smap clflushopt intel_pt xsaveopt xsavec xgetbv1 xsaves dtherm ida arat pln pts hwp hwp_notify hwp_act_window hwp_epp md_clear flush_l1d arch_capabilities\nL1d cache:                               128 KiB (4 instances)\nL1i cache:                               128 KiB (4 instances)\nL2 cache:                                1 MiB (4 instances)\nL3 cache:                                8 MiB (1 instance)\nNUMA node(s):                            1\nNUMA node0 CPU(s):                       0-7\nVulnerability Gather data sampling:      Vulnerable\nVulnerability Ghostwrite:                Not affected\nVulnerability Indirect target selection: Not affected\nVulnerability Itlb multihit:             KVM: Mitigation: VMX unsupported\nVulnerability L1tf:                      Mitigation; PTE Inversion\nVulnerability Mds:                       Mitigation; Clear CPU buffers; SMT vulnerable\nVulnerability Meltdown:                  Mitigation; PTI\nVulnerability Mmio stale data:           Mitigation; Clear CPU buffers; SMT vulnerable\nVulnerability Old microcode:             Not affected\nVulnerability Reg file data sampling:    Not affected\nVulnerability Retbleed:                  Mitigation; IBRS\nVulnerability Spec rstack overflow:      Not affected\nVulnerability Spec store bypass:         Mitigation; Speculative Store Bypass disabled via prctl\nVulnerability Spectre v1:                Mitigation; usercopy/swapgs barriers and __user pointer sanitization\nVulnerability Spectre v2:                Mitigation; IBRS; IBPB conditional; STIBP conditional; RSB filling; PBRSB-eIBRS Not affected; BHI Not affected\nVulnerability Srbds:                     Mitigation; Microcode\nVulnerability Tsa:                       Not affected\nVulnerability Tsx async abort:           Mitigation; TSX disabled\nVulnerability Vmscape:                   Mitigation; IBPB before exit to userspace\n",
+      "memory": "               total        used        free      shared  buff/cache   available\nMem:            31Gi        23Gi       1.8Gi       105Mi       6.3Gi       5.7Gi\nSwap:           15Gi       9.7Gi       6.3Gi\n",
+      "kernel": "Linux pop-os 7.0.11-76070011-generic #202606011647~1780583630~22.04~70ad774 SMP PREEMPT_DYNAMIC Thu J x86_64 x86_64 x86_64 GNU/Linux\n",
+      "python_flatbuffers": "25.12.19"
+    },
+    "verified-source-and-binaries.json": {
+      "cdda": {
+        "tree_sha256": "955759c5ce92e7d2a18aadc57e39a9934ded38c3494f84990ba3bc4b6242a864",
+        "expected": "955759c5ce92e7d2a18aadc57e39a9934ded38c3494f84990ba3bc4b6242a864",
+        "matches": true,
+        "file_count": 8577
+      },
+      "luanti": {
+        "tree_sha256": "63df6364a31166e473aa539e4a96f0b63f7d5bf329291b4890b2c370c4a795f3",
+        "expected": "63df6364a31166e473aa539e4a96f0b63f7d5bf329291b4890b2c370c4a795f3",
+        "matches": true,
+        "file_count": 2251
+      },
+      "mineclonia": {
+        "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36",
+        "expected": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36",
+        "matches": true,
+        "file_count": 9359
+      },
+      "cdda/build/src/cdda-server": {
+        "sha256": "f4d7193a5c76fc0e8feb9a78ca4c5f729657e87235845d14e9d9ce37effa204c",
+        "bytes": 313108904
+      },
+      "cdda/build/src/cataclysm": {
+        "sha256": "72e32168bcffbed4e947612a84cc59505bf21f62c72733b81439a1124b939549",
+        "bytes": 312501328
+      },
+      "cdda/build/tests/cata_test": {
+        "sha256": "1f3d4b2180ca92b570322467851f97813306eb2991ab19f6c99449ee18e4cd7f",
+        "bytes": 404207568
+      },
+      "luanti/bin/luanti": {
+        "sha256": "8cebced8a8608fde05fc25b5f9994a9c41e7d43890ad7d62f93ee2dbc26d6a80",
+        "bytes": 15369632
+      }
+    },
+    "binding_diff_cpp.json": [],
+    "binding_diff_python.json": [],
+    "conformance/runtime/checks.json": [
+      {
+        "name": "native_fixture_creation",
+        "status": "PASS",
+        "exit_code": 0
+      },
+      {
+        "name": "native_canonical_loader",
+        "status": "PASS",
+        "exit_code": 0
+      },
+      {
+        "name": "native_control_roundtrip",
+        "status": "PASS",
+        "comparisons": {
+          "time": true,
+          "player_abs": true,
+          "terrain_and_furniture": true,
+          "inventory": true,
+          "monsters": true,
+          "npcs": true,
+          "vehicles": true
+        },
+        "categories": {
+          "monsters": 1,
+          "npcs": 1,
+          "vehicles": 1
+        },
+        "limitation": "Control validates the native oracle only; it does not certify integration SAVE-001."
+      },
+      {
+        "name": "headless_boot",
+        "status": "PASS",
+        "exit_code": null,
+        "seconds": 9.250936211989028
+      },
+      {
+        "name": "no_snapshot_before_handshake",
+        "status": "FAIL",
+        "observed_payload": 5
+      },
+      {
+        "name": "unsupported_major_rejected",
+        "status": "FAIL",
+        "accepted": true
+      },
+      {
+        "name": "saved_avatar_is_loaded",
+        "status": "FAIL",
+        "native_saved_name": "Audit Survivor",
+        "cwm_name": "Survivor",
+        "native_position": [
+          60,
+          60,
+          0
+        ],
+        "cwm_local_position": [
+          65.0,
+          62.0,
+          0.0
+        ],
+        "snapshot_time": 43200,
+        "native_time": 129600
+      },
+      {
+        "name": "command_idempotency",
+        "status": "FAIL",
+        "observations": [
+          {
+            "accepted": true,
+            "revision": 3,
+            "time": 43200
+          },
+          {
+            "accepted": true,
+            "revision": 4,
+            "time": 43200
+          }
+        ]
+      },
+      {
+        "name": "wait_advances_authoritative_time",
+        "status": "FAIL",
+        "initial": 43200,
+        "after": 43200
+      },
+      {
+        "name": "distant_use_is_validated",
+        "status": "FAIL",
+        "accepted": true,
+        "target": [
+          1,
+          1,
+          0
+        ]
+      },
+      {
+        "name": "legacy_fuzzer_process_result",
+        "status": "PASS",
+        "exit_code": 0,
+        "limitation": "Legacy fuzzer closes immediately and does not prove server-side decoding."
+      },
+      {
+        "name": "oversized_frame_preserves_server",
+        "status": "FAIL",
+        "exit_code": -6
+      }
+    ],
+    "conformance/runtime/server-result.json": {
+      "command": [
+        "stdbuf",
+        "-oL",
+        "-eL",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/cdda/build/src/cdda-server",
+        "--socket",
+        "/tmp/m55-runtime-ryl3ur_e/ipc.sock",
+        "--world",
+        "audit_fixture",
+        "--userdir",
+        "/tmp/m55-runtime-ryl3ur_e/user",
+        "--datadir",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/cdda/data"
+      ],
+      "exit_code": -6,
+      "binary_sha256": "f4d7193a5c76fc0e8feb9a78ca4c5f729657e87235845d14e9d9ce37effa204c"
+    },
+    "conformance/save001/checks.json": [
+      {
+        "name": "native_before.json",
+        "status": "PASS",
+        "command": [
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/pristine-cdda/build/src/takeover_save_reader",
+          "--userdir",
+          "/tmp/m55-save-3jqchm_d/user",
+          "--datadir",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/cdda/data",
+          "--output",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/evidence/conformance/save001/before.json",
+          "--create"
+        ],
+        "exit_code": 0
+      },
+      {
+        "name": "headless_ready",
+        "status": "PASS",
+        "exit_code": null
+      },
+      {
+        "name": "actual_3d_client_received_state",
+        "status": "PASS"
+      },
+      {
+        "name": "actual_3d_movement_attempted",
+        "status": "PASS",
+        "sent": 3,
+        "accepted": 3
+      },
+      {
+        "name": "graceful_canonical_save",
+        "status": "PASS",
+        "exit_code": 0
+      },
+      {
+        "name": "existing_avatar_preserved",
+        "status": "FAIL",
+        "expected": "Audit Survivor",
+        "observed": "Survivor"
+      },
+      {
+        "name": "native_after.json",
+        "status": "PASS",
+        "command": [
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/pristine-cdda/build/src/takeover_save_reader",
+          "--userdir",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/evidence/conformance/save001/after.json.reader-user",
+          "--datadir",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/cdda/data",
+          "--output",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/evidence/conformance/save001/after.json",
+          "--expect-character",
+          "Survivor"
+        ],
+        "exit_code": 0
+      },
+      {
+        "name": "saved_position_matches_authority",
+        "status": "PASS",
+        "expected": [
+          -314.0,
+          6415.0,
+          0.0
+        ],
+        "observed": [
+          -314,
+          6415,
+          0
+        ]
+      },
+      {
+        "name": "saved_time_matches_authority",
+        "status": "PASS",
+        "expected": 43200,
+        "observed": 43200
+      },
+      {
+        "name": "fixture_time_is_preserved_on_load",
+        "status": "FAIL",
+        "expected": 129600,
+        "observed": 43200
+      }
+    ],
+    "conformance/save001/scope.json": {
+      "status": "FAILED",
+      "save001_complete": false,
+      "reason": "Existing-avatar/time preconditions and observed position/time are checked. Full inventory, world and entity semantic equivalence remains required before certification.",
+      "binaries": {
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/pristine-cdda/build/src/takeover_save_reader": "281f4ac521e5f769a9681afae95f7f3080fc27bddc5211b47e87de743fd0c4cb",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/cdda/build/src/cdda-server": "f4d7193a5c76fc0e8feb9a78ca4c5f729657e87235845d14e9d9ce37effa204c",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/luanti/bin/luanti": "8cebced8a8608fde05fc25b5f9994a9c41e7d43890ad7d62f93ee2dbc26d6a80"
+      }
+    },
+    "render-camera/results.json": [
+      {
+        "scenario": "BM01",
+        "fixture_entities": 2,
+        "fixture_chunks": 1,
+        "authoritative_cdda": false,
+        "connected": true,
+        "duration_seconds": 18.39917853899533,
+        "exit_code": 0,
+        "measured_frames": 852,
+        "frame_time_p50_ms": 16.677122,
+        "frame_time_p95_ms": 17.147661,
+        "frame_time_p99_ms": 18.871826,
+        "measured_average_fps": 58.45330170800047,
+        "sequence_gap_causes_resynchronization": false,
+        "semantic_invalid_snapshot_preserves_client": null,
+        "rss_peak_bytes": 334917632,
+        "cpu_seconds": 2.58,
+        "input_to_visual_p95_ms": null,
+        "initial_projection_p95_ms": null,
+        "limitations": [
+          "Synthetic CWM presentation fixture; CDDA runtime is not exercised.",
+          "Swap timestamps measure frame cadence, not confirmed mesh completion.",
+          "Population is transmitted; entity meshes require separate visual verification."
+        ]
+      },
+      {
+        "scenario": "BM02",
+        "fixture_entities": 150,
+        "fixture_chunks": 162,
+        "authoritative_cdda": false,
+        "connected": true,
+        "duration_seconds": 20.76524440900539,
+        "exit_code": -11,
+        "measured_frames": 838,
+        "frame_time_p50_ms": 16.674886,
+        "frame_time_p95_ms": 16.923009,
+        "frame_time_p99_ms": 17.236748,
+        "measured_average_fps": 59.96207731907129,
+        "sequence_gap_causes_resynchronization": false,
+        "semantic_invalid_snapshot_preserves_client": false,
+        "rss_peak_bytes": 342614016,
+        "cpu_seconds": 2.43,
+        "input_to_visual_p95_ms": null,
+        "initial_projection_p95_ms": null,
+        "limitations": [
+          "Synthetic CWM presentation fixture; CDDA runtime is not exercised.",
+          "Swap timestamps measure frame cadence, not confirmed mesh completion.",
+          "Population is transmitted; entity meshes require separate visual verification."
+        ]
+      }
+    ],
+    "conformance/asset-provenance.json": {
+      "assets": [
+        {
+          "asset": "game/mods/cdda_entities/models/character.b3d",
+          "sha256": "9f7414c8604c323d266ff54c966ff59d3ba0981743b7b59e15ea05c3168217d1",
+          "upstream_hash_matches": [
+            "mods/ITEMS/mcl_armor/models/mcl_armor_character.b3d"
+          ]
+        },
+        {
+          "asset": "game/mods/cdda_entities/models/zombie.b3d",
+          "sha256": "d528d2c47cc18db391e6c184c8716e61c0b8e44fa4e0901f00e9d8ce3b31d1e2",
+          "upstream_hash_matches": [
+            "mods/ENTITIES/mobs_mc/models/mobs_mc_zombie.b3d"
+          ]
+        },
+        {
+          "asset": "game/mods/cdda_entities/textures/character.png",
+          "sha256": "1640ffe319ebb2ee3af371644de1a9a5fa1b2565b1530293cba9bb271c3130b2",
+          "upstream_hash_matches": [
+            "mods/PLAYER/mcl_player/textures/character.png"
+          ]
+        },
+        {
+          "asset": "game/mods/cdda_entities/textures/mcl_heads_zombie.png",
+          "sha256": "6327a4050708462f1deb08cb2439eff564aa79149636dcd9070594116ff4d6c6",
+          "upstream_hash_matches": [
+            "mods/ITEMS/mcl_heads/textures/mcl_heads_zombie.png"
+          ]
+        },
+        {
+          "asset": "game/mods/cdda_entities/textures/mcl_skins_character_1.png",
+          "sha256": "bb708cae24508a86095e8b0a52922a333c2e08e4be9094021eb9c98ceda6f060",
+          "upstream_hash_matches": [
+            "mods/PLAYER/mcl_skins/textures/mcl_skins_character_1.png"
+          ]
+        },
+        {
+          "asset": "game/mods/cdda_entities/textures/mobs_mc_horse_zombie.png",
+          "sha256": "056f71293471d7c7d99f71bf2402d5b6fd9d9230e941b1060b2ef40dcbfea073",
+          "upstream_hash_matches": [
+            "mods/ENTITIES/mobs_mc/textures/mobs_mc_horse_zombie.png"
+          ]
+        },
+        {
+          "asset": "game/mods/cdda_entities/textures/mobs_mc_spawn_icon_horse_zombie.png",
+          "sha256": "4836e461f3fce470ef1148c68d0970e363cee6111cadd27ba4f505ac4e7e5c8f",
+          "upstream_hash_matches": [
+            "mods/ENTITIES/mobs_mc/textures/mobs_mc_spawn_icon_horse_zombie.png"
+          ]
+        },
+        {
+          "asset": "game/mods/cdda_entities/textures/mobs_mc_spawn_icon_zombie.png",
+          "sha256": "16dc946f77427e8cf6854e2add7cdb57cb9677a5408257e42d1f88e2aeab6593",
+          "upstream_hash_matches": [
+            "mods/ENTITIES/mobs_mc/textures/mobs_mc_spawn_icon_zombie.png"
+          ]
+        },
+        {
+          "asset": "game/mods/cdda_entities/textures/mobs_mc_spawn_icon_zombie_pigman.png",
+          "sha256": "69c7c683baedae56a450560cb87a805182be1d10177d438d0192b1d946a9d749",
+          "upstream_hash_matches": [
+            "mods/ENTITIES/mobs_mc/textures/mobs_mc_spawn_icon_zombie_pigman.png"
+          ]
+        },
+        {
+          "asset": "game/mods/cdda_entities/textures/mobs_mc_spawn_icon_zombie_villager.png",
+          "sha256": "cee0b724d8334c0e3b46036024fc67f799f0f51d1561bd4567e43700f4a0e483",
+          "upstream_hash_matches": [
+            "mods/ENTITIES/mobs_mc/textures/mobs_mc_spawn_icon_zombie_villager.png"
+          ]
+        },
+        {
+          "asset": "game/mods/cdda_entities/textures/mobs_mc_zombie.png",
+          "sha256": "97e3861e1ede094600fa452fa44d8ae09dede6d07749db27b304f709a0213472",
+          "upstream_hash_matches": [
+            "mods/ENTITIES/mobs_mc/textures/mobs_mc_zombie.png"
+          ]
+        },
+        {
+          "asset": "game/mods/cdda_entities/textures/mobs_mc_zombie_villager.png",
+          "sha256": "3a8ed1b58d0a222f962617baad935e78af2d644701ee11bc1f0539d1c12129b7",
+          "upstream_hash_matches": [
+            "mods/ENTITIES/mobs_mc/textures/mobs_mc_zombie_villager.png"
+          ]
+        },
+        {
+          "asset": "game/mods/cdda_entities/textures/mobs_mc_zombie_villager_base.png",
+          "sha256": "343281a2aef4443218eda278d422ed194562c94ff3583867203af92a9075504a",
+          "upstream_hash_matches": [
+            "mods/ENTITIES/mobs_mc/textures/mobs_mc_zombie_villager_base.png"
+          ]
+        },
+        {
+          "asset": "game/mods/cdda_entities/textures/mobs_mc_zombie_villager_desert.png",
+          "sha256": "542d7f41c81d5944bc2ca4b6f69499367f1f102869ce7105c57b8a0920f2bc42",
+          "upstream_hash_matches": [
+            "mods/ENTITIES/mobs_mc/textures/mobs_mc_zombie_villager_desert.png"
+          ]
+        },
+        {
+          "asset": "game/mods/cdda_entities/textures/mobs_mc_zombie_villager_jungle.png",
+          "sha256": "8f521406592c9d4171a9c82e28d0cf8a39967835eb2ab0f6d6db0d0e02987521",
+          "upstream_hash_matches": [
+            "mods/ENTITIES/mobs_mc/textures/mobs_mc_villager_jungle.png",
+            "mods/ENTITIES/mobs_mc/textures/mobs_mc_zombie_villager_jungle.png"
+          ]
+        },
+        {
+          "asset": "game/mods/cdda_entities/textures/mobs_mc_zombie_villager_plains.png",
+          "sha256": "776ad1b5205ff4abf123c9989849714184b1d20c4019efdce816c128d0891d0d",
+          "upstream_hash_matches": [
+            "mods/ENTITIES/mobs_mc/textures/mobs_mc_zombie_villager_plains.png"
+          ]
+        },
+        {
+          "asset": "game/mods/cdda_entities/textures/mobs_mc_zombie_villager_profession_armorer.png",
+          "sha256": "46aa99d2037a8ba6ac7260714f580d526bb310c51d67c0f4e6e7a7616eb09a37",
+          "upstream_hash_matches": [
+            "mods/ENTITIES/mobs_mc/textures/mobs_mc_zombie_villager_profession_armorer.png"
+          ]
+        },
+        {
+          "asset": "game/mods/cdda_entities/textures/mobs_mc_zombie_villager_profession_butcher.png",
+          "sha256": "331662f98e67a232f12adc399aa9d30949b4b1720976d65385805b1b8fff0b5a",
+          "upstream_hash_matches": [
+            "mods/ENTITIES/mobs_mc/textures/mobs_mc_villager_profession_butcher.png",
+            "mods/ENTITIES/mobs_mc/textures/mobs_mc_zombie_villager_profession_butcher.png"
+          ]
+        },
+        {
+          "asset": "game/mods/cdda_entities/textures/mobs_mc_zombie_villager_profession_cartographer.png",
+          "sha256": "a13e9fb498e460dc676283aa82d58c9aa0ea35c5ef66a2d78f8f1a0b6d29fcd6",
+          "upstream_hash_matches": [
+            "mods/ENTITIES/mobs_mc/textures/mobs_mc_villager_profession_cartographer.png",
+            "mods/ENTITIES/mobs_mc/textures/mobs_mc_zombie_villager_profession_cartographer.png"
+          ]
+        },
+        {
+          "asset": "game/mods/cdda_entities/textures/mobs_mc_zombie_villager_profession_cleric.png",
+          "sha256": "7a762286b73f5d40f909bc12c6daa1c2c67c271b3e1bcf04faaa9ed6c2b8513e",
+          "upstream_hash_matches": [
+            "mods/ENTITIES/mobs_mc/textures/mobs_mc_zombie_villager_profession_cleric.png"
+          ]
+        },
+        {
+          "asset": "game/mods/cdda_entities/textures/mobs_mc_zombie_villager_profession_farmer.png",
+          "sha256": "e0098eb074ad532d5544bb0f4a00be1ef8e6fd7f81aadc2bd08149469663f617",
+          "upstream_hash_matches": [
+            "mods/ENTITIES/mobs_mc/textures/mobs_mc_villager_profession_farmer.png",
+            "mods/ENTITIES/mobs_mc/textures/mobs_mc_zombie_villager_profession_farmer.png"
+          ]
+        },
+        {
+          "asset": "game/mods/cdda_entities/textures/mobs_mc_zombie_villager_profession_fisherman.png",
+          "sha256": "9c2395d6d34d147403c92d8c8af8900d7f0747ad3704acc510444433658058c6",
+          "upstream_hash_matches": [
+            "mods/ENTITIES/mobs_mc/textures/mobs_mc_villager_profession_fisherman.png",
+            "mods/ENTITIES/mobs_mc/textures/mobs_mc_zombie_villager_profession_fisherman.png"
+          ]
+        },
+        {
+          "asset": "game/mods/cdda_entities/textures/mobs_mc_zombie_villager_profession_fletcher.png",
+          "sha256": "39cda3b548adb14350334fc6a449d3c8f463e86aa2de12a3d9a49a8416852d15",
+          "upstream_hash_matches": [
+            "mods/ENTITIES/mobs_mc/textures/mobs_mc_villager_profession_fletcher.png",
+            "mods/ENTITIES/mobs_mc/textures/mobs_mc_zombie_villager_profession_fletcher.png"
+          ]
+        },
+        {
+          "asset": "game/mods/cdda_entities/textures/mobs_mc_zombie_villager_profession_leatherworker.png",
+          "sha256": "00eb782b8101935a2af52809aaad88284621965a11a15155e75e4596ef3be622",
+          "upstream_hash_matches": [
+            "mods/ENTITIES/mobs_mc/textures/mobs_mc_villager_profession_leatherworker.png",
+            "mods/ENTITIES/mobs_mc/textures/mobs_mc_zombie_villager_profession_leatherworker.png"
+          ]
+        },
+        {
+          "asset": "game/mods/cdda_entities/textures/mobs_mc_zombie_villager_profession_librarian.png",
+          "sha256": "268b7bc48aa42a04760be6639f27fe74dcdfd05e41fc8be791d31d493c6c5b55",
+          "upstream_hash_matches": [
+            "mods/ENTITIES/mobs_mc/textures/mobs_mc_villager_profession_librarian.png",
+            "mods/ENTITIES/mobs_mc/textures/mobs_mc_zombie_villager_profession_librarian.png"
+          ]
+        },
+        {
+          "asset": "game/mods/cdda_entities/textures/mobs_mc_zombie_villager_profession_mason.png",
+          "sha256": "307af30e5941e0e1d71a46f1aa0f214823faf61820f0f370b93e6d06819a0b22",
+          "upstream_hash_matches": [
+            "mods/ENTITIES/mobs_mc/textures/mobs_mc_villager_profession_mason.png",
+            "mods/ENTITIES/mobs_mc/textures/mobs_mc_zombie_villager_profession_mason.png"
+          ]
+        },
+        {
+          "asset": "game/mods/cdda_entities/textures/mobs_mc_zombie_villager_profession_nitwit.png",
+          "sha256": "061db8ae3e195459ea1af35f7c980da4d53db38d09b5a29ec8bbd8065995e6bd",
+          "upstream_hash_matches": [
+            "mods/ENTITIES/mobs_mc/textures/mobs_mc_villager_profession_nitwit.png",
+            "mods/ENTITIES/mobs_mc/textures/mobs_mc_zombie_villager_profession_nitwit.png"
+          ]
+        },
+        {
+          "asset": "game/mods/cdda_entities/textures/mobs_mc_zombie_villager_profession_shepherd.png",
+          "sha256": "f9ef64f16f538e5e09e16d8c614db821f4ee1dfe8a08f9a3e4f0f2b1007a3215",
+          "upstream_hash_matches": [
+            "mods/ENTITIES/mobs_mc/textures/mobs_mc_zombie_villager_profession_shepherd.png"
+          ]
+        },
+        {
+          "asset": "game/mods/cdda_entities/textures/mobs_mc_zombie_villager_profession_toolsmith.png",
+          "sha256": "6e3099f56c36b0627ce39f027f84dca1febe96f733a7cc163c205cbe0cd1b76c",
+          "upstream_hash_matches": [
+            "mods/ENTITIES/mobs_mc/textures/mobs_mc_villager_profession_toolsmith.png",
+            "mods/ENTITIES/mobs_mc/textures/mobs_mc_zombie_villager_profession_toolsmith.png"
+          ]
+        },
+        {
+          "asset": "game/mods/cdda_entities/textures/mobs_mc_zombie_villager_profession_weaponsmith.png",
+          "sha256": "58426efc8400e74449fc07c8e2e830d3974c4775d3a97a27d7bb4c16cbb4c27a",
+          "upstream_hash_matches": [
+            "mods/ENTITIES/mobs_mc/textures/mobs_mc_zombie_villager_profession_weaponsmith.png"
+          ]
+        },
+        {
+          "asset": "game/mods/cdda_entities/textures/mobs_mc_zombie_villager_savanna.png",
+          "sha256": "b29db8cc2848c7ea6cf7eaca1672283dcf3a3ea153e6ffa2c0ff3648fe08eada",
+          "upstream_hash_matches": [
+            "mods/ENTITIES/mobs_mc/textures/mobs_mc_villager_savanna.png",
+            "mods/ENTITIES/mobs_mc/textures/mobs_mc_zombie_villager_savanna.png"
+          ]
+        },
+        {
+          "asset": "game/mods/cdda_entities/textures/mobs_mc_zombie_villager_snow.png",
+          "sha256": "02a8662d4cfc036cdc776c5a5605d3178b9ab0906573cb8f8db6be77dabc9028",
+          "upstream_hash_matches": [
+            "mods/ENTITIES/mobs_mc/textures/mobs_mc_zombie_villager_snow.png"
+          ]
+        },
+        {
+          "asset": "game/mods/cdda_entities/textures/mobs_mc_zombie_villager_swamp.png",
+          "sha256": "6b027cbdb5b6f27f9585892e5e5d8ff9c8af74ca8d81fb602fc5c1a06a055f10",
+          "upstream_hash_matches": [
+            "mods/ENTITIES/mobs_mc/textures/mobs_mc_zombie_villager_swamp.png"
+          ]
+        },
+        {
+          "asset": "game/mods/cdda_entities/textures/mobs_mc_zombie_villager_taiga.png",
+          "sha256": "08519ccd964caa8744273188e8a1a09c6d74c10f7d88aa0cc672a81ef4f7872c",
+          "upstream_hash_matches": [
+            "mods/ENTITIES/mobs_mc/textures/mobs_mc_zombie_villager_taiga.png"
+          ]
+        },
+        {
+          "asset": "game/mods/cdda_entities/textures/zombie.png",
+          "sha256": "97e3861e1ede094600fa452fa44d8ae09dede6d07749db27b304f709a0213472",
+          "upstream_hash_matches": [
+            "mods/ENTITIES/mobs_mc/textures/mobs_mc_zombie.png"
+          ]
+        },
+        {
+          "asset": "game/mods/cdda_nodes/textures/default_brick.png",
+          "sha256": "7b4a6a3526f0e6a86eb120db49de45103b2de103d55dc488d9cceee3478d7911",
+          "upstream_hash_matches": [
+            "mods/ITEMS/mcl_core/textures/default_brick.png"
+          ]
+        },
+        {
+          "asset": "game/mods/cdda_nodes/textures/default_dirt.png",
+          "sha256": "ca53d237c809111c0f1bf2618bd7482e458e8ee880b13cb4dc7e8b6447e5c1b0",
+          "upstream_hash_matches": [
+            "mods/ITEMS/mcl_core/textures/default_dirt.png"
+          ]
+        },
+        {
+          "asset": "game/mods/cdda_nodes/textures/default_glass.png",
+          "sha256": "9600272c0255d508304f83d2b7f5ae718a1af892ef5763c127954a3222ed57df",
+          "upstream_hash_matches": [
+            "mods/ITEMS/mcl_core/textures/default_glass.png"
+          ]
+        },
+        {
+          "asset": "game/mods/cdda_nodes/textures/default_grass.png",
+          "sha256": "ca53d237c809111c0f1bf2618bd7482e458e8ee880b13cb4dc7e8b6447e5c1b0",
+          "upstream_hash_matches": [
+            "mods/ITEMS/mcl_core/textures/default_dirt.png"
+          ]
+        },
+        {
+          "asset": "game/mods/cdda_nodes/textures/default_stone.png",
+          "sha256": "f741bae514fa506fed3daf9977e629509c730431afe06d9d144c027cc8c17352",
+          "upstream_hash_matches": [
+            "mods/ITEMS/mcl_brewing/textures/mcl_brewing_base.png",
+            "mods/ITEMS/mcl_core/textures/default_stone.png"
+          ]
+        },
+        {
+          "asset": "game/mods/cdda_nodes/textures/default_wood.png",
+          "sha256": "275c8d25b28eea48c862ad7539690060c0693881e4becd9de0b1398b165ab1b2",
+          "upstream_hash_matches": [
+            "mods/ITEMS/mcl_core/textures/default_wood.png"
+          ]
+        },
+        {
+          "asset": "game/mods/cdda_nodes/textures/door_wood.png",
+          "sha256": "6dc2dd87bf24b080ae558d9af63891ad5f0a03223b19f23f55ed88bbf64e98a7",
+          "upstream_hash_matches": [
+            "mods/ITEMS/mcl_doors/textures/doors_item_wood.png"
+          ]
+        }
+      ],
+      "file_count": 42,
+      "matching_file_count": 42,
+      "manifest_missing_paths": [
+        "mods/ITEMS/mcl_core/textures/default_grass_side.png"
+      ],
+      "notes": [
+        "Hash matches establish content identity; they do not resolve license obligations.",
+        "Review per-mod media notices and authors; the existing generator does not validate them."
+      ]
+    },
+    "deps/ci-luacheck/manifest.json": {
+      "digest": "sha256:c63facd26a4a797255d72381bb10c5bdcdfd67944be0da6d647cd1474817c4ab",
+      "manifest": {
+        "schemaVersion": 2,
+        "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
+        "config": {
+          "mediaType": "application/vnd.docker.container.image.v1+json",
+          "size": 2311,
+          "digest": "sha256:e44b26735ac7183caeb5ab9e1dd3288846386e57f7e8857eb889d0b75f3819dc"
+        },
+        "layers": [
+          {
+            "mediaType": "application/vnd.docker.image.rootfs.diff.tar.gzip",
+            "size": 3408729,
+            "digest": "sha256:4abcf20661432fb2d719aaf90656f55c287f8ca915dc1c92ec14ff61e67fbaf8"
+          },
+          {
+            "mediaType": "application/vnd.docker.image.rootfs.diff.tar.gzip",
+            "size": 1275,
+            "digest": "sha256:3b65ab1acfaf6126002a7eae6b686e204fda732eb4e15473b0fd27367fa82d14"
+          },
+          {
+            "mediaType": "application/vnd.docker.image.rootfs.diff.tar.gzip",
+            "size": 741745,
+            "digest": "sha256:85855c971634659244d0008279546f5b7cef715c53554033b7386b5e7c77b7ee"
+          },
+          {
+            "mediaType": "application/vnd.docker.image.rootfs.diff.tar.gzip",
+            "size": 162,
+            "digest": "sha256:7346fe5cfbb42444c3fd6c699933e56d99ab28722eb680af085d565551a3226c"
+          },
+          {
+            "mediaType": "application/vnd.docker.image.rootfs.diff.tar.gzip",
+            "size": 161,
+            "digest": "sha256:d11a6cbeaa41225207e99bc9cd780c74dbbfee929733c8a36ed2439ca624de6f"
+          },
+          {
+            "mediaType": "application/vnd.docker.image.rootfs.diff.tar.gzip",
+            "size": 153237,
+            "digest": "sha256:70397d9e221740c2cfed4485e1c16af06517ea49aa47f3a97688d90c17d26c58"
+          },
+          {
+            "mediaType": "application/vnd.docker.image.rootfs.diff.tar.gzip",
+            "size": 126,
+            "digest": "sha256:434b23dcfd4fa8b9b58f9ded15e897bf3101b28b525a92557ca56e8fdee6ffad"
+          }
+        ]
+      }
+    }
+  },
+  "pristine_binaries": {
+    "pristine-cdda/build/src/cataclysm": {
+      "sha256": "e707ea25f7db46c33ade441a04a2ff4431d3b51c5c8ad57c4c7e8065cc3a70e6",
+      "bytes": 286120200
+    },
+    "pristine-cdda/build/src/takeover_save_reader": {
+      "sha256": "281f4ac521e5f769a9681afae95f7f3080fc27bddc5211b47e87de743fd0c4cb",
+      "bytes": 285969408
+    }
+  },
+  "commands": {
+    "build-retry/commands.json": [
+      {
+        "name": "configure_luanti",
+        "command": [
+          "cmake",
+          "-S",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/luanti",
+          "-B",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/luanti/build",
+          "-DCMAKE_BUILD_TYPE=Release",
+          "-DBUILD_UNITTESTS=ON",
+          "-DENABLE_SOUND=OFF",
+          "-DENABLE_GETTEXT=OFF",
+          "-DRUN_IN_PLACE=TRUE",
+          "-DCMAKE_PREFIX_PATH=/home/dannhill/.local"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+        "exit_code": 0,
+        "timeout": false,
+        "seconds": 2.326,
+        "status": "PASS",
+        "log": "configure_luanti.log",
+        "log_sha256": "ad8d0fb91f7cd53951820cca5524d62d9227a20669f6afed33f7f851887a7a12"
+      },
+      {
+        "name": "build_cdda",
+        "command": [
+          "cmake",
+          "--build",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/cdda/build",
+          "--parallel",
+          "2"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+        "exit_code": 0,
+        "timeout": false,
+        "seconds": 2220.595,
+        "status": "PASS",
+        "log": "build_cdda.log",
+        "log_sha256": "c6563fba9c819d43d749d9a0e865a94a1efda08ba57dd3c26d096cd5c59ee79d"
+      },
+      {
+        "name": "build_luanti",
+        "command": [
+          "cmake",
+          "--build",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/luanti/build",
+          "--parallel",
+          "2"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+        "exit_code": 0,
+        "timeout": false,
+        "seconds": 714.388,
+        "status": "PASS",
+        "log": "build_luanti.log",
+        "log_sha256": "a3b00d29a1b03c846560b989abe83a1878fc5961785878e78e377f79030a6026"
+      }
+    ],
+    "ci-reproduction/commands.json": [
+      {
+        "name": "mineclonia_ci_lint",
+        "command": [
+          "env",
+          "LUA_PATH=/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/evidence/ci-reproduction/files/usr/local/share/lua/5.1/?.lua;/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/evidence/ci-reproduction/files/usr/local/share/lua/5.1/?/init.lua;/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/deps/root/usr/share/lua/5.1/?.lua;/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/deps/root/usr/share/lua/5.1/?/init.lua;;",
+          "LUA_CPATH=/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/deps/root/usr/lib/x86_64-linux-gnu/lua/5.1/?.so;;",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/deps/root/usr/bin/lua5.1",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/evidence/ci-reproduction/files/usr/local/lib/luarocks/rocks-5.1/luacheck/dev-1/bin/luacheck",
+          "--quiet",
+          "--std",
+          "minetest+max",
+          "--config",
+          ".luacheckrc",
+          "mods/"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia",
+        "exit_code": 0,
+        "timeout": false,
+        "seconds": 11.241,
+        "status": "PASS",
+        "log": "mineclonia_ci_lint.log",
+        "log_sha256": "fabe27371575e8eaee0432b4bf60f7865970544b7c52d500f72ad029da71ec14"
+      }
+    ],
+    "commands.json": [
+      {
+        "name": "generate_cpp",
+        "command": [
+          "flatc",
+          "--cpp",
+          "--gen-mutable",
+          "--scoped-enums",
+          "-o",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/evidence/regenerated/cpp",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/protocol/cwm.fbs"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+        "exit_code": 0,
+        "timeout": false,
+        "seconds": 0.016,
+        "status": "PASS",
+        "log": "generate_cpp.log",
+        "log_sha256": "28d94d1d517ad6f5a85106195f1b2dc58a3b9564d3f56a86411d2949155ed916"
+      },
+      {
+        "name": "generate_python",
+        "command": [
+          "flatc",
+          "--python",
+          "-o",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/evidence/regenerated/python",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/protocol/cwm.fbs"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+        "exit_code": 0,
+        "timeout": false,
+        "seconds": 0.008,
+        "status": "PASS",
+        "log": "generate_python.log",
+        "log_sha256": "e3d43896e319207ed19cb719f469a0d90d6d4adfbb49afe6539071bad13417e1"
+      },
+      {
+        "name": "configure_protocol",
+        "command": [
+          "cmake",
+          "-S",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/protocol",
+          "-B",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/protocol/build",
+          "-DCMAKE_BUILD_TYPE=Debug"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+        "exit_code": 0,
+        "timeout": false,
+        "seconds": 0.215,
+        "status": "PASS",
+        "log": "configure_protocol.log",
+        "log_sha256": "bcba39dc9c3bc5d98fc865a77fa991d31539acb694c84e7a02de87af1623e227"
+      },
+      {
+        "name": "build_protocol",
+        "command": [
+          "cmake",
+          "--build",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/protocol/build",
+          "--parallel",
+          "2"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+        "exit_code": 0,
+        "timeout": false,
+        "seconds": 1.523,
+        "status": "PASS",
+        "log": "build_protocol.log",
+        "log_sha256": "142096bde1fc5816810efc47a5d688eaa9cce1b3c8549f5613a495133fb980cf"
+      },
+      {
+        "name": "configure_launcher",
+        "command": [
+          "cmake",
+          "-S",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/launcher",
+          "-B",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/launcher/build",
+          "-DCMAKE_BUILD_TYPE=Debug"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+        "exit_code": 0,
+        "timeout": false,
+        "seconds": 0.165,
+        "status": "PASS",
+        "log": "configure_launcher.log",
+        "log_sha256": "7447906384a453e1c1e40d9006aa73b294102367a932115b3e81ce752a047513"
+      },
+      {
+        "name": "build_launcher",
+        "command": [
+          "cmake",
+          "--build",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/launcher/build",
+          "--parallel",
+          "2"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+        "exit_code": 0,
+        "timeout": false,
+        "seconds": 0.768,
+        "status": "PASS",
+        "log": "build_launcher.log",
+        "log_sha256": "31634ac3c00e0446cab3c5a3ef72efb13ec54ea53782de3557222675b3bc8d98"
+      },
+      {
+        "name": "configure_coordinator",
+        "command": [
+          "cmake",
+          "-S",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/coordinator",
+          "-B",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/coordinator/build",
+          "-DCMAKE_BUILD_TYPE=Debug"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+        "exit_code": 0,
+        "timeout": false,
+        "seconds": 0.165,
+        "status": "PASS",
+        "log": "configure_coordinator.log",
+        "log_sha256": "05587076a3e719a51908a78bd24d17ed2bcae9ac222def0b5e9a73a3f71ef662"
+      },
+      {
+        "name": "build_coordinator",
+        "command": [
+          "cmake",
+          "--build",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/coordinator/build",
+          "--parallel",
+          "2"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+        "exit_code": 0,
+        "timeout": false,
+        "seconds": 0.768,
+        "status": "PASS",
+        "log": "build_coordinator.log",
+        "log_sha256": "d1ebc737b2245bfb897860426f62074ed9a55b9ec7e62eef61144151093acbb0"
+      },
+      {
+        "name": "configure_cdda",
+        "command": [
+          "cmake",
+          "-S",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/cdda",
+          "-B",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/cdda/build",
+          "-DCMAKE_BUILD_TYPE=Release",
+          "-DTESTS=ON",
+          "-DBUILD_TESTING=ON",
+          "-DCURSES=ON",
+          "-DTILES=OFF",
+          "-DSOUND=OFF",
+          "-DLOCALIZE=OFF",
+          "-DLANGUAGES=OFF",
+          "-DCATA_CCACHE=OFF"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+        "exit_code": 0,
+        "timeout": false,
+        "seconds": 0.869,
+        "status": "PASS",
+        "log": "configure_cdda.log",
+        "log_sha256": "03c32062c804093592660c6efc9db82be4415ce8ab023d62749904fa004f5766"
+      },
+      {
+        "name": "build_cdda",
+        "command": [
+          "cmake",
+          "--build",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/cdda/build",
+          "--parallel",
+          "2"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+        "exit_code": 2,
+        "timeout": false,
+        "seconds": 2457.16,
+        "status": "FAIL",
+        "log": "build_cdda.log",
+        "log_sha256": "98724a2fb739a8cd12b94aa4049697b84cbf31902a6c36bbf816b548a6c88eaf"
+      },
+      {
+        "name": "configure_luanti",
+        "command": [
+          "cmake",
+          "-S",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/luanti",
+          "-B",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/luanti/build",
+          "-DCMAKE_BUILD_TYPE=Release",
+          "-DBUILD_UNITTESTS=ON",
+          "-DENABLE_SOUND=OFF",
+          "-DENABLE_GETTEXT=OFF",
+          "-DRUN_IN_PLACE=TRUE"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+        "exit_code": 1,
+        "timeout": false,
+        "seconds": 0.469,
+        "status": "FAIL",
+        "log": "configure_luanti.log",
+        "log_sha256": "bd72186164b9f9efda5065cc8378f0d6b6a0c079bfe547391933951f0ee33547"
+      }
+    ],
+    "conformance/commands.json": [
+      {
+        "name": "build_transport_conformance",
+        "command": [
+          "c++",
+          "-std=c++20",
+          "-O1",
+          "-g",
+          "-fsanitize=address,undefined",
+          "-fno-omit-frame-pointer",
+          "-I/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/protocol/include",
+          "-I/home/dannhill/.local/include",
+          "/home/dannhill/Projects/cdda-mineclonia/tests/takeover_transport.cpp",
+          "-o",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/evidence/conformance/transport_conformance"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+        "exit_code": 0,
+        "timeout": false,
+        "seconds": 6.192,
+        "status": "PASS",
+        "log": "build_transport_conformance.log",
+        "log_sha256": "e6f35fc864a608ff51a6be34b3241937ebe37b3539f104b099447e6f445be3ab"
+      },
+      {
+        "name": "transport_conformance",
+        "command": [
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/evidence/conformance/transport_conformance"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+        "exit_code": 1,
+        "timeout": false,
+        "seconds": 0.368,
+        "status": "FAIL",
+        "log": "transport_conformance.log",
+        "log_sha256": "65229234e7172fdda0924dbe7d94effdd0e41e9f44e32081ce3a380ded8c377b"
+      },
+      {
+        "name": "build_frame_probe",
+        "command": [
+          "cc",
+          "-Wall",
+          "-Wextra",
+          "-shared",
+          "-fPIC",
+          "/home/dannhill/Projects/cdda-mineclonia/tests/takeover_frame_probe.c",
+          "-ldl",
+          "-o",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/evidence/conformance/frameprobe.so"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+        "exit_code": 0,
+        "timeout": false,
+        "seconds": 0.117,
+        "status": "PASS",
+        "log": "build_frame_probe.log",
+        "log_sha256": "5b64b06ee913549a4e55e01207aeb043109aedae04bc309ab9c23cd2c7edbf30"
+      },
+      {
+        "name": "runtime_conformance",
+        "command": [
+          "/usr/bin/python3",
+          "/home/dannhill/Projects/cdda-mineclonia/tests/takeover_runtime.py",
+          "--workspace",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+          "--native-reader",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/pristine-cdda/build/src/takeover_save_reader",
+          "--artifacts",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/evidence/conformance/runtime"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+        "exit_code": 1,
+        "timeout": false,
+        "seconds": 181.704,
+        "status": "FAIL",
+        "log": "runtime_conformance.log",
+        "log_sha256": "d63b92a3fede10a85e1d0bb7fc4d6e9f9380616f56a5bfa5df8063720da6d0c0"
+      },
+      {
+        "name": "render_conformance",
+        "command": [
+          "/usr/bin/python3",
+          "/home/dannhill/Projects/cdda-mineclonia/tests/takeover_render.py",
+          "--workspace",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+          "--probe-library",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/evidence/conformance/frameprobe.so",
+          "--artifacts",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/evidence/conformance/render"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+        "exit_code": 1,
+        "timeout": false,
+        "seconds": 64.74,
+        "status": "FAIL",
+        "log": "render_conformance.log",
+        "log_sha256": "edccb2c91b709f7e8d574cf816c14f64c0332b85745376d87b81ebafb17954d9"
+      },
+      {
+        "name": "save001_actual_3d",
+        "command": [
+          "/usr/bin/python3",
+          "/home/dannhill/Projects/cdda-mineclonia/tests/takeover_save_compat.py",
+          "--workspace",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+          "--native-reader",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/pristine-cdda/build/src/takeover_save_reader",
+          "--probe-library",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/evidence/conformance/frameprobe.so",
+          "--artifacts",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/evidence/conformance/save001"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+        "exit_code": 1,
+        "timeout": false,
+        "seconds": 159.3,
+        "status": "FAIL",
+        "log": "save001_actual_3d.log",
+        "log_sha256": "b9a237a4bc3fa5181c32d9e5a4fb54bb6a1f41c8eacb4215ef13427022a6209d"
+      },
+      {
+        "name": "asset_provenance",
+        "command": [
+          "/usr/bin/python3",
+          "/home/dannhill/Projects/cdda-mineclonia/tools/takeover_assets.py",
+          "--workspace",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+          "--output",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/evidence/conformance/asset-provenance.json"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+        "exit_code": 1,
+        "timeout": false,
+        "seconds": 1.22,
+        "status": "FAIL",
+        "log": "asset_provenance.log",
+        "log_sha256": "b2e1b0fa69635e30ed1453381b3dd5019b4d8b0139725e9f410244ed35e6f16c"
+      }
+    ],
+    "conformance/save001/commands.json": {
+      "server": [
+        "stdbuf",
+        "-oL",
+        "-eL",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/cdda/build/src/cdda-server",
+        "--socket",
+        "/tmp/m55-save-3jqchm_d/backend.sock",
+        "--userdir",
+        "/tmp/m55-save-3jqchm_d/user",
+        "--datadir",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/cdda/data",
+        "--world",
+        "audit_fixture"
+      ]
+    },
+    "legacy/commands.json": [
+      {
+        "name": "legacy_save_compat_test",
+        "command": [
+          "/usr/bin/python3",
+          "/home/dannhill/Projects/cdda-mineclonia/tests/takeover_legacy.py",
+          "--script",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/tests/save_compat_test.py",
+          "--artifacts",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/evidence/legacy/save_compat_test"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+        "exit_code": 0,
+        "timeout": false,
+        "seconds": 15.395,
+        "status": "PASS",
+        "log": "legacy_save_compat_test.log",
+        "log_sha256": "4ff3bd9ef29b432049812f67a48ed05efe7e5f1500e5b01c20bea53896a2f374"
+      },
+      {
+        "name": "legacy_vertical_slice_test",
+        "command": [
+          "/usr/bin/python3",
+          "/home/dannhill/Projects/cdda-mineclonia/tests/takeover_legacy.py",
+          "--script",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/tests/vertical_slice_test.py",
+          "--artifacts",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/evidence/legacy/vertical_slice_test"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+        "exit_code": 0,
+        "timeout": false,
+        "seconds": 11.741,
+        "status": "PASS",
+        "log": "legacy_vertical_slice_test.log",
+        "log_sha256": "cd6b61f6703755211ade1acb852eb301398de13acd75dac98ed4241d01f780f2"
+      },
+      {
+        "name": "legacy_multi_z_test",
+        "command": [
+          "/usr/bin/python3",
+          "/home/dannhill/Projects/cdda-mineclonia/tests/takeover_legacy.py",
+          "--script",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/tests/multi_z_test.py",
+          "--artifacts",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/evidence/legacy/multi_z_test"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+        "exit_code": 1,
+        "timeout": false,
+        "seconds": 9.471,
+        "status": "FAIL",
+        "log": "legacy_multi_z_test.log",
+        "log_sha256": "6dff0345ded0903bf7eed6c6139300ca353aea8dd4ad7ae70be76de2f9dfbbc7"
+      },
+      {
+        "name": "legacy_entity_animation_test",
+        "command": [
+          "/usr/bin/python3",
+          "/home/dannhill/Projects/cdda-mineclonia/tests/takeover_legacy.py",
+          "--script",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/tests/entity_animation_test.py",
+          "--artifacts",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/evidence/legacy/entity_animation_test"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+        "exit_code": 1,
+        "timeout": false,
+        "seconds": 8.814,
+        "status": "FAIL",
+        "log": "legacy_entity_animation_test.log",
+        "log_sha256": "8bee65dc997f6736a0df986fc7d3a112087290d179f02808856a80238ae28519"
+      },
+      {
+        "name": "legacy_dynamic_fields_test",
+        "command": [
+          "/usr/bin/python3",
+          "/home/dannhill/Projects/cdda-mineclonia/tests/takeover_legacy.py",
+          "--script",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/tests/dynamic_fields_test.py",
+          "--artifacts",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/evidence/legacy/dynamic_fields_test"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+        "exit_code": 0,
+        "timeout": false,
+        "seconds": 10.829,
+        "status": "PASS",
+        "log": "legacy_dynamic_fields_test.log",
+        "log_sha256": "3fce08e16e3bffec606d4bd44a4e55829dd842d5016afc71b5cac8674ebced99"
+      },
+      {
+        "name": "legacy_benchmark_test",
+        "command": [
+          "/usr/bin/python3",
+          "/home/dannhill/Projects/cdda-mineclonia/tests/takeover_legacy.py",
+          "--script",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/tests/benchmark_test.py",
+          "--artifacts",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/evidence/legacy/benchmark_test"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+        "exit_code": 1,
+        "timeout": false,
+        "seconds": 7.503,
+        "status": "FAIL",
+        "log": "legacy_benchmark_test.log",
+        "log_sha256": "1a7f4652cf2d511ba6ebaf792a4beb0582bbc09267bf87107b134568c589f9bc"
+      }
+    ],
+    "legacy-final/commands.json": [
+      {
+        "name": "legacy_save_compat_test",
+        "command": [
+          "python3",
+          "/home/dannhill/Projects/cdda-mineclonia/tests/takeover_legacy.py",
+          "--script",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/tests/save_compat_test.py",
+          "--artifacts",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/evidence/legacy-final/save_compat_test"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+        "exit_code": 0,
+        "timeout": false,
+        "seconds": 30.365,
+        "status": "PASS",
+        "log": "legacy_save_compat_test.log",
+        "log_sha256": "d0de29ac860a890b803d89552c570fb714641edffc2609f957f8fb8a71c94e24"
+      },
+      {
+        "name": "legacy_vertical_slice_test",
+        "command": [
+          "python3",
+          "/home/dannhill/Projects/cdda-mineclonia/tests/takeover_legacy.py",
+          "--script",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/tests/vertical_slice_test.py",
+          "--artifacts",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/evidence/legacy-final/vertical_slice_test"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+        "exit_code": 1,
+        "timeout": false,
+        "seconds": 17.445,
+        "status": "FAIL",
+        "log": "legacy_vertical_slice_test.log",
+        "log_sha256": "84068575d00af3fb43e4ed7e16eeedf54694e9024e06b6bf58ea05a11baf0895"
+      },
+      {
+        "name": "legacy_multi_z_test",
+        "command": [
+          "python3",
+          "/home/dannhill/Projects/cdda-mineclonia/tests/takeover_legacy.py",
+          "--script",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/tests/multi_z_test.py",
+          "--artifacts",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/evidence/legacy-final/multi_z_test"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+        "exit_code": 1,
+        "timeout": false,
+        "seconds": 15.767,
+        "status": "FAIL",
+        "log": "legacy_multi_z_test.log",
+        "log_sha256": "89f6b44c7391a9489a167b84ff1025179c471319219042352c98758659ff9b90"
+      },
+      {
+        "name": "legacy_entity_animation_test",
+        "command": [
+          "python3",
+          "/home/dannhill/Projects/cdda-mineclonia/tests/takeover_legacy.py",
+          "--script",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/tests/entity_animation_test.py",
+          "--artifacts",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/evidence/legacy-final/entity_animation_test"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+        "exit_code": 0,
+        "timeout": false,
+        "seconds": 15.733,
+        "status": "PASS",
+        "log": "legacy_entity_animation_test.log",
+        "log_sha256": "68c648a808a0b7b6e80762dbcadeec6eded0b7ede7ec5ea3052a0598e0f004a6"
+      },
+      {
+        "name": "legacy_dynamic_fields_test",
+        "command": [
+          "python3",
+          "/home/dannhill/Projects/cdda-mineclonia/tests/takeover_legacy.py",
+          "--script",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/tests/dynamic_fields_test.py",
+          "--artifacts",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/evidence/legacy-final/dynamic_fields_test"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+        "exit_code": 0,
+        "timeout": false,
+        "seconds": 15.518,
+        "status": "PASS",
+        "log": "legacy_dynamic_fields_test.log",
+        "log_sha256": "7cc277ffc2ead5384cf8cc1e4a71b79e9c60c4d0b31c898b58bb77ccf6bf385c"
+      },
+      {
+        "name": "legacy_benchmark_test",
+        "command": [
+          "python3",
+          "/home/dannhill/Projects/cdda-mineclonia/tests/takeover_legacy.py",
+          "--script",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/tests/benchmark_test.py",
+          "--artifacts",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/evidence/legacy-final/benchmark_test"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+        "exit_code": 1,
+        "timeout": false,
+        "seconds": 16.218,
+        "status": "FAIL",
+        "log": "legacy_benchmark_test.log",
+        "log_sha256": "d635b3733e898dd9e14f098d35038178e1bead7d0ef3903d1b082a100971eb4c"
+      }
+    ],
+    "mineclonia/commands.json": [
+      {
+        "name": "mineclonia_ci_lint",
+        "command": [
+          "env",
+          "LUA_PATH=/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/deps/root/usr/share/lua/5.1/?.lua;/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/deps/root/usr/share/lua/5.1/?/init.lua;;",
+          "LUA_CPATH=/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/deps/root/usr/lib/x86_64-linux-gnu/lua/5.1/?.so;;",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/deps/root/usr/bin/lua5.1",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/deps/root/usr/bin/luacheck",
+          "--quiet",
+          "--std",
+          "minetest+max",
+          "--config",
+          ".luacheckrc",
+          "mods/"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia",
+        "exit_code": 4,
+        "timeout": false,
+        "seconds": 0.064,
+        "status": "FAIL",
+        "log": "mineclonia_ci_lint.log",
+        "log_sha256": "fb6068d2ce67f13cc9c1ded321d556878fe1939a078d9aa4960298cf1a8fb830"
+      },
+      {
+        "name": "mineclonia_lua51_syntax",
+        "command": [
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/deps/root/usr/bin/luac5.1",
+          "-p",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/COMPAT/lightning/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/COMPAT/mcl_aliases/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/COMPAT/mcl_aliases/mcl_armor.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/COMPAT/mcl_aliases/mcl_bamboo.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/COMPAT/mcl_aliases/mcl_copper.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/COMPAT/mcl_aliases/mcl_crimson.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/COMPAT/mcl_aliases/mcl_doors.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/COMPAT/mcl_aliases/mcl_dyes.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/COMPAT/mcl_aliases/mcl_panes.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/COMPAT/mcl_aliases/mcl_stairs.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/COMPAT/mcl_aliases/mcl_tools.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/COMPAT/mcl_aliases/mcl_trees.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/COMPAT/mcl_aliases/mesecons.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/COMPAT/mcl_dye/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/COMPAT/mcl_itemframes_compat/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/COMPAT/mcl_mobs_compat/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/COMPAT/mcl_playerinfo/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/COMPAT/mcl_signs_compat/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/CORE/_mcl_autogroup/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/CORE/controls/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/CORE/flowlib/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/CORE/mcl_attached/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/CORE/mcl_autogroup/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/CORE/mcl_colors/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/CORE/mcl_damage/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/CORE/mcl_events/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/CORE/mcl_explosions/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/CORE/mcl_init/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/CORE/mcl_init/outdated_warning.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/CORE/mcl_loot/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/CORE/mcl_sounds/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/CORE/mcl_util/compat.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/CORE/mcl_util/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/CORE/mcl_util/ringbuffer.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/CORE/mcl_worlds/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/CORE/tga_encoder/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/CORE/walkover/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mcl_boats/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mcl_burning/api.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mcl_burning/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mcl_charges/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mcl_charges/wind_charge.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mcl_dripping/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mcl_entity_invs/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mcl_falling_nodes/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mcl_item_entity/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mcl_minecarts/functions.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mcl_minecarts/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mcl_minecarts/rails.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mcl_mobs/api.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mcl_mobs/breeding.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mcl_mobs/combat.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mcl_mobs/effects.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mcl_mobs/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mcl_mobs/items.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mcl_mobs/mount.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mcl_mobs/movement.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mcl_mobs/pathfinding.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mcl_mobs/physics.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mcl_mobs/spawning.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mcl_paintings/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mcl_paintings/paintings.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mcl_wither_spawning/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/axolotl.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/bat.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/blaze.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/chicken.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/cod.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/cow+mooshroom.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/creeper.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/dolphin.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/ender_dragon.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/enderman.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/endermite.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/ghast.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/guardian.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/guardian_elder.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/hoglin+zoglin.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/horse.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/illager_common.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/iron_golem.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/llama.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/ocelot.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/parrot.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/pig.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/piglin.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/pillager.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/polar_bear.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/rabbit.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/salmon.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/sheep.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/shulker.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/silverfish.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/skeleton+stray.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/skeleton_wither.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/slime+magma_cube.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/snowman.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/spider.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/squid+glow_squid.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/strider.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/tropical_fish.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/vex.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/villager.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/villager_evoker.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/villager_illusioner.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/villager_vindicator.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/villager_zombie.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/wandering_trader.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/witch.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/wither.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/wolf.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/zombie.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENTITIES/mobs_mc/zombiepig.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENVIRONMENT/mcl_lightning/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENVIRONMENT/mcl_moon/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENVIRONMENT/mcl_raids/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENVIRONMENT/mcl_void_damage/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENVIRONMENT/mcl_weather/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENVIRONMENT/mcl_weather/nether_dust.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENVIRONMENT/mcl_weather/rain.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENVIRONMENT/mcl_weather/skycolor.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENVIRONMENT/mcl_weather/snow.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENVIRONMENT/mcl_weather/thunder.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENVIRONMENT/mcl_weather/weather_core.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ENVIRONMENT/mcl_zombie_sieges/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/HELP/doc/doc/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/HELP/doc/doc_identifier/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/HELP/doc/doc_items/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/HELP/mcl_craftguide/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/HELP/mcl_doc/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/HELP/mcl_doc_basics/advanced.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/HELP/mcl_doc_basics/basics.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/HELP/mcl_doc_basics/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/HELP/mcl_tt/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/HELP/mcl_tt/snippets_base.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/HELP/mcl_tt/snippets_mcl.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/HELP/tt/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/HELP/tt/snippets.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/HUD/awards/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/HUD/awards/src/api_awards.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/HUD/awards/src/api_triggers.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/HUD/awards/src/chat_commands.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/HUD/awards/src/data.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/HUD/awards/src/gui.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/HUD/awards/src/triggers.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/HUD/hudbars/default_settings.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/HUD/hudbars/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/HUD/mcl_achievements/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/HUD/mcl_base_textures/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/HUD/mcl_bossbars/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/HUD/mcl_credits/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/HUD/mcl_credits/people.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/HUD/mcl_death_messages/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/HUD/mcl_experience/bottle.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/HUD/mcl_experience/command.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/HUD/mcl_experience/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/HUD/mcl_experience/orb.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/HUD/mcl_formspec/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/HUD/mcl_formspec_prepend/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/HUD/mcl_hbarmor/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/HUD/mcl_info/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/HUD/mcl_inventory/creative.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/HUD/mcl_inventory/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/HUD/mcl_inventory/survival.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/HUD/mcl_offhand/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/HUD/mcl_title/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/HUD/show_wielded_item/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/REDSTONE/mcl_buttons/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/REDSTONE/mcl_commandblock/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/REDSTONE/mcl_comparators/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/REDSTONE/mcl_daylight_detector/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/REDSTONE/mcl_dispensers/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/REDSTONE/mcl_lever/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/REDSTONE/mcl_noteblock/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/REDSTONE/mcl_observers/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/REDSTONE/mcl_pistons/api.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/REDSTONE/mcl_pistons/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/REDSTONE/mcl_pistons/nodes.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/REDSTONE/mcl_pressureplates/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/REDSTONE/mcl_redstone/eventqueue.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/REDSTONE/mcl_redstone/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/REDSTONE/mcl_redstone/logic.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/REDSTONE/mcl_redstone/wire.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/REDSTONE/mcl_redstone_lamp/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/REDSTONE/mcl_redstone_torch/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/REDSTONE/mcl_repeaters/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/REDSTONE/mcl_target/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_amethyst/grow.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_amethyst/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_anvils/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_armor/api.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_armor/damage.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_armor/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_armor/leather.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_armor/player.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_armor/register.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_armor/trims.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_armor_stand/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_bamboo/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_bamboo/nodes.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_bamboo/recipes.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_banners/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_banners/items.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_banners/patterncraft.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_barrels/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_beacons/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_beds/api.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_beds/beds.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_beds/functions.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_beds/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_beds/respawn_anchor.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_beehives/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_bells/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_blackstone/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_blast_furnace/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_bone_meal/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_books/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_bows/arrow.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_bows/bow.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_bows/crossbow.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_bows/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_brewing/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_buckets/fishbuckets.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_buckets/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_buckets/register.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_cake/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_campfires/api.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_campfires/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_campfires/register.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_candles/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_cartography_table/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_cauldrons/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_cherry_blossom/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_chests/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_clock/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_cocoas/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_colorblocks/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_compass/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_composters/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_conduits/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_copper/crafting.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_copper/decaychains.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_copper/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_copper/items.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_copper/nodes.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_core/compat.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_core/crafting.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_core/craftitems.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_core/functions.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_core/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_core/nodes_base.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_core/nodes_cactuscane.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_core/nodes_climb.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_core/nodes_glass.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_core/nodes_liquid.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_core/nodes_misc.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_core/nodes_stairs.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_core/nodes_trees.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_crafting_table/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_crimson/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_deepslate/deepslate.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_deepslate/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_deepslate/tuff.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_doors/api_doors.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_doors/api_trapdoors.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_doors/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_doors/register.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_dripstone/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_dyes/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_enchanting/enchantments.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_enchanting/engine.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_enchanting/groupcaps.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_enchanting/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_end/building.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_end/chorus_plant.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_end/end_crystal.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_end/eye_of_ender.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_end/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_farming/beetroot.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_farming/carrots.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_farming/hoes.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_farming/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_farming/melon.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_farming/potatoes.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_farming/pumpkin.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_farming/shared_functions.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_farming/soil.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_farming/sweet_berry.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_farming/wheat.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_fences/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_fire/fire_charge.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_fire/flint_and_steel.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_fire/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_fireworks/crafting.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_fireworks/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_fireworks/register.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_fishing/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_fishing/items.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_fletching_table/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_flowerpots/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_flowers/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_flowers/register.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_furnaces/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_grindstone/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_heads/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_honey/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_hoppers/compat.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_hoppers/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_itemframes/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_jukebox/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_lanterns/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_lanterns/register.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_lectern/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_lightning_rods/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_loom/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_lush_caves/crafting.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_lush_caves/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_lush_caves/nodes.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_mangrove/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_maps/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_mobitems/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_mobspawners/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_monster_eggs/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_mud/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_mushrooms/huge.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_mushrooms/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_mushrooms/small.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_nether/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_nether/lava.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_nether/nether_wart.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_ocean/corals.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_ocean/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_ocean/kelp.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_ocean/prismarine.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_ocean/sea_pickle.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_ocean/seagrass.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_panes/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_portals/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_portals/portal_end.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_portals/portal_gateway.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_portals/portal_nether.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_potions/commands.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_potions/functions.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_potions/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_potions/lingering.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_potions/potions.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_potions/splash.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_potions/tipped_arrow.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_pottery_sherds/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_powder_snow/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_raw_ores/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_sculk/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_shields/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_signs/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_smithing_table/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_smoker/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_sponges/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_spyglass/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_stairs/api.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_stairs/cornerstair.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_stairs/crafting.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_stairs/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_stonecutter/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_sus_nodes/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_sus_stew/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_throwing/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_throwing/register.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_tnt/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_tools/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_tools/mace.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_tools/register.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_torches/api.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_torches/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_torches/register.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_totems/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_trees/abms.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_trees/api.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_trees/functions.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_trees/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_vaults/api.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_vaults/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_walls/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_walls/register.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mcl_wool/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mclx_core/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mclx_fences/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/mclx_stairs/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/ITEMS/screwdriver/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/MAPGEN/mcl_biomes/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/MAPGEN/mcl_dungeons/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/MAPGEN/mcl_end_island/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/MAPGEN/mcl_mapgen_core/api.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/MAPGEN/mcl_mapgen_core/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/MAPGEN/mcl_mapgen_core/ores.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/MAPGEN/mcl_nether_fortresses/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/MAPGEN/mcl_strongholds/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/MAPGEN/mcl_structures/ancient_hermitage.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/MAPGEN/mcl_structures/api.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/MAPGEN/mcl_structures/desert_temple.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/MAPGEN/mcl_structures/end_city.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/MAPGEN/mcl_structures/end_spawn.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/MAPGEN/mcl_structures/geode.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/MAPGEN/mcl_structures/igloo.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/MAPGEN/mcl_structures/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/MAPGEN/mcl_structures/jungle_temple.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/MAPGEN/mcl_structures/ocean_ruins.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/MAPGEN/mcl_structures/pillager_outpost.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/MAPGEN/mcl_structures/ruined_portal.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/MAPGEN/mcl_structures/shipwrecks.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/MAPGEN/mcl_structures/witch_hut.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/MAPGEN/mcl_structures/woodland_mansion.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/MAPGEN/mcl_terrain_features/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/MAPGEN/mcl_villages/api.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/MAPGEN/mcl_villages/buildings.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/MAPGEN/mcl_villages/const.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/MAPGEN/mcl_villages/foundation.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/MAPGEN/mcl_villages/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/MAPGEN/mcl_villages/paths.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/MAPGEN/mcl_villages/pois.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/MAPGEN/mcl_villages/utils.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/MAPGEN/tsm_railcorridors/gameconfig.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/MAPGEN/tsm_railcorridors/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/MISC/findbiome/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/MISC/mcl_commands/alias.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/MISC/mcl_commands/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/MISC/mcl_commands/kill.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/MISC/mcl_commands/list.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/MISC/mcl_commands/say.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/MISC/mcl_commands/seed.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/MISC/mcl_commands/setblock.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/MISC/mcl_commands/sound.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/MISC/mcl_commands/summon.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/MISC/mcl_privs/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/MISC/mcl_temp_helper_recipes/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/MISC/mcl_wip/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/PLAYER/mcl_bonus_chest/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/PLAYER/mcl_criticals/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/PLAYER/mcl_death_drop/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/PLAYER/mcl_gamemode/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/PLAYER/mcl_hunger/api.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/PLAYER/mcl_hunger/hunger.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/PLAYER/mcl_hunger/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/PLAYER/mcl_hunger/register_foods.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/PLAYER/mcl_meshhand/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/PLAYER/mcl_player/animations.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/PLAYER/mcl_player/compat.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/PLAYER/mcl_player/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/PLAYER/mcl_player/settings.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/PLAYER/mcl_serverplayer/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/PLAYER/mcl_serverplayer/items.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/PLAYER/mcl_serverplayer/mount.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/PLAYER/mcl_serverplayer/player.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/PLAYER/mcl_skins/edit_skin.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/PLAYER/mcl_skins/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/PLAYER/mcl_skins/mesh_hand.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/PLAYER/mcl_spawn/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/PLAYER/mcl_sprint/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/PLAYER/mcl_wieldview/init.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/PLAYER/playerphysics/elytra.lua",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia/mods/PLAYER/playerphysics/init.lua"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+        "exit_code": 0,
+        "timeout": false,
+        "seconds": 0.267,
+        "status": "PASS",
+        "log": "mineclonia_lua51_syntax.log",
+        "log_sha256": "95ab8216a36a1a59d2eb341763ef6a5b25ba1e9031f3a3bdd0017f54c2753c8f"
+      },
+      {
+        "name": "asset_provenance",
+        "command": [
+          "python3",
+          "/home/dannhill/Projects/cdda-mineclonia/tools/takeover_assets.py",
+          "--workspace",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+          "--output",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/evidence/mineclonia/asset-provenance.json"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+        "exit_code": 1,
+        "timeout": false,
+        "seconds": 0.872,
+        "status": "FAIL",
+        "log": "asset_provenance.log",
+        "log_sha256": "6a733ffec3aba54073e6d53b6498c99c7562634c93cdf1afc5026e36dcb32864"
+      }
+    ],
+    "mineclonia-ci/commands.json": [
+      {
+        "name": "mineclonia_ci_lint",
+        "command": [
+          "env",
+          "LUA_PATH=/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/deps/ci-luacheck/files/usr/local/share/lua/5.1/?.lua;/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/deps/ci-luacheck/files/usr/local/share/lua/5.1/?/init.lua;/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/deps/root/usr/share/lua/5.1/?.lua;/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/deps/root/usr/share/lua/5.1/?/init.lua;;",
+          "LUA_CPATH=/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/deps/root/usr/lib/x86_64-linux-gnu/lua/5.1/?.so;;",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/deps/root/usr/bin/lua5.1",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/deps/ci-luacheck/files/usr/local/lib/luarocks/rocks-5.1/luacheck/dev-1/bin/luacheck",
+          "--quiet",
+          "--std",
+          "minetest+max",
+          "--config",
+          ".luacheckrc",
+          "mods/"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/mineclonia",
+        "exit_code": 0,
+        "timeout": false,
+        "seconds": 13.765,
+        "status": "PASS",
+        "log": "mineclonia_ci_lint.log",
+        "log_sha256": "ec883f7588e27ac66268fd05d67931e155e9c39cf668a542493860a739cf89c8"
+      }
+    ],
+    "native-tests/commands.json": [
+      {
+        "name": "unit_luanti",
+        "command": [
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/luanti/bin/luanti",
+          "--run-unittests",
+          "--config",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/evidence/native-tests/luanti-unit.conf",
+          "--logfile",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/evidence/native-tests/luanti-unit-engine.log"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+        "exit_code": 0,
+        "timeout": false,
+        "seconds": 5.557,
+        "status": "PASS",
+        "log": "unit_luanti.log",
+        "log_sha256": "1ee6c9cd771a87679002ee7e5d9c051ae89d2e5c2035344e02891a2bf62bc361"
+      },
+      {
+        "name": "unit_cdda",
+        "command": [
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/cdda/build/tests/cata_test",
+          "--rng-seed",
+          "42"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/cdda",
+        "exit_code": 1,
+        "timeout": false,
+        "seconds": 1491.895,
+        "status": "FAIL",
+        "log": "unit_cdda.log",
+        "log_sha256": "f27f36cf4c1027856a83bcd708a2c7897d1986380d0ccac58175c8f8ade4d8f7"
+      }
+    ],
+    "oracle-preflight/runtime/commands.json": [
+      {
+        "name": "runtime_preflight",
+        "command": [
+          "python3",
+          "/home/dannhill/Projects/cdda-mineclonia/tests/takeover_runtime.py",
+          "--workspace",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+          "--native-reader",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/evidence/oracle-preflight/reader",
+          "--artifacts",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/evidence/oracle-preflight/runtime"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+        "exit_code": 1,
+        "timeout": false,
+        "seconds": 22.235,
+        "status": "FAIL",
+        "log": "runtime_preflight.log",
+        "log_sha256": "f2eecf3a54f0f30bb7050707c78d318d1e53e4b6f81fb21f364c4d1156400b37"
+      }
+    ],
+    "pristine-build/commands.json": [
+      {
+        "name": "configure_pristine_cdda",
+        "command": [
+          "cmake",
+          "-S",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/pristine-cdda",
+          "-B",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/pristine-cdda/build",
+          "-DCMAKE_BUILD_TYPE=Release",
+          "-DTESTS=OFF",
+          "-DCURSES=ON",
+          "-DTILES=OFF",
+          "-DSOUND=OFF",
+          "-DLOCALIZE=OFF",
+          "-DLANGUAGES=OFF",
+          "-DCATA_CCACHE=OFF",
+          "-DCMAKE_CXX_FLAGS_RELEASE=-O0 -DNDEBUG"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+        "exit_code": 0,
+        "timeout": false,
+        "seconds": 1.275,
+        "status": "PASS",
+        "log": "configure_pristine_cdda.log",
+        "log_sha256": "57c3702d5b4122d74071c0acfde7a03a4eea61ae4e69533e8b72984d95b00388"
+      },
+      {
+        "name": "build_pristine_cdda",
+        "command": [
+          "cmake",
+          "--build",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/pristine-cdda/build",
+          "--target",
+          "cataclysm",
+          "takeover_save_reader",
+          "--parallel",
+          "4"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+        "exit_code": 2,
+        "timeout": false,
+        "seconds": 1211.823,
+        "status": "FAIL",
+        "log": "build_pristine_cdda.log",
+        "log_sha256": "2245ea3c33c282fd35bafdcb67df4570521cbb75c9027b69aa5aa65dad7d9231"
+      }
+    ],
+    "pristine-retry/commands.json": [
+      {
+        "name": "build_pristine_reader",
+        "command": [
+          "cmake",
+          "--build",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/pristine-cdda/build",
+          "--target",
+          "takeover_save_reader",
+          "--parallel",
+          "2"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+        "exit_code": 0,
+        "timeout": false,
+        "seconds": 64.069,
+        "status": "PASS",
+        "log": "build_pristine_reader.log",
+        "log_sha256": "708da0c1e8199c619fcb7d81a28e58cd7cfad980fa84e8b03f0c0c5272292c2e"
+      }
+    ],
+    "render-camera/commands.json": [
+      {
+        "name": "render_conformance",
+        "command": [
+          "python3",
+          "/home/dannhill/Projects/cdda-mineclonia/tests/takeover_render.py",
+          "--workspace",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+          "--probe-library",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/evidence/conformance/frameprobe.so",
+          "--artifacts",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/evidence/render-camera"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+        "exit_code": 1,
+        "timeout": false,
+        "seconds": 39.325,
+        "status": "FAIL",
+        "log": "render_conformance.log",
+        "log_sha256": "d9c20170dbb125c1912ad9a36b85766d82ef36cd13c170f10791d68e7e919c7f"
+      }
+    ],
+    "render-final/commands.json": [
+      {
+        "name": "render_conformance",
+        "command": [
+          "python3",
+          "/home/dannhill/Projects/cdda-mineclonia/tests/takeover_render.py",
+          "--workspace",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+          "--probe-library",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/evidence/conformance/frameprobe.so",
+          "--artifacts",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/evidence/render-final"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+        "exit_code": 1,
+        "timeout": false,
+        "seconds": 37.461,
+        "status": "FAIL",
+        "log": "render_conformance.log",
+        "log_sha256": "93fef37ea625b255e5a6db0c1baf19d6033bbbf9b0a57db64258707b6894e0d3"
+      }
+    ],
+    "repro-checks/commands.json": [
+      {
+        "name": "unit_root",
+        "command": [
+          "ctest",
+          "--test-dir",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/build",
+          "--output-on-failure"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+        "exit_code": 0,
+        "timeout": false,
+        "seconds": 0.016,
+        "status": "EMPTY",
+        "log": "unit_root.log",
+        "log_sha256": "7c2685be9bb399d5a1b3076d50f784b2ab57fbd0181dbc832e580a85a6059e96",
+        "limitation": "Exit zero with no discovered tests is not passing verification."
+      },
+      {
+        "name": "baseline_source_check",
+        "command": [
+          "/usr/bin/python3",
+          "/home/dannhill/Projects/cdda-mineclonia/tools/takeover_baseline.py",
+          "check"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia",
+        "exit_code": 0,
+        "timeout": false,
+        "seconds": 5.858,
+        "status": "PASS",
+        "log": "baseline_source_check.log",
+        "log_sha256": "c91e2ce066cf6b5cbc74390ec707ffbf6c97424c05e26c240204efa058aa8bc4"
+      },
+      {
+        "name": "verification_python_syntax",
+        "command": [
+          "/usr/bin/python3",
+          "-m",
+          "py_compile",
+          "/home/dannhill/Projects/cdda-mineclonia/tools/takeover_assets.py",
+          "/home/dannhill/Projects/cdda-mineclonia/tools/takeover_baseline.py",
+          "/home/dannhill/Projects/cdda-mineclonia/tools/takeover_ci_lint.py",
+          "/home/dannhill/Projects/cdda-mineclonia/tools/takeover_receipt.py",
+          "/home/dannhill/Projects/cdda-mineclonia/tools/takeover_verify.py",
+          "/home/dannhill/Projects/cdda-mineclonia/tests/takeover_legacy.py",
+          "/home/dannhill/Projects/cdda-mineclonia/tests/takeover_render.py",
+          "/home/dannhill/Projects/cdda-mineclonia/tests/takeover_runtime.py",
+          "/home/dannhill/Projects/cdda-mineclonia/tests/takeover_save_compat.py"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia",
+        "exit_code": 0,
+        "timeout": false,
+        "seconds": 0.115,
+        "status": "PASS",
+        "log": "verification_python_syntax.log",
+        "log_sha256": "52efd1ad10381bc0a93f0cfd1817a9ae3add1e5398273560871c35c09095fc14"
+      }
+    ],
+    "root-build/commands.json": [
+      {
+        "name": "configure_root",
+        "command": [
+          "cmake",
+          "-S",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+          "-B",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/build",
+          "-DCMAKE_BUILD_TYPE=Debug"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+        "exit_code": 0,
+        "timeout": false,
+        "seconds": 0.317,
+        "status": "PASS",
+        "log": "configure_root.log",
+        "log_sha256": "84136aca8deac8a3b3dd4a7c166af5654d087c7de9d8f8514d0e75df670b7667"
+      },
+      {
+        "name": "build_root",
+        "command": [
+          "cmake",
+          "--build",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/build",
+          "--parallel",
+          "2"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+        "exit_code": 0,
+        "timeout": false,
+        "seconds": 4.304,
+        "status": "PASS",
+        "log": "build_root.log",
+        "log_sha256": "1ab9d710c6c287d79b6949788a3dd436a37159e3abb0722a0048bc4e422bec36"
+      },
+      {
+        "name": "unit_root",
+        "command": [
+          "ctest",
+          "--test-dir",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/build",
+          "--output-on-failure"
+        ],
+        "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+        "exit_code": 0,
+        "timeout": false,
+        "seconds": 0.066,
+        "status": "PASS",
+        "log": "unit_root.log",
+        "log_sha256": "7c2685be9bb399d5a1b3076d50f784b2ab57fbd0181dbc832e580a85a6059e96"
+      }
+    ]
+  },
+  "artifact_checksums": {
+    "evidence/asset-provenance.json": {
+      "sha256": "28fc12e43fc39c79c5b45a00c8c53b5bc9dcabff3cde37021f30fe78487506d9",
+      "bytes": 12840
+    },
+    "evidence/binding_diff_cpp.json": {
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "bytes": 3
+    },
+    "evidence/binding_diff_python.json": {
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "bytes": 3
+    },
+    "evidence/build-retry/build_cdda.log": {
+      "sha256": "c6563fba9c819d43d749d9a0e865a94a1efda08ba57dd3c26d096cd5c59ee79d",
+      "bytes": 27141
+    },
+    "evidence/build-retry/build_luanti.log": {
+      "sha256": "a3b00d29a1b03c846560b989abe83a1878fc5961785878e78e377f79030a6026",
+      "bytes": 38524
+    },
+    "evidence/build-retry/commands.json": {
+      "sha256": "8c88e6371173a968bbb71cb313592db59f3d6a6bcd9a16d83fb251d8251e7a78",
+      "bytes": 1870
+    },
+    "evidence/build-retry/configure_luanti.log": {
+      "sha256": "ad8d0fb91f7cd53951820cca5524d62d9227a20669f6afed33f7f851887a7a12",
+      "bytes": 3948
+    },
+    "evidence/build_cdda.log": {
+      "sha256": "98724a2fb739a8cd12b94aa4049697b84cbf31902a6c36bbf816b548a6c88eaf",
+      "bytes": 33696
+    },
+    "evidence/build_coordinator.log": {
+      "sha256": "d1ebc737b2245bfb897860426f62074ed9a55b9ec7e62eef61144151093acbb0",
+      "bytes": 414
+    },
+    "evidence/build_launcher.log": {
+      "sha256": "31634ac3c00e0446cab3c5a3ef72efb13ec54ea53782de3557222675b3bc8d98",
+      "bytes": 402
+    },
+    "evidence/build_protocol.log": {
+      "sha256": "142096bde1fc5816810efc47a5d688eaa9cce1b3c8549f5613a495133fb980cf",
+      "bytes": 608
+    },
+    "evidence/build_transport_conformance.log": {
+      "sha256": "5a68cd7e07e12a48968d0cccd7baac984f5feb00103d123e0d0683c787eca585",
+      "bytes": 525
+    },
+    "evidence/cached-feasibility/boot.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "evidence/cached-feasibility/gdb.log": {
+      "sha256": "f4793e89f80d926fdf6e2fd25c183b934db54e3d8ed4da72ca1b88618f0fe653",
+      "bytes": 819
+    },
+    "evidence/cached-feasibility/result.json": {
+      "sha256": "88d958e7228c9c4624167d284516159c8e6e8e7d3723aa56e45a8f9bfd03079a",
+      "bytes": 503
+    },
+    "evidence/ci-reproduction/commands.json": {
+      "sha256": "a60c7e384e533394a7c350343f8cb0bfff8fcf85985012125476e9b3a665901b",
+      "bytes": 1442
+    },
+    "evidence/ci-reproduction/manifest.json": {
+      "sha256": "6a9a53fa46a27b07dff17c33feb3c5a514081a11c226b2b06a6154faf22831c0",
+      "bytes": 1870
+    },
+    "evidence/ci-reproduction/mineclonia_ci_lint.log": {
+      "sha256": "fabe27371575e8eaee0432b4bf60f7865970544b7c52d500f72ad029da71ec14",
+      "bytes": 1150
+    },
+    "evidence/commands.json": {
+      "sha256": "104c8b87055618b9a6b7cc00001a6fa47fb772c4e19e065912a022062e7b422e",
+      "bytes": 6983
+    },
+    "evidence/configure_cdda.log": {
+      "sha256": "03c32062c804093592660c6efc9db82be4415ce8ab023d62749904fa004f5766",
+      "bytes": 3079
+    },
+    "evidence/configure_coordinator.log": {
+      "sha256": "05587076a3e719a51908a78bd24d17ed2bcae9ac222def0b5e9a73a3f71ef662",
+      "bytes": 794
+    },
+    "evidence/configure_launcher.log": {
+      "sha256": "7447906384a453e1c1e40d9006aa73b294102367a932115b3e81ce752a047513",
+      "bytes": 785
+    },
+    "evidence/configure_luanti.log": {
+      "sha256": "bd72186164b9f9efda5065cc8378f0d6b6a0c079bfe547391933951f0ee33547",
+      "bytes": 1961
+    },
+    "evidence/configure_protocol.log": {
+      "sha256": "bcba39dc9c3bc5d98fc865a77fa991d31539acb694c84e7a02de87af1623e227",
+      "bytes": 833
+    },
+    "evidence/conformance/asset-provenance.json": {
+      "sha256": "3f7de9562f8c9efecd7446dc1dc540e3ec1e88dd4911f05eb2a7ce853e4f37d6",
+      "bytes": 13816
+    },
+    "evidence/conformance/asset_provenance.log": {
+      "sha256": "b2e1b0fa69635e30ed1453381b3dd5019b4d8b0139725e9f410244ed35e6f16c",
+      "bytes": 556
+    },
+    "evidence/conformance/build_frame_probe.log": {
+      "sha256": "5b64b06ee913549a4e55e01207aeb043109aedae04bc309ab9c23cd2c7edbf30",
+      "bytes": 350
+    },
+    "evidence/conformance/build_transport_conformance.log": {
+      "sha256": "e6f35fc864a608ff51a6be34b3241937ebe37b3539f104b099447e6f445be3ab",
+      "bytes": 537
+    },
+    "evidence/conformance/commands.json": {
+      "sha256": "f22876477077f6b8a5ecb9455a2f6292c5d001493ff40dd3b3e747d47780cce6",
+      "bytes": 5521
+    },
+    "evidence/conformance/frameprobe.so": {
+      "sha256": "0ed81e042353c903766e36f245411699ba1a40b50107d675a782258a1ed5c603",
+      "bytes": 16376
+    },
+    "evidence/conformance/render/BM01/after-f3.png": {
+      "sha256": "8eb46a726e06fb94b57224b47dc23ca98ae847d41904b45e8d541acce9a0e344",
+      "bytes": 258878
+    },
+    "evidence/conformance/render/BM01/after-gap.png": {
+      "sha256": "fa353634d4384229a7753049d09da122a519fbf3ced4613a131b6615ed9ca9c3",
+      "bytes": 267357
+    },
+    "evidence/conformance/render/BM01/client.conf": {
+      "sha256": "95c283492bbc2c9e9fd02ec01dad62edfff53d67e5da62de561b6d3620444d2e",
+      "bytes": 375
+    },
+    "evidence/conformance/render/BM01/console.log": {
+      "sha256": "6806a4d5ac90db56d6f12625c549b6f5c8e7e3b5a882746b72ee805642c87d41",
+      "bytes": 199675
+    },
+    "evidence/conformance/render/BM01/engine.log": {
+      "sha256": "aa6a92d0b748b2a5f5437efc1cbfc4acd831395e0d39ebf097b9d452728066b2",
+      "bytes": 1136
+    },
+    "evidence/conformance/render/BM01/events.json": {
+      "sha256": "058daecd0d1cd29b05057f7787c4c0f3562eafcc5b888d1896b6e7e38f65631a",
+      "bytes": 152
+    },
+    "evidence/conformance/render/BM01/frames.ns": {
+      "sha256": "26f9b3ccd6085235dce0c9cc970850acf11f52d0a32cb3c96862e8c8f6d05aca",
+      "bytes": 30208
+    },
+    "evidence/conformance/render/BM01/resources.json": {
+      "sha256": "b28d512c94fe439c8117c20c5b0950c8bb912f81a23d1728979d9f50e3526f25",
+      "bytes": 29809
+    },
+    "evidence/conformance/render/BM01/result.json": {
+      "sha256": "b980082c7bfa5e35c54eedd3290b40ab305daa750582a22b9909b809516e3d57",
+      "bytes": 816
+    },
+    "evidence/conformance/render/BM01/scene.png": {
+      "sha256": "835877c134172f1325c4480d9ba02033eaf2d4c95ffeb0d3b9aa2757dfe4f3a6",
+      "bytes": 267870
+    },
+    "evidence/conformance/render/BM02/after-f3.png": {
+      "sha256": "a3d80b39a0f7d749187ed4fee2e84e265bf246972fd9837b9fb16664dcc9485a",
+      "bytes": 264515
+    },
+    "evidence/conformance/render/BM02/after-gap.png": {
+      "sha256": "ece2290c313234f5e74f5eb1b5649ed09e831e51a23c8ed385a3fc6070e2160d",
+      "bytes": 277227
+    },
+    "evidence/conformance/render/BM02/client.conf": {
+      "sha256": "751536991faf128393ae5325540d00da48d6f33d365b07e83a8dc7bebdc35033",
+      "bytes": 375
+    },
+    "evidence/conformance/render/BM02/console.log": {
+      "sha256": "60ae73768accebef085458f8daee9393a7003f4da51d18260328a8618b59a654",
+      "bytes": 204369
+    },
+    "evidence/conformance/render/BM02/engine.log": {
+      "sha256": "5945a87ec8097487a421e30b6e0086157ab68d4d31bc8c23ee75a398351fe282",
+      "bytes": 1136
+    },
+    "evidence/conformance/render/BM02/events.json": {
+      "sha256": "09868a905808118ff7196e57617955734bfa96a545fb936d6a1016a1e0c43f36",
+      "bytes": 152
+    },
+    "evidence/conformance/render/BM02/frames.ns": {
+      "sha256": "faf55245f22a3ad2c93d68e48882c8dc77eb85921dbae36597dcb00a8a605d9e",
+      "bytes": 30704
+    },
+    "evidence/conformance/render/BM02/resources.json": {
+      "sha256": "6c0e5f27480b419b30f7ffa0ed5d3b02609e388e1e5c353f6a3a7571de05d8d2",
+      "bytes": 29904
+    },
+    "evidence/conformance/render/BM02/result.json": {
+      "sha256": "da9b54a29e09f49e8a8ff0509be0d2b56ddf02ffd543f58be7756af33bd42357",
+      "bytes": 820
+    },
+    "evidence/conformance/render/BM02/scene.png": {
+      "sha256": "79faf8eef4447ab88645f08fd18161e614bafc6ad8c71731e7709b0f8820a9a6",
+      "bytes": 278260
+    },
+    "evidence/conformance/render/results.json": {
+      "sha256": "dd106fcb01c5d17a228203f9e8aaba15a2d8617ec1efbb3f4a4c059a92c071fd",
+      "bytes": 1741
+    },
+    "evidence/conformance/render_conformance.log": {
+      "sha256": "edccb2c91b709f7e8d574cf816c14f64c0332b85745376d87b81ebafb17954d9",
+      "bytes": 2989
+    },
+    "evidence/conformance/runtime/cdda-server.log": {
+      "sha256": "e00b7c0c7529a3ccfb0db3aa3e79939a7111f5e6bd724b4d909ffecac5c2a56b",
+      "bytes": 734
+    },
+    "evidence/conformance/runtime/checks.json": {
+      "sha256": "7117b9e86aaf0a1d2a38c617b3f6b911727faac77dbf3b75f6d26dc226aad07f",
+      "bytes": 2096
+    },
+    "evidence/conformance/runtime/legacy-fuzzer.log": {
+      "sha256": "7a735fce3563e8065d11be00f0d3664d721233c3cfeb9a860c4b1ac36273f09d",
+      "bytes": 484
+    },
+    "evidence/conformance/runtime/native-fixture.json": {
+      "sha256": "2514295e318327833085c8916c378ed6a13b2cc415410f4c988c38d2b52955f5",
+      "bytes": 146970
+    },
+    "evidence/conformance/runtime/native-fixture.log": {
+      "sha256": "9b5fe84d3456a3d4fa2daac2a89e65131207e4f3c34dd84a7052c1789e91aa4b",
+      "bytes": 170
+    },
+    "evidence/conformance/runtime/native-load.log": {
+      "sha256": "633e3a717f46f168c45caa49cd07033788e30ecf99b3943e53de43e479767327",
+      "bytes": 166
+    },
+    "evidence/conformance/runtime/native-loaded.json": {
+      "sha256": "12572a5294a55f92e8e5de1c881eecb3e5429d7f2b07a1bf89d9fa973a382a73",
+      "bytes": 151244
+    },
+    "evidence/conformance/runtime/server-result.json": {
+      "sha256": "235be50009aa1f764524776919c79d25df33cff8957dd92bc6441cece2de86ed",
+      "bytes": 547
+    },
+    "evidence/conformance/runtime_conformance.log": {
+      "sha256": "d63b92a3fede10a85e1d0bb7fc4d6e9f9380616f56a5bfa5df8063720da6d0c0",
+      "bytes": 2152
+    },
+    "evidence/conformance/save001/after.json": {
+      "sha256": "bed5a746d531ec44e588ed3a2333c0a01352f4e1a3e6118d821e28f38d7cb41a",
+      "bytes": 156886
+    },
+    "evidence/conformance/save001/after.json.log": {
+      "sha256": "d12f722ac5e21684a4e7d172237f72ca1d79094b79da0d1113fd6ba87dc11eda",
+      "bytes": 158
+    },
+    "evidence/conformance/save001/before.json": {
+      "sha256": "2514295e318327833085c8916c378ed6a13b2cc415410f4c988c38d2b52955f5",
+      "bytes": 146970
+    },
+    "evidence/conformance/save001/before.json.log": {
+      "sha256": "2a66d06983325ee33a89f77786e6dced9b72f5b1a23baa07ecea008b7a35495b",
+      "bytes": 162
+    },
+    "evidence/conformance/save001/checks.json": {
+      "sha256": "43aad4d2d71ccd727e75caa52b047ab5d0111819c3fc3b1ab0708963fd36d198",
+      "bytes": 2200
+    },
+    "evidence/conformance/save001/client.conf": {
+      "sha256": "dc4e293443a6f3664569403805caa549b5e5f600cf833f6bba8dca77d3b51c81",
+      "bytes": 116
+    },
+    "evidence/conformance/save001/client.log": {
+      "sha256": "461ce11fc9c0cb1b4fedcf05401183c34e1580b68eca2b3b8f7b5e24725b8fc8",
+      "bytes": 1301
+    },
+    "evidence/conformance/save001/client.wire": {
+      "sha256": "b7bad26f1ac5fc20f7e1b580d1a0c9d4df65cb0530c2e85d33cc5c97fcd5a8c2",
+      "bytes": 360
+    },
+    "evidence/conformance/save001/commands.json": {
+      "sha256": "ed4629b1a71de1b1ccefa414e503307db0103d9c516d23397cec10366ab9c3c5",
+      "bytes": 438
+    },
+    "evidence/conformance/save001/engine.log": {
+      "sha256": "9a3aa85315b35fb484e7dcb914e3dbaba1278c87eac0ff8b0e202fb20b83ee14",
+      "bytes": 1144
+    },
+    "evidence/conformance/save001/events.json": {
+      "sha256": "56fde3c0f0e55caa6607d7c5a6d5f8b4c9ad3b7a814c9b0439d445f752dbbad9",
+      "bytes": 2242
+    },
+    "evidence/conformance/save001/frames.ns": {
+      "sha256": "fdb73a69aaa9281cfdac5ff6d0c7b951484f3d780161140cdb04ef5fe5ea0965",
+      "bytes": 9904
+    },
+    "evidence/conformance/save001/scene.png": {
+      "sha256": "7939e1c9f2207c66112e44511876ec999bf8adf76d3306b4ef5e9cb0ccf72f8e",
+      "bytes": 280314
+    },
+    "evidence/conformance/save001/scope.json": {
+      "sha256": "0a4a319f64d4db93b680f2e8db50206c2ac785777b47fb170622d8137bb95fa2",
+      "bytes": 811
+    },
+    "evidence/conformance/save001/server.log": {
+      "sha256": "6b6d7fc4569d59057da1e405e7e91396e197ea8044c0221b3b58920a1ec26825",
+      "bytes": 691
+    },
+    "evidence/conformance/save001/server.wire": {
+      "sha256": "ab597b955bbe03c2e805395262f4b7ced52d7fc30cff877751e795a674bfa478",
+      "bytes": 1012792
+    },
+    "evidence/conformance/save001_actual_3d.log": {
+      "sha256": "b9a237a4bc3fa5181c32d9e5a4fb54bb6a1f41c8eacb4215ef13427022a6209d",
+      "bytes": 2512
+    },
+    "evidence/conformance/transport_conformance": {
+      "sha256": "d316f44fd9c5badfda4985307278758df2a716152d36189c0419735555da7b89",
+      "bytes": 1628328
+    },
+    "evidence/conformance/transport_conformance.log": {
+      "sha256": "65229234e7172fdda0924dbe7d94effdd0e41e9f44e32081ce3a380ded8c377b",
+      "bytes": 621
+    },
+    "evidence/environment.json": {
+      "sha256": "6257ddc227f51e0fa3877cfcacc346fc8a15dc8344366c3b2304196132a7fd31",
+      "bytes": 4446
+    },
+    "evidence/frameprobe.so": {
+      "sha256": "0ed81e042353c903766e36f245411699ba1a40b50107d675a782258a1ed5c603",
+      "bytes": 16376
+    },
+    "evidence/generate_cpp.log": {
+      "sha256": "28d94d1d517ad6f5a85106195f1b2dc58a3b9564d3f56a86411d2949155ed916",
+      "bytes": 370
+    },
+    "evidence/generate_python.log": {
+      "sha256": "e3d43896e319207ed19cb719f469a0d90d6d4adfbb49afe6539071bad13417e1",
+      "bytes": 341
+    },
+    "evidence/legacy/benchmark_test/adapter.json": {
+      "sha256": "e43e4843ad1d54dc5df3b22931e28ad18158bff7dd517bb4199f5fc912839797",
+      "bytes": 346
+    },
+    "evidence/legacy/benchmark_test/server.log": {
+      "sha256": "047b70d143df0e3d94639659fd9e4b73232fc765eff965fdc9b62ff94c22b07e",
+      "bytes": 612
+    },
+    "evidence/legacy/commands.json": {
+      "sha256": "b029a9c74da4d512673df211d014746ed2fd932eaace1ebd6a5df3a2b03ede14",
+      "bytes": 4544
+    },
+    "evidence/legacy/dynamic_fields_test/adapter.json": {
+      "sha256": "1d8c2fadede365a23bb32668adcca59b12d3c5c532b28e400e98a01eee9b62be",
+      "bytes": 351
+    },
+    "evidence/legacy/dynamic_fields_test/server.log": {
+      "sha256": "db82313984971662af808534a1eb9d717c2181d4bcceaa40c4bc13970a02609a",
+      "bytes": 621
+    },
+    "evidence/legacy/entity_animation_test/adapter.json": {
+      "sha256": "d3e9037200ed7ee3beebda9159e3945b006dac22a74aad48073e61b3a304d8ad",
+      "bytes": 353
+    },
+    "evidence/legacy/entity_animation_test/server.log": {
+      "sha256": "37d4831890fc387f3eefbd5430a06659c699f5df663a98f41c0711389310056b",
+      "bytes": 621
+    },
+    "evidence/legacy/legacy_benchmark_test.log": {
+      "sha256": "1a7f4652cf2d511ba6ebaf792a4beb0582bbc09267bf87107b134568c589f9bc",
+      "bytes": 1503
+    },
+    "evidence/legacy/legacy_dynamic_fields_test.log": {
+      "sha256": "3fce08e16e3bffec606d4bd44a4e55829dd842d5016afc71b5cac8674ebced99",
+      "bytes": 1585
+    },
+    "evidence/legacy/legacy_entity_animation_test.log": {
+      "sha256": "8bee65dc997f6736a0df986fc7d3a112087290d179f02808856a80238ae28519",
+      "bytes": 1576
+    },
+    "evidence/legacy/legacy_multi_z_test.log": {
+      "sha256": "6dff0345ded0903bf7eed6c6139300ca353aea8dd4ad7ae70be76de2f9dfbbc7",
+      "bytes": 922
+    },
+    "evidence/legacy/legacy_save_compat_test.log": {
+      "sha256": "4ff3bd9ef29b432049812f67a48ed05efe7e5f1500e5b01c20bea53896a2f374",
+      "bytes": 1599
+    },
+    "evidence/legacy/legacy_vertical_slice_test.log": {
+      "sha256": "cd6b61f6703755211ade1acb852eb301398de13acd75dac98ed4241d01f780f2",
+      "bytes": 1483
+    },
+    "evidence/legacy/multi_z_test/adapter.json": {
+      "sha256": "545024fd0872aa5f7307d9ade83ddd758ea8908433ad55cc1b7ec15b8d77e2e4",
+      "bytes": 344
+    },
+    "evidence/legacy/multi_z_test/server.log": {
+      "sha256": "81e23e58f8fb32d0b4a2753ee582bc6a81f691b9b3499b742e16f10a07199dad",
+      "bytes": 616
+    },
+    "evidence/legacy/save_compat_test/adapter.json": {
+      "sha256": "b95452d30898fef01ada637d997d01f3e797bf14f712a7068e295d04d34ab2f7",
+      "bytes": 348
+    },
+    "evidence/legacy/save_compat_test/server.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "evidence/legacy/vertical_slice_test/adapter.json": {
+      "sha256": "7c95a811a65a5fefadbb8a1a02443c63efa10a7a6cc039d843a74928675cf9e5",
+      "bytes": 351
+    },
+    "evidence/legacy/vertical_slice_test/server.log": {
+      "sha256": "84ab424c31a6ec175da952b40b8811c39d6339d74b9e776788443023b02213e0",
+      "bytes": 620
+    },
+    "evidence/legacy-final/benchmark_test/adapter.json": {
+      "sha256": "21ddc0ab60382b2237d82ef39beb1a3556f26e4fe3df580a31aa60a2b9aad6a1",
+      "bytes": 346
+    },
+    "evidence/legacy-final/benchmark_test/server.log": {
+      "sha256": "9883e2d242b98817c6ff2d7fc169b0178815992c158c29593365f3c987acb162",
+      "bytes": 612
+    },
+    "evidence/legacy-final/commands.json": {
+      "sha256": "de394518490c8ddf3d52e7feee0077bff425173640faeeb6b70ee9a661ff2521",
+      "bytes": 4529
+    },
+    "evidence/legacy-final/dynamic_fields_test/adapter.json": {
+      "sha256": "e627d084f8bfb8d7ef1be8a74a70a12c1d884f3bff49234d0dfd2ea4af70932b",
+      "bytes": 351
+    },
+    "evidence/legacy-final/dynamic_fields_test/server.log": {
+      "sha256": "373b363394e7b03ff3dc7690cdca9d901e53bdfe090da30da2d4ab37aa61ab3b",
+      "bytes": 621
+    },
+    "evidence/legacy-final/entity_animation_test/adapter.json": {
+      "sha256": "4a1608de652fef09342ab777e7453329802a09b4d92afeb163d6dbc55ac1b7ac",
+      "bytes": 353
+    },
+    "evidence/legacy-final/entity_animation_test/server.log": {
+      "sha256": "4f290c40152dace576cab1a504d7ea366a0759f2492d1b7ca1c994a03304c40f",
+      "bytes": 621
+    },
+    "evidence/legacy-final/legacy_benchmark_test.log": {
+      "sha256": "d635b3733e898dd9e14f098d35038178e1bead7d0ef3903d1b082a100971eb4c",
+      "bytes": 789
+    },
+    "evidence/legacy-final/legacy_dynamic_fields_test.log": {
+      "sha256": "7cc277ffc2ead5384cf8cc1e4a71b79e9c60c4d0b31c898b58bb77ccf6bf385c",
+      "bytes": 1582
+    },
+    "evidence/legacy-final/legacy_entity_animation_test.log": {
+      "sha256": "68c648a808a0b7b6e80762dbcadeec6eded0b7ede7ec5ea3052a0598e0f004a6",
+      "bytes": 1937
+    },
+    "evidence/legacy-final/legacy_multi_z_test.log": {
+      "sha256": "89f6b44c7391a9489a167b84ff1025179c471319219042352c98758659ff9b90",
+      "bytes": 1514
+    },
+    "evidence/legacy-final/legacy_save_compat_test.log": {
+      "sha256": "d0de29ac860a890b803d89552c570fb714641edffc2609f957f8fb8a71c94e24",
+      "bytes": 1532
+    },
+    "evidence/legacy-final/legacy_vertical_slice_test.log": {
+      "sha256": "84068575d00af3fb43e4ed7e16eeedf54694e9024e06b6bf58ea05a11baf0895",
+      "bytes": 690
+    },
+    "evidence/legacy-final/multi_z_test/adapter.json": {
+      "sha256": "894e2fc2a1c2fe7cbb3dac4074b8effafae438d9d87867fba0842684757f2742",
+      "bytes": 344
+    },
+    "evidence/legacy-final/multi_z_test/server.log": {
+      "sha256": "9429d69b6851f83b4cfb44c34a3a4948ebe5cf17ce5f5ddd5b3bbf23a50b8efe",
+      "bytes": 616
+    },
+    "evidence/legacy-final/save_compat_test/adapter.json": {
+      "sha256": "f50440157ea092918aa912004dc59233468cc87195a225206df71f6e8cda3c7d",
+      "bytes": 348
+    },
+    "evidence/legacy-final/save_compat_test/server.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "evidence/legacy-final/vertical_slice_test/adapter.json": {
+      "sha256": "0e17ac2034f4fb13bdf00feeede0459b4a5f38eba784c3f73a378c908bb812d5",
+      "bytes": 351
+    },
+    "evidence/legacy-final/vertical_slice_test/server.log": {
+      "sha256": "61353e429b5fbc019ecb46d97b82542c7c5e6379fdb1a35bd4a0efb630573408",
+      "bytes": 620
+    },
+    "evidence/mineclonia/asset-provenance.json": {
+      "sha256": "3f7de9562f8c9efecd7446dc1dc540e3ec1e88dd4911f05eb2a7ce853e4f37d6",
+      "bytes": 13816
+    },
+    "evidence/mineclonia/asset_provenance.log": {
+      "sha256": "6a733ffec3aba54073e6d53b6498c99c7562634c93cdf1afc5026e36dcb32864",
+      "bytes": 546
+    },
+    "evidence/mineclonia/commands.json": {
+      "sha256": "2da4881d817bde65d54212b0a7679be3118dc2d9068c00043e040651933af8b7",
+      "bytes": 65980
+    },
+    "evidence/mineclonia/mineclonia_ci_lint.log": {
+      "sha256": "fb6068d2ce67f13cc9c1ded321d556878fe1939a078d9aa4960298cf1a8fb830",
+      "bytes": 840
+    },
+    "evidence/mineclonia/mineclonia_lua51_syntax.log": {
+      "sha256": "95ab8216a36a1a59d2eb341763ef6a5b25ba1e9031f3a3bdd0017f54c2753c8f",
+      "bytes": 61112
+    },
+    "evidence/mineclonia-ci/commands.json": {
+      "sha256": "d03ee13b41e78507f45556127b9b2e4e4b0f71d4ef37d20cafca6a0e62f31db2",
+      "bytes": 1418
+    },
+    "evidence/mineclonia-ci/mineclonia_ci_lint.log": {
+      "sha256": "ec883f7588e27ac66268fd05d67931e155e9c39cf668a542493860a739cf89c8",
+      "bytes": 1126
+    },
+    "evidence/native-tests/commands.json": {
+      "sha256": "b5d7f62dbf768ea8984f00171fba3da28e7b3e4b28ff8f75578f2d232d615f13",
+      "bytes": 1292
+    },
+    "evidence/native-tests/luanti-unit-engine.log": {
+      "sha256": "f327d8ca41c4895037f61c19334c3af78c4f700a6c594f9a9e5e69fb30094522",
+      "bytes": 15212
+    },
+    "evidence/native-tests/luanti-unit.conf": {
+      "sha256": "b28c0fcd6223aab7b35808da3c49ad0c225973f1ec762620a4ecc642615d1dc7",
+      "bytes": 30
+    },
+    "evidence/native-tests/unit_cdda.log": {
+      "sha256": "f27f36cf4c1027856a83bcd708a2c7897d1986380d0ccac58175c8f8ade4d8f7",
+      "bytes": 6492
+    },
+    "evidence/native-tests/unit_luanti.log": {
+      "sha256": "1ee6c9cd771a87679002ee7e5d9c051ae89d2e5c2035344e02891a2bf62bc361",
+      "bytes": 19192
+    },
+    "evidence/oracle-preflight/compile.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "evidence/oracle-preflight/link.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "evidence/oracle-preflight/runtime/cdda-server.log": {
+      "sha256": "ddeec5921f11ed877a1c5160bc6a3465d47d476c7bee418e4b29cb35bb6aa3f7",
+      "bytes": 734
+    },
+    "evidence/oracle-preflight/runtime/checks.json": {
+      "sha256": "2122f1d74297a963138226b3bdc504f00ee913b079ce5bf69f6330047308a1f8",
+      "bytes": 2114
+    },
+    "evidence/oracle-preflight/runtime/commands.json": {
+      "sha256": "82aae41b46717dad9214320e9645a13975201655a4fdbd16de1ca6e9c4c786f0",
+      "bytes": 855
+    },
+    "evidence/oracle-preflight/runtime/legacy-fuzzer.log": {
+      "sha256": "2e5eb8b28abca52bb98553459184067e1399571b7f41f00d2a1d84d14a873406",
+      "bytes": 484
+    },
+    "evidence/oracle-preflight/runtime/native-fixture.json": {
+      "sha256": "858587abecdc6d3e57e9705eccfb6990244b238ee81119ab8981f6ad39933cfb",
+      "bytes": 141339
+    },
+    "evidence/oracle-preflight/runtime/native-fixture.log": {
+      "sha256": "b5d4f2be9e2b05ac600b5d5a7b8ed574acd18a51a83701d4aaf84694bad87521",
+      "bytes": 175
+    },
+    "evidence/oracle-preflight/runtime/native-load.log": {
+      "sha256": "c17f61a1ae824eeb9f4327949a8fdc13209d596f4ea7e6bfee2db4fcb1fb0348",
+      "bytes": 171
+    },
+    "evidence/oracle-preflight/runtime/native-loaded.json": {
+      "sha256": "4cfd3996b1983e1bb3fd5b8d3be723566fe88cc55a56b93be716b3e7dfd0b2f1",
+      "bytes": 151236
+    },
+    "evidence/oracle-preflight/runtime/runtime_preflight.log": {
+      "sha256": "f2eecf3a54f0f30bb7050707c78d318d1e53e4b6f81fb21f364c4d1156400b37",
+      "bytes": 2154
+    },
+    "evidence/oracle-preflight/runtime/server-result.json": {
+      "sha256": "a766a237fa5ea71f9a25226938990d7de0b3d76c869da10ea99c667b581de69a",
+      "bytes": 547
+    },
+    "evidence/oracle-preflight/scope.txt": {
+      "sha256": "10d42873a787cc627bc9b23b303edf8e1364928ec7fcb5ec4e0827bd6284c6de",
+      "bytes": 109
+    },
+    "evidence/pristine-build/build_pristine_cdda.log": {
+      "sha256": "2245ea3c33c282fd35bafdcb67df4570521cbb75c9027b69aa5aa65dad7d9231",
+      "bytes": 34241
+    },
+    "evidence/pristine-build/commands.json": {
+      "sha256": "014967c1740759f10c319ec0ee094fd4556821e0d0978d658f697a3198207fd3",
+      "bytes": 1473
+    },
+    "evidence/pristine-build/configure_pristine_cdda.log": {
+      "sha256": "57c3702d5b4122d74071c0acfde7a03a4eea61ae4e69533e8b72984d95b00388",
+      "bytes": 3005
+    },
+    "evidence/pristine-retry/build_pristine_reader.log": {
+      "sha256": "708da0c1e8199c619fcb7d81a28e58cd7cfad980fa84e8b03f0c0c5272292c2e",
+      "bytes": 685
+    },
+    "evidence/pristine-retry/commands.json": {
+      "sha256": "bd6fc3de61835a32ec3a435dd308792b4b56a923d10cbcf4a9d07502e0dfaa59",
+      "bytes": 594
+    },
+    "evidence/render-camera/BM01/after-f3.png": {
+      "sha256": "eab00abfd21998b53624078cbe1dfc4b983a0eb0dc124e8d38f5af271c632161",
+      "bytes": 256779
+    },
+    "evidence/render-camera/BM01/after-gap.png": {
+      "sha256": "64f1dac8e7970edc6ebb7f808ef1564cc1da14b1c1af7a5f878ae6238437229a",
+      "bytes": 253587
+    },
+    "evidence/render-camera/BM01/client.conf": {
+      "sha256": "4a35428f8c7a9d4bd90d0871b4fa8ed240f8cc49f9f7883b636c834ddaa6fc21",
+      "bytes": 370
+    },
+    "evidence/render-camera/BM01/console.log": {
+      "sha256": "aca281a01d3816f95ade8a52f52c874b7730c813f12a75781131ba72a8ea6dea",
+      "bytes": 122100
+    },
+    "evidence/render-camera/BM01/engine.log": {
+      "sha256": "7a344377777c25f4fb8e39a003133119a8f94f600b0b59252d9d9702429e674b",
+      "bytes": 1136
+    },
+    "evidence/render-camera/BM01/events.json": {
+      "sha256": "70c7ef1b2fc897b88f6d4aab23ac2ace2ef35d2617300d77c8169c92a7fb09a3",
+      "bytes": 567
+    },
+    "evidence/render-camera/BM01/frames.ns": {
+      "sha256": "aba9f244e5f8bb859e74df872af36cc4ecc66459a5fca3052219657a26297d2d",
+      "bytes": 16784
+    },
+    "evidence/render-camera/BM01/resources.json": {
+      "sha256": "95768d051774fc5fbee7ed40b22578404f41deb86a6b773cbc6204bddf332b78",
+      "bytes": 16716
+    },
+    "evidence/render-camera/BM01/result.json": {
+      "sha256": "7d4ce401612135865b59bda8061c264b9a203218cd210a53a9302c769e721c77",
+      "bytes": 846
+    },
+    "evidence/render-camera/BM01/scene.png": {
+      "sha256": "c9655ebc9bc271a25d8eea01b1da8fbf07ab26570a812a62f1b44aeb298b91b4",
+      "bytes": 253489
+    },
+    "evidence/render-camera/BM02/after-f3.png": {
+      "sha256": "07c33e449e669ed31e53251317f5143e1bc175bba239901acc2fff5baa87bcfe",
+      "bytes": 297667
+    },
+    "evidence/render-camera/BM02/after-gap.png": {
+      "sha256": "ad87814345646ee7fade76d29071b5184585f987793c4679a674b55069eef0de",
+      "bytes": 294542
+    },
+    "evidence/render-camera/BM02/client.conf": {
+      "sha256": "2b9732e18487d9b2664af0b188f01caadae1085a59dd471c8dc2742ea87f2237",
+      "bytes": 336
+    },
+    "evidence/render-camera/BM02/console.log": {
+      "sha256": "e2fb258dc3817d4e7558cc13f134156d09c1b116b79d58e884e7453f4929f7c9",
+      "bytes": 123140
+    },
+    "evidence/render-camera/BM02/engine.log": {
+      "sha256": "fcf2ae6db60db8cd6bdf858eb30478530ed98678496abbbaf21b643d87665007",
+      "bytes": 911
+    },
+    "evidence/render-camera/BM02/events.json": {
+      "sha256": "6f53a896bff70cb0719fa5aa0f8bea3c8a187d899f9295b36d0d11e36915f0f2",
+      "bytes": 646
+    },
+    "evidence/render-camera/BM02/frames.ns": {
+      "sha256": "25df663f98e1512a7e9d04878ab75a2405b7ae89ea9a360a2024de6ea87aa6a8",
+      "bytes": 16880
+    },
+    "evidence/render-camera/BM02/resources.json": {
+      "sha256": "1bd201dbdd30f270f3e4286e43975c1c3faeca22e470780b3bf221326067083c",
+      "bytes": 18391
+    },
+    "evidence/render-camera/BM02/result.json": {
+      "sha256": "cad941961cb8dad0801e768d87dfcfce810fba4f39203c57a20c58d9435f9ffb",
+      "bytes": 853
+    },
+    "evidence/render-camera/BM02/scene.png": {
+      "sha256": "52dcefc76b1275f5e5c65fbe134e5f6b488a276b3e3968c30ee9c6eec6b003ef",
+      "bytes": 290188
+    },
+    "evidence/render-camera/commands.json": {
+      "sha256": "b71f2ec3da0a8e70dcb56f9acec5fc1934cc36fbe42f584aee88c9c47c6c0342",
+      "bytes": 847
+    },
+    "evidence/render-camera/render_conformance.log": {
+      "sha256": "d9c20170dbb125c1912ad9a36b85766d82ef36cd13c170f10791d68e7e919c7f",
+      "bytes": 2118
+    },
+    "evidence/render-camera/results.json": {
+      "sha256": "9dbc87cb2690f22c277da1b33293d26ac8e4c6890529247fbfe8c3cc0dce8b3f",
+      "bytes": 1804
+    },
+    "evidence/render-final/BM01/after-f3.png": {
+      "sha256": "0ba8582b9025bc624a301923cc6d18d4cd476d192b244c4efab345b5968bbcea",
+      "bytes": 271192
+    },
+    "evidence/render-final/BM01/after-gap.png": {
+      "sha256": "072b0ab24ef251787291fe36ea8b0914a890ade47ca6eb4841aa3de9f07b9278",
+      "bytes": 277117
+    },
+    "evidence/render-final/BM01/client.conf": {
+      "sha256": "366afdee2881006d65ddc24dd406f7c2cf322bcae340e56f57d34b1dc6e15c09",
+      "bytes": 369
+    },
+    "evidence/render-final/BM01/console.log": {
+      "sha256": "13058d9a5d1df7d91be1b05ad0239227b21df23bdbbb6d07bf2834a7c956cace",
+      "bytes": 116086
+    },
+    "evidence/render-final/BM01/engine.log": {
+      "sha256": "467aa0b9c737e3b79fb3b3255785fd2455fa71842271ed8c942189e91df6b797",
+      "bytes": 1136
+    },
+    "evidence/render-final/BM01/events.json": {
+      "sha256": "246ac668e24096ff04cad6bbde62b687fcbc20fbc355ebd726edd6424ca5fe9f",
+      "bytes": 567
+    },
+    "evidence/render-final/BM01/frames.ns": {
+      "sha256": "ad6f670f8c3497acee8db7cea0a76171eff88a08468b45a510ccaee9b12025ac",
+      "bytes": 15984
+    },
+    "evidence/render-final/BM01/resources.json": {
+      "sha256": "cae551dfb4ca226fa93bd3f0508920f42af6f0a778bbe2a5657a975122c60f1a",
+      "bytes": 15607
+    },
+    "evidence/render-final/BM01/result.json": {
+      "sha256": "38a3e060e94eca3fa927381538ba072558386dbeba9894cc2216577bc522ca91",
+      "bytes": 847
+    },
+    "evidence/render-final/BM01/scene.png": {
+      "sha256": "7b6ec1e10325eb640aea76f628e0078dc9003a3578e75102600b7df9e8bdb667",
+      "bytes": 276242
+    },
+    "evidence/render-final/BM02/after-f3.png": {
+      "sha256": "793fcc84587a001b9da4f1069ceb5efd579b34049c01332b86234c5715066f69",
+      "bytes": 323627
+    },
+    "evidence/render-final/BM02/after-gap.png": {
+      "sha256": "d9110571853866d63a77200ccc31ab92dcc17a2b28edec20d7e8d1675a1810eb",
+      "bytes": 325946
+    },
+    "evidence/render-final/BM02/client.conf": {
+      "sha256": "2263982800599a9c855cb4d0c2e4dbca3ba43724fd2e7ac0652e0d32ae7c9c9c",
+      "bytes": 335
+    },
+    "evidence/render-final/BM02/console.log": {
+      "sha256": "fe6be63245cb17fbccb8aafcb4b86ecae7886b948b2e6839f511447612817971",
+      "bytes": 117368
+    },
+    "evidence/render-final/BM02/engine.log": {
+      "sha256": "1164a6bc54b87e4cb0ee301682e342371ee2f83323980513273b25acd490c5f9",
+      "bytes": 911
+    },
+    "evidence/render-final/BM02/events.json": {
+      "sha256": "b1084180ceea2c97e05bf02eaec3dcf986634fddd9800aa7cd21de0f84bbc9aa",
+      "bytes": 646
+    },
+    "evidence/render-final/BM02/frames.ns": {
+      "sha256": "1255d4c85fd41fdd9f6a5973eff2a1f5d094d2469f96766513dd08350bb9d5b4",
+      "bytes": 16128
+    },
+    "evidence/render-final/BM02/resources.json": {
+      "sha256": "6817a9c661768556e509bfe486e67881cc8cf7354c89dead1c299fb8c48b3e0a",
+      "bytes": 17908
+    },
+    "evidence/render-final/BM02/result.json": {
+      "sha256": "6a4f79e1bc0450573e3511218523e3611516dcc59487a9ea92b472b79960bd67",
+      "bytes": 853
+    },
+    "evidence/render-final/BM02/scene.png": {
+      "sha256": "54437459bcb0a7aec953bb88aa1f17af6ff849ea26c4037b8df6f903f50caa75",
+      "bytes": 327562
+    },
+    "evidence/render-final/commands.json": {
+      "sha256": "072d5cc537a8efda2ffdcd20e2a2f7e02256001f59c1a8f0959330467f5b0b9b",
+      "bytes": 846
+    },
+    "evidence/render-final/render_conformance.log": {
+      "sha256": "93fef37ea625b255e5a6db0c1baf19d6033bbbf9b0a57db64258707b6894e0d3",
+      "bytes": 2118
+    },
+    "evidence/render-final/results.json": {
+      "sha256": "21f6fbfbb04d6fc2a770af4404adfce6ff1b89bc6347c8938fe46f0c8d5ddc20",
+      "bytes": 1805
+    },
+    "evidence/repro-checks/baseline_source_check.log": {
+      "sha256": "c91e2ce066cf6b5cbc74390ec707ffbf6c97424c05e26c240204efa058aa8bc4",
+      "bytes": 252
+    },
+    "evidence/repro-checks/commands.json": {
+      "sha256": "dbdb53fe3370aef0dcf9a1646acc4c6c6dc72874a31fb55c09e76fc05b623b63",
+      "bytes": 2133
+    },
+    "evidence/repro-checks/unit_root.log": {
+      "sha256": "7c2685be9bb399d5a1b3076d50f784b2ab57fbd0181dbc832e580a85a6059e96",
+      "bytes": 499
+    },
+    "evidence/repro-checks/verification_python_syntax.log": {
+      "sha256": "52efd1ad10381bc0a93f0cfd1817a9ae3add1e5398273560871c35c09095fc14",
+      "bytes": 726
+    },
+    "evidence/root-build/build_root.log": {
+      "sha256": "1ab9d710c6c287d79b6949788a3dd436a37159e3abb0722a0048bc4e422bec36",
+      "bytes": 781
+    },
+    "evidence/root-build/commands.json": {
+      "sha256": "20d1f21e4cdb7740cd6c6b12c54a20c1f04ec1df20d8d8fcef1de8982b8eece6",
+      "bytes": 1660
+    },
+    "evidence/root-build/configure_root.log": {
+      "sha256": "84136aca8deac8a3b3dd4a7c166af5654d087c7de9d8f8514d0e75df670b7667",
+      "bytes": 1040
+    },
+    "evidence/root-build/unit_root.log": {
+      "sha256": "7c2685be9bb399d5a1b3076d50f784b2ab57fbd0181dbc832e580a85a6059e96",
+      "bytes": 499
+    },
+    "evidence/transport-commands.json": {
+      "sha256": "0a415cd10e8b65be6b54970da4d3258a5c96ee97d80f1562180a0d59107edd68",
+      "bytes": 1898
+    },
+    "evidence/transport_conformance": {
+      "sha256": "d316f44fd9c5badfda4985307278758df2a716152d36189c0419735555da7b89",
+      "bytes": 1628328
+    },
+    "evidence/transport_conformance.log": {
+      "sha256": "18644d7211a9561517f9487f226a26e7e8703d439cec323fc82f3026e0c1d824",
+      "bytes": 609
+    },
+    "evidence/unit_protocol.log": {
+      "sha256": "4fc2e3b87f79123fcb7ea47e316f02cec55db00c5e7cdaa700564ada6b9e25ba",
+      "bytes": 776
+    },
+    "evidence/verified-source-and-binaries.json": {
+      "sha256": "e3079a855d85d6f7ea3cf118002602602e8c9064616728721d7a9ef7c9c30164",
+      "bytes": 1271
+    },
+    "deps/ci-luacheck/manifest.json": {
+      "sha256": "6a9a53fa46a27b07dff17c33feb3c5a514081a11c226b2b06a6154faf22831c0",
+      "bytes": 1870
+    }
+  }
+}

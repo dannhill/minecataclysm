@@ -3,6 +3,11 @@
 The original specification v1.0 and amendments v1.1, preserved verbatim in
 `docs/source/`, define the intended behavior. The approved agy plan is retained
 as historical evidence and does not replace the original M0–M9 roadmap.
+The [current user scope directive](docs/source/project-scope-2026-10-03.md)
+removes standalone preservation as a product constraint. Upstream internals
+and unused functionality can be changed or removed to serve the integration.
+Pinned upstream builds/tests are reference evidence, not a requirement to
+retain unrelated standalone functionality in the product.
 
 CDDA is the sole simulation, gameplay, temporal and persistence authority.
 Its internal CWM coordinator validates inputs and exports immutable snapshots
