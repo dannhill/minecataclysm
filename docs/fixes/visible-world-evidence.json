@@ -1,0 +1,592 @@
+{
+  "status": "VISIBLE WORLD REPAIR PASSED",
+  "overall_m5_5_gate": "FAILED, historical audit not recertified",
+  "branch": "fix/visible-world-startup",
+  "parent_commit": "67a3c8423dfe7367ad82c6d9e372499955af7d6b",
+  "artifact_root": "/home/dannhill/Projects/cdda-mineclonia/artifacts/visibility-fix",
+  "manifest": {
+    "format_version": 1,
+    "repositories": {
+      "cdda": {
+        "url": "https://github.com/CleverRaven/Cataclysm-DDA.git",
+        "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+        "shallow": true,
+        "patch": "baseline/patches/cdda.patch",
+        "patch_sha256": "88c7ba2966f9377dab52a908b0405d86716366392448c8e5184bc770623d6138",
+        "tree_inventory": "baseline/trees/cdda.json",
+        "tree_sha256": "955759c5ce92e7d2a18aadc57e39a9934ded38c3494f84990ba3bc4b6242a864",
+        "file_count": 8577,
+        "original_status": " M src/CMakeLists.txt\n M src/game.h\n?? src/cwm/cwm_main.cpp\n?? src/cwm/cwm_map_exporter.cpp\n?? src/cwm/cwm_map_exporter.h\n?? src/cwm/cwm_server.cpp\n?? src/cwm/cwm_server.h\n?? src/cwm/cwm_types.h\n"
+      },
+      "luanti": {
+        "url": "https://github.com/luanti-org/luanti.git",
+        "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
+        "shallow": true,
+        "patch": "baseline/patches/luanti.patch",
+        "patch_sha256": "49379ef74fc5ae8808162a8e8431510843912cc7cf2518b8e06d3902b4f64b21",
+        "tree_inventory": "baseline/trees/luanti.json",
+        "tree_sha256": "6796dc0476179709fc183c0aac8867b722ba8d5b0106fd65c4d688d1e0efbaf3",
+        "file_count": 2251,
+        "original_status": " M src/CMakeLists.txt\n M src/client/CMakeLists.txt\n M src/client/game.cpp\n M src/network/clientpackethandler.cpp\n?? src/cdda/cdda_bridge.cpp\n?? src/cdda/cdda_bridge.h\n"
+      },
+      "mineclonia": {
+        "url": "https://github.com/mark-wiemer/mineclonia.git",
+        "commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+        "shallow": true,
+        "patch": "baseline/patches/mineclonia.patch",
+        "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "tree_inventory": "baseline/trees/mineclonia.json",
+        "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36",
+        "file_count": 9359,
+        "original_status": ""
+      }
+    }
+  },
+  "installed_runtime": {
+    "cdda-server": {
+      "installed_at": "/home/dannhill/Projects/cdda-mineclonia/cdda/build/src/cdda-server",
+      "sha256": "f4d7193a5c76fc0e8feb9a78ca4c5f729657e87235845d14e9d9ce37effa204c",
+      "bytes": 313108904,
+      "previous_sha256": "1c26b637792525bef49b5ff3e0a11640f611e9c2fb77f2d00ea22fcc17f724c1"
+    },
+    "luanti": {
+      "installed_at": "/home/dannhill/Projects/cdda-mineclonia/luanti/bin/luanti",
+      "sha256": "9cca36da62db03ae4b531b4068c3d8138f63e5e77d68fc023cbbb5a8783ff2b7",
+      "bytes": 15378992,
+      "previous_sha256": "a0c36721293138a818f13536a869f891b110b2e6481df288c709bb05610eb788"
+    }
+  },
+  "before_cached_server": {
+    "command": [
+      "/home/dannhill/Projects/cdda-mineclonia/cdda/build/src/cdda-server",
+      "--socket",
+      "/tmp/cdda-visibility-before-c90oxu5g/cwm.sock",
+      "--world",
+      "visibility_probe",
+      "--userdir",
+      "/tmp/cdda-visibility-before-c90oxu5g/user",
+      "--datadir",
+      "/home/dannhill/Projects/cdda-mineclonia/cdda/data"
+    ],
+    "exit_code": -11,
+    "binary_mtime": 1791036945.8612564
+  },
+  "verification": {
+    "actual_launch": [
+      {
+        "name": "backend_failure_prevents_empty_client",
+        "pass": true
+      },
+      {
+        "name": "backend_exit_is_preserved",
+        "pass": true,
+        "exit_code": 23
+      },
+      {
+        "name": "actual_cdda_projection_received",
+        "pass": true
+      },
+      {
+        "name": "actual_luanti_window",
+        "pass": true
+      },
+      {
+        "name": "actual_native_cache_updates",
+        "pass": true,
+        "restored_blocks": 7
+      },
+      {
+        "name": "actual_runtime_survives",
+        "pass": true
+      }
+    ],
+    "distant_origin": [
+      {
+        "name": "BM01_connected",
+        "pass": true
+      },
+      {
+        "name": "BM01_native_exit",
+        "pass": true,
+        "exit_code": 0
+      },
+      {
+        "name": "BM01_visible_scene.png",
+        "pass": true,
+        "visible_wood_or_brick_fraction": 0.9911061561158798
+      },
+      {
+        "name": "BM01_visible_after-gap.png",
+        "pass": true,
+        "visible_wood_or_brick_fraction": 0.9911061561158798
+      },
+      {
+        "name": "BM01_native_air_update_exercised",
+        "pass": true,
+        "restored_blocks": 2
+      },
+      {
+        "name": "BM02_connected",
+        "pass": true
+      },
+      {
+        "name": "BM02_native_exit",
+        "pass": true,
+        "exit_code": 0
+      },
+      {
+        "name": "BM02_visible_scene.png",
+        "pass": true,
+        "visible_wood_or_brick_fraction": 0.9911061561158798
+      },
+      {
+        "name": "BM02_visible_after-gap.png",
+        "pass": true,
+        "visible_wood_or_brick_fraction": 0.9911061561158798
+      },
+      {
+        "name": "BM02_native_air_update_exercised",
+        "pass": true,
+        "restored_blocks": 2
+      }
+    ]
+  },
+  "native_luanti": {
+    "modules": 47,
+    "tests": 302,
+    "failed_modules": 0,
+    "failed_tests": 0
+  },
+  "remaining_recovery_results": [
+    {
+      "scenario": "BM01",
+      "fixture_entities": 2,
+      "fixture_origin": [
+        84000,
+        -42000,
+        -1
+      ],
+      "fixture_chunks": 1,
+      "authoritative_cdda": false,
+      "connected": true,
+      "duration_seconds": 18.122421029023826,
+      "exit_code": 0,
+      "measured_frames": 836,
+      "frame_time_p50_ms": 16.68023,
+      "frame_time_p95_ms": 17.050515,
+      "frame_time_p99_ms": 19.336241,
+      "measured_average_fps": 59.043657456988136,
+      "sequence_gap_causes_resynchronization": false,
+      "semantic_invalid_snapshot_preserves_client": null,
+      "rss_peak_bytes": 336879616,
+      "cpu_seconds": 2.62,
+      "input_to_visual_p95_ms": null,
+      "initial_projection_p95_ms": null,
+      "limitations": [
+        "Synthetic CWM presentation fixture; CDDA runtime is not exercised.",
+        "Swap timestamps measure frame cadence, not confirmed mesh completion.",
+        "Population is transmitted; entity meshes require separate visual verification."
+      ]
+    },
+    {
+      "scenario": "BM02",
+      "fixture_entities": 150,
+      "fixture_origin": [
+        84000,
+        -42000,
+        -1
+      ],
+      "fixture_chunks": 162,
+      "authoritative_cdda": false,
+      "connected": true,
+      "duration_seconds": 21.278485034010373,
+      "exit_code": 0,
+      "measured_frames": 1000,
+      "frame_time_p50_ms": 16.674497,
+      "frame_time_p95_ms": 17.133595,
+      "frame_time_p99_ms": 17.884996,
+      "measured_average_fps": 58.557005773949356,
+      "sequence_gap_causes_resynchronization": false,
+      "semantic_invalid_snapshot_preserves_client": true,
+      "rss_peak_bytes": 350302208,
+      "cpu_seconds": 3.08,
+      "input_to_visual_p95_ms": null,
+      "initial_projection_p95_ms": null,
+      "limitations": [
+        "Synthetic CWM presentation fixture; CDDA runtime is not exercised.",
+        "Swap timestamps measure frame cadence, not confirmed mesh completion.",
+        "Population is transmitted; entity meshes require separate visual verification."
+      ]
+    }
+  ],
+  "audit_workspace_restoration": {
+    "cdda": {
+      "tree_sha256": "955759c5ce92e7d2a18aadc57e39a9934ded38c3494f84990ba3bc4b6242a864",
+      "matches_frozen_audit": true
+    },
+    "luanti": {
+      "tree_sha256": "63df6364a31166e473aa539e4a96f0b63f7d5bf329291b4890b2c370c4a795f3",
+      "matches_frozen_audit": true
+    },
+    "mineclonia": {
+      "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36",
+      "matches_frozen_audit": true
+    },
+    "audit_luanti_binary": {
+      "sha256": "8cebced8a8608fde05fc25b5f9994a9c41e7d43890ad7d62f93ee2dbc26d6a80",
+      "expected": "8cebced8a8608fde05fc25b5f9994a9c41e7d43890ad7d62f93ee2dbc26d6a80",
+      "matches": true
+    }
+  },
+  "commands": [
+    {
+      "name": "build_visibility_client",
+      "command": [
+        "cmake",
+        "--build",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/luanti/build",
+        "--target",
+        "luanti",
+        "--parallel",
+        "3"
+      ],
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+      "exit_code": 0,
+      "timeout": false,
+      "seconds": 194.466,
+      "status": "PASS",
+      "log": "build_visibility_client.log",
+      "log_sha256": "9b28c3778f2747f319626d8394a77954e5f2194ad3455814c3f22c80b01d991c"
+    },
+    {
+      "name": "actual_startup_visibility",
+      "command": [
+        "/usr/bin/python3",
+        "/home/dannhill/Projects/cdda-mineclonia/tests/startup_visibility_test.py",
+        "--workspace",
+        "/home/dannhill/Projects/cdda-mineclonia",
+        "--artifacts",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/visibility-fix/startup"
+      ],
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia",
+      "exit_code": 1,
+      "timeout": false,
+      "seconds": 95.358,
+      "status": "FAIL",
+      "log": "actual_startup_visibility.log",
+      "log_sha256": "90f2cb75c4e5ea96d7634ae3c2e2afe7581c74bb53a9125f119d7cfe105a868d"
+    },
+    {
+      "name": "native_luanti_after_visibility",
+      "command": [
+        "/home/dannhill/Projects/cdda-mineclonia/luanti/bin/luanti",
+        "--run-unittests",
+        "--config",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/visibility-fix/native-unit.conf",
+        "--logfile",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/visibility-fix/native-unit-engine.log"
+      ],
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia",
+      "exit_code": 0,
+      "timeout": false,
+      "seconds": 5.012,
+      "status": "PASS",
+      "log": "native_luanti_after_visibility.log",
+      "log_sha256": "8e5f8dffad584329910350970f720a5a99cf3129b78d0ef90d2cd15d3a804751"
+    },
+    {
+      "name": "restore_audit_build_cache",
+      "command": [
+        "cmake",
+        "--build",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace/luanti/build",
+        "--target",
+        "luanti",
+        "--parallel",
+        "2"
+      ],
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/workspace",
+      "exit_code": 0,
+      "timeout": false,
+      "seconds": 241.924,
+      "status": "PASS",
+      "log": "restore_audit_build_cache.log",
+      "log_sha256": "d530855b7b3517d9c3632ccb7e99f22c69da7190fa8704a89483cf0cfc818b00"
+    },
+    {
+      "name": "distant_origin_visibility",
+      "command": [
+        "/usr/bin/python3",
+        "/home/dannhill/Projects/cdda-mineclonia/tests/visible_world_test.py",
+        "--workspace",
+        "/home/dannhill/Projects/cdda-mineclonia",
+        "--artifacts",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/visibility-fix/render-distant",
+        "--probe-library",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/evidence/conformance/frameprobe.so"
+      ],
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia",
+      "exit_code": 0,
+      "timeout": false,
+      "seconds": 39.73,
+      "status": "PASS",
+      "log": "distant_origin_visibility.log",
+      "log_sha256": "49976328c48418e7591a5a46a3e4decf2283d4c0e0331270a3579964935a6934"
+    },
+    {
+      "name": "actual_startup_visibility_final",
+      "command": [
+        "/usr/bin/python3",
+        "/home/dannhill/Projects/cdda-mineclonia/tests/startup_visibility_test.py",
+        "--workspace",
+        "/home/dannhill/Projects/cdda-mineclonia",
+        "--artifacts",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/visibility-fix/startup-final"
+      ],
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia",
+      "exit_code": 0,
+      "timeout": false,
+      "seconds": 24.651,
+      "status": "PASS",
+      "log": "actual_startup_visibility_final.log",
+      "log_sha256": "c32c215bc5da71991ed6ad9b7692a328bae1db461cd5e57ed3be5b4b29cad77f"
+    }
+  ],
+  "superseded_attempts": {
+    "build-luanti.log": "First link failed on ODR-use of nodecount, fixed before successful build.",
+    "startup": "First INFO-log parser read action-only engine logs; console/screenshots confirmed visible world. Final harness enables INFO log output."
+  },
+  "root_source_files": {
+    "start.sh": "56e0a0ea4f6d17f45a2bc341e377b4c7156b915a379db8afeca05ca9483b599f",
+    "game/minetest.conf": "a22e8c7a6ab69ea0d59a3900ef6fb4307a3d4289680c8c1939ced6ffa99ea0ac",
+    "tests/startup_visibility_test.py": "1cbd02e11595a0cecc3b34e007bbcb7f1e0841ae850340f516cc28ef4c563ec0",
+    "tests/visible_world_test.py": "f8b8dbc84db1220bb7fbe75a636a17ec1cd484057e5b39647af25a39480d25ae",
+    "tests/takeover_render.py": "ff969dbea25ad175fd9fb11d4452031027866dc0bb0467ecea29b544648379f1"
+  },
+  "artifact_checksums": {
+    "actual_startup_visibility.log": {
+      "sha256": "90f2cb75c4e5ea96d7634ae3c2e2afe7581c74bb53a9125f119d7cfe105a868d",
+      "bytes": 776
+    },
+    "actual_startup_visibility_final.log": {
+      "sha256": "c32c215bc5da71991ed6ad9b7692a328bae1db461cd5e57ed3be5b4b29cad77f",
+      "bytes": 780
+    },
+    "before-startup.json": {
+      "sha256": "b90e1cf1d9cb9a5ddc49d0e255a23574b9ecdcaa682aae9c522e597d76b31587",
+      "bytes": 402
+    },
+    "before-startup.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "build-luanti.log": {
+      "sha256": "80e63b9d7cbd56ae3cb44a37a3dbb77c71f19e4d85983baf396606a82b6875a6",
+      "bytes": 2373
+    },
+    "build_visibility_client.log": {
+      "sha256": "9b28c3778f2747f319626d8394a77954e5f2194ad3455814c3f22c80b01d991c",
+      "bytes": 985
+    },
+    "commands.json": {
+      "sha256": "b1b41f9c155aaab443f08623592642d437ea135f1b2d29d8b7cf9a1e4668bcdd",
+      "bytes": 3879
+    },
+    "distant_origin_visibility.log": {
+      "sha256": "49976328c48418e7591a5a46a3e4decf2283d4c0e0331270a3579964935a6934",
+      "bytes": 3074
+    },
+    "launcher-failure/cdda.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "launcher-failure/result.json": {
+      "sha256": "a247146c9c7f662024822cb3a52f3cbbb60d99d7e140062e832e89222dd271f9",
+      "bytes": 247
+    },
+    "native-unit-engine.log": {
+      "sha256": "6e1003187136d41342988fcaa5e737638548adf10c78af894f830003af0fe835",
+      "bytes": 15209
+    },
+    "native-unit.conf": {
+      "sha256": "b28c0fcd6223aab7b35808da3c49ad0c225973f1ec762620a4ecc642615d1dc7",
+      "bytes": 30
+    },
+    "native_luanti_after_visibility.log": {
+      "sha256": "8e5f8dffad584329910350970f720a5a99cf3129b78d0ef90d2cd15d3a804751",
+      "bytes": 18914
+    },
+    "render-distant/BM01/after-f3.png": {
+      "sha256": "88adc602500db921a2292acad1d354d5c2b0388ff2cdcba163f2bb5b74aaa201",
+      "bytes": 296428
+    },
+    "render-distant/BM01/after-gap.png": {
+      "sha256": "51d805b931ebbb985b6f6035b453089edf6534f33e928d50b82cba2d91166b66",
+      "bytes": 293298
+    },
+    "render-distant/BM01/client.conf": {
+      "sha256": "ea79427d6055ab381bab932bf9cff3ebeeb7bd7f8ee0eff3aad4410b65c2b6b4",
+      "bytes": 377
+    },
+    "render-distant/BM01/console.log": {
+      "sha256": "5617e4c7a40578bf563491589d8ab66dd01514f4ff698495e937477b9da7d097",
+      "bytes": 124776
+    },
+    "render-distant/BM01/engine.log": {
+      "sha256": "85252aa18a016a30990728bdb321d8b040777353ef1a7b6727b45a477561c5e4",
+      "bytes": 123319
+    },
+    "render-distant/BM01/events.json": {
+      "sha256": "d320c216b67aa85260adbb7c124a921cf9b5756e419b21a7df682d469cdf24f9",
+      "bytes": 567
+    },
+    "render-distant/BM01/frames.ns": {
+      "sha256": "d9e41cb29f0c28c617977a6342cb0c0eb82e4041f50d0cae66c29267a5e38283",
+      "bytes": 16624
+    },
+    "render-distant/BM01/resources.json": {
+      "sha256": "1a9d89fa33a8ee955f4c5860f8011334249c3d157bec44b5d1a3f7f86f4c1322",
+      "bytes": 16439
+    },
+    "render-distant/BM01/result.json": {
+      "sha256": "75cdc04cc20e38dd9467bdaf41f899752e044f4178c85f0979323256dec800b0",
+      "bytes": 904
+    },
+    "render-distant/BM01/scene.png": {
+      "sha256": "ca52e0c7596ea28197d34d299d7ed0dec6289f1b52631290fbab80918b657fdd",
+      "bytes": 289218
+    },
+    "render-distant/BM02/after-f3.png": {
+      "sha256": "e428bbc6fdb20888a5d63da3e1cacd000099249a2f5a166a233f3e18ad37dc6d",
+      "bytes": 297705
+    },
+    "render-distant/BM02/after-gap.png": {
+      "sha256": "7b77e5628184937ac3aa5156487993ed86ef7b3480a4eff8e5cb9bbec1a1c54a",
+      "bytes": 294576
+    },
+    "render-distant/BM02/client.conf": {
+      "sha256": "f1b3b547bf50bdf7cee5b5b8dd7aceef43cb1938035543ccd9e1d01b8d1943c6",
+      "bytes": 377
+    },
+    "render-distant/BM02/console.log": {
+      "sha256": "e8a38323e1d00412f4b8f3ee19074b84037659614bd7dd2efdeb45d3f5b9a317",
+      "bytes": 142470
+    },
+    "render-distant/BM02/engine.log": {
+      "sha256": "37026a3badadfe535b41973b2121cb38cb065654c7b2cf0245bf9bf55bb30a4c",
+      "bytes": 141013
+    },
+    "render-distant/BM02/events.json": {
+      "sha256": "eb72073dea293d55dc92b8a8d142f7386f6202ed665eb9f33d610e38a0268f86",
+      "bytes": 646
+    },
+    "render-distant/BM02/frames.ns": {
+      "sha256": "02e629501f07ce792616488d98f83312cfca4cc72317c3cd63e95c1b14f2bc4c",
+      "bytes": 19520
+    },
+    "render-distant/BM02/resources.json": {
+      "sha256": "d3ffb4a858c09a3562387cc08de600200ab719d4efef7c46aab2b3dfebda301d",
+      "bytes": 19230
+    },
+    "render-distant/BM02/result.json": {
+      "sha256": "aac40405a6fcb169bbbadf0a49e78da8dae98cc4e46d42b21cebcdd8256a8241",
+      "bytes": 910
+    },
+    "render-distant/BM02/scene.png": {
+      "sha256": "c6400f5c0971e03c1abdd13f21e54656116a47ba3605d7b0ceb3def3a8771e9b",
+      "bytes": 290361
+    },
+    "render-distant/results.json": {
+      "sha256": "23dc546fc7120b8cbec9940a1c82639a9e64a8b35e46f9978a6f51a98a6952a6",
+      "bytes": 1939
+    },
+    "render-distant/visibility-checks.json": {
+      "sha256": "0241476a13506cc94b1cfea12bf66d016d373d2acdda72ca1b1540e74f0a1b80",
+      "bytes": 967
+    },
+    "restore_audit_build_cache.log": {
+      "sha256": "d530855b7b3517d9c3632ccb7e99f22c69da7190fa8704a89483cf0cfc818b00",
+      "bytes": 1143
+    },
+    "restored-audit-workspace.json": {
+      "sha256": "62397346cab81be5b77c20398adb7f5adceb8b2a3b121a87c193512a4f5c5d49",
+      "bytes": 640
+    },
+    "runtime-install.json": {
+      "sha256": "3b276f2b4f46b47742f35e4d313e755bdc794843f30606aad390b4cfa7e3ca73",
+      "bytes": 608
+    },
+    "startup/actual/cdda.log": {
+      "sha256": "22529adfeed2afaca8c552bcb1dbc58ec3d2afe90386eda3d6d46d3968d790f1",
+      "bytes": 647
+    },
+    "startup/actual/luanti-engine.log": {
+      "sha256": "907b1993813efee882615db39802864729f3be8ec10d996cbbf753eec653dbab",
+      "bytes": 1349
+    },
+    "startup/actual/luanti.log": {
+      "sha256": "3576601ea58bdb8b7b8187c4b5df16e0040b2e2fc07949e1e8e5eca51125f535",
+      "bytes": 40473
+    },
+    "startup/actual-launch.log": {
+      "sha256": "27ecf24574c87fcf2886a2779fc7312e21fdb1d612163c7dba1d7f28eb42b6f0",
+      "bytes": 178
+    },
+    "startup/actual-scene-later.png": {
+      "sha256": "c577bce3a16befcb2c6ed989279f3b5308ac4a3297d8c6b0f01bcfa3b5481b87",
+      "bytes": 318589
+    },
+    "startup/actual-scene.png": {
+      "sha256": "c577bce3a16befcb2c6ed989279f3b5308ac4a3297d8c6b0f01bcfa3b5481b87",
+      "bytes": 318589
+    },
+    "startup/checks.json": {
+      "sha256": "f5403a526dd5638bda959cb4ef6a991d589bcbcc8545d133fc2fb84a105e35ce",
+      "bytes": 467
+    },
+    "startup/failure/cdda.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "startup/failure-launch.log": {
+      "sha256": "3892df7e2b125e922192a2a172ad61b46a5ff4f10ba63eb0a259ec5cc4865157",
+      "bytes": 163
+    },
+    "startup-final/actual/cdda.log": {
+      "sha256": "fd8f00924eade302b228edc33783ffa406f63835749a92d1127ac13b867a880e",
+      "bytes": 647
+    },
+    "startup-final/actual/luanti-engine.log": {
+      "sha256": "fa26bc8c4dbae433f2edda76f18a90cfe02fc7c81f800aa0548e4e396cf8cc91",
+      "bytes": 30142
+    },
+    "startup-final/actual/luanti.log": {
+      "sha256": "f31d416a8702f4e75258a9c11d5ffcc62f9df38268b4f6a2ab412b36ceeb82ba",
+      "bytes": 31536
+    },
+    "startup-final/actual-launch.log": {
+      "sha256": "f1bcc988ecae454dc638dd409f26562af523184d2f301e1089f8a1cb64afabfe",
+      "bytes": 184
+    },
+    "startup-final/actual-scene-later.png": {
+      "sha256": "1a610b4b05bff3f7f50ffe22e1e27a4c1ae35216862b85f8198fae136ec1e98a",
+      "bytes": 333045
+    },
+    "startup-final/actual-scene.png": {
+      "sha256": "1a610b4b05bff3f7f50ffe22e1e27a4c1ae35216862b85f8198fae136ec1e98a",
+      "bytes": 333045
+    },
+    "startup-final/checks.json": {
+      "sha256": "9beeafdb6eaceb36183d053e3400cf2f7ad02cc9adce86f1ed7cdb62852c4623",
+      "bytes": 465
+    },
+    "startup-final/failure/cdda.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "startup-final/failure-launch.log": {
+      "sha256": "2b9f816e36e8adfad94dc622acf5be768d4a9c098fd7c414dbd4f7429fe4d9e4",
+      "bytes": 169
+    }
+  }
+}

@@ -1,0 +1,2 @@
+# Patch context prefixes are data, including mandatory space-before-tab lines.
+baseline/patches/*.patch -whitespace

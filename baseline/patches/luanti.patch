@@ -24,7 +24,7 @@ index d451d09..eb8db1d 100644
  	PARENT_SCOPE
  )
 diff --git a/src/client/game.cpp b/src/client/game.cpp
-index 27b5833..2b9d1b4 100644
+index 27b5833..0d60a5b 100644
 --- a/src/client/game.cpp
 +++ b/src/client/game.cpp
 @@ -8,6 +8,7 @@
@@ -96,7 +96,7 @@ index 27b5833..2b9d1b4 100644
  	//tt.stop();
  }
  
-@@ -2784,6 +2823,22 @@ inline void Game::step(f32 dtime)
+@@ -2784,6 +2823,25 @@ inline void Game::step(f32 dtime)
  
  	if (!m_is_paused)
  		client->step(dtime);
@@ -109,8 +109,11 @@ index 27b5833..2b9d1b4 100644
 +		// Wait until node definitions and media are received; connecting earlier
 +		// would resolve CDDA materials to CONTENT_IGNORE (invisible but solid).
 +		if (!bridge.getMetrics().connected && cdda_retry <= 0.0f &&
-+				client->nodedefReceived() && client->mediaReceived()) {
-+			bridge.initialize(client, "/tmp/cwm_bench_ipc.sock");
++				client->getState() == LC_Ready &&
++				client->getNodeDefManager()->getId("cdda_nodes:stone") != CONTENT_IGNORE) {
++			std::string socket_path = "/tmp/cwm_bench_ipc.sock";
++			g_settings->getNoEx("cwm_socket_path", socket_path);
++			bridge.initialize(client, socket_path);
 +			cdda_retry = 1.0f;
 +		}
 +		bridge.update(dtime);
@@ -119,12 +122,38 @@ index 27b5833..2b9d1b4 100644
  }
  
  static void pauseNodeAnimation(PausedNodesList &paused, scene::ISceneNode *node) {
+diff --git a/src/network/clientpackethandler.cpp b/src/network/clientpackethandler.cpp
+index 9f987cc..4af2f72 100644
+--- a/src/network/clientpackethandler.cpp
++++ b/src/network/clientpackethandler.cpp
+@@ -3,6 +3,7 @@
+ // Copyright (C) 2015 nerzhul, Loic Blot <loic.blot@unix-experience.fr>
+ 
+ #include "client/client.h"
++#include "cdda/cdda_bridge.h"
+ 
+ #include "irr_v2d.h"
+ #include "util/base64.h"
+@@ -321,6 +322,13 @@ void Client::handleCommand_BlockData(NetworkPacket* pkt)
+ 		block->deSerializeNetworkSpecific(istr);
+ 	}
+ 
++	// Luanti's singlenode server owns the disposable cache, not CDDA terrain.
++	// Its delayed air blocks must not erase a snapshot already projected here.
++	if (cdda_client::CddaBridge::getInstance().restoreProjectedBlock(this, block)) {
++		infostream << "[Luanti-CDDA] Retained projection after cache block update at ("
++			<< p.X << ", " << p.Y << ", " << p.Z << ")" << std::endl;
++	}
++
+ 	if (m_localdb) {
+ 		ServerMap::saveBlock(block, m_localdb);
+ 	}
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..b774b24
+index 0000000..2609fff
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,532 @@
+@@ -0,0 +1,597 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
@@ -139,6 +168,7 @@ index 0000000..b774b24
 +#include "mapblock.h"
 +#include "mapsector.h"
 +#include "nodedef.h"
++#include "log.h"
 +
 +#include <IGUIEnvironment.h>
 +#include <IGUIStaticText.h>
@@ -150,6 +180,7 @@ index 0000000..b774b24
 +#include <chrono>
 +#include <cmath>
 +#include <set>
++#include <map>
 +#include <unordered_map>
 +
 +namespace cdda_client {
@@ -176,6 +207,45 @@ index 0000000..b774b24
 +    irr::gui::IGUIStaticText* debug_text_{nullptr};
 +    irr::scene::ISceneManager* smgr_{nullptr};
 +    std::unordered_map<uint16_t, content_t> material_map_;
++    // The projection uses reality-bubble-local XY and absolute CDDA z-levels
++    // for terrain, camera and vehicles alike. Origin is rebase metadata only.
++    v3s32 projection_origin_;
++    bool origin_valid_{false};
++    std::map<v3s16, std::vector<MapNode>> projected_blocks_;
++
++    static void apply_nodes(MapBlock& block, const std::vector<MapNode>* nodes) {
++        for (s16 z = 0; z < MAP_BLOCKSIZE; ++z)
++            for (s16 y = 0; y < MAP_BLOCKSIZE; ++y)
++                for (s16 x = 0; x < MAP_BLOCKSIZE; ++x) {
++                    const size_t index = z * MapBlock::zstride + y * MapBlock::ystride + x;
++                    block.setNodeNoCheck(x, y, z, nodes ? (*nodes)[index] : MapNode(CONTENT_AIR, 0xff));
++                }
++        // Network deserialization can cache an empty block as isAir=true.
++        block.expireIsAirCache();
++        block.resetUsageTimer();
++    }
++
++    bool restore_projected_block(MapBlock* block) {
++        if (!block) return false;
++        const auto it = projected_blocks_.find(block->getPos());
++        if (it == projected_blocks_.end()) return false;
++        apply_nodes(*block, &it->second);
++        return true;
++    }
++
++    void commit_projection(const std::set<v3s16>& modified_blocks) {
++        if (!client_) return;
++        Map& map = client_->getEnv().getMap();
++        for (const auto& bp : modified_blocks) {
++            MapSector* sector = map.emergeSector(v2s16(bp.X, bp.Z));
++            if (!sector) continue;
++            MapBlock* block = sector->getBlockNoCreateNoEx(bp.Y);
++            if (!block) block = sector->createBlankBlock(bp.Y);
++            const auto it = projected_blocks_.find(bp);
++            apply_nodes(*block, it == projected_blocks_.end() ? nullptr : &it->second);
++            client_->addUpdateMeshTaskWithEdge(bp, false, true);
++        }
++    }
 +
 +    content_t get_node_for_material(uint16_t mat_id) {
 +        if (mat_id == 0) return CONTENT_AIR;
@@ -204,26 +274,23 @@ index 0000000..b774b24
 +        return cid;
 +    }
 +
-+    void set_voxel(Map& map, const v3s16& lpos, content_t cid, uint8_t light, uint8_t param2, std::set<v3s16>& modified_blocks) {
++    void set_voxel(const v3s16& lpos, content_t cid, uint8_t light, uint8_t param2, std::set<v3s16>& modified_blocks) {
 +        v3s16 bp, offset;
 +        getNodeBlockPosWithOffset(lpos, bp, offset);
-+        MapSector* sector = map.emergeSector(v2s16(bp.X, bp.Z));
-+        if (!sector) return;
-+        MapBlock* blk = sector->getBlockNoCreateNoEx(bp.Y);
-+        if (!blk) {
-+            blk = sector->createBlankBlock(bp.Y);
-+        }
++        auto& nodes = projected_blocks_.try_emplace(bp, size_t(MapBlock::nodecount),
++                                                    MapNode(CONTENT_AIR, 0xff)).first->second;
 +        // Same light in day and night banks: CDDA, not Luanti's clock, decides brightness.
 +        const uint8_t l = light & 0x0F;
-+        blk->setNodeNoCheck(offset, MapNode(cid, (uint8_t)(l | (l << 4)), param2));
++        const size_t index = offset.Z * MapBlock::zstride + offset.Y * MapBlock::ystride + offset.X;
++        nodes[index] = MapNode(cid, (uint8_t)(l | (l << 4)), param2);
 +        modified_blocks.insert(bp);
 +    }
 +
-+    void place_cdda_tile(Map& map, const v3s16& base_lpos, uint16_t mat_id, uint8_t light, uint8_t param2, std::set<v3s16>& modified_blocks) {
++    void place_cdda_tile(const v3s16& base_lpos, uint16_t mat_id, uint8_t light, uint8_t param2, std::set<v3s16>& modified_blocks) {
 +        if (mat_id == 0) { // Air
-+            set_voxel(map, base_lpos, CONTENT_AIR, light, 0, modified_blocks);
-+            set_voxel(map, base_lpos + v3s16(0, 1, 0), CONTENT_AIR, light, 0, modified_blocks);
-+            set_voxel(map, base_lpos + v3s16(0, 2, 0), CONTENT_AIR, light, 0, modified_blocks);
++            set_voxel(base_lpos, CONTENT_AIR, light, 0, modified_blocks);
++            set_voxel(base_lpos + v3s16(0, 1, 0), CONTENT_AIR, light, 0, modified_blocks);
++            set_voxel(base_lpos + v3s16(0, 2, 0), CONTENT_AIR, light, 0, modified_blocks);
 +            return;
 +        }
 +
@@ -232,28 +299,28 @@ index 0000000..b774b24
 +        switch (mat_id) {
 +            case 3: // MAT_WALL_BRICK
 +                // Full story height wall (3 voxels)
-+                set_voxel(map, base_lpos, cid, light, param2, modified_blocks);
-+                set_voxel(map, base_lpos + v3s16(0, 1, 0), cid, light, param2, modified_blocks);
-+                set_voxel(map, base_lpos + v3s16(0, 2, 0), cid, light, param2, modified_blocks);
++                set_voxel(base_lpos, cid, light, param2, modified_blocks);
++                set_voxel(base_lpos + v3s16(0, 1, 0), cid, light, param2, modified_blocks);
++                set_voxel(base_lpos + v3s16(0, 2, 0), cid, light, param2, modified_blocks);
 +                break;
 +            case 5: // MAT_DOOR_WOOD_CLOSED
 +            case 6: // MAT_DOOR_WOOD_OPEN
 +                // Door at base (its nodebox extends through Y+1), lintel block at Y+2
-+                set_voxel(map, base_lpos, cid, light, param2, modified_blocks);
-+                set_voxel(map, base_lpos + v3s16(0, 1, 0), CONTENT_AIR, light, 0, modified_blocks);
-+                set_voxel(map, base_lpos + v3s16(0, 2, 0), get_node_for_material(3), light, 0, modified_blocks);
++                set_voxel(base_lpos, cid, light, param2, modified_blocks);
++                set_voxel(base_lpos + v3s16(0, 1, 0), CONTENT_AIR, light, 0, modified_blocks);
++                set_voxel(base_lpos + v3s16(0, 2, 0), get_node_for_material(3), light, 0, modified_blocks);
 +                break;
 +            case 7: // MAT_WINDOW_GLASS
 +                // Lower sill at Y, glass pane at Y+1, lintel at Y+2
-+                set_voxel(map, base_lpos, get_node_for_material(3), light, 0, modified_blocks);
-+                set_voxel(map, base_lpos + v3s16(0, 1, 0), cid, light, param2, modified_blocks);
-+                set_voxel(map, base_lpos + v3s16(0, 2, 0), get_node_for_material(3), light, 0, modified_blocks);
++                set_voxel(base_lpos, get_node_for_material(3), light, 0, modified_blocks);
++                set_voxel(base_lpos + v3s16(0, 1, 0), cid, light, param2, modified_blocks);
++                set_voxel(base_lpos + v3s16(0, 2, 0), get_node_for_material(3), light, 0, modified_blocks);
 +                break;
 +            case 9: // MAT_FURNITURE_WOOD
 +                // Furniture at base, open headroom above
-+                set_voxel(map, base_lpos, cid, light, param2, modified_blocks);
-+                set_voxel(map, base_lpos + v3s16(0, 1, 0), CONTENT_AIR, light, 0, modified_blocks);
-+                set_voxel(map, base_lpos + v3s16(0, 2, 0), CONTENT_AIR, light, 0, modified_blocks);
++                set_voxel(base_lpos, cid, light, param2, modified_blocks);
++                set_voxel(base_lpos + v3s16(0, 1, 0), CONTENT_AIR, light, 0, modified_blocks);
++                set_voxel(base_lpos + v3s16(0, 2, 0), CONTENT_AIR, light, 0, modified_blocks);
 +                break;
 +            case 1: // MAT_DIRT
 +            case 2: // MAT_GRASS
@@ -261,9 +328,9 @@ index 0000000..b774b24
 +            case 8: // MAT_PAVEMENT_STONE
 +            default: // Floor / Ground
 +                // Ground surface at base, open air headroom above (Y+1, Y+2)
-+                set_voxel(map, base_lpos, cid, light, param2, modified_blocks);
-+                set_voxel(map, base_lpos + v3s16(0, 1, 0), CONTENT_AIR, light, 0, modified_blocks);
-+                set_voxel(map, base_lpos + v3s16(0, 2, 0), CONTENT_AIR, light, 0, modified_blocks);
++                set_voxel(base_lpos, cid, light, param2, modified_blocks);
++                set_voxel(base_lpos + v3s16(0, 1, 0), CONTENT_AIR, light, 0, modified_blocks);
++                set_voxel(base_lpos + v3s16(0, 2, 0), CONTENT_AIR, light, 0, modified_blocks);
 +                break;
 +        }
 +    }
@@ -395,16 +462,28 @@ index 0000000..b774b24
 +
 +            case CDDA::CWM::Payload::WorldSnapshot: {
 +                const auto* snap = msg->payload_as_WorldSnapshot();
-+                if (!snap) break;
++                if (!snap || !snap->origin()) {
++                    warningstream << "[Luanti-CDDA] Ignoring snapshot without origin" << std::endl;
++                    break;
++                }
++                const v3s32 origin(snap->origin()->x(), snap->origin()->y(), snap->origin()->z());
++                const bool rebased = !origin_valid_ || origin.X != projection_origin_.X ||
++                                     origin.Y != projection_origin_.Y;
++                projection_origin_ = origin;
++                origin_valid_ = true;
 +
 +                if (snap->chunks() && snap->chunks()->size() > 0)
 +                    metrics_.chunks_loaded = snap->chunks()->size();
 +                metrics_.entities_count = snap->entities() ? snap->entities()->size() : 0;
 +
 +                // Ingest chunk voxels into Luanti ClientMap
-+                if (client_ && snap->chunks()) {
-+                    Map& map = client_->getEnv().getMap();
++                if (client_ && snap->chunks() && snap->chunks()->size() > 0) {
 +                    std::set<v3s16> modified_blocks;
++                    // Full terrain replaces the presentation cache, including
++                    // areas absent from the new bubble. Partial snapshots keep it.
++                    for (const auto& entry : projected_blocks_)
++                        modified_blocks.insert(entry.first);
++                    projected_blocks_.clear();
 +
 +                    for (size_t ci = 0; ci < snap->chunks()->size(); ++ci) {
 +                        const auto* chunk = snap->chunks()->Get(ci);
@@ -433,15 +512,15 @@ index 0000000..b774b24
 +                                    uint8_t light = b->light_level();
 +                                    uint8_t param2 = b->orientation();
 +
-+                                    place_cdda_tile(map, lpos, mat_id, light, param2, modified_blocks);
++                                    place_cdda_tile(lpos, mat_id, light, param2, modified_blocks);
 +                                }
 +                            }
 +                        }
 +                    }
 +
-+                    for (const auto& bp : modified_blocks) {
-+                        client_->addUpdateMeshTaskWithEdge(bp, false, true);
-+                    }
++                    commit_projection(modified_blocks);
++                    infostream << "[Luanti-CDDA] Installed terrain projection in "
++                               << projected_blocks_.size() << " local map blocks" << std::endl;
 +                }
 +
 +                // Sync vehicles
@@ -449,11 +528,12 @@ index 0000000..b774b24
 +                    metrics_.vehicles_count = snap->vehicles()->size();
 +                    for (size_t i = 0; i < snap->vehicles()->size(); ++i) {
 +                        const auto* veh_state = snap->vehicles()->Get(i);
++                        if (!veh_state || !veh_state->pivot()) continue;
 +                        uint64_t vid = veh_state->id();
 +                        v3f target = v3f(
-+                            veh_state->pivot()->x() + snap->origin()->x(),
-+                            (veh_state->pivot()->z() - snap->origin()->z()) * 3.0f,
-+                            -(veh_state->pivot()->y() + snap->origin()->y())
++                            veh_state->pivot()->x(),
++                            veh_state->pivot()->z() * 3.0f,
++                            -veh_state->pivot()->y()
 +                        );
 +
 +                        auto it = vehicles_.find(vid);
@@ -467,6 +547,7 @@ index 0000000..b774b24
 +                            if (veh_state->components()) {
 +                                for (size_t ci = 0; ci < veh_state->components()->size(); ++ci) {
 +                                    const auto* comp = veh_state->components()->Get(ci);
++                                    if (!comp || !comp->offset()) continue;
 +                                    VisualVehicleComponent vc;
 +                                    vc.name = comp->part_id() ? comp->part_id()->str() : "";
 +                                    vc.mount_offset = v3f(comp->offset()->x(), 0.0f, -comp->offset()->y());
@@ -478,6 +559,7 @@ index 0000000..b774b24
 +                            }
 +                            vehicles_[vid] = vv;
 +                        } else {
++                            if (rebased) it->second.current_pos = target;
 +                            it->second.target_pos = target;
 +                            it->second.rotation = veh_state->rotation();
 +                            // Assuming components don't change frequently for this prototype, or update them here
@@ -489,12 +571,17 @@ index 0000000..b774b24
 +                if (snap->entities()) {
 +                    for (size_t i = 0; i < snap->entities()->size(); ++i) {
 +                        const auto* ent_state = snap->entities()->Get(i);
++                        if (!ent_state || !ent_state->pos()) continue;
 +                        uint64_t eid = ent_state->id();
 +                        v3f target = v3f(
-+                            ent_state->pos()->x() + snap->origin()->x(),
-+                            (ent_state->pos()->z() - snap->origin()->z()) * 3.0f,
-+                            -(ent_state->pos()->y() + snap->origin()->y())
++                            ent_state->pos()->x(),
++                            ent_state->pos()->z() * 3.0f,
++                            -ent_state->pos()->y()
 +                        );
++                        if (eid == 1 && rebased)
++                            infostream << "[Luanti-CDDA] Player projected at local ("
++                                       << target.X << ", " << target.Y << ", " << target.Z
++                                       << ")" << std::endl;
 +
 +                        auto it = entities_.find(eid);
 +                        if (it == entities_.end()) {
@@ -508,6 +595,7 @@ index 0000000..b774b24
 +                            ve.hp_percent = ent_state->hp_percent();
 +                            entities_[eid] = ve;
 +                        } else {
++                            if (rebased) it->second.current_pos = target;
 +                            it->second.target_pos = target;
 +                            it->second.rotation = ent_state->rotation();
 +                            it->second.hp_percent = ent_state->hp_percent();
@@ -526,19 +614,15 @@ index 0000000..b774b24
 +                        delta->coord()->z()
 +                    );
 +                    if (client_) {
-+                        Map& map = client_->getEnv().getMap();
 +                        std::set<v3s16> modified_blocks;
 +                        place_cdda_tile(
-+                            map,
 +                            lpos,
 +                            delta->block()->material_id(),
 +                            delta->block()->light_level(),
 +                            delta->block()->orientation(),
 +                            modified_blocks
 +                        );
-+                        for (const auto& bp : modified_blocks) {
-+                            client_->addUpdateMeshTaskWithEdge(bp, false, true);
-+                        }
++                        commit_projection(modified_blocks);
 +                    }
 +                }
 +                break;
@@ -582,6 +666,7 @@ index 0000000..b774b24
 +}
 +
 +bool CddaBridge::initialize(Client* client, const std::string& socket_path) {
++    shutdown();
 +    pimpl_ = std::make_unique<Impl>();
 +    pimpl_->client_ = client;
 +    pimpl_->socket_path_ = socket_path;
@@ -590,8 +675,17 @@ index 0000000..b774b24
 +
 +void CddaBridge::shutdown() {
 +    if (pimpl_) {
-+        pimpl_->connection_.reset();
++        if (pimpl_->debug_text_) pimpl_->debug_text_->remove();
++        for (auto& vehicle : pimpl_->vehicles_)
++            for (auto& component : vehicle.second.components)
++                if (component.scene_node)
++                    static_cast<irr::scene::ISceneNode*>(component.scene_node)->remove();
++        pimpl_.reset();
 +    }
++}
++
++bool CddaBridge::restoreProjectedBlock(Client* client, MapBlock* block) {
++    return pimpl_ && pimpl_->client_ == client && pimpl_->restore_projected_block(block);
 +}
 +
 +void CddaBridge::update(float dtime) {
@@ -659,10 +753,10 @@ index 0000000..b774b24
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.h b/src/cdda/cdda_bridge.h
 new file mode 100644
-index 0000000..caf1992
+index 0000000..0f2ece1
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.h
-@@ -0,0 +1,86 @@
+@@ -0,0 +1,90 @@
 +// Luanti C++ CWM Presentation Bridge
 +// Licensed under Apache-2.0
 +#pragma once
@@ -678,6 +772,7 @@ index 0000000..caf1992
 +namespace irr { namespace gui { class IGUIEnvironment; class IGUIStaticText; } }
 +
 +class Client;
++class MapBlock;
 +
 +namespace cdda_client {
 +
@@ -717,6 +812,9 @@ index 0000000..caf1992
 +    bool initialize(Client* client, const std::string& socket_path);
 +    void shutdown();
 +    void update(float dtime);
++
++    // The local Luanti server supplies empty cache blocks, not gameplay terrain.
++    bool restoreProjectedBlock(Client* client, MapBlock* block);
 +
 +    // Input hooks
 +    bool handleMoveInput(int dir);

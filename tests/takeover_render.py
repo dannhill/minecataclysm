@@ -21,7 +21,7 @@ import time
 def percentile(values, fraction):
     return sorted(values)[max(0, math.ceil(len(values)*fraction)-1)] if values else None
 
-def run(ws, artifacts, probe_library):
+def run(ws, artifacts, probe_library, origin_x=0, origin_y=0):
     sys.path.insert(0, str(ws / "protocol/python"))
     import flatbuffers
     from CDDA.CWM import CwmMessage as Msg, Payload, HelloResponse as Hello
@@ -104,7 +104,7 @@ def run(ws, artifacts, probe_library):
         World.WorldSnapshotAddEntities(b,entities)
         World.WorldSnapshotAddSimulationTimeSeconds(b,43200)
         if not omit_origin:
-            origin=Coord3i.CreateCoord3i(b,0,0,-1)
+            origin=Coord3i.CreateCoord3i(b,origin_x,origin_y,-1)
             World.WorldSnapshotAddOrigin(b,origin)
         return envelope(b,Payload.Payload.WorldSnapshot,World.WorldSnapshotEnd(b),sequence)
 
@@ -169,7 +169,7 @@ def run(ws, artifacts, probe_library):
             world=directory/'world';world.mkdir()
             (world/'world.mt').write_text('gameid = cdda_voxel\nbackend = sqlite3\nplayer_backend = sqlite3\nauth_backend = sqlite3\nload_mod_cdda_nodes = true\nload_mod_cdda_entities = true\n')
             cfg=target/'client.conf'
-            cfg.write_text('name = audit\nenable_damage = false\nfullscreen = false\nscreen_w = 1024\nscreen_h = 768\nfps_max = 120\nfps_max_unfocused = 120\nvsync = false\nvideo_driver = opengl\nprofiler_print_interval = 1\nenable_update_checker = false\nscreenshot_path = '+str(target)+'\n')
+            cfg.write_text('name = audit\nenable_damage = false\nfullscreen = false\nscreen_w = 1024\nscreen_h = 768\nfps_max = 120\nfps_max_unfocused = 120\nvsync = false\nvideo_driver = opengl\nprofiler_print_interval = 1\ndebug_log_level = info\nenable_update_checker = false\nscreenshot_path = '+str(target)+'\n')
             env=os.environ.copy();env['LD_PRELOAD']=str(probe_library);env['M55_SOCKET_PATH']=str(sockpath);env['M55_FRAME_LOG']=str(target/'frames.ns')
             cmd=[str(ws/'luanti/bin/luanti'),'--go','--world',str(world),'--gameid','cdda_voxel','--config',str(cfg),'--logfile',str(target/'engine.log'),'--info']
             start=time.monotonic()
@@ -238,6 +238,7 @@ def run(ws, artifacts, probe_library):
             invalid_exercised=any(e['kind']=='missing_origin_injected' for e in events)
             resynced=any(e['kind']=='initial_snapshot' and e['time_ns']>first_gap for e in events) if first_gap else None
             outcome={'scenario':scenario,'fixture_entities':2 if scenario=='BM01' else 150,
+                     'fixture_origin':[origin_x,origin_y,-1],
                      'fixture_chunks':1 if scenario=='BM01' else 162,'authoritative_cdda':False,
                      'connected':synced is not None,'duration_seconds':time.monotonic()-start,'exit_code':proc.returncode,
                      'measured_frames':len(times),'frame_time_p50_ms':percentile(times,.5),
@@ -265,5 +266,7 @@ if __name__=='__main__':
     parser.add_argument('--workspace',type=Path,required=True)
     parser.add_argument('--artifacts',type=Path,required=True)
     parser.add_argument('--probe-library',type=Path,required=True)
+    parser.add_argument('--origin-x',type=int,default=0)
+    parser.add_argument('--origin-y',type=int,default=0)
     args=parser.parse_args()
-    sys.exit(0 if run(args.workspace.resolve(),args.artifacts.resolve(),args.probe_library.resolve()) else 1)
+    sys.exit(0 if run(args.workspace.resolve(),args.artifacts.resolve(),args.probe_library.resolve(),args.origin_x,args.origin_y) else 1)

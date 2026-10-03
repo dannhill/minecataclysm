@@ -19,9 +19,10 @@ original specification, amendments and current user scope directive in
 - A milestone is VERIFIED only with an exact source identity, environment,
   reproducible commands and substantive passing evidence. Passing a Python CWM
   client does not verify the Luanti renderer.
-- During the M5.5 takeover, production changes are limited to those strictly
-  required to run verification. Record them separately; leave functional fixes
-  for the remediation plan. Preserve failing conformance probes.
+- The M5.5 takeover is complete and FAILED. Its tag/report are historical
+  evidence. Scope subsequent functional fixes to the user's request, record
+  the new source identity and verification, and preserve remaining failing
+  conformance probes. Do not promote the whole gate from a scoped repair.
 - Run tests against reconstructed sources with isolated saves/configuration.
   Never use or delete the user's existing worlds or shared benchmark save directories.
 - Do not execute `test_worldgen.py`, `patch_*`, or `fix_file.py` as tests: they

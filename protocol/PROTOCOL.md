@@ -57,10 +57,13 @@ larger than the current 132-tile reality bubble; bounds need an explicit rule.
 
 `origin.x/y` equals the absolute submap origin times 12. Entity positions and
 chunk cells are local in X/Y; their Z value is a CDDA level. `origin.z` is
-currently the player's level minus one. Luanti adds horizontal origin to
-entities/vehicles but ignores it for terrain and tile deltas. It also subtracts
-origin.z for entities while terrain uses `level * 3`. These incompatible
-interpretations are implementation defects, not alternate valid conventions.
+currently the player's level minus one. The visibility repair uses local XY
+and absolute Z levels consistently for terrain, camera, vehicles and tile
+deltas. Origin is metadata identifying a reality-bubble rebase, not an extra
+translation applied only to entities. On a horizontal rebase visual positions
+are reset into the new local projection rather than interpolated across
+unrelated local coordinates. The incompatible pre-repair transforms remain
+documented in the frozen M5.5 audit.
 
 Presentation maps `(x,y,z)` to `(x,3z,-y)` in signed 16-bit coordinates, with
 hardcoded voxel scale and eye height. A configurable, shared transform and
@@ -97,10 +100,12 @@ must not repeat gameplay.
 
 Currently the server allocates some sequence numbers without emitting a
 message; neither side validates ordering. The client stores every incoming
-world revision without checking monotonicity and retains visual maps across
-reconnect. There is no delta batch boundary, recovery request or deduplication.
-Full snapshot ingestion does not remove absent entities/vehicles or clear old
-terrain.
+world revision without checking monotonicity. There is no delta batch boundary,
+recovery request or deduplication. Full terrain ingestion now replaces the
+terrain cache and clears absent projected blocks; native Luanti air blocks
+cannot overwrite it. Shutdown clears bridge-owned visual state. Removal of
+absent entities/vehicles within snapshots and complete reconnect recovery
+remain unimplemented.
 
 ## Framing and scheduling defects retained for remediation
 

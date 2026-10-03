@@ -5,8 +5,18 @@ The findings are documented in [the audit](docs/audits/M5.5.md), with
 [persistent evidence](docs/audits/M5.5-evidence.json) and a
 [prioritized remediation / M6 plan](docs/audits/M5.5-remediation.md).
 
+Post-audit visibility repair: `start.sh` now waits for the real CDDA process,
+uses a private configured socket, opens the CDDA presentation game directly
+and preserves failure status. The actual invoked binaries have been refreshed.
+Terrain, camera and vehicles share local XY / absolute Z coordinates; cached
+Luanti air blocks cannot erase the CDDA projection. Full terrain replaces old
+projected blocks, and bridge shutdown clears owned state. Missing origins are
+safely rejected. See [the scoped repair evidence](docs/fixes/visible-world.md).
+The original failed M5.5 gate and remaining findings are not recertified.
+
 The frozen claimed-M5 baseline is `1c37927`, tagged
-`pre-takeover-m5-claimed`. Work is on `audit/m5-conformance`. Only two production
+`pre-takeover-m5-claimed`. The audit is on `audit/m5-conformance`; the scoped
+visibility repair is on `fix/visible-world-startup`. During the audit only two production
 changes were made to enable verification: trap-registry/map initialization
 (`53ec1d4`) and the native `main` declaration (`6f0d415`). Complete fork patches,
 upstream pins and source identities are in `baseline/manifest.json`.
