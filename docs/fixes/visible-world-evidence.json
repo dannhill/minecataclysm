@@ -350,6 +350,23 @@
       "status": "PASS",
       "log": "actual_startup_visibility_final.log",
       "log_sha256": "c32c215bc5da71991ed6ad9b7692a328bae1db461cd5e57ed3be5b4b29cad77f"
+    },
+    {
+      "name": "repair_source_reconstruction",
+      "command": [
+        "/usr/bin/python3",
+        "/home/dannhill/Projects/cdda-mineclonia/tools/takeover_baseline.py",
+        "reconstruct",
+        "--destination",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/visibility-fix/reconstruction/workspace"
+      ],
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia",
+      "exit_code": 0,
+      "timeout": false,
+      "seconds": 10.12,
+      "status": "PASS",
+      "log": "repair_source_reconstruction.log",
+      "log_sha256": "e23be4e75cb9c267a6c899c6e0b49b73cd78cd67428bbfdabead854e53b32f63"
     }
   ],
   "superseded_attempts": {
@@ -389,8 +406,8 @@
       "bytes": 985
     },
     "commands.json": {
-      "sha256": "b1b41f9c155aaab443f08623592642d437ea135f1b2d29d8b7cf9a1e4668bcdd",
-      "bytes": 3879
+      "sha256": "7ad2c89426c83e8f46eeeed5b5753d5eb28326168459cfb9d5fc012d798afbcc",
+      "bytes": 4472
     },
     "distant_origin_visibility.log": {
       "sha256": "49976328c48418e7591a5a46a3e4decf2283d4c0e0331270a3579964935a6934",
@@ -587,6 +604,31 @@
     "startup-final/failure-launch.log": {
       "sha256": "2b9f816e36e8adfad94dc622acf5be768d4a9c098fd7c414dbd4f7429fe4d9e4",
       "bytes": 169
+    },
+    "repair_source_reconstruction.log": {
+      "sha256": "e23be4e75cb9c267a6c899c6e0b49b73cd78cd67428bbfdabead854e53b32f63",
+      "bytes": 572
+    },
+    "reconstruction/reconstruction.json": {
+      "sha256": "84895ff39261e29fe52e27b6345b708dee70a83c3b62077392acc2208145d774",
+      "bytes": 458
+    }
+  },
+  "source_reconstruction": {
+    "cdda": {
+      "tree_sha256": "955759c5ce92e7d2a18aadc57e39a9934ded38c3494f84990ba3bc4b6242a864",
+      "file_count": 8577,
+      "status": "PASS"
+    },
+    "luanti": {
+      "tree_sha256": "6796dc0476179709fc183c0aac8867b722ba8d5b0106fd65c4d688d1e0efbaf3",
+      "file_count": 2251,
+      "status": "PASS"
+    },
+    "mineclonia": {
+      "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36",
+      "file_count": 9359,
+      "status": "PASS"
     }
   }
 }
