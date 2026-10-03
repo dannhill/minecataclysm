@@ -6,9 +6,9 @@
       "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
       "shallow": true,
       "patch": "baseline/patches/cdda.patch",
-      "patch_sha256": "cb7b77e6f2bbbb643f62b1a6cb3cfadccefbc188723f8caf0809a3a84bcb2146",
+      "patch_sha256": "88c7ba2966f9377dab52a908b0405d86716366392448c8e5184bc770623d6138",
       "tree_inventory": "baseline/trees/cdda.json",
-      "tree_sha256": "f5363ca87c9f51ec448df66af110fc7ccf5a6b3c391f124a45d3fb4b3d118a7f",
+      "tree_sha256": "955759c5ce92e7d2a18aadc57e39a9934ded38c3494f84990ba3bc4b6242a864",
       "file_count": 8577,
       "original_status": " M src/CMakeLists.txt\n M src/game.h\n?? src/cwm/cwm_main.cpp\n?? src/cwm/cwm_map_exporter.cpp\n?? src/cwm/cwm_map_exporter.h\n?? src/cwm/cwm_server.cpp\n?? src/cwm/cwm_server.h\n?? src/cwm/cwm_types.h\n"
     },

@@ -30,20 +30,20 @@ index 6d5d148..4181ad1 100644
  
  if (MINGW AND NOT RELEASE)
 diff --git a/src/game.h b/src/game.h
-index c25584e..5384627 100644
+index c25584e..fdb835f 100644
 --- a/src/game.h
 +++ b/src/game.h
 @@ -146,6 +146,7 @@ class game
          friend class editmap;
          friend class advanced_inventory;
          friend class main_menu;
-+        friend int main( int argc, char *argv[] );
++        friend int main( int argc, const char *argv[] );
          friend class exosuit_interact;
          friend achievements_tracker &get_achievements();
          friend event_bus &get_event_bus();
 diff --git a/src/cwm/cwm_main.cpp b/src/cwm/cwm_main.cpp
 new file mode 100644
-index 0000000..bf631fa
+index 0000000..de62231
 --- /dev/null
 +++ b/src/cwm/cwm_main.cpp
 @@ -0,0 +1,221 @@
@@ -91,7 +91,7 @@ index 0000000..bf631fa
 +
 +static const mod_id MOD_DDA("dda");
 +
-+int main(int argc, char* argv[]) {
++int main(int argc, const char* argv[]) {
 +    std::string socket_path = "/tmp/cdda_cwm.sock";
 +    std::string world_name = "cwm_world";
 +    std::string user_dir = "./user";

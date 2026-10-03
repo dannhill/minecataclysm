@@ -37322,7 +37322,7 @@
   {
     "path": "src/cwm/cwm_main.cpp",
     "mode": "100644",
-    "sha256": "215798e1640fe53dd55ba0dfa34a56b221dd474ad6740a149a4b8f255da50192"
+    "sha256": "fda69c9660c432771db88e9d3fd7cac216d4a8a97dd9e674dbd1af4fe78e78c3"
   },
   {
     "path": "src/cwm/cwm_map_exporter.cpp",
@@ -37802,7 +37802,7 @@
   {
     "path": "src/game.h",
     "mode": "100644",
-    "sha256": "c496448d2844399b33e6ffba67f8e08e105694d775096b5362a04b69553fa0cf"
+    "sha256": "fb0344ab869016725bc4f37bee1e991ca822253323c92c968bb78cdf0f015973"
   },
   {
     "path": "src/game_constants.h",
