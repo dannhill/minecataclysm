@@ -7232,12 +7232,12 @@
   {
     "path": "src/cdda/cdda_bridge.cpp",
     "mode": "100644",
-    "sha256": "ee6c230a5a509f3e39c2dde0ac576606ca211216544e71bbd6623edfc0e65e0a"
+    "sha256": "386c21e9d6e84039acf3fdd3f1361dc583e26903897fbc6c6f5ae2c3c60192b3"
   },
   {
     "path": "src/cdda/cdda_bridge.h",
     "mode": "100644",
-    "sha256": "e1b94e66f6a5f5678008709e71f37469efed7f1ef228084591170d3f2dc38372"
+    "sha256": "49c479d8fc717c126d3a52ce0b82da2250ba1b0156905e9e48fc03aa92144d55"
   },
   {
     "path": "src/chat.cpp",
@@ -7287,7 +7287,7 @@
   {
     "path": "src/client/client.cpp",
     "mode": "100644",
-    "sha256": "1274c96927f63ae690e17a9a43ec96e1c789dc1b21a88b7189b9c8bc8005b4ea"
+    "sha256": "57e0abc566d7bbb1ad67021be4a53c54d3df2708f8ddf9d05b20c7c60ffd19fa"
   },
   {
     "path": "src/client/client.h",
@@ -7297,7 +7297,7 @@
   {
     "path": "src/client/clientenvironment.cpp",
     "mode": "100644",
-    "sha256": "37558f46a65e5ae408daced775d61a0c097ad872e880832aa0eccb978b821dc2"
+    "sha256": "f0cf73f4db1f34b51d053bf04b381fc62ef779c19b4b8aa3bc43179665f46cbf"
   },
   {
     "path": "src/client/clientenvironment.h",
@@ -7422,7 +7422,7 @@
   {
     "path": "src/client/game.cpp",
     "mode": "100644",
-    "sha256": "413912ec7130589dac45d4b31b80399ca792f523cb363dad72cd407f6ea5b65a"
+    "sha256": "35e05ba2361a8b5962dc7d38bbc3d7a76bfea65d2d4f3b088a26f8bd9702cdd1"
   },
   {
     "path": "src/client/game.h",
@@ -7547,12 +7547,12 @@
   {
     "path": "src/client/mesh_generator_thread.cpp",
     "mode": "100644",
-    "sha256": "97ea399440e7499568fd0cae18066c547ebaefc069d2a1596d2d8bc8f4bccc16"
+    "sha256": "4a546867a30daa5122ab876f358462daacaa26ef0dc12e1535e181d6f53191df"
   },
   {
     "path": "src/client/mesh_generator_thread.h",
     "mode": "100644",
-    "sha256": "2526344ceac1194ba12cfa9d673f909318683cdc270821f84b147d53b2ef8054"
+    "sha256": "3a6f6cc6c3a44e27ac692b4007312a940aa5b2228a34aa3dbce26e2f2de086a0"
   },
   {
     "path": "src/client/meshgen/collector.cpp",
@@ -8952,7 +8952,7 @@
   {
     "path": "src/network/clientpackethandler.cpp",
     "mode": "100644",
-    "sha256": "3976380235f7eec153f93d63b42c298a45695c2088f83c4c0092e48501d9369d"
+    "sha256": "1cfd4f0e94182c1174986a2870d4036d935b5f6a94be272d0e82c17e3067cb83"
   },
   {
     "path": "src/network/connection.cpp",
@@ -10282,7 +10282,7 @@
   {
     "path": "src/unittest/test_mapblock.cpp",
     "mode": "100644",
-    "sha256": "fcf9cd5a379700e1391f6b8558147e85660f84df466179a1d9a2023fac203031"
+    "sha256": "3d7aa139b6763ba8421d56d2c2f12aab115120da77685af5e49b4eca03108cda"
   },
   {
     "path": "src/unittest/test_mapnode.cpp",

@@ -1522,7 +1522,8 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_CHUNKS = 10,
     VT_ENTITIES = 12,
     VT_VEHICLES = 14,
-    VT_FIELDS = 16
+    VT_FIELDS = 16,
+    VT_TILES = 18
   };
   uint64_t world_revision() const {
     return GetField<uint64_t>(VT_WORLD_REVISION, 0);
@@ -1566,6 +1567,12 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::FieldState>> *mutable_fields() {
     return GetPointer<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::FieldState>> *>(VT_FIELDS);
   }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::TileDelta>> *tiles() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::TileDelta>> *>(VT_TILES);
+  }
+  ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::TileDelta>> *mutable_tiles() {
+    return GetPointer<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::TileDelta>> *>(VT_TILES);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint64_t>(verifier, VT_WORLD_REVISION, 8) &&
@@ -1583,6 +1590,9 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_FIELDS) &&
            verifier.VerifyVector(fields()) &&
            verifier.VerifyVectorOfTables(fields()) &&
+           VerifyOffset(verifier, VT_TILES) &&
+           verifier.VerifyVector(tiles()) &&
+           verifier.VerifyVectorOfTables(tiles()) &&
            verifier.EndTable();
   }
 };
@@ -1612,6 +1622,9 @@ struct WorldSnapshotBuilder {
   void add_fields(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::FieldState>>> fields) {
     fbb_.AddOffset(WorldSnapshot::VT_FIELDS, fields);
   }
+  void add_tiles(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::TileDelta>>> tiles) {
+    fbb_.AddOffset(WorldSnapshot::VT_TILES, tiles);
+  }
   explicit WorldSnapshotBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -1631,10 +1644,12 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshot(
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::ChunkSnapshot>>> chunks = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::EntityState>>> entities = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::VehicleState>>> vehicles = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::FieldState>>> fields = 0) {
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::FieldState>>> fields = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::TileDelta>>> tiles = 0) {
   WorldSnapshotBuilder builder_(_fbb);
   builder_.add_simulation_time_seconds(simulation_time_seconds);
   builder_.add_world_revision(world_revision);
+  builder_.add_tiles(tiles);
   builder_.add_fields(fields);
   builder_.add_vehicles(vehicles);
   builder_.add_entities(entities);
@@ -1651,11 +1666,13 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshotDirect(
     const std::vector<::flatbuffers::Offset<CDDA::CWM::ChunkSnapshot>> *chunks = nullptr,
     const std::vector<::flatbuffers::Offset<CDDA::CWM::EntityState>> *entities = nullptr,
     const std::vector<::flatbuffers::Offset<CDDA::CWM::VehicleState>> *vehicles = nullptr,
-    const std::vector<::flatbuffers::Offset<CDDA::CWM::FieldState>> *fields = nullptr) {
+    const std::vector<::flatbuffers::Offset<CDDA::CWM::FieldState>> *fields = nullptr,
+    const std::vector<::flatbuffers::Offset<CDDA::CWM::TileDelta>> *tiles = nullptr) {
   auto chunks__ = chunks ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::ChunkSnapshot>>(*chunks) : 0;
   auto entities__ = entities ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::EntityState>>(*entities) : 0;
   auto vehicles__ = vehicles ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::VehicleState>>(*vehicles) : 0;
   auto fields__ = fields ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::FieldState>>(*fields) : 0;
+  auto tiles__ = tiles ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::TileDelta>>(*tiles) : 0;
   return CDDA::CWM::CreateWorldSnapshot(
       _fbb,
       world_revision,
@@ -1664,7 +1681,8 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshotDirect(
       chunks__,
       entities__,
       vehicles__,
-      fields__);
+      fields__,
+      tiles__);
 }
 
 struct MoveRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {

@@ -14,6 +14,11 @@ projected blocks, and bridge shutdown clears owned state. Missing origins are
 safely rejected. See [the scoped repair evidence](docs/fixes/visible-world.md).
 The original failed M5.5 gate and remaining findings are not recertified.
 
+Post-audit structural/movement repair: semantic CDDA terrain/furniture export,
+batched end-of-action tile changes, consistent window/door geometry, exclusive
+CWM player positioning and frame-independent bounded movement input. See
+[the scoped repair](docs/fixes/projection-and-movement.md) for evidence and limits.
+
 The frozen claimed-M5 baseline is `1c37927`, tagged
 `pre-takeover-m5-claimed`. The audit is on `audit/m5-conformance`; the scoped
 visibility repair is on `fix/visible-world-startup`. During the audit only two production

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Verify launch failure handling and run actual CDDA/Luanti with isolated worlds."""
 import argparse
+import csv
 import json
 import os
 from pathlib import Path
@@ -14,6 +15,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--workspace", type=Path, required=True)
     parser.add_argument("--artifacts", type=Path, required=True)
+    parser.add_argument("--movement", action="store_true")
     args = parser.parse_args()
     ws, out = args.workspace.resolve(), args.artifacts.resolve()
     out.mkdir(parents=True, exist_ok=True)
@@ -37,7 +39,8 @@ def main():
 
         config = scratch/"client.conf"
         config.write_text("fullscreen = false\nscreen_w = 1024\nscreen_h = 768\n"
-                          "enable_damage = false\ndebug_log_level = info\nenable_update_checker = false\n")
+                          "enable_damage = false\ndebug_log_level = info\nenable_update_checker = false\n"
+                          + (f"cwm_trace_file = {out/'camera.csv'}\nfps_max = 60\n" if args.movement else ""))
         logs = out/"actual"
         env = os.environ.copy()
         env.update(CDDA_BIN=str(ws/"cdda/build/src/cdda-server"), LUANTI_BIN=str(ws/"luanti/bin/luanti"),
@@ -74,12 +77,31 @@ def main():
                     subprocess.run(["import", "-window", window, str(out/"actual-scene.png")], check=True, timeout=15)
                     time.sleep(7)
                     subprocess.run(["import", "-window", window, str(out/"actual-scene-later.png")], check=True, timeout=15)
+                    if args.movement:
+                        subprocess.run(["xdotool", "keydown", "--window", window, "w"], check=True)
+                        time.sleep(3.2)
+                        subprocess.run(["xdotool", "keyup", "--window", window, "w"], check=True)
+                        time.sleep(1)
+                        stable_start = time.monotonic()
+                        time.sleep(.7)
+                        rows = list(csv.DictReader((out/"camera.csv").open()))
+                        pending = {row["pending_move"] for row in rows} - {"0"}
+                        checks.append({"name": "actual_movement_commands_completed", "pass": len(pending) >= 10,
+                                       "distinct_commands": len(pending)})
+                        stable = [row for row in rows if float(row["time_ns"])/1e9 > stable_start]
+                        spans = [max(float(row[axis]) for row in stable)-min(float(row[axis]) for row in stable)
+                                 for axis in ["camera_x", "camera_y", "camera_z"]] if stable else [float("inf")]
+                        checks.append({"name": "actual_camera_settles_without_jitter", "pass": max(spans) < .005,
+                                       "position_spans": spans})
+                        subprocess.run(["import", "-window", window, str(out/"actual-after-movement.png")], check=True, timeout=15)
                 engine_text = (logs/"luanti-engine.log").read_text() if (logs/"luanti-engine.log").exists() else ""
                 restored = engine_text.count("Retained projection after cache block update")
                 checks.append({"name": "actual_native_cache_updates", "pass": restored > 0,
                                "restored_blocks": restored})
                 checks.append({"name": "actual_runtime_survives", "pass": proc.poll() is None})
             finally:
+                if window:
+                    subprocess.run(["xdotool", "keyup", "--window", window, "w"], capture_output=True)
                 if proc.poll() is None:
                     proc.terminate()
                     try: proc.wait(timeout=30)

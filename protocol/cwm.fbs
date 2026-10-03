@@ -144,6 +144,8 @@ table WorldSnapshot {
     entities: [EntityState];
     vehicles: [VehicleState];
     fields: [FieldState];
+    // End-of-action terrain/furniture changes, applied before entity positions.
+    tiles: [TileDelta];
 }
 
 table MoveRequest {

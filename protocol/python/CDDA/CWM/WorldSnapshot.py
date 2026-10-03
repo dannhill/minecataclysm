@@ -149,8 +149,33 @@ class WorldSnapshot(object):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(16))
         return o == 0
 
+    # WorldSnapshot
+    def Tiles(self, j):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(18))
+        if o != 0:
+            x = self._tab.Vector(o)
+            x += flatbuffers.number_types.UOffsetTFlags.py_type(j) * 4
+            x = self._tab.Indirect(x)
+            from CDDA.CWM.TileDelta import TileDelta
+            obj = TileDelta()
+            obj.Init(self._tab.Bytes, x)
+            return obj
+        return None
+
+    # WorldSnapshot
+    def TilesLength(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(18))
+        if o != 0:
+            return self._tab.VectorLen(o)
+        return 0
+
+    # WorldSnapshot
+    def TilesIsNone(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(18))
+        return o == 0
+
 def WorldSnapshotStart(builder):
-    builder.StartObject(7)
+    builder.StartObject(8)
 
 def Start(builder):
     WorldSnapshotStart(builder)
@@ -220,6 +245,18 @@ def WorldSnapshotStartFieldsVector(builder, numElems):
 
 def StartFieldsVector(builder, numElems):
     return WorldSnapshotStartFieldsVector(builder, numElems)
+
+def WorldSnapshotAddTiles(builder, tiles):
+    builder.PrependUOffsetTRelativeSlot(7, flatbuffers.number_types.UOffsetTFlags.py_type(tiles), 0)
+
+def AddTiles(builder, tiles):
+    WorldSnapshotAddTiles(builder, tiles)
+
+def WorldSnapshotStartTilesVector(builder, numElems):
+    return builder.StartVector(4, numElems, 4)
+
+def StartTilesVector(builder, numElems):
+    return WorldSnapshotStartTilesVector(builder, numElems)
 
 def WorldSnapshotEnd(builder):
     return builder.EndObject()

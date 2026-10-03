@@ -41,6 +41,24 @@ index c25584e..fdb835f 100644
          friend class exosuit_interact;
          friend achievements_tracker &get_achievements();
          friend event_bus &get_event_bus();
+diff --git a/tests/CMakeLists.txt b/tests/CMakeLists.txt
+index bfe0773..f28a50f 100644
+--- a/tests/CMakeLists.txt
++++ b/tests/CMakeLists.txt
+@@ -44,6 +44,13 @@ if (BUILD_TESTING)
+ 
+     if (CURSES)
+         add_executable(cata_test ${CATACLYSM_DDA_TEST_SOURCES})
++        target_sources(cata_test PRIVATE ${CMAKE_SOURCE_DIR}/src/cwm/cwm_map_exporter.cpp)
++        find_path(CWM_FLATBUFFERS_INCLUDE_DIR flatbuffers/flatbuffers.h
++            HINTS "$ENV{HOME}/.local/include" REQUIRED)
++        set_source_files_properties(
++            ${CMAKE_SOURCE_DIR}/tests/cwm_projection_test.cpp
++            ${CMAKE_SOURCE_DIR}/src/cwm/cwm_map_exporter.cpp
++            PROPERTIES INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/../protocol/include;${CWM_FLATBUFFERS_INCLUDE_DIR}")
+         if (LOCALIZE)
+             add_dependencies(cata_test test_mo)
+         endif()
 diff --git a/src/cwm/cwm_main.cpp b/src/cwm/cwm_main.cpp
 new file mode 100644
 index 0000000..de62231
@@ -270,15 +288,16 @@ index 0000000..de62231
 +}
 diff --git a/src/cwm/cwm_map_exporter.cpp b/src/cwm/cwm_map_exporter.cpp
 new file mode 100644
-index 0000000..951fcf8
+index 0000000..75e5283
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.cpp
-@@ -0,0 +1,293 @@
+@@ -0,0 +1,324 @@
 +// CDDA CWM Map & Entity Exporter Implementation
 +// Licensed under Apache-2.0
 +
 +#include "cwm_map_exporter.h"
-+#include "cwm_types.h"
++#include "cwm/tile_semantics.hpp"
++#include "mapdata.h"
 +#include "cwm/cwm_protocol.hpp"
 +
 +#include "avatar.h"
@@ -293,13 +312,62 @@ index 0000000..951fcf8
 +
 +namespace cwm {
 +
++CDDA::CWM::CwmBlock CwmMapExporter::export_block(const tripoint& p, map& m, uint8_t light) {
++    using namespace cdda::cwm;
++    if (!m.inbounds(p)) return CDDA::CWM::CwmBlock(0, AIR, light, 0);
++    const ter_t& t = m.ter(p).obj();
++    const furn_t& f = m.furn(p).obj();
++    const bool blocked = m.impassable_ter_furn(p);
++    uint32_t flags = 0;
++    if (blocked) flags |= BLOCKS_MOVEMENT;
++    uint16_t material = DIRT;
++    const std::string& id = t.id.str();
++    const bool door = t.has_flag(ter_furn_flag::TFLAG_DOOR) ||
++        (!t.close.is_null() && t.close.obj().has_flag(ter_furn_flag::TFLAG_DOOR));
++    if (id == "t_null" || t.has_flag(ter_furn_flag::TFLAG_NO_FLOOR)) material = AIR;
++    else if (t.has_flag(ter_furn_flag::TFLAG_WINDOW)) {
++        material = t.movecost > 0 ? WINDOW_OPEN :
++                   t.has_flag(ter_furn_flag::TFLAG_TRANSPARENT) ? WINDOW : WINDOW_BOARDED;
++    } else if (door) {
++        flags |= DOOR;
++        material = t.has_flag(ter_furn_flag::TFLAG_DOOR) ? DOOR_CLOSED : DOOR_OPEN;
++    } else if (t.has_flag(ter_furn_flag::TFLAG_WALL)) {
++        material = t.movecost > 0 ? LOW_OBSTACLE :
++                   t.has_flag(ter_furn_flag::TFLAG_TRANSPARENT) ? GLASS_WALL : WALL;
++    } else if (t.has_flag(ter_furn_flag::TFLAG_SWIMMABLE)) material = WATER;
++    else if (t.movecost == 0) material = OBSTACLE;
++    else if (id.find("grass") != std::string::npos) material = GRASS;
++    else if (id.find("pavement") != std::string::npos || id == "t_sidewalk" ||
++             id.find("asphalt") != std::string::npos) material = PAVEMENT;
++    else if (t.has_flag(ter_furn_flag::TFLAG_INDOORS) || id.find("floor") != std::string::npos ||
++             id.find("stairs") != std::string::npos || id.find("roof") != std::string::npos)
++        material = FLOOR;
++    if (!f.id.is_null()) {
++        flags |= FURNITURE;
++        if (blocked && !f.has_flag(ter_furn_flag::TFLAG_SHORT)) flags |= TALL_FURNITURE;
++    }
++    uint8_t orientation = 0;
++    if (door || t.has_flag(ter_furn_flag::TFLAG_WINDOW)) {
++        const auto connects = [&m](const tripoint& neighbor) {
++            if (!m.inbounds(neighbor)) return false;
++            const auto& terrain = m.ter(neighbor).obj();
++            return terrain.has_flag(ter_furn_flag::TFLAG_WALL) || terrain.has_flag(ter_furn_flag::TFLAG_CONNECT_WITH_WALL);
++        };
++        const int east_west = connects(p + tripoint_east) + connects(p + tripoint_west);
++        const int north_south = connects(p + tripoint_north) + connects(p + tripoint_south);
++        orientation = north_south > east_west ? 1 : 0;
++    }
++    return CDDA::CWM::CwmBlock(flags, material, light, orientation);
++}
++
 +std::vector<uint8_t> CwmMapExporter::export_world_snapshot(
 +    uint64_t sequence_num,
 +    uint64_t world_rev,
 +    const avatar& u,
 +    map& m,
 +    game& g,
-+    bool include_chunks
++    bool include_chunks,
++    ProjectionCache* cache
 +) {
 +    cdda::cwm::MessageBuilder builder(sequence_num, world_rev);
 +    auto& fbb = builder.builder();
@@ -318,68 +386,51 @@ index 0000000..951fcf8
 +    int z_min = u_pos.z - 1;
 +    int z_max = u_pos.z + 1;
 +
-+    if (include_chunks) {
-+        for (int z_level = z_min; z_level <= z_max; ++z_level) {
-+
++    // Cache the complete semantic projection. Changes from auto-opening doors,
++    // furniture and monster actions share the same end-of-action export path.
++    const tripoint cache_origin(sub.x, sub.y, u_pos.z);
++    constexpr size_t tile_count = 3 * 9 * 9 * 16 * 16;
++    if (cache && (cache->origin != cache_origin || cache->tiles.size() != tile_count))
++        include_chunks = true;
++    if (cache && include_chunks) {
++        cache->origin = cache_origin;
++        cache->tiles.assign(tile_count, 0);
++    }
++    std::vector<flatbuffers::Offset<CDDA::CWM::TileDelta>> tile_offsets;
++    size_t cache_index = 0;
++    for (int z_level = z_min; z_level <= z_max; ++z_level) {
 +        float nat_light = g.natural_light_level(z_level);
 +        uint8_t ambient_light = static_cast<uint8_t>(std::clamp(static_cast<int>(nat_light / 6.0f), 1, 15));
-+
 +        for (int cy = 0; cy < 9; ++cy) {
 +            for (int cx = 0; cx < 9; ++cx) {
 +                std::vector<CDDA::CWM::CwmBlock> blocks;
-+                blocks.reserve(16 * 16);
-+
++                if (include_chunks) blocks.reserve(256);
 +                for (int by = 0; by < 16; ++by) {
-+                    for (int bx = 0; bx < 16; ++bx) {
-+                        int gx = cx * 16 + bx;
-+                        int gy = cy * 16 + by;
-+
-+                        tripoint p(gx, gy, z_level);
-+                        ter_id t = m.ter(p);
-+                        furn_id f = m.furn(p);
-+
-+                        uint16_t mat_id = map_cdda_terrain_to_material(t.id().str());
-+                        if (f.id().str() != "f_null") {
-+                            // If furniture is present, prioritize furniture visual
-+                            if (f.id().str().find("chair") != std::string::npos ||
-+                                f.id().str().find("table") != std::string::npos ||
-+                                f.id().str().find("bed") != std::string::npos) {
-+                                mat_id = MAT_FURNITURE_WOOD;
-+                            }
++                    for (int bx = 0; bx < 16; ++bx, ++cache_index) {
++                        const tripoint p(cx * 16 + bx, cy * 16 + by, z_level);
++                        const auto block = export_block(p, m, ambient_light);
++                        const uint64_t packed = block.state_flags() |
++                            (static_cast<uint64_t>(block.material_id()) << 32) |
++                            (static_cast<uint64_t>(block.light_level()) << 48) |
++                            (static_cast<uint64_t>(block.orientation()) << 56);
++                        if (include_chunks) blocks.push_back(block);
++                        else if (cache && cache->tiles[cache_index] != packed) {
++                            const CDDA::CWM::Coord3i coord(p.x, p.y, p.z);
++                            tile_offsets.push_back(CDDA::CWM::CreateTileDelta(fbb, &coord, &block));
 +                        }
-+
-+                        uint8_t light = ambient_light;
-+                        if (m.has_field_at(p)) {
-+                            light = 15; // Illuminated by field (e.g. fire)
-+                        }
-+
-+                        uint32_t state_flags = 0;
-+                        if (t.id().str().find("door") != std::string::npos) {
-+                            state_flags |= 0x1;
-+                        }
-+
-+                        blocks.emplace_back(state_flags, mat_id, light, 0);
++                        if (cache) cache->tiles[cache_index] = packed;
 +                    }
 +                }
-+
-+                auto blocks_vec = fbb.CreateVectorOfStructs(blocks);
-+
-+                auto chunk_snap = CDDA::CWM::CreateChunkSnapshot(
-+                    fbb,
-+                    cx, cy, z_level,
-+                    16, 16, 1,
-+                    blocks_vec
-+                );
-+
-+                chunk_offsets.push_back(chunk_snap);
++                if (include_chunks) {
++                    const auto vector = fbb.CreateVectorOfStructs(blocks);
++                    chunk_offsets.push_back(CDDA::CWM::CreateChunkSnapshot(
++                        fbb, cx, cy, z_level, 16, 16, 1, vector));
++                }
 +            }
 +        }
 +    }
-+
-+    }
-+
 +    auto chunks_vec = include_chunks ? fbb.CreateVector(chunk_offsets) : 0;
-+
++    const auto tiles_vec = fbb.CreateVector(tile_offsets);
 +
 +    // 3. Entities (Player + Monsters)
 +    std::vector<flatbuffers::Offset<CDDA::CWM::EntityState>> entity_offsets;
@@ -515,7 +566,8 @@ index 0000000..951fcf8
 +        chunks_vec,
 +        entities_vec,
 +        vehicles_vec,
-+        fields_vec
++        fields_vec,
++        tiles_vec
 +    );
 +
 +    return builder.finish_message(CDDA::CWM::Payload::WorldSnapshot, world_snap.Union());
@@ -529,12 +581,9 @@ index 0000000..951fcf8
 +) {
 +    cdda::cwm::MessageBuilder builder(sequence_num, world_rev);
 +
-+    ter_id t = m.ter(p);
-+    uint16_t mat_id = map_cdda_terrain_to_material(t.id().str());
-+    uint32_t state = 0;
-+    if (t.id().str().find("door") != std::string::npos) state |= 0x1;
-+
-+    return builder.build_tile_delta(p.x, p.y, p.z, mat_id, state, 15, 0);
++    const auto block = export_block(p, m, 15);
++    return builder.build_tile_delta(p.x, p.y, p.z, block.material_id(),
++                                    block.state_flags(), block.light_level(), block.orientation());
 +}
 +
 +std::vector<uint8_t> CwmMapExporter::export_entity_delta(
@@ -569,10 +618,10 @@ index 0000000..951fcf8
 +} // namespace cwm
 diff --git a/src/cwm/cwm_map_exporter.h b/src/cwm/cwm_map_exporter.h
 new file mode 100644
-index 0000000..849b169
+index 0000000..b146915
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.h
-@@ -0,0 +1,44 @@
+@@ -0,0 +1,51 @@
 +// CDDA CWM Map & Entity Exporter
 +// Licensed under Apache-2.0
 +#pragma once
@@ -581,6 +630,7 @@ index 0000000..849b169
 +#include <cstdint>
 +#include <memory>
 +#include "point.h"
++#include "cwm/cwm_generated.h"
 +
 +class map;
 +class avatar;
@@ -590,13 +640,19 @@ index 0000000..849b169
 +
 +class CwmMapExporter {
 +public:
++    struct ProjectionCache {
++        tripoint origin;
++        std::vector<uint64_t> tiles;
++    };
++    static CDDA::CWM::CwmBlock export_block(const tripoint& p, map& m, uint8_t light);
 +    static std::vector<uint8_t> export_world_snapshot(
 +        uint64_t sequence_num,
 +        uint64_t world_rev,
 +        const avatar& u,
 +        map& m,
 +        game& g,
-+        bool include_chunks = true
++        bool include_chunks = true,
++        ProjectionCache* cache = nullptr
 +    );
 +
 +    static std::vector<uint8_t> export_tile_delta(
@@ -619,10 +675,10 @@ index 0000000..849b169
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..f54031f
+index 0000000..ab382d1
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,245 @@
+@@ -0,0 +1,240 @@
 +// CDDA CWM IPC Server Implementation
 +// Licensed under Apache-2.0
 +
@@ -698,7 +754,7 @@ index 0000000..f54031f
 +
 +    // If client is connected and hasn't received snapshot yet, send it
 +    if (!snapshot_sent_) {
-+        auto snap = CwmMapExporter::export_world_snapshot(sequence_counter_++, world_revision_, u, m, g, true);
++        auto snap = CwmMapExporter::export_world_snapshot(sequence_counter_++, world_revision_, u, m, g, true, &projection_cache_);
 +        server_->client()->send_message(snap.data(), snap.size());
 +        snapshot_sent_ = true;
 +        DebugLog(D_INFO, DC_ALL) << "[CWM] Initial WorldSnapshot sent to client (revision: " << world_revision_ << ")";
@@ -740,7 +796,7 @@ index 0000000..f54031f
 +            }
 +
 +            // Push fresh snapshot on handshake
-+            auto snap = CwmMapExporter::export_world_snapshot(sequence_counter_++, world_revision_, u, m, g, true);
++            auto snap = CwmMapExporter::export_world_snapshot(sequence_counter_++, world_revision_, u, m, g, true, &projection_cache_);
 +            server_->client()->send_message(snap.data(), snap.size());
 +            snapshot_sent_ = true;
 +            break;
@@ -812,15 +868,10 @@ index 0000000..f54031f
 +                world_revision_++;
 +            }
 +
-+            // Send updated snapshot reflecting movements
-+            // CDDA shifts the reality bubble when the player nears its edge; local
-+            // coordinates then jump by whole submaps. Resend terrain in that case.
-+            const tripoint sub = m.get_abs_sub().raw();
-+            const bool bubble_shifted = !last_sub_valid_ || sub.x != last_sub_x_ ||
-+                                        sub.y != last_sub_y_ || sub.z != last_sub_z_;
-+            last_sub_x_ = sub.x; last_sub_y_ = sub.y; last_sub_z_ = sub.z;
-+            last_sub_valid_ = true;
-+            auto snap = CwmMapExporter::export_world_snapshot(sequence_counter_++, world_revision_, u, m, g, bubble_shifted);
++            // Send authoritative tile changes and positions together, after simulation.
++            // The exporter detects rebases and replaces terrain only when needed.
++            auto snap = CwmMapExporter::export_world_snapshot(sequence_counter_++, world_revision_,
++                        u, m, g, false, &projection_cache_);
 +            server_->client()->send_message(snap.data(), snap.size());
 +            break;
 +        }
@@ -851,7 +902,7 @@ index 0000000..f54031f
 +
 +            if (success) {
 +                if (req->action() == CDDA::CWM::InteractAction::USE) {
-+                    auto snap = CwmMapExporter::export_world_snapshot(sequence_counter_++, world_revision_, u, m, g, true);
++                    auto snap = CwmMapExporter::export_world_snapshot(sequence_counter_++, world_revision_, u, m, g, true, &projection_cache_);
 +                    server_->client()->send_message(snap.data(), snap.size());
 +                } else {
 +                    auto tile_delta = CwmMapExporter::export_tile_delta(sequence_counter_++, world_revision_, target, m);
@@ -870,10 +921,10 @@ index 0000000..f54031f
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.h b/src/cwm/cwm_server.h
 new file mode 100644
-index 0000000..b48cb6f
+index 0000000..35a7d07
 --- /dev/null
 +++ b/src/cwm/cwm_server.h
-@@ -0,0 +1,49 @@
+@@ -0,0 +1,51 @@
 +// CDDA CWM IPC Server
 +// Licensed under Apache-2.0
 +#pragma once
@@ -881,6 +932,7 @@ index 0000000..b48cb6f
 +#include <string>
 +#include <memory>
 +#include <cstdint>
++#include "cwm_map_exporter.h"
 +
 +class avatar;
 +class map;
@@ -914,6 +966,7 @@ index 0000000..b48cb6f
 +    uint64_t sequence_counter_{1};
 +    uint64_t world_revision_{1};
 +    bool snapshot_sent_{false};
++    CwmMapExporter::ProjectionCache projection_cache_;
 +    // Reality-bubble origin (absolute submap) last sent to the client.
 +    // When CDDA shifts the bubble, local coordinates change and terrain must be resent.
 +    int last_sub_x_{0}, last_sub_y_{0}, last_sub_z_{0};
@@ -923,80 +976,124 @@ index 0000000..b48cb6f
 +};
 +
 +} // namespace cwm
-diff --git a/src/cwm/cwm_types.h b/src/cwm/cwm_types.h
+diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644
-index 0000000..96c0065
+index 0000000..ae4a2a3
 --- /dev/null
-+++ b/src/cwm/cwm_types.h
-@@ -0,0 +1,71 @@
-+// CDDA CWM Types & Manifest Mapping
-+// Licensed under Apache-2.0
-+#pragma once
++++ b/tests/cwm_projection_test.cpp
+@@ -0,0 +1,115 @@
++#include "cata_catch.h"
++#include "avatar.h"
++#include "avatar_action.h"
++#include "game.h"
++#include "map.h"
++#include "mapdata.h"
++#include "map_helpers.h"
++#include "player_helpers.h"
++#include "cwm/cwm_map_exporter.h"
++#include "cwm/tile_semantics.hpp"
 +
-+#include <cstdint>
-+#include <string>
-+#include <unordered_map>
-+
-+namespace cwm {
-+
-+// Material IDs aligned with assets-manifest.json
-+enum MaterialId : uint16_t {
-+    MAT_AIR = 0,
-+    MAT_DIRT = 1,
-+    MAT_GRASS = 2,
-+    MAT_WALL_BRICK = 3,
-+    MAT_FLOOR_WOOD = 4,
-+    MAT_DOOR_WOOD_CLOSED = 5,
-+    MAT_DOOR_WOOD_OPEN = 6,
-+    MAT_WINDOW_GLASS = 7,
-+    MAT_PAVEMENT_STONE = 8,
-+    MAT_FURNITURE_WOOD = 9
-+};
-+
-+inline uint16_t map_cdda_terrain_to_material(const std::string& ter_id) {
-+    static const std::unordered_map<std::string, uint16_t> mapping = {
-+        {"t_open_air", MAT_AIR},
-+        {"t_null", MAT_AIR},
-+        {"t_dirt", MAT_DIRT},
-+        {"t_dirtmound", MAT_DIRT},
-+        {"t_grass", MAT_GRASS},
-+        {"t_grass_tall", MAT_GRASS},
-+        {"t_grass_dead", MAT_GRASS},
-+        {"t_wall", MAT_WALL_BRICK},
-+        {"t_wall_brick", MAT_WALL_BRICK},
-+        {"t_wall_metal", MAT_WALL_BRICK},
-+        {"t_concrete_wall", MAT_WALL_BRICK},
-+        {"t_floor", MAT_FLOOR_WOOD},
-+        {"t_floor_wood", MAT_FLOOR_WOOD},
-+        {"t_carpet_red", MAT_FLOOR_WOOD},
-+        {"t_carpet_green", MAT_FLOOR_WOOD},
-+        {"t_carpet_yellow", MAT_FLOOR_WOOD},
-+        {"t_carpet_purple", MAT_FLOOR_WOOD},
-+        {"t_door_c", MAT_DOOR_WOOD_CLOSED},
-+        {"t_door_locked", MAT_DOOR_WOOD_CLOSED},
-+        {"t_door_locked_peep", MAT_DOOR_WOOD_CLOSED},
-+        {"t_door_o", MAT_DOOR_WOOD_OPEN},
-+        {"t_window", MAT_WINDOW_GLASS},
-+        {"t_window_curtains", MAT_WINDOW_GLASS},
-+        {"t_window_open", MAT_WINDOW_GLASS},
-+        {"t_pavement", MAT_PAVEMENT_STONE},
-+        {"t_pavement_y", MAT_PAVEMENT_STONE},
-+        {"t_sidewalk", MAT_PAVEMENT_STONE},
-+        {"t_asphalt", MAT_PAVEMENT_STONE}
-+    };
-+
-+    auto it = mapping.find(ter_id);
-+    if (it != mapping.end()) {
-+        return it->second;
++TEST_CASE("cwm_terrain_catalog_has_visible_obstacles", "[cwm]")
++{
++    using namespace cdda::cwm;
++    clear_map();
++    map& m = get_map();
++    const tripoint p(60, 60, 0);
++    for (size_t i = 1; i < ter_t::count(); ++i) {
++        const ter_id id(static_cast<int>(i));
++        const auto& terrain = id.obj();
++        CAPTURE(terrain.id.str());
++        m.ter_set(p, id);
++        const auto tile = cwm::CwmMapExporter::export_block(p, m, 15);
++        CHECK(bool(tile.state_flags() & BLOCKS_MOVEMENT) == m.impassable_ter_furn(p));
++        if (terrain.movecost == 0 && !terrain.has_flag(ter_furn_flag::TFLAG_NO_FLOOR)) {
++            CHECK((tile.material_id() == WALL || tile.material_id() == WINDOW ||
++                   tile.material_id() == WINDOW_BOARDED || tile.material_id() == DOOR_CLOSED ||
++                   tile.material_id() == OBSTACLE || tile.material_id() == GLASS_WALL ||
++                   tile.material_id() == WATER));
++        }
 +    }
-+    if (ter_id.find("air") != std::string::npos || ter_id.find("null") != std::string::npos) return MAT_AIR;
-+    // Default fallback based on substring
-+    if (ter_id.find("wall") != std::string::npos) return MAT_WALL_BRICK;
-+    if (ter_id.find("door") != std::string::npos) {
-+        return (ter_id.find("_o") != std::string::npos) ? MAT_DOOR_WOOD_OPEN : MAT_DOOR_WOOD_CLOSED;
-+    }
-+    if (ter_id.find("floor") != std::string::npos) return MAT_FLOOR_WOOD;
-+    return MAT_DIRT;
 +}
 +
-+} // namespace cwm
++TEST_CASE("cwm_windows_stairs_and_furniture_keep_semantics", "[cwm]")
++{
++    using namespace cdda::cwm;
++    clear_map();
++    map& m = get_map();
++    const tripoint p(60, 60, 0);
++    for (const auto& entry : {std::pair<const char*, uint16_t>{"t_window", WINDOW},
++                             {"t_window_open", WINDOW_OPEN}, {"t_window_empty", WINDOW_OPEN},
++                             {"t_window_boarded", WINDOW_BOARDED}, {"t_stairs_up", FLOOR},
++                             {"t_chainfence", OBSTACLE}, {"t_reinforced_glass", GLASS_WALL},
++                             {"t_wall_wood_widened", LOW_OBSTACLE}, {"t_bollard", LOW_OBSTACLE}}) {
++        CAPTURE(entry.first);
++        m.ter_set(p, ter_str_id(entry.first));
++        CHECK(cwm::CwmMapExporter::export_block(p, m, 15).material_id() == entry.second);
++    }
++    m.ter_set(p, ter_str_id("t_floor"));
++    for (size_t i = 1; i < furn_t::count(); ++i) {
++        const furn_id id(static_cast<int>(i));
++        CAPTURE(id.id().str());
++        m.furn_set(p, id);
++        const auto tile = cwm::CwmMapExporter::export_block(p, m, 15);
++        CHECK(tile.material_id() == FLOOR);
++        // f_clear is an editing sentinel: furn_set resolves it to f_null.
++        CHECK(bool(tile.state_flags() & FURNITURE) == !m.furn(p).id().is_null());
++        CHECK(bool(tile.state_flags() & BLOCKS_MOVEMENT) == m.impassable_ter_furn(p));
++    }
++    m.furn_set(p, furn_str_id("f_null"));
++    m.ter_set(p, ter_str_id("t_window"));
++    m.ter_set(p + tripoint_east, ter_str_id("t_wall"));
++    m.ter_set(p + tripoint_west, ter_str_id("t_wall"));
++    CHECK(cwm::CwmMapExporter::export_block(p, m, 15).orientation() == 0);
++    m.ter_set(p + tripoint_east, ter_str_id("t_floor"));
++    m.ter_set(p + tripoint_west, ter_str_id("t_floor"));
++    m.ter_set(p + tripoint_north, ter_str_id("t_wall"));
++    m.ter_set(p + tripoint_south, ter_str_id("t_wall"));
++    CHECK(cwm::CwmMapExporter::export_block(p, m, 15).orientation() == 1);
++}
++
++TEST_CASE("cwm_auto_open_and_furniture_export_without_full_resend", "[cwm]")
++{
++    using namespace cdda::cwm;
++    clear_avatar();
++    clear_map();
++    map& m = get_map();
++    avatar& u = get_avatar();
++    const tripoint p(60, 60, 0);
++    u.setpos(p);
++    u.moves = 1000;
++    const tripoint door = p + tripoint_east;
++    m.ter_set(p, ter_str_id("t_floor"));
++    m.ter_set(door, ter_str_id("t_door_c"));
++    cwm::CwmMapExporter::ProjectionCache cache;
++    auto full = cwm::CwmMapExporter::export_world_snapshot(1, 1, u, m, *g, true, &cache);
++    REQUIRE(CDDA::CWM::GetCwmMessage(full.data())->payload_as_WorldSnapshot()->chunks()->size() == 243);
++    REQUIRE(avatar_action::move(u, m, point_east));
++    REQUIRE(u.pos() == p); // Opening consumes an action, without a step.
++    REQUIRE(m.ter(door) == ter_str_id("t_door_o"));
++    m.furn_set(p + tripoint_south, furn_str_id("f_bookcase"));
++    auto partial = cwm::CwmMapExporter::export_world_snapshot(2, 2, u, m, *g, false, &cache);
++    const auto* result = CDDA::CWM::GetCwmMessage(partial.data())->payload_as_WorldSnapshot();
++    CHECK(result->chunks() == nullptr);
++    REQUIRE(result->tiles()->size() == 2);
++    bool found_door = false, found_furniture = false;
++    for (const auto* delta : *result->tiles()) {
++        if (delta->coord()->x() == door.x && delta->coord()->y() == door.y) {
++            found_door = true;
++            CHECK(delta->block()->material_id() == DOOR_OPEN);
++        } else {
++            found_furniture = true;
++            CHECK(bool(delta->block()->state_flags() & FURNITURE));
++        }
++    }
++    CHECK(found_door);
++    CHECK(found_furniture);
++    REQUIRE(avatar_action::move(u, m, point_east));
++    CHECK(u.pos() == door);
++    m.ter_set(door + tripoint_east, ter_str_id("t_wall"));
++    CHECK_FALSE(avatar_action::move(u, m, point_east));
++    CHECK(u.pos() == door);
++    auto unchanged = cwm::CwmMapExporter::export_world_snapshot(3, 3, u, m, *g, false, &cache);
++    CHECK(CDDA::CWM::GetCwmMessage(unchanged.data())->payload_as_WorldSnapshot()->tiles()->size() == 1);
++}

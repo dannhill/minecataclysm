@@ -32,7 +32,7 @@ comments do not provide a TCP backend or the required transport abstraction.
 | --- | --- | --- |
 | HelloRequest / HelloResponse | Accepts every major version; handshake can spawn a zombie | Sends hello; reports acceptance, but marks connected before validation |
 | Heartbeat / HeartbeatAck | Replies | No periodic RTT measurement |
-| WorldSnapshot | Sends immediately after connection, on hello and after movement | Projects chunks, stores visual targets; treats partial snapshots as full messages |
+| WorldSnapshot | Full terrain on connection/rebase; changed tiles and positions after movement | Applies terrain before visual targets; preserves unchanged terrain |
 | ChunkSnapshot | Embedded in WorldSnapshot | Embedded ingestion only |
 | TileDelta | Open/close interaction | Applies and requests native mesh updates |
 | EntityState / EntityRemoved | Entity states embedded; removal not emitted | Embedded states stored; standalone updates/removal not handled |
@@ -41,7 +41,7 @@ comments do not provide a TCP backend or the required transport abstraction.
 | MoveRequest | Horizontal movement and NONE/wait | WASD hook sends horizontal commands |
 | InteractRequest | OPEN, CLOSE and synthetic USE/fire | Public method exists; no gameplay input caller |
 | AttackRequest | Not handled | Not sent |
-| CommandAck | Replies to implemented requests | Received without reconciliation |
+| CommandAck | Replies to implemented requests | Movement waits for matching ACK and subsequent authoritative snapshot |
 | TimeEvent | Defined, not emitted | Ignored |
 
 `ResyncRequest`, `WorldReset`, session/player/connection identities, stable
@@ -53,7 +53,8 @@ cannot express those operations without a schema extension.
 Chunks are 16×16×1, indexed `x` fastest, then `y`, then `z`. The server exports
 9×9 chunks at each of the player's three Z levels (243 chunks), despite the
 comment and historical test expecting 8×8×3. Horizontal extent is 144 tiles,
-larger than the current 132-tile reality bubble; bounds need an explicit rule.
+larger than the current 132-tile reality bubble. Out-of-bounds cells are explicitly
+air; the exporter checks `map::inbounds` before reading terrain/furniture.
 
 `origin.x/y` equals the absolute submap origin times 12. Entity positions and
 chunk cells are local in X/Y; their Z value is a CDDA level. `origin.z` is
@@ -80,10 +81,27 @@ explicit large-coordinate policy remain required.
 | 7 | window |
 | 8 | pavement |
 | 9 | wooden furniture |
+| 10 / 11 | open / boarded window |
+| 12 / 13 | generic solid obstacle / glass wall |
+| 14 / 15 | water surface / low traversable obstacle |
 
-The exporter reduces terrain/furniture through string matching and sets only
-bit 0 of `state_flags` for door-like terrain. These mappings do not yet cover
-all required semantic terrain, layered furniture, stairs or roof shapes.
+The exporter uses loaded CDDA terrain flags, open/close links and movement
+costs for structural geometry. Text matching remains only for floor/ground
+texture selection. `state_flags` bit 0 identifies doors, bit 1 records
+`map::impassable_ter_furn`, bit 2 adds furniture over the terrain and bit 3
+requests tall furniture. `orientation` 0/1 describes east-west/north-south wall
+alignment inferred from adjacent CDDA wall connections. No native node IDs
+are transmitted. Furniture, unfamiliar solid terrain and passable damaged
+walls no longer disappear into floor textures. Material/geometry remains an
+approximation: fences/trees/rocks share an obstacle placeholder, furniture
+uses wooden boxes and stairs/roof surfaces are not detailed meshes.
+
+`WorldSnapshot.tiles` is an appended FlatBuffers vector of `TileDelta`. An
+end-of-action comparison of the complete projected semantic tiles emits only
+changed cells, including auto-opened doors and furniture modified by actors.
+The renderer applies this batch before updating entity targets. A rebase or
+invalidated export cache requires full chunks. Both project runtime binaries
+must be rebuilt together to render the new materials/batched changes.
 
 Player wire ID is always 1. Monster IDs are reassigned from 1000 on every
 export. Vehicle IDs are process memory addresses. NPCs are not exported.
@@ -100,8 +118,9 @@ must not repeat gameplay.
 
 Currently the server allocates some sequence numbers without emitting a
 message; neither side validates ordering. The client stores every incoming
-world revision without checking monotonicity. There is no delta batch boundary,
-recovery request or deduplication. Full terrain ingestion now replaces the
+world revision without checking monotonicity. Movement now has a tile batch
+inside its result snapshot, but a general revision/recovery contract and
+deduplication are absent. Full terrain ingestion replaces the
 terrain cache and clears absent projected blocks; native Luanti air blocks
 cannot overwrite it. Shutdown clears bridge-owned visual state. Removal of
 absent entities/vehicles within snapshots and complete reconnect recovery

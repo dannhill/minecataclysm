@@ -29,31 +29,27 @@ minetest.register_node("cdda_nodes:wood_planks", {
     walkable = true,
 })
 
-minetest.register_node("cdda_nodes:door_wood_closed", {
-    description = "Wooden Door (Closed)",
-    tiles = {"door_wood.png"},
-    drawtype = "nodebox",
-    paramtype = "light",
-    paramtype2 = "facedir",
-    node_box = {
-        type = "fixed",
-        fixed = {-0.5, -0.5, -0.1, 0.5, 1.5, 0.1},
-    },
-    walkable = true,
-})
-
-minetest.register_node("cdda_nodes:door_wood_open", {
-    description = "Wooden Door (Open)",
-    tiles = {"door_wood.png"},
-    drawtype = "nodebox",
-    paramtype = "light",
-    paramtype2 = "facedir",
-    node_box = {
-        type = "fixed",
-        fixed = {-0.5, -0.5, -0.5, -0.3, 1.5, 0.5},
-    },
-    walkable = false,
-})
+-- Two cell-sized halves share one door image. Geometry never extends into
+-- a neighboring cell, so mesh visibility is the same from inside and outside.
+local function register_door(name, is_open, top)
+    minetest.register_node("cdda_nodes:" .. name, {
+        description = is_open and "Wooden Door (Open)" or "Wooden Door (Closed)",
+        tiles = {"door_wood.png^[sheet:1x2:0," .. (top and "0" or "1")},
+        drawtype = "nodebox",
+        paramtype = "light",
+        paramtype2 = "facedir",
+        node_box = {
+            type = "fixed",
+            fixed = is_open and {-0.5, -0.5, -0.5, -0.3, 0.5, 0.5}
+                or {-0.5, -0.5, -0.1, 0.5, 0.5, 0.1},
+        },
+        walkable = not is_open,
+    })
+end
+register_door("door_wood_closed", false, false)
+register_door("door_wood_closed_top", false, true)
+register_door("door_wood_open", true, false)
+register_door("door_wood_open_top", true, true)
 
 minetest.register_node("cdda_nodes:glass", {
     description = "Glass Window",
@@ -69,6 +65,12 @@ minetest.register_node("cdda_nodes:stone", {
     tiles = {"default_stone.png"},
     groups = {cracky = 3},
     walkable = true,
+})
+
+minetest.register_node("cdda_nodes:water", {
+    description = "Water Surface",
+    tiles = {"default_stone.png^[colorize:#307ac6:160"},
+    walkable = false,
 })
 
 minetest.register_node("cdda_nodes:furniture_wood", {

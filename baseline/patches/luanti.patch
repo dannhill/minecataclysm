@@ -23,8 +23,69 @@ index d451d09..eb8db1d 100644
 +	${CMAKE_CURRENT_SOURCE_DIR}/../cdda/cdda_bridge.cpp
  	PARENT_SCOPE
  )
+diff --git a/src/client/client.cpp b/src/client/client.cpp
+index 6d42e75..3e13910 100644
+--- a/src/client/client.cpp
++++ b/src/client/client.cpp
+@@ -9,6 +9,7 @@
+ #include <IFileSystem.h>
+ #include <json/json.h>
+ #include "client.h"
++#include "cdda/cdda_bridge.h"
+ #include "network/clientopcodes.h"
+ #include "network/connection.h"
+ #include "network/networkpacket.h"
+@@ -1445,6 +1446,8 @@ void Client::sendUpdateClientInfo(const ClientDynamicInfo& info)
+ 
+ void Client::removeNode(v3s16 p)
+ {
++    if (cdda_client::CddaBridge::getInstance().ownsPlayer(this)) return;
++    std::lock_guard<std::recursive_mutex> lock(cdda_client::CddaBridge::projectionMutex());
+ 	std::map<v3s16, MapBlock*> modified_blocks;
+ 
+ 	try {
+@@ -1504,6 +1507,8 @@ v3s16 Client::CSMClampPos(v3s16 pos)
+ 
+ void Client::addNode(v3s16 p, MapNode n, bool remove_metadata)
+ {
++    if (cdda_client::CddaBridge::getInstance().ownsPlayer(this)) return;
++    std::lock_guard<std::recursive_mutex> lock(cdda_client::CddaBridge::projectionMutex());
+ 	//TimeTaker timer1("Client::addNode()");
+ 
+ 	std::map<v3s16, MapBlock*> modified_blocks;
+diff --git a/src/client/clientenvironment.cpp b/src/client/clientenvironment.cpp
+index b6ae675..9e33201 100644
+--- a/src/client/clientenvironment.cpp
++++ b/src/client/clientenvironment.cpp
+@@ -5,6 +5,7 @@
+ #include "util/serialize.h"
+ #include "util/pointedthing.h"
+ #include "client.h"
++#include "cdda/cdda_bridge.h"
+ #include "clientenvironment.h"
+ #include "clientsimpleobject.h"
+ #include "clientmap.h"
+@@ -117,8 +118,16 @@ void ClientEnvironment::step(float dtime)
+ 		Stuff that has a maximum time increment
+ 	*/
+ 
+-	u32 steps = std::ceil(dtime / dtime_max_increment);
+-	f32 dtime_part = dtime / steps;
++	const bool cwm_player = cdda_client::CddaBridge::getInstance().ownsPlayer(m_client);
++    if (cwm_player) {
++        // Looking is presentation input and must remain active without physics.
++        lplayer->setPitch(lplayer->control.pitch);
++        lplayer->setYaw(lplayer->control.yaw);
++        lplayer->setSpeed(v3f(0, 0, 0));
++		lplayer->camera_impact = 0;
++	}
++	u32 steps = cwm_player ? 0 : std::ceil(dtime / dtime_max_increment);
++	f32 dtime_part = steps ? dtime / steps : 0;
+ 	for (; steps > 0; --steps) {
+ 		/*
+ 			Local player handling
 diff --git a/src/client/game.cpp b/src/client/game.cpp
-index 27b5833..0d60a5b 100644
+index 27b5833..d7dcde0 100644
 --- a/src/client/game.cpp
 +++ b/src/client/game.cpp
 @@ -8,6 +8,7 @@
@@ -53,12 +114,12 @@ index 27b5833..0d60a5b 100644
  	delete client;
  	client = nullptr;
  	delete soundmaker;
-@@ -2737,8 +2742,42 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
+@@ -2737,8 +2742,37 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
  		control.aux1 = control.aux1 ^ true;
  	}
  
 +	// [CDDA-Mineclonia] Luanti never moves the player on its own (CDDA authority)
-+	if (cdda_client::CddaBridge::getInstance().getMetrics().connected) {
++	if (cdda_client::CddaBridge::getInstance().ownsPlayer(client)) {
 +		control.movement_speed = 0.0f;
 +		control.jump = false;
 +		control.dig = false;
@@ -67,10 +128,7 @@ index 27b5833..0d60a5b 100644
  	client->setPlayerControl(control);
  
 +	// [CDDA-Mineclonia] Send Movement Commands
-+	static float move_cooldown = 0.0f;
-+	if (move_cooldown > 0.0f) move_cooldown -= 1.0f / 60.0f; // Approx dtime
-+
-+	if (move_cooldown <= 0.0f) {
++	if (cdda_client::CddaBridge::getInstance().ownsPlayer(client)) {
 +		// Camera-relative WASD: build a local vector, rotate by yaw, snap to
 +		// one of CDDA's 8 grid directions (diagonals included).
 +		float lf = (isKeyDown(KeyType::FORWARD) ? 1.f : 0.f) - (isKeyDown(KeyType::BACKWARD) ? 1.f : 0.f);
@@ -87,16 +145,14 @@ index 27b5833..0d60a5b 100644
 +			cdda_dir = oct_to_cdda[oct];
 +		}
 +
-+		if (cdda_dir != 0) {
++		if (cdda_dir != 0)
 +			cdda_client::CddaBridge::getInstance().handleMoveInput(cdda_dir);
-+			move_cooldown = 0.2f; // CDDA is turn based, limit to 5 steps/sec
-+		}
 +	}
 +
  	//tt.stop();
  }
  
-@@ -2784,6 +2823,25 @@ inline void Game::step(f32 dtime)
+@@ -2784,6 +2818,25 @@ inline void Game::step(f32 dtime)
  
  	if (!m_is_paused)
  		client->step(dtime);
@@ -122,8 +178,75 @@ index 27b5833..0d60a5b 100644
  }
  
  static void pauseNodeAnimation(PausedNodesList &paused, scene::ISceneNode *node) {
+@@ -3246,6 +3299,7 @@ void Game::updateCamera(f32 dtime)
+ 	tool_reload_ratio = MYMIN(tool_reload_ratio, 1.0);
+ 	camera->update(player, dtime, tool_reload_ratio);
+ 	camera->step(dtime);
++    cdda_client::CddaBridge::getInstance().traceCamera(camera->getPosition(), camera->getDirection());
+ 
+ 	f32 camera_fov = camera->getFovMax();
+ 	v3s16 camera_offset = camera->getOffset();
+diff --git a/src/client/mesh_generator_thread.cpp b/src/client/mesh_generator_thread.cpp
+index ec86898..3f99071 100644
+--- a/src/client/mesh_generator_thread.cpp
++++ b/src/client/mesh_generator_thread.cpp
+@@ -6,6 +6,7 @@
+ #include "settings.h"
+ #include "profiler.h"
+ #include "client.h"
++#include "cdda/cdda_bridge.h"
+ #include "mapblock.h"
+ #include "map.h"
+ #include "util/directiontables.h"
+@@ -176,6 +177,7 @@ void MeshUpdateQueue::done(v3s16 pos)
+ 
+ void MeshUpdateQueue::fillDataFromMapBlocks(QueuedMeshUpdate *q)
+ {
++    std::lock_guard<std::recursive_mutex> lock(cdda_client::CddaBridge::projectionMutex());
+ 	auto mesh_grid = m_client->getMeshGrid();
+ 	MeshMakeData *data = new MeshMakeData(m_client->ndef(), MAP_BLOCKSIZE * mesh_grid.cell_size, m_cache_enable_shaders);
+ 	q->data = data;
+@@ -279,19 +281,15 @@ void MeshUpdateManager::updateBlock(Map *map, v3s16 p, bool ack_block_to_server,
+ 
+ void MeshUpdateManager::putResult(const MeshUpdateResult &result)
+ {
+-	if (result.urgent)
+-		m_queue_out_urgent.push_back(result);
+-	else
+-		m_queue_out.push_back(result);
++    // Work is already prioritized by MeshUpdateQueue::pop. Completed meshes
++    // must retain their order: two priority output queues could apply a newer
++    // projection, then overwrite it with an older normal (even empty) mesh.
++    // Only one task per position is in flight, and it publishes before done().
++    m_queue_out.push_back(result);
+ }
+ 
+ bool MeshUpdateManager::getNextResult(MeshUpdateResult &r)
+ {
+-	if (!m_queue_out_urgent.empty()) {
+-		r = m_queue_out_urgent.pop_frontNoEx();
+-		return true;
+-	}
+-
+ 	if (!m_queue_out.empty()) {
+ 		r = m_queue_out.pop_frontNoEx();
+ 		return true;
+diff --git a/src/client/mesh_generator_thread.h b/src/client/mesh_generator_thread.h
+index d6e2863..239953a 100644
+--- a/src/client/mesh_generator_thread.h
++++ b/src/client/mesh_generator_thread.h
+@@ -135,8 +135,7 @@ class MeshUpdateManager
+ 
+ 
+ 	MeshUpdateQueue m_queue_in;
+-	MutexedQueue<MeshUpdateResult> m_queue_out;
+-	MutexedQueue<MeshUpdateResult> m_queue_out_urgent;
++    MutexedQueue<MeshUpdateResult> m_queue_out;
+ 
+ 	std::vector<std::unique_ptr<MeshUpdateWorkerThread>> m_workers;
+ };
 diff --git a/src/network/clientpackethandler.cpp b/src/network/clientpackethandler.cpp
-index 9f987cc..4af2f72 100644
+index 9f987cc..005fbfb 100644
 --- a/src/network/clientpackethandler.cpp
 +++ b/src/network/clientpackethandler.cpp
 @@ -3,6 +3,7 @@
@@ -134,7 +257,17 @@ index 9f987cc..4af2f72 100644
  
  #include "irr_v2d.h"
  #include "util/base64.h"
-@@ -321,6 +322,13 @@ void Client::handleCommand_BlockData(NetworkPacket* pkt)
+@@ -286,6 +287,9 @@ void Client::handleCommand_NodemetaChanged(NetworkPacket *pkt)
+ 
+ void Client::handleCommand_BlockData(NetworkPacket* pkt)
+ {
++    // A mesh worker must see either the old projection or the complete restored
++    // block, never native air or partially overwritten node data in between.
++    std::lock_guard<std::recursive_mutex> lock(cdda_client::CddaBridge::projectionMutex());
+ 	// Ignore too small packet
+ 	if (pkt->getSize() < 6)
+ 		return;
+@@ -321,6 +325,13 @@ void Client::handleCommand_BlockData(NetworkPacket* pkt)
  		block->deSerializeNetworkSpecific(istr);
  	}
  
@@ -148,18 +281,99 @@ index 9f987cc..4af2f72 100644
  	if (m_localdb) {
  		ServerMap::saveBlock(block, m_localdb);
  	}
+@@ -599,6 +610,8 @@ void Client::handleCommand_Breath(NetworkPacket* pkt)
+ 
+ void Client::handleCommand_MovePlayer(NetworkPacket* pkt)
+ {
++	if (cdda_client::CddaBridge::getInstance().ownsPlayer(this)) return;
++
+ 	LocalPlayer *player = m_env.getLocalPlayer();
+ 	assert(player != NULL);
+ 
+@@ -630,6 +643,8 @@ void Client::handleCommand_MovePlayer(NetworkPacket* pkt)
+ 
+ void Client::handleCommand_MovePlayerRel(NetworkPacket *pkt)
+ {
++	if (cdda_client::CddaBridge::getInstance().ownsPlayer(this)) return;
++
+ 	v3f added_pos;
+ 
+ 	*pkt >> added_pos;
+diff --git a/src/unittest/test_mapblock.cpp b/src/unittest/test_mapblock.cpp
+index 7f3f860..663a6ec 100644
+--- a/src/unittest/test_mapblock.cpp
++++ b/src/unittest/test_mapblock.cpp
+@@ -10,6 +10,9 @@
+ #include "serialization.h"
+ #include "noise.h"
+ #include "inventory.h"
++#if CHECK_CLIENT_BUILD()
++#include "client/mesh_generator_thread.h"
++#endif
+ 
+ class TestMapBlock : public TestBase
+ {
+@@ -32,7 +35,10 @@ class TestMapBlock : public TestBase
+ 	void testLoad20(IGameDef *gamedef);
+ 
+ 	// Tests loading a non-standard MapBlock
+-	void testLoadNonStd(IGameDef *gamedef);
++    void testLoadNonStd(IGameDef *gamedef);
++#if CHECK_CLIENT_BUILD()
++    void testMeshResultOrder();
++#endif
+ };
+ 
+ static TestMapBlock g_test_instance;
+@@ -44,9 +50,32 @@ void TestMapBlock::runTests(IGameDef *gamedef)
+ 	TEST(testSave29, gamedef);
+ 	TEST(testLoad29, gamedef);
+ 	TEST(testLoad20, gamedef);
+-	TEST(testLoadNonStd, gamedef);
++    TEST(testLoadNonStd, gamedef);
++#if CHECK_CLIENT_BUILD()
++    TEST(testMeshResultOrder);
++#endif
+ }
+ 
++#if CHECK_CLIENT_BUILD()
++void TestMapBlock::testMeshResultOrder()
++{
++    // No renderer/workers are started. Reproduce the actual completion path
++    // for one block: older normal mesh, newer urgent authoritative projection.
++    MeshUpdateManager manager(nullptr);
++    MeshUpdateResult older, newer, result;
++    older.p = newer.p = v3s16(1, 2, 3);
++    older.urgent = false;
++    newer.urgent = true;
++    manager.putResult(older);
++    manager.putResult(newer);
++    UASSERT(manager.getNextResult(result));
++    UASSERT(!result.urgent);
++    UASSERT(manager.getNextResult(result));
++    UASSERT(result.urgent);
++    UASSERT(!manager.getNextResult(result));
++}
++#endif
++
+ ////////////////////////////////////////////////////////////////////////////////
+ 
+ void TestMapBlock::testSaveLoad(IGameDef *gamedef, const u8 version)
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..2609fff
+index 0000000..b3842e8
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,597 @@
+@@ -0,0 +1,660 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
 +#include "cdda_bridge.h"
 +#include "cwm/ipc_transport.hpp"
 +#include "cwm/cwm_protocol.hpp"
++#include "cwm/tile_semantics.hpp"
++#include "settings.h"
++#include <fstream>
 +
 +#include "client/client.h"
 +#include "client/clientmap.h"
@@ -201,6 +415,13 @@ index 0000000..2609fff
 +    std::unique_ptr<cdda::cwm::IpcConnection> connection_;
 +    Metrics metrics_;
 +    uint64_t command_counter_{1};
++    uint64_t pending_move_{0};
++    bool move_acked_{false};
++    std::chrono::steady_clock::time_point next_move_{};
++    std::chrono::steady_clock::time_point sent_move_{};
++    std::ofstream trace_;
++    bool player_ready_{false};
++    static constexpr float step_duration = 0.2f;
 +
 +    std::unordered_map<uint64_t, VisualEntity> entities_;
 +    std::unordered_map<uint64_t, VisualVehicle> vehicles_;
@@ -226,6 +447,7 @@ index 0000000..2609fff
 +    }
 +
 +    bool restore_projected_block(MapBlock* block) {
++        std::lock_guard<std::recursive_mutex> lock(CddaBridge::projectionMutex());
 +        if (!block) return false;
 +        const auto it = projected_blocks_.find(block->getPos());
 +        if (it == projected_blocks_.end()) return false;
@@ -235,6 +457,7 @@ index 0000000..2609fff
 +
 +    void commit_projection(const std::set<v3s16>& modified_blocks) {
 +        if (!client_) return;
++        std::lock_guard<std::recursive_mutex> lock(CddaBridge::projectionMutex());
 +        Map& map = client_->getEnv().getMap();
 +        for (const auto& bp : modified_blocks) {
 +            MapSector* sector = map.emergeSector(v2s16(bp.X, bp.Z));
@@ -267,6 +490,12 @@ index 0000000..2609fff
 +            case 7: cid = ndef->getId("cdda_nodes:glass"); break;
 +            case 8: cid = ndef->getId("cdda_nodes:stone"); break;
 +            case 9: cid = ndef->getId("cdda_nodes:furniture_wood"); break;
++            case 10: cid = CONTENT_AIR; break;
++            case 11: cid = ndef->getId("cdda_nodes:wood_planks"); break;
++            case 12: cid = ndef->getId("cdda_nodes:stone"); break;
++            case 13: cid = ndef->getId("cdda_nodes:glass"); break;
++            case 14: cid = ndef->getId("cdda_nodes:water"); break;
++            case 15: cid = ndef->getId("cdda_nodes:stone"); break;
 +            default: cid = ndef->getId("cdda_nodes:stone"); break;
 +        }
 +        if (cid == CONTENT_IGNORE) cid = CONTENT_AIR;
@@ -286,59 +515,60 @@ index 0000000..2609fff
 +        modified_blocks.insert(bp);
 +    }
 +
-+    void place_cdda_tile(const v3s16& base_lpos, uint16_t mat_id, uint8_t light, uint8_t param2, std::set<v3s16>& modified_blocks) {
-+        if (mat_id == 0) { // Air
-+            set_voxel(base_lpos, CONTENT_AIR, light, 0, modified_blocks);
-+            set_voxel(base_lpos + v3s16(0, 1, 0), CONTENT_AIR, light, 0, modified_blocks);
-+            set_voxel(base_lpos + v3s16(0, 2, 0), CONTENT_AIR, light, 0, modified_blocks);
-+            return;
++    void place_cdda_tile(const v3s16& base, uint16_t material, uint32_t flags,
++                         uint8_t light, uint8_t orientation, std::set<v3s16>& modified) {
++        using namespace cdda::cwm;
++        // Each nodebox stays inside its own cell; split doors avoid cross-cell
++        // occlusion, and ordinary cubes retain faces visible from either side.
++        const uint8_t facedir = orientation == 1 ? 1 : 0;
++        content_t floor = material == AIR ? CONTENT_AIR : get_node_for_material(FLOOR);
++        content_t lower = CONTENT_AIR, upper = CONTENT_AIR;
++        switch (material) {
++            case AIR: break;
++            case WALL: case OBSTACLE: case GLASS_WALL:
++                floor = lower = upper = get_node_for_material(material); break;
++            case DOOR_CLOSED: case DOOR_OPEN:
++                lower = get_node_for_material(material);
++                upper = get_node_for_material(WALL); break;
++            case WINDOW: case WINDOW_OPEN: case WINDOW_BOARDED:
++                // A passable window has a genuinely open aperture.
++                floor = get_node_for_material(WALL);
++                lower = get_node_for_material(material);
++                upper = lower; break;
++            case LEGACY_FURNITURE:
++                lower = get_node_for_material(LEGACY_FURNITURE); break;
++            case LOW_OBSTACLE:
++                lower = get_node_for_material(LOW_OBSTACLE); break;
++            default: floor = get_node_for_material(material); break;
 +        }
-+
-+        content_t cid = get_node_for_material(mat_id);
-+
-+        switch (mat_id) {
-+            case 3: // MAT_WALL_BRICK
-+                // Full story height wall (3 voxels)
-+                set_voxel(base_lpos, cid, light, param2, modified_blocks);
-+                set_voxel(base_lpos + v3s16(0, 1, 0), cid, light, param2, modified_blocks);
-+                set_voxel(base_lpos + v3s16(0, 2, 0), cid, light, param2, modified_blocks);
-+                break;
-+            case 5: // MAT_DOOR_WOOD_CLOSED
-+            case 6: // MAT_DOOR_WOOD_OPEN
-+                // Door at base (its nodebox extends through Y+1), lintel block at Y+2
-+                set_voxel(base_lpos, cid, light, param2, modified_blocks);
-+                set_voxel(base_lpos + v3s16(0, 1, 0), CONTENT_AIR, light, 0, modified_blocks);
-+                set_voxel(base_lpos + v3s16(0, 2, 0), get_node_for_material(3), light, 0, modified_blocks);
-+                break;
-+            case 7: // MAT_WINDOW_GLASS
-+                // Lower sill at Y, glass pane at Y+1, lintel at Y+2
-+                set_voxel(base_lpos, get_node_for_material(3), light, 0, modified_blocks);
-+                set_voxel(base_lpos + v3s16(0, 1, 0), cid, light, param2, modified_blocks);
-+                set_voxel(base_lpos + v3s16(0, 2, 0), get_node_for_material(3), light, 0, modified_blocks);
-+                break;
-+            case 9: // MAT_FURNITURE_WOOD
-+                // Furniture at base, open headroom above
-+                set_voxel(base_lpos, cid, light, param2, modified_blocks);
-+                set_voxel(base_lpos + v3s16(0, 1, 0), CONTENT_AIR, light, 0, modified_blocks);
-+                set_voxel(base_lpos + v3s16(0, 2, 0), CONTENT_AIR, light, 0, modified_blocks);
-+                break;
-+            case 1: // MAT_DIRT
-+            case 2: // MAT_GRASS
-+            case 4: // MAT_FLOOR_WOOD
-+            case 8: // MAT_PAVEMENT_STONE
-+            default: // Floor / Ground
-+                // Ground surface at base, open air headroom above (Y+1, Y+2)
-+                set_voxel(base_lpos, cid, light, param2, modified_blocks);
-+                set_voxel(base_lpos + v3s16(0, 1, 0), CONTENT_AIR, light, 0, modified_blocks);
-+                set_voxel(base_lpos + v3s16(0, 2, 0), CONTENT_AIR, light, 0, modified_blocks);
-+                break;
++        if (flags & FURNITURE) {
++            lower = get_node_for_material(LEGACY_FURNITURE);
++            if (flags & TALL_FURNITURE) upper = lower;
 +        }
++        set_voxel(base, floor, light, 0, modified);
++        set_voxel(base + v3s16(0, 1, 0), lower, light, facedir, modified);
++        // Door covers both headroom cells using two independent nodeboxes.
++        if (material == DOOR_CLOSED || material == DOOR_OPEN)
++            upper = client_->getNodeDefManager()->getId(material == DOOR_CLOSED ?
++                "cdda_nodes:door_wood_closed_top" : "cdda_nodes:door_wood_open_top");
++        set_voxel(base + v3s16(0, 2, 0), upper, light, facedir, modified);
++    }
++
++    void apply_tile(const CDDA::CWM::TileDelta* delta, std::set<v3s16>& modified) {
++        if (!delta || !delta->coord() || !delta->block()) return;
++        const auto* p = delta->coord();
++        const auto* block = delta->block();
++        place_cdda_tile(CddaBridge::cddaToLuantiCoord(p->x(), p->y(), p->z()),
++                       block->material_id(), block->state_flags(), block->light_level(),
++                       block->orientation(), modified);
 +    }
 +
 +    bool connect() {
 +        connection_ = cdda::cwm::IpcClient::connect_unix(socket_path_);
 +        if (connection_ && connection_->is_valid()) {
 +            metrics_.connected = true;
++            pending_move_ = 0;
++            player_ready_ = false;
 +
 +            // Send Hello
 +            cdda::cwm::MessageBuilder builder(command_counter_++, 0);
@@ -366,6 +596,8 @@ index 0000000..2609fff
 +        bool ok = connection_->poll_and_receive(incoming, 0);
 +        if (!ok) {
 +            metrics_.connected = false;
++            player_ready_ = false;
++            pending_move_ = 0;
 +            connection_.reset();
 +            return;
 +        }
@@ -376,8 +608,9 @@ index 0000000..2609fff
 +
 +        // Interpolate visual entities
 +        for (auto& [id, ent] : entities_) {
-+            v3f diff = ent.target_pos - ent.current_pos;
-+            ent.current_pos += diff * std::min(1.0f, dtime * 12.0f);
++            ent.interpolation_time = std::min(step_duration, ent.interpolation_time + dtime);
++            ent.current_pos = ent.start_pos + (ent.target_pos - ent.start_pos) *
++                              (ent.interpolation_time / step_duration);
 +            
 +            // Sync Luanti camera to CDDA player (id == 1)
 +            if (id == 1 && client_) {
@@ -512,7 +745,7 @@ index 0000000..2609fff
 +                                    uint8_t light = b->light_level();
 +                                    uint8_t param2 = b->orientation();
 +
-+                                    place_cdda_tile(lpos, mat_id, light, param2, modified_blocks);
++                                    place_cdda_tile(lpos, mat_id, b->state_flags(), light, param2, modified_blocks);
 +                                }
 +                            }
 +                        }
@@ -521,6 +754,12 @@ index 0000000..2609fff
 +                    commit_projection(modified_blocks);
 +                    infostream << "[Luanti-CDDA] Installed terrain projection in "
 +                               << projected_blocks_.size() << " local map blocks" << std::endl;
++                }
++
++                if (client_ && snap->tiles()) {
++                    std::set<v3s16> modified_blocks;
++                    for (const auto* delta : *snap->tiles()) apply_tile(delta, modified_blocks);
++                    commit_projection(modified_blocks);
 +                }
 +
 +                // Sync vehicles
@@ -591,39 +830,39 @@ index 0000000..2609fff
 +                            ve.name = ent_state->name() ? ent_state->name()->str() : "";
 +                            ve.current_pos = target;
 +                            ve.target_pos = target;
++                            ve.start_pos = target;
 +                            ve.rotation = ent_state->rotation();
 +                            ve.hp_percent = ent_state->hp_percent();
 +                            entities_[eid] = ve;
 +                        } else {
 +                            if (rebased) it->second.current_pos = target;
++                            if (rebased || target != it->second.target_pos) {
++                                it->second.start_pos = it->second.current_pos;
++                                it->second.interpolation_time = rebased ? step_duration : 0.0f;
++                            }
 +                            it->second.target_pos = target;
 +                            it->second.rotation = ent_state->rotation();
 +                            it->second.hp_percent = ent_state->hp_percent();
 +                        }
 +                    }
 +                }
++                player_ready_ = entities_.count(1) != 0;
++                // ACK can arrive before simulation ends. Unlock only when its
++                // authoritative result has also arrived; never queue held keys.
++                if (pending_move_ && move_acked_) {
++                    metrics_.ipc_latency_ms = std::chrono::duration<float, std::milli>(
++                        std::chrono::steady_clock::now() - sent_move_).count();
++                    pending_move_ = 0;
++                }
 +                break;
 +            }
 +
 +            case CDDA::CWM::Payload::TileDelta: {
 +                const auto* delta = msg->payload_as_TileDelta();
-+                if (delta && delta->coord() && delta->block()) {
-+                    v3s16 lpos = CddaBridge::cddaToLuantiCoord(
-+                        delta->coord()->x(),
-+                        delta->coord()->y(),
-+                        delta->coord()->z()
-+                    );
-+                    if (client_) {
-+                        std::set<v3s16> modified_blocks;
-+                        place_cdda_tile(
-+                            lpos,
-+                            delta->block()->material_id(),
-+                            delta->block()->light_level(),
-+                            delta->block()->orientation(),
-+                            modified_blocks
-+                        );
-+                        commit_projection(modified_blocks);
-+                    }
++                if (client_) {
++                    std::set<v3s16> modified_blocks;
++                    apply_tile(delta, modified_blocks);
++                    commit_projection(modified_blocks);
 +                }
 +                break;
 +            }
@@ -631,7 +870,7 @@ index 0000000..2609fff
 +            case CDDA::CWM::Payload::CommandAck: {
 +                const auto* ack = msg->payload_as_CommandAck();
 +                if (ack) {
-+                    // Command confirmed
++                    if (ack->command_id() == pending_move_) move_acked_ = true;
 +                }
 +                break;
 +            }
@@ -642,17 +881,26 @@ index 0000000..2609fff
 +    }
 +
 +    bool send_move_request(int dir) {
-+        if (!connection_ || !connection_->is_valid()) return false;
-+        cdda::cwm::MessageBuilder builder(command_counter_++, metrics_.current_revision);
-+        auto req = builder.build_move_request(command_counter_, static_cast<CDDA::CWM::MoveDirection>(dir));
-+        return connection_->send_message(req.data(), req.size());
++        const auto now = std::chrono::steady_clock::now();
++        if (!connection_ || !connection_->is_valid() || !player_ready_ ||
++            pending_move_ || now < next_move_) return false;
++        const uint64_t command = command_counter_++;
++        cdda::cwm::MessageBuilder builder(command, metrics_.current_revision);
++        auto req = builder.build_move_request(command, static_cast<CDDA::CWM::MoveDirection>(dir));
++        if (!connection_->send_message(req.data(), req.size())) return false;
++        pending_move_ = command;
++        move_acked_ = false;
++        sent_move_ = now;
++        next_move_ = now + std::chrono::milliseconds(200);
++        return true;
 +    }
 +
 +    bool send_interact_request(int x, int y, int z, int action) {
 +        if (!connection_ || !connection_->is_valid()) return false;
-+        cdda::cwm::MessageBuilder builder(command_counter_++, metrics_.current_revision);
++        const uint64_t command = command_counter_++;
++        cdda::cwm::MessageBuilder builder(command, metrics_.current_revision);
 +        auto req = builder.build_interact_request(
-+            command_counter_,
++            command,
 +            x, y, z,
 +            static_cast<CDDA::CWM::InteractAction>(action)
 +        );
@@ -665,11 +913,21 @@ index 0000000..2609fff
 +    return instance;
 +}
 +
++std::recursive_mutex& CddaBridge::projectionMutex() {
++    static std::recursive_mutex mutex;
++    return mutex;
++}
++
 +bool CddaBridge::initialize(Client* client, const std::string& socket_path) {
 +    shutdown();
 +    pimpl_ = std::make_unique<Impl>();
 +    pimpl_->client_ = client;
 +    pimpl_->socket_path_ = socket_path;
++    std::string trace_path;
++    if (g_settings->getNoEx("cwm_trace_file", trace_path) && !trace_path.empty()) {
++        pimpl_->trace_.open(trace_path);
++        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z\n";
++    }
 +    return pimpl_->connect();
 +}
 +
@@ -686,6 +944,22 @@ index 0000000..2609fff
 +
 +bool CddaBridge::restoreProjectedBlock(Client* client, MapBlock* block) {
 +    return pimpl_ && pimpl_->client_ == client && pimpl_->restore_projected_block(block);
++}
++
++bool CddaBridge::ownsPlayer(const Client* client) const {
++    return pimpl_ && pimpl_->client_ == client;
++}
++
++void CddaBridge::traceCamera(const v3f& position, const v3f& direction) {
++    if (!pimpl_ || !pimpl_->trace_.is_open() || !pimpl_->entities_.count(1)) return;
++    const auto& entity = pimpl_->entities_.at(1);
++    pimpl_->trace_ << std::chrono::duration_cast<std::chrono::nanoseconds>(
++        std::chrono::steady_clock::now().time_since_epoch()).count() << ','
++        << position.X << ',' << position.Y << ',' << position.Z << ','
++        << entity.target_pos.X << ',' << entity.target_pos.Y << ',' << entity.target_pos.Z << ','
++        << pimpl_->pending_move_ << ',' << direction.X << ',' << direction.Y << ','
++        << direction.Z << '\n';
++    pimpl_->trace_.flush();
 +}
 +
 +void CddaBridge::update(float dtime) {
@@ -753,10 +1027,10 @@ index 0000000..2609fff
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.h b/src/cdda/cdda_bridge.h
 new file mode 100644
-index 0000000..0f2ece1
+index 0000000..ece10f3
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.h
-@@ -0,0 +1,90 @@
+@@ -0,0 +1,100 @@
 +// Luanti C++ CWM Presentation Bridge
 +// Licensed under Apache-2.0
 +#pragma once
@@ -766,6 +1040,7 @@ index 0000000..0f2ece1
 +#include <vector>
 +#include <unordered_map>
 +#include <cstdint>
++#include <mutex>
 +#include "irrlichttypes.h"
 +#include "irr_v3d.h"
 +
@@ -800,6 +1075,8 @@ index 0000000..0f2ece1
 +    std::string type_id;
 +    v3f current_pos;
 +    v3f target_pos;
++    v3f start_pos;
++    float interpolation_time{0.2f};
 +    float rotation{0.0f};
 +    uint8_t hp_percent{100};
 +    std::string name;
@@ -808,6 +1085,9 @@ index 0000000..0f2ece1
 +class CddaBridge {
 +public:
 +    static CddaBridge& getInstance();
++    // Share one lock between projection/cache writers and mesh data capture.
++    // Workers release it before generating geometry from their private copy.
++    static std::recursive_mutex& projectionMutex();
 +
 +    bool initialize(Client* client, const std::string& socket_path);
 +    void shutdown();
@@ -815,6 +1095,10 @@ index 0000000..0f2ece1
 +
 +    // The local Luanti server supplies empty cache blocks, not gameplay terrain.
 +    bool restoreProjectedBlock(Client* client, MapBlock* block);
++    // Once initialized, native physics/teleports cannot own this player,
++    // including while IPC is reconnecting.
++    bool ownsPlayer(const Client* client) const;
++    void traceCamera(const v3f& position, const v3f& direction);
 +
 +    // Input hooks
 +    bool handleMoveInput(int dir);
