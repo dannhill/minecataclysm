@@ -1,0 +1,14 @@
+/cdda/
+/luanti/
+/mineclonia/
+/artifacts/
+**/build/
+**/build-*/
+**/__pycache__/
+*.pyc
+*.log
+/user/
+/worlds/
+**/CMakeFiles/
+**/CMakeCache.txt
+**/Testing/

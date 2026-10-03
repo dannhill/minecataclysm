@@ -1,0 +1,204 @@
+// CDDA-Mineclonia Common World Model (CWM) Protocol Schema
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+
+namespace CDDA.CWM;
+
+enum EntityType : byte {
+    PLAYER = 0,
+    NPC = 1,
+    MONSTER = 2,
+    VEHICLE = 3,
+    ITEM = 4,
+    FIELD_EFFECT = 5
+}
+
+enum MoveDirection : byte {
+    NONE = 0,
+    NORTH = 1,
+    NORTHEAST = 2,
+    EAST = 3,
+    SOUTHEAST = 4,
+    SOUTH = 5,
+    SOUTHWEST = 6,
+    WEST = 7,
+    NORTHWEST = 8,
+    UP = 9,
+    DOWN = 10
+}
+
+enum InteractAction : byte {
+    EXAMINE = 0,
+    OPEN = 1,
+    CLOSE = 2,
+    PICKUP = 3,
+    DROP = 4,
+    ATTACK = 5,
+    SMASH = 6,
+    USE = 7
+}
+
+struct Coord3i {
+    x: int32;
+    y: int32;
+    z: int32;
+}
+
+struct Vec3f {
+    x: float32;
+    y: float32;
+    z: float32;
+}
+
+table HelloRequest {
+    protocol_version_major: uint16;
+    protocol_version_minor: uint16;
+    build_id: string;
+}
+
+table HelloResponse {
+    protocol_version_major: uint16;
+    protocol_version_minor: uint16;
+    server_build_id: string;
+    accepted: bool;
+    reject_reason: string;
+}
+
+table Heartbeat {
+    timestamp_ms: uint64;
+}
+
+table HeartbeatAck {
+    timestamp_ms: uint64;
+    server_time_ms: uint64;
+}
+
+struct CwmBlock {
+    state_flags: uint32;
+    material_id: uint16;
+    light_level: uint8;
+    orientation: uint8;
+}
+
+table ChunkSnapshot {
+    chunk_x: int32;
+    chunk_y: int32;
+    chunk_z: int32;
+    size_x: uint8;
+    size_y: uint8;
+    size_z: uint8;
+    blocks: [CwmBlock];
+}
+
+table TileDelta {
+    coord: Coord3i;
+    block: CwmBlock;
+}
+
+table EntityState {
+    id: uint64;
+    type: EntityType;
+    type_id: string;
+    pos: Vec3f;
+    rotation: float32;
+    animation_hint: uint16;
+    hp_percent: uint8;
+    name: string;
+}
+
+table EntityRemoved {
+    id: uint64;
+}
+
+table VehicleComponentState {
+    part_id: string;
+    offset: Vec3f;
+    broken: bool;
+    open: bool;
+}
+
+table VehicleState {
+    id: uint64;
+    name: string;
+    pivot: Vec3f;
+    rotation: float32;
+    velocity: Vec3f;
+    components: [VehicleComponentState];
+}
+
+table FieldState {
+    coord: Coord3i;
+    field_type_id: uint16;
+    density: uint8;
+    age: uint32;
+}
+
+table WorldSnapshot {
+    world_revision: uint64;
+    origin: Coord3i;
+    simulation_time_seconds: uint64;
+    chunks: [ChunkSnapshot];
+    entities: [EntityState];
+    vehicles: [VehicleState];
+    fields: [FieldState];
+}
+
+table MoveRequest {
+    command_id: uint64;
+    direction: MoveDirection;
+}
+
+table InteractRequest {
+    command_id: uint64;
+    target_coord: Coord3i;
+    action: InteractAction;
+}
+
+table AttackRequest {
+    command_id: uint64;
+    target_entity_id: uint64;
+}
+
+table CommandAck {
+    command_id: uint64;
+    accepted: bool;
+    error_message: string;
+}
+
+table TimeEvent {
+    world_revision: uint64;
+    simulation_time: uint64;
+    time_jump: bool;
+    simulation_busy: bool;
+}
+
+union Payload {
+    HelloRequest,
+    HelloResponse,
+    Heartbeat,
+    HeartbeatAck,
+    WorldSnapshot,
+    ChunkSnapshot,
+    TileDelta,
+    EntityState,
+    EntityRemoved,
+    VehicleState,
+    FieldState,
+    MoveRequest,
+    InteractRequest,
+    AttackRequest,
+    CommandAck,
+    TimeEvent
+}
+
+table CwmMessage {
+    sequence_number: uint64;
+    world_revision: uint64;
+    timestamp_ms: uint64;
+    payload: Payload;
+}
+
+root_type CwmMessage;

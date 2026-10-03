@@ -1,0 +1,38 @@
+{
+  "format_version": 1,
+  "repositories": {
+    "cdda": {
+      "url": "https://github.com/CleverRaven/Cataclysm-DDA.git",
+      "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+      "shallow": true,
+      "patch": "baseline/patches/cdda.patch",
+      "patch_sha256": "255d536b235af29e4a34ca60807735af038ec73803273c16690831a9281451ff",
+      "tree_inventory": "baseline/trees/cdda.json",
+      "tree_sha256": "0762f114663b28910dbcb5cc9ac14e761933dde51d4ddb67c8ab3b9f8f2c4c28",
+      "file_count": 8577,
+      "original_status": " M src/CMakeLists.txt\n M src/game.h\n?? src/cwm/cwm_main.cpp\n?? src/cwm/cwm_map_exporter.cpp\n?? src/cwm/cwm_map_exporter.h\n?? src/cwm/cwm_server.cpp\n?? src/cwm/cwm_server.h\n?? src/cwm/cwm_types.h\n"
+    },
+    "luanti": {
+      "url": "https://github.com/luanti-org/luanti.git",
+      "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
+      "shallow": true,
+      "patch": "baseline/patches/luanti.patch",
+      "patch_sha256": "54355e454d9d835495afed1aef23b75d161484440eb860136afc7c30c838c39b",
+      "tree_inventory": "baseline/trees/luanti.json",
+      "tree_sha256": "63df6364a31166e473aa539e4a96f0b63f7d5bf329291b4890b2c370c4a795f3",
+      "file_count": 2251,
+      "original_status": " M src/CMakeLists.txt\n M src/client/CMakeLists.txt\n M src/client/game.cpp\n?? src/cdda/cdda_bridge.cpp\n?? src/cdda/cdda_bridge.h\n"
+    },
+    "mineclonia": {
+      "url": "https://github.com/mark-wiemer/mineclonia.git",
+      "commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+      "shallow": true,
+      "patch": "baseline/patches/mineclonia.patch",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree_inventory": "baseline/trees/mineclonia.json",
+      "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36",
+      "file_count": 9359,
+      "original_status": ""
+    }
+  }
+}

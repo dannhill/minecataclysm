@@ -1,0 +1,751 @@
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 65e5ab6..a8494d2 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -547,6 +547,9 @@ include_directories(
+ 	${PROJECT_BINARY_DIR}
+ 	${PROJECT_SOURCE_DIR}
+ 	${PROJECT_SOURCE_DIR}/script
++	${PROJECT_SOURCE_DIR}/cdda
++	${PROJECT_SOURCE_DIR}/../../protocol/include
++	/home/dannhill/.local/include
+ )
+ include_directories(SYSTEM
+ 	${ZLIB_INCLUDE_DIR}
+diff --git a/src/client/CMakeLists.txt b/src/client/CMakeLists.txt
+index d451d09..eb8db1d 100644
+--- a/src/client/CMakeLists.txt
++++ b/src/client/CMakeLists.txt
+@@ -75,5 +75,6 @@ set(client_SRCS
+ 	${CMAKE_CURRENT_SOURCE_DIR}/shadows/dynamicshadowsrender.cpp
+ 	${CMAKE_CURRENT_SOURCE_DIR}/shadows/shadowsshadercallbacks.cpp
+ 	${CMAKE_CURRENT_SOURCE_DIR}/shadows/shadowsScreenQuad.cpp
++	${CMAKE_CURRENT_SOURCE_DIR}/../cdda/cdda_bridge.cpp
+ 	PARENT_SCOPE
+ )
+diff --git a/src/client/game.cpp b/src/client/game.cpp
+index 27b5833..2b9d1b4 100644
+--- a/src/client/game.cpp
++++ b/src/client/game.cpp
+@@ -8,6 +8,7 @@
+ #include "IAttributes.h"
+ #include "client/renderingengine.h"
+ #include "camera.h"
++#include "cdda/cdda_bridge.h"
+ #include "client.h"
+ #include "client/clientevent.h"
+ #include "client/gameui.h"
+@@ -1009,6 +1010,8 @@ Game::Game() :
+ 
+ Game::~Game()
+ {
++	// [CDDA-Mineclonia] Shutdown Bridge
++	cdda_client::CddaBridge::getInstance().shutdown();
+ 	delete client;
+ 	delete soundmaker;
+ 	sound_manager.reset();
+@@ -1239,6 +1242,8 @@ void Game::shutdown()
+ 		}
+ 	}
+ 
++	// [CDDA-Mineclonia] Shutdown Bridge
++	cdda_client::CddaBridge::getInstance().shutdown();
+ 	delete client;
+ 	client = nullptr;
+ 	delete soundmaker;
+@@ -2737,8 +2742,42 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
+ 		control.aux1 = control.aux1 ^ true;
+ 	}
+ 
++	// [CDDA-Mineclonia] Luanti never moves the player on its own (CDDA authority)
++	if (cdda_client::CddaBridge::getInstance().getMetrics().connected) {
++		control.movement_speed = 0.0f;
++		control.jump = false;
++		control.dig = false;
++		control.place = false;
++	}
+ 	client->setPlayerControl(control);
+ 
++	// [CDDA-Mineclonia] Send Movement Commands
++	static float move_cooldown = 0.0f;
++	if (move_cooldown > 0.0f) move_cooldown -= 1.0f / 60.0f; // Approx dtime
++
++	if (move_cooldown <= 0.0f) {
++		// Camera-relative WASD: build a local vector, rotate by yaw, snap to
++		// one of CDDA's 8 grid directions (diagonals included).
++		float lf = (isKeyDown(KeyType::FORWARD) ? 1.f : 0.f) - (isKeyDown(KeyType::BACKWARD) ? 1.f : 0.f);
++		float lr = (isKeyDown(KeyType::RIGHT) ? 1.f : 0.f) - (isKeyDown(KeyType::LEFT) ? 1.f : 0.f);
++		int cdda_dir = 0; // NONE (see protocol MoveDirection)
++		if (lf != 0.f || lr != 0.f) {
++			float yaw = cam.camera_yaw * core::DEGTORAD;
++			// Luanti: +X east, +Z north. forward = (-sin, cos), right = (cos, sin)
++			float vx = -std::sin(yaw) * lf + std::cos(yaw) * lr;
++			float vz =  std::cos(yaw) * lf + std::sin(yaw) * lr;
++			int oct = (int)std::lround(std::atan2(vz, vx) / (core::PI / 4.0f));
++			oct = ((oct % 8) + 8) % 8; // 0=E,1=NE,2=N,3=NW,4=W,5=SW,6=S,7=SE
++			static const int oct_to_cdda[8] = {3, 2, 1, 8, 7, 6, 5, 4};
++			cdda_dir = oct_to_cdda[oct];
++		}
++
++		if (cdda_dir != 0) {
++			cdda_client::CddaBridge::getInstance().handleMoveInput(cdda_dir);
++			move_cooldown = 0.2f; // CDDA is turn based, limit to 5 steps/sec
++		}
++	}
++
+ 	//tt.stop();
+ }
+ 
+@@ -2784,6 +2823,22 @@ inline void Game::step(f32 dtime)
+ 
+ 	if (!m_is_paused)
+ 		client->step(dtime);
++
++	// [CDDA-Mineclonia] Connect (with retry), sync and draw overlay
++	{
++		auto &bridge = cdda_client::CddaBridge::getInstance();
++		static float cdda_retry = 0.0f;
++		cdda_retry -= dtime;
++		// Wait until node definitions and media are received; connecting earlier
++		// would resolve CDDA materials to CONTENT_IGNORE (invisible but solid).
++		if (!bridge.getMetrics().connected && cdda_retry <= 0.0f &&
++				client->nodedefReceived() && client->mediaReceived()) {
++			bridge.initialize(client, "/tmp/cwm_bench_ipc.sock");
++			cdda_retry = 1.0f;
++		}
++		bridge.update(dtime);
++		bridge.renderDebugOverlay(m_rendering_engine->get_gui_env());
++	}
+ }
+ 
+ static void pauseNodeAnimation(PausedNodesList &paused, scene::ISceneNode *node) {
+diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
+new file mode 100644
+index 0000000..b774b24
+--- /dev/null
++++ b/src/cdda/cdda_bridge.cpp
+@@ -0,0 +1,532 @@
++// Luanti C++ CWM Presentation Bridge Implementation
++// Licensed under Apache-2.0
++
++#include "cdda_bridge.h"
++#include "cwm/ipc_transport.hpp"
++#include "cwm/cwm_protocol.hpp"
++
++#include "client/client.h"
++#include "client/clientmap.h"
++#include "client/clientenvironment.h"
++#include "client/localplayer.h"
++#include "mapblock.h"
++#include "mapsector.h"
++#include "nodedef.h"
++
++#include <IGUIEnvironment.h>
++#include <IGUIStaticText.h>
++#include <ISceneManager.h>
++#include <IMeshSceneNode.h>
++
++
++#include <iostream>
++#include <chrono>
++#include <cmath>
++#include <set>
++#include <unordered_map>
++
++namespace cdda_client {
++
++v3s16 CddaBridge::cddaToLuantiCoord(int x, int y, int z) {
++    // Luanti: X is East (+), Y is Up (+), Z is North (-)
++    return v3s16(x, z * 3, -y);
++}
++
++v3s16 CddaBridge::luantiToCddaCoord(v3s16 pos) {
++    return v3s16(pos.X, -pos.Z, static_cast<int>(std::round(pos.Y / 3.0f)));
++}
++
++class CddaBridge::Impl {
++public:
++    Client* client_{nullptr};
++    std::string socket_path_;
++    std::unique_ptr<cdda::cwm::IpcConnection> connection_;
++    Metrics metrics_;
++    uint64_t command_counter_{1};
++
++    std::unordered_map<uint64_t, VisualEntity> entities_;
++    std::unordered_map<uint64_t, VisualVehicle> vehicles_;
++    irr::gui::IGUIStaticText* debug_text_{nullptr};
++    irr::scene::ISceneManager* smgr_{nullptr};
++    std::unordered_map<uint16_t, content_t> material_map_;
++
++    content_t get_node_for_material(uint16_t mat_id) {
++        if (mat_id == 0) return CONTENT_AIR;
++        auto it = material_map_.find(mat_id);
++        if (it != material_map_.end()) return it->second;
++
++        if (!client_) return CONTENT_AIR;
++        const NodeDefManager* ndef = client_->getNodeDefManager();
++        if (!ndef) return CONTENT_AIR;
++
++        content_t cid = CONTENT_AIR;
++        switch (mat_id) {
++            case 1: cid = ndef->getId("cdda_nodes:dirt"); break;
++            case 2: cid = ndef->getId("cdda_nodes:grass_block"); break;
++            case 3: cid = ndef->getId("cdda_nodes:brick_wall"); break;
++            case 4: cid = ndef->getId("cdda_nodes:wood_planks"); break;
++            case 5: cid = ndef->getId("cdda_nodes:door_wood_closed"); break;
++            case 6: cid = ndef->getId("cdda_nodes:door_wood_open"); break;
++            case 7: cid = ndef->getId("cdda_nodes:glass"); break;
++            case 8: cid = ndef->getId("cdda_nodes:stone"); break;
++            case 9: cid = ndef->getId("cdda_nodes:furniture_wood"); break;
++            default: cid = ndef->getId("cdda_nodes:stone"); break;
++        }
++        if (cid == CONTENT_IGNORE) cid = CONTENT_AIR;
++        material_map_[mat_id] = cid;
++        return cid;
++    }
++
++    void set_voxel(Map& map, const v3s16& lpos, content_t cid, uint8_t light, uint8_t param2, std::set<v3s16>& modified_blocks) {
++        v3s16 bp, offset;
++        getNodeBlockPosWithOffset(lpos, bp, offset);
++        MapSector* sector = map.emergeSector(v2s16(bp.X, bp.Z));
++        if (!sector) return;
++        MapBlock* blk = sector->getBlockNoCreateNoEx(bp.Y);
++        if (!blk) {
++            blk = sector->createBlankBlock(bp.Y);
++        }
++        // Same light in day and night banks: CDDA, not Luanti's clock, decides brightness.
++        const uint8_t l = light & 0x0F;
++        blk->setNodeNoCheck(offset, MapNode(cid, (uint8_t)(l | (l << 4)), param2));
++        modified_blocks.insert(bp);
++    }
++
++    void place_cdda_tile(Map& map, const v3s16& base_lpos, uint16_t mat_id, uint8_t light, uint8_t param2, std::set<v3s16>& modified_blocks) {
++        if (mat_id == 0) { // Air
++            set_voxel(map, base_lpos, CONTENT_AIR, light, 0, modified_blocks);
++            set_voxel(map, base_lpos + v3s16(0, 1, 0), CONTENT_AIR, light, 0, modified_blocks);
++            set_voxel(map, base_lpos + v3s16(0, 2, 0), CONTENT_AIR, light, 0, modified_blocks);
++            return;
++        }
++
++        content_t cid = get_node_for_material(mat_id);
++
++        switch (mat_id) {
++            case 3: // MAT_WALL_BRICK
++                // Full story height wall (3 voxels)
++                set_voxel(map, base_lpos, cid, light, param2, modified_blocks);
++                set_voxel(map, base_lpos + v3s16(0, 1, 0), cid, light, param2, modified_blocks);
++                set_voxel(map, base_lpos + v3s16(0, 2, 0), cid, light, param2, modified_blocks);
++                break;
++            case 5: // MAT_DOOR_WOOD_CLOSED
++            case 6: // MAT_DOOR_WOOD_OPEN
++                // Door at base (its nodebox extends through Y+1), lintel block at Y+2
++                set_voxel(map, base_lpos, cid, light, param2, modified_blocks);
++                set_voxel(map, base_lpos + v3s16(0, 1, 0), CONTENT_AIR, light, 0, modified_blocks);
++                set_voxel(map, base_lpos + v3s16(0, 2, 0), get_node_for_material(3), light, 0, modified_blocks);
++                break;
++            case 7: // MAT_WINDOW_GLASS
++                // Lower sill at Y, glass pane at Y+1, lintel at Y+2
++                set_voxel(map, base_lpos, get_node_for_material(3), light, 0, modified_blocks);
++                set_voxel(map, base_lpos + v3s16(0, 1, 0), cid, light, param2, modified_blocks);
++                set_voxel(map, base_lpos + v3s16(0, 2, 0), get_node_for_material(3), light, 0, modified_blocks);
++                break;
++            case 9: // MAT_FURNITURE_WOOD
++                // Furniture at base, open headroom above
++                set_voxel(map, base_lpos, cid, light, param2, modified_blocks);
++                set_voxel(map, base_lpos + v3s16(0, 1, 0), CONTENT_AIR, light, 0, modified_blocks);
++                set_voxel(map, base_lpos + v3s16(0, 2, 0), CONTENT_AIR, light, 0, modified_blocks);
++                break;
++            case 1: // MAT_DIRT
++            case 2: // MAT_GRASS
++            case 4: // MAT_FLOOR_WOOD
++            case 8: // MAT_PAVEMENT_STONE
++            default: // Floor / Ground
++                // Ground surface at base, open air headroom above (Y+1, Y+2)
++                set_voxel(map, base_lpos, cid, light, param2, modified_blocks);
++                set_voxel(map, base_lpos + v3s16(0, 1, 0), CONTENT_AIR, light, 0, modified_blocks);
++                set_voxel(map, base_lpos + v3s16(0, 2, 0), CONTENT_AIR, light, 0, modified_blocks);
++                break;
++        }
++    }
++
++    bool connect() {
++        connection_ = cdda::cwm::IpcClient::connect_unix(socket_path_);
++        if (connection_ && connection_->is_valid()) {
++            metrics_.connected = true;
++
++            // Send Hello
++            cdda::cwm::MessageBuilder builder(command_counter_++, 0);
++            auto hello = builder.build_hello_request("luanti_cdda_client_5.10.0");
++            connection_->send_message(hello.data(), hello.size());
++            return true;
++        }
++        metrics_.connected = false;
++        return false;
++    }
++
++    void update(float dtime) {
++        if (!connection_ || !connection_->is_valid()) {
++            // Periodic reconnect attempt
++            static float reconnect_timer = 0.0f;
++            reconnect_timer += dtime;
++            if (reconnect_timer > 2.0f) {
++                reconnect_timer = 0.0f;
++                connect();
++            }
++            return;
++        }
++
++        std::vector<std::vector<uint8_t>> incoming;
++        bool ok = connection_->poll_and_receive(incoming, 0);
++        if (!ok) {
++            metrics_.connected = false;
++            connection_.reset();
++            return;
++        }
++
++        for (const auto& frame : incoming) {
++            process_message(frame.data(), frame.size());
++        }
++
++        // Interpolate visual entities
++        for (auto& [id, ent] : entities_) {
++            v3f diff = ent.target_pos - ent.current_pos;
++            ent.current_pos += diff * std::min(1.0f, dtime * 12.0f);
++            
++            // Sync Luanti camera to CDDA player (id == 1)
++            if (id == 1 && client_) {
++                auto* local_player = client_->getEnv().getLocalPlayer();
++                if (local_player) {
++                    // BS = 10.0f. Player camera typically is +1.5 blocks up, but CDDA handles Z
++                    local_player->setPosition((ent.current_pos + v3f(0, 0.5f, 0)) * 10.0f); // feet on top of floor node
++                }
++            }
++        }
++
++        // Interpolate visual vehicles and manage scene nodes
++        if (client_ && !smgr_) {
++            smgr_ = client_->getSceneManager();
++        }
++
++        for (auto& [id, veh] : vehicles_) {
++            v3f diff = veh.target_pos - veh.current_pos;
++            veh.current_pos += diff * std::min(1.0f, dtime * 12.0f);
++
++            if (smgr_) {
++                for (auto& comp : veh.components) {
++                    if (!comp.scene_node) {
++                        // Create a simple cube node for the vehicle component
++                        // BS (Block Size) is 10.0f
++                        irr::scene::ISceneNode* node = smgr_->addEmptySceneNode();
++                        if (node) {
++                            // node->getMaterial(0).setFlag(irr::video::EMF_LIGHTING, false);
++                            if (comp.is_broken) {
++                                // Maybe darker color, just handle node creation
++                            }
++                            comp.scene_node = node;
++                        }
++                    }
++                    if (comp.scene_node) {
++                        irr::scene::ISceneNode* node = static_cast<irr::scene::ISceneNode*>(comp.scene_node);
++                        
++                        // Calculate world position based on pivot and rotation
++                        // CDDA rotations: 0 is East, 90 is South, etc.
++                        float rad = veh.rotation * irr::core::DEGTORAD;
++                        float cos_r = std::cos(rad);
++                        float sin_r = std::sin(rad);
++                        
++                        // Apply rotation to mount offset
++                        // Mount offset X is forward/back, Y is left/right in CDDA
++                        float ox = comp.mount_offset.X;
++                        float oz = comp.mount_offset.Z;
++                        
++                        float rx = ox * cos_r - oz * sin_r;
++                        float rz = ox * sin_r + oz * cos_r;
++                        
++                        v3f world_pos(
++                            (veh.current_pos.X + rx) * 10.0f, // Luanti uses BS=10.0f
++                            (veh.current_pos.Y) * 10.0f,
++                            (veh.current_pos.Z + rz) * 10.0f
++                        );
++                        
++                        node->setPosition(world_pos);
++                        node->setRotation(v3f(0.0f, -veh.rotation, 0.0f));
++                    }
++                }
++            }
++        }
++    }
++
++    void process_message(const uint8_t* data, size_t size) {
++        if (!cdda::cwm::MessageVerifier::verify(data, size)) return;
++        const auto* msg = cdda::cwm::MessageVerifier::parse(data, size);
++        if (!msg) return;
++
++        metrics_.current_revision = msg->world_revision();
++
++        switch (msg->payload_type()) {
++            case CDDA::CWM::Payload::HelloResponse: {
++                const auto* resp = msg->payload_as_HelloResponse();
++                if (resp && resp->accepted()) {
++                    std::cout << "[Luanti-CDDA] Handshake accepted by server: "
++                              << (resp->server_build_id() ? resp->server_build_id()->str() : "") << std::endl;
++                }
++                break;
++            }
++
++            case CDDA::CWM::Payload::WorldSnapshot: {
++                const auto* snap = msg->payload_as_WorldSnapshot();
++                if (!snap) break;
++
++                if (snap->chunks() && snap->chunks()->size() > 0)
++                    metrics_.chunks_loaded = snap->chunks()->size();
++                metrics_.entities_count = snap->entities() ? snap->entities()->size() : 0;
++
++                // Ingest chunk voxels into Luanti ClientMap
++                if (client_ && snap->chunks()) {
++                    Map& map = client_->getEnv().getMap();
++                    std::set<v3s16> modified_blocks;
++
++                    for (size_t ci = 0; ci < snap->chunks()->size(); ++ci) {
++                        const auto* chunk = snap->chunks()->Get(ci);
++                        if (!chunk || !chunk->blocks()) continue;
++
++                        int cx = chunk->chunk_x();
++                        int cy = chunk->chunk_y();
++                        int cz = chunk->chunk_z();
++                        uint8_t sx = chunk->size_x();
++                        uint8_t sy = chunk->size_y();
++                        uint8_t sz = chunk->size_z();
++
++                        size_t block_idx = 0;
++                        for (uint8_t bz = 0; bz < sz; ++bz) {
++                            for (uint8_t by = 0; by < sy; ++by) {
++                                for (uint8_t bx = 0; bx < sx; ++bx) {
++                                    if (block_idx >= chunk->blocks()->size()) break;
++                                    const auto* b = chunk->blocks()->Get(block_idx++);
++
++                                    uint16_t mat_id = b->material_id();
++                                    int gx = cx * sx + bx;
++                                    int gy = cy * sy + by;
++                                    int gz = cz + bz;
++
++                                    v3s16 lpos = CddaBridge::cddaToLuantiCoord(gx, gy, gz);
++                                    uint8_t light = b->light_level();
++                                    uint8_t param2 = b->orientation();
++
++                                    place_cdda_tile(map, lpos, mat_id, light, param2, modified_blocks);
++                                }
++                            }
++                        }
++                    }
++
++                    for (const auto& bp : modified_blocks) {
++                        client_->addUpdateMeshTaskWithEdge(bp, false, true);
++                    }
++                }
++
++                // Sync vehicles
++                if (snap->vehicles()) {
++                    metrics_.vehicles_count = snap->vehicles()->size();
++                    for (size_t i = 0; i < snap->vehicles()->size(); ++i) {
++                        const auto* veh_state = snap->vehicles()->Get(i);
++                        uint64_t vid = veh_state->id();
++                        v3f target = v3f(
++                            veh_state->pivot()->x() + snap->origin()->x(),
++                            (veh_state->pivot()->z() - snap->origin()->z()) * 3.0f,
++                            -(veh_state->pivot()->y() + snap->origin()->y())
++                        );
++
++                        auto it = vehicles_.find(vid);
++                        if (it == vehicles_.end()) {
++                            VisualVehicle vv;
++                            vv.id = vid;
++                            vv.name = veh_state->name() ? veh_state->name()->str() : "";
++                            vv.current_pos = target;
++                            vv.target_pos = target;
++                            vv.rotation = veh_state->rotation();
++                            if (veh_state->components()) {
++                                for (size_t ci = 0; ci < veh_state->components()->size(); ++ci) {
++                                    const auto* comp = veh_state->components()->Get(ci);
++                                    VisualVehicleComponent vc;
++                                    vc.name = comp->part_id() ? comp->part_id()->str() : "";
++                                    vc.mount_offset = v3f(comp->offset()->x(), 0.0f, -comp->offset()->y());
++                                    vc.is_broken = comp->broken();
++                                    vc.is_open = comp->open();
++                                    vc.scene_node = nullptr; // Initialize lazily
++                                    vv.components.push_back(vc);
++                                }
++                            }
++                            vehicles_[vid] = vv;
++                        } else {
++                            it->second.target_pos = target;
++                            it->second.rotation = veh_state->rotation();
++                            // Assuming components don't change frequently for this prototype, or update them here
++                        }
++                    }
++                }
++
++                // Sync entities
++                if (snap->entities()) {
++                    for (size_t i = 0; i < snap->entities()->size(); ++i) {
++                        const auto* ent_state = snap->entities()->Get(i);
++                        uint64_t eid = ent_state->id();
++                        v3f target = v3f(
++                            ent_state->pos()->x() + snap->origin()->x(),
++                            (ent_state->pos()->z() - snap->origin()->z()) * 3.0f,
++                            -(ent_state->pos()->y() + snap->origin()->y())
++                        );
++
++                        auto it = entities_.find(eid);
++                        if (it == entities_.end()) {
++                            VisualEntity ve;
++                            ve.id = eid;
++                            ve.type_id = ent_state->type_id() ? ent_state->type_id()->str() : "";
++                            ve.name = ent_state->name() ? ent_state->name()->str() : "";
++                            ve.current_pos = target;
++                            ve.target_pos = target;
++                            ve.rotation = ent_state->rotation();
++                            ve.hp_percent = ent_state->hp_percent();
++                            entities_[eid] = ve;
++                        } else {
++                            it->second.target_pos = target;
++                            it->second.rotation = ent_state->rotation();
++                            it->second.hp_percent = ent_state->hp_percent();
++                        }
++                    }
++                }
++                break;
++            }
++
++            case CDDA::CWM::Payload::TileDelta: {
++                const auto* delta = msg->payload_as_TileDelta();
++                if (delta && delta->coord() && delta->block()) {
++                    v3s16 lpos = CddaBridge::cddaToLuantiCoord(
++                        delta->coord()->x(),
++                        delta->coord()->y(),
++                        delta->coord()->z()
++                    );
++                    if (client_) {
++                        Map& map = client_->getEnv().getMap();
++                        std::set<v3s16> modified_blocks;
++                        place_cdda_tile(
++                            map,
++                            lpos,
++                            delta->block()->material_id(),
++                            delta->block()->light_level(),
++                            delta->block()->orientation(),
++                            modified_blocks
++                        );
++                        for (const auto& bp : modified_blocks) {
++                            client_->addUpdateMeshTaskWithEdge(bp, false, true);
++                        }
++                    }
++                }
++                break;
++            }
++
++            case CDDA::CWM::Payload::CommandAck: {
++                const auto* ack = msg->payload_as_CommandAck();
++                if (ack) {
++                    // Command confirmed
++                }
++                break;
++            }
++
++            default:
++                break;
++        }
++    }
++
++    bool send_move_request(int dir) {
++        if (!connection_ || !connection_->is_valid()) return false;
++        cdda::cwm::MessageBuilder builder(command_counter_++, metrics_.current_revision);
++        auto req = builder.build_move_request(command_counter_, static_cast<CDDA::CWM::MoveDirection>(dir));
++        return connection_->send_message(req.data(), req.size());
++    }
++
++    bool send_interact_request(int x, int y, int z, int action) {
++        if (!connection_ || !connection_->is_valid()) return false;
++        cdda::cwm::MessageBuilder builder(command_counter_++, metrics_.current_revision);
++        auto req = builder.build_interact_request(
++            command_counter_,
++            x, y, z,
++            static_cast<CDDA::CWM::InteractAction>(action)
++        );
++        return connection_->send_message(req.data(), req.size());
++    }
++};
++
++CddaBridge& CddaBridge::getInstance() {
++    static CddaBridge instance;
++    return instance;
++}
++
++bool CddaBridge::initialize(Client* client, const std::string& socket_path) {
++    pimpl_ = std::make_unique<Impl>();
++    pimpl_->client_ = client;
++    pimpl_->socket_path_ = socket_path;
++    return pimpl_->connect();
++}
++
++void CddaBridge::shutdown() {
++    if (pimpl_) {
++        pimpl_->connection_.reset();
++    }
++}
++
++void CddaBridge::update(float dtime) {
++    if (pimpl_) {
++        pimpl_->update(dtime);
++    }
++}
++
++bool CddaBridge::handleMoveInput(int dir) {
++    if (pimpl_) {
++        return pimpl_->send_move_request(dir);
++    }
++    return false;
++}
++
++bool CddaBridge::handleInteract(int x, int y, int z, int action) {
++    if (pimpl_) {
++        return pimpl_->send_interact_request(x, y, z, action);
++    }
++    return false;
++}
++
++CddaBridge::Metrics CddaBridge::getMetrics() const {
++    if (pimpl_) return pimpl_->metrics_;
++    return Metrics{};
++}
++
++} // namespace cdda_client
++
++namespace cdda_client {
++void CddaBridge::renderDebugOverlay(irr::gui::IGUIEnvironment* guienv) {
++    if (!guienv || !pimpl_) return;
++
++    if (!pimpl_->debug_text_) {
++        // Create static text at top left
++        irr::core::rect<irr::s32> rect(10, 10, 400, 150);
++        pimpl_->debug_text_ = guienv->addStaticText(L"F3 Overlay Initializing...", rect, false, true, nullptr, -1, true);
++        if (pimpl_->debug_text_) {
++            pimpl_->debug_text_->setOverrideColor(irr::video::SColor(255, 255, 255, 255));
++        }
++    }
++
++    if (pimpl_->debug_text_) {
++        wchar_t text[512];
++        swprintf(text, 512, L"[CDDA-Mineclonia F3 Overlay]\n"
++                             L"CWM IPC Connected: %ls\n"
++                             L"FPS: %u\n"
++                             L"IPC Latency: %.2f ms\n"
++                             L"Revision: %llu\n"
++                             L"Chunks: %u\n"
++                             L"Entities: %u\n"
++                             L"Vehicles: %u",
++                 pimpl_->metrics_.connected ? L"YES" : L"NO",
++                 pimpl_->metrics_.fps,
++                 pimpl_->metrics_.ipc_latency_ms,
++                 (unsigned long long)pimpl_->metrics_.current_revision,
++                 pimpl_->metrics_.chunks_loaded,
++                 pimpl_->metrics_.entities_count,
++                 pimpl_->metrics_.vehicles_count);
++        
++        pimpl_->debug_text_->setText(text);
++    }
++}
++
++} // namespace cdda_client
+diff --git a/src/cdda/cdda_bridge.h b/src/cdda/cdda_bridge.h
+new file mode 100644
+index 0000000..caf1992
+--- /dev/null
++++ b/src/cdda/cdda_bridge.h
+@@ -0,0 +1,86 @@
++// Luanti C++ CWM Presentation Bridge
++// Licensed under Apache-2.0
++#pragma once
++
++#include <string>
++#include <memory>
++#include <vector>
++#include <unordered_map>
++#include <cstdint>
++#include "irrlichttypes.h"
++#include "irr_v3d.h"
++
++namespace irr { namespace gui { class IGUIEnvironment; class IGUIStaticText; } }
++
++class Client;
++
++namespace cdda_client {
++
++
++struct VisualVehicleComponent {
++    std::string name;
++    v3f mount_offset;
++    bool is_broken;
++    bool is_open;
++    void* scene_node{nullptr}; // Pointer to Irrlicht scene node
++};
++
++struct VisualVehicle {
++    uint64_t id{0};
++    std::string name;
++    v3f current_pos;
++    v3f target_pos;
++    float rotation{0.0f};
++    v3f velocity;
++    std::vector<VisualVehicleComponent> components;
++};
++
++struct VisualEntity {
++    uint64_t id{0};
++    std::string type_id;
++    v3f current_pos;
++    v3f target_pos;
++    float rotation{0.0f};
++    uint8_t hp_percent{100};
++    std::string name;
++};
++
++class CddaBridge {
++public:
++    static CddaBridge& getInstance();
++
++    bool initialize(Client* client, const std::string& socket_path);
++    void shutdown();
++    void update(float dtime);
++
++    // Input hooks
++    bool handleMoveInput(int dir);
++    bool handleInteract(int x, int y, int z, int action);
++
++    // Coordinate conversion
++    static v3s16 cddaToLuantiCoord(int x, int y, int z);
++    static v3s16 luantiToCddaCoord(v3s16 pos);
++
++    // Metrics for F3 Debug Overlay
++    struct Metrics {
++        uint64_t current_revision{0};
++        uint32_t fps{60};
++        float ipc_latency_ms{0.0f};
++        uint32_t chunks_loaded{0};
++        uint32_t entities_count{0};
++        uint32_t vehicles_count{0};
++        bool connected{false};
++    };
++    Metrics getMetrics() const;
++
++    // F3 Debug Overlay
++    void renderDebugOverlay(irr::gui::IGUIEnvironment* guienv);
++
++
++private:
++    CddaBridge() = default;
++    class Impl;
++    std::unique_ptr<Impl> pimpl_;
++};
++
++} // namespace cdda_client

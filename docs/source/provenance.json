@@ -1,0 +1,158 @@
+{
+  "conversation_id": "76a315cf-ae14-4fca-9786-81b3f44cdeb6",
+  "transcript_sha256": "1a5538524a5588b228403ae01c28cb079e7881195cd854dec790e73134cc1417",
+  "transcript_rows": 1978,
+  "last_step": 1986,
+  "specification_step": 0,
+  "amendments_step": 960,
+  "plan_approval_step": 997,
+  "requests": [
+    {
+      "step": 0,
+      "created_at": "2026-10-03T07:44:09Z",
+      "characters": 38923,
+      "sha256": "4e790f31ce6392830f3feb559ed08e91e76d17d458c5b877b819ca3e06c4fa8a",
+      "text": "Preserved in architecture source document."
+    },
+    {
+      "step": 960,
+      "created_at": "2026-10-03T11:14:58Z",
+      "characters": 16527,
+      "sha256": "11290bf003dae06712773cc76819e65bb4abb6357520969a811e42910e0356b8",
+      "text": "Preserved in architecture source document."
+    },
+    {
+      "step": 997,
+      "created_at": "2026-10-03T11:19:44Z",
+      "characters": 35,
+      "sha256": "9344a74a4956aee4ee6fd4d959bc8b1106f91722c82aaa7aae478e2f96a7b611",
+      "text": "[Approved] cdda_mineclonia_plan.md\n"
+    },
+    {
+      "step": 1411,
+      "created_at": "2026-10-03T12:30:42Z",
+      "characters": 8,
+      "sha256": "64b3f29ddeb1d678feeda3cc8f87d1b1f9d196397de5799b53cf33eba030147d",
+      "text": "continua"
+    },
+    {
+      "step": 1413,
+      "created_at": "2026-10-03T12:36:06Z",
+      "characters": 8,
+      "sha256": "64b3f29ddeb1d678feeda3cc8f87d1b1f9d196397de5799b53cf33eba030147d",
+      "text": "continua"
+    },
+    {
+      "step": 1416,
+      "created_at": "2026-10-03T12:42:19Z",
+      "characters": 8,
+      "sha256": "64b3f29ddeb1d678feeda3cc8f87d1b1f9d196397de5799b53cf33eba030147d",
+      "text": "continua"
+    },
+    {
+      "step": 1418,
+      "created_at": "2026-10-03T12:43:02Z",
+      "characters": 8,
+      "sha256": "64b3f29ddeb1d678feeda3cc8f87d1b1f9d196397de5799b53cf33eba030147d",
+      "text": "continua"
+    },
+    {
+      "step": 1661,
+      "created_at": "2026-10-03T12:54:22Z",
+      "characters": 60,
+      "sha256": "250a75917df8e0ec92d5dc92003de1a10b9415e26b0594fe0e28212443d22b95",
+      "text": "posso testare il deliverable? oppure ancora non è testabile?"
+    },
+    {
+      "step": 1692,
+      "created_at": "2026-10-03T13:03:14Z",
+      "characters": 430,
+      "sha256": "0c935dc7b121c5ad7a6b96f836ba7a3586f612b0b2a608d7e288e6f469021076",
+      "text": "Mi dispiace ma il gioco è rotto, anche attivando le mods di cdde se creo un nuovo mondo e ci entro con enable damage ottengo che il mondo è tutto invisibile, c'è l'hud e l'arma, e vedo in alto scritte rosse di errore che contengono \"mapgen stone is invalid\" e \"mapgen water source is invalid\". Inoltre quando ho avviato per la prima volta luanti diceva che c'era una versione più aggiornata ma io non ho accettato l'aggiornamento."
+    },
+    {
+      "step": 1726,
+      "created_at": "2026-10-03T13:10:04Z",
+      "characters": 351,
+      "sha256": "96de57851d67050534fc9359442f611f64ab6dce44c20847925206a7b55b8e58",
+      "text": "ok ora è giocabile e senza errori. Cose che ho notato: non ho nulla nell'inventario, l'ambiente è full3d ma è totalmente roccioso/montagna anche se mi sono mosso un bel po' ed è tutto con lo stesso blocco e stesso landscape, nessuna struttura nè alberi nè erba nè niente. Inoltre non posso distruggere nessun blocco. Non so se queste cose sono volute."
+    },
+    {
+      "step": 1756,
+      "created_at": "2026-10-03T13:12:24Z",
+      "characters": 8,
+      "sha256": "64b3f29ddeb1d678feeda3cc8f87d1b1f9d196397de5799b53cf33eba030147d",
+      "text": "continua"
+    },
+    {
+      "step": 1773,
+      "created_at": "2026-10-03T13:16:48Z",
+      "characters": 284,
+      "sha256": "6c6f99d78d7ebc6036e2fe91d10fa2698bd5a82fbad3ae23a15c63230eb52c2c",
+      "text": "F3 non apre nulla, fa solo fog enabled e fog disabled. Inoltre adesso non c'è neppure alcun terrain e cado nel vuoto fino all'infinito anche se non c'è nessun errore. Inoltre quando genero il mondo c'è come opzione v7 ma posso anche cambiarla anche se non vedo niente inerente a cdda."
+    },
+    {
+      "step": 1801,
+      "created_at": "2026-10-03T13:22:56Z",
+      "characters": 462,
+      "sha256": "0b03560671d18be39eb87f48b038aa990a95a3e72f8a022b7d91f22d7a8791b0",
+      "text": "ok il mondo è creato, non cado di sotto ma è tutto invisibile quindi non riesco neanche a capire la topologia anche se le collisioni ci sono. mi dice che è connesso l'overlay, 60fps, ipc latenci 0,00ms, revision aumenta linearmente quando mi muovo, chunks 0, entites 4. Dopo aver generato il mondo, che mi dava solo l'opzione single-qualcosa, ho poi aperto le mod e fatto enable all(era solo 1 mod di cdda) e poi ho avviato il mondo e il resto te l'ho già detto."
+    },
+    {
+      "step": 1819,
+      "created_at": "2026-10-03T13:28:20Z",
+      "characters": 544,
+      "sha256": "68a7c2b773f59a05ffe2aaaec9f748626f11ffb15b48f687069d08442afa4546",
+      "text": "ok bellissimo, ora mi mostra chunks 192 ed effettivamente mi posso muovere in quadrati discreti come in cdda! le cose fastidiose sono che ogni tanto anche se cammino con successo mi teletrasporta in un punto indietro o diverso senza apparente ragione, inoltre il mondo è totalmente scuro come se fossi in una grotta ma è pieno giorno e sono in un'area completamente aperta, e poi che wasd funziona in senso assoluto rispetto all'orientamento della mappa e non in senso relativo in base allo'oriemtamento del giocatore. Però hey, è un traguardo!"
+    },
+    {
+      "step": 1841,
+      "created_at": "2026-10-03T13:34:01Z",
+      "characters": 470,
+      "sha256": "d799d294d6e88d1eea578dfe8bb65dd4b41be35994a4b065e1675aa4b3280734",
+      "text": "Ok ora è tutto parecchio buio come prima, il movimento è orientato al player però ogni tanto mi teletrasporta ancora, inoltre ci sono alcune aree veramente molto specifiche i.e. rettangolari in cui invece c'è luce senza apparente motivo, anche se non ci sono alcune strutture nel mondo ma solo un pavimento di pietra infinito liscio. Inoltre nel mondo di mineclonia è giorno mentre in quello di cdda è notte suppongo quindi c'è questa discrepanza molto molto fastidiosa."
+    },
+    {
+      "step": 1851,
+      "created_at": "2026-10-03T13:42:17Z",
+      "characters": 8,
+      "sha256": "64b3f29ddeb1d678feeda3cc8f87d1b1f9d196397de5799b53cf33eba030147d",
+      "text": "continua"
+    },
+    {
+      "step": 1869,
+      "created_at": "2026-10-03T13:47:58Z",
+      "characters": 420,
+      "sha256": "3b22f3f565061f90314e0b22cf61dade1db696cc89979acfd8782a167e67ee32",
+      "text": "Ok ora va molto meglio ma comunque con dei significativi problemi. Cose positive: ora la luce c'è ed è coerente con il sole e lo spazio aperto, inoltre ci sono alcuni blocchi di legno per terra randomly.  Cose negative: non c'è assolutamente nient'altro, nessun mob o struttura e il mondo è superflat con solo blocchi di pietra e qualche legno sparso come ti dicevo, e inoltre il teletrasporto sparuto è ancora presente."
+    },
+    {
+      "step": 1891,
+      "created_at": "2026-10-03T13:55:02Z",
+      "characters": 488,
+      "sha256": "9af77f19a9dd919d3b321c424e6214c8e850370728120c04d1664d4211ce605a",
+      "text": "Svariati problemi: ora il player è alto tipo 5 blocchi ed è stranissimo, o comunque sta volando 5 blocchi circa. Inoltre il mondo è generato DOPO che il player è dentro il gioco e quindi lui vede il mondo che viene generato dal nulla e per un player medio non è assolutamente accettabile. inoltre a caso mentre cammino becco muri invisibili e i blocchi di legno che ti dicevo per terra cambiano di pattern a vista d'occhio senza apparente senso. I teletrasporti tuttavia sembrano risolti."
+    },
+    {
+      "step": 1918,
+      "created_at": "2026-10-03T13:59:56Z",
+      "characters": 159,
+      "sha256": "ed43000359cd8f696b3c1198d3a6eab5f00fba30e076b992910d2c8b2152608d",
+      "text": "Il player sta ancora volando ma più basso di prima(forse di 1 o 2 blocchi). mentre i muri invisibili ancora ci sono! tipo ne ho trovato 1 di proprio un blocco."
+    },
+    {
+      "step": 1976,
+      "created_at": "2026-10-03T14:05:40Z",
+      "characters": 8,
+      "sha256": "64b3f29ddeb1d678feeda3cc8f87d1b1f9d196397de5799b53cf33eba030147d",
+      "text": "continua"
+    },
+    {
+      "step": 1984,
+      "created_at": "2026-10-03T14:14:03Z",
+      "characters": 8,
+      "sha256": "64b3f29ddeb1d678feeda3cc8f87d1b1f9d196397de5799b53cf33eba030147d",
+      "text": "continua"
+    }
+  ]
+}
