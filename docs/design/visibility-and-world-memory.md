@@ -112,6 +112,18 @@ dedotti da submap non osservate.
 
 ## Comparsa delle creature
 
+Il [riscontro successivo](../source/exploration-validation-2026-10-04.md)
+segnala un NPC visibile soltanto entro circa tre caselle nella stanza chiusa
+dello spawn, ricondotto dall'utente al buio. La visibilità corrente usa
+`avatar::sees`, mentre i tile ricevono luce naturale semplificata per piano Z.
+Verificare luce locale, occlusione e sorgenti nelle fixture giorno/notte e
+interno/esterno; una stanza graficamente luminosa non spiega una percezione
+nativa limitata. Oscurità degli interni e nebbia del confine richiedono
+presentazioni coerenti ma distinte, senza anticipare creature non percepite.
+Registrata anche la resa nera dell'immersione: includere indizi d'acqua,
+superficie/volume, camera e attenuazione nella prova di percezione più ampia.
+Nessun intervento urgente su questi due appunti richiesto dall'utente.
+
 La proposta di una transizione più dolce è da provare. Non mostrare anticipi,
 ombre, suoni o sagome di creature non percepite per evitare un pop-in: sarebbero
 informazione aggiuntiva. Il ramo `perceived` attuale è una base, non certifica
@@ -126,6 +138,10 @@ Orientamento, animazioni e occlusione corretti aiutano la leggibilità, ma non
 eliminano da soli il problema delle soglie informative.
 
 ## Piattezza, alberi e aperture
+
+Nel successivo riscontro manuale B riduce molto la sensazione di piattezza:
+rilievo e dossi rinviati almeno fino a dettagli grafici sufficienti. Le
+possibilità sotto restano future e non cambiano l'ordine FND-02/03 → panorama.
 
 La B attuale mostra un albero con un blocco di tronco e uno di chioma sopra il
 pavimento: non è una conversione definitiva dell'altezza di un albero maturo.

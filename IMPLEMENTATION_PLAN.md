@@ -49,6 +49,14 @@ sono stati affrontati nella [riparazione esplorativa](docs/fixes/exploration-ape
 avviso degli oggetti vulnerabili tramite UI esterna, stati derivati dalle
 transizioni native, davanzale persistente e OPEN/CLOSE puntati. Restano i
 limiti e la nuova verifica manuale indicati nel report.
+La [validazione manuale successiva](docs/source/exploration-validation-2026-10-04.md)
+accetta OPEN/CLOSE puntati, B normale, ingresso/uscita nell'acqua e avviso degli
+oggetti vulnerabili. Posizione e stati delle aperture persistono anche dopo
+allontanamento oltre la proiezione, quit/load e ritorno. Nei casi provati la
+riparazione è accettata; non serve ripetere la stessa checklist prima di
+FND-02/03. Puntamento sul davanzale funzionale, ergonomia ancora da valutare:
+proposta di selezione dell'intera apertura con evidenziazione/azione esplicita,
+occlusione e portata native, senza collisioni aggiunte.
 L'accettazione delle strutture nei casi precedenti non copre queste anomalie.
 FND-04 ora include OPEN/CLOSE puntati senza attraversamento; la fase 2
 comprende una nebbia del confine della proiezione che non sveli terreno ignoto.
@@ -90,6 +98,12 @@ Dipende da FND-01–03 e dalla proiezione sufficiente alla scena di confronto.
   legalità nativa e coerenza geometrica. Estensioni ulteriori documentate.
 - Percezione CDDA indipendente dal cono camera; indizi periferici/sonori con
   conoscenza e incertezza native. Luce e sensi speciali coerenti.
+  Coprire il caso manuale dell'NPC visibile solo da vicino in una stanza
+  chiusa/buia: luce locale e sorgenti/occlusione CDDA devono rendere leggibile
+  la perdita di percezione, oltre alla luce naturale semplificata per piano.
+  Per l'immersione, confrontare superficie/volume, camera e tinta/attenuazione
+  riconoscibili anziché nero privo di contesto. Entrambi registrati per la
+  prova più ampia, conservando la visibilità autorevole degli attori.
 - Separare distanza di presentazione, realtà simulata e conoscenza. Il
   [contratto proposto](docs/design/visibility-and-world-memory.md) distingue
   terreno osservato, memoria statica e overmap nota. Verificare/popolare la
@@ -109,6 +123,9 @@ Dipende da FND-01–03 e dalla proiezione sufficiente alla scena di confronto.
   e costiera accettabile; dettaglio naturale e skyline da migliorare.
   Piccole irregolarità facoltative in una prova più ampia, senza test manuale
   dedicato; nessun gradino di un cubo soltanto grafico assunto innocuo.
+  Il successivo riscontro trova la piattezza molto meno evidente con B:
+  rinviare rilievo e prototipi di dossi fino a dettagli grafici sufficienti;
+  rivalutare allora la necessità, senza una nuova worldgen nel prossimo task.
   Rilievi percorribili richiedono quote e regole autorevoli CDDA, non colline
   autonome Luanti. Nessuna nuova generazione del mondo è stata scelta.
 - Animazione e orientamento delle creature coerenti con stato, movimento e

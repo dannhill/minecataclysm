@@ -1,5 +1,5 @@
 {
-  "scope": "Exploration repair PASS in scoped automated/native/real-client checks; manual user confirmation pending. Historical M5.5 FAILED; full SAVE-001 INCOMPLETE.",
+  "scope": "Exploration repair PASS in scoped automated/native/real-client checks, followed by manual acceptance of pointed openings, normal B, water entry/exit and aperture/position persistence. Historical M5.5 FAILED; full SAVE-001 INCOMPLETE.",
   "code_commit": "2a018000debe2be9eedac5d8cd35f3b8af0a16aa",
   "branch": "fix/exploration-apertures",
   "sources": {
@@ -303,7 +303,7 @@
     "caveat": "Began before final breathing-warning rebuild completed; no per-invocation executable hashes recorded. Informational only, not used for final source-specific acceptance. Final native/GUI water-save checks above use the installed binary identity."
   },
   "limits": [
-    "Manual confirmation of exact user pond/aperture variants pending",
+    "Manual acceptance received in the reported cases; exact original pond session not reconstructed and all graphic aperture variants not certified.",
     "Complete vertical/swim controls, long-warning GUI, furniture/detail assets, real-time scheduler and animations incomplete",
     "Final distance/fog, distant memory, mature trees and relief not implemented",
     "FND-02/03 transport, negotiation, deduplication and recovery probes remain failing/unverified",
@@ -445,5 +445,26 @@
     "artifacts/exploration-fix/terrain/launcher.log": "1ccee0a04ff440579944467cd3625a8789177b4a4ee4b70b15598c4d97cd23e8",
     "artifacts/exploration-fix/terrain/pixels.json": "b2e30f2c60d688edffa700297af963a23d69b6f9c7efe52ad4cb23b15cdddb3d",
     "artifacts/exploration-fix/terrain.log": "5b622ffedf4dce3fdc26979b6dca5b6762f84cbec2a363e901ba44c6cea8e1b8"
+  },
+  "manual_validation": {
+    "source": "docs/source/exploration-validation-2026-10-04.md",
+    "distributed_report_commit": "f0873d5",
+    "accepted": [
+      "Pointed OPEN/CLOSE on doors/windows",
+      "B in ordinary start.sh",
+      "Shallow/deep water entry/exit and vulnerable-item confirmation",
+      "Position on quit/load",
+      "Modified aperture states on quit/load",
+      "Aperture states after departure beyond rendering, quit/load and return",
+      "Readable/moving purple placeholder creatures"
+    ],
+    "remaining_feedback": [
+      "Sill targeting usable; final ergonomics undecided",
+      "Dark-room NPC disappearance needs corresponding visual darkness",
+      "Black underwater image lacks immersion cues",
+      "Projection border without fog remains unattractive"
+    ],
+    "priority_directive": "Defer flatness/relief until sufficient visual detail; dark-room/water presentation not urgent; FND-02/03 precede distant panorama.",
+    "scope_limit": "User-reported cases, not independently instrumented sessions or complete save/perception/lifecycle certification."
   }
 }

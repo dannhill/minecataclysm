@@ -13,6 +13,12 @@ Il problema va definito adesso; il confronto giocabile appartiene alla fase 2,
 prima di consolidare guida, combattimento e costruzioni. FND-02/03 restano le
 prossime fondazioni da implementare.
 
+Nel [riscontro dopo la riparazione](../source/exploration-validation-2026-10-04.md)
+l'utente valida B nel mondo normale e nota molto meno la piattezza. Rilievo
+e prototipi di dossi sono rinviati almeno fino a dettagli grafici sufficienti.
+La voce facoltativa sul dettaglio superficiale sotto resta una possibilità
+futura, non lavoro da introdurre nel prossimo task.
+
 ## Quanto dipende dal bridge corrente
 
 Nel codice `c10633e`, `CwmMapExporter::export_block()` distingue materiali

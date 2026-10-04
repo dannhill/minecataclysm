@@ -60,6 +60,18 @@ The exact pond save reported by the user has not been reproduced. Full
 underwater/vertical input, furniture assets and upper-floor navigation remain
 incomplete. Historical M5.5 and SAVE-001 outcomes remain unchanged.
 
+The subsequent [manual exploration validation](docs/source/exploration-validation-2026-10-04.md)
+accepts pointed OPEN/CLOSE on doors/windows, B in normal play, shallow/deep
+water entry/exit and the native vulnerable-item confirmation. Position and
+modified aperture states survive quit/load, including departure beyond the
+rendered area and return. This does not certify distant visual memory.
+The user also accepts readable/moving placeholder creatures. Remaining visual
+issues are dark-room NPC pop-in without corresponding local darkness,
+black underwater presentation and the unsoftened projection border. Window
+sill targeting works but its final ergonomics remain open. These are recorded
+for FND-04/phase 2; flatness/relief is deferred until sufficient visual detail.
+No further repeated manual checklist is needed before FND-02/03 work.
+
 **M5.5 takeover audit: COMPLETE. Architectural conformance gate: FAILED.**
 The findings are documented in [the audit](docs/audits/M5.5.md), with
 [persistent evidence](docs/audits/M5.5-evidence.json) and a

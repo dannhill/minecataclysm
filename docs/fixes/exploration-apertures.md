@@ -103,6 +103,14 @@ con copie precedenti e receipt conservati negli artifact.
 
 ## Prova manuale con `start.sh`
 
+Il [riscontro dell'utente](../source/exploration-validation-2026-10-04.md)
+valida OPEN/CLOSE, B normale, acqua bassa/profonda e conferma degli oggetti.
+Valida anche posizione e stati delle aperture dopo quit/load e dopo viaggio
+oltre la proiezione, quit/load e ritorno. Le creature placeholder risultano
+leggibili e si muovono. Restano ergonomia del puntamento basso, resa del buio,
+immersione nera e confine senza nebbia, registrati per il seguito. Nessun altro
+ciclo obbligatorio richiesto ora; la checklist sotto resta un riferimento.
+
 1. Cercare porte e finestre diverse: stato visibile coerente prima/dopo il
    passaggio, osservando anche dall'altro lato.
 2. Puntare una porta/finestra vicina: clic destro per aprire, Shift sinistro
