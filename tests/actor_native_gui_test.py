@@ -71,9 +71,17 @@ def main():
             proc=subprocess.Popen([str(ws/'start.sh'),'--go','--name','actor_native_tester','--info'],
                 env=env,stdout=log,stderr=subprocess.STDOUT,start_new_session=True)
             try:
-                state=until(lambda data: len(data)==4 and data[1]['ready']=='1',85)
-                ids=set(state)-{1}
-                if run=='initial': expected=ids
+                state=until(lambda data: len(data)>=4 and data[1]['ready']=='1',85)
+                if run=='initial':
+                    player=state[1]
+                    px,py,pz=[float(player['target_'+k]) for k in ('x','y','z')]
+                    # Native mapgen can contain legitimate static animal spawns
+                    # even at density zero. Select our fixed fixture actors by
+                    # kind and relative position, rather than forbidding others.
+                    wanted={('monster',px+3,py,pz+2),('monster',px+5,py,pz+2),('npc',px,py,pz-4)}
+                    expected={ident for ident,row in state.items() if
+                        (row['type'],*[float(row['target_'+k]) for k in ('x','y','z')]) in wanted}
+                ids=set(state)&expected
                 check(run+'_actual_native_actor_roster',ids==expected and len(ids)==3)
                 check(run+'_wire_ids_use_persistent_namespaces',sum(i>>62==1 for i in ids)==2 and sum(i>>63==1 for i in ids)==1)
                 npc_id=next(i for i in ids if i>>63==1)
@@ -99,9 +107,9 @@ def main():
                     tap('space'); arrived(x,y+3,z+1)
                     tap('space',True); arrived(x,y,z+1)
                     tap('s'); returned=arrived(x,y,z)
-                    check('native_floor_roundtrip_retains_actor_ids',set(returned)-{1}==expected)
+                    check('native_floor_roundtrip_retains_actor_ids',expected<=set(returned))
                 else:
-                    check('native_gui_reload_has_no_orphan_meshes',int(state[1]['scene_actors'])<=3)
+                    check('native_gui_reload_has_no_orphan_meshes',int(state[1]['scene_actors'])<=len(state)-1)
                 samples=read(actors)
                 check(run+'_mesh_visibility_respects_native_perception',all(
                     row['node_visible']=='0' or (row['perceived']=='1' and row['ready']=='1') for row in samples))
