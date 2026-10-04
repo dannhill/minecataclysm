@@ -4,6 +4,10 @@ This workspace integrates CDDA, Luanti and selected Mineclonia presentation cont
 Read `ARCHITECTURE.md`, `IMPLEMENTATION_STATUS.md`, `docs/invariants.md`, and the
 original specification, amendments and current user scope directive in
 `docs/source/` before changing behavior.
+Read `IMPLEMENTATION_PLAN.md` and accepted decisions in
+`docs/source/feature-decisions-2026-10-04.md` before choosing product behavior.
+Prototype decisions that require the user's playable comparison must not be
+silently finalized by an agent.
 
 - CDDA owns gameplay, simulation time and canonical persistence. Luanti owns presentation only.
 - The integrated product is the target. Unused upstream code, internal APIs

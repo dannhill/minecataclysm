@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "source": "User answers to 15 source-grounded questionnaires in this Codex conversation, 2026-10-04",
+  "status": "Accepted product decisions; implementation and prototype outcomes tracked separately",
+  "decisions": {
+    "time": "Real time with pause; default 1 real second = 1 simulation second; globally adjustable rate applies consistently to all authoritative systems. Complex menus pause. Native action costs preserved. Long activities accelerate automatically with interruption handling.",
+    "depth": "deep CDDA rules; guided defaults; progressively exposed optional detail/manual control up to near-native CDDA experience",
+    "movement": "Playable comparison required: smoothly presented native grid vs authoritative CDDA tile+subcell extension, natural first-person heading/stops and fractional accumulated movement costs; integrated CDDA remains ground truth. User decides after documented hands-on scenarios.",
+    "spatialPreference": "Visible geometry should determine range and obstacles, conditional on a clear contract with CDDA ground truth; user requests explanation promptly.",
+    "validation": "Plan playable comparison of smooth grid vs hybrid before final commitment.",
+    "groundTruth": "CDDA integrated authoritative, explicit tested spatial extensions allowed. User must personally play test scenes; differences from vanilla and extensions must be well documented.",
+    "interactions": {
+      "default": "quick action + stable-position compact radial menu + full action list with requirements/costs; rebindable shortcuts"
+    },
+    "posture": {
+      "scope": "walk/run/crouch/prone direct rebindable",
+      "groundTruth": "speed/noise/fatigue in 3D must follow integrated CDDA authority, parameters may be adapted as necessary"
+    },
+    "vertical": {
+      "initial": "fluid stairs, explicit vault/climb; swimming and diving retained",
+      "pending": "Resolved: native contextual jumps and acquired leaps included; effective ordinary jump cost remains a code-path/test investigation.",
+      "jump": "Include native contextual gap jumps, vaulting and acquired leap abilities with original eligibility constraints; verify ordinary ledge-jump effective cost (no explicit moves charge in success branch) before any adaptation; no unrestricted universal physics jump assumed."
+    },
+    "inventory": {
+      "view": "unified icons/categories/search; actual pocket/container shown for selected item; advanced tree view",
+      "transfers": "select quantities between two panels while paused, then execute native-like interruptible timed activity; prioritize CDDA behavior"
+    },
+    "survival": "Full CDDA mechanics, guided main indicators, details on demand; no per-world rule disabling selected.",
+    "equipmentVisuals": "Recognizable equipment categories and colors for first complete version; canonical per-item stats and clothing layers remain complete.",
+    "medical": {
+      "ui": "body diagram -> explicit actual item -> confirm treatment; original item -> body workflow also available",
+      "help": "filter relevant owned items and explain knowable effects; no automatic treatment selection or automatic care plan"
+    },
+    "crafting": {
+      "recipes": "visual known-recipe catalogue; linked known subrecipes; user starts each job; batch quantities/favorites; no automatic dependency production queue",
+      "components": "explicit confirmation of proposed concrete components and source containers; alternatives editable; protect favorite/equipped items from automatic selection",
+      "longActivities": "automatic time acceleration with progress; pause on relevant interruptions; user can slow/stop; full CDDA simulation advances"
+    },
+    "combat": {
+      "defense": "native passive defenses, martial techniques and positional movement; no new universal active parry/dodge mechanic",
+      "melee": "point and attack",
+      "time": "auto-pause on newly perceived threat; user resumes real-time; manual pause available",
+      "optionalTurnMode": "User requests selectable action-by-action combat if design/implementation is reasonably simple; validate shared-scheduler feasibility in time/movement prototype, not promised yet.",
+      "ranged": "assisted default and selectable free-crosshair mode required in first complete version, same CDDA ballistic and aim-time authority"
+    },
+    "perception": {
+      "awareness": "Preserve CDDA perception independent of camera field of view, contextual directional awareness cues; no new vision-cone balance change now.",
+      "sound": "spatial audio + optional discreet descriptions/directional cues with canonical uncertainty",
+      "maps": "Confirmed native world map, notes/routes, graphic minimap default true in pinned CDDA; adopt consultable world/local knowledge views plus optional minimap. Local dedicated map is 3D adaptation of native overhead information, no item access requirement."
+    },
+    "creatures": {
+      "coverage": "Preserve base CDDA bestiary with family models, size/appearance cues for distinguishable variants; improve individual assets later.",
+      "simulation": "CDDA AI, evolution, special attacks and native warnings; presentation assets only from Mineclonia",
+      "corpses": "manual actions by default; native automation optional; retain revival, destruction, butchery/dissection costs and requirements"
+    },
+    "npcs": {
+      "dialogue": "paused panel with complete native text/history/responses/trials and consequences",
+      "trade": "native multi-item bilateral barter/credit/ownership/capacity with explicit final confirmation",
+      "companions": "quick native orders + readable profiles + editable full native individual rules; obey communication constraints",
+      "missions": "Native journal/status/deadlines/selected mission/destination and map direction retained; optional first-person HUD direction is presentation adaptation, no more precise target than native exposes. Exact time vs approximate preserves watch-dependent knowledge.",
+      "camps": "include native camps, expeditions, resources, jobs and upgrades through management panel; preserve native offscreen abstractions"
+    },
+    "building": {
+      "granularity": "Native CDDA structures represented in 3D, preview and authoritative validity; no arbitrary per-render-voxel construction extension requested.",
+      "planning": "Multi-cell plans/blueprints with material estimates; native staged interruptible labor",
+      "logistics": "Native sorting/farming/building zones presented spatially; actual workers and native activities perform work",
+      "appliances": "Native appliance/electrical systems with clear device/network UI, hiding internal vehicle implementation"
+    },
+    "vehicles": {
+      "driving": "Playable comparison of interpolated native driving and continuous authoritative CDDA extension; user chooses after driving/collision/skill scenarios.",
+      "workshop": "In-world targeting + layered part view; full native installation/repair/removal requirements and timed work",
+      "rollout": "Plan native categories in sequence land, water, then flight; flight included later, not excluded."
+    },
+    "progression": {
+      "characterCreation": "guided presets/filters plus full native creation editor, scenarios, professions, backgrounds, attributes and skills",
+      "skills": "native distinction practice/theory/proficiencies; books and NPC training preserved",
+      "mutationsBionics": "both full core native systems including costs, risks, activation and physical/equipment implications; unified readable character/ability UI"
+    },
+    "worldActivities": {
+      "farmingAnimalsFood": "Retain native farming/harvesting/fishing/foraging/animal care and mounts, butchery/food prep/preservation; contextual actions, zone operations and native timed activities.",
+      "environment": "Native fire/smoke/gas/weather/traps/destruction rendered consistently; no knowledge leak.",
+      "liquids": "Native CDDA sources/containers/transfers/fuel/swimming and native phenomena with 3D visuals; no new voxel fluid simulation",
+      "computers": "Readable menu/panel exposing native functions, skill checks, times and consequences; no new reflex minigame"
+    },
+    "worldProfile": {
+      "default": "Pinned CDDA developer-recommended valid mod profile (dda plus no_npc_food, personal_portal_storms, no_fungal_growth; resolve invalid/legacy identifiers as native loader does). Expose exact mod/config list; advanced native settings editable.",
+      "expansions": "Complete/verify base first; selected large content mods later with explicit compatibility coverage and tests; retain generic ability/EOC infrastructures.",
+      "deathSave": "Native quicksave/load/autosave and permanent character death; expose/configure native world-end policy at world creation. No added post-death recovery mode selected."
+    },
+    "questionnaireStatus": "First series complete: 15 topic blocks. Remaining product choices intentionally assigned to hands-on movement/driving prototypes; optional action-by-action combat requires feasibility validation. No repository edits made in Plan Mode."
+  }
+}

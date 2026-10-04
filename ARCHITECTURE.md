@@ -9,6 +9,13 @@ and unused functionality can be changed or removed to serve the integration.
 Pinned upstream builds/tests are reference evidence, not a requirement to
 retain unrelated standalone functionality in the product.
 
+The [complete current plan](IMPLEMENTATION_PLAN.md) and
+[accepted feature decisions](docs/source/feature-decisions-2026-10-04.md)
+define the product adaptations: real time with pause, guided deep interfaces,
+native recommended content defaults and playable spatial/controller prototypes.
+Explicit tested spatial extensions inside integrated CDDA are authorized;
+the user selects movement/driving after playing the comparison scenes.
+
 CDDA is the sole simulation, gameplay, temporal and persistence authority.
 Its internal CWM coordinator validates inputs and exports immutable snapshots
 and end-of-turn delta batches. CWM describes semantic state, independent of the

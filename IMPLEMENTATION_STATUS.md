@@ -1,5 +1,11 @@
 # Implementation status
 
+The [complete implementation plan](IMPLEMENTATION_PLAN.md) now incorporates
+all 15 source-grounded feature questionnaires. Detailed accepted decisions
+are in [the product directive](docs/source/feature-decisions-2026-10-04.md).
+FND-01 (canonical startup/loading and shared native turns) is in progress.
+Product decisions and planned prototypes do not certify implementation.
+
 **M5.5 takeover audit: COMPLETE. Architectural conformance gate: FAILED.**
 The findings are documented in [the audit](docs/audits/M5.5.md), with
 [persistent evidence](docs/audits/M5.5-evidence.json) and a
