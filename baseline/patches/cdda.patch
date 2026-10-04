@@ -30,7 +30,7 @@ index 6d5d148..4181ad1 100644
  
  if (MINGW AND NOT RELEASE)
 diff --git a/src/avatar_action.cpp b/src/avatar_action.cpp
-index d7e91fc..c01be43 100644
+index d7e91fc..75f4886 100644
 --- a/src/avatar_action.cpp
 +++ b/src/avatar_action.cpp
 @@ -22,6 +22,7 @@
@@ -73,6 +73,18 @@ index d7e91fc..c01be43 100644
      uilist menu;
      menu.title = _( "Diving will destroy the following items.  Proceed?" );
      menu.text = _( "These items are not inside a waterproof container." );
+@@ -631,7 +657,10 @@ void avatar_action::swim( map &m, avatar &you, const tripoint &p )
+         }
+     }
+     if( you.oxygen <= 5 && you.is_underwater() ) {
+-        if( movecost < 500 ) {
++        if( external_ui_active() ) {
++            external_ui_choice( _( "You need to breathe!  Get to dry land, quick!" ),
++                                { _( "Continue" ) } );
++        } else if( movecost < 500 ) {
+             popup( _( "You need to breathe!  (%s to surface.)" ), press_x( ACTION_MOVE_UP ) );
+         } else {
+             popup( _( "You need to breathe but you can't swim!  Get to dry land, quick!" ) );
 diff --git a/src/do_turn.cpp b/src/do_turn.cpp
 index 2455a6f..a6a40aa 100644
 --- a/src/do_turn.cpp
@@ -1881,10 +1893,10 @@ index 0000000..ca196fd
 +}
 diff --git a/tests/cwm_runtime_test.cpp b/tests/cwm_runtime_test.cpp
 new file mode 100644
-index 0000000..f4edf2d
+index 0000000..c93b96d
 --- /dev/null
 +++ b/tests/cwm_runtime_test.cpp
-@@ -0,0 +1,243 @@
+@@ -0,0 +1,276 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "avatar_action.h"
@@ -1959,6 +1971,39 @@ index 0000000..f4edf2d
 +        REQUIRE( choices.size() == 2 );
 +        CHECK( choices.back() == "No" );
 +        return answer;
++    } ) );
++    CHECK( prompts == 1 );
++    CHECK_FALSE( external_ui_active() );
++}
++
++TEST_CASE( "cwm_underwater_breath_warning_uses_external_decision", "[cwm][water]" )
++{
++    const override_option no_autosave( "AUTOSAVE", "false" );
++    prepare_runtime();
++    avatar &u = get_avatar();
++    map &m = get_map();
++    const tripoint start = u.pos();
++    const auto absolute_start = m.getglobal( start );
++    m.ter_set( start, ter_str_id( "t_water_dp" ) );
++    m.ter_set( start + tripoint_north, ter_str_id( "t_water_dp" ) );
++    u.set_skill_level( skill_id( "swimming" ), 10 );
++    u.set_underwater( true );
++    u.moves = 1000;
++    int prompts = 0;
++    REQUIRE_FALSE( do_turn_with_action( [&]() {
++        u.oxygen = 1;
++        const int before = u.moves;
++        avatar_action::swim( m, u, u.pos() + tripoint_north );
++        CHECK( m.getglobal( u.pos() ) == absolute_start + tripoint_north );
++        CHECK( u.moves < before );
++        u.pause();
++        return true;
++    }, [&]( const std::string &text, const std::vector<std::string> &choices ) {
++        ++prompts;
++        CHECK( text.find( "breathe" ) != std::string::npos );
++        REQUIRE( choices.size() == 1 );
++        CHECK( choices.front() == "Continue" );
++        return 0;
 +    } ) );
 +    CHECK( prompts == 1 );
 +    CHECK_FALSE( external_ui_active() );

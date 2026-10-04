@@ -36662,7 +36662,7 @@
   {
     "path": "src/avatar_action.cpp",
     "mode": "100644",
-    "sha256": "705f0be51518d4d1e331903963d16b45e1630bd1fd5e4a65eb5a9af2e503559c"
+    "sha256": "25213ae31a7f6385a1cb00aca3065145d7ab4f2aaaca8d8a801114dc7f7c3aa3"
   },
   {
     "path": "src/avatar_action.h",
@@ -40867,7 +40867,7 @@
   {
     "path": "tests/cwm_runtime_test.cpp",
     "mode": "100644",
-    "sha256": "b74c06ab0a5ecb5dea8095de6de40d8a8ec791e1f31b0e5f04655a291a1d2e45"
+    "sha256": "877f77d2a23f4158342752293a91791c50c5502c773f9f21308c4f95af29ed80"
   },
   {
     "path": "tests/data/name.json",
