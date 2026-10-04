@@ -151,10 +151,14 @@ int main(int argc, const char *argv[]) {
                 tinymap section;
                 section.load(tripoint_abs_sm(sx,4,0), false);
                 for (int y = 0; y < 24; ++y) for (int x = 0; x < 24; ++x) {
-                    section.ter_set(tripoint(x,y,0), ter_str_id("t_floor"));
+                    section.ter_set(tripoint(x,y,0), ter_str_id(create_actor_demo ? "t_pavement" : "t_floor"));
                     section.furn_set(tripoint(x,y,0), furn_str_id("f_null"));
                     section.ter_set(tripoint(x,y,1), ter_str_id("t_wood_treated_roof"));
                     section.furn_set(tripoint(x,y,1), furn_str_id("f_null"));
+                    if (create_actor_demo) for (int z = 1; z <= 10; ++z) {
+                        section.ter_set(tripoint(x,y,z), ter_str_id("t_open_air_rooved"));
+                        section.furn_set(tripoint(x,y,z), furn_str_id("f_null"));
+                    }
                 }
                 section.save();
             }
