@@ -7,7 +7,7 @@
   "environment": {
     "os": "Pop!_OS 22.04 LTS",
     "compiler": "GCC 11.4.0 (/usr/bin/c++)",
-    "build": "Release, incremental reconstructed sources with retained caches; not cold",
+    "build": "CDDA/Luanti Release, protocol Debug; incremental reconstructed sources with retained caches, not cold",
     "display": ":1",
     "flatc": "24.3.25"
   },
