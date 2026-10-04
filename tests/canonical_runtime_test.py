@@ -248,7 +248,7 @@ def main():
         native_npc_ids = [n['id'] for n in saved['npcs']]
         check('live_save_keeps_native_npc_identity', all(native_npc_ids.count(n['id']) == 1
               for n in control['npcs']), npc_ids=native_npc_ids,
-              limitation='NPC presentation is still unimplemented; this checks native persistence only.')
+              limitation='This checks native persistence; NPC rendering has a separate real-client fixture.')
         native_restart = scratch/'native-restart'; shutil.copytree(user, native_restart)
         native(native_restart, 'native_restart_resave', resave=True)
         expected_restart = native(native_restart, 'native_restart_expected')

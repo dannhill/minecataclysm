@@ -163,7 +163,7 @@ index 6ebdaa7..b5af8ff 100644
  
  #endif // CATA_SRC_DO_TURN_H
 diff --git a/src/game.cpp b/src/game.cpp
-index 195bc1e..e43643d 100644
+index 195bc1e..b40e2d3 100644
 --- a/src/game.cpp
 +++ b/src/game.cpp
 @@ -1,4 +1,5 @@
@@ -172,13 +172,17 @@ index 195bc1e..e43643d 100644
  
  #include <functional>
  #include <clocale>
-@@ -2763,6 +2764,13 @@ bool game::is_game_over()
+@@ -2763,6 +2764,17 @@ bool game::is_game_over()
  void game::bury_screen() const
  {
      avatar &u = get_avatar();
 +    if( external_ui_active() ) {
-+        external_ui_choice( string_format( _( "%s has died. The native death and world policy will now apply." ),
-+                                          u.name ), { _( "Continue" ) } );
++        const std::string mode = get_option<std::string>( "WORLD_END" );
++        const std::string policy = mode == "reset" ? _( "Reset world" ) :
++                                   mode == "delete" ? _( "Delete world" ) :
++                                   mode == "query" ? _( "Ask" ) : _( "Keep world" );
++        external_ui_choice( string_format( _( "%1$s has died.\nWhen the last character dies: %2$s." ),
++                                          u.name, policy ), { _( "Continue" ) } );
 +        get_event_bus().send<event_type::game_avatar_death>( u.getID(), u.name, u.male,
 +                uquit == QUIT_SUICIDE, std::string() );
 +        return;
@@ -186,7 +190,7 @@ index 195bc1e..e43643d 100644
  
      std::vector<std::string> vRip;
  
-@@ -2951,6 +2959,13 @@ void game::bury_screen() const
+@@ -2951,6 +2963,13 @@ void game::bury_screen() const
  void game::death_screen()
  {
      gamemode->game_over();
@@ -279,6 +283,44 @@ index 652ad80..b19d6b8 100644
              break;
  
          case ACTION_WHITELIST_ENEMY:
+diff --git a/src/iexamine.cpp b/src/iexamine.cpp
+index e2e738d..e3ed1a6 100644
+--- a/src/iexamine.cpp
++++ b/src/iexamine.cpp
+@@ -1,4 +1,5 @@
+ #include "iexamine.h"
++#include "do_turn.h"
+ 
+ #include <algorithm>
+ #include <climits>
+@@ -5057,7 +5058,26 @@ void iexamine::ledge( Character &you, const tripoint &examp )
+                     ( jump_target_valid ? _( "Jump across." ) : _( "Can't jump across (need a small gap)." ) ) );
+     cmenu.addentry( ledge_fall_down, true, 'f', _( "Fall down." ) );
+ 
+-    cmenu.query();
++    if( external_ui_active() ) {
++        std::vector<std::string> labels;
++        std::vector<int> actions;
++        for( const auto &entry : cmenu.entries ) {
++            // Native peek/examine screens need their own 3D camera/interface.
++            // Keep native climb/jump/fall legality and costs; never substitute
++            // an automatically accepted fall for an unavailable terminal menu.
++            if( entry.enabled && entry.retval != ledge_peek_down &&
++                entry.retval != ledge_examine_furniture_below ) {
++                labels.push_back( entry.txt );
++                actions.push_back( entry.retval );
++            }
++        }
++        labels.push_back( _( "Cancel" ) );
++        actions.push_back( UILIST_CANCEL );
++        const int choice = external_ui_choice( cmenu.text, labels );
++        cmenu.ret = choice >= 0 && size_t( choice ) < actions.size() ? actions[choice] : UILIST_CANCEL;
++    } else {
++        cmenu.query();
++    }
+ 
+     creature_tracker &creatures = get_creature_tracker();
+     if( g->climb_down_menu_pick( examp, cmenu.ret ) ) {
 diff --git a/src/output.cpp b/src/output.cpp
 index 38b1d71..e5b7a12 100644
 --- a/src/output.cpp
@@ -648,10 +690,10 @@ index 0000000..fbd5097
 +}
 diff --git a/src/cwm/cwm_map_exporter.cpp b/src/cwm/cwm_map_exporter.cpp
 new file mode 100644
-index 0000000..29e32fa
+index 0000000..c439b28
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.cpp
-@@ -0,0 +1,353 @@
+@@ -0,0 +1,354 @@
 +// CDDA CWM Map & Entity Exporter Implementation
 +// Licensed under Apache-2.0
 +
@@ -824,6 +866,7 @@ index 0000000..29e32fa
 +            else ++it;
 +        }
 +    }
++    uint64_t fallback_entity_id = 1000;
 +    for (monster& critter : g.all_monsters()) {
 +        if (!critter.is_hallucination() && !critter.is_dead()) {
 +            tripoint m_pos = critter.pos();
@@ -836,11 +879,11 @@ index 0000000..29e32fa
 +                hp_pct = static_cast<uint8_t>((critter.get_hp() * 100) / critter.get_hp_max());
 +            }
 +
-+            uint64_t entity_id = reinterpret_cast<uintptr_t>(&critter);
++            uint64_t entity_id = fallback_entity_id++;
 +            if (cache) {
 +                auto it = cache->creature_ids.find(&critter);
 +                if (it == cache->creature_ids.end()) {
-+                    auto owner = get_creature_tracker().find(critter.pos_abs());
++                    auto owner = get_creature_tracker().find(m.getglobal(critter.pos()));
 +                    it = cache->creature_ids.emplace(&critter,
 +                        ProjectionCache::CreatureIdentity{owner, cache->next_entity_id++}).first;
 +                }
@@ -1073,10 +1116,10 @@ index 0000000..978f98d
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..00299a2
+index 0000000..26cac0c
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,260 @@
+@@ -0,0 +1,279 @@
 +// CDDA CWM IPC Server Implementation
 +// Licensed under Apache-2.0
 +
@@ -1149,7 +1192,7 @@ index 0000000..00299a2
 +    bool prelude_sent = false;
 +    const bool ended = do_turn_with_action([&]() {
 +        if (g.uquit == QUIT_WATCH) {
-+            const int choice = ask_decision("Deathcam: advance the native simulation or finish?",
++            const int choice = ask_decision("Deathcam: watch the next moment or finish?",
 +                {"Advance one turn", "Finish deathcam"}, u, m, g, keep_running);
 +            if (choice == 1) g.uquit = QUIT_DIED;
 +            return false;
@@ -1195,6 +1238,25 @@ index 0000000..00299a2
 +
 +int CwmServer::ask_decision(const std::string& text, const std::vector<std::string>& choices,
 +                          avatar& u, map& m, game& g, const std::function<bool()>& keep_running) {
++    if (choices.size() > 9) {
++        // The temporary numbered GUI pages long native lists. Preserve every
++        // available action and its original index; never hang on >9 choices.
++        size_t begin = 0;
++        while (keep_running() && has_active_client()) {
++            std::vector<std::string> page;
++            std::vector<int> indices;
++            const size_t end = std::min(begin + 6, choices.size() - 1);
++            for (size_t i = begin; i < end; ++i) { page.push_back(choices[i]); indices.push_back(i); }
++            if (begin) { page.push_back("Previous page"); indices.push_back(-1); }
++            if (end < choices.size() - 1) { page.push_back("Next page"); indices.push_back(-2); }
++            page.push_back(choices.back()); indices.push_back(choices.size() - 1);
++            const int answer = ask_decision(text, page, u, m, g, keep_running);
++            if (indices[answer] == -1) begin -= 6;
++            else if (indices[answer] == -2) begin += 6;
++            else return indices[answer];
++        }
++        return choices.size() - 1;
++    }
 +    pending_decision_ = next_decision_++;
 +    decision_choices_ = choices.size();
 +    decision_answer_.reset();
@@ -1559,10 +1621,10 @@ index 0000000..ae4a2a3
 +}
 diff --git a/tests/cwm_runtime_test.cpp b/tests/cwm_runtime_test.cpp
 new file mode 100644
-index 0000000..746741c
+index 0000000..14b3c38
 --- /dev/null
 +++ b/tests/cwm_runtime_test.cpp
-@@ -0,0 +1,198 @@
+@@ -0,0 +1,200 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "calendar.h"
@@ -1649,6 +1711,8 @@ index 0000000..746741c
 +    first->set_hp( 0 );
 +    g->cleanup_dead();
 +    get_avatar().add_effect( efftype_id( "blind" ), 10_seconds );
++    get_avatar().recalc_sight_limits();
++    REQUIRE_FALSE( get_avatar().sees( *second ) );
 +    const auto after = projection();
 +    snapshot = cdda::cwm::MessageVerifier::parse( after.data(), after.size() )->payload_as_WorldSnapshot();
 +    bool found = false;

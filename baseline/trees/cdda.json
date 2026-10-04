@@ -37327,7 +37327,7 @@
   {
     "path": "src/cwm/cwm_map_exporter.cpp",
     "mode": "100644",
-    "sha256": "1426d8a1952df44a559832f630b2e326c86491ffb7449e5dd9520f25577d198d"
+    "sha256": "91171a647cac8ec810525d90c9fa4c0403cf8c34bc3abadea08d56d88c5a291e"
   },
   {
     "path": "src/cwm/cwm_map_exporter.h",
@@ -37337,7 +37337,7 @@
   {
     "path": "src/cwm/cwm_server.cpp",
     "mode": "100644",
-    "sha256": "087bfca3ef981cd601e49def3a671c4326896c67dca74a1a881138bda70b9a91"
+    "sha256": "110d776f4ba5bbb35cce06b9774d5d8480a61e10d2acf85744062e44da41cae4"
   },
   {
     "path": "src/cwm/cwm_server.h",
@@ -37792,7 +37792,7 @@
   {
     "path": "src/game.cpp",
     "mode": "100644",
-    "sha256": "4eb8fada119b414e01bf865b0ba1e16fd9781fd3fef6a6f97c8b22765b084309"
+    "sha256": "9a1f79a3a10e484843bf25029c794521a9efa30c39b6f110cecb80469c87346e"
   },
   {
     "path": "src/game.h",
@@ -37927,7 +37927,7 @@
   {
     "path": "src/iexamine.cpp",
     "mode": "100644",
-    "sha256": "27fc5eab2684d536feb2664f6ac98160a8125cde93658ff50a7a690bf92d58bb"
+    "sha256": "922a702810f5c503a25e1bb02efb029c44320a68b14513c96cdd0ab34c86a423"
   },
   {
     "path": "src/iexamine.h",
@@ -40867,7 +40867,7 @@
   {
     "path": "tests/cwm_runtime_test.cpp",
     "mode": "100644",
-    "sha256": "13e7dd0d253be1b784a5a994f05a002a81ac1c06b5bbadd6641734e23eaa6f6c"
+    "sha256": "b157ae43835a3639fda95d895f2a133e7f2b9467f3aed51366ce1cee010c1726"
   },
   {
     "path": "tests/data/name.json",

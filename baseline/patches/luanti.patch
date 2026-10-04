@@ -85,7 +85,7 @@ index b6ae675..9e33201 100644
  		/*
  			Local player handling
 diff --git a/src/client/game.cpp b/src/client/game.cpp
-index 27b5833..7bab457 100644
+index 27b5833..d37664f 100644
 --- a/src/client/game.cpp
 +++ b/src/client/game.cpp
 @@ -8,6 +8,7 @@
@@ -114,7 +114,17 @@ index 27b5833..7bab457 100644
  	delete client;
  	client = nullptr;
  	delete soundmaker;
-@@ -2737,8 +2742,55 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
+@@ -2178,6 +2183,9 @@ void Game::processItemSelection(u16 *new_playeritem)
+ 	LocalPlayer *player = client->getEnv().getLocalPlayer();
+ 
+ 	*new_playeritem = player->getWieldIndex();
++	if (cdda_client::CddaBridge::getInstance().ownsPlayer(client) &&
++			cdda_client::CddaBridge::getInstance().getMetrics().pending_decision)
++		return; // Number keys belong to the authoritative decision, not the hotbar.
+ 	u16 max_item = player->getMaxHotbarItemcount();
+ 	if (max_item == 0)
+ 		return;
+@@ -2737,8 +2745,62 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
  		control.aux1 = control.aux1 ^ true;
  	}
  
@@ -130,15 +140,22 @@ index 27b5833..7bab457 100644
 +	// [CDDA-Mineclonia] Send Movement Commands
 +	if (cdda_client::CddaBridge::getInstance().ownsPlayer(client)) {
 +		auto &bridge = cdda_client::CddaBridge::getInstance();
++		static bool decision_held[9] = {};
 +		if (bridge.getMetrics().pending_decision) {
 +			const auto choices = bridge.getMetrics().decision_choices;
-+			for (uint16_t i = 0; i < choices; ++i)
-+				if (wasKeyDown(static_cast<GameKeyType>(KeyType::SLOT_1 + i))) {
-+					bridge.answerDecision(i);
-+					break;
-+				}
++			bool answered = false;
++			for (uint16_t i = 0; i < 9; ++i) {
++				const auto key = static_cast<GameKeyType>(KeyType::SLOT_1 + i);
++				const bool down = isKeyDown(key);
++				const bool pressed = wasKeyDown(key);
++				if (!answered && i < choices && !decision_held[i] && (down || pressed))
++					answered = bridge.answerDecision(i);
++				decision_held[i] = down;
++			}
 +			return;
 +		}
++		for (uint16_t i = 0; i < 9; ++i)
++			decision_held[i] = isKeyDown(static_cast<GameKeyType>(KeyType::SLOT_1 + i));
 +		// A held key must not automatically acknowledge each new threat.
 +		static bool acknowledgement_held = false;
 +		const bool acknowledgement_down = isKeyDown(KeyType::AUX1);
@@ -170,7 +187,7 @@ index 27b5833..7bab457 100644
  	//tt.stop();
  }
  
-@@ -2784,6 +2836,25 @@ inline void Game::step(f32 dtime)
+@@ -2784,6 +2846,25 @@ inline void Game::step(f32 dtime)
  
  	if (!m_is_paused)
  		client->step(dtime);
@@ -196,7 +213,7 @@ index 27b5833..7bab457 100644
  }
  
  static void pauseNodeAnimation(PausedNodesList &paused, scene::ISceneNode *node) {
-@@ -3246,6 +3317,7 @@ void Game::updateCamera(f32 dtime)
+@@ -3246,6 +3327,7 @@ void Game::updateCamera(f32 dtime)
  	tool_reload_ratio = MYMIN(tool_reload_ratio, 1.0);
  	camera->update(player, dtime, tool_reload_ratio);
  	camera->step(dtime);
@@ -204,6 +221,14 @@ index 27b5833..7bab457 100644
  
  	f32 camera_fov = camera->getFovMax();
  	v3s16 camera_offset = camera->getOffset();
+@@ -3262,6 +3344,7 @@ void Game::updateCamera(f32 dtime)
+ 		if (m_camera_offset_changed) {
+ 			client->updateCameraOffset(camera_offset);
+ 			client->getEnv().updateCameraOffset(camera_offset);
++			cdda_client::CddaBridge::getInstance().updateScenePositions();
+ 
+ 			if (clouds)
+ 				clouds->updateCameraOffset(camera_offset);
 diff --git a/src/client/mesh_generator_thread.cpp b/src/client/mesh_generator_thread.cpp
 index ec86898..3f99071 100644
 --- a/src/client/mesh_generator_thread.cpp
@@ -379,10 +404,10 @@ index 7f3f860..663a6ec 100644
  void TestMapBlock::testSaveLoad(IGameDef *gamedef, const u8 version)
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..3ea19fb
+index 0000000..e2d43ad
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,831 @@
+@@ -0,0 +1,847 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
@@ -491,25 +516,27 @@ index 0000000..3ea19fb
 +                        ent.model_y_offset = -box.MinEdge.Y * scale;
 +                        setMeshColor(mesh, irr::video::SColor(255, 255, 255, 255));
 +                        node = body;
-+                        node->setMaterialTexture(0, client_->getTextureSource()->getTexture(
-+                            zombie ? "zombie.png" : "character.png"));
-+                        node->setMaterialType(irr::video::EMT_TRANSPARENT_ALPHA_CHANNEL_REF);
++                        node->forEachMaterial([&](auto& material) {
++                            material.setTexture(0, client_->getTextureSource()->getTextureForMesh(
++                                zombie ? "zombie.png" : "character.png"));
++                            material.MaterialType = irr::video::EMT_TRANSPARENT_ALPHA_CHANNEL_REF;
++                        });
 +                    }
 +                    mesh->drop();
 +                }
 +            }
 +            if (!node) {
-+                auto* marker = smgr_->addCubeSceneNode(10.0f);
++                auto* cube = createCubeMesh(v3f(7.0f, 10.0f, 7.0f));
++                auto* marker = smgr_->addMeshSceneNode(cube);
++                cube->drop();
 +                if (marker) {
-+                    marker->setScale(v3f(.7f, 1.0f, .7f));
 +                    setMeshColor(marker->getMesh(), irr::video::SColor(255, 220, 65, 180));
 +                    ent.model_y_offset = 5.0f;
 +                    node = marker;
 +                }
 +            }
 +            if (node) {
-+                node->setMaterialFlag(irr::video::EMF_LIGHTING, false);
-+                node->setMaterialFlag(irr::video::EMF_FOG_ENABLE, true);
++                node->forEachMaterial([](auto& material) { material.FogEnable = true; });
 +                ent.scene_node = node;
 +                infostream << "[Luanti-CDDA] Visual creature " << ent.id << ": " << ent.type_id << std::endl;
 +            }
@@ -939,6 +966,15 @@ index 0000000..3ea19fb
 +                            ve.humanoid = ent_state->type() == CDDA::CWM::EntityType::NPC;
 +                            entities_[eid] = ve;
 +                        } else {
++                            const std::string type_id = ent_state->type_id() ? ent_state->type_id()->str() : "";
++                            if (it->second.type_id != type_id) {
++                                if (it->second.scene_node)
++                                    static_cast<irr::scene::ISceneNode*>(it->second.scene_node)->remove();
++                                it->second.scene_node = nullptr;
++                                it->second.type_id = type_id;
++                            }
++                            it->second.name = ent_state->name() ? ent_state->name()->str() : "";
++                            it->second.humanoid = ent_state->type() == CDDA::CWM::EntityType::NPC;
 +                            if (target != it->second.target_pos) {
 +                                it->second.start_pos = it->second.current_pos;
 +                                it->second.interpolation_time = 0.0f;
@@ -1125,6 +1161,11 @@ index 0000000..3ea19fb
 +    }
 +}
 +
++void CddaBridge::updateScenePositions() {
++    if (pimpl_)
++        for (auto& [id, ent] : pimpl_->entities_) pimpl_->render_entity(ent);
++}
++
 +bool CddaBridge::handleMoveInput(int dir) {
 +    if (pimpl_) {
 +        return pimpl_->send_move_request(dir);
@@ -1216,10 +1257,10 @@ index 0000000..3ea19fb
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.h b/src/cdda/cdda_bridge.h
 new file mode 100644
-index 0000000..6543673
+index 0000000..2820761
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.h
-@@ -0,0 +1,110 @@
+@@ -0,0 +1,111 @@
 +// Luanti C++ CWM Presentation Bridge
 +// Licensed under Apache-2.0
 +#pragma once
@@ -1292,6 +1333,7 @@ index 0000000..6543673
 +    // including while IPC is reconnecting.
 +    bool ownsPlayer(const Client* client) const;
 +    void traceCamera(const v3f& position, const v3f& direction);
++    void updateScenePositions();
 +
 +    // Input hooks
 +    bool handleMoveInput(int dir);

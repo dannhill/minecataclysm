@@ -21,7 +21,7 @@ import threading
 import time
 
 
-def run(ws, out, fps, delayed=False, rebases=False):
+def run(ws, out, fps, delayed=False, rebases=False, threats=False):
     link = ws / "luanti/games/cdda_voxel"
     if not link.exists():
         link.parent.mkdir(parents=True, exist_ok=True)
@@ -32,6 +32,7 @@ def run(ws, out, fps, delayed=False, rebases=False):
     from CDDA.CWM import WorldSnapshot as World, ChunkSnapshot as Chunk, CwmBlock as Block
     from CDDA.CWM import EntityState as Entity, Vec3f, Coord3i, CommandAck as Ack, MoveRequest as Move
     from CDDA.CWM import TileDelta as Tile
+    from CDDA.CWM import DecisionPrompt as Prompt, DecisionResponse as Response
 
     sequence = 0
     player = [8, 24]
@@ -44,6 +45,8 @@ def run(ws, out, fps, delayed=False, rebases=False):
     window_open = threading.Event()
     force_rebase = threading.Event()
     origin_offset = [0, 0]
+    creature_mode = [0]
+    prompt_requested = threading.Event()
 
     def envelope(b, kind, value):
         nonlocal sequence
@@ -69,12 +72,25 @@ def run(ws, out, fps, delayed=False, rebases=False):
         Ack.CommandAckAddAccepted(b, accepted)
         return envelope(b, Payload.Payload.CommandAck, Ack.CommandAckEnd(b))
 
+    def prompt(decision_id=77):
+        b = flatbuffers.Builder(256)
+        text = b.CreateString('Native decision fixture: choose Keep world.')
+        options = [b.CreateString(s) for s in ('Reset world', 'Delete world', 'Keep world')]
+        Prompt.DecisionPromptStartChoicesVector(b, len(options))
+        for option in reversed(options): b.PrependUOffsetTRelative(option)
+        choices = b.EndVector()
+        Prompt.DecisionPromptStart(b)
+        Prompt.DecisionPromptAddDecisionId(b, decision_id)
+        Prompt.DecisionPromptAddText(b, text)
+        Prompt.DecisionPromptAddChoices(b, choices)
+        return envelope(b, Payload.Payload.DecisionPrompt, Prompt.DecisionPromptEnd(b))
+
     def snapshot(full=False, window_delta=False):
         b = flatbuffers.Builder(32768)
         offsets = []
         if full:
-            for cy in range(2):
-                for cx in range(2):
+            for cy in range(4 if rebases else 2):
+                for cx in range(4 if rebases else 2):
                     Chunk.ChunkSnapshotStartBlocksVector(b, 256)
                     for i in range(255, -1, -1):
                         x, y = cx * 16 + i % 16 + origin_offset[0], cy * 16 + i // 16 + origin_offset[1]
@@ -106,8 +122,19 @@ def run(ws, out, fps, delayed=False, rebases=False):
         Entity.EntityStateAddId(b, 1)
         Entity.EntityStateAddPos(b, Vec3f.CreateVec3f(b, player[0]-origin_offset[0], player[1]-origin_offset[1], 0))
         entity = Entity.EntityStateEnd(b)
-        World.WorldSnapshotStartEntitiesVector(b, 1)
-        b.PrependUOffsetTRelative(entity)
+        actors = [entity]
+        if creature_mode[0] in (1,2,3):
+            for eid, kind, typename, x in [(1000,2,'mon_zombie',8), (1001,2,'mon_dog',10), (1002,1,'npc',6)]:
+                type_id = b.CreateString(typename)
+                Entity.EntityStateStart(b)
+                Entity.EntityStateAddId(b,eid)
+                Entity.EntityStateAddType(b,kind)
+                Entity.EntityStateAddTypeId(b,type_id)
+                Entity.EntityStateAddPerceived(b,creature_mode[0] != 2)
+                Entity.EntityStateAddPos(b,Vec3f.CreateVec3f(b,x,player[1]-4,0))
+                actors.append(Entity.EntityStateEnd(b))
+        World.WorldSnapshotStartEntitiesVector(b, len(actors))
+        for actor in reversed(actors): b.PrependUOffsetTRelative(actor)
         entities = b.EndVector()
         tiles = 0
         if window_delta:
@@ -145,6 +172,8 @@ def run(ws, out, fps, delayed=False, rebases=False):
                     buffer = b""
                     pending = None
                     geometry_sent = outside_sent = opened_sent = False
+                    last_creatures = 0
+                    prompt_sent = False
                     while not stop.is_set():
                         now = time.monotonic()
                         if pending and now >= pending[0]:
@@ -165,6 +194,11 @@ def run(ws, out, fps, delayed=False, rebases=False):
                             origin_offset[1] = 0
                             send(snapshot(True))
                             events.append({"kind": "stationary_rebase", "time": now})
+                        if creature_mode[0] != last_creatures:
+                            last_creatures = creature_mode[0]
+                            send(snapshot())
+                        if prompt_requested.is_set() and not prompt_sent:
+                            send(prompt()); prompt_sent = True
                         try: data = connection.recv(65536)
                         except socket.timeout: continue
                         if not data: break
@@ -188,6 +222,11 @@ def run(ws, out, fps, delayed=False, rebases=False):
                                     origin_offset[1] = -12 if n == 5 else -24
                                     events.append({"kind": "moving_rebase", "time": time.monotonic()})
                                 pending = (time.monotonic() + (.12 if full else .65 if delayed and n == 3 else .01), req.CommandId(), accepted, full)
+                            elif msg.PayloadType() == Payload.Payload.DecisionResponse:
+                                response = Response.DecisionResponse()
+                                response.Init(msg.Payload().Bytes,msg.Payload().Pos)
+                                events.append({'kind':'decision','id':response.DecisionId(),'choice':response.Choice()})
+                                if response.DecisionId()==77: send(prompt(78))
             except (OSError, ValueError) as exc:
                 if not stop.is_set(): error.append(repr(exc))
 
@@ -228,10 +267,24 @@ def run(ws, out, fps, delayed=False, rebases=False):
                 time.sleep(1)
                 stopped = time.monotonic(); time.sleep(.7); stopped_end = time.monotonic()
                 if rebases:
+                    screenshot('rebase-before.png')
                     rebase_start = time.monotonic()
                     force_rebase.set(); time.sleep(1.0)
                     rebase_end = time.monotonic()
-                if fps == 60 and not delayed and not rebases:
+                    screenshot('rebase-after.png')
+                if threats:
+                    creature_mode[0] = 1; time.sleep(1); screenshot('creatures-visible.png')
+                    creature_mode[0] = 2; time.sleep(.5); screenshot('creatures-unperceived.png')
+                    creature_mode[0] = 3; time.sleep(.5); screenshot('creatures-restored.png')
+                    creature_mode[0] = 4; time.sleep(.5); screenshot('creatures-removed.png')
+                    prompt_requested.set(); time.sleep(.5); screenshot('native-decision.png')
+                    xdo('keydown','--window',window,'w'); time.sleep(.4)
+                    xdo('keyup','--window',window,'w')
+                    xdo('keydown','--window',window,'3'); time.sleep(.5)
+                    held_decision_count = sum(e['kind']=='decision' for e in events)
+                    xdo('keyup','--window',window,'3'); time.sleep(.1)
+                    xdo('key','--window',window,'3'); time.sleep(.5)
+                if fps == 60 and not delayed and not rebases and not threats:
                     geometry.set(); time.sleep(2)
                     screenshot("window-inside.png")
                     screenshot("window-inside-later.png")
@@ -282,7 +335,22 @@ def run(ws, out, fps, delayed=False, rebases=False):
         checks['two_moving_bubble_rebases_exercised'] = sum(e['kind'] == 'moving_rebase' for e in events) == 2
         checks['stationary_bubble_rebase_does_not_move_camera'] = max(span(rebase_start, rebase_end, axis) for axis in ('camera_x','camera_y','camera_z')) < .001
         checks['moving_bubble_rebase_has_no_camera_teleport'] = all(abs(b['camera_z']-a['camera_z']) < 5 for a,b in zip(movement_rows,movement_rows[1:]))
-    if fps == 60 and not delayed and not rebases:
+        before,after = [subprocess.check_output(['convert',str(out/s),'-crop','400x160+300+500','+repage','-depth','8','RGB:-']) for s in ('rebase-before.png','rebase-after.png')]
+        checks['stationary_rebase_preserves_visible_terrain'] = sum(abs(a-b)>5 for a,b in zip(before,after)) < 60
+    if threats:
+        def body_pixels(name):
+            return subprocess.check_output(['convert',str(out/name),'-crop','500x180+260+480','+repage','-depth','8','RGB:-'])
+        on,off,restored,removed = [body_pixels(s) for s in ('creatures-visible.png','creatures-unperceived.png','creatures-restored.png','creatures-removed.png')]
+        def changed(a,b): return sum(max(abs(x-y) for x,y in zip(a[i:i+3],b[i:i+3])) > 25 for i in range(0,len(a),3))
+        console = (out/'console.log').read_text() + (out/'engine.log').read_text()
+        checks['zombie_npc_and_generic_creature_models_created'] = all('Visual creature '+str(i) in console for i in (1000,1001,1002))
+        checks['perceived_creatures_are_rendered'] = changed(on,off) > 300
+        checks['perception_loss_hides_creatures_and_recovery_restores_them'] = changed(restored,off) > 300 and changed(on,restored) < 100
+        checks['removed_creatures_leave_no_ghost_models'] = changed(off,removed) < 100
+        checks['native_decision_number_reaches_authority'] = any(e['kind']=='decision' and e['id']==77 and e['choice']==2 for e in events)
+        checks['held_number_does_not_answer_a_following_decision'] = held_decision_count==1 and sum(e['kind']=='decision' and e['id']==78 for e in events)==1
+        checks['no_missing_creature_assets'] = 'Mesh not found:' not in console
+    if fps == 60 and not delayed and not rebases and not threats:
         checks["mouse_look_and_opposite_side_exercised"] = camera_turned
         def crop(name):
             # Exclude sky/clouds; the frame texture is off-white, not pure white.
@@ -311,9 +379,12 @@ if __name__ == "__main__":
     parser.add_argument("--workspace", type=Path, required=True)
     parser.add_argument("--artifacts", type=Path, required=True)
     parser.add_argument("--rebase-only", action='store_true')
+    parser.add_argument("--threats-only", action='store_true')
     args = parser.parse_args()
     if args.rebase_only:
         sys.exit(0 if run(args.workspace.resolve(), args.artifacts.resolve(), 60, rebases=True) else 1)
+    if args.threats_only:
+        sys.exit(0 if run(args.workspace.resolve(), args.artifacts.resolve(), 60, threats=True) else 1)
     outcomes = [run(args.workspace.resolve(), args.artifacts.resolve()/f"fps-{fps}", fps) for fps in (30, 60, 120)]
     outcomes.append(run(args.workspace.resolve(), args.artifacts.resolve()/"delayed", 60, True))
     sys.exit(0 if all(outcomes) else 1)

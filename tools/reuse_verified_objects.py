@@ -33,6 +33,14 @@ def main():
 
     def normalize(text, root): return text.replace(str(root), '<workspace>')
 
+    def effective_flags(path, obj, root):
+        # CMake records other objects' source-specific flags in the same file.
+        # Compare the common flags plus this object's overrides, rather than
+        # invalidating unrelated objects when one source gains an include path.
+        key = str(obj.relative_to(root/args.component/'build'))
+        return normalize('\n'.join(line for line in path.read_text().splitlines()
+            if line.strip() and (not line.startswith('# Custom ') or key + '_' in line)), root)
+
     for dependency in sorted(old_build.rglob('*.o.d')):
         obj = dependency.with_suffix('')
         relative = obj.relative_to(old_build)
@@ -40,7 +48,7 @@ def main():
         flags, target_flags = obj.parent/'flags.make', target.parent/'flags.make'
         reason = None
         if not obj.exists() or not target_flags.exists() or not flags.exists(): continue
-        if normalize(flags.read_text(), old) != normalize(target_flags.read_text(), new):
+        if effective_flags(flags, obj, old) != effective_flags(target_flags, target, new):
             reason = 'compiler flags differ'
         text = dependency.read_text()
         inputs = shlex.split(text.split(':', 1)[1].replace('\\\n', ' '))
