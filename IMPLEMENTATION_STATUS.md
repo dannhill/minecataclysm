@@ -10,6 +10,14 @@ Full SAVE-001 remains incomplete; the failed M5.5 gate has not been recertified.
 FND-02 is next.
 Product decisions and planned prototypes do not certify implementation.
 
+Manual feedback accepted movement, structures, door opening, safe mode and
+position reload, but reported remaining camera flicker and terminal-input
+aborts. A [scoped repair](docs/fixes/rebase-and-threat-presentation.md) now
+keeps scene coordinates stable through CDDA rebases, renders perceived
+creatures/NPCs, and exposes supported native ledge/death decisions. Its tests
+do not replace manual confirmation of the reported flicker. Border fog and
+pointed OPEN/CLOSE remain planned; full entity/lifecycle conformance is pending.
+
 **M5.5 takeover audit: COMPLETE. Architectural conformance gate: FAILED.**
 The findings are documented in [the audit](docs/audits/M5.5.md), with
 [persistent evidence](docs/audits/M5.5-evidence.json) and a

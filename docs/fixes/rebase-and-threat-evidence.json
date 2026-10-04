@@ -1,0 +1,602 @@
+{
+  "scope": "Scoped rebase, creature presentation and native ledge/death repair PASS. User flicker confirmation pending. Historical M5.5 remains FAILED; full SAVE-001 INCOMPLETE.",
+  "code_commit": "c10633e6afb838a7e2f6114fedf95067c4f854c7",
+  "branch": "fix/rebase-and-threat-presentation",
+  "sources": {
+    "cdda": {
+      "url": "https://github.com/CleverRaven/Cataclysm-DDA.git",
+      "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+      "shallow": true,
+      "patch": "baseline/patches/cdda.patch",
+      "patch_sha256": "539d614d0796a5dab0979b2ddc9d7dcdd251a7aa912f482c88acb746c8242a06",
+      "tree_inventory": "baseline/trees/cdda.json",
+      "tree_sha256": "fb036bb6b330fd5794829439108d784da052bae966a3ecda66c2c00653e54a65",
+      "file_count": 8579,
+      "original_status": " M src/CMakeLists.txt\n M src/do_turn.cpp\n M src/do_turn.h\n M src/game.cpp\n M src/game.h\n M src/handle_action.cpp\n M src/iexamine.cpp\n M src/output.cpp\n M tests/CMakeLists.txt\n M tests/test_main.cpp\n?? src/cwm/cwm_main.cpp\n?? src/cwm/cwm_map_exporter.cpp\n?? src/cwm/cwm_map_exporter.h\n?? src/cwm/cwm_server.cpp\n?? src/cwm/cwm_server.h\n?? src/safe_mode_actions.h\n?? tests/cwm_projection_test.cpp\n?? tests/cwm_runtime_test.cpp\n"
+    },
+    "luanti": {
+      "url": "https://github.com/luanti-org/luanti.git",
+      "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
+      "shallow": true,
+      "patch": "baseline/patches/luanti.patch",
+      "patch_sha256": "347be89833d7358b0854d48fa8a7add0c4e20e46d88f8c31e0610bdceabb4f44",
+      "tree_inventory": "baseline/trees/luanti.json",
+      "tree_sha256": "a10ed864cc66b47bf4730aad97607c9e3894fefe045791e3ab3dc44915cd7375",
+      "file_count": 2251,
+      "original_status": " M src/CMakeLists.txt\n M src/client/CMakeLists.txt\n M src/client/client.cpp\n M src/client/clientenvironment.cpp\n M src/client/game.cpp\n M src/client/mesh_generator_thread.cpp\n M src/client/mesh_generator_thread.h\n M src/network/clientpackethandler.cpp\n M src/unittest/test_mapblock.cpp\n?? src/cdda/cdda_bridge.cpp\n?? src/cdda/cdda_bridge.h\n"
+    },
+    "mineclonia": {
+      "url": "https://github.com/mark-wiemer/mineclonia.git",
+      "commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+      "shallow": true,
+      "patch": "baseline/patches/mineclonia.patch",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree_inventory": "baseline/trees/mineclonia.json",
+      "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36",
+      "file_count": 9359,
+      "original_status": ""
+    }
+  },
+  "environment": {
+    "platform": "Linux-7.0.11-76070011-generic-x86_64-with-glibc2.35",
+    "python": "3.10.12",
+    "compiler": "g++ (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0",
+    "gui": "X11, xdotool, ImageMagick; all test worlds/configuration and Unix sockets isolated"
+  },
+  "workspaces": {
+    "tested": "/home/dannhill/Projects/cdda-mineclonia/artifacts/rebase-threat/reconstruction/workspace",
+    "fresh_final_reconstruction": "/home/dannhill/Projects/cdda-mineclonia/artifacts/rebase-threat/accepted-reconstruction/workspace",
+    "provenance": "Test workspace initially reconstructed from de64313 and incrementally updated with final sources. Every inventoried fork byte in both workspaces was compared to the c10633e baseline. Fresh final reconstruction verifies reproducibility, not a separate cold build."
+  },
+  "binaries": {
+    "cdda/build/src/cdda-server": "2dfc75c8102329bccce412fc67b18cfd76ee0a504112ef2c5505befecd2c53bd",
+    "luanti/bin/luanti": "94e362ad4755b6b0d750599386a5e789d259d346eebc5b81f7128061ed42ef40",
+    "/home/dannhill/Projects/cdda-mineclonia/artifacts/rebase-threat/reconstruction/workspace/cdda/build/src/cdda-server": "2dfc75c8102329bccce412fc67b18cfd76ee0a504112ef2c5505befecd2c53bd",
+    "/home/dannhill/Projects/cdda-mineclonia/artifacts/rebase-threat/reconstruction/workspace/luanti/bin/luanti": "94e362ad4755b6b0d750599386a5e789d259d346eebc5b81f7128061ed42ef40",
+    "/home/dannhill/Projects/cdda-mineclonia/artifacts/rebase-threat/reconstruction/workspace/cdda/build/tests/cata_test": "addf527fab69fd1d1529178548372f2bf1f01c4907e2ef554eaec5de08f40a7c",
+    "artifacts/rebase-threat/native-save-reader": "0a547bcc3e320e65da6cc394d0030948595f6769342b2dd2b1d85894c43e2a62",
+    "artifacts/canonical-runtime/frameprobe.so": "0ed81e042353c903766e36f245411699ba1a40b50107d675a782258a1ed5c603"
+  },
+  "installation": [
+    {
+      "path": "cdda/build/src/cdda-server",
+      "previous_sha256": "69f4d29e9523cf473bb0762e8a18a8681129b5d9ea2b47c8dca8e0e6cf51ea22",
+      "verified_sha256": "2dfc75c8102329bccce412fc67b18cfd76ee0a504112ef2c5505befecd2c53bd",
+      "installed_atomically": true
+    },
+    {
+      "path": "luanti/bin/luanti",
+      "previous_sha256": "5b2d61f554b2e6050e4ce34a1a1a6a5c7f9a563711f16321b14a1d8a44438ff6",
+      "verified_sha256": "94e362ad4755b6b0d750599386a5e789d259d346eebc5b81f7128061ed42ef40",
+      "installed_atomically": true
+    }
+  ],
+  "results": {
+    "rebase": {
+      "passed": 15,
+      "total": 15,
+      "all_pass": true,
+      "artifact": "artifacts/rebase-threat/accepted-rebase/result.json"
+    },
+    "creatures-and-decisions": {
+      "passed": 18,
+      "total": 18,
+      "all_pass": true,
+      "artifact": "artifacts/rebase-threat/accepted-creatures/result.json"
+    },
+    "native-lifecycle": {
+      "passed": 40,
+      "total": 40,
+      "all_pass": true,
+      "artifact": "artifacts/rebase-threat/accepted-lifecycle/checks.json"
+    },
+    "canonical-runtime-regression": {
+      "passed": 40,
+      "total": 40,
+      "all_pass": true,
+      "artifact": "artifacts/rebase-threat/canonical-runtime/checks.json",
+      "provenance": "Earlier run within this repair, before the final GUI input latch, native decision text/pagination and cacheless-ID fallback refinements. Not a final-binary certification. Native lifecycle and actual 3D save checks were repeated on final binaries. The independent reader gained optional --create-ledge during the earlier run; ordinary --create/read behavior is unchanged.",
+      "artifact_wording": "The old artifact says NPC presentation is unimplemented. This test verifies native persistence only; final rendering is covered by accepted-creatures separately."
+    },
+    "launcher": {
+      "passed": 8,
+      "total": 8,
+      "all_pass": true,
+      "artifact": "artifacts/rebase-threat/accepted-launcher/checks.json"
+    },
+    "native-save-through-3d": {
+      "passed": 11,
+      "total": 11,
+      "all_pass": true,
+      "artifact": "artifacts/rebase-threat/accepted-bridge/checks.json"
+    },
+    "presentation-regression": {
+      "passed": 48,
+      "total": 48,
+      "all_pass": true,
+      "scenarios": {
+        "fps-30": {
+          "passed": 11,
+          "total": 11,
+          "all_pass": true,
+          "artifact": "artifacts/rebase-threat/accepted-presentation/fps-30/result.json"
+        },
+        "fps-60": {
+          "passed": 15,
+          "total": 15,
+          "all_pass": true,
+          "artifact": "artifacts/rebase-threat/accepted-presentation/fps-60/result.json"
+        },
+        "fps-120": {
+          "passed": 11,
+          "total": 11,
+          "all_pass": true,
+          "artifact": "artifacts/rebase-threat/accepted-presentation/fps-120/result.json"
+        },
+        "delayed": {
+          "passed": 11,
+          "total": 11,
+          "all_pass": true,
+          "artifact": "artifacts/rebase-threat/accepted-presentation/delayed/result.json"
+        }
+      },
+      "measured_fps": {
+        "fps-30": 29.942434472030143,
+        "fps-60": 59.75836823321636,
+        "fps-120": 59.99176313092213,
+        "delayed": 59.75752547433432
+      },
+      "limits": "FPS settings are limits; 120 FPS scenario achieved about 60 FPS. Controlled CWM source, actual Luanti renderer/input."
+    },
+    "native-cdda": {
+      "passed_cases": 9,
+      "total_cases": 9,
+      "assertions": 3396,
+      "log": "artifacts/rebase-threat/accepted-native-tests.log",
+      "filter": "[cwm]; not the complete upstream suite"
+    },
+    "native-luanti": {
+      "passed": 303,
+      "total": 303,
+      "modules": 47,
+      "log": "artifacts/rebase-threat/accepted-luanti-native.log"
+    },
+    "protocol-debug": {
+      "passed": 2,
+      "total": 2,
+      "log": "artifacts/rebase-threat/protocol-tests.log",
+      "limits": "Existing serialization/IPC tests; not framing, backpressure, negotiation or reconnect certification."
+    }
+  },
+  "build_provenance": {
+    "cold_cache": false,
+    "cache_reuse": {
+      "cdda": {
+        "cache_workspace": "/home/dannhill/Projects/cdda-mineclonia/artifacts/canonical-runtime/reconstruction/workspace",
+        "workspace": "/home/dannhill/Projects/cdda-mineclonia/artifacts/rebase-threat/reconstruction/workspace",
+        "compiler": "/usr/bin/c++",
+        "mode": "dependency-validated incremental reuse; not a cold clean build",
+        "reused": 588,
+        "rejected": 7
+      },
+      "luanti": {
+        "cache_workspace": "/home/dannhill/Projects/cdda-mineclonia",
+        "workspace": "/home/dannhill/Projects/cdda-mineclonia/artifacts/rebase-threat/reconstruction/workspace",
+        "compiler": "/usr/bin/c++",
+        "mode": "dependency-validated incremental reuse; not a cold clean build",
+        "reused": 105,
+        "rejected": 58
+      }
+    },
+    "reader_receipt": "artifacts/rebase-threat/native-save-reader.build.json",
+    "independent_reader": "Pinned upstream core, not production fork core; helper fixture gained optional --create-ledge using native t_open_air_rooved. Native loader unchanged. Reader build receipt contains exact compile/link argv.",
+    "note": "Changed sources and rejected dependency objects rebuilt. Intermediate stopped attempts are not accepted builds. Reused objects can retain source-location diagnostic paths from their original build workspace."
+  },
+  "commands": [
+    {
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia",
+      "argv": [
+        "python3",
+        "tools/takeover_baseline.py",
+        "reconstruct",
+        "--destination",
+        "artifacts/rebase-threat/accepted-reconstruction"
+      ]
+    },
+    {
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia",
+      "argv": [
+        "python3",
+        "tools/takeover_baseline.py",
+        "check"
+      ]
+    },
+    {
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia",
+      "argv": [
+        "cmake",
+        "-S",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/rebase-threat/reconstruction/workspace/cdda",
+        "-B",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/rebase-threat/reconstruction/workspace/cdda/build",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DCURSES=ON",
+        "-DTILES=OFF",
+        "-DLOCALIZE=OFF",
+        "-DBUILD_TESTING=ON",
+        "-DCATA_CCACHE=OFF"
+      ]
+    },
+    {
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia",
+      "argv": [
+        "cmake",
+        "--build",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/rebase-threat/reconstruction/workspace/cdda/build",
+        "--target",
+        "cdda-server",
+        "cata_test",
+        "--parallel",
+        "2"
+      ]
+    },
+    {
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/rebase-threat/reconstruction/workspace/cdda",
+      "argv": [
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/rebase-threat/reconstruction/workspace/cdda/build/tests/cata_test",
+        "[cwm]",
+        "--rng-seed",
+        "42",
+        "--user-dir=/home/dannhill/Projects/cdda-mineclonia/artifacts/rebase-threat/native-test-user"
+      ]
+    },
+    {
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia",
+      "argv": [
+        "cmake",
+        "-S",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/rebase-threat/reconstruction/workspace/luanti",
+        "-B",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/rebase-threat/reconstruction/workspace/luanti/build",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DBUILD_UNITTESTS=ON",
+        "-DBUILD_SERVER=OFF",
+        "-DENABLE_SOUND=OFF",
+        "-DRUN_IN_PLACE=ON",
+        "-DENABLE_LTO=FALSE"
+      ]
+    },
+    {
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia",
+      "argv": [
+        "cmake",
+        "--build",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/rebase-threat/reconstruction/workspace/luanti/build",
+        "--target",
+        "luanti",
+        "--parallel",
+        "2"
+      ]
+    },
+    {
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/rebase-threat/reconstruction/workspace",
+      "argv": [
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/rebase-threat/reconstruction/workspace/luanti/bin/luanti",
+        "--run-unittests"
+      ]
+    },
+    {
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia",
+      "argv": [
+        "cmake",
+        "-S",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/rebase-threat/reconstruction/workspace/protocol",
+        "-B",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/rebase-threat/reconstruction/workspace/protocol/build",
+        "-DCMAKE_BUILD_TYPE=Debug"
+      ]
+    },
+    {
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia",
+      "argv": [
+        "cmake",
+        "--build",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/rebase-threat/reconstruction/workspace/protocol/build",
+        "--parallel",
+        "2"
+      ]
+    },
+    {
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia",
+      "argv": [
+        "ctest",
+        "--test-dir",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/rebase-threat/reconstruction/workspace/protocol/build",
+        "--output-on-failure"
+      ]
+    },
+    {
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia",
+      "argv": [
+        "python3",
+        "tools/build_native_save_reader.py",
+        "--pristine-cdda",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/pristine-cdda",
+        "--workspace",
+        "/home/dannhill/Projects/cdda-mineclonia",
+        "--output",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/rebase-threat/native-save-reader"
+      ]
+    },
+    {
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia",
+      "argv": [
+        "python3",
+        "tests/presentation_regression.py",
+        "--workspace",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/rebase-threat/reconstruction/workspace",
+        "--artifacts",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/rebase-threat/accepted-rebase",
+        "--rebase-only"
+      ]
+    },
+    {
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia",
+      "argv": [
+        "python3",
+        "tests/presentation_regression.py",
+        "--workspace",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/rebase-threat/reconstruction/workspace",
+        "--artifacts",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/rebase-threat/accepted-creatures",
+        "--threats-only"
+      ]
+    },
+    {
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia",
+      "argv": [
+        "python3",
+        "tests/presentation_regression.py",
+        "--workspace",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/rebase-threat/reconstruction/workspace",
+        "--artifacts",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/rebase-threat/accepted-presentation"
+      ]
+    },
+    {
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia",
+      "argv": [
+        "python3",
+        "tests/native_decision_lifecycle_test.py",
+        "--workspace",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/rebase-threat/reconstruction/workspace",
+        "--artifacts",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/rebase-threat/accepted-lifecycle",
+        "--native-reader",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/rebase-threat/native-save-reader"
+      ]
+    },
+    {
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia",
+      "argv": [
+        "python3",
+        "tests/canonical_runtime_test.py",
+        "--workspace",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/rebase-threat/reconstruction/workspace",
+        "--artifacts",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/rebase-threat/canonical-runtime",
+        "--native-reader",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/rebase-threat/native-save-reader"
+      ]
+    },
+    {
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia",
+      "argv": [
+        "python3",
+        "tests/startup_visibility_test.py",
+        "--workspace",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/rebase-threat/reconstruction/workspace",
+        "--artifacts",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/rebase-threat/accepted-launcher",
+        "--movement"
+      ]
+    },
+    {
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia",
+      "argv": [
+        "python3",
+        "tests/takeover_save_compat.py",
+        "--workspace",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/rebase-threat/reconstruction/workspace",
+        "--artifacts",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/rebase-threat/accepted-bridge",
+        "--native-reader",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/rebase-threat/native-save-reader",
+        "--probe-library",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/canonical-runtime/frameprobe.so"
+      ]
+    }
+  ],
+  "commands_note": "Absolute paths are this local run; adjust workspace/artifact paths for replay. Test scripts create isolated state. Exact nested server/reader commands retained in commands.json artifacts. Compiler argv recorded by CMake files and reader receipt.",
+  "previous_binary_regression": {
+    "artifact": "artifacts/rebase-threat/before-rebase/result.json",
+    "old_binary": "FND-01 pre-repair Luanti binary",
+    "outcome": "Three camera checks failed; final rebase 15/15 PASS."
+  },
+  "save_scope": {
+    "status": "INCOMPLETE",
+    "save001_complete": false,
+    "reason": "Existing-avatar/time preconditions and observed position/time are checked. Full inventory, world and entity semantic equivalence remains required before certification.",
+    "binaries": {
+      "/home/dannhill/Projects/cdda-mineclonia/artifacts/rebase-threat/native-save-reader": "0a547bcc3e320e65da6cc394d0030948595f6769342b2dd2b1d85894c43e2a62",
+      "/home/dannhill/Projects/cdda-mineclonia/artifacts/rebase-threat/reconstruction/workspace/cdda/build/src/cdda-server": "2dfc75c8102329bccce412fc67b18cfd76ee0a504112ef2c5505befecd2c53bd",
+      "/home/dannhill/Projects/cdda-mineclonia/artifacts/rebase-threat/reconstruction/workspace/luanti/bin/luanti": "94e362ad4755b6b0d750599386a5e789d259d346eebc5b81f7128061ed42ef40"
+    }
+  },
+  "limitations": [
+    "Actual user path not replayed; manual confirmation of flicker remains necessary.",
+    "Synthetic CWM source verifies actual renderer/input; separate final native lifecycle, launcher and 3D save tests cover native integration.",
+    "Zombie family and generic NPC models; other creatures use magenta placeholders. Full animation/bestiary/HUD and field/verticality presentation remain open.",
+    "Perceived controls client visibility, but unseen actor records are still sent. Actor IDs persist in the running process only.",
+    "Native ledge/death and scoped yes/no choices covered; other terminal interaction paths remain uncertified. Endgame epitaph/epilogue UI omitted.",
+    "Death obeys existing native world policy, including reset/delete when configured. No recovery mechanic added.",
+    "Fixed initial presentation origin still uses signed 16-bit Luanti node coordinates; very long travel needs renderer rebasing/bounds benchmarks.",
+    "Projection timing excludes asynchronous meshing/rendering; Action result includes simulation wait and transport, not pure ping.",
+    "FND-02/03 protocol limits, negotiation, session IDs, reconnect/resync and full SAVE-001 remain unverified.",
+    "Border fog and pointed OPEN/CLOSE are planned; movement/driving prototypes are not finalized."
+  ],
+  "user_worlds_used_or_modified_by_tests": false,
+  "artifacts_sha256": {
+    "artifacts/rebase-threat/accepted-bridge/after.json": "ecfe3c7f428aa4440b0b4f51a4bd2606d616d292bcf232123fca7fcd885359ee",
+    "artifacts/rebase-threat/accepted-bridge/after.json.canonical": "0bb3c2b843c811dcbbf3dea8578774d9fc3148973f7f6cb62638f9a3498ea37b",
+    "artifacts/rebase-threat/accepted-bridge/after.json.log": "861e60f33a0da07d0ae2319fcc4b035ed0ae705654d0a539bfff3170991be8be",
+    "artifacts/rebase-threat/accepted-bridge/before.json": "2514295e318327833085c8916c378ed6a13b2cc415410f4c988c38d2b52955f5",
+    "artifacts/rebase-threat/accepted-bridge/before.json.canonical": "f1693b049a4ada5abea2a261f3a1558229e34f9782eaca78a33de63c3603909a",
+    "artifacts/rebase-threat/accepted-bridge/before.json.log": "4535f8c046398c04f3abbcbc0a69044688c382fffd87ca462655442b7818a38f",
+    "artifacts/rebase-threat/accepted-bridge/checks.json": "c102921fb4f959a01b0b20b84123620ad8ed22a75bf8519ded48cfd7425b29d2",
+    "artifacts/rebase-threat/accepted-bridge/client.log": "a5b3d92df243edd5d19b2c0bfa022c74bb8a515d48070c8cbca5e3da8ef57bf5",
+    "artifacts/rebase-threat/accepted-bridge/client.wire": "7ddb36f357b867e256a5d2b319690433357b39b4673d3a90be9abe39ea6c69e2",
+    "artifacts/rebase-threat/accepted-bridge/commands.json": "c1b629f8a40e953c0b922c3b93f323e0749daa0a7fd6c9b81bcdb3a80d0df66a",
+    "artifacts/rebase-threat/accepted-bridge/engine.log": "482e9f46284775cd31d05d627dec35c9919b985ebec8017ae3cca7a650a78556",
+    "artifacts/rebase-threat/accepted-bridge/events.json": "b1c69788cd0c5e1535dfc71e8c04ec58465c04ad199e53f11d08bfdecdb28bf3",
+    "artifacts/rebase-threat/accepted-bridge/frames.ns": "704ae93172d0a7685bc854d8043f79ec251ace3d9b3862c77d2dae98555b8ea9",
+    "artifacts/rebase-threat/accepted-bridge/scene.png": "faf933ea1ea1ace8001a6a7d804f188cae101ef45897a1b6a95c6f93c88c0668",
+    "artifacts/rebase-threat/accepted-bridge/scope.json": "efd646391c2c87097fbe3627e516beb5922024c43b51fb556c2dc94b71251b8f",
+    "artifacts/rebase-threat/accepted-bridge/server.log": "49133d5a6bb2e1e7e643417d498ae4ef6178893278b3c04a81c29083f9452e56",
+    "artifacts/rebase-threat/accepted-bridge/server.wire": "282300755f927bb3a29485f40c9ce265c662352fe5bfd824a86719a3d38e77ea",
+    "artifacts/rebase-threat/accepted-bridge.log": "73b06209153dcd6d133536e2bac25c2ac6bc255237eca2dccc1165fbe8c65cb8",
+    "artifacts/rebase-threat/accepted-creatures/camera.csv": "5cb8ac626bb61500ad6ba7a6f022d8792d34af13bbbe1838c0cf696dfd1dddd1",
+    "artifacts/rebase-threat/accepted-creatures/console.log": "087ab91bad0c763376c785e434c5202790bbf4555bb5588234f5b8de84700cb4",
+    "artifacts/rebase-threat/accepted-creatures/creatures-removed.png": "42e88c47c8a8cb2e10693f2c4b9a3c6ee32bc042a1b3e9ab76568ed4ab153ae8",
+    "artifacts/rebase-threat/accepted-creatures/creatures-restored.png": "dce6f07938252d789dfbfc53294aaa82dfeef3d6cec8f0f1a28b123a79223a9d",
+    "artifacts/rebase-threat/accepted-creatures/creatures-unperceived.png": "1cf0be66d564e81bb42622f9c186f70d072a9dc6770e8e9cd6a1e378c7e96cbd",
+    "artifacts/rebase-threat/accepted-creatures/creatures-visible.png": "0ff198cea2e67ae6307bcc435a1031e0688ef3d266c7f6e3f8b79a1ed84beb25",
+    "artifacts/rebase-threat/accepted-creatures/engine.log": "17997798098b4c76087f63c3f1a8cc7de365080c375e67a1249058933cb538a6",
+    "artifacts/rebase-threat/accepted-creatures/events.json": "0fdef053ac5cbe98555007cc8c225e3bfab1f1dffec4b595d01ddfcfe8c313eb",
+    "artifacts/rebase-threat/accepted-creatures/native-decision.png": "1998f5175c232eb0deb80f4c74cf0fcbdd65f7c8f786b2bdf56116f55a4a0977",
+    "artifacts/rebase-threat/accepted-creatures/result.json": "173c86c8d4c7e9e4a5935eecbcf4ededa9498c510e4d348ef3d44c08465a8c12",
+    "artifacts/rebase-threat/accepted-creatures.log": "f4511e80014400248f58f1a2ce62fe7ffd2348607632095568abaee1294f7217",
+    "artifacts/rebase-threat/accepted-launcher/actual/cdda.log": "fe27031a4099164c51705c748989e574301e166cbd77308aa25b4b8eee1c11ee",
+    "artifacts/rebase-threat/accepted-launcher/actual/luanti-engine.log": "d8e580b9cf4de63be59f6ce1023af219c95b6728909f906495c261bdcd18abff",
+    "artifacts/rebase-threat/accepted-launcher/actual/luanti.log": "d8f318fab48a8498acc8a23e78da620fd4c25259e070d68410b129028e50bc3f",
+    "artifacts/rebase-threat/accepted-launcher/actual-after-movement.png": "5532562b448afc2a5fcd800e21b4d30cf1b949705ba6b69ccddbf4682a7661be",
+    "artifacts/rebase-threat/accepted-launcher/actual-launch.log": "4fd718ea0d3d16b2e15b8638b940dd9be3a3d8f813216614c8c9f5ed73d9029f",
+    "artifacts/rebase-threat/accepted-launcher/actual-scene-later.png": "2510e8187b6c2f03ea075066a7a8110823aed2ab9d22772291093035eb726985",
+    "artifacts/rebase-threat/accepted-launcher/actual-scene.png": "2510e8187b6c2f03ea075066a7a8110823aed2ab9d22772291093035eb726985",
+    "artifacts/rebase-threat/accepted-launcher/camera.csv": "52612697a1a23e1aee0f8de67e9808dc8957507d8e10c505d308771a9e01c575",
+    "artifacts/rebase-threat/accepted-launcher/checks.json": "014a9d255f36a7dfbf95934a33961822e5506a7d92df9ddec8e7e0d14708fdc1",
+    "artifacts/rebase-threat/accepted-launcher/failure-launch.log": "2f9433fb5ade899342b62492065f651359bcecfe50a3e7b912dbd8bdf9eba8ed",
+    "artifacts/rebase-threat/accepted-launcher.log": "014a9d255f36a7dfbf95934a33961822e5506a7d92df9ddec8e7e0d14708fdc1",
+    "artifacts/rebase-threat/accepted-lifecycle/checks.json": "2d04252ec1cb201b723004d320befa8b88cce924e47f635dd965d4ca88611d52",
+    "artifacts/rebase-threat/accepted-lifecycle/commands.json": "a5e14d7515af09f6662e05911e8a5751dad44d37d3a701894e56e6bc182a97b7",
+    "artifacts/rebase-threat/accepted-lifecycle/death_delete/server.log": "270e03707c3201ef4b3f512b81e0cf9b893382df2d2ea18ac4f8ae383ff9938c",
+    "artifacts/rebase-threat/accepted-lifecycle/death_keep/server.log": "9e313a45bfca149ae4847c21b5f1081790b5992c50a03f47ff21605d381fede0",
+    "artifacts/rebase-threat/accepted-lifecycle/death_query/server.log": "299aa572f4ad796a054affabfa727852d4b0be53542a444f66f650be0efd7ba8",
+    "artifacts/rebase-threat/accepted-lifecycle/death_reset/server.log": "b2c92841477d83bb80f4e0f54769566a9c9bdd1130032952ffdaf7c843e9e226",
+    "artifacts/rebase-threat/accepted-lifecycle/death_watch/server.log": "a23db9248919d44cec73ff00485adf1346f6d2e987dcd90a9e431957910f9d40",
+    "artifacts/rebase-threat/accepted-lifecycle/events.json": "abc50c8401274ffa715b24efbde314e14ca1e13f63727e79197208dc6fd2b695",
+    "artifacts/rebase-threat/accepted-lifecycle/fixture.json": "cd45192cac42cea4cb63d1b091ba2dd2a49b14362688d63135d21b560d3d84d2",
+    "artifacts/rebase-threat/accepted-lifecycle/fixture.json.canonical": "6b7f729a0f7673b37357566c1a1248853bb33c679f981e5a066626197da0b68c",
+    "artifacts/rebase-threat/accepted-lifecycle/fixture.log": "798ca393b1ac30a50eaf7fe1cebcbe40a9084d4e3073c959a5e456e9fafedf99",
+    "artifacts/rebase-threat/accepted-lifecycle/ledge-after.json": "e26750fdc2eadf34486dc09d0a6e95c425422aba5fb8841ffc67a467069d265c",
+    "artifacts/rebase-threat/accepted-lifecycle/ledge-after.json.canonical": "0589870e9a53d932d4d2296f69a39558628d17f9c0fbd614f5480b1ece33901b",
+    "artifacts/rebase-threat/accepted-lifecycle/ledge-native-read.log": "8c2a24827a142f516688366173bdc22872af255c17d21d5d42bb69c4e2126bce",
+    "artifacts/rebase-threat/accepted-lifecycle/ledge_cancel/server.log": "c3c1722583083ec2b2a85fcd8dfdde13f4e348dc3a7341fa05f39ef2e93a3790",
+    "artifacts/rebase-threat/accepted-lifecycle.log": "94c3210ec26e23fc3d9bd1177ddea055163302d793f0b80e0c4f6d0158353752",
+    "artifacts/rebase-threat/accepted-luanti-native.log": "cd2ad19e22326b41249cd402ee021ba5eef034d53c794fd27889b0678b5412ff",
+    "artifacts/rebase-threat/accepted-native-tests.log": "41123dc9663266c5727683617c46b4c8002920977bbdeceecbb7569231861069",
+    "artifacts/rebase-threat/accepted-presentation/delayed/camera.csv": "8524bccb74c4cb175b0576d34d685ffc110c69b588b1fc4996e41e736b8679c6",
+    "artifacts/rebase-threat/accepted-presentation/delayed/console.log": "7604c9c28697165c0ed5a3e37dd065499afaa38b24be55aebdc1afe6588ec5d3",
+    "artifacts/rebase-threat/accepted-presentation/delayed/engine.log": "c0c3e7fde8bed9e31fa23b2abe14ac54118dac5c672ce5e48101111c1507093e",
+    "artifacts/rebase-threat/accepted-presentation/delayed/events.json": "8c2a7cb2a31c6dce1f97be8af69dcc3cc90bc2cd06da072a817cdf58df0fc5b1",
+    "artifacts/rebase-threat/accepted-presentation/delayed/result.json": "86db9a0bf755f9c431dc243b87a2533f4ce1cd52961c4de39d3abe1c8886f475",
+    "artifacts/rebase-threat/accepted-presentation/fps-120/camera.csv": "23ca2fa74901ff3ef111e50ff1126924757a6944481c9795426e6e3a089cd59f",
+    "artifacts/rebase-threat/accepted-presentation/fps-120/console.log": "49f7940aa042e56cd0efe85b887e4797933b634f2fadf0e609935eedf8662c27",
+    "artifacts/rebase-threat/accepted-presentation/fps-120/engine.log": "0052e95579691acbbf2f360c271944d5460febb293fc16d34979881d7c606956",
+    "artifacts/rebase-threat/accepted-presentation/fps-120/events.json": "18be076f0e3d058f436868ee9bfe0e9b2f6ba0af43b643f30a471d420a21ef01",
+    "artifacts/rebase-threat/accepted-presentation/fps-120/result.json": "07ef8a4ce98d65cc30b739d1625bffb62fe883ef179fc222c98d41637ad7b2ca",
+    "artifacts/rebase-threat/accepted-presentation/fps-30/camera.csv": "25f74a2eb8386b92b16751650e16750d7a8492bcb158d4a4f6d6ffe153f483d7",
+    "artifacts/rebase-threat/accepted-presentation/fps-30/console.log": "9c430b4dc5e2aeded0fb8eca54df500757a33e7d974748d7f9f7cd18dd057780",
+    "artifacts/rebase-threat/accepted-presentation/fps-30/engine.log": "d1ca9c06ebcfe2c97b092e00140b75e11238169b7228198cd7306c14f48236cb",
+    "artifacts/rebase-threat/accepted-presentation/fps-30/events.json": "97d850bd90e388e1739e2cf90d0395833433118dcb7a4ad2de47d58b8b8ff927",
+    "artifacts/rebase-threat/accepted-presentation/fps-30/result.json": "ba517ddb1166accac330d79ed70dc25b089b2f048721983cd1297251e4c0ebde",
+    "artifacts/rebase-threat/accepted-presentation/fps-60/camera.csv": "635c5041f898b4093d391e185c13b3ea8e772f84b58e55200b99c15a5dd3e9f8",
+    "artifacts/rebase-threat/accepted-presentation/fps-60/console.log": "86263b7d50b1930945564b127c9f6c6f93db459cd7de25cec92cf834f7a5801a",
+    "artifacts/rebase-threat/accepted-presentation/fps-60/engine.log": "3664ef1ef3463bff69a4d8edc515be0da07ca5dcab7cf0cf9bf7ae4e57fe0eec",
+    "artifacts/rebase-threat/accepted-presentation/fps-60/events.json": "3103e356d16fc8ca7437d9b65e7ca3398879360c839ed5de34fba672d4df656e",
+    "artifacts/rebase-threat/accepted-presentation/fps-60/result.json": "a4d2cae3516fca88e4521ec1386eee4e5728a547aedba8041acaf30325b1a5b0",
+    "artifacts/rebase-threat/accepted-presentation/fps-60/window-inside-later.png": "65f78f5f9d706c4c97173ee4b3c7d37c41df26b06061d33cb7bc95d03bfca123",
+    "artifacts/rebase-threat/accepted-presentation/fps-60/window-inside.png": "0c074f045b01f14d7c4afbad8e9e473d31d94934b342ddcb58abdad0bb6cb407",
+    "artifacts/rebase-threat/accepted-presentation/fps-60/window-open.png": "c28aa8e354f4926546e301e61623b76157a14a0a69ae02bf2b8e4c16ff4fd3f8",
+    "artifacts/rebase-threat/accepted-presentation/fps-60/window-outside.png": "5658c3ca120571daba6dab5654ac2875deb5f29d2e35783fee245842de64b705",
+    "artifacts/rebase-threat/accepted-presentation.log": "900c66450cdac87c3462c5453ca99b049f58e0dfa3c1e625d94f8a213d554e3e",
+    "artifacts/rebase-threat/accepted-rebase/camera.csv": "ca7b63582db1d099eda9d8979015041ff6d551500c3a2cc2b5effa9b7c8f90e8",
+    "artifacts/rebase-threat/accepted-rebase/console.log": "197c77cd8b58de1fac9e939f8f644bc554e0efc5b9410091604bb665b0bacaae",
+    "artifacts/rebase-threat/accepted-rebase/engine.log": "bb42fe6571328cbccf48718bcca84f423118bc86da9c5ce88b66aec594c355ed",
+    "artifacts/rebase-threat/accepted-rebase/events.json": "f34ebc78c672ca8ed912eb8b47ef2079309a13ef2d9bca53537005036cf398b7",
+    "artifacts/rebase-threat/accepted-rebase/rebase-after.png": "7708196da13ca484cdf6bcea90ab1ed2ace9a889c386355622a51f0d99e8fd3f",
+    "artifacts/rebase-threat/accepted-rebase/rebase-before.png": "b5d604cbeb6d14af404eb31f28550f9960d3b2706dc853be35f8504f11c99d4a",
+    "artifacts/rebase-threat/accepted-rebase/result.json": "49f5e9eaa551bab5175734080470293bf217dd963c873b778afa04811495a2bb",
+    "artifacts/rebase-threat/accepted-rebase.log": "202ebb57fd274eaa6c220bf231f9b18cda68cc492e297535d720d5e8f6a30c01",
+    "artifacts/rebase-threat/accepted-reconstruction/reconstruction.json": "a22d310e0e1ed0328348b08e933a9b78585220066a6892eda2c98b6e752781f7",
+    "artifacts/rebase-threat/accepted-reconstruction.log": "a727337a8b90324b80ac41f4fad208081c23e16dfeea7cf21847830e18f0cd09",
+    "artifacts/rebase-threat/accepted-source-capture.log": "dbfc64fda2cb943e4b655de6aff9330e9b78c241cb22b92bfec9677c638a09df",
+    "artifacts/rebase-threat/accepted-source-check.log": "b6d5285e2433a806fa92052bdade15cf55986c5a15f8f0b82c28b07393632ca5",
+    "artifacts/rebase-threat/before-rebase/camera.csv": "e7b81e60dd94e543f3993e1287bec051bfed6ab656ac6e7057a7eba7fe737b1b",
+    "artifacts/rebase-threat/before-rebase/console.log": "a3604eeaa50faecb86d477436959a3de8215166a5918d0d691da30053ea7f7fd",
+    "artifacts/rebase-threat/before-rebase/engine.log": "097b82b431e0d390ac623f19b9629ce3004c3a5c28b54f491176902058f2fee5",
+    "artifacts/rebase-threat/before-rebase/events.json": "47b0549d892e7e505d58d7a41d9a4edca2d00409b3a8f3a37e45d56aa829ec7d",
+    "artifacts/rebase-threat/before-rebase/result.json": "47070ba6e552369841a1d499cc82c3bb8369c18986940b6ea114cbba7e124b6a",
+    "artifacts/rebase-threat/canonical-runtime/checks.json": "e84f6ea1e8fcba3f55623de7a4f575873dfe6111b607721fecb5941ee0bdf661",
+    "artifacts/rebase-threat/canonical-runtime/colliding_character_is_rejected.log": "71b47a00dc6ce07ab1e57b06a7c244c1afc55254dc8803760a9acce61845cc4e",
+    "artifacts/rebase-threat/canonical-runtime/commands.json": "4b1cdba72448b4887c117cd68e3c7bbbf1204fe3db60e8a8c9b9ffc0ec2898c5",
+    "artifacts/rebase-threat/canonical-runtime/control.json": "12572a5294a55f92e8e5de1c881eecb3e5429d7f2b07a1bf89d9fa973a382a73",
+    "artifacts/rebase-threat/canonical-runtime/control.json.canonical": "389495235718cafc77b29a0419850bf495689c04b8f772059e2df9f29e6b9b82",
+    "artifacts/rebase-threat/canonical-runtime/control.log": "b75f0692da151b557cfe09fcedf1204bde4c387587e4001132d6de0aa4d96470",
+    "artifacts/rebase-threat/canonical-runtime/explicit_saved_character_selection.log": "d5d306d7e92508b145f774ed3805fa6f57ddd091225ef154d736f7644d70c0ff",
+    "artifacts/rebase-threat/canonical-runtime/fixture.json": "2514295e318327833085c8916c378ed6a13b2cc415410f4c988c38d2b52955f5",
+    "artifacts/rebase-threat/canonical-runtime/fixture.json.canonical": "8133c61e51651f64c603fe9d3e76edde233363b07e11a56dcca3afce54d02ae5",
+    "artifacts/rebase-threat/canonical-runtime/fixture.log": "6eb07b6e485fef4f0222887862d08603699566bbcfdf7b986ef387f4785a4031",
+    "artifacts/rebase-threat/canonical-runtime/live.log": "88db4c277a4591c118ef80bca5951cfea9e7c5caf8e0ecf7a0b3d0a9e3ac179b",
+    "artifacts/rebase-threat/canonical-runtime/multiple_saves_require_selection.log": "5d94e40158193d695e7e453f7c7ea4439ca6d188afe106940ba9076612e0cd12",
+    "artifacts/rebase-threat/canonical-runtime/native_restart_expected.json": "54a2563e6ced59bc33162217f389ccffa8c42f93cf8ad2d4653973810af1e6e0",
+    "artifacts/rebase-threat/canonical-runtime/native_restart_expected.json.canonical": "c1d438f5225ab92cfb3209f29b4ca8ef8fe543a5cf9e53dcf6fba3277492883c",
+    "artifacts/rebase-threat/canonical-runtime/native_restart_expected.log": "1ce7a04565d6bb92198f5e1c66c3c9227a20dc28089eece27ed7d22b98531d21",
+    "artifacts/rebase-threat/canonical-runtime/native_restart_resave.json": "276b9b6cdf334ae6848b4570abc82304959a44b4d9f6c1cfab087682960f8ece",
+    "artifacts/rebase-threat/canonical-runtime/native_restart_resave.json.canonical": "bdf2fe5ad1679b74cea1094310300d0bdc87afabb9057468f06d43f50b9da484",
+    "artifacts/rebase-threat/canonical-runtime/native_restart_resave.log": "d7f9fee6ef06543194b3758e54846a4dcc122b0e4017c68fb4672b3250ad6f95",
+    "artifacts/rebase-threat/canonical-runtime/new_character_is_explicit.log": "95b6e5be351271b07a52c922aea94ed770ec8275bed3fc1aa5fe1adbe6006c4d",
+    "artifacts/rebase-threat/canonical-runtime/new_world_recommended_profile.log": "b2e96ba5002178916f0910baac518a4a8e251f4dfd790a10bfa1f552ed3e5021",
+    "artifacts/rebase-threat/canonical-runtime/restart_zero_turn.log": "404227d6d3574cc6dcce920b1f6a284c3d62a5bf162bb16204cb15abe6533e22",
+    "artifacts/rebase-threat/canonical-runtime/restarted.json": "54a2563e6ced59bc33162217f389ccffa8c42f93cf8ad2d4653973810af1e6e0",
+    "artifacts/rebase-threat/canonical-runtime/restarted.json.canonical": "c1d438f5225ab92cfb3209f29b4ca8ef8fe543a5cf9e53dcf6fba3277492883c",
+    "artifacts/rebase-threat/canonical-runtime/restarted.log": "807338d705148fd4e1da79b79da9bbd4004e12dc80c1ed0a714d420d81e55b8c",
+    "artifacts/rebase-threat/canonical-runtime/saved.json": "276b9b6cdf334ae6848b4570abc82304959a44b4d9f6c1cfab087682960f8ece",
+    "artifacts/rebase-threat/canonical-runtime/saved.json.canonical": "cc78167156260d4168320ee0424a5858b5833db70b1a831682306a264c9e95d5",
+    "artifacts/rebase-threat/canonical-runtime/saved.log": "e9063ad67e5d8170f14c74195cbc37be7c408dc9b3c465ea50f79689f9def654",
+    "artifacts/rebase-threat/canonical-runtime/unknown_character_is_rejected.log": "5d94e40158193d695e7e453f7c7ea4439ca6d188afe106940ba9076612e0cd12",
+    "artifacts/rebase-threat/canonical-runtime/zero.json": "be0e1e547d82aa6602fb94dcb44c9c4f7f6a727857ce7c5eefff9d8aa08d2876",
+    "artifacts/rebase-threat/canonical-runtime/zero.json.canonical": "09395f78096092ea2c4041b5434d4c7f37f8739753289390ad5a43760306040a",
+    "artifacts/rebase-threat/canonical-runtime/zero.log": "2bae469eba4f285f0b6eef4ec4d344eebfda8e3ed083c8f4c873c83035506c5b",
+    "artifacts/rebase-threat/canonical-runtime/zero_turn_load.log": "93698c596e88eb9f8312ee960e04ee3d56d67ec1a468b61eeaaf070f7ea69996",
+    "artifacts/rebase-threat/canonical-runtime.log": "4068793eee5bf3c9a315947b62038665f8fde8ddeecccade19124322e6eb6d7e",
+    "artifacts/rebase-threat/cdda-build-corrected.log": "cc6cbf256e5b3a60b9c668146d76c1dcce0111d65ac094024e893e650589e847",
+    "artifacts/rebase-threat/cdda-build-final.log": "3ce322d85f199dbd7f236cd501c71d35f00e4be329908cb40c7c3f1d18da82f0",
+    "artifacts/rebase-threat/cdda-build-policy.log": "ad54ea1924ec11a704c0a3cb6d1f6a1ff8512c588a4393652b25bda94d9386bc",
+    "artifacts/rebase-threat/cdda-cache-effective.json": "d393ec3ef3045928f20338f6da277393eb924d2b20d6c9a721cd7e0ed0a5bf98",
+    "artifacts/rebase-threat/cdda-configure.log": "e1b26279613f4ff94e50b96d96ac84d01a6b7d18bc29ac766190e5447166febf",
+    "artifacts/rebase-threat/installed-binaries.json": "68e846b06831fd414c73efd87eb3b17d902626d821074d92e42fff3d3e245220",
+    "artifacts/rebase-threat/luanti-build-corrected.log": "30863b0b33d1138ab264846528b17f7ae3ce95468853f82723cb4fb62d674a3e",
+    "artifacts/rebase-threat/luanti-build-final-source.log": "7a0ac8a26957a1e59b492c0b5786a0b6fca2d580ecb64a9ef2a93354cb32ac3c",
+    "artifacts/rebase-threat/luanti-build-final.log": "495802a4c6c4b6e1299d53b0acce0eccb3bebd3d07b6803457791932d49aefa4",
+    "artifacts/rebase-threat/luanti-build-input.log": "6e2eeb19bbe649e672c7811423421d1af90b4ebc97f492d473e196a47bfb276b",
+    "artifacts/rebase-threat/luanti-cache-final.json": "c6e5be6b2a242b3584fa5648701c7e5f0b41cfde2c95fe61029f777a1fec986c",
+    "artifacts/rebase-threat/luanti-configure-final.log": "9e4dc6f3e34ff5047a56b74b88c50ea923aa9ca180559c73ff72cfdd685e69c5",
+    "artifacts/rebase-threat/native-reader-final-build.log": "147cfc1f5031f040125f7a0af9ae29adaf6652bab8e1ec9e8501338c7c3b88f5",
+    "artifacts/rebase-threat/native-save-reader.build.json": "6197622013df25945888cafde1496562649a581a11059fb89d92919c57308afa",
+    "artifacts/rebase-threat/native-test-rebuild.log": "e2e34d592b5145a022b1c4f874e22e5f9dbcb5f682cac5824f2178b44af44475",
+    "artifacts/rebase-threat/protocol-build.log": "00bffffc9ad1535992a8aa6aa088aeaa816a41d75bf489597f236c5256735e61",
+    "artifacts/rebase-threat/protocol-configure.log": "a15cd892f263cd3559f5cacca37d003fadc12abac99383ef66815c63829f6f40",
+    "artifacts/rebase-threat/protocol-tests.log": "b9ee1d86ea9b1d24aa4a19e7f030f4d0f94e6021867d64c25aa14d6bf632d746"
+  }
+}

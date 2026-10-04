@@ -26,7 +26,7 @@ le riparazioni già completate a visibilità, strutture e movimento.
 | FND-01 | Distinguere nuova partita e caricamento; mantenere identità, inventario, posizione, orologio e mondo. Comandi e verifiche headless usano il ciclo nativo completo. | IMPLEMENTED — verifica mirata PASS; SAVE-001 completo in FND-05 |
 | FND-02 | Framing e code limitati; EOF, input malformato e client lento non bloccano o terminano il runtime. | PLANNED |
 | FND-03 | Negoziazione, identità di sessione, deduplicazione, revisioni, sequenze, reconnect/resync e abilitazione dell'input su stato completo. | PLANNED |
-| FND-04 | Entità reali persistenti, picking, verticalità, campi, luce/percezione e HUD autorevoli; lifecycle e threading verificati. | IN PROGRESS: geometria/input riparati, copertura incompleta |
+| FND-04 | Entità reali persistenti, picking, verticalità, campi, luce/percezione e HUD autorevoli; lifecycle e threading verificati. | IN PROGRESS: geometria/input, rebase, creature base e decisioni native; copertura incompleta |
 | FND-05 | SAVE-001 completo, test discovery, licenze/media e benchmark popolati riproducibili; nuova certificazione M5.5 soltanto dopo le evidenze. | PLANNED |
 
 FND-01 applica il preset CDDA raccomandato ai nuovi mondi e conserva mod/opzioni
@@ -39,6 +39,8 @@ movimento, strutture, apertura porte, safe mode e riavvio, ma lascia aperta
 la stabilità grafica durante i cambi di origine della reality bubble.
 Prima di proseguire FND-02: riparazione mirata di rebase, creature visibili e
 conferme native esplorazione/morte, come anticipo parziale di FND-04.
+La [riparazione](docs/fixes/rebase-and-threat-presentation.md) ha prove mirate
+PASS; resta da confermare manualmente la scena che sfarfallava.
 FND-04 comprende anche OPEN/CLOSE puntati senza attraversamento; la fase 2
 comprende una nebbia del confine della proiezione che non sveli terreno ignoto.
 
