@@ -107,8 +107,12 @@ scambi e luce locale restano nei task previsti. L'utente
 [accetta tutti e tre i controlli manuali](docs/source/actor-lifecycle-validation-2026-10-04.md).
 Non serve ripeterli. Il caso di schermo nero fuori dal percorso della demo
 resta da riprodurre, conservando la sessione; non riapre questi tre controlli.
-Il seguito proposto è il primo prototipo circoscritto dello scheduler della
-fase 2, sulle fondazioni già verificate. Gli altri criteri FND-04 restano aperti.
+Il seguito autorizzato è il [primo prototipo dello scheduler della fase 2](docs/prototypes/rt01-real-time.md):
+tick nativi temporizzati, idle, velocità globale, pause/menu/minacce e input
+mantenuto senza coda di passi. `realtime-demo.sh` offre la prova isolata.
+La validazione manuale e il confronto con il futuro controller continuo
+restano aperti; non è una scelta definitiva né la chiusura della fase 2.
+Gli altri criteri FND-04 restano aperti.
 
 ## Fase 2 — Prototipo di tempo, movimento e percezione
 

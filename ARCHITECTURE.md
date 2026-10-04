@@ -28,10 +28,18 @@ The canonical save is CDDA's save. A Luanti world is a disposable presentation
 cache. On reconnect or a missing delta the client must obtain an authoritative
 snapshot before resuming. Session/player/connection identity, command
 deduplication, message sequences and world revisions have distinct meanings.
-CWM 2.0 implements this boundary through CwmTransport/CwmListener: exact
+CWM 2.1 implements this boundary through CwmTransport/CwmListener: exact
 version negotiation, canonical player identity, fresh runtime/connection IDs,
 bounded command outcomes, contiguous per-direction emitted messages and
 correlated reset/full-state acknowledgement. Old wire clients are incompatible.
+
+The opt-in [RT-01 prototype](docs/prototypes/rt01-real-time.md) paces the same
+native turn phases using one monotonic coordinator clock inside CDDA. Held
+intent does not queue footsteps; pause/menu/recovery freeze the coordinator.
+Native action credit/debt remains authoritative. Action-phase snapshots and
+prelude snapshots can precede the paced post-player world phase; the prototype
+does not yet make every publication a sole end-of-turn batch. The final spatial
+controller still requires the user's playable comparison.
 
 CDDA `(x,y,z_level)` coordinates are semantic. Scale, floor height and eye
 height belong to presentation configuration. Changes of reality-bubble origin

@@ -6,7 +6,7 @@ captured implementation; it does not approve its gaps. The executable schema
 is [cwm.fbs](cwm.fbs). Audit findings and evidence are in
 [M5.5](../docs/audits/M5.5.md).
 
-The current runtime requires **CWM 2.0**. This breaks the old negotiation
+The current runtime requires **CWM 2.1**. This breaks the old negotiation
 contract; schema fields and union members are appended without changing the
 existing FlatBuffers offsets. Both executables must be rebuilt together.
 The historical coverage table below is retained as audit evidence.
@@ -299,3 +299,29 @@ graphical runtimes. The optional camera trace records connection status,
 queue sizes, per-pump counters, session IDs, readiness, received sequence and
 resync count. The original takeover probes remain frozen evidence; CWM 2
 fixtures test the new contract with substantive native and graphical cases.
+
+## CWM 2.1 — Optional real-time prototype
+
+`SimulationControlRequest` and `MovementIntentRequest` append command payloads.
+Both use the existing command ledger and exact version negotiation. A held
+intent sets direction 0–8; 0 releases, vertical movement remains a punctual
+`MoveRequest`. Accepted intent updates have one effect; native repeated steps
+are internal actions, not repeated execution of the request ID.
+
+`WorldSnapshot.clock` is absent in action-driven mode. In real-time mode its
+scale is finite in [0.25,4]. Pause bits are Manual=1, Menu=2, Threat=4,
+Recovery=8, Decision=16. Unknown bits or invalid scales require recovery.
+`SimulationControl` is PAUSE=0, RESUME=1, SET_SPEED=2, MENU_OPEN=3, MENU_CLOSE=4.
+Controls change the coordinator, not native movement costs or save serialization.
+
+`EntityState.motion_seconds` is finite in [0.01,60], default 0.2 seconds for
+action-driven presentation. The coordinator publishes effective action duration
+for the avatar and a native tick duration for other actors. This does not expose
+sub-tick AI trajectories. Lifecycle metadata must agree with roster durations.
+
+Pauses drop held intent and acknowledge cancelled queued actions negatively.
+A missing delta still requires correlated reset/full-state installation; the
+world does not progress while waiting for its ACK. The calendar, native action
+and post-player world phases remain distinct; an action result can precede that
+tick's AI phase. See [RT-01](../docs/prototypes/rt01-real-time.md) for quantization,
+stall policy, evidence and remaining controller decisions.

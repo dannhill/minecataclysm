@@ -44,9 +44,13 @@ implement animations, real-time scheduling, local light or full FND-04 conforman
 The user [accepts all three actor lifecycle manual checks](docs/source/actor-lifecycle-validation-2026-10-04.md).
 No repeat checklist is needed. Black-screen loss of context after leaving the
 demo road is reported separately, not yet reproduced; preserve that demo save.
-The proposed next slice is the first phase-2 authoritative real-time scheduler
-prototype is in implementation on `prototype/rt01-scheduler`. Verification
-and manual comparison are pending; it is not certified. Other FND-04 criteria remain open.
+The authorized [RT-01 real-time prototype](docs/prototypes/rt01-real-time.md)
+implements paced native turns, idle AI, global speed, manual/menu/threat/recovery
+pauses and held movement intent. `realtime-demo.sh` offers the isolated manual
+scene; ordinary `start.sh` remains action-driven unless explicitly opted in.
+Scoped verification is recorded in its evidence; manual validation is pending.
+Automatic continuous stairs/ladders must now be revisited with the user before
+choosing the final controller. Other phase-2/FND-04 criteria remain open.
 Product decisions and planned prototypes do not certify implementation.
 
 Manual feedback accepted movement, structures, door opening, safe mode and
