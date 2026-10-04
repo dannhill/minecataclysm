@@ -76,6 +76,12 @@ struct TimeEventBuilder;
 struct AcknowledgeThreatRequest;
 struct AcknowledgeThreatRequestBuilder;
 
+struct DecisionPrompt;
+struct DecisionPromptBuilder;
+
+struct DecisionResponse;
+struct DecisionResponseBuilder;
+
 struct CwmMessage;
 struct CwmMessageBuilder;
 
@@ -245,11 +251,13 @@ enum class Payload : uint8_t {
   CommandAck = 15,
   TimeEvent = 16,
   AcknowledgeThreatRequest = 17,
+  DecisionPrompt = 18,
+  DecisionResponse = 19,
   MIN = NONE,
-  MAX = AcknowledgeThreatRequest
+  MAX = DecisionResponse
 };
 
-inline const Payload (&EnumValuesPayload())[18] {
+inline const Payload (&EnumValuesPayload())[20] {
   static const Payload values[] = {
     Payload::NONE,
     Payload::HelloRequest,
@@ -268,13 +276,15 @@ inline const Payload (&EnumValuesPayload())[18] {
     Payload::AttackRequest,
     Payload::CommandAck,
     Payload::TimeEvent,
-    Payload::AcknowledgeThreatRequest
+    Payload::AcknowledgeThreatRequest,
+    Payload::DecisionPrompt,
+    Payload::DecisionResponse
   };
   return values;
 }
 
 inline const char * const *EnumNamesPayload() {
-  static const char * const names[19] = {
+  static const char * const names[21] = {
     "NONE",
     "HelloRequest",
     "HelloResponse",
@@ -293,13 +303,15 @@ inline const char * const *EnumNamesPayload() {
     "CommandAck",
     "TimeEvent",
     "AcknowledgeThreatRequest",
+    "DecisionPrompt",
+    "DecisionResponse",
     nullptr
   };
   return names;
 }
 
 inline const char *EnumNamePayload(Payload e) {
-  if (::flatbuffers::IsOutRange(e, Payload::NONE, Payload::AcknowledgeThreatRequest)) return "";
+  if (::flatbuffers::IsOutRange(e, Payload::NONE, Payload::DecisionResponse)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesPayload()[index];
 }
@@ -374,6 +386,14 @@ template<> struct PayloadTraits<CDDA::CWM::TimeEvent> {
 
 template<> struct PayloadTraits<CDDA::CWM::AcknowledgeThreatRequest> {
   static const Payload enum_value = Payload::AcknowledgeThreatRequest;
+};
+
+template<> struct PayloadTraits<CDDA::CWM::DecisionPrompt> {
+  static const Payload enum_value = Payload::DecisionPrompt;
+};
+
+template<> struct PayloadTraits<CDDA::CWM::DecisionResponse> {
+  static const Payload enum_value = Payload::DecisionResponse;
 };
 
 bool VerifyPayload(::flatbuffers::Verifier &verifier, const void *obj, Payload type);
@@ -1014,7 +1034,8 @@ struct EntityState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_ROTATION = 12,
     VT_ANIMATION_HINT = 14,
     VT_HP_PERCENT = 16,
-    VT_NAME = 18
+    VT_NAME = 18,
+    VT_PERCEIVED = 20
   };
   uint64_t id() const {
     return GetField<uint64_t>(VT_ID, 0);
@@ -1064,6 +1085,12 @@ struct EntityState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   ::flatbuffers::String *mutable_name() {
     return GetPointer<::flatbuffers::String *>(VT_NAME);
   }
+  bool perceived() const {
+    return GetField<uint8_t>(VT_PERCEIVED, 1) != 0;
+  }
+  bool mutate_perceived(bool _perceived = 1) {
+    return SetField<uint8_t>(VT_PERCEIVED, static_cast<uint8_t>(_perceived), 1);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint64_t>(verifier, VT_ID, 8) &&
@@ -1076,6 +1103,7 @@ struct EntityState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyField<uint8_t>(verifier, VT_HP_PERCENT, 1) &&
            VerifyOffset(verifier, VT_NAME) &&
            verifier.VerifyString(name()) &&
+           VerifyField<uint8_t>(verifier, VT_PERCEIVED, 1) &&
            verifier.EndTable();
   }
 };
@@ -1108,6 +1136,9 @@ struct EntityStateBuilder {
   void add_name(::flatbuffers::Offset<::flatbuffers::String> name) {
     fbb_.AddOffset(EntityState::VT_NAME, name);
   }
+  void add_perceived(bool perceived) {
+    fbb_.AddElement<uint8_t>(EntityState::VT_PERCEIVED, static_cast<uint8_t>(perceived), 1);
+  }
   explicit EntityStateBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -1128,7 +1159,8 @@ inline ::flatbuffers::Offset<EntityState> CreateEntityState(
     float rotation = 0.0f,
     uint16_t animation_hint = 0,
     uint8_t hp_percent = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> name = 0) {
+    ::flatbuffers::Offset<::flatbuffers::String> name = 0,
+    bool perceived = true) {
   EntityStateBuilder builder_(_fbb);
   builder_.add_id(id);
   builder_.add_name(name);
@@ -1136,6 +1168,7 @@ inline ::flatbuffers::Offset<EntityState> CreateEntityState(
   builder_.add_pos(pos);
   builder_.add_type_id(type_id);
   builder_.add_animation_hint(animation_hint);
+  builder_.add_perceived(perceived);
   builder_.add_hp_percent(hp_percent);
   builder_.add_type(type);
   return builder_.Finish();
@@ -1150,7 +1183,8 @@ inline ::flatbuffers::Offset<EntityState> CreateEntityStateDirect(
     float rotation = 0.0f,
     uint16_t animation_hint = 0,
     uint8_t hp_percent = 0,
-    const char *name = nullptr) {
+    const char *name = nullptr,
+    bool perceived = true) {
   auto type_id__ = type_id ? _fbb.CreateString(type_id) : 0;
   auto name__ = name ? _fbb.CreateString(name) : 0;
   return CDDA::CWM::CreateEntityState(
@@ -1162,7 +1196,8 @@ inline ::flatbuffers::Offset<EntityState> CreateEntityStateDirect(
       rotation,
       animation_hint,
       hp_percent,
-      name__);
+      name__,
+      perceived);
 }
 
 struct EntityRemoved FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -2105,6 +2140,150 @@ inline ::flatbuffers::Offset<AcknowledgeThreatRequest> CreateAcknowledgeThreatRe
   return builder_.Finish();
 }
 
+struct DecisionPrompt FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef DecisionPromptBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_DECISION_ID = 4,
+    VT_TEXT = 6,
+    VT_CHOICES = 8
+  };
+  uint64_t decision_id() const {
+    return GetField<uint64_t>(VT_DECISION_ID, 0);
+  }
+  bool mutate_decision_id(uint64_t _decision_id = 0) {
+    return SetField<uint64_t>(VT_DECISION_ID, _decision_id, 0);
+  }
+  const ::flatbuffers::String *text() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_TEXT);
+  }
+  ::flatbuffers::String *mutable_text() {
+    return GetPointer<::flatbuffers::String *>(VT_TEXT);
+  }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *choices() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *>(VT_CHOICES);
+  }
+  ::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *mutable_choices() {
+    return GetPointer<::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *>(VT_CHOICES);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_DECISION_ID, 8) &&
+           VerifyOffset(verifier, VT_TEXT) &&
+           verifier.VerifyString(text()) &&
+           VerifyOffset(verifier, VT_CHOICES) &&
+           verifier.VerifyVector(choices()) &&
+           verifier.VerifyVectorOfStrings(choices()) &&
+           verifier.EndTable();
+  }
+};
+
+struct DecisionPromptBuilder {
+  typedef DecisionPrompt Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_decision_id(uint64_t decision_id) {
+    fbb_.AddElement<uint64_t>(DecisionPrompt::VT_DECISION_ID, decision_id, 0);
+  }
+  void add_text(::flatbuffers::Offset<::flatbuffers::String> text) {
+    fbb_.AddOffset(DecisionPrompt::VT_TEXT, text);
+  }
+  void add_choices(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>>> choices) {
+    fbb_.AddOffset(DecisionPrompt::VT_CHOICES, choices);
+  }
+  explicit DecisionPromptBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<DecisionPrompt> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<DecisionPrompt>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<DecisionPrompt> CreateDecisionPrompt(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t decision_id = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> text = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>>> choices = 0) {
+  DecisionPromptBuilder builder_(_fbb);
+  builder_.add_decision_id(decision_id);
+  builder_.add_choices(choices);
+  builder_.add_text(text);
+  return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<DecisionPrompt> CreateDecisionPromptDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t decision_id = 0,
+    const char *text = nullptr,
+    const std::vector<::flatbuffers::Offset<::flatbuffers::String>> *choices = nullptr) {
+  auto text__ = text ? _fbb.CreateString(text) : 0;
+  auto choices__ = choices ? _fbb.CreateVector<::flatbuffers::Offset<::flatbuffers::String>>(*choices) : 0;
+  return CDDA::CWM::CreateDecisionPrompt(
+      _fbb,
+      decision_id,
+      text__,
+      choices__);
+}
+
+struct DecisionResponse FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef DecisionResponseBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_DECISION_ID = 4,
+    VT_CHOICE = 6
+  };
+  uint64_t decision_id() const {
+    return GetField<uint64_t>(VT_DECISION_ID, 0);
+  }
+  bool mutate_decision_id(uint64_t _decision_id = 0) {
+    return SetField<uint64_t>(VT_DECISION_ID, _decision_id, 0);
+  }
+  uint16_t choice() const {
+    return GetField<uint16_t>(VT_CHOICE, 0);
+  }
+  bool mutate_choice(uint16_t _choice = 0) {
+    return SetField<uint16_t>(VT_CHOICE, _choice, 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_DECISION_ID, 8) &&
+           VerifyField<uint16_t>(verifier, VT_CHOICE, 2) &&
+           verifier.EndTable();
+  }
+};
+
+struct DecisionResponseBuilder {
+  typedef DecisionResponse Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_decision_id(uint64_t decision_id) {
+    fbb_.AddElement<uint64_t>(DecisionResponse::VT_DECISION_ID, decision_id, 0);
+  }
+  void add_choice(uint16_t choice) {
+    fbb_.AddElement<uint16_t>(DecisionResponse::VT_CHOICE, choice, 0);
+  }
+  explicit DecisionResponseBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<DecisionResponse> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<DecisionResponse>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<DecisionResponse> CreateDecisionResponse(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t decision_id = 0,
+    uint16_t choice = 0) {
+  DecisionResponseBuilder builder_(_fbb);
+  builder_.add_decision_id(decision_id);
+  builder_.add_choice(choice);
+  return builder_.Finish();
+}
+
 struct CwmMessage FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef CwmMessageBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
@@ -2190,6 +2369,12 @@ struct CwmMessage FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const CDDA::CWM::AcknowledgeThreatRequest *payload_as_AcknowledgeThreatRequest() const {
     return payload_type() == CDDA::CWM::Payload::AcknowledgeThreatRequest ? static_cast<const CDDA::CWM::AcknowledgeThreatRequest *>(payload()) : nullptr;
   }
+  const CDDA::CWM::DecisionPrompt *payload_as_DecisionPrompt() const {
+    return payload_type() == CDDA::CWM::Payload::DecisionPrompt ? static_cast<const CDDA::CWM::DecisionPrompt *>(payload()) : nullptr;
+  }
+  const CDDA::CWM::DecisionResponse *payload_as_DecisionResponse() const {
+    return payload_type() == CDDA::CWM::Payload::DecisionResponse ? static_cast<const CDDA::CWM::DecisionResponse *>(payload()) : nullptr;
+  }
   void *mutable_payload() {
     return GetPointer<void *>(VT_PAYLOAD);
   }
@@ -2271,6 +2456,14 @@ template<> inline const CDDA::CWM::TimeEvent *CwmMessage::payload_as<CDDA::CWM::
 
 template<> inline const CDDA::CWM::AcknowledgeThreatRequest *CwmMessage::payload_as<CDDA::CWM::AcknowledgeThreatRequest>() const {
   return payload_as_AcknowledgeThreatRequest();
+}
+
+template<> inline const CDDA::CWM::DecisionPrompt *CwmMessage::payload_as<CDDA::CWM::DecisionPrompt>() const {
+  return payload_as_DecisionPrompt();
+}
+
+template<> inline const CDDA::CWM::DecisionResponse *CwmMessage::payload_as<CDDA::CWM::DecisionResponse>() const {
+  return payload_as_DecisionResponse();
 }
 
 struct CwmMessageBuilder {
@@ -2390,6 +2583,14 @@ inline bool VerifyPayload(::flatbuffers::Verifier &verifier, const void *obj, Pa
     }
     case Payload::AcknowledgeThreatRequest: {
       auto ptr = reinterpret_cast<const CDDA::CWM::AcknowledgeThreatRequest *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::DecisionPrompt: {
+      auto ptr = reinterpret_cast<const CDDA::CWM::DecisionPrompt *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::DecisionResponse: {
+      auto ptr = reinterpret_cast<const CDDA::CWM::DecisionResponse *>(obj);
       return verifier.VerifyTable(ptr);
     }
     default: return true;

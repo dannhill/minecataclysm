@@ -34,6 +34,13 @@ dei mondi esistenti. Selezione esplicita se esistono più personaggi; niente
 sovrascrittura silenziosa. Il ciclo comandato dalle azioni è un passaggio
 tecnico verso il tempo reale approvato, non il comportamento finale del prodotto.
 Implementazione ed evidenze in [FND-01](docs/fixes/canonical-runtime.md).
+Il [riscontro manuale](docs/source/manual-validation-2026-10-04.md) accetta
+movimento, strutture, apertura porte, safe mode e riavvio, ma lascia aperta
+la stabilità grafica durante i cambi di origine della reality bubble.
+Prima di proseguire FND-02: riparazione mirata di rebase, creature visibili e
+conferme native esplorazione/morte, come anticipo parziale di FND-04.
+FND-04 comprende anche OPEN/CLOSE puntati senza attraversamento; la fase 2
+comprende una nebbia del confine della proiezione che non sveli terreno ignoto.
 
 ## Fase 2 — Prototipo di tempo, movimento e percezione
 

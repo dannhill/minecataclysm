@@ -85,7 +85,7 @@ index b6ae675..9e33201 100644
  		/*
  			Local player handling
 diff --git a/src/client/game.cpp b/src/client/game.cpp
-index 27b5833..2429de8 100644
+index 27b5833..7bab457 100644
 --- a/src/client/game.cpp
 +++ b/src/client/game.cpp
 @@ -8,6 +8,7 @@
@@ -114,7 +114,7 @@ index 27b5833..2429de8 100644
  	delete client;
  	client = nullptr;
  	delete soundmaker;
-@@ -2737,8 +2742,46 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
+@@ -2737,8 +2742,55 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
  		control.aux1 = control.aux1 ^ true;
  	}
  
@@ -130,6 +130,15 @@ index 27b5833..2429de8 100644
 +	// [CDDA-Mineclonia] Send Movement Commands
 +	if (cdda_client::CddaBridge::getInstance().ownsPlayer(client)) {
 +		auto &bridge = cdda_client::CddaBridge::getInstance();
++		if (bridge.getMetrics().pending_decision) {
++			const auto choices = bridge.getMetrics().decision_choices;
++			for (uint16_t i = 0; i < choices; ++i)
++				if (wasKeyDown(static_cast<GameKeyType>(KeyType::SLOT_1 + i))) {
++					bridge.answerDecision(i);
++					break;
++				}
++			return;
++		}
 +		// A held key must not automatically acknowledge each new threat.
 +		static bool acknowledgement_held = false;
 +		const bool acknowledgement_down = isKeyDown(KeyType::AUX1);
@@ -161,7 +170,7 @@ index 27b5833..2429de8 100644
  	//tt.stop();
  }
  
-@@ -2784,6 +2827,25 @@ inline void Game::step(f32 dtime)
+@@ -2784,6 +2836,25 @@ inline void Game::step(f32 dtime)
  
  	if (!m_is_paused)
  		client->step(dtime);
@@ -187,7 +196,7 @@ index 27b5833..2429de8 100644
  }
  
  static void pauseNodeAnimation(PausedNodesList &paused, scene::ISceneNode *node) {
-@@ -3246,6 +3308,7 @@ void Game::updateCamera(f32 dtime)
+@@ -3246,6 +3317,7 @@ void Game::updateCamera(f32 dtime)
  	tool_reload_ratio = MYMIN(tool_reload_ratio, 1.0);
  	camera->update(player, dtime, tool_reload_ratio);
  	camera->step(dtime);
@@ -370,10 +379,10 @@ index 7f3f860..663a6ec 100644
  void TestMapBlock::testSaveLoad(IGameDef *gamedef, const u8 version)
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..1f4d420
+index 0000000..3ea19fb
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,691 @@
+@@ -0,0 +1,831 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
@@ -392,11 +401,15 @@ index 0000000..1f4d420
 +#include "mapsector.h"
 +#include "nodedef.h"
 +#include "log.h"
++#include "client/mesh.h"
++#include "client/texturesource.h"
++#include "util/string.h"
 +
 +#include <IGUIEnvironment.h>
 +#include <IGUIStaticText.h>
 +#include <ISceneManager.h>
 +#include <IMeshSceneNode.h>
++#include <IAnimatedMeshSceneNode.h>
 +
 +
 +#include <iostream>
@@ -436,13 +449,80 @@ index 0000000..1f4d420
 +    std::unordered_map<uint64_t, VisualVehicle> vehicles_;
 +    irr::gui::IGUIStaticText* debug_text_{nullptr};
 +    irr::gui::IGUIStaticText* safety_text_{nullptr};
++    irr::gui::IGUIStaticText* decision_text_{nullptr};
++    std::wstring decision_body_;
 +    irr::scene::ISceneManager* smgr_{nullptr};
 +    std::unordered_map<uint16_t, content_t> material_map_;
-+    // The projection uses reality-bubble-local XY and absolute CDDA z-levels
-+    // for terrain, camera and vehicles alike. Origin is rebase metadata only.
++    // Anchor presentation at the first bubble origin. Later CDDA bubble shifts
++    // change local coordinates, not the camera/world's presentation coordinates.
 +    v3s32 projection_origin_;
++    v3s32 scene_origin_;
 +    bool origin_valid_{false};
 +    std::map<v3s16, std::vector<MapNode>> projected_blocks_;
++
++    v3f project_position(float x, float y, float z) const {
++        return v3f(x + projection_origin_.X - scene_origin_.X, z * 3.0f,
++                   -(y + projection_origin_.Y - scene_origin_.Y));
++    }
++
++    v3s16 project_tile(int x, int y, int z) const {
++        return CddaBridge::cddaToLuantiCoord(x + projection_origin_.X - scene_origin_.X,
++            y + projection_origin_.Y - scene_origin_.Y, z);
++    }
++
++    void render_entity(VisualEntity& ent) {
++        if (!client_ || ent.id == 1) return;
++        if (!smgr_) smgr_ = client_->getSceneManager();
++        if (!smgr_) return;
++        if (!ent.scene_node && ent.perceived) {
++            const bool zombie = ent.type_id.find("mon_zombie") == 0;
++            irr::scene::ISceneNode* node = nullptr;
++            if (zombie || ent.humanoid) {
++                auto* mesh = client_->getMesh(zombie ? "zombie.b3d" : "character.b3d");
++                if (mesh) {
++                    auto* body = smgr_->addAnimatedMeshSceneNode(mesh);
++                    if (body) {
++                        const auto box = mesh->getBoundingBox();
++                        const float height = box.MaxEdge.Y - box.MinEdge.Y;
++                        const float scale = height > 0.001f ? 18.0f / height : 1.0f;
++                        body->setScale(v3f(scale, scale, scale));
++                        body->setFrameLoop(0, 0);
++                        body->setAnimationSpeed(0);
++                        ent.model_y_offset = -box.MinEdge.Y * scale;
++                        setMeshColor(mesh, irr::video::SColor(255, 255, 255, 255));
++                        node = body;
++                        node->setMaterialTexture(0, client_->getTextureSource()->getTexture(
++                            zombie ? "zombie.png" : "character.png"));
++                        node->setMaterialType(irr::video::EMT_TRANSPARENT_ALPHA_CHANNEL_REF);
++                    }
++                    mesh->drop();
++                }
++            }
++            if (!node) {
++                auto* marker = smgr_->addCubeSceneNode(10.0f);
++                if (marker) {
++                    marker->setScale(v3f(.7f, 1.0f, .7f));
++                    setMeshColor(marker->getMesh(), irr::video::SColor(255, 220, 65, 180));
++                    ent.model_y_offset = 5.0f;
++                    node = marker;
++                }
++            }
++            if (node) {
++                node->setMaterialFlag(irr::video::EMF_LIGHTING, false);
++                node->setMaterialFlag(irr::video::EMF_FOG_ENABLE, true);
++                ent.scene_node = node;
++                infostream << "[Luanti-CDDA] Visual creature " << ent.id << ": " << ent.type_id << std::endl;
++            }
++        }
++        if (ent.scene_node) {
++            auto* node = static_cast<irr::scene::ISceneNode*>(ent.scene_node);
++            const v3s16 offset = client_->getEnv().getCameraOffset();
++            node->setVisible(metrics_.connected && ent.perceived);
++            node->setPosition((ent.current_pos + v3f(0, .5f, 0) - v3f(offset.X, offset.Y, offset.Z)) * 10.0f +
++                              v3f(0, ent.model_y_offset, 0));
++            node->setRotation(v3f(0, -ent.rotation, 0));
++        }
++    }
 +
 +    static void apply_nodes(MapBlock& block, const std::vector<MapNode>* nodes) {
 +        for (s16 z = 0; z < MAP_BLOCKSIZE; ++z)
@@ -568,7 +648,7 @@ index 0000000..1f4d420
 +        if (!delta || !delta->coord() || !delta->block()) return;
 +        const auto* p = delta->coord();
 +        const auto* block = delta->block();
-+        place_cdda_tile(CddaBridge::cddaToLuantiCoord(p->x(), p->y(), p->z()),
++        place_cdda_tile(project_tile(p->x(), p->y(), p->z()),
 +                       block->material_id(), block->state_flags(), block->light_level(),
 +                       block->orientation(), modified);
 +    }
@@ -609,6 +689,9 @@ index 0000000..1f4d420
 +            player_ready_ = false;
 +            pending_move_ = 0;
 +            connection_.reset();
++            metrics_.pending_decision = 0;
++            for (auto& [id, ent] : entities_) if (ent.scene_node)
++                static_cast<irr::scene::ISceneNode*>(ent.scene_node)->setVisible(false);
 +            return;
 +        }
 +
@@ -621,6 +704,7 @@ index 0000000..1f4d420
 +            ent.interpolation_time = std::min(step_duration, ent.interpolation_time + dtime);
 +            ent.current_pos = ent.start_pos + (ent.target_pos - ent.start_pos) *
 +                              (ent.interpolation_time / step_duration);
++            render_entity(ent);
 +            
 +            // Sync Luanti camera to CDDA player (id == 1)
 +            if (id == 1 && client_) {
@@ -710,9 +794,11 @@ index 0000000..1f4d420
 +                    break;
 +                }
 +                metrics_.safety_stop = snap->safety_stop();
++                const auto projection_started = std::chrono::steady_clock::now();
 +                const v3s32 origin(snap->origin()->x(), snap->origin()->y(), snap->origin()->z());
 +                const bool rebased = !origin_valid_ || origin.X != projection_origin_.X ||
 +                                     origin.Y != projection_origin_.Y;
++                if (!origin_valid_) scene_origin_ = origin;
 +                projection_origin_ = origin;
 +                origin_valid_ = true;
 +
@@ -723,10 +809,10 @@ index 0000000..1f4d420
 +                // Ingest chunk voxels into Luanti ClientMap
 +                if (client_ && snap->chunks() && snap->chunks()->size() > 0) {
 +                    std::set<v3s16> modified_blocks;
-+                    // Full terrain replaces the presentation cache, including
-+                    // areas absent from the new bubble. Partial snapshots keep it.
-+                    for (const auto& entry : projected_blocks_)
-+                        modified_blocks.insert(entry.first);
++                    // Compare full snapshots in the stable scene coordinates.
++                    // Retain overlapping meshes; replace/remove changed blocks
++                    // only. A CDDA rebase must not remesh the world under the camera.
++                    auto previous_blocks = std::move(projected_blocks_);
 +                    projected_blocks_.clear();
 +
 +                    for (size_t ci = 0; ci < snap->chunks()->size(); ++ci) {
@@ -752,7 +838,7 @@ index 0000000..1f4d420
 +                                    int gy = cy * sy + by;
 +                                    int gz = cz + bz;
 +
-+                                    v3s16 lpos = CddaBridge::cddaToLuantiCoord(gx, gy, gz);
++                                    v3s16 lpos = project_tile(gx, gy, gz);
 +                                    uint8_t light = b->light_level();
 +                                    uint8_t param2 = b->orientation();
 +
@@ -761,6 +847,16 @@ index 0000000..1f4d420
 +                            }
 +                        }
 +                    }
++
++                    for (auto it = modified_blocks.begin(); it != modified_blocks.end();) {
++                        const auto previous = previous_blocks.find(*it);
++                        if (previous != previous_blocks.end() &&
++                            previous->second == projected_blocks_.at(*it))
++                            it = modified_blocks.erase(it);
++                        else ++it;
++                    }
++                    for (const auto& previous : previous_blocks)
++                        if (!projected_blocks_.count(previous.first)) modified_blocks.insert(previous.first);
 +
 +                    commit_projection(modified_blocks);
 +                    infostream << "[Luanti-CDDA] Installed terrain projection in "
@@ -780,11 +876,8 @@ index 0000000..1f4d420
 +                        const auto* veh_state = snap->vehicles()->Get(i);
 +                        if (!veh_state || !veh_state->pivot()) continue;
 +                        uint64_t vid = veh_state->id();
-+                        v3f target = v3f(
-+                            veh_state->pivot()->x(),
-+                            veh_state->pivot()->z() * 3.0f,
-+                            -veh_state->pivot()->y()
-+                        );
++                        v3f target = project_position(veh_state->pivot()->x(),
++                            veh_state->pivot()->y(), veh_state->pivot()->z());
 +
 +                        auto it = vehicles_.find(vid);
 +                        if (it == vehicles_.end()) {
@@ -809,7 +902,6 @@ index 0000000..1f4d420
 +                            }
 +                            vehicles_[vid] = vv;
 +                        } else {
-+                            if (rebased) it->second.current_pos = target;
 +                            it->second.target_pos = target;
 +                            it->second.rotation = veh_state->rotation();
 +                            // Assuming components don't change frequently for this prototype, or update them here
@@ -819,15 +911,14 @@ index 0000000..1f4d420
 +
 +                // Sync entities
 +                if (snap->entities()) {
++                    std::set<uint64_t> present;
 +                    for (size_t i = 0; i < snap->entities()->size(); ++i) {
 +                        const auto* ent_state = snap->entities()->Get(i);
 +                        if (!ent_state || !ent_state->pos()) continue;
 +                        uint64_t eid = ent_state->id();
-+                        v3f target = v3f(
-+                            ent_state->pos()->x(),
-+                            ent_state->pos()->z() * 3.0f,
-+                            -ent_state->pos()->y()
-+                        );
++                        present.insert(eid);
++                        v3f target = project_position(ent_state->pos()->x(),
++                            ent_state->pos()->y(), ent_state->pos()->z());
 +                        if (eid == 1 && rebased)
 +                            infostream << "[Luanti-CDDA] Player projected at local ("
 +                                       << target.X << ", " << target.Y << ", " << target.Z
@@ -844,20 +935,31 @@ index 0000000..1f4d420
 +                            ve.start_pos = target;
 +                            ve.rotation = ent_state->rotation();
 +                            ve.hp_percent = ent_state->hp_percent();
++                            ve.perceived = ent_state->perceived();
++                            ve.humanoid = ent_state->type() == CDDA::CWM::EntityType::NPC;
 +                            entities_[eid] = ve;
 +                        } else {
-+                            if (rebased) it->second.current_pos = target;
-+                            if (rebased || target != it->second.target_pos) {
++                            if (target != it->second.target_pos) {
 +                                it->second.start_pos = it->second.current_pos;
-+                                it->second.interpolation_time = rebased ? step_duration : 0.0f;
++                                it->second.interpolation_time = 0.0f;
 +                            }
 +                            it->second.target_pos = target;
 +                            it->second.rotation = ent_state->rotation();
 +                            it->second.hp_percent = ent_state->hp_percent();
++                            it->second.perceived = ent_state->perceived();
 +                        }
++                    }
++                    for (auto it = entities_.begin(); it != entities_.end();) {
++                        if (!present.count(it->first)) {
++                            if (it->second.scene_node)
++                                static_cast<irr::scene::ISceneNode*>(it->second.scene_node)->remove();
++                            it = entities_.erase(it);
++                        } else ++it;
 +                    }
 +                }
 +                player_ready_ = entities_.count(1) != 0;
++                metrics_.projection_ms = std::chrono::duration<float, std::milli>(
++                    std::chrono::steady_clock::now() - projection_started).count();
 +                // ACK can arrive before simulation ends. Unlock only when its
 +                // authoritative result has also arrived; never queue held keys.
 +                if (pending_move_ && move_acked_) {
@@ -883,6 +985,20 @@ index 0000000..1f4d420
 +                if (ack) {
 +                    if (ack->command_id() == pending_move_) move_acked_ = true;
 +                }
++                break;
++            }
++
++            case CDDA::CWM::Payload::DecisionPrompt: {
++                const auto* prompt = msg->payload_as_DecisionPrompt();
++                if (!prompt || !prompt->text() || !prompt->choices() || prompt->choices()->size() == 0 ||
++                    prompt->choices()->size() > 9) break;
++                metrics_.pending_decision = prompt->decision_id();
++                metrics_.decision_choices = prompt->choices()->size();
++                decision_body_ = utf8_to_wide(prompt->text()->str()) + L"\n\n";
++                for (size_t i = 0; i < prompt->choices()->size(); ++i)
++                    decision_body_ += std::to_wstring(i + 1) + L". " +
++                        utf8_to_wide(prompt->choices()->Get(i)->str()) + L"\n";
++                decision_body_ += L"\nPress the corresponding number to choose.";
 +                break;
 +            }
 +
@@ -912,7 +1028,8 @@ index 0000000..1f4d420
 +        cdda::cwm::MessageBuilder builder(command, metrics_.current_revision);
 +        auto req = builder.build_interact_request(
 +            command,
-+            x, y, z,
++            x - projection_origin_.X + scene_origin_.X,
++            y - projection_origin_.Y + scene_origin_.Y, z,
 +            static_cast<CDDA::CWM::InteractAction>(action)
 +        );
 +        return connection_->send_message(req.data(), req.size());
@@ -929,6 +1046,17 @@ index 0000000..1f4d420
 +        pending_move_ = command;
 +        move_acked_ = false;
 +        sent_move_ = std::chrono::steady_clock::now();
++        return true;
++    }
++
++    bool answer_decision(uint16_t choice) {
++        if (!connection_ || !connection_->is_valid() || !metrics_.pending_decision ||
++            choice >= metrics_.decision_choices) return false;
++        cdda::cwm::MessageBuilder builder(command_counter_++, metrics_.current_revision);
++        const auto request = builder.finish_message(CDDA::CWM::Payload::DecisionResponse,
++            CDDA::CWM::CreateDecisionResponse(builder.builder(), metrics_.pending_decision, choice).Union());
++        if (!connection_->send_message(request.data(), request.size())) return false;
++        metrics_.pending_decision = 0;
 +        return true;
 +    }
 +};
@@ -960,6 +1088,9 @@ index 0000000..1f4d420
 +    if (pimpl_) {
 +        if (pimpl_->debug_text_) pimpl_->debug_text_->remove();
 +        if (pimpl_->safety_text_) pimpl_->safety_text_->remove();
++        if (pimpl_->decision_text_) pimpl_->decision_text_->remove();
++        for (auto& [id, ent] : pimpl_->entities_) if (ent.scene_node)
++            static_cast<irr::scene::ISceneNode*>(ent.scene_node)->remove();
 +        for (auto& vehicle : pimpl_->vehicles_)
 +            for (auto& component : vehicle.second.components)
 +                if (component.scene_node)
@@ -1012,6 +1143,10 @@ index 0000000..1f4d420
 +    return pimpl_ && pimpl_->acknowledge_threat();
 +}
 +
++bool CddaBridge::answerDecision(uint16_t choice) {
++    return pimpl_ && pimpl_->answer_decision(choice);
++}
++
 +CddaBridge::Metrics CddaBridge::getMetrics() const {
 +    if (pimpl_) return pimpl_->metrics_;
 +    return Metrics{};
@@ -1022,6 +1157,19 @@ index 0000000..1f4d420
 +namespace cdda_client {
 +void CddaBridge::renderDebugOverlay(irr::gui::IGUIEnvironment* guienv) {
 +    if (!guienv || !pimpl_) return;
++
++    if (!pimpl_->decision_text_) {
++        pimpl_->decision_text_ = guienv->addStaticText(L"", irr::core::rect<irr::s32>(100, 230, 850, 480),
++            true, true, nullptr, -1, true);
++        if (pimpl_->decision_text_) {
++            pimpl_->decision_text_->setOverrideColor(irr::video::SColor(255, 255, 255, 255));
++            pimpl_->decision_text_->setBackgroundColor(irr::video::SColor(245, 25, 25, 30));
++        }
++    }
++    if (pimpl_->decision_text_) {
++        pimpl_->decision_text_->setText(pimpl_->decision_body_.c_str());
++        pimpl_->decision_text_->setVisible(pimpl_->metrics_.pending_decision != 0);
++    }
 +
 +    if (!pimpl_->safety_text_) {
 +        pimpl_->safety_text_ = guienv->addStaticText(
@@ -1047,7 +1195,7 @@ index 0000000..1f4d420
 +        swprintf(text, 512, L"[CDDA-Mineclonia F3 Overlay]\n"
 +                             L"CWM IPC Connected: %ls\n"
 +                             L"FPS: %u\n"
-+                             L"IPC Latency: %.2f ms\n"
++                             L"Action result: %.2f ms; projection: %.2f ms\n"
 +                             L"Revision: %llu\n"
 +                             L"Chunks: %u\n"
 +                             L"Entities: %u\n"
@@ -1055,6 +1203,7 @@ index 0000000..1f4d420
 +                 pimpl_->metrics_.connected ? L"YES" : L"NO",
 +                 pimpl_->metrics_.fps,
 +                 pimpl_->metrics_.ipc_latency_ms,
++                 pimpl_->metrics_.projection_ms,
 +                 (unsigned long long)pimpl_->metrics_.current_revision,
 +                 pimpl_->metrics_.chunks_loaded,
 +                 pimpl_->metrics_.entities_count,
@@ -1067,10 +1216,10 @@ index 0000000..1f4d420
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.h b/src/cdda/cdda_bridge.h
 new file mode 100644
-index 0000000..8bbebe4
+index 0000000..6543673
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.h
-@@ -0,0 +1,102 @@
+@@ -0,0 +1,110 @@
 +// Luanti C++ CWM Presentation Bridge
 +// Licensed under Apache-2.0
 +#pragma once
@@ -1120,6 +1269,10 @@ index 0000000..8bbebe4
 +    float rotation{0.0f};
 +    uint8_t hp_percent{100};
 +    std::string name;
++    bool perceived{true};
++    bool humanoid{false};
++    void* scene_node{nullptr};
++    float model_y_offset{0.0f};
 +};
 +
 +class CddaBridge {
@@ -1144,6 +1297,7 @@ index 0000000..8bbebe4
 +    bool handleMoveInput(int dir);
 +    bool handleInteract(int x, int y, int z, int action);
 +    bool acknowledgeThreat();
++    bool answerDecision(uint16_t choice);
 +
 +    // Coordinate conversion
 +    static v3s16 cddaToLuantiCoord(int x, int y, int z);
@@ -1154,11 +1308,14 @@ index 0000000..8bbebe4
 +        uint64_t current_revision{0};
 +        uint32_t fps{60};
 +        float ipc_latency_ms{0.0f};
++        float projection_ms{0.0f};
 +        uint32_t chunks_loaded{0};
 +        uint32_t entities_count{0};
 +        uint32_t vehicles_count{0};
 +        bool connected{false};
 +        bool safety_stop{false};
++        uint64_t pending_decision{0};
++        uint16_t decision_choices{0};
 +    };
 +    Metrics getMetrics() const;
 +

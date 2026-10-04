@@ -21,3 +21,5 @@ class Payload(object):
     CommandAck = 15
     TimeEvent = 16
     AcknowledgeThreatRequest = 17
+    DecisionPrompt = 18
+    DecisionResponse = 19

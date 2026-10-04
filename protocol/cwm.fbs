@@ -107,6 +107,8 @@ table EntityState {
     animation_hint: uint16;
     hp_percent: uint8;
     name: string;
+    // CDDA sensory visibility, independent of the presentation camera.
+    perceived: bool = true;
 }
 
 table EntityRemoved {
@@ -183,6 +185,17 @@ table AcknowledgeThreatRequest {
     command_id: uint64;
 }
 
+table DecisionPrompt {
+    decision_id: uint64;
+    text: string;
+    choices: [string];
+}
+
+table DecisionResponse {
+    decision_id: uint64;
+    choice: uint16;
+}
+
 union Payload {
     HelloRequest,
     HelloResponse,
@@ -200,7 +213,9 @@ union Payload {
     AttackRequest,
     CommandAck,
     TimeEvent,
-    AcknowledgeThreatRequest
+    AcknowledgeThreatRequest,
+    DecisionPrompt,
+    DecisionResponse
 }
 
 table CwmMessage {

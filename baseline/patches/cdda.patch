@@ -30,10 +30,65 @@ index 6d5d148..4181ad1 100644
  
  if (MINGW AND NOT RELEASE)
 diff --git a/src/do_turn.cpp b/src/do_turn.cpp
-index 2455a6f..621cfaa 100644
+index 2455a6f..a6a40aa 100644
 --- a/src/do_turn.cpp
 +++ b/src/do_turn.cpp
-@@ -400,6 +400,25 @@ void overmap_npc_move()
+@@ -120,14 +120,21 @@ bool cleanup_at_end()
+                                       );
+ 
+                 while( !decided ) {
+-                    uilist smenu;
+-                    smenu.allow_cancel = false;
+-                    smenu.addentry( 0, true, 'r', "%s", _( "Reset world" ) );
+-                    smenu.addentry( 1, true, 'd', "%s", _( "Delete world" ) );
+-                    smenu.addentry( 2, true, 'k', "%s", _( "Keep world" ) );
+-                    smenu.query();
+-
+-                    switch( smenu.ret ) {
++                    int selected;
++                    if( external_ui_active() ) {
++                        selected = external_ui_choice( _( "No living characters remain. World policy:" ),
++                        { _( "Reset world" ), _( "Delete world" ), _( "Keep world" ) } );
++                    } else {
++                        uilist smenu;
++                        smenu.allow_cancel = false;
++                        smenu.addentry( 0, true, 'r', "%s", _( "Reset world" ) );
++                        smenu.addentry( 1, true, 'd', "%s", _( "Delete world" ) );
++                        smenu.addentry( 2, true, 'k', "%s", _( "Keep world" ) );
++                        smenu.query();
++                        selected = smenu.ret;
++                    }
++
++                    switch( selected ) {
+                         case 0:
+                             queryReset = true;
+                             decided = true;
+@@ -137,7 +144,9 @@ bool cleanup_at_end()
+                             decided = true;
+                             break;
+                         case 2:
+-                            decided = query_yn( buffer );
++                            // Closing/disconnecting the presentation retains the
++                            // world without implicitly authorizing deletion.
++                            decided = external_ui_active() || query_yn( buffer );
+                             break;
+                     }
+                 }
+@@ -155,7 +164,12 @@ bool cleanup_at_end()
+                 tmpmessage += "\n  ";
+                 tmpmessage += character;
+             }
+-            popup( _( "World retained.  Characters remaining:%s" ), tmpmessage );
++            if( external_ui_active() ) {
++                external_ui_choice( string_format( _( "World retained. Characters remaining:%s" ),
++                                                   tmpmessage ), { _( "Continue" ) } );
++            } else {
++                popup( _( "World retained.  Characters remaining:%s" ), tmpmessage );
++            }
+         }
+         if( g->gamemode ) {
+             g->gamemode = std::make_unique<special_game>(); // null gamemode or something..
+@@ -400,6 +414,40 @@ void overmap_npc_move()
  
  // MAIN GAME LOOP
  // Returns true if game is over (death, saved, quit, etc)
@@ -42,24 +97,39 @@ index 2455a6f..621cfaa 100644
 +// The simulation and action provider share one thread. The scoped override
 +// keeps the ordinary client on handle_action(), including after exceptions.
 +const std::function<bool()> *external_action = nullptr;
++const external_choice_provider *external_choice = nullptr;
 +}
 +
-+bool do_turn_with_action( const std::function<bool()> &action )
++bool external_ui_active()
++{
++    return external_choice && bool( *external_choice );
++}
++
++int external_ui_choice( const std::string &text, const std::vector<std::string> &choices )
++{
++    return ( *external_choice )( text, choices );
++}
++
++bool do_turn_with_action( const std::function<bool()> &action,
++                         const external_choice_provider &choice )
 +{
 +    struct restore_input {
 +        const std::function<bool()> *previous;
++        const external_choice_provider *previous_choice;
 +        ~restore_input() {
 +            external_action = previous;
++            external_choice = previous_choice;
 +        }
-+    } restore{ external_action };
++    } restore{ external_action, external_choice };
 +    external_action = &action;
++    external_choice = &choice;
 +    return do_turn();
 +}
 +
  bool do_turn()
  {
      if( g->is_game_over() ) {
-@@ -533,7 +552,7 @@ bool do_turn()
+@@ -533,7 +581,7 @@ bool do_turn()
                      g->queue_screenshot = false;
                  }
  
@@ -69,22 +139,67 @@ index 2455a6f..621cfaa 100644
                      u.action_taken();
                  }
 diff --git a/src/do_turn.h b/src/do_turn.h
-index 6ebdaa7..55bf2e7 100644
+index 6ebdaa7..b5af8ff 100644
 --- a/src/do_turn.h
 +++ b/src/do_turn.h
-@@ -2,8 +2,12 @@
+@@ -2,8 +2,19 @@
  #ifndef CATA_SRC_DO_TURN_H
  #define CATA_SRC_DO_TURN_H
  
 +#include <functional>
++#include <string>
++#include <vector>
 +
  /** MAIN GAME LOOP. Returns true if game is over (death, saved, quit, etc.). */
  bool do_turn();
 +/** Same canonical turn pipeline, with externally supplied actions on its owning thread. */
-+bool do_turn_with_action( const std::function<bool()> &action );
++using external_choice_provider = std::function<int( const std::string &,
++                                 const std::vector<std::string> & )>;
++bool do_turn_with_action( const std::function<bool()> &action,
++                         const external_choice_provider &choice = {} );
++bool external_ui_active();
++int external_ui_choice( const std::string &text, const std::vector<std::string> &choices );
  void handle_key_blocking_activity();
  
  #endif // CATA_SRC_DO_TURN_H
+diff --git a/src/game.cpp b/src/game.cpp
+index 195bc1e..e43643d 100644
+--- a/src/game.cpp
++++ b/src/game.cpp
+@@ -1,4 +1,5 @@
+ #include "game.h"
++#include "do_turn.h"
+ 
+ #include <functional>
+ #include <clocale>
+@@ -2763,6 +2764,13 @@ bool game::is_game_over()
+ void game::bury_screen() const
+ {
+     avatar &u = get_avatar();
++    if( external_ui_active() ) {
++        external_ui_choice( string_format( _( "%s has died. The native death and world policy will now apply." ),
++                                          u.name ), { _( "Continue" ) } );
++        get_event_bus().send<event_type::game_avatar_death>( u.getID(), u.name, u.male,
++                uquit == QUIT_SUICIDE, std::string() );
++        return;
++    }
+ 
+     std::vector<std::string> vRip;
+ 
+@@ -2951,6 +2959,13 @@ void game::bury_screen() const
+ void game::death_screen()
+ {
+     gamemode->game_over();
++    if( external_ui_active() ) {
++        // These are presentation screens, not simulation/cleanup. Keep native
++        // diary/follower bookkeeping; detailed epitaph/epilogues belong to M7.
++        u.get_avatar_diary()->death_entry();
++        follower_ids.clear();
++        return;
++    }
+     Messages::display_messages();
+     u.get_avatar_diary()->death_entry();
+     show_scores_ui( *achievements_tracker_ptr, stats(), get_kill_tracker() );
 diff --git a/src/game.h b/src/game.h
 index c25584e..fdb835f 100644
 --- a/src/game.h
@@ -164,11 +279,31 @@ index 652ad80..b19d6b8 100644
              break;
  
          case ACTION_WHITELIST_ENEMY:
+diff --git a/src/output.cpp b/src/output.cpp
+index 38b1d71..e5b7a12 100644
+--- a/src/output.cpp
++++ b/src/output.cpp
+@@ -1,4 +1,5 @@
+ #include "output.h"
++#include "do_turn.h"
+ 
+ #include <cctype>
+ // IWYU pragma: no_include <sys/errno.h>
+@@ -810,6 +811,9 @@ int border_helper::border_connection::as_curses_line() const
+ 
+ bool query_yn( const std::string &text )
+ {
++    if( external_ui_active() ) {
++        return external_ui_choice( text, { _( "Yes" ), _( "No" ) } ) == 0;
++    }
+ #if defined(__ANDROID__)
+     if( get_option<bool>( "ANDROID_NATIVE_UI" ) ) {
+         JNIEnv *env = ( JNIEnv * )SDL_AndroidGetJNIEnv();
 diff --git a/tests/CMakeLists.txt b/tests/CMakeLists.txt
-index bfe0773..f28a50f 100644
+index bfe0773..699b0af 100644
 --- a/tests/CMakeLists.txt
 +++ b/tests/CMakeLists.txt
-@@ -44,6 +44,13 @@ if (BUILD_TESTING)
+@@ -44,6 +44,14 @@ if (BUILD_TESTING)
  
      if (CURSES)
          add_executable(cata_test ${CATACLYSM_DDA_TEST_SOURCES})
@@ -177,6 +312,7 @@ index bfe0773..f28a50f 100644
 +            HINTS "$ENV{HOME}/.local/include" REQUIRED)
 +        set_source_files_properties(
 +            ${CMAKE_SOURCE_DIR}/tests/cwm_projection_test.cpp
++            ${CMAKE_SOURCE_DIR}/tests/cwm_runtime_test.cpp
 +            ${CMAKE_SOURCE_DIR}/src/cwm/cwm_map_exporter.cpp
 +            PROPERTIES INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/../protocol/include;${CWM_FLATBUFFERS_INCLUDE_DIR}")
          if (LOCALIZE)
@@ -205,10 +341,10 @@ index 09a7711..9b0c484 100644
          DebugLog( D_INFO, DC_ALL ) <<
 diff --git a/src/cwm/cwm_main.cpp b/src/cwm/cwm_main.cpp
 new file mode 100644
-index 0000000..565c3a8
+index 0000000..fbd5097
 --- /dev/null
 +++ b/src/cwm/cwm_main.cpp
-@@ -0,0 +1,297 @@
+@@ -0,0 +1,301 @@
 +// CDDA Headless CWM Server Entrypoint
 +// Licensed under Apache-2.0
 +
@@ -464,7 +600,11 @@ index 0000000..565c3a8
 +    if (headless) {
 +        std::cout << "[CDDA-Server] Running headless simulation for " << headless_ticks << " turns...\n";
 +        for (int i = 0; i < headless_ticks && g_running; ++i) {
-+            if (do_turn_with_action([&u]() { u.pause(); return true; })) {
++            if (do_turn_with_action([&u]() { u.pause(); return true; },
++                [](const std::string& text, const std::vector<std::string>& choices) {
++                    std::cout << "[CDDA-Server] Headless decision declined/acknowledged: " << text << "\n";
++                    return static_cast<int>(choices.size()) - 1;
++                })) {
 +                // Native death/quit cleanup has already handled persistence
 +                // and cleared the map buffers. Never save them a second time.
 +                return (g->uquit == QUIT_DIED || g->uquit == QUIT_SUICIDE ||
@@ -508,10 +648,10 @@ index 0000000..565c3a8
 +}
 diff --git a/src/cwm/cwm_map_exporter.cpp b/src/cwm/cwm_map_exporter.cpp
 new file mode 100644
-index 0000000..92b04b5
+index 0000000..29e32fa
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.cpp
-@@ -0,0 +1,325 @@
+@@ -0,0 +1,353 @@
 +// CDDA CWM Map & Entity Exporter Implementation
 +// Licensed under Apache-2.0
 +
@@ -524,6 +664,8 @@ index 0000000..92b04b5
 +#include "game.h"
 +#include "map.h"
 +#include "monster.h"
++#include "creature_tracker.h"
++#include "npc.h"
 +#include "calendar.h"
 +#include "mtype.h"
 +#include "vehicle.h"
@@ -676,7 +818,12 @@ index 0000000..92b04b5
 +    }
 +
 +    // Monsters
-+    uint64_t mon_counter = 1000;
++    if (cache) {
++        for (auto it = cache->creature_ids.begin(); it != cache->creature_ids.end();) {
++            if (it->second.owner.expired()) it = cache->creature_ids.erase(it);
++            else ++it;
++        }
++    }
 +    for (monster& critter : g.all_monsters()) {
 +        if (!critter.is_hallucination() && !critter.is_dead()) {
 +            tripoint m_pos = critter.pos();
@@ -689,7 +836,16 @@ index 0000000..92b04b5
 +                hp_pct = static_cast<uint8_t>((critter.get_hp() * 100) / critter.get_hp_max());
 +            }
 +
-+            uint64_t entity_id = mon_counter++;
++            uint64_t entity_id = reinterpret_cast<uintptr_t>(&critter);
++            if (cache) {
++                auto it = cache->creature_ids.find(&critter);
++                if (it == cache->creature_ids.end()) {
++                    auto owner = get_creature_tracker().find(critter.pos_abs());
++                    it = cache->creature_ids.emplace(&critter,
++                        ProjectionCache::CreatureIdentity{owner, cache->next_entity_id++}).first;
++                }
++                entity_id = it->second.id;
++            }
 +            auto mon_state = CDDA::CWM::CreateEntityState(
 +                fbb,
 +                entity_id,
@@ -699,10 +855,22 @@ index 0000000..92b04b5
 +                0.0f,
 +                0,
 +                hp_pct,
-+                mon_name
++                mon_name,
++                u.sees(critter)
 +            );
 +            entity_offsets.push_back(mon_state);
 +        }
++    }
++
++    for (npc& person : g.all_npcs()) {
++        if (person.is_dead()) continue;
++        const auto name = fbb.CreateString(person.name);
++        const auto type = fbb.CreateString("npc");
++        const auto p = person.pos();
++        const CDDA::CWM::Vec3f pos(p.x, p.y, p.z);
++        const uint64_t id = (uint64_t(1) << 63) | static_cast<uint64_t>(person.getID().get_value());
++        entity_offsets.push_back(CDDA::CWM::CreateEntityState(fbb, id,
++            CDDA::CWM::EntityType::NPC, type, &pos, 0.0f, 0, 100, name, u.sees(person)));
 +    }
 +
 +    auto entities_vec = fbb.CreateVector(entity_offsets);
@@ -839,10 +1007,10 @@ index 0000000..92b04b5
 +} // namespace cwm
 diff --git a/src/cwm/cwm_map_exporter.h b/src/cwm/cwm_map_exporter.h
 new file mode 100644
-index 0000000..b146915
+index 0000000..978f98d
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.h
-@@ -0,0 +1,51 @@
+@@ -0,0 +1,60 @@
 +// CDDA CWM Map & Entity Exporter
 +// Licensed under Apache-2.0
 +#pragma once
@@ -850,12 +1018,15 @@ index 0000000..b146915
 +#include <vector>
 +#include <cstdint>
 +#include <memory>
++#include <unordered_map>
++#include "memory_fast.h"
 +#include "point.h"
 +#include "cwm/cwm_generated.h"
 +
 +class map;
 +class avatar;
 +class game;
++class monster;
 +
 +namespace cwm {
 +
@@ -864,6 +1035,12 @@ index 0000000..b146915
 +    struct ProjectionCache {
 +        tripoint origin;
 +        std::vector<uint64_t> tiles;
++        uint64_t next_entity_id{1000};
++        struct CreatureIdentity {
++            weak_ptr_fast<monster> owner;
++            uint64_t id;
++        };
++        std::unordered_map<const monster*, CreatureIdentity> creature_ids;
 +    };
 +    static CDDA::CWM::CwmBlock export_block(const tripoint& p, map& m, uint8_t light);
 +    static std::vector<uint8_t> export_world_snapshot(
@@ -896,10 +1073,10 @@ index 0000000..b146915
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..61c53c9
+index 0000000..00299a2
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,207 @@
+@@ -0,0 +1,260 @@
 +// CDDA CWM IPC Server Implementation
 +// Licensed under Apache-2.0
 +
@@ -918,6 +1095,7 @@ index 0000000..61c53c9
 +#include "do_turn.h"
 +#include "gates.h"
 +#include "safe_mode_actions.h"
++#include "npc.h"
 +
 +namespace cwm {
 +namespace {
@@ -970,6 +1148,12 @@ index 0000000..61c53c9
 +                           const std::function<bool()>& keep_running) {
 +    bool prelude_sent = false;
 +    const bool ended = do_turn_with_action([&]() {
++        if (g.uquit == QUIT_WATCH) {
++            const int choice = ask_decision("Deathcam: advance the native simulation or finish?",
++                {"Advance one turn", "Finish deathcam"}, u, m, g, keep_running);
++            if (choice == 1) g.uquit = QUIT_DIED;
++            return false;
++        }
 +        // Native timed events/perception run before requesting input. Publish
 +        // them immediately, rather than attributing them to a later rejected
 +        // request or withholding a safety warning until movement is attempted.
@@ -996,6 +1180,8 @@ index 0000000..61c53c9
 +        g.uquit = saved_on_shutdown_ ? QUIT_SAVED : QUIT_NOSAVED;
 +        u.moves = 0;
 +        return false;
++    }, [&](const std::string& text, const std::vector<std::string>& choices) {
++        return ask_decision(text, choices, u, m, g, keep_running);
 +    });
 +    if (!ended) {
 +        ++world_revision_;
@@ -1005,6 +1191,32 @@ index 0000000..61c53c9
 +        } else send_state(u, m, g);
 +    }
 +    return ended;
++}
++
++int CwmServer::ask_decision(const std::string& text, const std::vector<std::string>& choices,
++                          avatar& u, map& m, game& g, const std::function<bool()>& keep_running) {
++    pending_decision_ = next_decision_++;
++    decision_choices_ = choices.size();
++    decision_answer_.reset();
++    send_state(u, m, g, !snapshot_sent_);
++    if (has_active_client()) {
++        cdda::cwm::MessageBuilder builder(sequence_counter_++, world_revision_);
++        auto& fbb = builder.builder();
++        const auto body = fbb.CreateString(text);
++        const auto labels = fbb.CreateVectorOfStrings(choices);
++        const auto message = builder.finish_message(CDDA::CWM::Payload::DecisionPrompt,
++            CDDA::CWM::CreateDecisionPrompt(fbb, pending_decision_, body, labels).Union());
++        server_->client()->send_message(message.data(), message.size());
++    }
++    while (keep_running() && has_active_client() && !decision_answer_) {
++        update(u, m, g);
++        std::this_thread::sleep_for(std::chrono::milliseconds(1));
++    }
++    // Yes/No, deathcam and world-end menus put the non-destructive option last.
++    const int selected = decision_answer_.value_or(static_cast<int>(choices.size()) - 1);
++    pending_decision_ = 0;
++    decision_answer_.reset();
++    return selected;
 +}
 +
 +bool CwmServer::execute(const Command& command, avatar& u, map& m, game& g) {
@@ -1017,7 +1229,15 @@ index 0000000..61c53c9
 +        } else if (command.action == 0) {
 +            u.pause();
 +            accepted = true;
-+        } else accepted = avatar_action::move(u, m, directions[command.action]);
++        } else {
++            const tripoint target = u.pos() + tripoint(directions[command.action], 0);
++            const npc* person = get_creature_tracker().creature_at<npc>(target);
++            if (person && !person->is_enemy()) {
++                result_ = Result{command.id, false, "NPC interaction UI is not implemented yet"};
++                return false;
++            }
++            accepted = avatar_action::move(u, m, directions[command.action]);
++        }
 +    } else {
 +        const tripoint target = m.getlocal(tripoint(command.x, command.y, command.z));
 +        if (target.z == u.posz() && rl_dist(target, u.pos()) <= 1 && m.inbounds(target)) {
@@ -1042,6 +1262,16 @@ index 0000000..61c53c9
 +    if (!cdda::cwm::MessageVerifier::verify(data, size)) return;
 +    const auto* msg = cdda::cwm::MessageVerifier::parse(data, size);
 +    if (!msg) return;
++    if (msg->payload_type() == CDDA::CWM::Payload::DecisionResponse) {
++        const auto* response = msg->payload_as_DecisionResponse();
++        if (response && pending_decision_ && !decision_answer_ &&
++            response->decision_id() == pending_decision_ && response->choice() < decision_choices_)
++            decision_answer_ = response->choice();
++        return;
++    }
++    if (pending_decision_ && (msg->payload_type() == CDDA::CWM::Payload::MoveRequest ||
++        msg->payload_type() == CDDA::CWM::Payload::InteractRequest ||
++        msg->payload_type() == CDDA::CWM::Payload::AcknowledgeThreatRequest)) return;
 +    if (msg->payload_type() == CDDA::CWM::Payload::HelloRequest) {
 +        cdda::cwm::MessageBuilder reply(sequence_counter_++, world_revision_);
 +        auto response = reply.build_hello_response(true, "cdda-server-0.H");
@@ -1109,10 +1339,10 @@ index 0000000..61c53c9
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.h b/src/cwm/cwm_server.h
 new file mode 100644
-index 0000000..82ce9f4
+index 0000000..1215970
 --- /dev/null
 +++ b/src/cwm/cwm_server.h
-@@ -0,0 +1,71 @@
+@@ -0,0 +1,77 @@
 +// CDDA CWM IPC Server
 +// Licensed under Apache-2.0
 +#pragma once
@@ -1174,11 +1404,17 @@ index 0000000..82ce9f4
 +    std::deque<Command> commands_;
 +    std::optional<Result> result_;
 +    bool saved_on_shutdown_{false};
++    uint64_t next_decision_{1};
++    uint64_t pending_decision_{0};
++    size_t decision_choices_{0};
++    std::optional<int> decision_answer_;
 +    CwmMapExporter::ProjectionCache projection_cache_;
 +
 +    void send_state(avatar& u, map& m, game& g, bool full = false);
 +    void send_result(const Result& result, avatar& u, map& m, game& g);
 +    bool execute(const Command& command, avatar& u, map& m, game& g);
++    int ask_decision(const std::string& text, const std::vector<std::string>& choices,
++                     avatar& u, map& m, game& g, const std::function<bool()>& keep_running);
 +
 +    void handle_client_message(const uint8_t* data, size_t size, avatar& u, map& m, game& g);
 +};
@@ -1323,10 +1559,10 @@ index 0000000..ae4a2a3
 +}
 diff --git a/tests/cwm_runtime_test.cpp b/tests/cwm_runtime_test.cpp
 new file mode 100644
-index 0000000..bc65302
+index 0000000..746741c
 --- /dev/null
 +++ b/tests/cwm_runtime_test.cpp
-@@ -0,0 +1,131 @@
+@@ -0,0 +1,198 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "calendar.h"
@@ -1341,6 +1577,9 @@ index 0000000..bc65302
 +#include "player_helpers.h"
 +#include "safe_mode_actions.h"
 +#include "weather.h"
++#include "output.h"
++#include "cwm/cwm_map_exporter.h"
++#include "cwm/cwm_protocol.hpp"
 +
 +static void prepare_runtime()
 +{
@@ -1358,6 +1597,70 @@ index 0000000..bc65302
 +    get_map().build_map_cache( 0 );
 +    get_map().invalidate_visibility_cache();
 +    get_map().update_visibility_cache( 0 );
++}
++
++TEST_CASE( "cwm_native_questions_use_scoped_external_choices", "[cwm][runtime]" )
++{
++    const override_option no_autosave( "AUTOSAVE", "false" );
++    prepare_runtime();
++    int questions = 0;
++    const auto choose = [&]( const std::string &text, const std::vector<std::string> &choices ) {
++        ++questions;
++        CHECK( text == "Confirm dangerous move?" );
++        REQUIRE( choices.size() == 2 );
++        return 1; // Explicit native No, never automatic confirmation.
++    };
++    REQUIRE_FALSE( external_ui_active() );
++    REQUIRE_FALSE( do_turn_with_action( [&]() {
++        CHECK( external_ui_active() );
++        CHECK_FALSE( query_yn( "Confirm dangerous move?" ) );
++        get_avatar().pause();
++        return true;
++    }, choose ) );
++    CHECK( questions == 1 );
++    CHECK_FALSE( external_ui_active() );
++    CHECK_THROWS_AS( do_turn_with_action( [&]() -> bool {
++        throw std::runtime_error( "fixture exception" );
++    }, choose ), std::runtime_error );
++    CHECK_FALSE( external_ui_active() );
++}
++
++TEST_CASE( "cwm_creature_identity_survives_other_creature_removal_and_visibility_changes", "[cwm][runtime]" )
++{
++    prepare_runtime();
++    monster *first = g->place_critter_at( mtype_id( "mon_zombie" ), get_avatar().pos() + tripoint( 4, 0, 0 ) );
++    monster *second = g->place_critter_at( mtype_id( "mon_zombie_brute" ), get_avatar().pos() + tripoint( 7, 0, 0 ) );
++    REQUIRE( first != nullptr );
++    REQUIRE( second != nullptr );
++    cwm::CwmMapExporter::ProjectionCache cache;
++    const auto projection = [&]() {
++        return cwm::CwmMapExporter::export_world_snapshot( 1, 1, get_avatar(), get_map(), *g, false, &cache );
++    };
++    const auto before = projection();
++    const auto *snapshot = cdda::cwm::MessageVerifier::parse( before.data(), before.size() )->payload_as_WorldSnapshot();
++    uint64_t second_id = 0;
++    for( const auto *ent : *snapshot->entities() ) {
++        if( ent->type_id()->str() == "mon_zombie_brute" ) {
++            second_id = ent->id();
++            CHECK( ent->perceived() );
++        }
++    }
++    REQUIRE( second_id != 0 );
++    first->set_hp( 0 );
++    g->cleanup_dead();
++    get_avatar().add_effect( efftype_id( "blind" ), 10_seconds );
++    const auto after = projection();
++    snapshot = cdda::cwm::MessageVerifier::parse( after.data(), after.size() )->payload_as_WorldSnapshot();
++    bool found = false;
++    for( const auto *ent : *snapshot->entities() ) {
++        if( ent->type_id()->str() == "mon_zombie_brute" ) {
++            found = true;
++            CHECK( ent->id() == second_id );
++            CHECK_FALSE( ent->perceived() );
++        }
++        CHECK( ent->type_id()->str() != "mon_zombie" );
++    }
++    CHECK( found );
 +}
 +
 +TEST_CASE( "cwm_turn_runs_native_fields_ai_and_body", "[cwm][runtime]" )

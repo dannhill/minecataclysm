@@ -21,7 +21,7 @@ import threading
 import time
 
 
-def run(ws, out, fps, delayed=False):
+def run(ws, out, fps, delayed=False, rebases=False):
     link = ws / "luanti/games/cdda_voxel"
     if not link.exists():
         link.parent.mkdir(parents=True, exist_ok=True)
@@ -42,6 +42,8 @@ def run(ws, out, fps, delayed=False):
     geometry = threading.Event()
     outside = threading.Event()
     window_open = threading.Event()
+    force_rebase = threading.Event()
+    origin_offset = [0, 0]
 
     def envelope(b, kind, value):
         nonlocal sequence
@@ -75,7 +77,7 @@ def run(ws, out, fps, delayed=False):
                 for cx in range(2):
                     Chunk.ChunkSnapshotStartBlocksVector(b, 256)
                     for i in range(255, -1, -1):
-                        x, y = cx * 16 + i % 16, cy * 16 + i // 16
+                        x, y = cx * 16 + i % 16 + origin_offset[0], cy * 16 + i // 16 + origin_offset[1]
                         material, flags, orientation = 4, 0, 0
                         if x in (0, 31) or y in (0, 31): material, flags = 3, 2
                         if geometry.is_set():
@@ -102,7 +104,7 @@ def run(ws, out, fps, delayed=False):
         else: chunks = 0
         Entity.EntityStateStart(b)
         Entity.EntityStateAddId(b, 1)
-        Entity.EntityStateAddPos(b, Vec3f.CreateVec3f(b, player[0], player[1], 0))
+        Entity.EntityStateAddPos(b, Vec3f.CreateVec3f(b, player[0]-origin_offset[0], player[1]-origin_offset[1], 0))
         entity = Entity.EntityStateEnd(b)
         World.WorldSnapshotStartEntitiesVector(b, 1)
         b.PrependUOffsetTRelative(entity)
@@ -120,7 +122,7 @@ def run(ws, out, fps, delayed=False):
         World.WorldSnapshotAddEntities(b, entities)
         World.WorldSnapshotAddChunks(b, chunks)
         World.WorldSnapshotAddTiles(b, tiles)
-        World.WorldSnapshotAddOrigin(b, Coord3i.CreateCoord3i(b, 84000, -42000, -1))
+        World.WorldSnapshotAddOrigin(b, Coord3i.CreateCoord3i(b, 84000+origin_offset[0], -42000+origin_offset[1], -1))
         return envelope(b, Payload.Payload.WorldSnapshot, World.WorldSnapshotEnd(b))
 
     out.mkdir(parents=True, exist_ok=True)
@@ -146,9 +148,9 @@ def run(ws, out, fps, delayed=False):
                     while not stop.is_set():
                         now = time.monotonic()
                         if pending and now >= pending[0]:
-                            _, command, accepted = pending
+                            _, command, accepted, full = pending
                             if accepted: player[1] -= 1
-                            send(snapshot())
+                            send(snapshot(full))
                             events.append({"kind": "result", "command": command, "time": now, "player": player[:]})
                             pending = None
                         if geometry.is_set() and not geometry_sent:
@@ -158,6 +160,11 @@ def run(ws, out, fps, delayed=False):
                         if window_open.is_set() and not opened_sent:
                             send(snapshot(window_delta=True)); opened_sent = True
                             events.append({"kind": "window_delta", "tiles": 1, "chunks": 0, "time": now})
+                        if force_rebase.is_set():
+                            force_rebase.clear()
+                            origin_offset[1] = 0
+                            send(snapshot(True))
+                            events.append({"kind": "stationary_rebase", "time": now})
                         try: data = connection.recv(65536)
                         except socket.timeout: continue
                         if not data: break
@@ -176,7 +183,11 @@ def run(ws, out, fps, delayed=False):
                                 events.append({"kind": "request", "command": req.CommandId(), "time": time.monotonic(),
                                                "overlap": pending is not None, "accepted": accepted})
                                 send(ack(req.CommandId(), accepted))
-                                pending = (time.monotonic() + (.65 if delayed and n == 3 else .01), req.CommandId(), accepted)
+                                full = rebases and n in (5, 10)
+                                if full:
+                                    origin_offset[1] = -12 if n == 5 else -24
+                                    events.append({"kind": "moving_rebase", "time": time.monotonic()})
+                                pending = (time.monotonic() + (.12 if full else .65 if delayed and n == 3 else .01), req.CommandId(), accepted, full)
             except (OSError, ValueError) as exc:
                 if not stop.is_set(): error.append(repr(exc))
 
@@ -216,7 +227,11 @@ def run(ws, out, fps, delayed=False):
                 xdo("keyup", "--window", window, "w"); release = time.monotonic()
                 time.sleep(1)
                 stopped = time.monotonic(); time.sleep(.7); stopped_end = time.monotonic()
-                if fps == 60 and not delayed:
+                if rebases:
+                    rebase_start = time.monotonic()
+                    force_rebase.set(); time.sleep(1.0)
+                    rebase_end = time.monotonic()
+                if fps == 60 and not delayed and not rebases:
                     geometry.set(); time.sleep(2)
                     screenshot("window-inside.png")
                     screenshot("window-inside-later.png")
@@ -263,7 +278,11 @@ def run(ws, out, fps, delayed=False):
         "camera_height_stable": vertical_span < .001,
         "rejected_action_exercised": any(not e["accepted"] for e in requests),
     }
-    if fps == 60 and not delayed:
+    if rebases:
+        checks['two_moving_bubble_rebases_exercised'] = sum(e['kind'] == 'moving_rebase' for e in events) == 2
+        checks['stationary_bubble_rebase_does_not_move_camera'] = max(span(rebase_start, rebase_end, axis) for axis in ('camera_x','camera_y','camera_z')) < .001
+        checks['moving_bubble_rebase_has_no_camera_teleport'] = all(abs(b['camera_z']-a['camera_z']) < 5 for a,b in zip(movement_rows,movement_rows[1:]))
+    if fps == 60 and not delayed and not rebases:
         checks["mouse_look_and_opposite_side_exercised"] = camera_turned
         def crop(name):
             # Exclude sky/clouds; the frame texture is off-white, not pure white.
@@ -291,7 +310,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--workspace", type=Path, required=True)
     parser.add_argument("--artifacts", type=Path, required=True)
+    parser.add_argument("--rebase-only", action='store_true')
     args = parser.parse_args()
+    if args.rebase_only:
+        sys.exit(0 if run(args.workspace.resolve(), args.artifacts.resolve(), 60, rebases=True) else 1)
     outcomes = [run(args.workspace.resolve(), args.artifacts.resolve()/f"fps-{fps}", fps) for fps in (30, 60, 120)]
     outcomes.append(run(args.workspace.resolve(), args.artifacts.resolve()/"delayed", 60, True))
     sys.exit(0 if all(outcomes) else 1)
