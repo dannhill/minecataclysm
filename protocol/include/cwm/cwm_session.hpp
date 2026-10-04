@@ -26,7 +26,8 @@ inline bool valid_world(const CDDA::CWM::WorldSnapshot* world) {
     if (!world->full() && world->chunks() && world->chunks()->size()) return false;
     if (const auto* clock = world->clock()) {
         if (!std::isfinite(clock->time_scale()) || clock->time_scale() < .25f || clock->time_scale() > 4.f ||
-            (clock->pause_reasons() & ~uint32_t(31))) return false;
+            (clock->pause_reasons() & ~uint32_t(31)) ||
+            (clock->continuous_motion() && !clock->realtime())) return false;
     }
     std::set<uint64_t> ids;
     std::unordered_map<uint64_t, const CDDA::CWM::EntityState*> actor_states;

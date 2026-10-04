@@ -36947,7 +36947,7 @@
   {
     "path": "src/character.cpp",
     "mode": "100644",
-    "sha256": "ae3d2da138d710a477e94989cac71638ba7c56d625f4a33df90cc4f7ae9b6a00"
+    "sha256": "0d8b2388e5051fd62d9737c94793d5ca531c8b8d5ef92f18d68ef8de463a3e27"
   },
   {
     "path": "src/character.h",
@@ -37337,7 +37337,7 @@
   {
     "path": "src/cwm/cwm_server.cpp",
     "mode": "100644",
-    "sha256": "0171de3d047d2ac989f80d07e92de2478e052dd65bd8f98c2d0ae25b3721872a"
+    "sha256": "62d4da5f4cc6dd7abb8863538bd2a07a4a337f7eb7732cba10d7dddd416c91e2"
   },
   {
     "path": "src/cwm/cwm_server.h",
@@ -37347,12 +37347,12 @@
   {
     "path": "src/cwm_motion.cpp",
     "mode": "100644",
-    "sha256": "36fbb3e801726d31e7aab1664eeda2a3827f48c4308cc0d0bf2f108206672021"
+    "sha256": "17d84cc8811d5edea2777899e0b00469fc2c68541812cfb8a293717564e26c4e"
   },
   {
     "path": "src/cwm_motion.h",
     "mode": "100644",
-    "sha256": "2420f9fe15dbc58c9f55470e0d82d00fa8d915195d9ad1cc6157ab962f11efa6"
+    "sha256": "2ae8b552bbcb8b6b33b5d542a3da821cc78055c4a6e2ae9448cd8341c44d120e"
   },
   {
     "path": "src/damage.cpp",
@@ -37802,7 +37802,7 @@
   {
     "path": "src/game.cpp",
     "mode": "100644",
-    "sha256": "77ad9adca543f30b74b8bc9dbdbded60fe2bb24e734f3f3623f5c4c3b8b3c945"
+    "sha256": "458fa4633a55cc512503535edffa78c5db7ff7d17811de12f796bba21eba7bb4"
   },
   {
     "path": "src/game.h",

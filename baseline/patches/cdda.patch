@@ -107,7 +107,7 @@ index d7e91fc..6d99647 100644
  
      body_part_set flags;
 diff --git a/src/character.cpp b/src/character.cpp
-index a90f830..39fc8a5 100644
+index a90f830..4584cf1 100644
 --- a/src/character.cpp
 +++ b/src/character.cpp
 @@ -1,3 +1,6 @@
@@ -124,7 +124,7 @@ index a90f830..39fc8a5 100644
 -    mod_stamina( -( ( moves * burn_ratio ) / 100.0 ) * get_modifier(
 -                     character_modifier_stamina_move_cost_mod ) * get_modifier(
 -                     character_modifier_move_mode_move_cost_mod ) );
-+    double burn = ( moves * burn_ratio ) / 100.0 * get_modifier(
++    double burn = ( ( cwm_motion::fractional_stamina() ? cwm_motion::stamina_moves() : moves ) * burn_ratio ) / 100.0 * get_modifier(
 +                      character_modifier_stamina_move_cost_mod ) * get_modifier(
 +                      character_modifier_move_mode_move_cost_mod );
 +    if( cwm_motion::fractional_stamina() ) {
@@ -318,7 +318,7 @@ index 6ebdaa7..205549f 100644
  
  #endif // CATA_SRC_DO_TURN_H
 diff --git a/src/game.cpp b/src/game.cpp
-index 195bc1e..5809a8c 100644
+index 195bc1e..9660342 100644
 --- a/src/game.cpp
 +++ b/src/game.cpp
 @@ -1,4 +1,6 @@
@@ -369,6 +369,15 @@ index 195bc1e..5809a8c 100644
          /**
          TODO:
          This should really use the mounted creatures stamina, if mounted.
+@@ -10570,7 +10590,7 @@ bool game::walk_move( const tripoint &dest_loc, const bool via_ramp, const bool
+         }
+     }
+ 
+-    u.make_footstep_noise();
++    if( !cwm_motion::prepaid_crossing() ) u.make_footstep_noise();
+ 
+     //only clatter items every so often based on activity level
+     if( to_turns<int>( calendar::turn - u.last_pocket_noise ) > std::max( static_cast<int>
 diff --git a/src/game.h b/src/game.h
 index c25584e..fdb835f 100644
 --- a/src/game.h
@@ -1470,10 +1479,10 @@ index 0000000..5bdd176
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..e80d831
+index 0000000..aa48301
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,619 @@
+@@ -0,0 +1,628 @@
 +#include "cwm_motion.h"
 +// CDDA CWM IPC Server Implementation
 +// Licensed under Apache-2.0
@@ -1648,7 +1657,16 @@ index 0000000..e80d831
 +    // 25 wall samples/s. A delayed frame is capped, never caught up in bursts.
 +    if (dt <= 1e-8 || (!flush && dt < .04 * clock_.scale())) return false;
 +    motion_sample_ = clock_.elapsed();
-+    const auto step = cwm_motion::advance(u, m, intent_x_, intent_y_, std::min(dt, .20));
++    cwm_motion::Step step;
++    double remaining = std::min(dt, .20);
++    while (remaining > 1e-8 && u.moves > 0 && !pause_reasons(g)) {
++        const double quantum = std::min(remaining, .04);
++        const auto part = cwm_motion::advance(u, m, intent_x_, intent_y_, quantum);
++        step.distance += part.distance; step.extra_moves += part.extra_moves;
++        step.crossed = step.crossed || part.crossed;
++        remaining -= quantum;
++        if (part.extra_moves) break;
++    }
 +    motion_seconds_ = .04f;
 +    if (step.extra_moves) clock_.charge_action(step.extra_moves, u.get_speed());
 +    if (step.distance > 1e-8 || step.extra_moves) {
@@ -2000,8 +2018,8 @@ index 0000000..e80d831
 +            // Account for the old direction up to admission, including a
 +            // short tap. Frequent camera changes cannot postpone sampling.
 +            sample_motion(u, m, g, true);
-+            intent_x_ = length < 1e-6 ? 0 : x / length;
-+            intent_y_ = length < 1e-6 ? 0 : y / length;
++            intent_x_ = length < 1e-6 || pause_reasons(g) ? 0 : x / length;
++            intent_y_ = length < 1e-6 || pause_reasons(g) ? 0 : y / length;
 +            motion_sample_ = clock_.elapsed(); ++world_revision_;
 +        }
 +        send_result({id, valid, valid ? "" : "Continuous intent unavailable or invalid"}, u, m, g);
@@ -2212,10 +2230,10 @@ index 0000000..cfd8c9d
 +} // namespace cwm
 diff --git a/src/cwm_motion.cpp b/src/cwm_motion.cpp
 new file mode 100644
-index 0000000..ddf079d
+index 0000000..debccc5
 --- /dev/null
 +++ b/src/cwm_motion.cpp
-@@ -0,0 +1,188 @@
+@@ -0,0 +1,204 @@
 +#include "cwm_motion.h"
 +
 +#include <algorithm>
@@ -2234,11 +2252,18 @@ index 0000000..ddf079d
 +namespace cwm_motion {
 +namespace {
 +thread_local bool prepaid = false, fractional = false;
++thread_local double stamina_units = 0;
 +struct Scope {
 +    bool &flag;
 +    bool previous;
 +    explicit Scope( bool &value ) : flag( value ), previous( value ) { flag = true; }
 +    ~Scope() { flag = previous; }
++};
++struct StaminaScope {
++    Scope scope{ fractional };
++    double previous{ stamina_units };
++    explicit StaminaScope( double moves ) { stamina_units = moves; }
++    ~StaminaScope() { stamina_units = previous; }
 +};
 +constexpr double radius = .22;
 +bool solid( const avatar &u, const map &m, const tripoint &p )
@@ -2260,6 +2285,7 @@ index 0000000..ddf079d
 +}
 +bool prepaid_crossing() { return prepaid; }
 +bool fractional_stamina() { return fractional; }
++double stamina_moves() { return stamina_units; }
 +
 +State load( const avatar &u, const map &m )
 +{
@@ -2391,12 +2417,20 @@ index 0000000..ddf079d
 +    const int paid = static_cast<int>( std::ceil( debit - 1e-9 ) );
 +    state.credit = std::max( 0.0, state.credit + paid - cost * result.distance );
 +    u.moves -= paid;
-+    if( paid ) {
-+        const Scope scope( fractional );
-+        u.burn_move_stamina( swimming ? static_cast<int>( std::ceil( paid * double( u.swim_speed() ) / cost ) ) : paid );
++    if( result.distance > 1e-8 ) {
++        const StaminaScope scope( result.distance * ( swimming ? u.swim_speed() : cost ) );
++        u.burn_move_stamina( 0 );
 +        u.set_activity_level( u.current_movement_mode()->exertion_level() );
 +        u.recoil = MAX_RECOIL;
 +        u.last_target_pos = std::nullopt;
++        double steps = 0;
++        std::istringstream( u.get_value( "cwm_step_distance" ) ) >> steps;
++        if( !std::isfinite( steps ) || steps < 0 || steps >= 1 ) steps = 0;
++        steps += result.distance;
++        if( steps >= 1 ) { u.make_footstep_noise(); steps -= std::floor( steps ); }
++        std::ostringstream saved;
++        saved << std::setprecision( 17 ) << steps;
++        u.set_value( "cwm_step_distance", saved.str() );
 +    }
 +    state.x = next_x - actual.x; state.y = next_y - actual.y;
 +    store( u, m, state );
@@ -2406,10 +2440,10 @@ index 0000000..ddf079d
 +}
 diff --git a/src/cwm_motion.h b/src/cwm_motion.h
 new file mode 100644
-index 0000000..5003c42
+index 0000000..b7b1dc6
 --- /dev/null
 +++ b/src/cwm_motion.h
-@@ -0,0 +1,25 @@
+@@ -0,0 +1,26 @@
 +// Native continuous avatar motion. No presentation-engine types or physics.
 +#pragma once
 +#include "point.h"
@@ -2428,6 +2462,7 @@ index 0000000..5003c42
 +// opening doors, restraints or vertical traversal.
 +bool prepaid_crossing();
 +bool fractional_stamina();
++double stamina_moves();
 +struct Step {
 +    double distance{0};
 +    int extra_moves{0};
