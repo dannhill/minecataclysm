@@ -57,6 +57,7 @@ def main():
             self.buffer = b''
             self.state = None
             self.acks = {}
+            self.completed = set()
             b = flatbuffers.Builder(64)
             HelloRequest.HelloRequestStart(b)
             self.wire.hello_fields(b)
@@ -97,6 +98,7 @@ def main():
                         pause=clock.PauseReasons() if clock else 0, scale=clock.TimeScale() if clock else 1,
                         realtime=clock.Realtime() if clock else False, actors=actors,
                         origin=[origin.X(), origin.Y(), origin.Z()], completed=w.CompletedCommandId())
+                    self.completed.add(w.CompletedCommandId())
                     history.append(dict(wall=time.monotonic(), **self.state))
                     (out / 'history.json').write_text(json.dumps(history, indent=2) + '\n')
                 elif msg.PayloadType() == Payload.Payload.DecisionPrompt:
@@ -130,7 +132,7 @@ def main():
             return ident
 
         def complete(self, ident, accepted=True):
-            self.until(lambda: ident in self.acks and self.state['completed'] == ident)
+            self.until(lambda: ident in self.acks and ident in self.completed)
             check('command_' + str(ident) + '_accepted_' + str(accepted), self.acks[ident][0] == accepted)
             return ident
 
