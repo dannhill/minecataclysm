@@ -165,7 +165,8 @@ int main(int argc, const char *argv[]) {
             m.load(tripoint_abs_sm(0,0,0), false);
             m.ter_set(tripoint(60,59,0), ter_str_id("t_stairs_up"));
             m.ter_set(tripoint(60,59,1), ter_str_id("t_stairs_down"));
-            calendar::turn = calendar::turn_zero + 1_hours;
+            // turn_zero is midnight, not the normal scenario start time.
+            calendar::turn = calendar::turn_zero + (create_actor_demo ? 12_hours : 1_hours);
             if (create_actor_demo) {
                 // The covered regression fixture deliberately exercises native
                 // perception. The manual variant is outdoors in native daylight,
