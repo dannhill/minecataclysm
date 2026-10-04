@@ -33,6 +33,7 @@ keymap_quicktune_prev = KEY_F8
 keymap_toggle_profiler =
 debug_log_level = info
 CONFIG
+printf '\ncwm_trace_file = %s/camera.csv\n' "$PLAY_DIR" >> "$PLAY_DIR/client.conf"
 printf 'Confronto terreno: F7 cambia A/B, F8 nebbia. Scena isolata: %s\n' "$PLAY_DIR"
 exec env CDDA_USERDIR="$PLAY_DIR/cdda" CDDA_WORLD=terrain_comparison \
     CDDA_CHARACTER= CDDA_TERRAIN_DEMO=1 LUANTI_WORLD="$PLAY_DIR/luanti" \

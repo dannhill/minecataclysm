@@ -434,10 +434,10 @@ index 7f3f860..663a6ec 100644
  void TestMapBlock::testSaveLoad(IGameDef *gamedef, const u8 version)
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..984d9d4
+index 0000000..8ef3246
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,984 @@
+@@ -0,0 +1,985 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
@@ -1238,7 +1238,7 @@ index 0000000..984d9d4
 +    std::string trace_path;
 +    if (g_settings->getNoEx("cwm_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->trace_.open(trace_path);
-+        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z\n";
++        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog\n";
 +    }
 +    return pimpl_->connect();
 +}
@@ -1304,7 +1304,8 @@ index 0000000..984d9d4
 +        << position.X << ',' << position.Y << ',' << position.Z << ','
 +        << entity.target_pos.X << ',' << entity.target_pos.Y << ',' << entity.target_pos.Z << ','
 +        << pimpl_->pending_move_ << ',' << direction.X << ',' << direction.Y << ','
-+        << direction.Z << '\n';
++        << direction.Z << ',' << pimpl_->metrics_.current_revision << ','
++        << pimpl_->terrain_enriched_ << ',' << pimpl_->terrain_fog_ << '\n';
 +    pimpl_->trace_.flush();
 +}
 +

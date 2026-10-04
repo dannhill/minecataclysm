@@ -63,6 +63,13 @@
       "sha256": "32e41398980fda0a46401394d3a73e1a56734d466b01fa0e9d47f5c3673151dd",
       "upstream_commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
       "notice": "media-notices/mcl_core-README.txt"
+    },
+    {
+      "asset": "game/mods/cdda_nodes/textures/mcl_flowers_tallgrass.png",
+      "source": "mineclonia/mods/ITEMS/mcl_flowers/textures/mcl_flowers_tallgrass.png",
+      "sha256": "8c67dbb63d9df222223e40ea5eec1ca968a219ea937aa4cc84866bb04164035d",
+      "upstream_commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+      "notice": "media-notices/mcl_flowers-README.txt; media-notices/Mineclonia-LEGAL.md"
     }
   ]
 }
