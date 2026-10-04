@@ -85,7 +85,7 @@ index b6ae675..9e33201 100644
  		/*
  			Local player handling
 diff --git a/src/client/game.cpp b/src/client/game.cpp
-index 27b5833..9e48105 100644
+index 27b5833..c3ed3a4 100644
 --- a/src/client/game.cpp
 +++ b/src/client/game.cpp
 @@ -8,6 +8,7 @@
@@ -203,7 +203,7 @@ index 27b5833..9e48105 100644
  	//tt.stop();
  }
  
-@@ -2784,6 +2850,25 @@ inline void Game::step(f32 dtime)
+@@ -2784,6 +2850,24 @@ inline void Game::step(f32 dtime)
  
  	if (!m_is_paused)
  		client->step(dtime);
@@ -211,17 +211,16 @@ index 27b5833..9e48105 100644
 +	// [CDDA-Mineclonia] Connect (with retry), sync and draw overlay
 +	{
 +		auto &bridge = cdda_client::CddaBridge::getInstance();
-+		static float cdda_retry = 0.0f;
-+		cdda_retry -= dtime;
 +		// Wait until node definitions and media are received; connecting earlier
 +		// would resolve CDDA materials to CONTENT_IGNORE (invisible but solid).
-+		if (!bridge.getMetrics().connected && cdda_retry <= 0.0f &&
++		// Initialize once per Client. The bridge pumps reconnection itself;
++		// recreating it on transport loss discards the projection and camera.
++		if (!bridge.ownsPlayer(client) &&
 +				client->getState() == LC_Ready &&
 +				client->getNodeDefManager()->getId("cdda_nodes:stone") != CONTENT_IGNORE) {
 +			std::string socket_path = "/tmp/cwm_bench_ipc.sock";
 +			g_settings->getNoEx("cwm_socket_path", socket_path);
 +			bridge.initialize(client, socket_path);
-+			cdda_retry = 1.0f;
 +		}
 +		bridge.update(dtime);
 +		bridge.renderDebugOverlay(m_rendering_engine->get_gui_env());
@@ -229,7 +228,7 @@ index 27b5833..9e48105 100644
  }
  
  static void pauseNodeAnimation(PausedNodesList &paused, scene::ISceneNode *node) {
-@@ -3246,6 +3331,7 @@ void Game::updateCamera(f32 dtime)
+@@ -3246,6 +3330,7 @@ void Game::updateCamera(f32 dtime)
  	tool_reload_ratio = MYMIN(tool_reload_ratio, 1.0);
  	camera->update(player, dtime, tool_reload_ratio);
  	camera->step(dtime);
@@ -237,7 +236,7 @@ index 27b5833..9e48105 100644
  
  	f32 camera_fov = camera->getFovMax();
  	v3s16 camera_offset = camera->getOffset();
-@@ -3262,6 +3348,7 @@ void Game::updateCamera(f32 dtime)
+@@ -3262,6 +3347,7 @@ void Game::updateCamera(f32 dtime)
  		if (m_camera_offset_changed) {
  			client->updateCameraOffset(camera_offset);
  			client->getEnv().updateCameraOffset(camera_offset);
@@ -245,7 +244,7 @@ index 27b5833..9e48105 100644
  
  			if (clouds)
  				clouds->updateCameraOffset(camera_offset);
-@@ -3365,6 +3452,21 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
+@@ -3365,6 +3451,21 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
  	// but the halo rendering code is already inefficient so there's no point in optimizing it here
  	hud->updateSelectionMesh(camera_offset);
  
@@ -267,7 +266,7 @@ index 27b5833..9e48105 100644
  	// Allow digging again if button is not pressed
  	if (runData.digging_blocked && !isKeyDown(KeyType::DIG))
  		runData.digging_blocked = false;
-@@ -4319,7 +4421,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
+@@ -4319,7 +4420,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
  	/*
  		Fog
  	*/

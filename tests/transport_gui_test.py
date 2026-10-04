@@ -72,7 +72,10 @@ def main():
             data = rows()
             if data and predicate(data[-1]): return data[-1]
             time.sleep(.05)
-        raise RuntimeError('Renderer condition timed out; inspect trace and engine log')
+        found = subprocess.run(['xdotool', 'search', '--onlyvisible', '--pid', str(proc.pid)], capture_output=True, text=True)
+        if found.stdout.strip():
+            subprocess.run(['import', '-window', found.stdout.splitlines()[0], str(out/'timeout.png')], timeout=10)
+        raise RuntimeError(f'Renderer condition timed out (exit={proc.poll()}); inspect trace, task-window screenshot and engine log')
     link = ws/'luanti/games/cdda_voxel'
     if not link.exists(): link.parent.mkdir(parents=True, exist_ok=True); link.symlink_to(ws/'game', target_is_directory=True)
     with tempfile.TemporaryDirectory(prefix='cwm-gui-adverse-') as temporary:
@@ -119,17 +122,17 @@ def main():
         port = socket.socket(); port.bind(('127.0.0.1', 0)); port_number = port.getsockname()[1]; port.close()
         config = scratch/'client.conf'
         config.write_text(f'fullscreen = false\nscreen_w = 1024\nscreen_h = 768\nfps_max = 60\nfps_max_unfocused = 60\n'
-            f'vsync = false\nenable_damage = false\nenable_update_checker = false\nenable_clouds = false\n'
+            f'vsync = false\nenable_damage = false\nenable_update_checker = false\nenable_clouds = false\ndebug_log_level = info\n'
             f'cwm_socket_path = {path}\ncwm_trace_file = {trace}\nport = {port_number}\n')
         old_window = subprocess.run(['xdotool', 'getactivewindow'], capture_output=True, text=True).stdout.strip()
         window = None
         with (out/'console.log').open('w') as log:
             command = [str(binary), '--go', '--world', str(world), '--gameid', 'cdda_voxel', '--config', str(config),
-                       '--name', 'transport_regression', '--logfile', str(out/'engine.log')]
+                       '--name', 'transport_tester', '--info', '--logfile', str(out/'engine.log')]
             (out/'command.json').write_text(json.dumps(dict(argv=command, cwd=str(ws/'luanti'), display=os.environ.get('DISPLAY')), indent=2)+'\n')
             proc = subprocess.Popen(command, cwd=ws/'luanti', stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
             try:
-                until(lambda r: int(r['revision']) == 1000, 40)
+                until(lambda r: int(r['revision']) == 1000, 80)
                 found = subprocess.run(['xdotool', 'search', '--onlyvisible', '--pid', str(proc.pid)], capture_output=True, text=True)
                 window = found.stdout.strip().splitlines()[0]
                 subprocess.run(['xdotool', 'windowactivate', '--sync', window], check=True, capture_output=True)
