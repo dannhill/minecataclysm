@@ -25,6 +25,8 @@ inline bool valid_world(const CDDA::CWM::WorldSnapshot* world) {
     if (world->full() && (!world->chunks() || !world->chunks()->size() || world->chunks()->size() > 1024)) return false;
     if (!world->full() && world->chunks() && world->chunks()->size()) return false;
     std::set<uint64_t> ids;
+    std::unordered_map<uint64_t, const CDDA::CWM::EntityState*> actor_states;
+    actor_states.reserve(world->entities()->size());
     bool player = false;
     for (const auto* actor : *world->entities()) {
         if (!actor || !actor->id() || !actor->pos() || !ids.insert(actor->id()).second) return false;
@@ -35,6 +37,7 @@ inline bool valid_world(const CDDA::CWM::WorldSnapshot* world) {
         if (!std::isfinite(p->x()) || !std::isfinite(p->y()) || !std::isfinite(p->z()) ||
             std::abs(p->x()) > 32767 || std::abs(p->y()) > 32767 || std::abs(p->z()) > 1024) return false;
         if (actor->id() == 1) player = true;
+        actor_states.emplace(actor->id(), actor);
     }
     if (!player) return false;
     if (world->chunks()) for (const auto* chunk : *world->chunks()) {
@@ -57,13 +60,13 @@ inline bool valid_world(const CDDA::CWM::WorldSnapshot* world) {
                 !std::isfinite(part->offset()->y()) || !std::isfinite(part->offset()->z())) return false;
     }
     std::set<uint64_t> spawned_ids, removed_ids;
+    if ((world->spawned() && world->spawned()->size() > world->entities()->size()) ||
+        (world->removed() && world->removed()->size() > 8192)) return false;
     if (world->spawned()) for (const auto* spawn : *world->spawned()) {
         if (!spawn || !spawn->state() || !ids.count(spawn->state()->id()) ||
             !spawned_ids.insert(spawn->state()->id()).second) return false;
         const auto* declared = spawn->state();
-        const auto found = std::find_if(world->entities()->begin(), world->entities()->end(),
-            [declared](const auto* actor) { return actor->id() == declared->id(); });
-        const auto* actor = *found;
+        const auto* actor = actor_states.at(declared->id());
         const auto string_equal = [](const auto* a, const auto* b) {
             return a && b ? a->str() == b->str() : a == b;
         };
