@@ -1392,7 +1392,7 @@ index 0000000..eed54f3
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..744e7a8
+index 0000000..72b95cf
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
 @@ -0,0 +1,566 @@
@@ -1549,9 +1549,9 @@ index 0000000..744e7a8
 +uint32_t CwmServer::pause_reasons(const game& g) const {
 +    if (!realtime_) return 0;
 +    using namespace cdda::cwm;
-+    return (manual_pause_ ? Manual : 0) | (menu_pause_ ? Menu : 0) |
-+        ((g.uquit != QUIT_WATCH && (threat_pause_ || g.safe_mode == SAFE_MODE_STOP || get_avatar().has_effect(efftype_id("laserlocked")))) ? Threat : 0) |
-+        ((!ready_ || !has_active_client()) ? Recovery : 0) | (pending_decision_ ? Decision : 0);
++    return (manual_pause_ ? uint32_t(Manual) : 0u) | (menu_pause_ ? uint32_t(Menu) : 0u) |
++        ((g.uquit != QUIT_WATCH && (threat_pause_ || g.safe_mode == SAFE_MODE_STOP || get_avatar().has_effect(efftype_id("laserlocked")))) ? uint32_t(Threat) : 0u) |
++        ((!ready_ || !has_active_client()) ? uint32_t(Recovery) : 0u) | (pending_decision_ ? uint32_t(Decision) : 0u);
 +}
 +
 +void CwmServer::service_clock(avatar& u, map& m, game& g) {
