@@ -83,7 +83,7 @@ def main():
                     self.next_id = parse(msg, HelloResponse).NextCommandId()
                 elif msg.PayloadType() == Payload.Payload.CommandAck:
                     a = parse(msg, CommandAck)
-                    self.acks[a.CommandId()] = (a.Accepted(), (a.Error() or b'').decode())
+                    self.acks[a.CommandId()] = (a.Accepted(), (a.ErrorMessage() or b'').decode())
                 elif msg.PayloadType() == Payload.Payload.WorldSnapshot:
                     w = parse(msg, WorldSnapshot)
                     origin = w.Origin()
@@ -170,9 +170,10 @@ def main():
                 while not path.exists() and proc.poll() is None and time.monotonic()<deadline:
                     time.sleep(.05)
                 check('native_server_started', path.exists() and proc.poll() is None)
-                time.sleep(1.3)  # No client must not advance the native world.
+                time.sleep(2.4)  # No client must not advance the native world.
                 c = Connection(path)
                 check('realtime_negotiated_1x_without_initial_threat', c.state['realtime'] and c.state['scale']==1 and c.state['pause']==0)
+                check('unconnected_startup_does_not_simulate_wall_time', 43200 <= c.state['time'] <= 43201)
                 start_time = c.state['time']
                 start_actors = {k:v['pos'][:] for k,v in c.state['actors'].items()}
                 c.observe(3.2)
@@ -273,6 +274,28 @@ def main():
     check('realtime_save_is_pristine_native_readable', result.returncode==0)
     native = json.loads((out/'canonical.json').read_text())
     check('native_save_preserves_clock_and_position', native['player_abs']==saved_position and native['time']==saved_time)
+    with tempfile.TemporaryDirectory(prefix='cwm-rt01-reload-') as private, (out/'reload.log').open('w') as log:
+        path = Path(private)/'cwm.sock'
+        reload_command = command[:-1]+[str(path)]
+        proc = subprocess.Popen(reload_command, stdout=log, stderr=subprocess.STDOUT)
+        c = None
+        try:
+            deadline=time.monotonic()+85
+            while not path.exists() and proc.poll() is None and time.monotonic()<deadline:
+                time.sleep(.05)
+            check('realtime_canonical_reload_started', path.exists() and proc.poll() is None)
+            c=Connection(path)
+            check('reload_keeps_canonical_position_and_clock',c.pos()==saved_position and saved_time<=c.state['time']<=saved_time+1)
+            check('clock_controller_settings_are_volatile', c.state['scale']==1 and not c.state['pause']&1)
+        finally:
+            if c:
+                c.sock.close()
+            proc.terminate()
+            try:
+                proc.wait(timeout=40)
+            except subprocess.TimeoutExpired:
+                proc.kill(); proc.wait()
+    check('reloaded_native_shutdown_is_clean', proc.returncode==0)
     return 0
 
 
