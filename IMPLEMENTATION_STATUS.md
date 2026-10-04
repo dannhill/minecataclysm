@@ -80,7 +80,7 @@ issues are dark-room NPC pop-in without corresponding local darkness,
 black underwater presentation and the unsoftened projection border. Window
 sill targeting works but its final ergonomics remain open. These are recorded
 for FND-04/phase 2; flatness/relief is deferred until sufficient visual detail.
-No further repeated manual checklist is needed before FND-03 work.
+The accepted manual cases do not need another gate before FND-04 work.
 
 **M5.5 takeover audit: COMPLETE. Architectural conformance gate: FAILED.**
 The findings are documented in [the audit](docs/audits/M5.5.md), with

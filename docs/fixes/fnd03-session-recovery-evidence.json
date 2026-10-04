@@ -77,14 +77,16 @@
         "installed": "cdda/build/src/cdda-server",
         "sha256": "8707d9aec5ce01bd5b117366fc5d099da6427dede9bbc1b6f80e7195085eddab",
         "previous_sha256": "418153addb2380ac1f8c38e6dfaa772c637e7ab0dd6fd58ee53190bacd7c7ae4",
-        "backup": "artifacts/fnd03-session/installed-backups/cdda-server-418153addb2380ac1f8c38e6dfaa772c637e7ab0dd6fd58ee53190bacd7c7ae4"
+        "backup": "artifacts/fnd02-transport/workspace/cdda/build/src/cdda-server",
+        "backup_note": "Rollback uses the identical previously verified FND-02 executable; redundant new backup copy consolidated after checksum verification."
       },
       {
         "source": "artifacts/fnd03-session/workspace/luanti/bin/luanti",
         "installed": "luanti/bin/luanti",
         "sha256": "e4d8410e3a70f26ed6838c6ea7dfa4e739d59d743f3bf29468d4c606bc0cdec3",
         "previous_sha256": "a2eea4bbe1297cb2c86839cdb6303d20835962f967576cf7f2f3141e7de3068b",
-        "backup": "artifacts/fnd03-session/installed-backups/luanti-a2eea4bbe1297cb2c86839cdb6303d20835962f967576cf7f2f3141e7de3068b"
+        "backup": "artifacts/fnd02-transport/workspace/luanti/bin/luanti",
+        "backup_note": "Rollback uses the identical previously verified FND-02 executable; redundant new backup copy consolidated after checksum verification."
       },
       {
         "source": "artifacts/fnd03-session/launcher-build/cwm-launcher",
@@ -725,5 +727,14 @@
     "c++ -std=c++20 -O1 -g -Wall -Wextra -Werror -fno-omit-frame-pointer -fsanitize=address,undefined -Iartifacts/fnd03-session/workspace/protocol/include -I/home/dannhill/.local/include protocol/tests/test_session.cpp -o artifacts/fnd03-session/test-session-sanitized",
     "c++ -std=c++20 -O1 -g -Wall -Wextra -Werror -fno-omit-frame-pointer -fsanitize=address,undefined -Iartifacts/fnd03-session/workspace/protocol/include -I/home/dannhill/.local/include protocol/tests/test_transport_limits.cpp -o artifacts/fnd03-session/transport-limits-sanitized"
   ],
-  "verification_note": "Compiled workspace began as reconstruction of 8283447; committed root exports and captured changed sources were refreshed before final builds. Final source inventory/content verification matches 74b7a40. Build receipts expose all accepted/rejected cache dependencies."
+  "verification_note": "Compiled workspace began as reconstruction of 8283447; committed root exports and captured changed sources were refreshed before final builds. Final source inventory/content verification matches 74b7a40. Build receipts expose all accepted/rejected cache dependencies.",
+  "independent_final_reconstruction": {
+    "commit": "3d67796edb4769407741efe75fc0a33d7769cab4",
+    "archive": "artifacts/fnd03-session/final-reconstruction.tar.gz",
+    "archive_sha256": "629ced27189bc5030d7ee105f2d2e6a115415467bc3665000a99b3cf93d9a368",
+    "archive_bytes": 437127617,
+    "verified_fork_files": 20189,
+    "status": "PASS",
+    "note": "Source-only reconstruction archived and its captured files reverified before removing the temporary expanded clone; compiled workspace and all test evidence retained."
+  }
 }

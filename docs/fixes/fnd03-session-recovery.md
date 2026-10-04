@@ -67,7 +67,11 @@ Il [contratto completo](../../protocol/PROTOCOL.md) conserva limiti e semantica 
 Build da sorgenti ricostruiti in `artifacts/fnd03-session/workspace`, con riuso
 incrementale di oggetti FND-02 soltanto se flag e tutte le dipendenze coincidono.
 **Non sono build cold-cache.** Gli inventari dei fork e il contenuto/modo Git
-della radice vengono ricontrollati dopo gli aggiornamenti finali. I mondi di
+della radice vengono ricontrollati dopo gli aggiornamenti finali. Una seconda
+ricostruzione dal commit del report è archiviata in
+`artifacts/fnd03-session/final-reconstruction.tar.gz`: 20.189 file dei fork
+ricontrollati dopo la compressione; checksum nel registro. La copia espansa
+temporanea è rimossa per contenere il consumo di disco. I mondi di
 prova sono copie isolate; nessun salvataggio utente è usato o eliminato.
 Il lettore dei salvataggi è collegato al core CDDA pinned indipendente.
 
