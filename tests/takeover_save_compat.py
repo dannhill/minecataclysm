@@ -19,7 +19,7 @@ import time
 def run(ws, reader, probe, out):
     out.mkdir(parents=True, exist_ok=True)
     sys.path.insert(0, str(ws/'protocol/python'))
-    from CDDA.CWM import CwmMessage, Payload, WorldSnapshot, EntityType, CommandAck
+    from CDDA.CWM import CwmMessage, Payload, WorldSnapshot, EntityType, CommandAck, MoveRequest
     events = []
     stop = threading.Event()
     checks = []
@@ -104,6 +104,9 @@ def run(ws, reader, probe, out):
                                 if msg.PayloadType() == Payload.Payload.CommandAck:
                                     ack = CommandAck.CommandAck(); ack.Init(msg.Payload().Bytes, msg.Payload().Pos)
                                     event.update(command_id=ack.CommandId(), accepted=ack.Accepted())
+                                if msg.PayloadType() == Payload.Payload.MoveRequest:
+                                    request = MoveRequest.MoveRequest(); request.Init(msg.Payload().Bytes, msg.Payload().Pos)
+                                    event['command_id'] = request.CommandId()
                                 events.append(event)
                             buffers[source] = buf
             except Exception as error:
@@ -124,7 +127,7 @@ def run(ws, reader, probe, out):
                 world = directory/'presentation'; world.mkdir()
                 (world/'world.mt').write_text('gameid = cdda_voxel\nbackend = sqlite3\nplayer_backend = sqlite3\nauth_backend = sqlite3\n')
                 cfg = out/'client.conf'
-                cfg.write_text('name = audit\nscreen_w = 1024\nscreen_h = 768\nfps_max = 60\nvsync = false\nenable_update_checker = false\n')
+                cfg.write_text('name = audit\nscreen_w = 1024\nscreen_h = 768\nfps_max = 60\nvsync = false\nenable_update_checker = false\nkeymap_aux1 = KEY_KEY_E\n')
                 game_link = ws/'luanti/games/cdda_voxel'
                 if not game_link.exists(): game_link.symlink_to(ws/'game', target_is_directory=True)
                 env = os.environ.copy(); env.update(LD_PRELOAD=str(probe), M55_SOCKET_PATH=str(frontend), M55_FRAME_LOG=str(out/'frames.ns'))
@@ -146,6 +149,17 @@ def run(ws, reader, probe, out):
                         subprocess.run(['xdotool', 'keydown', '--window', window, 'w'], capture_output=True)
                         time.sleep(.5)
                         subprocess.run(['xdotool', 'keyup', '--window', window, 'w'], capture_output=True)
+                        # Full native turns can detect a threat and stop input.
+                        # Exercise the actual explicit-resume binding before
+                        # measuring accepted movement; never disable safe mode.
+                        time.sleep(.3)
+                        subprocess.run(['xdotool', 'keydown', '--window', window, 'e'], capture_output=True)
+                        time.sleep(.15)
+                        subprocess.run(['xdotool', 'keyup', '--window', window, 'e'], capture_output=True)
+                        time.sleep(.3)
+                        subprocess.run(['xdotool', 'keydown', '--window', window, 'w'], capture_output=True)
+                        time.sleep(.6)
+                        subprocess.run(['xdotool', 'keyup', '--window', window, 'w'], capture_output=True)
                         time.sleep(4)
                         subprocess.run(['import', '-window', window, str(out/'scene.png')], capture_output=True, timeout=15)
                     gui.terminate(); gui.wait(timeout=15)
@@ -153,6 +167,13 @@ def run(ws, reader, probe, out):
                 sent = sum(e.get('direction') == 'client' and e.get('payload_type') == Payload.Payload.MoveRequest for e in events)
                 accepted = sum(e.get('payload_type') == Payload.Payload.CommandAck and e.get('accepted', False) for e in events)
                 check('actual_3d_movement_attempted', sent > 0, sent=sent, accepted=accepted)
+                move_ids = {e.get('command_id') for e in events if e.get('direction') == 'client'
+                            and e.get('payload_type') == Payload.Payload.MoveRequest}
+                # Requests are decoded below into command IDs, avoiding the
+                # acknowledgement of a free threat-resume counting as movement.
+                accepted_moves = sum(e.get('command_id') in move_ids and e.get('accepted', False)
+                                     for e in events if e.get('payload_type') == Payload.Payload.CommandAck)
+                check('actual_3d_movement_accepted', accepted_moves > 0, accepted_moves=accepted_moves)
             finally:
                 if gui and gui.poll() is None: gui.kill(); gui.wait()
                 if server.poll() is None:

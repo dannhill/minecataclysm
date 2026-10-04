@@ -85,7 +85,7 @@ index b6ae675..9e33201 100644
  		/*
  			Local player handling
 diff --git a/src/client/game.cpp b/src/client/game.cpp
-index 27b5833..434f776 100644
+index 27b5833..2429de8 100644
 --- a/src/client/game.cpp
 +++ b/src/client/game.cpp
 @@ -8,6 +8,7 @@
@@ -114,7 +114,7 @@ index 27b5833..434f776 100644
  	delete client;
  	client = nullptr;
  	delete soundmaker;
-@@ -2737,8 +2742,44 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
+@@ -2737,8 +2742,46 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
  		control.aux1 = control.aux1 ^ true;
  	}
  
@@ -133,7 +133,9 @@ index 27b5833..434f776 100644
 +		// A held key must not automatically acknowledge each new threat.
 +		static bool acknowledgement_held = false;
 +		const bool acknowledgement_down = isKeyDown(KeyType::AUX1);
-+		if (acknowledgement_down && !acknowledgement_held && bridge.getMetrics().safety_stop)
++		const bool acknowledgement_pressed = wasKeyDown(KeyType::AUX1);
++		if ((acknowledgement_down || acknowledgement_pressed) && !acknowledgement_held &&
++				bridge.getMetrics().safety_stop)
 +			bridge.acknowledgeThreat();
 +		acknowledgement_held = acknowledgement_down;
 +		// Camera-relative WASD: build a local vector, rotate by yaw, snap to
@@ -159,7 +161,7 @@ index 27b5833..434f776 100644
  	//tt.stop();
  }
  
-@@ -2784,6 +2825,25 @@ inline void Game::step(f32 dtime)
+@@ -2784,6 +2827,25 @@ inline void Game::step(f32 dtime)
  
  	if (!m_is_paused)
  		client->step(dtime);
@@ -185,7 +187,7 @@ index 27b5833..434f776 100644
  }
  
  static void pauseNodeAnimation(PausedNodesList &paused, scene::ISceneNode *node) {
-@@ -3246,6 +3306,7 @@ void Game::updateCamera(f32 dtime)
+@@ -3246,6 +3308,7 @@ void Game::updateCamera(f32 dtime)
  	tool_reload_ratio = MYMIN(tool_reload_ratio, 1.0);
  	camera->update(player, dtime, tool_reload_ratio);
  	camera->step(dtime);

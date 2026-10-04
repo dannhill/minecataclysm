@@ -6,20 +6,20 @@
       "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
       "shallow": true,
       "patch": "baseline/patches/cdda.patch",
-      "patch_sha256": "7217f94d13797dc4df5f90d52f6bdf5b210afd9905c261c7e78c4af0058c99ba",
+      "patch_sha256": "413031672bd0da39021002a2497c98b50c8491ad0eef93f4b278488e81f5c6c0",
       "tree_inventory": "baseline/trees/cdda.json",
-      "tree_sha256": "0cd4ef72ffa0a249daab58bc5ceef097bbecf0787f9f43f0a818432b8e6a8eb7",
+      "tree_sha256": "400539e42a222960a81101a4cea010fc4b4fd1c7b2167055afcc75c8af2543c1",
       "file_count": 8579,
-      "original_status": " M src/CMakeLists.txt\n M src/do_turn.cpp\n M src/do_turn.h\n M src/game.h\n M src/handle_action.cpp\n M tests/CMakeLists.txt\n?? src/cwm/cwm_main.cpp\n?? src/cwm/cwm_map_exporter.cpp\n?? src/cwm/cwm_map_exporter.h\n?? src/cwm/cwm_server.cpp\n?? src/cwm/cwm_server.h\n?? src/safe_mode_actions.h\n?? tests/cwm_projection_test.cpp\n?? tests/cwm_runtime_test.cpp\n"
+      "original_status": " M src/CMakeLists.txt\n M src/do_turn.cpp\n M src/do_turn.h\n M src/game.h\n M src/handle_action.cpp\n M tests/CMakeLists.txt\n M tests/test_main.cpp\n?? src/cwm/cwm_main.cpp\n?? src/cwm/cwm_map_exporter.cpp\n?? src/cwm/cwm_map_exporter.h\n?? src/cwm/cwm_server.cpp\n?? src/cwm/cwm_server.h\n?? src/safe_mode_actions.h\n?? tests/cwm_projection_test.cpp\n?? tests/cwm_runtime_test.cpp\n"
     },
     "luanti": {
       "url": "https://github.com/luanti-org/luanti.git",
       "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
       "shallow": true,
       "patch": "baseline/patches/luanti.patch",
-      "patch_sha256": "52c9afcc3c4257b47311433f05aa15486d54bdb273c8442a8e4c125dd771ae3d",
+      "patch_sha256": "35402989d458ce3d40f982c8b855d828cd60bef1e848c46f849e9c16af44f27b",
       "tree_inventory": "baseline/trees/luanti.json",
-      "tree_sha256": "2445aea94dcfe3ed893b674b2080e08d835a7a97d4f4260c8ac34cb7962c8a5b",
+      "tree_sha256": "0cb8b1bcf24bc6b4d33cbeaf6c9ec8204ca53c101c43f4f7ddcde9ddeec16632",
       "file_count": 2251,
       "original_status": " M src/CMakeLists.txt\n M src/client/CMakeLists.txt\n M src/client/client.cpp\n M src/client/clientenvironment.cpp\n M src/client/game.cpp\n M src/client/mesh_generator_thread.cpp\n M src/client/mesh_generator_thread.h\n M src/network/clientpackethandler.cpp\n M src/unittest/test_mapblock.cpp\n?? src/cdda/cdda_bridge.cpp\n?? src/cdda/cdda_bridge.h\n"
     },

@@ -98,7 +98,7 @@ index c25584e..fdb835f 100644
          friend achievements_tracker &get_achievements();
          friend event_bus &get_event_bus();
 diff --git a/src/handle_action.cpp b/src/handle_action.cpp
-index 652ad80..9e64ca7 100644
+index 652ad80..b19d6b8 100644
 --- a/src/handle_action.cpp
 +++ b/src/handle_action.cpp
 @@ -77,6 +77,7 @@
@@ -131,7 +131,7 @@ index 652ad80..9e64ca7 100644
 +            add_msg( m_info, _( "Ignoring laser targeting!" ) );
 +        }
 +        player_character.remove_effect( effect_laserlocked );
-+        g->safe_mode_warning_logged = false;
++        g->set_safe_mode( g->safe_mode ); // also clears the previous warning
 +        return true;
 +    }
 +    return false;
@@ -182,16 +182,38 @@ index bfe0773..f28a50f 100644
          if (LOCALIZE)
              add_dependencies(cata_test test_mo)
          endif()
+diff --git a/tests/test_main.cpp b/tests/test_main.cpp
+index 09a7711..9b0c484 100644
+--- a/tests/test_main.cpp
++++ b/tests/test_main.cpp
+@@ -35,6 +35,7 @@
+ #include "debug.h"
+ #include "filesystem.h"
+ #include "game.h"
++#include "gamemode.h"
+ #include "help.h"
+ #include "json.h"
+ #include "loading_ui.h"
+@@ -393,6 +394,8 @@ int main( int argc, const char *argv[] )
+     try {
+         // TODO: Only init game if we're running tests that need it.
+         init_global_game_state( mods, option_overrides_for_test_suite, user_dir );
++        // Full-turn tests require the same default mode as native start/load.
++        g->gamemode = std::make_unique<special_game>();
+     } catch( const std::exception &err ) {
+         DebugLog( D_ERROR, DC_ALL ) << "Terminated:\n" << err.what();
+         DebugLog( D_INFO, DC_ALL ) <<
 diff --git a/src/cwm/cwm_main.cpp b/src/cwm/cwm_main.cpp
 new file mode 100644
-index 0000000..8ff6788
+index 0000000..155a3e0
 --- /dev/null
 +++ b/src/cwm/cwm_main.cpp
-@@ -0,0 +1,268 @@
+@@ -0,0 +1,290 @@
 +// CDDA Headless CWM Server Entrypoint
 +// Licensed under Apache-2.0
 +
 +#include <iostream>
++#include <algorithm>
 +#include <string>
 +#include <vector>
 +#include <csignal>
@@ -219,6 +241,8 @@ index 0000000..8ff6788
 +#include "do_turn.h"
 +#include "debug.h"
 +#include "coordinate_conversions.h"
++#include "cata_utility.h"
++#include "json.h"
 +#include <flatbuffers/util.h>
 +
 +#if defined(FLATBUFFERS_LOCALE_INDEPENDENT) && (FLATBUFFERS_LOCALE_INDEPENDENT > 0)
@@ -231,6 +255,22 @@ index 0000000..8ff6788
 +
 +static void sig_handler(int) {
 +    g_running = 0;
++}
++
++static std::vector<mod_id> recommended_mods() {
++    std::vector<mod_id> result;
++    const bool loaded = read_from_file_json(PATH_INFO::mods_dev_default(), [&](const JsonValue& input) {
++        for (JsonObject entry : input.get_array()) {
++            entry.allow_omitted_members();
++            if (entry.get_string("id") == "dev:default") entry.read("dependencies", result);
++        }
++    });
++    if (!loaded || result.empty()) throw std::runtime_error("Native developer-default mod profile is missing");
++    // Same registry validation as native mod_manager::set_default_mods.
++    result.erase(std::remove_if(result.begin(), result.end(), [](const mod_id& id) {
++        return !id.is_valid();
++    }), result.end());
++    return result;
 +}
 +
 +int main(int argc, const char* argv[]) {
@@ -356,8 +396,12 @@ index 0000000..8ff6788
 +        world = world_generator->get_world(world_name);
 +    } else {
 +        std::cout << "[CDDA-Server] Creating new canonical world: " << world_name << "\n";
-+        const auto& mods = world_generator->get_mod_manager().get_default_mods();
-+        world = world_generator->make_new_world(world_name, mods);
++        try {
++            world = world_generator->make_new_world(world_name, recommended_mods());
++        } catch (const std::exception& error) {
++            std::cerr << "[CDDA-Server] ERROR: " << error.what() << "\n";
++            return 1;
++        }
 +    }
 +
 +    if (!world) {
@@ -437,11 +481,10 @@ index 0000000..8ff6788
 +
 +    std::cout << "[CDDA-Server] Entering main event loop. Waiting for Luanti 3D client...\n";
 +    while (g_running) {
++        // Advance the same turn phases as the native outer loop. Input waits
++        // inside the provider; invalid requests cannot start additional turns.
++        if (server.advance_turn(u, here, *g, []() { return g_running != 0; })) break;
 +        server.update(u, here, *g);
-+        if (server.needs_turn(u)) {
-+            if (server.advance_turn(u, here, *g, []() { return g_running != 0; })) break;
-+        }
-+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
 +    }
 +
 +    if (g->uquit == QUIT_DIED || g->uquit == QUIT_SUICIDE) {
@@ -846,10 +889,10 @@ index 0000000..b146915
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..fb0697e
+index 0000000..61c53c9
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,204 @@
+@@ -0,0 +1,207 @@
 +// CDDA CWM IPC Server Implementation
 +// Licensed under Apache-2.0
 +
@@ -916,15 +959,18 @@ index 0000000..fb0697e
 +    return true;
 +}
 +
-+bool CwmServer::needs_turn(const avatar& u) const {
-+    return !commands_.empty() || (simulation_started_ &&
-+           (u.moves <= 0 || u.activity || u.has_effect(efftype_id("sleep")) || u.is_dead_state()));
-+}
-+
 +bool CwmServer::advance_turn(avatar& u, map& m, game& g,
 +                           const std::function<bool()>& keep_running) {
-+    simulation_started_ = true;
++    bool prelude_sent = false;
 +    const bool ended = do_turn_with_action([&]() {
++        // Native timed events/perception run before requesting input. Publish
++        // them immediately, rather than attributing them to a later rejected
++        // request or withholding a safety warning until movement is attempted.
++        if (!prelude_sent) {
++            ++world_revision_;
++            send_state(u, m, g, !snapshot_sent_);
++            prelude_sent = true;
++        }
 +        if (result_) {
 +            send_result(*result_, u, m, g);
 +            result_.reset();
@@ -1056,10 +1102,10 @@ index 0000000..fb0697e
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.h b/src/cwm/cwm_server.h
 new file mode 100644
-index 0000000..1b50863
+index 0000000..e08d7c7
 --- /dev/null
 +++ b/src/cwm/cwm_server.h
-@@ -0,0 +1,76 @@
+@@ -0,0 +1,70 @@
 +// CDDA CWM IPC Server
 +// Licensed under Apache-2.0
 +#pragma once
@@ -1092,7 +1138,6 @@ index 0000000..1b50863
 +
 +    // Ticks server: handles connections, processes commands, advances turns
 +    bool update(avatar& u, map& m, game& g);
-+    bool needs_turn(const avatar& u) const;
 +    bool advance_turn(avatar& u, map& m, game& g, const std::function<bool()>& keep_running);
 +    bool saved_on_shutdown() const { return saved_on_shutdown_; }
 +
@@ -1120,13 +1165,8 @@ index 0000000..1b50863
 +    };
 +    std::deque<Command> commands_;
 +    std::optional<Result> result_;
-+    bool simulation_started_{false};
 +    bool saved_on_shutdown_{false};
 +    CwmMapExporter::ProjectionCache projection_cache_;
-+    // Reality-bubble origin (absolute submap) last sent to the client.
-+    // When CDDA shifts the bubble, local coordinates change and terrain must be resent.
-+    int last_sub_x_{0}, last_sub_y_{0}, last_sub_z_{0};
-+    bool last_sub_valid_{false};
 +
 +    void send_state(avatar& u, map& m, game& g, bool full = false);
 +    void send_result(const Result& result, avatar& u, map& m, game& g);
@@ -1275,10 +1315,10 @@ index 0000000..ae4a2a3
 +}
 diff --git a/tests/cwm_runtime_test.cpp b/tests/cwm_runtime_test.cpp
 new file mode 100644
-index 0000000..1a007af
+index 0000000..bc65302
 --- /dev/null
 +++ b/tests/cwm_runtime_test.cpp
-@@ -0,0 +1,102 @@
+@@ -0,0 +1,131 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "calendar.h"
@@ -1305,6 +1345,11 @@ index 0000000..1a007af
 +    g->uquit = QUIT_NO;
 +    g->set_safe_mode( SAFE_MODE_OFF );
 +    get_weather().update_weather();
++    get_avatar().recalc_sight_limits();
++    g->reset_light_level();
++    get_map().build_map_cache( 0 );
++    get_map().invalidate_visibility_cache();
++    get_map().update_visibility_cache( 0 );
 +}
 +
 +TEST_CASE( "cwm_turn_runs_native_fields_ai_and_body", "[cwm][runtime]" )
@@ -1321,6 +1366,9 @@ index 0000000..1a007af
 +    const tripoint start = u.pos() + tripoint( 7, 0, 0 );
 +    monster *zombie = g->place_critter_at( mtype_id( "mon_zombie" ), start );
 +    REQUIRE( zombie != nullptr );
++    zombie->anger = 100;
++    zombie->set_dest( m.getglobal( u.pos() ) );
++    zombie->set_moves( 200 );
 +    u.add_effect( efftype_id( "blind" ), 10_seconds );
 +    const time_point before = calendar::turn;
 +    int calls = 0;
@@ -1362,6 +1410,8 @@ index 0000000..1a007af
 +    avatar &u = get_avatar();
 +    monster *zombie = g->place_critter_at( mtype_id( "mon_zombie" ), u.pos() + tripoint( 5, 0, 0 ) );
 +    REQUIRE( zombie != nullptr );
++    zombie->anger = 100;
++    REQUIRE( u.sees( *zombie ) );
 +    g->set_safe_mode( SAFE_MODE_ON );
 +    g->mostseen = 0;
 +    g->mon_info_update();
@@ -1380,4 +1430,23 @@ index 0000000..1a007af
 +    CHECK_FALSE( u.has_effect( efftype_id( "laserlocked" ) ) );
 +    CHECK( u.moves == moves );
 +    CHECK( calendar::turn == before );
++}
++
++TEST_CASE( "cwm_native_activity_progresses_without_polling_for_actions", "[cwm][runtime]" )
++{
++    const override_option no_random_npc( "NPC_SPAWNTIME", "0" );
++    const override_option no_autosave( "AUTOSAVE", "false" );
++    const override_option no_autosafe( "AUTOSAFEMODE", "false" );
++    prepare_runtime();
++    avatar &u = get_avatar();
++    u.assign_activity( activity_id( "ACT_WAIT" ), 300 );
++    const time_point before = calendar::turn;
++    int calls = 0;
++    const auto pause = [&]() { ++calls; u.pause(); return true; };
++    REQUIRE_FALSE( do_turn_with_action( pause ) );
++    CHECK( calls == 0 );
++    CHECK( u.activity.moves_left < 300 );
++    for( int i = 0; i < 4 && u.activity; ++i ) REQUIRE_FALSE( do_turn_with_action( pause ) );
++    CHECK_FALSE( u.activity );
++    CHECK( calendar::turn > before );
 +}

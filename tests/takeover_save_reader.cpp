@@ -29,9 +29,11 @@
 int main(int argc, const char *argv[]) {
     std::string userdir, datadir, output, character, world_name = "audit_fixture";
     bool create = false;
+    bool resave = false;
     for (int i = 1; i < argc; ++i) {
         std::string arg(argv[i]);
         if (arg == "--create") create = true;
+        else if (arg == "--resave") resave = true;
         else if (i + 1 < argc && arg == "--userdir") userdir = argv[++i];
         else if (i + 1 < argc && arg == "--datadir") datadir = argv[++i];
         else if (i + 1 < argc && arg == "--output") output = argv[++i];
@@ -109,6 +111,9 @@ int main(int argc, const char *argv[]) {
         return 6;
     }
     if (!create && !character.empty() && get_avatar().name != character) return 8;
+    // Explicit native load/save control for canonical on_load catch-up effects.
+    // Ordinary reader invocations remain read-only.
+    if (resave && !g->save()) return 9;
 
     std::ofstream file(output);
     JsonOut json(file, true);

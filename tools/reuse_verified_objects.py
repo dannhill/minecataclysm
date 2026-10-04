@@ -50,7 +50,7 @@ def main():
                 if not source.is_absolute(): source = old_build/source
                 if source.is_relative_to(old):
                     current = new/source.relative_to(old)
-                    if not current.is_file() or digest(source) != digest(current):
+                    if not source.is_file() or not current.is_file() or digest(source) != digest(current):
                         reason = 'project dependency differs: '+str(source.relative_to(old))
                         break
                 elif not source.is_file() or source.stat().st_mtime_ns > obj.stat().st_mtime_ns:
