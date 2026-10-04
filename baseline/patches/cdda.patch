@@ -2897,10 +2897,10 @@ index 0000000..609ac58
 +}
 diff --git a/tests/cwm_runtime_test.cpp b/tests/cwm_runtime_test.cpp
 new file mode 100644
-index 0000000..21d7702
+index 0000000..58d2f98
 --- /dev/null
 +++ b/tests/cwm_runtime_test.cpp
-@@ -0,0 +1,392 @@
+@@ -0,0 +1,407 @@
 +#include "cwm_motion.h"
 +#include "cata_catch.h"
 +#include "avatar.h"
@@ -3271,6 +3271,21 @@ index 0000000..21d7702
 +        const double traveled = m.getabs( u.pos() ).x - origin.x + cwm_motion::load( u, m ).x;
 +        CHECK( 1000 - u.moves == static_cast<int>( std::ceil( traveled * cost - 1e-9 ) ) + 100 );
 +        CHECK( m.ter( u.pos() ) == ter_str_id( "t_door_o" ) );
++    }
++    SECTION( "many short motions inside one cell retain native cost and stamina" ) {
++        const override_option burn_rate( "PLAYER_BASE_STAMINA_BURN_RATE", "100" );
++        const int stamina = u.get_stamina();
++        u.burn_move_stamina( cost );
++        const int expected_burn = stamina - u.get_stamina();
++        u.set_stamina( stamina );
++        for( const point d : { point_east, point_south, point_west, point_north } )
++            for( int i = 0; i < 25; ++i )
++                cwm_motion::advance( u, m, d.x, d.y, .01 * cost / speed );
++        CHECK( m.getabs( u.pos() ) == origin );
++        CHECK( cwm_motion::load( u, m ).x == Approx( 0 ).margin( 1e-7 ) );
++        CHECK( cwm_motion::load( u, m ).y == Approx( 0 ).margin( 1e-7 ) );
++        CHECK( 1000 - u.moves == cost );
++        CHECK( stamina - u.get_stamina() == expected_burn );
 +    }
 +    SECTION( "restraints do not grant within-tile movement or rapid escape rolls" ) {
 +        u.add_effect( efftype_id( "beartrap" ), 1_hours );

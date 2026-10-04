@@ -16,6 +16,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for key in ('workspace', 'fixture', 'native-reader', 'artifacts'):
         parser.add_argument('--'+key, type=Path, required=True)
+    parser.add_argument("--fps", type=int, choices=(30,60,120), default=60)
     args = parser.parse_args()
     ws, out = args.workspace.resolve(), args.artifacts.resolve()
     out.mkdir(parents=True, exist_ok=False)
@@ -29,7 +30,7 @@ def main():
         sock.bind(('127.0.0.1', 0))
         port = sock.getsockname()[1]
     config = out/'client.conf'
-    config.write_text(f'screen_w = 1280\nscreen_h = 800\nfullscreen = false\nfps_max = 60\nfps_max_unfocused = 60\n'
+    config.write_text(f'screen_w = 1280\nscreen_h = 800\nfullscreen = false\nfps_max = {args.fps}\nfps_max_unfocused = {args.fps}\n'
         f'vsync = false\nenable_clouds = false\nport = {port}\n'
         f'keymap_jump = KEY_SPACE\nkeymap_sneak = KEY_LSHIFT\n'
         f'cwm_trace_file = {camera}\ncwm_entity_trace_file = {actors}\n')
@@ -119,6 +120,17 @@ def main():
             check('real_camera_yaw_produces_arbitrary_confirmed_direction',abs(dx)>.03 and abs(dz)>.03 and abs(ratio-1)>.05)
             check('real_4x_continuous_pace_is_usable',1.1<math.dist(after,before)<3.5)
             subprocess.run(['import','-window',window,str(out/'continuous.png')],check=True,timeout=10)
+            # Sustain camera changes across native bubble rebases, rather than
+            # testing only a stationary yaw at the initial origin.
+            before=target(latest()); began=time.monotonic()
+            xdo('keydown','--window',window,'a')
+            for i in range(100):
+                xdo('mousemove_relative','--sync','--',str(3 if i%2 else -3),'0')
+                time.sleep(.04)
+            xdo('keyup','--window',window,'a'); time.sleep(.3)
+            duration=time.monotonic()-began; after=target(latest())
+            check('continuous_camera_changes_survive_native_rebases',math.dist(after,before)>duration*2 and latest()['resync_count']=='0')
+
             xdo('keydown','--window',window,'a'); time.sleep(.16)
             tap('F7'); until(lambda r:r['pause_reasons']=='1'); time.sleep(.1)
             paused=target(latest()); paused_time=native_time(latest()); cam=tuple(float(latest()['camera_'+k]) for k in ('x','y','z'))
@@ -149,7 +161,7 @@ def main():
     stamps=[int(r['time_ns']) for r in data]
     intervals=[(b-a)/1e9 for a,b in zip(stamps,stamps[1:]) if 0<(b-a)/1e9<.2]
     intervals.sort(); median=intervals[len(intervals)//2]
-    check('continuous_actual_frame_rate_stays_interactive',1/median>35)
+    check('continuous_actual_frame_rate_stays_interactive',1/median>min(35,args.fps*.8))
     (out/'performance.json').write_text(json.dumps(dict(frames=len(data),median_fps=1/median,
         max_ipc_latency_ms=None),indent=2)+'\n')
     with (out/'canonical.log').open('w') as log:
