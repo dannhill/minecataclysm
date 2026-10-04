@@ -19,7 +19,7 @@ import time
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    for name in ('workspace', 'fixture', 'native-reader', 'artifacts'):
+    for name in ('workspace', 'fixture', 'decision-fixture', 'native-reader', 'artifacts'):
         parser.add_argument('--' + name, type=Path, required=True)
     args = parser.parse_args()
     ws, out = args.workspace.resolve(), args.artifacts.resolve()
@@ -35,6 +35,7 @@ def main():
     from CDDA.CWM import CwmMessage, Payload, HelloRequest, HelloResponse, WorldSnapshot, CommandAck
     from CDDA.CWM import SimulationControlRequest as Control, MovementIntentRequest as Intent
     from CDDA.CWM import MoveRequest, InteractRequest, Coord3i, AcknowledgeThreatRequest as Threat
+    from CDDA.CWM import ResyncRequest, SnapshotAck, DecisionPrompt, DecisionResponse
     checks, history = {}, []
 
     def check(name, ok):
@@ -58,6 +59,9 @@ def main():
             self.state = None
             self.acks = {}
             self.completed = set()
+            self.prompts = []
+            self.auto_ack = True
+            self.full_state_id = 0
             b = flatbuffers.Builder(64)
             HelloRequest.HelloRequestStart(b)
             self.wire.hello_fields(b)
@@ -78,7 +82,8 @@ def main():
                     break
                 msg = CwmMessage.CwmMessage.GetRootAsCwmMessage(self.buffer[4:size+4])
                 self.buffer = self.buffer[size+4:]
-                self.wire.observe(self.sock, msg)
+                if self.auto_ack or msg.PayloadType() != Payload.Payload.WorldSnapshot:
+                    self.wire.observe(self.sock, msg)
                 if msg.PayloadType() == Payload.Payload.HelloResponse:
                     self.next_id = parse(msg, HelloResponse).NextCommandId()
                 elif msg.PayloadType() == Payload.Payload.CommandAck:
@@ -86,6 +91,9 @@ def main():
                     self.acks[a.CommandId()] = (a.Accepted(), (a.ErrorMessage() or b'').decode())
                 elif msg.PayloadType() == Payload.Payload.WorldSnapshot:
                     w = parse(msg, WorldSnapshot)
+                    self.wire.revision = w.WorldRevision()
+                    if w.Full():
+                        self.full_state_id = w.StateId()
                     origin = w.Origin()
                     actors = {}
                     for i in range(w.EntitiesLength()):
@@ -102,7 +110,9 @@ def main():
                     history.append(dict(wall=time.monotonic(), **self.state))
                     (out / 'history.json').write_text(json.dumps(history, indent=2) + '\n')
                 elif msg.PayloadType() == Payload.Payload.DecisionPrompt:
-                    raise AssertionError('Unexpected decision in real-time scene')
+                    prompt=parse(msg, DecisionPrompt)
+                    self.prompts.append(dict(id=prompt.DecisionId(), text=prompt.Text().decode(),
+                        choices=[prompt.Choices(i).decode() for i in range(prompt.ChoicesLength())]))
 
         def until(self, predicate, timeout=15):
             deadline = time.monotonic() + timeout
@@ -123,6 +133,8 @@ def main():
             if ident is None:
                 ident = self.next_id
                 self.next_id += 1
+            self.acks.pop(ident, None)
+            self.completed.discard(ident)
             b = flatbuffers.Builder(128)
             getattr(module, name+'Start')(b)
             getattr(module, name+'AddCommandId')(b, ident)
@@ -231,15 +243,37 @@ def main():
                 old_identity = c.wire.identity
                 c.intent(7)
                 c.observe(.3)
+                disconnected_time = c.state['time']
                 c.sock.close()
                 c = None
                 time.sleep(1.3)
                 c = Connection(path)
                 check('reconnect_changes_connection_only', c.wire.identity[:2]==old_identity[:2] and c.wire.identity[2]!=old_identity[2])
+                check('disconnected_world_does_not_advance', c.state['time']-disconnected_time<=1)
                 stopped = c.pos()[:]
                 t = c.state['time']
                 c.observe(.3)
                 check('disconnect_loses_wall_debt_and_held_intent', c.pos()==stopped and c.state['time']-t<=1)
+                # A lost-delta recovery must freeze until full-state install ACK.
+                c.intent(7)
+                c.until(lambda: c.pos()!=stopped)
+                c.auto_ack=False
+                b=flatbuffers.Builder(64)
+                ResyncRequest.ResyncRequestStart(b)
+                ResyncRequest.ResyncRequestAddRequestId(b,77)
+                c.wire.send(c.sock,b,Payload.Payload.ResyncRequest,ResyncRequest.ResyncRequestEnd(b))
+                c.until(lambda: c.state['pause']&8)
+                recovery_position, recovery_time=c.pos()[:],c.state['time']
+                c.observe(.8)
+                check('recovery_waits_for_full_state_ack_without_simulating', c.pos()==recovery_position and c.state['time']==recovery_time)
+                b=flatbuffers.Builder(64)
+                SnapshotAck.SnapshotAckStart(b)
+                SnapshotAck.SnapshotAckAddStateId(b,c.full_state_id)
+                c.wire.send(c.sock,b,Payload.Payload.SnapshotAck,SnapshotAck.SnapshotAckEnd(b))
+                c.auto_ack=True
+                c.until(lambda: not c.state['pause']&8)
+                c.observe(.3)
+                check('full_state_recovery_drops_pre_gap_movement_intent',c.pos()==recovery_position)
                 # Approach the closed room from the safe corridor.
                 c.control(2,4)
                 c.intent(3)
@@ -296,6 +330,49 @@ def main():
             except subprocess.TimeoutExpired:
                 proc.kill(); proc.wait()
     check('reloaded_native_shutdown_is_clean', proc.returncode==0)
+    decision_user=out/'decision-user'
+    shutil.copytree(args.decision_fixture.resolve(),decision_user)
+    (decision_user/'config/options.json').write_text(json.dumps([
+        {'name':'SAFEMODE','value':'false'},{'name':'AUTOSAFEMODE','value':'false'},
+        {'name':'AUTOSAVE','value':'false'}]))
+    with tempfile.TemporaryDirectory(prefix='cwm-rt01-decision-') as private, (out/'decision.log').open('w') as log:
+        path=Path(private)/'cwm.sock'
+        decision_command=[str(ws/'cdda/build/src/cdda-server'),'--realtime','--userdir',str(decision_user),
+            '--datadir',str(ws/'cdda/data'),'--world','audit_fixture','--socket',str(path)]
+        proc=subprocess.Popen(decision_command,stdout=log,stderr=subprocess.STDOUT)
+        c=None
+        try:
+            deadline=time.monotonic()+85
+            while not path.exists() and proc.poll() is None and time.monotonic()<deadline:
+                time.sleep(.05)
+            check('native_decision_scene_started',path.exists() and proc.poll() is None)
+            c=Connection(path)
+            move=c.send(MoveRequest,dict(Direction=1))
+            c.until(lambda: bool(c.prompts))
+            check('water_warning_is_native_and_published_as_pause',c.state['pause']&16 and 'water' in c.prompts[-1]['text'].lower())
+            t,pos=c.state['time'],c.pos()[:]
+            c.observe(1.2)
+            check('native_decision_freezes_clock_and_position',c.state['time']==t and c.pos()==pos)
+            response=c.prompts[-1]
+            b=flatbuffers.Builder(64)
+            DecisionResponse.DecisionResponseStart(b)
+            DecisionResponse.DecisionResponseAddDecisionId(b,response['id'])
+            DecisionResponse.DecisionResponseAddChoice(b,len(response['choices'])-1)
+            c.wire.send(c.sock,b,Payload.Payload.DecisionResponse,DecisionResponse.DecisionResponseEnd(b))
+            c.until(lambda: move in c.acks and move in c.completed)
+            check('native_decline_preserves_position_and_resumes',c.pos()==pos and not c.state['pause']&16)
+            t=c.state['time']
+            c.observe(.3)
+            check('dialogue_wall_time_is_not_replayed_on_resume',c.state['time']-t<=1 and c.pos()==pos)
+        finally:
+            if c:
+                c.sock.close()
+            proc.terminate()
+            try:
+                proc.wait(timeout=40)
+            except subprocess.TimeoutExpired:
+                proc.kill(); proc.wait()
+    check('native_decision_shutdown_is_clean',proc.returncode==0)
     return 0
 
 
