@@ -107,7 +107,7 @@ index d7e91fc..6d99647 100644
  
      body_part_set flags;
 diff --git a/src/character.cpp b/src/character.cpp
-index a90f830..4584cf1 100644
+index a90f830..84949ac 100644
 --- a/src/character.cpp
 +++ b/src/character.cpp
 @@ -1,3 +1,6 @@
@@ -117,7 +117,7 @@ index a90f830..4584cf1 100644
  #include "character.h"
  
  #include <algorithm>
-@@ -6979,9 +6982,24 @@ void Character::burn_move_stamina( int moves )
+@@ -6979,9 +6982,28 @@ void Character::burn_move_stamina( int moves )
      }
  
      burn_ratio *= move_mode->stamina_mult();
@@ -132,9 +132,13 @@ index a90f830..4584cf1 100644
 +        std::istringstream( get_value( "cwm_stamina_fraction" ) ) >> remainder;
 +        if( !std::isfinite( remainder ) || remainder < 0 || remainder >= 1 ) remainder = 0;
 +        burn += remainder;
-+        const int whole = static_cast<int>( std::floor( burn ) );
++        // Repeated fractional samples can accumulate to values such as
++        // 115.99999999999999 instead of the mathematically equivalent 116.
++        // Snap only across a tiny floating-point boundary so sampling rate
++        // cannot change total stamina cost.
++        const int whole = static_cast<int>( std::floor( burn + 1e-9 ) );
 +        std::ostringstream saved;
-+        saved << std::setprecision( 17 ) << burn - whole;
++        saved << std::setprecision( 17 ) << std::max( 0.0, burn - whole );
 +        set_value( "cwm_stamina_fraction", saved.str() );
 +        mod_stamina( -whole );
 +        // Random overburden pain remains a native tile-boundary effect rather
@@ -2897,10 +2901,10 @@ index 0000000..609ac58
 +}
 diff --git a/tests/cwm_runtime_test.cpp b/tests/cwm_runtime_test.cpp
 new file mode 100644
-index 0000000..58d2f98
+index 0000000..cba9d7a
 --- /dev/null
 +++ b/tests/cwm_runtime_test.cpp
-@@ -0,0 +1,407 @@
+@@ -0,0 +1,410 @@
 +#include "cwm_motion.h"
 +#include "cata_catch.h"
 +#include "avatar.h"
@@ -3273,11 +3277,14 @@ index 0000000..58d2f98
 +        CHECK( m.ter( u.pos() ) == ter_str_id( "t_door_o" ) );
 +    }
 +    SECTION( "many short motions inside one cell retain native cost and stamina" ) {
-+        const override_option burn_rate( "PLAYER_BASE_STAMINA_BURN_RATE", "100" );
++        // Compare against the native one-shot burn using the same current
++        // options. No option override is required, and avoiding one keeps this
++        // regression independent of option initialization/teardown.
 +        const int stamina = u.get_stamina();
 +        u.burn_move_stamina( cost );
 +        const int expected_burn = stamina - u.get_stamina();
 +        u.set_stamina( stamina );
++        u.remove_value( "cwm_stamina_fraction" );
 +        for( const point d : { point_east, point_south, point_west, point_north } )
 +            for( int i = 0; i < 25; ++i )
 +                cwm_motion::advance( u, m, d.x, d.y, .01 * cost / speed );

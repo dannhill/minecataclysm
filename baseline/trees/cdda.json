@@ -36947,7 +36947,7 @@
   {
     "path": "src/character.cpp",
     "mode": "100644",
-    "sha256": "0d8b2388e5051fd62d9737c94793d5ca531c8b8d5ef92f18d68ef8de463a3e27"
+    "sha256": "0448fddb6430931c614cf26a84bb16bad4206859b9dd88eb2e3f083c17e6a944"
   },
   {
     "path": "src/character.h",
@@ -40877,7 +40877,7 @@
   {
     "path": "tests/cwm_runtime_test.cpp",
     "mode": "100644",
-    "sha256": "142a6dd600b098d1441646da986ff0a46836167bc703215a855d7e3d45736822"
+    "sha256": "99b02f002a83a2646cd25e62b0e2a5fb38f88a8e3585eda6d7c5c969892ae00c"
   },
   {
     "path": "tests/data/name.json",
