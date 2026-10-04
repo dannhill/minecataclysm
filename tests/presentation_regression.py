@@ -64,6 +64,7 @@ def run(ws, out, fps, delayed=False, rebases=False, threats=False):
         Ack.CommandAckStart(b)
         Ack.CommandAckAddCommandId(b, command)
         Ack.CommandAckAddAccepted(b, accepted)
+        Ack.CommandAckAddResultRevision(b,wire.revision+1)
         return envelope(b, Payload.Payload.CommandAck, Ack.CommandAckEnd(b))
 
     def prompt(decision_id=77):
