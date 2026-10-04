@@ -104,7 +104,11 @@ non certifica il binario finale. Lifecycle nativo, launcher e salvataggio dal
 client 3D sono stati verificati di nuovo sui binari finali.
 
 La prova della scena di rebase non riproduce ogni edificio o percorso reale:
-la conferma manuale dello sfarfallio dell'utente rimane necessaria. I test
+il [secondo riscontro manuale](../source/manual-validation-2026-10-04.md)
+accetta per ora sfarfallio assente/impercettibile, zombie visibili e morte
+da zombie senza crash. Il pozzo/bordo non è stato riprovato manualmente.
+Questa conferma successiva integra il registro di verifica automatico, che
+conserva il contesto originale precedente alla prova dell'utente. I test
 grafici usano una sorgente CWM controllata; native CDDA e launcher reale hanno
 prove separate. Le identità dei fork nel workspace compilato corrispondono
 all'inventario finale; una ricostruzione separata conferma la riproducibilità.

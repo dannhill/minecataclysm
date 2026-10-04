@@ -35,12 +35,12 @@ sovrascrittura silenziosa. Il ciclo comandato dalle azioni è un passaggio
 tecnico verso il tempo reale approvato, non il comportamento finale del prodotto.
 Implementazione ed evidenze in [FND-01](docs/fixes/canonical-runtime.md).
 Il [riscontro manuale](docs/source/manual-validation-2026-10-04.md) accetta
-movimento, strutture, apertura porte, safe mode e riavvio, ma lascia aperta
-la stabilità grafica durante i cambi di origine della reality bubble.
-Prima di proseguire FND-02: riparazione mirata di rebase, creature visibili e
-conferme native esplorazione/morte, come anticipo parziale di FND-04.
-La [riparazione](docs/fixes/rebase-and-threat-presentation.md) ha prove mirate
-PASS; resta da confermare manualmente la scena che sfarfallava.
+movimento, strutture, apertura porte, safe mode e riavvio. Dopo la
+[riparazione](docs/fixes/rebase-and-threat-presentation.md), accetta anche
+sfarfallio assente/impercettibile, zombie visibili e morte da zombie senza
+crash. Il pozzo/bordo resta da riprovare manualmente. Questa riparazione
+anticipa parte di FND-04; animazioni/orientamento e copertura completa restano
+aperti. Il prossimo task di fondazione rimane FND-02.
 FND-04 comprende anche OPEN/CLOSE puntati senza attraversamento; la fase 2
 comprende una nebbia del confine della proiezione che non sveli terreno ignoto.
 
@@ -63,6 +63,15 @@ Dipende da FND-01–03 e dalla proiezione sufficiente alla scena di confronto.
   legalità nativa e coerenza geometrica. Estensioni ulteriori documentate.
 - Percezione CDDA indipendente dal cono camera; indizi periferici/sonori con
   conoscenza e incertezza native. Luce e sensi speciali coerenti.
+- Terreno: definire ora il contratto e confrontare in questa fase una scena
+  più ricca (nebbia del bordo, materiali, vegetazione) con le necessità di
+  rilievo giocabile, prima di consolidare veicoli/combattimento/costruzioni.
+  La [proposta](docs/design/terrain-presentation.md) è da valutare; nessuna
+  variante o nuova generazione del mondo è stata scelta. Rilievi percorribili
+  richiedono quote e regole autorevoli CDDA, non colline autonome Luanti.
+- Animazione e orientamento delle creature coerenti con stato, movimento e
+  cronologia simulata; pose leggibili anche in pausa. La visibilità base già
+  validata non certifica animazioni, AI in tempo reale o bestiario completo.
 
 Consegna: scene ripetibili, controlli selezionabili, misure di pacing/latency,
 differenze da CDDA pinned e prova dell'utente. La scelta finale del movimento

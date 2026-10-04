@@ -15,8 +15,14 @@ position reload, but reported remaining camera flicker and terminal-input
 aborts. A [scoped repair](docs/fixes/rebase-and-threat-presentation.md) now
 keeps scene coordinates stable through CDDA rebases, renders perceived
 creatures/NPCs, and exposes supported native ledge/death decisions. Its tests
-do not replace manual confirmation of the reported flicker. Border fog and
-pointed OPEN/CLOSE remain planned; full entity/lifecycle conformance is pending.
+have now been followed by the user's manual acceptance of absent/imperceptible
+flicker, visible zombies and combat death without a crash. Manual ledge/pit
+reproduction is still pending. Creature animations/heading and real-time
+scheduling are not implemented; action-driven time is temporary. Border fog,
+pointed OPEN/CLOSE and full entity/lifecycle conformance remain pending.
+The user also reported flat, monotonous ground; a
+[terrain proposal](docs/design/terrain-presentation.md) records the design
+questions for phase 2 without selecting or implementing a terrain variant.
 
 **M5.5 takeover audit: COMPLETE. Architectural conformance gate: FAILED.**
 The findings are documented in [the audit](docs/audits/M5.5.md), with

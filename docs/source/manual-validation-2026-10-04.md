@@ -26,3 +26,28 @@ lifecycle completo, il bestiario, SAVE-001 o il gate M5.5. Poi FND-02/03.
 
 Nebbia del bordo e interazioni OPEN/CLOSE puntate restano esplicitamente nel
 piano; nessuna variante definitiva di movimento/guida è stata scelta.
+
+## Seconda prova dopo la riparazione
+
+Fonte: riscontro dell'utente dopo l'aggiornamento di `start.sh` con il codice
+`c10633e` e il report `d53d12f`.
+
+- Sfarfallio assente o impercettibile: l'utente valida questa parte per ora.
+- Zombie chiaramente visibili: accettata la presenza grafica. Modelli rigidi,
+  senza animazione e orientamento dinamico, segnalati come lavoro restante.
+- Zombie avanzano soltanto quando il giocatore agisce. Il comportamento
+  corrente scandito dalle azioni è osservato e tollerato in questa fase; non
+  sostituisce la scelta già approvata di tempo reale con pausa.
+- Morte da zombie: nessun crash, compare la UI di fine partita. L'utente
+  riferisce opzioni di continuazione/scena della morte/diario. Questo riscontro
+  non attesta l'esecuzione di ogni opzione o una GUI completa del diario.
+- Pozzo/bordo non incontrato durante questa prova: la riproduzione manuale
+  della precedente chiusura resta aperta, distinta dai test automatici.
+- Terreno innaturalmente piatto e monotono: richiesto un ragionamento sul
+  compromesso tra presentazione, nebbia/materiali e rilievi realmente giocabili.
+  Nessuna soluzione di terreno, worldgen o movimento è stata scelta.
+
+Sfarfallio, visibilità base e morte da combattimento sono quindi accettati
+manualmente nei casi provati. Questo non certifica FND-04 completo, SAVE-001
+o un nuovo gate M5.5. Per il terreno vedi la
+[nota di progettazione proposta](../design/terrain-presentation.md).
