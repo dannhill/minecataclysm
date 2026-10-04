@@ -47,6 +47,14 @@ inline bool configure_ipc_fd(int fd) {
            ::fcntl(fd, F_SETFD, fdflags | FD_CLOEXEC) == 0;
 }
 
+inline bool ipc_would_block(int error) {
+#if EAGAIN != EWOULDBLOCK
+    return error == EAGAIN || error == EWOULDBLOCK;
+#else
+    return error == EAGAIN;
+#endif
+}
+
 class IpcConnection {
 public:
     explicit IpcConnection(int fd, IpcLimits limits = {}) try
@@ -157,7 +165,7 @@ public:
                             decoder_.append(buf, static_cast<size_t>(n));
                             drain(out_frames);
                         } else if (n == 0) { read_eof_ = true; break; }
-                        else if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                        else if (ipc_would_block(errno)) {
                             if (write_failed_) { close_fd(IpcCloseReason::IoError); return false; }
                             break;
                         } else if (errno != EINTR) {
@@ -218,7 +226,7 @@ private:
                 if (output_offset_ == head.size()) {
                     output_bytes_ -= head.size(); output_.pop_front(); output_offset_ = 0;
                 }
-            } else if (n < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) return;
+            } else if (n < 0 && ipc_would_block(errno)) return;
             else if (n < 0 && errno == EINTR) continue;
             else {
                 write_failed_ = true;
