@@ -1847,10 +1847,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644
-index 0000000..f1c9b27
+index 0000000..fedfa80
 --- /dev/null
 +++ b/tests/cwm_projection_test.cpp
-@@ -0,0 +1,251 @@
+@@ -0,0 +1,254 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "avatar_action.h"
@@ -1910,7 +1910,10 @@ index 0000000..f1c9b27
 +    }
 +    m.ter_set(p, ter_str_id("t_floor"));
 +    m.furn_set(p, furn_str_id("f_rope_up"));
-+    CHECK(cwm::CwmMapExporter::export_block(p, m, 15).state_flags() & GOES_UP);
++    // A grappling rope is CLIMBABLE, not GOES_UP. Its direction chooser
++    // remains a separate feature; the exporter must not invent a connection.
++    CHECK_FALSE(cwm::CwmMapExporter::export_block(p, m, 15).state_flags() & GOES_UP);
++    CHECK(cwm::CwmMapExporter::export_block(p, m, 15).state_flags() & DIFFICULT_Z);
 +    CHECK(cwm::CwmMapExporter::export_block(p, m, 15).state_flags() & FURNITURE);
 +}
 +
