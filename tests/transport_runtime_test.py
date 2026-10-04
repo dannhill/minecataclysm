@@ -23,7 +23,7 @@ def main():
     sys.path.insert(0, str(ws/'protocol/python'))
     import flatbuffers
     from session_wire import NativeWire
-    wire = NativeWire()
+    native_wire = NativeWire()
     from CDDA.CWM import CwmMessage as Msg, Payload, HelloRequest as Hello, Heartbeat
     from CDDA.CWM import MoveRequest as Move, DecisionPrompt as Prompt, DecisionResponse as Response
     from CDDA.CWM import WorldSnapshot as World
@@ -39,10 +39,10 @@ def main():
         if not ok: raise AssertionError(name)
     def message(kind, build):
         b = flatbuffers.Builder(256); value = build(b)
-        body = wire.finish(b,kind,value)
+        body = native_wire.finish(b,kind,value)
         return struct.pack('>I',len(body))+body
     def hello(b):
-        Hello.HelloRequestStart(b); wire.hello_fields(b); return Hello.HelloRequestEnd(b)
+        Hello.HelloRequestStart(b); native_wire.hello_fields(b); return Hello.HelloRequestEnd(b)
     def greeting(): return message(Payload.Payload.HelloRequest, hello)
     def read(c):
         def exact(n):
@@ -54,7 +54,7 @@ def main():
             return data
         size = struct.unpack('>I', exact(4))[0]
         if not 0 < size <= 16*1024*1024: raise ValueError('Invalid CWM length')
-        return wire.observe(c,Msg.CwmMessage.GetRootAsCwmMessage(exact(size), 0))
+        return native_wire.observe(c,Msg.CwmMessage.GetRootAsCwmMessage(exact(size), 0))
     def state(msg):
         world = World.WorldSnapshot(); world.Init(msg.Payload().Bytes, msg.Payload().Pos)
         origin = world.Origin()

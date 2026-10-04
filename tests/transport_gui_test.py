@@ -151,7 +151,9 @@ def main():
                                 c.sendall(frame(snapshot(1300, True, True)))
                             elif action == 'flood':
                                 # Valid FlatBuffers followed by allowed trailing padding.
+                                c.settimeout(10)
                                 c.sendall(b''.join(frame(beat(1100+i)+bytes(65536)) for i in range(40)))
+                                c.settimeout(.01)
                             elif action == 'final':
                                 c.sendall(frame(snapshot(1500))); break
                             elif action == 'oversize':
@@ -198,7 +200,7 @@ def main():
                 until(lambda r: int(r['revision'])==1400 and int(r['input_ready'])==1)
                 check('semantic_failure_recovers_with_full_state',True)
                 flood_start = time.monotonic(); commands.put('flood')
-                until(lambda r: int(r['ipc_frames']) > 0 and int(r['sequence']) >= 50)
+                until(lambda r: int(r['sequence']) >= 50)
                 check('heartbeats_do_not_advance_world_revision', int(rows()[-1]['revision'])==1400)
                 flood_end = time.monotonic()
                 commands.put('final'); until(lambda r: int(r['revision']) == 1500 and int(r['ipc_connected']) == 0)
