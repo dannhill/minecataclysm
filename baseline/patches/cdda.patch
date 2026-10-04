@@ -205,10 +205,10 @@ index 09a7711..9b0c484 100644
          DebugLog( D_INFO, DC_ALL ) <<
 diff --git a/src/cwm/cwm_main.cpp b/src/cwm/cwm_main.cpp
 new file mode 100644
-index 0000000..155a3e0
+index 0000000..565c3a8
 --- /dev/null
 +++ b/src/cwm/cwm_main.cpp
-@@ -0,0 +1,290 @@
+@@ -0,0 +1,297 @@
 +// CDDA Headless CWM Server Entrypoint
 +// Licensed under Apache-2.0
 +
@@ -480,6 +480,13 @@ index 0000000..155a3e0
 +    }
 +
 +    std::cout << "[CDDA-Server] Entering main event loop. Waiting for Luanti 3D client...\n";
++    // Show the restored save before resuming any owed movement/turn debt.
++    // Bootstrap requires an admitted action; malformed/unsupported requests
++    // and handshakes cannot advance the inherited calendar.
++    while (g_running && !server.has_queued_action()) {
++        server.update(u, here, *g);
++        std::this_thread::sleep_for(std::chrono::milliseconds(1));
++    }
 +    while (g_running) {
 +        // Advance the same turn phases as the native outer loop. Input waits
 +        // inside the provider; invalid requests cannot start additional turns.
@@ -1102,10 +1109,10 @@ index 0000000..61c53c9
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.h b/src/cwm/cwm_server.h
 new file mode 100644
-index 0000000..e08d7c7
+index 0000000..82ce9f4
 --- /dev/null
 +++ b/src/cwm/cwm_server.h
-@@ -0,0 +1,70 @@
+@@ -0,0 +1,71 @@
 +// CDDA CWM IPC Server
 +// Licensed under Apache-2.0
 +#pragma once
@@ -1139,6 +1146,7 @@ index 0000000..e08d7c7
 +    // Ticks server: handles connections, processes commands, advances turns
 +    bool update(avatar& u, map& m, game& g);
 +    bool advance_turn(avatar& u, map& m, game& g, const std::function<bool()>& keep_running);
++    bool has_queued_action() const { return !commands_.empty(); }
 +    bool saved_on_shutdown() const { return saved_on_shutdown_; }
 +
 +    bool save_world(game& g);
