@@ -29,6 +29,62 @@ index 6d5d148..4181ad1 100644
  endif ()
  
  if (MINGW AND NOT RELEASE)
+diff --git a/src/do_turn.cpp b/src/do_turn.cpp
+index 2455a6f..621cfaa 100644
+--- a/src/do_turn.cpp
++++ b/src/do_turn.cpp
+@@ -400,6 +400,25 @@ void overmap_npc_move()
+ 
+ // MAIN GAME LOOP
+ // Returns true if game is over (death, saved, quit, etc)
++namespace
++{
++// The simulation and action provider share one thread. The scoped override
++// keeps the ordinary client on handle_action(), including after exceptions.
++const std::function<bool()> *external_action = nullptr;
++}
++
++bool do_turn_with_action( const std::function<bool()> &action )
++{
++    struct restore_input {
++        const std::function<bool()> *previous;
++        ~restore_input() {
++            external_action = previous;
++        }
++    } restore{ external_action };
++    external_action = &action;
++    return do_turn();
++}
++
+ bool do_turn()
+ {
+     if( g->is_game_over() ) {
+@@ -533,7 +552,7 @@ bool do_turn()
+                     g->queue_screenshot = false;
+                 }
+ 
+-                if( g->handle_action() ) {
++                if( external_action ? ( *external_action )() : g->handle_action() ) {
+                     ++g->moves_since_last_save;
+                     u.action_taken();
+                 }
+diff --git a/src/do_turn.h b/src/do_turn.h
+index 6ebdaa7..55bf2e7 100644
+--- a/src/do_turn.h
++++ b/src/do_turn.h
+@@ -2,8 +2,12 @@
+ #ifndef CATA_SRC_DO_TURN_H
+ #define CATA_SRC_DO_TURN_H
+ 
++#include <functional>
++
+ /** MAIN GAME LOOP. Returns true if game is over (death, saved, quit, etc.). */
+ bool do_turn();
++/** Same canonical turn pipeline, with externally supplied actions on its owning thread. */
++bool do_turn_with_action( const std::function<bool()> &action );
+ void handle_key_blocking_activity();
+ 
+ #endif // CATA_SRC_DO_TURN_H
 diff --git a/src/game.h b/src/game.h
 index c25584e..fdb835f 100644
 --- a/src/game.h
@@ -41,6 +97,73 @@ index c25584e..fdb835f 100644
          friend class exosuit_interact;
          friend achievements_tracker &get_achievements();
          friend event_bus &get_event_bus();
+diff --git a/src/handle_action.cpp b/src/handle_action.cpp
+index 652ad80..9e64ca7 100644
+--- a/src/handle_action.cpp
++++ b/src/handle_action.cpp
+@@ -77,6 +77,7 @@
+ #include "ranged.h"
+ #include "rng.h"
+ #include "safemode_ui.h"
++#include "safe_mode_actions.h"
+ #include "scores_ui.h"
+ #include "sounds.h"
+ #include "string_formatter.h"
+@@ -2075,6 +2076,30 @@ static std::map<action_id, std::string> get_actions_disabled_mounted()
+     };
+ }
+ 
++bool acknowledge_current_threat( avatar &player_character )
++{
++    if( g->safe_mode == SAFE_MODE_STOP ) {
++        add_msg( m_info, _( "Ignoring enemy!" ) );
++        for( auto &elem : player_character.get_mon_visible().new_seen_mon ) {
++            monster &critter = *elem;
++            critter.ignoring = rl_dist( player_character.pos(), critter.pos() );
++        }
++        g->set_safe_mode( SAFE_MODE_ON );
++        return true;
++    }
++    if( player_character.has_effect( effect_laserlocked ) ) {
++        if( player_character.has_trait( trait_PROF_CHURL ) ) {
++            add_msg( m_warning, _( "You make the sign of the cross." ) );
++        } else {
++            add_msg( m_info, _( "Ignoring laser targeting!" ) );
++        }
++        player_character.remove_effect( effect_laserlocked );
++        g->safe_mode_warning_logged = false;
++        return true;
++    }
++    return false;
++}
++
+ bool game::do_regular_action( action_id &act, avatar &player_character,
+                               const std::optional<tripoint> &mouse_target )
+ {
+@@ -2604,22 +2629,7 @@ bool game::do_regular_action( action_id &act, avatar &player_character,
+         }
+ 
+         case ACTION_IGNORE_ENEMY:
+-            if( safe_mode == SAFE_MODE_STOP ) {
+-                add_msg( m_info, _( "Ignoring enemy!" ) );
+-                for( auto &elem : player_character.get_mon_visible().new_seen_mon ) {
+-                    monster &critter = *elem;
+-                    critter.ignoring = rl_dist( player_character.pos(), critter.pos() );
+-                }
+-                set_safe_mode( SAFE_MODE_ON );
+-            } else if( player_character.has_effect( effect_laserlocked ) ) {
+-                if( player_character.has_trait( trait_PROF_CHURL ) ) {
+-                    add_msg( m_warning, _( "You make the sign of the cross." ) );
+-                } else {
+-                    add_msg( m_info, _( "Ignoring laser targeting!" ) );
+-                }
+-                player_character.remove_effect( effect_laserlocked );
+-                safe_mode_warning_logged = false;
+-            }
++            acknowledge_current_threat( player_character );
+             break;
+ 
+         case ACTION_WHITELIST_ENEMY:
 diff --git a/tests/CMakeLists.txt b/tests/CMakeLists.txt
 index bfe0773..f28a50f 100644
 --- a/tests/CMakeLists.txt
@@ -61,10 +184,10 @@ index bfe0773..f28a50f 100644
          endif()
 diff --git a/src/cwm/cwm_main.cpp b/src/cwm/cwm_main.cpp
 new file mode 100644
-index 0000000..de62231
+index 0000000..8ff6788
 --- /dev/null
 +++ b/src/cwm/cwm_main.cpp
-@@ -0,0 +1,221 @@
+@@ -0,0 +1,268 @@
 +// CDDA Headless CWM Server Entrypoint
 +// Licensed under Apache-2.0
 +
@@ -74,6 +197,7 @@ index 0000000..de62231
 +#include <csignal>
 +#include <thread>
 +#include <chrono>
++#include <stdexcept>
 +
 +#include "cwm_server.h"
 +#include "cwm_map_exporter.h"
@@ -91,6 +215,8 @@ index 0000000..de62231
 +#include "weather.h"
 +#include "overmapbuffer.h"
 +#include "overmap.h"
++#include "mod_manager.h"
++#include "do_turn.h"
 +#include "debug.h"
 +#include "coordinate_conversions.h"
 +#include <flatbuffers/util.h>
@@ -101,13 +227,11 @@ index 0000000..de62231
 +}
 +#endif
 +
-+static volatile bool g_running = true;
++static volatile std::sig_atomic_t g_running = 1;
 +
 +static void sig_handler(int) {
-+    g_running = false;
++    g_running = 0;
 +}
-+
-+static const mod_id MOD_DDA("dda");
 +
 +int main(int argc, const char* argv[]) {
 +    std::string socket_path = "/tmp/cdda_cwm.sock";
@@ -115,6 +239,9 @@ index 0000000..de62231
 +    std::string user_dir = "./user";
 +    std::string data_dir = "";
 +    int headless_ticks = 0;
++    bool headless = false;
++    bool new_character = false;
++    std::string character;
 +
 +    for (int i = 1; i < argc; ++i) {
 +        std::string arg = argv[i];
@@ -127,16 +254,34 @@ index 0000000..de62231
 +        } else if (arg == "--datadir" && i + 1 < argc) {
 +            data_dir = argv[++i];
 +        } else if (arg == "--headless-ticks" && i + 1 < argc) {
-+            headless_ticks = std::stoi(argv[++i]);
++            headless = true;
++            try {
++                size_t consumed = 0;
++                const std::string value = argv[++i];
++                headless_ticks = std::stoi(value, &consumed);
++                if (consumed != value.size() || headless_ticks < 0) throw std::invalid_argument("ticks");
++            } catch (const std::exception&) {
++                std::cerr << "--headless-ticks requires a nonnegative integer\n";
++                return 2;
++            }
++        } else if (arg == "--character" && i + 1 < argc) {
++            character = argv[++i];
++        } else if (arg == "--new-character") {
++            new_character = true;
 +        } else if (arg == "--help" || arg == "-h") {
 +            std::cout << "Usage: cdda-server [options]\n"
 +                      << "  --socket <path>       Unix domain socket path (default: /tmp/cdda_cwm.sock)\n"
 +                      << "  --world <name>        World name to load or create (default: cwm_world)\n"
 +                      << "  --userdir <path>      User directory for savegames and config (default: ./user)\n"
 +                      << "  --datadir <path>      Data directory (default: auto-detected)\n"
++                      << "  --character <id>      Select a decoded save ID (or a name with --new-character)\n"
++                      << "  --new-character       Explicitly create a character; existing saves are preserved\n"
 +                      << "  --headless-ticks <n>  Advance n simulation turns headlessly and save (Milestone 0.5 verification)\n"
 +                      << "  --help                Show this help message\n";
 +            return 0;
++        } else {
++            std::cerr << "Unknown or incomplete option: " << arg << "\n";
++            return 2;
 +        }
 +    }
 +
@@ -211,7 +356,7 @@ index 0000000..de62231
 +        world = world_generator->get_world(world_name);
 +    } else {
 +        std::cout << "[CDDA-Server] Creating new canonical world: " << world_name << "\n";
-+        std::vector<mod_id> mods = { MOD_DDA };
++        const auto& mods = world_generator->get_mod_manager().get_default_mods();
 +        world = world_generator->make_new_world(world_name, mods);
 +    }
 +
@@ -221,28 +366,45 @@ index 0000000..de62231
 +    }
 +    world_generator->set_active_world(world);
 +
-+    loading_ui ui(false);
-+    g->load_core_data(ui);
-+    g->load_world_modfiles(ui);
-+
-+    // map caches depend on dynamic registries (notably trap::count()).
-+    // Match upstream's headless test setup before start_game loads submaps.
-+    get_map() = map();
-+
-+    avatar& u = get_avatar();
-+    u = avatar();
-+    u.create(character_type::NOW);
-+    u.name = "Survivor";
-+    // Milestone 6: Real World Generation
-+    if (!g->start_game()) {
-+        std::cerr << "[CDDA-Server] ERROR: Failed to start game (generate scenario).\n";
-+        return 1;
++    if (!new_character && !world->world_saves.empty()) {
++        const save_t* selected = nullptr;
++        for (const auto& save : world->world_saves) {
++            if ((!character.empty() && (save.decoded_name() == character || save.base_path() == character)) ||
++                (character.empty() && world->world_saves.size() == 1)) selected = &save;
++        }
++        if (!selected) {
++            std::cerr << "[CDDA-Server] Select an existing character with --character. Available save IDs:\n";
++            for (const auto& save : world->world_saves) std::cerr << "  " << save.decoded_name() << "\n";
++            return 2;
++        }
++        const save_t save = *selected;
++        g->setup();
++        if (!g->load(save)) {
++            std::cerr << "[CDDA-Server] ERROR: Canonical character load failed.\n";
++            return 1;
++        }
++        std::cout << "[CDDA-Server] Restored character: " << get_avatar().name << "\n";
++    } else {
++        if (!new_character && !character.empty()) {
++            std::cerr << "[CDDA-Server] No saved character matches --character; use --new-character to create one.\n";
++            return 2;
++        }
++        g->setup();
++        avatar& fresh = get_avatar();
++        fresh = avatar();
++        fresh.create(character_type::NOW);
++        fresh.name = character.empty() ? "Survivor" : character;
++        if (world->save_exists(save_t::from_save_id(fresh.get_save_id()))) {
++            std::cerr << "[CDDA-Server] ERROR: This character save already exists; choose another name.\n";
++            return 2;
++        }
++        if (!g->start_game()) {
++            std::cerr << "[CDDA-Server] ERROR: Failed to start canonical new game.\n";
++            return 1;
++        }
 +    }
++    avatar& u = get_avatar();
 +    map& here = get_map();
-+    get_weather().update_weather();
-+    
-+    // Set time to midday on day 1 so tests have daylight
-+    calendar::turn = calendar::turn_zero + 12_hours;
 +
 +    std::cout << "[CDDA-Server] World loaded. Player position: ("
 +              << u.pos().x << ", " << u.pos().y << ", " << u.pos().z << ")\n";
@@ -255,43 +417,51 @@ index 0000000..de62231
 +    std::cout << "[CDDA-Server] CWM IPC server listening on: " << socket_path << "\n";
 +
 +    // Milestone 0.5 Automated acceptance mode
-+    if (headless_ticks > 0) {
++    if (headless) {
 +        std::cout << "[CDDA-Server] Running headless simulation for " << headless_ticks << " turns...\n";
 +        for (int i = 0; i < headless_ticks && g_running; ++i) {
-+            u.action_taken();
-+            here.process_fields();
-+            here.process_items();
-+            u.process_turn();
-+            u.moves += u.get_speed();
-+            calendar::turn += 1_turns;
++            if (do_turn_with_action([&u]() { u.pause(); return true; })) {
++                // Native death/quit cleanup has already handled persistence
++                // and cleared the map buffers. Never save them a second time.
++                return (g->uquit == QUIT_DIED || g->uquit == QUIT_SUICIDE ||
++                        g->uquit == QUIT_SAVED) ? 0 : 1;
++            }
 +            std::cout << "  Turn " << (i + 1) << "/" << headless_ticks << " simulated.\n";
 +        }
 +        std::cout << "[CDDA-Server] Saving world state...\n";
 +        bool saved = server.save_world(*g);
 +        std::cout << "[CDDA-Server] World save " << (saved ? "SUCCESS" : "FAILED") << "\n";
-+        std::cout << "[Milestone 0.5] Headless CDDA acceptance test PASSED.\n";
++        if (saved) std::cout << "[CDDA-Server] Headless canonical-turn run completed.\n";
 +        return saved ? 0 : 1;
 +    }
 +
 +    std::cout << "[CDDA-Server] Entering main event loop. Waiting for Luanti 3D client...\n";
 +    while (g_running) {
 +        server.update(u, here, *g);
++        if (server.needs_turn(u)) {
++            if (server.advance_turn(u, here, *g, []() { return g_running != 0; })) break;
++        }
 +        std::this_thread::sleep_for(std::chrono::milliseconds(1));
 +    }
 +
++    if (g->uquit == QUIT_DIED || g->uquit == QUIT_SUICIDE) {
++        std::cout << "\n[CDDA-Server] Native character death lifecycle completed.\n";
++        server.stop();
++        return 0;
++    }
 +    std::cout << "\n[CDDA-Server] Shutting down. Saving canonical game state...\n";
-+    bool saved = server.save_world(*g);
++    bool saved = server.saved_on_shutdown() || (g->uquit == QUIT_NO && server.save_world(*g));
 +    std::cout << "[CDDA-Server] Final save: " << (saved ? "SUCCESS" : "FAILED") << "\n";
 +    server.stop();
 +
-+    return 0;
++    return saved ? 0 : 1;
 +}
 diff --git a/src/cwm/cwm_map_exporter.cpp b/src/cwm/cwm_map_exporter.cpp
 new file mode 100644
-index 0000000..75e5283
+index 0000000..92b04b5
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.cpp
-@@ -0,0 +1,324 @@
+@@ -0,0 +1,325 @@
 +// CDDA CWM Map & Entity Exporter Implementation
 +// Licensed under Apache-2.0
 +
@@ -567,7 +737,8 @@ index 0000000..75e5283
 +        entities_vec,
 +        vehicles_vec,
 +        fields_vec,
-+        tiles_vec
++        tiles_vec,
++        g.safe_mode == SAFE_MODE_STOP || u.has_effect(efftype_id("laserlocked"))
 +    );
 +
 +    return builder.finish_message(CDDA::CWM::Payload::WorldSnapshot, world_snap.Union());
@@ -675,10 +846,10 @@ index 0000000..b146915
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..ab382d1
+index 0000000..fb0697e
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,240 @@
+@@ -0,0 +1,204 @@
 +// CDDA CWM IPC Server Implementation
 +// Licensed under Apache-2.0
 +
@@ -687,244 +858,208 @@ index 0000000..ab382d1
 +#include "cwm/ipc_transport.hpp"
 +#include "cwm/cwm_protocol.hpp"
 +
++#include <chrono>
++#include <thread>
 +#include "avatar.h"
 +#include "avatar_action.h"
++#include "creature_tracker.h"
 +#include "game.h"
 +#include "map.h"
-+#include "action.h"
-+#include "debug.h"
-+#include "monster.h"
-+#include "mtype.h"
-+#include "field_type.h"
++#include "do_turn.h"
++#include "gates.h"
++#include "safe_mode_actions.h"
 +
 +namespace cwm {
++namespace {
++const point directions[] = {point_zero, point(0,-1), point(1,-1), point(1,0),
++    point(1,1), point(0,1), point(-1,1), point(-1,0), point(-1,-1)};
++}
 +
 +CwmServer::CwmServer(const std::string& socket_path)
-+    : socket_path_(socket_path),
-+      server_(std::make_unique<cdda::cwm::IpcServer>(socket_path)) {}
++    : socket_path_(socket_path), server_(std::make_unique<cdda::cwm::IpcServer>(socket_path)) {}
++CwmServer::~CwmServer() { stop(); }
++bool CwmServer::start() { return server_->start(); }
++void CwmServer::stop() { if (server_) server_->stop(); }
++bool CwmServer::has_active_client() const { return server_ && server_->has_client(); }
++bool CwmServer::save_world(game& g) { return g.save(); }
 +
-+CwmServer::~CwmServer() {
-+    stop();
++void CwmServer::send_state(avatar& u, map& m, game& g, bool full) {
++    if (!has_active_client()) return;
++    auto snapshot = CwmMapExporter::export_world_snapshot(sequence_counter_++, world_revision_,
++                    u, m, g, full, &projection_cache_);
++    server_->client()->send_message(snapshot.data(), snapshot.size());
++    snapshot_sent_ = true;
 +}
 +
-+bool CwmServer::start() {
-+    return server_->start();
-+}
-+
-+void CwmServer::stop() {
-+    if (server_) {
-+        server_->stop();
-+    }
-+}
-+
-+bool CwmServer::has_active_client() const {
-+    return server_ && server_->has_client();
-+}
-+
-+bool CwmServer::save_world(game& g) {
-+    DebugLog(D_INFO, DC_ALL) << "[CWM] Saving authoritative world state...";
-+    return g.save();
++void CwmServer::send_result(const Result& result, avatar& u, map& m, game& g) {
++    if (!has_active_client()) return;
++    cdda::cwm::MessageBuilder reply(sequence_counter_++, world_revision_);
++    auto ack = reply.build_command_ack(result.id, result.accepted, result.error);
++    server_->client()->send_message(ack.data(), ack.size());
++    // The real client releases input only after its ACK and authoritative state.
++    send_state(u, m, g);
 +}
 +
 +bool CwmServer::update(avatar& u, map& m, game& g) {
 +    if (!server_) return false;
-+
-+    // Check for incoming client connection
-+    if (server_->poll_accept(0)) {
-+        DebugLog(D_INFO, DC_ALL) << "[CWM] Client connected via Unix socket.";
-+        snapshot_sent_ = false;
-+    }
-+
-+    if (!server_->has_client()) {
-+        return true;
-+    }
-+
-+    // Read incoming messages
-+    std::vector<std::vector<uint8_t>> incoming_frames;
-+    bool client_alive = server_->client()->poll_and_receive(incoming_frames, 0);
-+    if (!client_alive) {
-+        DebugLog(D_WARNING, DC_ALL) << "[CWM] Client disconnected.";
++    if (server_->poll_accept(0)) snapshot_sent_ = false;
++    if (!has_active_client()) return true;
++    std::vector<std::vector<uint8_t>> frames;
++    if (!server_->client()->poll_and_receive(frames, 0)) {
++        commands_.clear();
++        result_.reset();
 +        snapshot_sent_ = false;
 +        return true;
 +    }
-+
-+    for (const auto& frame : incoming_frames) {
-+        handle_client_message(frame.data(), frame.size(), u, m, g);
-+    }
-+
-+    // If client is connected and hasn't received snapshot yet, send it
-+    if (!snapshot_sent_) {
-+        auto snap = CwmMapExporter::export_world_snapshot(sequence_counter_++, world_revision_, u, m, g, true, &projection_cache_);
-+        server_->client()->send_message(snap.data(), snap.size());
-+        snapshot_sent_ = true;
-+        DebugLog(D_INFO, DC_ALL) << "[CWM] Initial WorldSnapshot sent to client (revision: " << world_revision_ << ")";
-+    }
-+
++    for (const auto& frame : frames) handle_client_message(frame.data(), frame.size(), u, m, g);
++    if (!snapshot_sent_) send_state(u, m, g, true);
 +    return true;
 +}
 +
-+void CwmServer::handle_client_message(
-+    const uint8_t* data,
-+    size_t size,
-+    avatar& u,
-+    map& m,
-+    game& g
-+) {
-+    if (!cdda::cwm::MessageVerifier::verify(data, size)) {
-+        DebugLog(D_WARNING, DC_ALL) << "[CWM] Malformed message rejected from client.";
-+        return;
-+    }
++bool CwmServer::needs_turn(const avatar& u) const {
++    return !commands_.empty() || (simulation_started_ &&
++           (u.moves <= 0 || u.activity || u.has_effect(efftype_id("sleep")) || u.is_dead_state()));
++}
 +
++bool CwmServer::advance_turn(avatar& u, map& m, game& g,
++                           const std::function<bool()>& keep_running) {
++    simulation_started_ = true;
++    const bool ended = do_turn_with_action([&]() {
++        if (result_) {
++            send_result(*result_, u, m, g);
++            result_.reset();
++        }
++        while (keep_running()) {
++            update(u, m, g);
++            if (!commands_.empty()) {
++                const Command command = commands_.front();
++                commands_.pop_front();
++                return execute(command, u, m, g);
++            }
++            std::this_thread::sleep_for(std::chrono::milliseconds(1));
++        }
++        // Native cleanup clears map buffers: save first, as ACTION_SAVE does.
++        saved_on_shutdown_ = save_world(g);
++        g.uquit = saved_on_shutdown_ ? QUIT_SAVED : QUIT_NOSAVED;
++        u.moves = 0;
++        return false;
++    });
++    if (!ended) {
++        ++world_revision_;
++        if (result_) {
++            send_result(*result_, u, m, g);
++            result_.reset();
++        } else send_state(u, m, g);
++    }
++    return ended;
++}
++
++bool CwmServer::execute(const Command& command, avatar& u, map& m, game& g) {
++    const int before_moves = u.moves;
++    bool accepted = false;
++    if (command.move) {
++        if (!g.check_safe_mode_allowed(false)) {
++            result_ = Result{command.id, false, "Safe mode: threat requires acknowledgement"};
++            return false;
++        } else if (command.action == 0) {
++            u.pause();
++            accepted = true;
++        } else accepted = avatar_action::move(u, m, directions[command.action]);
++    } else {
++        const tripoint target = m.getlocal(tripoint(command.x, command.y, command.z));
++        if (target.z == u.posz() && rl_dist(target, u.pos()) <= 1 && m.inbounds(target)) {
++            if (command.action == int(CDDA::CWM::InteractAction::OPEN)) {
++                accepted = m.open_door(u, target, !m.is_outside(u.pos()), false);
++                if (accepted) u.moves -= 100; // native terrain-door OPEN cost
++            } else if (command.action == int(CDDA::CWM::InteractAction::CLOSE)) {
++                doors::close_door(m, u, target);
++                accepted = u.moves != before_moves;
++            }
++        }
++    }
++    // A failed native movement can still consume time, e.g. a movement effect.
++    const bool acted = accepted || u.moves != before_moves;
++    result_ = Result{command.id, acted, acted ? "" : "Native action blocked or target changed"};
++    if (acted) ++world_revision_;
++    return acted; // do_turn owns action_taken, activities and every world system
++}
++
++void CwmServer::handle_client_message(const uint8_t* data, size_t size,
++                                      avatar& u, map& m, game& g) {
++    if (!cdda::cwm::MessageVerifier::verify(data, size)) return;
 +    const auto* msg = cdda::cwm::MessageVerifier::parse(data, size);
 +    if (!msg) return;
-+
-+    cdda::cwm::MessageBuilder reply_builder(sequence_counter_++, world_revision_);
-+
-+    switch (msg->payload_type()) {
-+        case CDDA::CWM::Payload::HelloRequest: {
-+            const auto* req = msg->payload_as_HelloRequest();
-+            std::string build_id = req && req->build_id() ? req->build_id()->str() : "unknown";
-+            DebugLog(D_INFO, DC_ALL) << "[CWM] Handshake received from client build: " << build_id;
-+
-+            auto resp = reply_builder.build_hello_response(true, "cdda-server-0.H");
-+            server_->client()->send_message(resp.data(), resp.size());
-+
-+            // Ensure at least one living monster exists in reality bubble for visual synchronization
-+            auto mons = g.all_monsters();
-+            if (mons.begin() == mons.end()) {
-+                g.place_critter_at(mtype_id("mon_zombie"), u.pos() + tripoint(4, 4, 0));
-+            }
-+
-+            // Push fresh snapshot on handshake
-+            auto snap = CwmMapExporter::export_world_snapshot(sequence_counter_++, world_revision_, u, m, g, true, &projection_cache_);
-+            server_->client()->send_message(snap.data(), snap.size());
-+            snapshot_sent_ = true;
-+            break;
-+        }
-+
-+        case CDDA::CWM::Payload::Heartbeat: {
-+            auto ack = reply_builder.finish_message(
-+                CDDA::CWM::Payload::HeartbeatAck,
-+                CDDA::CWM::CreateHeartbeatAck(reply_builder.builder(), cdda::cwm::current_time_ms(), cdda::cwm::current_time_ms()).Union()
-+            );
-+            server_->client()->send_message(ack.data(), ack.size());
-+            break;
-+        }
-+
-+        case CDDA::CWM::Payload::MoveRequest: {
-+            const auto* req = msg->payload_as_MoveRequest();
-+            if (!req) break;
-+
-+            point delta = point_zero;
-+            switch (req->direction()) {
-+                case CDDA::CWM::MoveDirection::NORTH:     delta = point(0, -1); break;
-+                case CDDA::CWM::MoveDirection::NORTHEAST: delta = point(1, -1); break;
-+                case CDDA::CWM::MoveDirection::EAST:      delta = point(1, 0); break;
-+                case CDDA::CWM::MoveDirection::SOUTHEAST: delta = point(1, 1); break;
-+                case CDDA::CWM::MoveDirection::SOUTH:     delta = point(0, 1); break;
-+                case CDDA::CWM::MoveDirection::SOUTHWEST: delta = point(-1, 1); break;
-+                case CDDA::CWM::MoveDirection::WEST:      delta = point(-1, 0); break;
-+                case CDDA::CWM::MoveDirection::NORTHWEST: delta = point(-1, -1); break;
-+                default: break;
-+            }
-+
-+            bool moved = false;
-+            if (req->direction() == CDDA::CWM::MoveDirection::NONE) {
-+                u.moves -= 100;
-+                u.action_taken();
-+                moved = true;
-+                world_revision_++;
-+            } else if (delta != point_zero) {
-+                moved = avatar_action::move(u, m, delta);
-+                if (moved) {
-+                    u.action_taken();
-+                    world_revision_++;
-+                }
-+            }
-+
-+            // Ack command
-+            auto ack = reply_builder.build_command_ack(req->command_id(), moved);
-+            server_->client()->send_message(ack.data(), ack.size());
-+
-+            // If player took an action and moves depleted, simulate world step
-+            if (moved && u.moves <= 0) {
-+                m.process_fields();
-+                m.process_items();
-+                u.process_turn();
-+                u.moves += u.get_speed();
-+
-+                // Authoritative monster turn stepping & AI
-+                for (monster& critter : g.all_monsters()) {
-+                    if (!critter.is_dead()) {
-+                        critter.process_turn();
-+                        while (critter.moves > 0 && !critter.is_dead()) {
-+                            critter.plan();
-+                            critter.move();
-+                            m.creature_in_field(critter);
-+                        }
-+                    }
-+                }
-+                g.cleanup_dead();
-+                world_revision_++;
-+            }
-+
-+            // Send authoritative tile changes and positions together, after simulation.
-+            // The exporter detects rebases and replaces terrain only when needed.
-+            auto snap = CwmMapExporter::export_world_snapshot(sequence_counter_++, world_revision_,
-+                        u, m, g, false, &projection_cache_);
-+            server_->client()->send_message(snap.data(), snap.size());
-+            break;
-+        }
-+
-+        case CDDA::CWM::Payload::InteractRequest: {
-+            const auto* req = msg->payload_as_InteractRequest();
-+            if (!req || !req->target_coord()) break;
-+
-+            tripoint target(req->target_coord()->x(), req->target_coord()->y(), req->target_coord()->z());
-+            bool success = false;
-+
-+            if (req->action() == CDDA::CWM::InteractAction::OPEN) {
-+                success = m.open_door(u, target, true, false);
-+            } else if (req->action() == CDDA::CWM::InteractAction::CLOSE) {
-+                success = m.close_door(target, true, false);
-+            } else if (req->action() == CDDA::CWM::InteractAction::USE) {
-+                m.add_field(target, fd_fire, 2);
-+                success = true;
-+            }
-+
-+            if (success) {
-+                u.action_taken();
-+                world_revision_++;
-+            }
-+
-+            auto ack = reply_builder.build_command_ack(req->command_id(), success);
-+            server_->client()->send_message(ack.data(), ack.size());
-+
-+            if (success) {
-+                if (req->action() == CDDA::CWM::InteractAction::USE) {
-+                    auto snap = CwmMapExporter::export_world_snapshot(sequence_counter_++, world_revision_, u, m, g, true, &projection_cache_);
-+                    server_->client()->send_message(snap.data(), snap.size());
-+                } else {
-+                    auto tile_delta = CwmMapExporter::export_tile_delta(sequence_counter_++, world_revision_, target, m);
-+                    server_->client()->send_message(tile_delta.data(), tile_delta.size());
-+                }
-+            }
-+            break;
-+        }
-+
-+        default:
-+            DebugLog(D_INFO, DC_ALL) << "[CWM] Unhandled message payload type: " << static_cast<int>(msg->payload_type());
-+            break;
++    if (msg->payload_type() == CDDA::CWM::Payload::HelloRequest) {
++        cdda::cwm::MessageBuilder reply(sequence_counter_++, world_revision_);
++        auto response = reply.build_hello_response(true, "cdda-server-0.H");
++        server_->client()->send_message(response.data(), response.size());
++        send_state(u, m, g, true);
++        return;
 +    }
++    if (msg->payload_type() == CDDA::CWM::Payload::Heartbeat) {
++        cdda::cwm::MessageBuilder reply(sequence_counter_++, world_revision_);
++        auto response = reply.finish_message(CDDA::CWM::Payload::HeartbeatAck,
++            CDDA::CWM::CreateHeartbeatAck(reply.builder(), cdda::cwm::current_time_ms(),
++                                          cdda::cwm::current_time_ms()).Union());
++        server_->client()->send_message(response.data(), response.size());
++        return;
++    }
++    if (msg->payload_type() == CDDA::CWM::Payload::AcknowledgeThreatRequest) {
++        const auto* request = msg->payload_as_AcknowledgeThreatRequest();
++        if (!request) return;
++        if (acknowledge_current_threat(u)) ++world_revision_;
++        send_result(Result{request->command_id(), true, ""}, u, m, g);
++        return;
++    }
++    Command command{};
++    std::string error;
++    if (msg->payload_type() == CDDA::CWM::Payload::MoveRequest) {
++        const auto* request = msg->payload_as_MoveRequest();
++        if (!request) return;
++        command = Command{request->command_id(), true, int(request->direction())};
++        if (command.action < 0 || command.action > 8) error = "Unsupported movement direction";
++        else if (!g.check_safe_mode_allowed(false)) error = "Safe mode: threat requires acknowledgement";
++        else if (command.action != 0) {
++            const tripoint target = u.pos() + tripoint(directions[command.action], 0);
++            if (!m.inbounds(target)) error = "Movement target outside reality bubble";
++            else if (m.impassable(target) && !get_creature_tracker().creature_at(target, true) &&
++                     !m.open_door(u, target, !m.is_outside(u.pos()), true)) error = "Movement blocked";
++        }
++    } else if (msg->payload_type() == CDDA::CWM::Payload::InteractRequest) {
++        const auto* request = msg->payload_as_InteractRequest();
++        if (!request) return;
++        command = Command{request->command_id(), false, int(request->action())};
++        if (!request->target_coord()) error = "Missing interaction target";
++        else {
++            const auto* p = request->target_coord();
++            // Check bounds before arithmetic on untrusted coordinates.
++            if (p->z() != u.posz() || p->x() < u.posx()-1 || p->x() > u.posx()+1 ||
++                p->y() < u.posy()-1 || p->y() > u.posy()+1) error = "Interaction target out of reach";
++            else {
++                const tripoint local(p->x(), p->y(), p->z());
++                const tripoint absolute = m.getabs(local);
++                command.x = absolute.x; command.y = absolute.y; command.z = absolute.z;
++                const bool inside = !m.is_outside(u.pos());
++                if (command.action == int(CDDA::CWM::InteractAction::OPEN)) {
++                    if (!m.open_door(u, local, inside, true)) error = "Target cannot be opened";
++                } else if (command.action == int(CDDA::CWM::InteractAction::CLOSE)) {
++                    if (!m.close_door(local, inside, true)) error = "Target cannot be closed";
++                } else error = "Interaction not implemented";
++            }
++        }
++    } else return;
++    if (commands_.size() >= 32) error = "Command queue full";
++    if (!error.empty()) send_result(Result{command.id, false, error}, u, m, g);
++    else commands_.push_back(command);
 +}
 +
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.h b/src/cwm/cwm_server.h
 new file mode 100644
-index 0000000..35a7d07
+index 0000000..1b50863
 --- /dev/null
 +++ b/src/cwm/cwm_server.h
-@@ -0,0 +1,51 @@
+@@ -0,0 +1,76 @@
 +// CDDA CWM IPC Server
 +// Licensed under Apache-2.0
 +#pragma once
@@ -932,6 +1067,9 @@ index 0000000..35a7d07
 +#include <string>
 +#include <memory>
 +#include <cstdint>
++#include <deque>
++#include <functional>
++#include <optional>
 +#include "cwm_map_exporter.h"
 +
 +class avatar;
@@ -954,6 +1092,9 @@ index 0000000..35a7d07
 +
 +    // Ticks server: handles connections, processes commands, advances turns
 +    bool update(avatar& u, map& m, game& g);
++    bool needs_turn(const avatar& u) const;
++    bool advance_turn(avatar& u, map& m, game& g, const std::function<bool()>& keep_running);
++    bool saved_on_shutdown() const { return saved_on_shutdown_; }
 +
 +    bool save_world(game& g);
 +
@@ -966,16 +1107,51 @@ index 0000000..35a7d07
 +    uint64_t sequence_counter_{1};
 +    uint64_t world_revision_{1};
 +    bool snapshot_sent_{false};
++    struct Command {
++        uint64_t id;
++        bool move;
++        int action;
++        int x{0}, y{0}, z{0}; // absolute CDDA coordinates, captured on receipt
++    };
++    struct Result {
++        uint64_t id;
++        bool accepted;
++        std::string error;
++    };
++    std::deque<Command> commands_;
++    std::optional<Result> result_;
++    bool simulation_started_{false};
++    bool saved_on_shutdown_{false};
 +    CwmMapExporter::ProjectionCache projection_cache_;
 +    // Reality-bubble origin (absolute submap) last sent to the client.
 +    // When CDDA shifts the bubble, local coordinates change and terrain must be resent.
 +    int last_sub_x_{0}, last_sub_y_{0}, last_sub_z_{0};
 +    bool last_sub_valid_{false};
 +
++    void send_state(avatar& u, map& m, game& g, bool full = false);
++    void send_result(const Result& result, avatar& u, map& m, game& g);
++    bool execute(const Command& command, avatar& u, map& m, game& g);
++
 +    void handle_client_message(const uint8_t* data, size_t size, avatar& u, map& m, game& g);
 +};
 +
 +} // namespace cwm
+diff --git a/src/safe_mode_actions.h b/src/safe_mode_actions.h
+new file mode 100644
+index 0000000..f5a7c0a
+--- /dev/null
++++ b/src/safe_mode_actions.h
+@@ -0,0 +1,10 @@
++#pragma once
++#ifndef CATA_SRC_SAFE_MODE_ACTIONS_H
++#define CATA_SRC_SAFE_MODE_ACTIONS_H
++
++class avatar;
++
++/** Native ignore-enemy action; acknowledges current threats without disabling safe mode. */
++bool acknowledge_current_threat( avatar &player_character );
++
++#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644
 index 0000000..ae4a2a3
@@ -1096,4 +1272,112 @@ index 0000000..ae4a2a3
 +    CHECK(u.pos() == door);
 +    auto unchanged = cwm::CwmMapExporter::export_world_snapshot(3, 3, u, m, *g, false, &cache);
 +    CHECK(CDDA::CWM::GetCwmMessage(unchanged.data())->payload_as_WorldSnapshot()->tiles()->size() == 1);
++}
+diff --git a/tests/cwm_runtime_test.cpp b/tests/cwm_runtime_test.cpp
+new file mode 100644
+index 0000000..1a007af
+--- /dev/null
++++ b/tests/cwm_runtime_test.cpp
+@@ -0,0 +1,102 @@
++#include "cata_catch.h"
++#include "avatar.h"
++#include "calendar.h"
++#include "do_turn.h"
++#include "field.h"
++#include "field_type.h"
++#include "game.h"
++#include "map.h"
++#include "map_helpers.h"
++#include "monster.h"
++#include "options_helpers.h"
++#include "player_helpers.h"
++#include "safe_mode_actions.h"
++#include "weather.h"
++
++static void prepare_runtime()
++{
++    clear_avatar();
++    clear_map();
++    get_avatar().setpos( tripoint( 60, 60, 0 ) );
++    get_avatar().moves = 100;
++    calendar::turn = calendar::turn_zero + 36_hours + 7_seconds;
++    g->new_game = false;
++    g->uquit = QUIT_NO;
++    g->set_safe_mode( SAFE_MODE_OFF );
++    get_weather().update_weather();
++}
++
++TEST_CASE( "cwm_turn_runs_native_fields_ai_and_body", "[cwm][runtime]" )
++{
++    const override_option no_random_npc( "NPC_SPAWNTIME", "0" );
++    const override_option no_autosave( "AUTOSAVE", "false" );
++    const override_option no_autosafe( "AUTOSAFEMODE", "false" );
++    prepare_runtime();
++    avatar &u = get_avatar();
++    map &m = get_map();
++    const tripoint vent = u.pos() + tripoint( 12, 0, 0 );
++    m.add_field( vent, field_type_str_id( "fd_smoke_vent" ).id(), 3, 1_seconds );
++    REQUIRE( m.get_field( vent, field_type_str_id( "fd_smoke" ).id() ) == nullptr );
++    const tripoint start = u.pos() + tripoint( 7, 0, 0 );
++    monster *zombie = g->place_critter_at( mtype_id( "mon_zombie" ), start );
++    REQUIRE( zombie != nullptr );
++    u.add_effect( efftype_id( "blind" ), 10_seconds );
++    const time_point before = calendar::turn;
++    int calls = 0;
++    REQUIRE_FALSE( do_turn_with_action( [&]() {
++        ++calls;
++        u.pause();
++        return true;
++    } ) );
++    CHECK( calls == 1 );
++    CHECK( calendar::turn == before + 1_seconds );
++    CHECK( u.get_effect_dur( efftype_id( "blind" ) ) < 10_seconds );
++    CHECK( m.get_field( vent, field_type_str_id( "fd_smoke" ).id() ) != nullptr );
++    CHECK( zombie->pos() != start );
++    CHECK( u.moves > 0 );
++}
++
++TEST_CASE( "cwm_turn_pays_native_action_debt_before_accepting_input", "[cwm][runtime]" )
++{
++    const override_option no_random_npc( "NPC_SPAWNTIME", "0" );
++    const override_option no_autosave( "AUTOSAVE", "false" );
++    const override_option no_autosafe( "AUTOSAFEMODE", "false" );
++    prepare_runtime();
++    avatar &u = get_avatar();
++    u.moves = -250;
++    const time_point before = calendar::turn;
++    int calls = 0;
++    const auto pause = [&]() { ++calls; u.pause(); return true; };
++    for( int i = 0; i < 3; ++i ) REQUIRE_FALSE( do_turn_with_action( pause ) );
++    CHECK( calls == 0 );
++    CHECK( u.moves > 0 );
++    CHECK( calendar::turn == before + 3_seconds );
++    REQUIRE_FALSE( do_turn_with_action( pause ) );
++    CHECK( calls == 1 );
++}
++
++TEST_CASE( "cwm_threat_acknowledgement_preserves_native_safe_mode", "[cwm][runtime]" )
++{
++    prepare_runtime();
++    avatar &u = get_avatar();
++    monster *zombie = g->place_critter_at( mtype_id( "mon_zombie" ), u.pos() + tripoint( 5, 0, 0 ) );
++    REQUIRE( zombie != nullptr );
++    g->set_safe_mode( SAFE_MODE_ON );
++    g->mostseen = 0;
++    g->mon_info_update();
++    REQUIRE( g->safe_mode == SAFE_MODE_STOP );
++    const int moves = u.moves;
++    const time_point before = calendar::turn;
++    CHECK( acknowledge_current_threat( u ) );
++    CHECK( g->safe_mode == SAFE_MODE_ON );
++    CHECK( zombie->ignoring > 0 );
++    CHECK( u.moves == moves );
++    CHECK( calendar::turn == before );
++    g->mon_info_update();
++    CHECK( g->safe_mode == SAFE_MODE_ON );
++    u.add_effect( efftype_id( "laserlocked" ), 10_seconds );
++    CHECK( acknowledge_current_threat( u ) );
++    CHECK_FALSE( u.has_effect( efftype_id( "laserlocked" ) ) );
++    CHECK( u.moves == moves );
++    CHECK( calendar::turn == before );
 +}

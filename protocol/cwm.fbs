@@ -146,6 +146,8 @@ table WorldSnapshot {
     fields: [FieldState];
     // End-of-action terrain/furniture changes, applied before entity positions.
     tiles: [TileDelta];
+    // Native safety/laser-targeting stop; presentation must offer explicit acknowledgement.
+    safety_stop: bool;
 }
 
 table MoveRequest {
@@ -177,6 +179,10 @@ table TimeEvent {
     simulation_busy: bool;
 }
 
+table AcknowledgeThreatRequest {
+    command_id: uint64;
+}
+
 union Payload {
     HelloRequest,
     HelloResponse,
@@ -193,7 +199,8 @@ union Payload {
     InteractRequest,
     AttackRequest,
     CommandAck,
-    TimeEvent
+    TimeEvent,
+    AcknowledgeThreatRequest
 }
 
 table CwmMessage {

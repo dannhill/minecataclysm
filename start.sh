@@ -6,6 +6,7 @@ CDDA_BIN="${CDDA_BIN:-$PROJECT_DIR/cdda/build/src/cdda-server}"
 LUANTI_BIN="${LUANTI_BIN:-$PROJECT_DIR/luanti/bin/luanti}"
 CDDA_USERDIR="${CDDA_USERDIR:-$PROJECT_DIR/user/cdda}"
 CDDA_WORLD="${CDDA_WORLD:-cdda_voxel}"
+CDDA_CHARACTER="${CDDA_CHARACTER:-}"
 LUANTI_WORLD="${LUANTI_WORLD:-$PROJECT_DIR/worlds/cdda-presentation}"
 LOG_DIR="${LOG_DIR:-$PROJECT_DIR/artifacts/runtime/$(date -u +%Y%m%dT%H%M%SZ)-$$}"
 
@@ -65,7 +66,9 @@ fi
 
 printf '[Launcher] Starting CDDA; logs: %s\n' "$LOG_DIR"
 cd -- "$PROJECT_DIR"
-stdbuf -oL -eL "$CDDA_BIN" --socket "$SOCKET_PATH" --world "$CDDA_WORLD" \
+SERVER_ARGS=()
+if [[ -n "$CDDA_CHARACTER" ]]; then SERVER_ARGS+=(--character "$CDDA_CHARACTER"); fi
+stdbuf -oL -eL "$CDDA_BIN" --socket "$SOCKET_PATH" --world "$CDDA_WORLD" "${SERVER_ARGS[@]}" \
     --userdir "$CDDA_USERDIR" --datadir "$PROJECT_DIR/cdda/data" \
     > "$LOG_DIR/cdda.log" 2>&1 &
 SERVER_PID=$!

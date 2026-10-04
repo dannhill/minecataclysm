@@ -85,7 +85,7 @@ index b6ae675..9e33201 100644
  		/*
  			Local player handling
 diff --git a/src/client/game.cpp b/src/client/game.cpp
-index 27b5833..d7dcde0 100644
+index 27b5833..434f776 100644
 --- a/src/client/game.cpp
 +++ b/src/client/game.cpp
 @@ -8,6 +8,7 @@
@@ -114,7 +114,7 @@ index 27b5833..d7dcde0 100644
  	delete client;
  	client = nullptr;
  	delete soundmaker;
-@@ -2737,8 +2742,37 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
+@@ -2737,8 +2742,44 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
  		control.aux1 = control.aux1 ^ true;
  	}
  
@@ -129,6 +129,13 @@ index 27b5833..d7dcde0 100644
  
 +	// [CDDA-Mineclonia] Send Movement Commands
 +	if (cdda_client::CddaBridge::getInstance().ownsPlayer(client)) {
++		auto &bridge = cdda_client::CddaBridge::getInstance();
++		// A held key must not automatically acknowledge each new threat.
++		static bool acknowledgement_held = false;
++		const bool acknowledgement_down = isKeyDown(KeyType::AUX1);
++		if (acknowledgement_down && !acknowledgement_held && bridge.getMetrics().safety_stop)
++			bridge.acknowledgeThreat();
++		acknowledgement_held = acknowledgement_down;
 +		// Camera-relative WASD: build a local vector, rotate by yaw, snap to
 +		// one of CDDA's 8 grid directions (diagonals included).
 +		float lf = (isKeyDown(KeyType::FORWARD) ? 1.f : 0.f) - (isKeyDown(KeyType::BACKWARD) ? 1.f : 0.f);
@@ -145,14 +152,14 @@ index 27b5833..d7dcde0 100644
 +			cdda_dir = oct_to_cdda[oct];
 +		}
 +
-+		if (cdda_dir != 0)
++		if (cdda_dir != 0 && !bridge.getMetrics().safety_stop)
 +			cdda_client::CddaBridge::getInstance().handleMoveInput(cdda_dir);
 +	}
 +
  	//tt.stop();
  }
  
-@@ -2784,6 +2818,25 @@ inline void Game::step(f32 dtime)
+@@ -2784,6 +2825,25 @@ inline void Game::step(f32 dtime)
  
  	if (!m_is_paused)
  		client->step(dtime);
@@ -178,7 +185,7 @@ index 27b5833..d7dcde0 100644
  }
  
  static void pauseNodeAnimation(PausedNodesList &paused, scene::ISceneNode *node) {
-@@ -3246,6 +3299,7 @@ void Game::updateCamera(f32 dtime)
+@@ -3246,6 +3306,7 @@ void Game::updateCamera(f32 dtime)
  	tool_reload_ratio = MYMIN(tool_reload_ratio, 1.0);
  	camera->update(player, dtime, tool_reload_ratio);
  	camera->step(dtime);
@@ -361,10 +368,10 @@ index 7f3f860..663a6ec 100644
  void TestMapBlock::testSaveLoad(IGameDef *gamedef, const u8 version)
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..b3842e8
+index 0000000..1f4d420
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,660 @@
+@@ -0,0 +1,691 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
@@ -426,6 +433,7 @@ index 0000000..b3842e8
 +    std::unordered_map<uint64_t, VisualEntity> entities_;
 +    std::unordered_map<uint64_t, VisualVehicle> vehicles_;
 +    irr::gui::IGUIStaticText* debug_text_{nullptr};
++    irr::gui::IGUIStaticText* safety_text_{nullptr};
 +    irr::scene::ISceneManager* smgr_{nullptr};
 +    std::unordered_map<uint16_t, content_t> material_map_;
 +    // The projection uses reality-bubble-local XY and absolute CDDA z-levels
@@ -699,6 +707,7 @@ index 0000000..b3842e8
 +                    warningstream << "[Luanti-CDDA] Ignoring snapshot without origin" << std::endl;
 +                    break;
 +                }
++                metrics_.safety_stop = snap->safety_stop();
 +                const v3s32 origin(snap->origin()->x(), snap->origin()->y(), snap->origin()->z());
 +                const bool rebased = !origin_valid_ || origin.X != projection_origin_.X ||
 +                                     origin.Y != projection_origin_.Y;
@@ -906,6 +915,20 @@ index 0000000..b3842e8
 +        );
 +        return connection_->send_message(req.data(), req.size());
 +    }
++
++    bool acknowledge_threat() {
++        if (!connection_ || !connection_->is_valid() || !player_ready_ || pending_move_)
++            return false;
++        const uint64_t command = command_counter_++;
++        cdda::cwm::MessageBuilder builder(command, metrics_.current_revision);
++        const auto request = builder.finish_message(CDDA::CWM::Payload::AcknowledgeThreatRequest,
++            CDDA::CWM::CreateAcknowledgeThreatRequest(builder.builder(), command).Union());
++        if (!connection_->send_message(request.data(), request.size())) return false;
++        pending_move_ = command;
++        move_acked_ = false;
++        sent_move_ = std::chrono::steady_clock::now();
++        return true;
++    }
 +};
 +
 +CddaBridge& CddaBridge::getInstance() {
@@ -934,6 +957,7 @@ index 0000000..b3842e8
 +void CddaBridge::shutdown() {
 +    if (pimpl_) {
 +        if (pimpl_->debug_text_) pimpl_->debug_text_->remove();
++        if (pimpl_->safety_text_) pimpl_->safety_text_->remove();
 +        for (auto& vehicle : pimpl_->vehicles_)
 +            for (auto& component : vehicle.second.components)
 +                if (component.scene_node)
@@ -982,6 +1006,10 @@ index 0000000..b3842e8
 +    return false;
 +}
 +
++bool CddaBridge::acknowledgeThreat() {
++    return pimpl_ && pimpl_->acknowledge_threat();
++}
++
 +CddaBridge::Metrics CddaBridge::getMetrics() const {
 +    if (pimpl_) return pimpl_->metrics_;
 +    return Metrics{};
@@ -992,6 +1020,16 @@ index 0000000..b3842e8
 +namespace cdda_client {
 +void CddaBridge::renderDebugOverlay(irr::gui::IGUIEnvironment* guienv) {
 +    if (!guienv || !pimpl_) return;
++
++    if (!pimpl_->safety_text_) {
++        pimpl_->safety_text_ = guienv->addStaticText(
++            L"CDDA: threat detected. Release movement, press Aux1 (default E) to resume.",
++            irr::core::rect<irr::s32>(10, 165, 650, 205), false, true);
++        if (pimpl_->safety_text_)
++            pimpl_->safety_text_->setOverrideColor(irr::video::SColor(255, 255, 210, 80));
++    }
++    if (pimpl_->safety_text_)
++        pimpl_->safety_text_->setVisible(pimpl_->metrics_.connected && pimpl_->metrics_.safety_stop);
 +
 +    if (!pimpl_->debug_text_) {
 +        // Create static text at top left
@@ -1027,10 +1065,10 @@ index 0000000..b3842e8
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.h b/src/cdda/cdda_bridge.h
 new file mode 100644
-index 0000000..ece10f3
+index 0000000..8bbebe4
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.h
-@@ -0,0 +1,100 @@
+@@ -0,0 +1,102 @@
 +// Luanti C++ CWM Presentation Bridge
 +// Licensed under Apache-2.0
 +#pragma once
@@ -1103,6 +1141,7 @@ index 0000000..ece10f3
 +    // Input hooks
 +    bool handleMoveInput(int dir);
 +    bool handleInteract(int x, int y, int z, int action);
++    bool acknowledgeThreat();
 +
 +    // Coordinate conversion
 +    static v3s16 cddaToLuantiCoord(int x, int y, int z);
@@ -1117,6 +1156,7 @@ index 0000000..ece10f3
 +        uint32_t entities_count{0};
 +        uint32_t vehicles_count{0};
 +        bool connected{false};
++        bool safety_stop{false};
 +    };
 +    Metrics getMetrics() const;
 +

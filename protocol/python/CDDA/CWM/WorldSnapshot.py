@@ -174,8 +174,15 @@ class WorldSnapshot(object):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(18))
         return o == 0
 
+    # WorldSnapshot
+    def SafetyStop(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(20))
+        if o != 0:
+            return bool(self._tab.Get(flatbuffers.number_types.BoolFlags, o + self._tab.Pos))
+        return False
+
 def WorldSnapshotStart(builder):
-    builder.StartObject(8)
+    builder.StartObject(9)
 
 def Start(builder):
     WorldSnapshotStart(builder)
@@ -257,6 +264,12 @@ def WorldSnapshotStartTilesVector(builder, numElems):
 
 def StartTilesVector(builder, numElems):
     return WorldSnapshotStartTilesVector(builder, numElems)
+
+def WorldSnapshotAddSafetyStop(builder, safetyStop):
+    builder.PrependBoolSlot(8, safetyStop, 0)
+
+def AddSafetyStop(builder, safetyStop):
+    WorldSnapshotAddSafetyStop(builder, safetyStop)
 
 def WorldSnapshotEnd(builder):
     return builder.EndObject()

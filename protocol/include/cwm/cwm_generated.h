@@ -73,6 +73,9 @@ struct CommandAckBuilder;
 struct TimeEvent;
 struct TimeEventBuilder;
 
+struct AcknowledgeThreatRequest;
+struct AcknowledgeThreatRequestBuilder;
+
 struct CwmMessage;
 struct CwmMessageBuilder;
 
@@ -241,11 +244,12 @@ enum class Payload : uint8_t {
   AttackRequest = 14,
   CommandAck = 15,
   TimeEvent = 16,
+  AcknowledgeThreatRequest = 17,
   MIN = NONE,
-  MAX = TimeEvent
+  MAX = AcknowledgeThreatRequest
 };
 
-inline const Payload (&EnumValuesPayload())[17] {
+inline const Payload (&EnumValuesPayload())[18] {
   static const Payload values[] = {
     Payload::NONE,
     Payload::HelloRequest,
@@ -263,13 +267,14 @@ inline const Payload (&EnumValuesPayload())[17] {
     Payload::InteractRequest,
     Payload::AttackRequest,
     Payload::CommandAck,
-    Payload::TimeEvent
+    Payload::TimeEvent,
+    Payload::AcknowledgeThreatRequest
   };
   return values;
 }
 
 inline const char * const *EnumNamesPayload() {
-  static const char * const names[18] = {
+  static const char * const names[19] = {
     "NONE",
     "HelloRequest",
     "HelloResponse",
@@ -287,13 +292,14 @@ inline const char * const *EnumNamesPayload() {
     "AttackRequest",
     "CommandAck",
     "TimeEvent",
+    "AcknowledgeThreatRequest",
     nullptr
   };
   return names;
 }
 
 inline const char *EnumNamePayload(Payload e) {
-  if (::flatbuffers::IsOutRange(e, Payload::NONE, Payload::TimeEvent)) return "";
+  if (::flatbuffers::IsOutRange(e, Payload::NONE, Payload::AcknowledgeThreatRequest)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesPayload()[index];
 }
@@ -364,6 +370,10 @@ template<> struct PayloadTraits<CDDA::CWM::CommandAck> {
 
 template<> struct PayloadTraits<CDDA::CWM::TimeEvent> {
   static const Payload enum_value = Payload::TimeEvent;
+};
+
+template<> struct PayloadTraits<CDDA::CWM::AcknowledgeThreatRequest> {
+  static const Payload enum_value = Payload::AcknowledgeThreatRequest;
 };
 
 bool VerifyPayload(::flatbuffers::Verifier &verifier, const void *obj, Payload type);
@@ -1523,7 +1533,8 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_ENTITIES = 12,
     VT_VEHICLES = 14,
     VT_FIELDS = 16,
-    VT_TILES = 18
+    VT_TILES = 18,
+    VT_SAFETY_STOP = 20
   };
   uint64_t world_revision() const {
     return GetField<uint64_t>(VT_WORLD_REVISION, 0);
@@ -1573,6 +1584,12 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::TileDelta>> *mutable_tiles() {
     return GetPointer<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::TileDelta>> *>(VT_TILES);
   }
+  bool safety_stop() const {
+    return GetField<uint8_t>(VT_SAFETY_STOP, 0) != 0;
+  }
+  bool mutate_safety_stop(bool _safety_stop = 0) {
+    return SetField<uint8_t>(VT_SAFETY_STOP, static_cast<uint8_t>(_safety_stop), 0);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint64_t>(verifier, VT_WORLD_REVISION, 8) &&
@@ -1593,6 +1610,7 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_TILES) &&
            verifier.VerifyVector(tiles()) &&
            verifier.VerifyVectorOfTables(tiles()) &&
+           VerifyField<uint8_t>(verifier, VT_SAFETY_STOP, 1) &&
            verifier.EndTable();
   }
 };
@@ -1625,6 +1643,9 @@ struct WorldSnapshotBuilder {
   void add_tiles(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::TileDelta>>> tiles) {
     fbb_.AddOffset(WorldSnapshot::VT_TILES, tiles);
   }
+  void add_safety_stop(bool safety_stop) {
+    fbb_.AddElement<uint8_t>(WorldSnapshot::VT_SAFETY_STOP, static_cast<uint8_t>(safety_stop), 0);
+  }
   explicit WorldSnapshotBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -1645,7 +1666,8 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshot(
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::EntityState>>> entities = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::VehicleState>>> vehicles = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::FieldState>>> fields = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::TileDelta>>> tiles = 0) {
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::TileDelta>>> tiles = 0,
+    bool safety_stop = false) {
   WorldSnapshotBuilder builder_(_fbb);
   builder_.add_simulation_time_seconds(simulation_time_seconds);
   builder_.add_world_revision(world_revision);
@@ -1655,6 +1677,7 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshot(
   builder_.add_entities(entities);
   builder_.add_chunks(chunks);
   builder_.add_origin(origin);
+  builder_.add_safety_stop(safety_stop);
   return builder_.Finish();
 }
 
@@ -1667,7 +1690,8 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshotDirect(
     const std::vector<::flatbuffers::Offset<CDDA::CWM::EntityState>> *entities = nullptr,
     const std::vector<::flatbuffers::Offset<CDDA::CWM::VehicleState>> *vehicles = nullptr,
     const std::vector<::flatbuffers::Offset<CDDA::CWM::FieldState>> *fields = nullptr,
-    const std::vector<::flatbuffers::Offset<CDDA::CWM::TileDelta>> *tiles = nullptr) {
+    const std::vector<::flatbuffers::Offset<CDDA::CWM::TileDelta>> *tiles = nullptr,
+    bool safety_stop = false) {
   auto chunks__ = chunks ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::ChunkSnapshot>>(*chunks) : 0;
   auto entities__ = entities ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::EntityState>>(*entities) : 0;
   auto vehicles__ = vehicles ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::VehicleState>>(*vehicles) : 0;
@@ -1682,7 +1706,8 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshotDirect(
       entities__,
       vehicles__,
       fields__,
-      tiles__);
+      tiles__,
+      safety_stop);
 }
 
 struct MoveRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -2036,6 +2061,50 @@ inline ::flatbuffers::Offset<TimeEvent> CreateTimeEvent(
   return builder_.Finish();
 }
 
+struct AcknowledgeThreatRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef AcknowledgeThreatRequestBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_COMMAND_ID = 4
+  };
+  uint64_t command_id() const {
+    return GetField<uint64_t>(VT_COMMAND_ID, 0);
+  }
+  bool mutate_command_id(uint64_t _command_id = 0) {
+    return SetField<uint64_t>(VT_COMMAND_ID, _command_id, 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_COMMAND_ID, 8) &&
+           verifier.EndTable();
+  }
+};
+
+struct AcknowledgeThreatRequestBuilder {
+  typedef AcknowledgeThreatRequest Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_command_id(uint64_t command_id) {
+    fbb_.AddElement<uint64_t>(AcknowledgeThreatRequest::VT_COMMAND_ID, command_id, 0);
+  }
+  explicit AcknowledgeThreatRequestBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<AcknowledgeThreatRequest> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<AcknowledgeThreatRequest>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<AcknowledgeThreatRequest> CreateAcknowledgeThreatRequest(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t command_id = 0) {
+  AcknowledgeThreatRequestBuilder builder_(_fbb);
+  builder_.add_command_id(command_id);
+  return builder_.Finish();
+}
+
 struct CwmMessage FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef CwmMessageBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
@@ -2118,6 +2187,9 @@ struct CwmMessage FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const CDDA::CWM::TimeEvent *payload_as_TimeEvent() const {
     return payload_type() == CDDA::CWM::Payload::TimeEvent ? static_cast<const CDDA::CWM::TimeEvent *>(payload()) : nullptr;
   }
+  const CDDA::CWM::AcknowledgeThreatRequest *payload_as_AcknowledgeThreatRequest() const {
+    return payload_type() == CDDA::CWM::Payload::AcknowledgeThreatRequest ? static_cast<const CDDA::CWM::AcknowledgeThreatRequest *>(payload()) : nullptr;
+  }
   void *mutable_payload() {
     return GetPointer<void *>(VT_PAYLOAD);
   }
@@ -2195,6 +2267,10 @@ template<> inline const CDDA::CWM::CommandAck *CwmMessage::payload_as<CDDA::CWM:
 
 template<> inline const CDDA::CWM::TimeEvent *CwmMessage::payload_as<CDDA::CWM::TimeEvent>() const {
   return payload_as_TimeEvent();
+}
+
+template<> inline const CDDA::CWM::AcknowledgeThreatRequest *CwmMessage::payload_as<CDDA::CWM::AcknowledgeThreatRequest>() const {
+  return payload_as_AcknowledgeThreatRequest();
 }
 
 struct CwmMessageBuilder {
@@ -2310,6 +2386,10 @@ inline bool VerifyPayload(::flatbuffers::Verifier &verifier, const void *obj, Pa
     }
     case Payload::TimeEvent: {
       auto ptr = reinterpret_cast<const CDDA::CWM::TimeEvent *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::AcknowledgeThreatRequest: {
+      auto ptr = reinterpret_cast<const CDDA::CWM::AcknowledgeThreatRequest *>(obj);
       return verifier.VerifyTable(ptr);
     }
     default: return true;

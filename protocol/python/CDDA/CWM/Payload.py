@@ -20,3 +20,4 @@ class Payload(object):
     AttackRequest = 14
     CommandAck = 15
     TimeEvent = 16
+    AcknowledgeThreatRequest = 17

@@ -10,6 +10,12 @@ This package defines the standalone, binary IPC protocol between:
 - **Framing**: 4-byte big-endian length-prefixed stream framing
 - **License**: Apache-2.0
 
+Minor version 1 adds `WorldSnapshot.safety_stop` and the appended
+`AcknowledgeThreatRequest`. Acknowledgement invokes CDDA's native ignore-enemy
+action; it does not disable safe mode or advance simulation time. The bridge
+shows a warning and uses the configurable Luanti Aux1 binding (default E).
+Version negotiation, deduplication and recovery remain FND-03 work.
+
 ## Directory Layout
 - `cwm.fbs`: Authoritative schema definition
 - `include/cwm/`: Generated C++ headers, message builders, frame encoder/decoder, IPC transport

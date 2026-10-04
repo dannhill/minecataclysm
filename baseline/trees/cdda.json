@@ -37322,12 +37322,12 @@
   {
     "path": "src/cwm/cwm_main.cpp",
     "mode": "100644",
-    "sha256": "fda69c9660c432771db88e9d3fd7cac216d4a8a97dd9e674dbd1af4fe78e78c3"
+    "sha256": "447cd20ed74526768ce09a91bae299515e7ad2ffef9e7c894d54d02309183c9b"
   },
   {
     "path": "src/cwm/cwm_map_exporter.cpp",
     "mode": "100644",
-    "sha256": "c64782f18cfd92f8433ed810d4254fe3cd469750abc966684a90acca19faff07"
+    "sha256": "e2cbd570af148244db95701ce3477a690198f96a32d9f33c40c59fec994a3546"
   },
   {
     "path": "src/cwm/cwm_map_exporter.h",
@@ -37337,12 +37337,12 @@
   {
     "path": "src/cwm/cwm_server.cpp",
     "mode": "100644",
-    "sha256": "b386fc394ce6a341bd7cf28b78ada6ec75582333e0976b66add2c216e5a94692"
+    "sha256": "e46a9bfdbe6bce8afa9843919eaed54bb2d48642a75d8b1473e16886ef3f378b"
   },
   {
     "path": "src/cwm/cwm_server.h",
     "mode": "100644",
-    "sha256": "573aec2590119d049c006a7ac58755d7ea414c24a7ed87d6885704a4630537b2"
+    "sha256": "9c029276f390f0f703db055863486f7e5e715d2ee6e7b24a50616180915d276e"
   },
   {
     "path": "src/damage.cpp",
@@ -37502,12 +37502,12 @@
   {
     "path": "src/do_turn.cpp",
     "mode": "100644",
-    "sha256": "e0a4e41f8aca9a5ed606f0bd6ae9c20225b33c807e71d9a17301a9ae05e55260"
+    "sha256": "cdf9163c09813dcc84474571cc0cc1404d02827c425ff71a91f3bdbabb06ab2e"
   },
   {
     "path": "src/do_turn.h",
     "mode": "100644",
-    "sha256": "39a746083ab02269d4a819439d08aac983bb0f912ade632122f92ba839978dd9"
+    "sha256": "413f18a7dff3f5146d844db3489fc2a75fd8aa459c1287c3532ed3d44bb337ba"
   },
   {
     "path": "src/drawing_primitives.cpp",
@@ -37887,7 +37887,7 @@
   {
     "path": "src/handle_action.cpp",
     "mode": "100644",
-    "sha256": "d0c4258ad574ea98bf76631b281035efec14c962fb4c9a56b7c4bc130c159621"
+    "sha256": "fc1fabd745859ea9e981b63b26c5f416f88710e736a6bf5a759a8e6d3a8ca02f"
   },
   {
     "path": "src/handle_liquid.cpp",
@@ -39490,6 +39490,11 @@
     "sha256": "da568fb8cde82ade4402f4bdb349fdebf5a9d55ac998ac0de6d386c650254a5d"
   },
   {
+    "path": "src/safe_mode_actions.h",
+    "mode": "100644",
+    "sha256": "3b256f1a5a6befe82280a7c2454ad1aacc960a171e05bc5e0721ed83d1896c82"
+  },
+  {
     "path": "src/safe_reference.cpp",
     "mode": "100644",
     "sha256": "116f6cdf5c6764170bf854cecbe84444971d571d5ab36c2e719b3094052ff5dd"
@@ -40858,6 +40863,11 @@
     "path": "tests/cwm_projection_test.cpp",
     "mode": "100644",
     "sha256": "595be155e9b0619f16d5d1675fd3c48375558347cc55845660d27d02c3d452ff"
+  },
+  {
+    "path": "tests/cwm_runtime_test.cpp",
+    "mode": "100644",
+    "sha256": "644403c735a959753d8abd2f35f11c642361133a2dd38fb56b3aafdc3046d087"
   },
   {
     "path": "tests/data/name.json",
