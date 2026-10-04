@@ -9,8 +9,8 @@ is [cwm.fbs](cwm.fbs). Audit findings and evidence are in
 This document retains takeover-baseline coverage below. Subsequent scoped
 repairs are recorded in their evidence: native canonical turns/loading,
 stable presentation through rebases, perceived creature models and native
-decisions. The current terrain comparison uses minor 3; its appended material
-catalog is described below. Negotiation/session/recovery conformance remains
+decisions. The current implementation uses minor 4: minor 3 appended the terrain
+catalog, minor 4 appends actor state cues. Negotiation/session/recovery conformance remains
 unverified.
 
 ## Wire format
@@ -73,7 +73,10 @@ meshes. The incompatible pre-repair transforms remain
 documented in the frozen M5.5 audit.
 
 Presentation maps stable scene XY and native Z to `(X,3z,-Y)` in signed 16-bit coordinates, with
-hardcoded voxel scale and eye height. A configurable, shared transform and
+hardcoded voxel scale and baseline eye height. Inverse picking uses floor division
+of node Y by three, so both aperture halves and negative Z levels belong to
+the correct native floor. Native actor cues adjust presentation posture only.
+A configurable, shared transform and
 explicit large-coordinate policy remain required.
 
 | Material ID | Current interpretation |
@@ -95,14 +98,19 @@ explicit large-coordinate policy remain required.
 
 Minor 3 appends these five terrain categories, retaining the 8-byte CwmBlock
 layout. Movement/obstruction flags remain native. The isolated A/B comparison
-can select richer textures/vegetation; ordinary presentation maps the appended
-IDs back to the earlier generic materials. Fog and visual variants are client
+can select richer textures/vegetation; ordinary presentation now uses the
+approved B style (`cdda_terrain_enriched = true`). Only comparison mode retains
+the extra semantic cache needed for live A/B switches. Fog and visual variants are client
 configuration, not gameplay state or new wire data. See the
 [prototype evidence](../docs/prototypes/terrain-comparison.md).
 
 The exporter uses loaded CDDA terrain flags, open/close links and movement
-costs for structural geometry. Text matching remains only for floor/ground
-texture selection. `state_flags` bit 0 identifies doors, bit 1 records
+costs for structural geometry. Door/gate family names supplement missing native
+DOOR flags on linked transitions; two empty-curtain IDs supplement missing
+WINDOW flags. Names also select floor/ground textures. Closed/open state follows
+native transitions, independently of DOOR flags or passability alone. Open but
+blocking trailer doors retain a visible threshold. Window states retain a
+lower wall/sill; only the upper pane changes. `CwmBlock.state_flags` bit 0 identifies doors, bit 1 records
 `map::impassable_ter_furn`, bit 2 adds furniture over the terrain and bit 3
 requests tall furniture. `orientation` 0/1 describes east-west/north-south wall
 alignment inferred from adjacent CDDA wall connections. No native node IDs
@@ -124,6 +132,20 @@ containing the canonical NPC ID. Actor `perceived` controls rendered visibility;
 unperceived records are still sent. Monster IDs do not persist across runtime
 restart; vehicle IDs remain process memory addresses. This is not a complete
 persisted identity/session registry.
+
+Minor 4 appends `EntityState.state_flags:uint32=0` after `perceived`, leaving
+older fields unchanged. Actor bits are WINDOW_PASSAGE (1), WADING (2),
+SWIMMING (4) and UNDERWATER (8). CDDA derives them from native terrain/avatar
+state, excluding vehicle-supported water tiles. Luanti smoothly adjusts feet
+and first-person eye height; authoritative positions, action costs and time do
+not change. They are distinct from the tile obstruction flags above. See the
+[exploration repair](../docs/fixes/exploration-apertures.md) for evidence/limits.
+
+Desktop picking sends native OPEN/CLOSE through the existing coordinator:
+right-click opens, Sneak + right-click closes; an empty pane/door can be targeted
+through its remaining sill/floor. Actions share the movement ACK/state gate;
+Luanti dig/place callbacks do not modify the projection. No full interaction
+query, inventory or vertical-control interface is certified by this wiring.
 
 ## Required ordering and recovery
 

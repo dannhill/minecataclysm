@@ -29,7 +29,7 @@ le riparazioni già completate a visibilità, strutture e movimento.
 | FND-01 | Distinguere nuova partita e caricamento; mantenere identità, inventario, posizione, orologio e mondo. Comandi e verifiche headless usano il ciclo nativo completo. | IMPLEMENTED — verifica mirata PASS; SAVE-001 completo in FND-05 |
 | FND-02 | Framing e code limitati; EOF, input malformato e client lento non bloccano o terminano il runtime. | PLANNED |
 | FND-03 | Negoziazione, identità di sessione, deduplicazione, revisioni, sequenze, reconnect/resync e abilitazione dell'input su stato completo. | PLANNED |
-| FND-04 | Entità reali persistenti, picking, verticalità, campi, luce/percezione e HUD autorevoli; lifecycle e threading verificati. | IN PROGRESS: geometria/input, rebase, creature base e decisioni native; copertura incompleta |
+| FND-04 | Entità reali persistenti, picking, verticalità, campi, luce/percezione e HUD autorevoli; lifecycle e threading verificati. | IN PROGRESS: rebase, creature base, decisioni native, OPEN/CLOSE puntati, varianti porte/finestre e presentazione acqua; copertura incompleta |
 | FND-05 | SAVE-001 completo, test discovery, licenze/media e benchmark popolati riproducibili; nuova certificazione M5.5 soltanto dopo le evidenze. | PLANNED |
 
 FND-01 applica il preset CDDA raccomandato ai nuovi mondi e conserva mod/opzioni
@@ -43,17 +43,20 @@ movimento, strutture, apertura porte, safe mode e riavvio. Dopo la
 sfarfallio assente/impercettibile, zombie visibili e morte da zombie senza
 crash. Il pozzo/bordo resta da riprovare manualmente. Questa riparazione
 anticipa parte di FND-04; animazioni/orientamento e copertura completa restano
-aperti. Il prossimo task di fondazione rimane FND-02. Prima di ulteriori prove
-esplorative estese, trattare in FND-04 il nuovo abort nell'acqua e le varianti
-di porte/finestre segnalate nel [riscontro sul terreno](docs/source/terrain-feedback-2026-10-04.md).
+aperti. Il prossimo task di fondazione rimane FND-02. Il nuovo abort nell'acqua e le varianti
+di porte/finestre segnalate nel [riscontro sul terreno](docs/source/terrain-feedback-2026-10-04.md)
+sono stati affrontati nella [riparazione esplorativa](docs/fixes/exploration-apertures.md):
+avviso degli oggetti vulnerabili tramite UI esterna, stati derivati dalle
+transizioni native, davanzale persistente e OPEN/CLOSE puntati. Restano i
+limiti e la nuova verifica manuale indicati nel report.
 L'accettazione delle strutture nei casi precedenti non copre queste anomalie.
-FND-04 comprende anche OPEN/CLOSE puntati senza attraversamento; la fase 2
+FND-04 ora include OPEN/CLOSE puntati senza attraversamento; la fase 2
 comprende una nebbia del confine della proiezione che non sveli terreno ignoto.
 Su richiesta dell'utente, il [confronto del terreno](docs/prototypes/terrain-comparison.md)
 è stato anticipato come prototipo isolato: A/B nella stessa scena nativa e
 nebbia ON/OFF separata, tramite `terrain-demo.sh`. L'utente ha approvato B
-per materiali/vegetazione; promuoverla al gioco normale separando stile e
-fixture, senza importare le opzioni speciali della demo. La nebbia attuale
+per materiali/vegetazione; B è ora attiva nel gioco normale, separando stile e
+fixture e conservando le opzioni native del mondo caricato. La nebbia attuale
 non è approvata come soluzione definitiva. La
 [proposta su distanza e memoria](docs/design/visibility-and-world-memory.md)
 conserva le alternative e raccomanda panorama statico ricordato, dettaglio

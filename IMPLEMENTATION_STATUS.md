@@ -18,20 +18,22 @@ creatures/NPCs, and exposes supported native ledge/death decisions. Its tests
 have now been followed by the user's manual acceptance of absent/imperceptible
 flicker, visible zombies and combat death without a crash. Manual ledge/pit
 reproduction is still pending. Creature animations/heading and real-time
-scheduling are not implemented; action-driven time is temporary. Border fog,
-pointed OPEN/CLOSE and full entity/lifecycle conformance remain pending.
+scheduling are not implemented; action-driven time is temporary. Border fog
+and full entity/lifecycle conformance remain pending. Desktop pointed
+OPEN/CLOSE is now implemented in the scoped exploration repair below.
 The user also reported flat, monotonous ground; a
 [terrain proposal](docs/design/terrain-presentation.md) records the design
 questions for phase 2. The user then requested points 1/2: an
 [isolated playable comparison](docs/prototypes/terrain-comparison.md) now
 provides A/B materials/vegetation and independent border fog via
-`terrain-demo.sh`. Ordinary `start.sh` keeps the baseline style.
+`terrain-demo.sh`. The later exploration repair promotes the chosen B style
+to ordinary `start.sh`, independently of the demo fixture.
 Real-time scheduling and terrain relief
 are not part of this prototype.
 
 Subsequent [manual terrain feedback](docs/source/terrain-feedback-2026-10-04.md)
-**accepts B as the materials/vegetation direction**. Promotion to ordinary
-`start.sh` is planned, not implemented. The current short border fog is not
+**accepts B as the materials/vegetation direction**. Ordinary `start.sh` now
+uses B. The current short border fog is not
 accepted as the final solution. The
 [distance/memory proposal](docs/design/visibility-and-world-memory.md) records
 the user's alternatives and recommends a larger static remembered panorama
@@ -45,11 +47,18 @@ double-height disappearing window glass, generic traversable wooden objects,
 apparent water-surface walking and unclear access to an upper floor. These
 reopen variant/geometry coverage within FND-04 rather than invalidate all
 earlier scoped tests. A demo-session CDDA log contains a terminal-input abort;
-deep-water item warnings still have an unadapted native menu, a concrete
-candidate requiring isolated reproduction. The reported pond exit is not
-certified as death or as fixed. Address that abort and aperture variants
-before further broad exploration tests. Historical M5.5 and SAVE-001 outcomes
-remain unchanged.
+deep-water item warnings were using an unadapted native menu. An independent
+canonical fixture reproduces its terminal-input abort with the previous
+installed server; the [scoped exploration repair](docs/fixes/exploration-apertures.md)
+routes that warning and the low-oxygen warning through native external
+decisions, preserves water/item
+effects, distinguishes aperture variants and retains the window sill. Native
+state cues lower the first-person camera for wading/swimming and raise the
+feet for window passage. Right-click opens; Sneak + right-click closes an
+adjacent pointed opening, including by pointing at the remaining sill/floor.
+The exact pond save reported by the user has not been reproduced. Full
+underwater/vertical input, furniture assets and upper-floor navigation remain
+incomplete. Historical M5.5 and SAVE-001 outcomes remain unchanged.
 
 **M5.5 takeover audit: COMPLETE. Architectural conformance gate: FAILED.**
 The findings are documented in [the audit](docs/audits/M5.5.md), with

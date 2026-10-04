@@ -80,3 +80,8 @@ questo riscontro nel [piano completo](../../IMPLEMENTATION_PLAN.md).
 In questo aggiornamento sono cambiati soltanto documenti: B resta disponibile
 nella demo; `start.sh` non è ancora stato promosso alla nuova resa. Nessun
 nuovo rilievo, cache di memoria o comportamento dell'acqua è stato implementato.
+
+Aggiornamento successivo: la [riparazione esplorativa](../fixes/exploration-apertures.md)
+implementa B nel gioco normale, le correzioni mirate di aperture/acqua e
+OPEN/CLOSE puntati. Il paragrafo precedente descrive lo stato al momento
+della registrazione del riscontro, non quello successivo alla riparazione.

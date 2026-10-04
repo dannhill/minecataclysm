@@ -34,8 +34,9 @@ vicino. Casa, finestre e porta sono terrain nativi, non scenografia separata.
 Ogni avvio crea un nuovo mondo in
 `artifacts/terrain-prototype/plays/run-*/`. I salvataggi e log della demo restano
 lì; il mondo normale e il suo personaggio non vengono caricati. Per ripetere
-il confronto dal centro basta rilanciare lo script. `start.sh` mantiene la
-resa normale: nessuna nuova variante è imposta alla partita dell'utente.
+il confronto dal centro basta rilanciare lo script. Dopo l'approvazione manuale,
+`start.sh` usa anch'esso B, tramite la [riparazione esplorativa](../fixes/exploration-apertures.md).
+La fixture, gli spawn disabilitati e la nebbia corta restano specifici della demo.
 
 ## Riscontro della prova manuale
 
@@ -50,8 +51,8 @@ anche finestre/porte incoerenti, acqua, arredi e accesso ai piani. Una sessione
 della demo contiene un abort da input terminale: le evidenze sotto sul
 confronto non certificano tutti i percorsi esplorativi o varianti native.
 La [proposta sulla distanza](../design/visibility-and-world-memory.md) distingue
-percezione, memoria e confine grafico. Promozione B e correzioni sono nel piano;
-il codice/binario di questo confronto non cambia con il presente aggiornamento.
+percezione, memoria e confine grafico. Promozione B e correzioni sono descritte
+nella riparazione successiva; le evidenze sotto identificano il prototipo originale.
 
 ## Criteri usati per la prova
 

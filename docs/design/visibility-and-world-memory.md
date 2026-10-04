@@ -5,6 +5,9 @@ Analisi sul codice `3a830d8`, con i pin e le patch conservati nel baseline.
 **B è approvata per la direzione dei materiali/vegetazione.** La soluzione
 per distanza, nebbia, alberi e rilievo qui descritta è una raccomandazione da
 prototipare; non un'approvazione dell'utente né una feature implementata.
+La [riparazione successiva](../fixes/exploration-apertures.md) promuove soltanto
+i materiali/vegetazione B al gioco normale e corregge aperture/acqua;
+non implementa il panorama distante qui proposto.
 
 ## I tre limiti oggi sono diversi
 

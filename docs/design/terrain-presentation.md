@@ -5,6 +5,7 @@ Stato: punti 1 e 2 autorizzati dall'utente e realizzati nel
 [prototipo di confronto](../prototypes/terrain-comparison.md). La
 [prova manuale successiva](../source/terrain-feedback-2026-10-04.md) approva B
 per materiali/vegetazione, ma trova troppo corta la distanza della nebbia.
+B è ora attiva anche nel gioco normale: [implementazione e limiti](../fixes/exploration-apertures.md).
 Distanza, alberi maturi, dettaglio superficiale e rilievo percorribile restano
 da sviluppare. Le alternative e il contratto di memoria sono nella
 [proposta su panorama e conoscenza](visibility-and-world-memory.md).
