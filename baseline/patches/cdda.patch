@@ -833,7 +833,7 @@ index 0000000..4138acf
 +}
 diff --git a/src/cwm/cwm_map_exporter.cpp b/src/cwm/cwm_map_exporter.cpp
 new file mode 100644
-index 0000000..54c69a1
+index 0000000..99f9230
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.cpp
 @@ -0,0 +1,399 @@
@@ -1093,7 +1093,7 @@ index 0000000..54c69a1
 +    std::vector<flatbuffers::Offset<CDDA::CWM::EntitySpawned>> spawned;
 +    std::vector<flatbuffers::Offset<CDDA::CWM::EntityRemoved>> removed;
 +    for (const auto& actor : entity_offsets) {
-+        const auto id = flatbuffers::GetTemporaryPointer(fbb, actor)->id();
++        const auto id = flatbuffers::GetMutableTemporaryPointer(fbb, actor)->id();
 +        actor_ids.insert(id);
 +        if (!include_chunks && cache && !cache->actors.count(id))
 +            spawned.push_back(CDDA::CWM::CreateEntitySpawned(fbb, actor));
@@ -1310,10 +1310,10 @@ index 0000000..776779c
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..4b3c93c
+index 0000000..43cb665
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,374 @@
+@@ -0,0 +1,379 @@
 +// CDDA CWM IPC Server Implementation
 +// Licensed under Apache-2.0
 +
@@ -1374,7 +1374,10 @@ index 0000000..4b3c93c
 +    if (emit(snapshot)) {
 +        snapshot_sent_ = true;
 +        sent_revision_ = world_revision_;
-+        if (is_full) { ready_ = false; awaiting_state_ = state_id; }
++        if (is_full) {
++            ready_ = false; awaiting_state_ = state_id;
++            handshake_deadline_ = std::chrono::steady_clock::now() + std::chrono::seconds(5);
++        }
 +    }
 +}
 +
@@ -1431,6 +1434,8 @@ index 0000000..4b3c93c
 +    if (rejecting_ && (!server_->client()->queued_output_bytes() ||
 +        std::chrono::steady_clock::now() > handshake_deadline_)) server_->client()->close();
 +    if (!negotiated_ && std::chrono::steady_clock::now() > handshake_deadline_)
++        server_->client()->close();
++    if (negotiated_ && awaiting_state_ && std::chrono::steady_clock::now() > handshake_deadline_)
 +        server_->client()->close();
 +    if (!alive || !has_active_client()) cancel_connection();
 +    return true;

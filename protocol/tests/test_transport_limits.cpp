@@ -225,5 +225,16 @@ int main() {
         CHECK(!IpcClient::connect_unix("/tmp/cwm-missing-" + std::to_string(::getpid()), 0));
         CHECK(std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - start).count() < 50);
     });
+    test("failed_bind_preserves_other_supervisor_socket", [] {
+        const std::string path = "/tmp/cwm-owned-" + std::to_string(::getpid()) + ".sock";
+        IpcServer first(path); CHECK(first.start());
+        struct stat before {}; CHECK(::stat(path.c_str(), &before) == 0);
+        CHECK((before.st_mode & 0777) == 0600);
+        { IpcServer second(path); CHECK(!second.start()); }
+        struct stat after {}; CHECK(::stat(path.c_str(), &after) == 0);
+        CHECK(before.st_ino == after.st_ino);
+        auto client = IpcClient::connect_unix(path, 0); CHECK(client);
+        CHECK(first.poll_accept(100));
+    });
     return failures ? 1 : 0;
 }

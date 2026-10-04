@@ -469,10 +469,10 @@ index 7f3f860..c4c4482 100644
  void TestMapBlock::testSaveLoad(IGameDef *gamedef, const u8 version)
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..078df2c
+index 0000000..4ca67a2
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,1064 @@
+@@ -0,0 +1,1065 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
@@ -1026,6 +1026,7 @@ index 0000000..078df2c
 +            }
 +
 +            case CDDA::CWM::Payload::WorldSnapshot: {
++                std::lock_guard<std::recursive_mutex> lock(CddaBridge::projectionMutex());
 +                const auto* snap = msg->payload_as_WorldSnapshot();
 +                if (!snap || !snap->origin()) {
 +                    warningstream << "[Luanti-CDDA] Ignoring snapshot without origin" << std::endl;
