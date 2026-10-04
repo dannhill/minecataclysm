@@ -74,6 +74,11 @@ int main(int argc, const char *argv[]) {
     if (create) {
         auto *world = world_generator->make_new_world(world_name, {mod_id("dda")});
         if (!world) return 3;
+        if (create_actors) {
+            world->WORLD_OPTIONS["SPAWN_DENSITY"].setValue("0.0");
+            world->WORLD_OPTIONS["WANDER_SPAWNS"].setValue("false");
+            if (!world->save()) return 11;
+        }
         world_generator->set_active_world(world);
         loading_ui ui(false);
         g->load_core_data(ui);
@@ -160,7 +165,8 @@ int main(int argc, const char *argv[]) {
                 auto* actor = g->place_critter_at(mtype_id(entry.first),entry.second);
                 if (!actor) return 10;
                 actor->friendly = -1;
-                actor->add_effect(efftype_id("stunned"), 10_days, true);
+                actor->unique_name = entry.first == std::string("mon_zombie") ? "Lifecycle Zombie" : "Lifecycle Dog";
+                actor->add_effect(efftype_id("tied"), 10_days, true);
             }
             auto guy = make_shared_fast<npc>();
             guy->normalize();
@@ -169,7 +175,9 @@ int main(int argc, const char *argv[]) {
             guy->set_fac(faction_id("no_faction"));
             guy->set_attitude(NPCATT_NULL);
             guy->spawn_at_precise(tripoint_abs_ms(m.getabs(tripoint(60,64,0))));
-            guy->add_effect(efftype_id("stunned"), 10_days, true);
+            guy->set_guard_pos(guy->get_location());
+            guy->set_speed_base(0);
+            guy->moves = 0;
             overmap_buffer.insert_npc(guy);
             g->load_npcs();
         }

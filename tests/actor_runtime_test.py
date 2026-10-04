@@ -130,7 +130,7 @@ def main():
 
     expected = {}
     def identities(c):
-        return {a['type']: a['id'] for a in c.actors.values() if a['kind'] != 0}
+        return {a['type']: a['id'] for a in c.actors.values() if a['kind'] != 0 and 'Lifecycle' in a['name']}
 
     def reader(label, resave=False):
         command = [str(args.native_reader.resolve()), '--userdir', str(user), '--datadir', str(ws / 'cdda/data'),
@@ -211,9 +211,11 @@ def main():
         run('return', return_home)
         state = reader('home-native-resave', True)
         check('native_monster_values_preserve_wire_identity',
-              {(1 << 62) | int(a['values']['cwm_monster_id']) for a in state['monsters']} ==
+              {(1 << 62) | int(a['values']['cwm_monster_id']) for a in state['monsters']
+               if a['unique_name'].startswith('Lifecycle ')} ==
               {expected['mon_zombie'], expected['mon_dog']})
-        check('native_npc_id_preserved', {(1 << 63) | a['id'] for a in state['npcs']} == {expected['npc']})
+        check('native_npc_id_preserved', {(1 << 63) | a['id'] for a in state['npcs']
+              if a['name'] == 'Lifecycle NPC'} == {expected['npc']})
         run('after-pristine-writer', lambda c: check('pristine_writer_roundtrip_keeps_actor_ids', identities(c) == expected))
     check('spawn_removal_batches_cover_bubble_departure_return',
           set(expected.values()) <= {i for state in history for i in state['removed']} and
