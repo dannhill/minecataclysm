@@ -1866,10 +1866,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644
-index 0000000..7f6e944
+index 0000000..609ac58
 --- /dev/null
 +++ b/tests/cwm_projection_test.cpp
-@@ -0,0 +1,400 @@
+@@ -0,0 +1,399 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "avatar_action.h"
@@ -1881,6 +1881,7 @@ index 0000000..7f6e944
 +#include "calendar.h"
 +#include "creature_tracker.h"
 +#include "json.h"
++#include "json_loader.h"
 +#include "monster.h"
 +#include "npc.h"
 +#include "rng.h"
@@ -1939,9 +1940,7 @@ index 0000000..7f6e944
 +    REQUIRE(world->removed()->size() == 1);
 +    CHECK(world->removed()->Get(0)->id() == id);
 +    auto restored = make_shared_fast<monster>();
-+    std::istringstream stream(saved.str());
-+    JsonIn in(stream);
-+    restored->deserialize(in.get_object());
++    restored->deserialize(json_loader::from_string(saved.str()).get_object());
 +    REQUIRE(g->place_critter_at(restored, tripoint(64, 60, 0)));
 +    auto returned = snapshot();
 +    world = CDDA::CWM::GetCwmMessage(returned.data())->payload_as_WorldSnapshot();

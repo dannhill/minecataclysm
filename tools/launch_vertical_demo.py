@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Launch the verified native vertical fixture in a persistent isolated copy."""
+"""Launch a native vertical/actor fixture in a persistent isolated copy."""
 import argparse
 import hashlib
 import json
@@ -13,11 +13,13 @@ import tempfile
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--fresh', action='store_true', help='Create a new copy; preserve previous demo saves')
+    parser.add_argument('--actors', action='store_true', help='Use the actor lifecycle fixture')
     args, client_args = parser.parse_known_args()
     root = Path(__file__).resolve().parents[1]
-    source = root / 'artifacts/fnd04-vertical/fixture-user'
-    baseline = root / 'artifacts/fnd04-vertical/fixture-baseline.json'
-    directory = root / 'artifacts/vertical-demo'
+    artifact = 'fnd04-actors' if args.actors else 'fnd04-vertical'
+    source = root / 'artifacts' / artifact / 'fixture-user'
+    baseline = root / 'artifacts' / artifact / 'fixture-baseline.json'
+    directory = root / 'artifacts' / ('actor-demo' if args.actors else 'vertical-demo')
     pointer = directory / 'last-session'
     directory.mkdir(parents=True, exist_ok=True)
     if pointer.exists() and not args.fresh:
@@ -26,7 +28,7 @@ def main():
             raise RuntimeError('Invalid demo session reference; use --fresh')
     else:
         if not source.is_dir() or not baseline.is_file():
-            parser.error('Native fixture missing; see docs/fixes/fnd04-vertical-navigation.md for reproduction')
+            parser.error('Native fixture missing; see docs/fixes/ for reproduction')
         state = json.loads(baseline.read_text())
         if state['player_abs'] != [60, 60, 0]:
             raise RuntimeError('Unexpected native fixture baseline')
@@ -49,11 +51,16 @@ def main():
                CDDA_CHARACTER='Audit Survivor', LUANTI_WORLD=str(session / 'luanti'),
                LUANTI_CONFIG=str(config))
     env.pop('CDDA_TERRAIN_DEMO', None)
-    print('Prova verticale isolata — salvataggio:', session, flush=True)
-    print('Dal centro: nord scala su, sud cantina, est scala a pioli, due caselle est acqua.', flush=True)
+    print(('Prova creature isolata' if args.actors else 'Prova verticale isolata') + ' — salvataggio:', session, flush=True)
+    if args.actors:
+        print('Zombie/cane verso nord-est, NPC verso sud: innocui e immobilizzati per questa prova.', flush=True)
+        print('Scala a nord. Corridoio verso est: percorri circa 80 caselle e ritorna per scaricare/ricaricare le creature.', flush=True)
+    else:
+        print('Dal centro: nord scala su, sud cantina, est scala a pioli, due caselle est acqua.', flush=True)
     print('Spazio: sali/emergi. Maiusc+Spazio: scendi/immergiti. Un passaggio per pressione.', flush=True)
     print('Rilancia per riprendere questa prova; --fresh crea una copia nuova senza cancellarla.', flush=True)
-    os.execve(root / 'start.sh', [str(root / 'start.sh'), '--go', '--name', 'vertical_demo', *client_args], env)
+    os.execve(root / 'start.sh', [str(root / 'start.sh'), '--go', '--name',
+        'actor_demo' if args.actors else 'vertical_demo', *client_args], env)
 
 
 if __name__ == '__main__':
