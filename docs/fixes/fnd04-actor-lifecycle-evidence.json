@@ -1,0 +1,764 @@
+{
+  "source_commit": "cedb871f9a54c3fad30176daede169916c7615b2",
+  "branch": "fix/fnd04-actor-lifecycle",
+  "manual_demo_source_commit": "124702df4b7c1b538fde5a3275cf5242bb614af5",
+  "scope": "Persistent native monster/NPC identities, bounded lifecycle validation, scene ownership and recovery. Full FND-04, SAVE-001 and M5.5 not certified.",
+  "build_workspace": "artifacts/fnd03-session/workspace",
+  "build_policy": "Incremental reconstruction with retained caches. Production builds at 38da257; later acceptance commits change test helpers/documentation only. Fork trees and production protocol headers unchanged. No new cold-cache build.",
+  "source_verification": {
+    "acceptance_integration": {
+      "commit": "cedb871f9a54c3fad30176daede169916c7615b2",
+      "files": 244,
+      "status": "PASS"
+    },
+    "delivery_integration": {
+      "commit": "124702df4b7c1b538fde5a3275cf5242bb614af5",
+      "files": 244,
+      "status": "PASS"
+    },
+    "forks": {
+      "cdda": {
+        "tree_sha256": "c644ebdc913c25bfa7171a2e7d03545aca1e92554fc1a10d1e0eea966f0b3d44",
+        "files": 8579,
+        "changed": 0,
+        "status": "PASS"
+      },
+      "luanti": {
+        "tree_sha256": "5a47a4b3d1b7068f4e066aacde19f97189a4f345850df4dc00d7e16ea09327f0",
+        "files": 2251,
+        "changed": 0,
+        "status": "PASS"
+      },
+      "mineclonia": {
+        "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36",
+        "files": 9359,
+        "changed": 0,
+        "status": "PASS"
+      }
+    },
+    "independent_pinned_patch_replay": {
+      "cdda": {
+        "pin": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+        "patch_sha256": "f8258a6350d4c7f60f52c75daf91aa0d58be0ffd8a049fdb334813b62440080b",
+        "tree_sha256": "c644ebdc913c25bfa7171a2e7d03545aca1e92554fc1a10d1e0eea966f0b3d44",
+        "files": 8579,
+        "patched_files": 19,
+        "status": "PASS"
+      },
+      "luanti": {
+        "pin": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
+        "patch_sha256": "3ca15855274aee0609b568c6d33262572cc278cc3710271e99d16109081228f7",
+        "tree_sha256": "5a47a4b3d1b7068f4e066aacde19f97189a4f345850df4dc00d7e16ea09327f0",
+        "files": 2251,
+        "patched_files": 11,
+        "status": "PASS"
+      },
+      "mineclonia": {
+        "pin": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+        "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36",
+        "files": 9359,
+        "patched_files": 0,
+        "status": "PASS"
+      }
+    },
+    "verifier": {
+      "path": "tools/verify_captured_sources.py",
+      "sha256": "34e7ac00cd51aa635bc03c94217f1c8805d1311ca41edcfaac64f0c01c7bd6fe"
+    }
+  },
+  "build_commands": [
+    {
+      "argv": [
+        "cmake",
+        "--build",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/cdda/build",
+        "--target",
+        "cdda-server",
+        "cata_test",
+        "--parallel",
+        "2"
+      ],
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia",
+      "log": "artifacts/fnd04-actors/build-cdda-final.log"
+    },
+    {
+      "argv": [
+        "cmake",
+        "--build",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/luanti/build",
+        "--target",
+        "luanti",
+        "--parallel",
+        "2"
+      ],
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia",
+      "log": "artifacts/fnd04-actors/build-luanti-final.log"
+    },
+    {
+      "argv": [
+        "cmake",
+        "--build",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/protocol/build",
+        "--parallel",
+        "2"
+      ],
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia",
+      "log": "artifacts/fnd04-actors/build-protocol-final.log"
+    }
+  ],
+  "environment": {
+    "platform": "Linux-7.0.11-76070011-generic-x86_64-with-glibc2.35",
+    "python": "3.10.12 (main, Mar  3 2026, 11:56:32) [GCC 11.4.0]",
+    "python_flatbuffers": "25.12.19",
+    "display": ":1",
+    "compiler": "c++ (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0",
+    "cmake": "cmake version 3.22.1"
+  },
+  "native_reader": {
+    "binary_sha256": "1f91e064cd90020e5983ecd021e4072dbb93a77206c3284a9d4c832ad32ea6ce",
+    "source_sha256": "d9d7e86e1ce3fbe5d5f8948577ab7b0a4bc8a8908293f23566e99f3669fa53b0",
+    "source_commit": "cedb871f9a54c3fad30176daede169916c7615b2",
+    "pristine_core": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/pristine-cdda",
+    "build_receipt": {
+      "path": "artifacts/fnd04-actors/native-save-reader-final.build.json",
+      "sha256": "28720d7a6079f41ad92a7648116539d3a39fbda8373022942ea57d6694065963"
+    }
+  },
+  "daylight_native_reader": {
+    "binary_sha256": "438a2f80d1fa8bff85e89b0700779ff89eda520a11c0e7b946031b53e6e6c12d",
+    "source_sha256": "3d2d688153dbd5b6d471237c0cba95b5e2d9dafda8b83259e0b637d55bafd42e",
+    "source_commit": "124702df4b7c1b538fde5a3275cf5242bb614af5",
+    "pristine_core": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/pristine-cdda",
+    "build_receipt": {
+      "path": "artifacts/fnd04-actors/native-save-reader-daylight.build.json",
+      "sha256": "ab61f2695bf7589cbacb014d06cbd85ea0f642edb3c1bcfe7a8e30708a7836dd"
+    }
+  },
+  "installed_binaries": {
+    "source_commit": "cedb871f9a54c3fad30176daede169916c7615b2",
+    "mode": "Atomic replacement from verified reconstructed build; previous executables preserved in verified gzip archives",
+    "binaries": {
+      "cdda": {
+        "source": "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/cdda/build/src/cdda-server",
+        "installed": "/home/dannhill/Projects/cdda-mineclonia/cdda/build/src/cdda-server",
+        "sha256": "ba06428c58dff49a73f3a67a37f7d0613f0346f626f1499658e524879c61f50c",
+        "size": 313755920,
+        "rollback_verified": true
+      },
+      "luanti": {
+        "source": "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/luanti/bin/luanti",
+        "installed": "/home/dannhill/Projects/cdda-mineclonia/luanti/bin/luanti",
+        "sha256": "5801d041e04e0d1536d682b846aa2c77048544c96c73c16544ed97d2212a8c83",
+        "size": 17437544,
+        "rollback_verified": true
+      }
+    }
+  },
+  "rollback": {
+    "cdda": {
+      "source": "/home/dannhill/Projects/cdda-mineclonia/cdda/build/src/cdda-server",
+      "sha256": "e4416a7baf355cf2e7e722a95f92a3c48b3db121253491e3f7ffc0c4010085b1",
+      "archive": "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd04-actors/cdda-vertical-rollback.gz",
+      "archive_sha256": "3443bf462bf9cad8d2bf5d0225799897ff5464667ebdbafd343cc0f78ee1853f"
+    },
+    "luanti": {
+      "source": "/home/dannhill/Projects/cdda-mineclonia/luanti/bin/luanti",
+      "sha256": "91e33811975c56883e13a5c598b70978ee40a8dd58caacc00ed0b38ff0bdb34f",
+      "archive": "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd04-actors/luanti-vertical-rollback.gz",
+      "archive_sha256": "eb9bf60c2b010cbaadd6fae1ec933e75472510b5663e982b00ac218fcec82f49"
+    }
+  },
+  "units": {
+    "cdda": {
+      "cases": 19,
+      "assertions": 6701,
+      "filter": "[cwm],[diving]",
+      "rng_seed": 42,
+      "status": "PASS"
+    },
+    "protocol": {
+      "executables": 4,
+      "status": "PASS"
+    },
+    "luanti": {
+      "modules": 47,
+      "tests": 304,
+      "catch_cases": 4,
+      "catch_assertions": 648,
+      "status": "PASS"
+    }
+  },
+  "runtime_checks": {
+    "native_actor_lifecycle": {
+      "checks": 186,
+      "status": "PASS",
+      "path": "artifacts/fnd04-actors/native-runtime-acceptance/checks.json",
+      "sha256": "8226394d342d00adaac8f730fb29347fb9a5ce60e07c5106ee65523ad7f04d15"
+    },
+    "controlled_peer_renderer": {
+      "checks": 17,
+      "status": "PASS",
+      "path": "artifacts/fnd04-actors/gui-final/checks.json",
+      "sha256": "fcd627363c498de02521b76fbbdf352c59cada73b15bd2eec83dd7f03beda5e9"
+    },
+    "combined_native_renderer": {
+      "checks": 15,
+      "status": "PASS",
+      "path": "artifacts/fnd04-actors/native-gui-final/checks.json",
+      "sha256": "3e227b15b9f77fd2040628282211fe438f3049239487eeacf936c3a9357e8f5e"
+    },
+    "native_vertical_regression": {
+      "checks": 70,
+      "status": "PASS",
+      "path": "artifacts/fnd04-actors/vertical-regression/checks.json",
+      "sha256": "5b43685ab688e6e30ecca8e8be68fe46875d18e1556a80483119c95404edc258"
+    },
+    "native_session_regression": {
+      "checks": 21,
+      "status": "PASS",
+      "path": "artifacts/fnd04-actors/session-regression/checks.json",
+      "sha256": "2b64b23a62ed4271324f83d6c0d20a0c96eb993ab6746fe619e56891e639ecbf"
+    },
+    "adverse_transport_renderer_regression": {
+      "checks": 21,
+      "status": "PASS",
+      "path": "artifacts/fnd04-actors/transport-gui-regression/checks.json",
+      "sha256": "b6e9d2ba621e400f4d900fd3d3ca51b72cf77e2b47a34a2ead423eb77a0c8022"
+    },
+    "daylight_combined_native_renderer": {
+      "checks": 15,
+      "status": "PASS",
+      "path": "artifacts/fnd04-actors/daylight-native-gui/checks.json",
+      "sha256": "3e227b15b9f77fd2040628282211fe438f3049239487eeacf936c3a9357e8f5e"
+    },
+    "installed_daylight_demo_smoke": {
+      "checks": 8,
+      "status": "PASS",
+      "path": "artifacts/fnd04-actors/installed-daylight-smoke/checks.json",
+      "sha256": "71e31a9af9e72f1d6dfc390849e1f9937f02e6a42a375f8938bffe472085b458"
+    },
+    "presentation_regression": {
+      "checks": 48,
+      "status": "PASS",
+      "scenarios": [
+        {
+          "fps_limit": 60,
+          "delayed_result": true,
+          "measured_median_fps": 59.765289754077784,
+          "checks": 11,
+          "path": "artifacts/fnd04-actors/pacing-regression/delayed/result.json",
+          "sha256": "d9e75c1c5aaceaebd29d4fab69c894ece0177c54f0870a7c85577f4cc78142e0"
+        },
+        {
+          "fps_limit": 120,
+          "delayed_result": false,
+          "measured_median_fps": 59.959991695541156,
+          "checks": 11,
+          "path": "artifacts/fnd04-actors/pacing-regression/fps-120/result.json",
+          "sha256": "d519607a644ece7c2bd140d55bd5bd1cb461b5f6572c3e2b6163b87a4bfd2818"
+        },
+        {
+          "fps_limit": 30,
+          "delayed_result": false,
+          "measured_median_fps": 29.942492747853404,
+          "checks": 11,
+          "path": "artifacts/fnd04-actors/pacing-regression/fps-30/result.json",
+          "sha256": "06f510fa6b79dd14d718a1bfb3ce5973bea194edcd83bea56bf857ad0e4c69e8"
+        },
+        {
+          "fps_limit": 60,
+          "delayed_result": false,
+          "measured_median_fps": 59.708504276293226,
+          "checks": 15,
+          "path": "artifacts/fnd04-actors/pacing-regression/fps-60/result.json",
+          "sha256": "46612edbd44e43e486bb88a610aa5dc5e1a1c4266eeee7f7f4c3df056bb31c9c"
+        }
+      ],
+      "limitation": "FPS limit does not attest achieved throughput; authority peer is synthetic"
+    }
+  },
+  "reproduction_commands": [
+    {
+      "argv": [
+        "python3",
+        "tools/takeover_baseline.py",
+        "check"
+      ],
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia"
+    },
+    {
+      "argv": [
+        "python3",
+        "tools/verify_captured_sources.py",
+        "--workspace",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace",
+        "--receipt",
+        "<new-output>/source.json"
+      ],
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia"
+    },
+    {
+      "argv": [
+        "cmake",
+        "--build",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/cdda/build",
+        "--target",
+        "cdda-server",
+        "cata_test",
+        "--parallel",
+        "2"
+      ],
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia",
+      "log": "artifacts/fnd04-actors/build-cdda-final.log"
+    },
+    {
+      "argv": [
+        "cmake",
+        "--build",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/luanti/build",
+        "--target",
+        "luanti",
+        "--parallel",
+        "2"
+      ],
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia",
+      "log": "artifacts/fnd04-actors/build-luanti-final.log"
+    },
+    {
+      "argv": [
+        "cmake",
+        "--build",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/protocol/build",
+        "--parallel",
+        "2"
+      ],
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia",
+      "log": "artifacts/fnd04-actors/build-protocol-final.log"
+    },
+    {
+      "argv": [
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/cdda/build/tests/cata_test",
+        "--user-dir=<isolated-user>",
+        "[cwm],[diving]",
+        "--rng-seed",
+        "42"
+      ],
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/cdda"
+    },
+    {
+      "argv": [
+        "ctest",
+        "--test-dir",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/protocol/build",
+        "--output-on-failure"
+      ],
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia"
+    },
+    {
+      "argv": [
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/luanti/bin/luanti",
+        "--run-unittests",
+        "--config",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/unit.conf",
+        "--logfile",
+        "<new-output>/unit-luanti-engine.log"
+      ],
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia"
+    },
+    {
+      "argv": [
+        "python3",
+        "tools/build_native_save_reader.py",
+        "--pristine-cdda",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/pristine-cdda",
+        "--workspace",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace",
+        "--output",
+        "<new-output>/native-save-reader",
+        "--strip-debug"
+      ],
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia"
+    },
+    {
+      "argv": [
+        "<new-output>/native-save-reader",
+        "--create-actors",
+        "--userdir",
+        "<new-fixture>",
+        "--datadir",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/cdda/data",
+        "--output",
+        "<new-output>/fixture-baseline.json"
+      ],
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia"
+    },
+    {
+      "argv": [
+        "<new-output>/native-save-reader",
+        "--create-actor-demo",
+        "--userdir",
+        "<new-demo-fixture>",
+        "--datadir",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/cdda/data",
+        "--output",
+        "<new-output>/demo-fixture-baseline.json"
+      ],
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia"
+    },
+    {
+      "argv": [
+        "python3",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/tests/actor_runtime_test.py",
+        "--workspace",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace",
+        "--fixture",
+        "<new-fixture>",
+        "--native-reader",
+        "<new-output>/native-save-reader",
+        "--artifacts",
+        "<new-output>/native"
+      ],
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia"
+    },
+    {
+      "argv": [
+        "python3",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/tests/actor_gui_test.py",
+        "--workspace",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace",
+        "--artifacts",
+        "<new-output>/gui"
+      ],
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia",
+      "environment": {
+        "DISPLAY": ":1"
+      }
+    },
+    {
+      "argv": [
+        "python3",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/tests/actor_native_gui_test.py",
+        "--workspace",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace",
+        "--fixture",
+        "<new-fixture>",
+        "--native-reader",
+        "<new-output>/native-save-reader",
+        "--artifacts",
+        "<new-output>/native-gui"
+      ],
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia",
+      "environment": {
+        "DISPLAY": ":1"
+      }
+    },
+    {
+      "argv": [
+        "python3",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/tests/actor_native_gui_test.py",
+        "--workspace",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace",
+        "--fixture",
+        "<new-demo-fixture>",
+        "--native-reader",
+        "<new-output>/native-save-reader",
+        "--artifacts",
+        "<new-output>/daylight-gui"
+      ],
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia",
+      "environment": {
+        "DISPLAY": ":1"
+      }
+    },
+    {
+      "argv": [
+        "python3",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/tests/vertical_runtime_test.py",
+        "--workspace",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace",
+        "--fixture",
+        "<new-fixture>",
+        "--native-reader",
+        "<new-output>/native-save-reader",
+        "--artifacts",
+        "<new-output>/vertical"
+      ],
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia"
+    },
+    {
+      "argv": [
+        "python3",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/tests/session_runtime_test.py",
+        "--workspace",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace",
+        "--fixture",
+        "<new-fixture>",
+        "--artifacts",
+        "<new-output>/session"
+      ],
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia"
+    },
+    {
+      "argv": [
+        "python3",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/tests/presentation_regression.py",
+        "--workspace",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace",
+        "--artifacts",
+        "<new-output>/pacing"
+      ],
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia",
+      "environment": {
+        "DISPLAY": ":1"
+      }
+    },
+    {
+      "argv": [
+        "python3",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/tests/transport_gui_test.py",
+        "--workspace",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace",
+        "--artifacts",
+        "<new-output>/transport-gui"
+      ],
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia",
+      "environment": {
+        "DISPLAY": ":1"
+      }
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "artifacts/fnd04-actors/build-cdda-final.log",
+      "sha256": "f4db0ba02a880358a020ac731d3e84f3f96aa0736673a4e44ee201cb699f3b03"
+    },
+    {
+      "path": "artifacts/fnd04-actors/build-luanti-final.log",
+      "sha256": "1078e104f24c1980439ad2b585c3510c0ec00191710557c8990c242482832e7f"
+    },
+    {
+      "path": "artifacts/fnd04-actors/build-protocol-final.log",
+      "sha256": "ec32bd7db0383455389eb5cadc6c84a4acb45c085bdb16450b04ddd598e20f05"
+    },
+    {
+      "path": "artifacts/fnd04-actors/build-native-reader-final.log",
+      "sha256": "c617dd562c25121fa3ceffb8fbab80971ff0b50a52bba332c3f1326fa967a56f"
+    },
+    {
+      "path": "artifacts/fnd04-actors/build-native-reader-daylight.log",
+      "sha256": "dacec71ae0cbfb7e8504c7fd7bea1ba8c7c0d7ee02aa2c89320c79af3f5631b0"
+    },
+    {
+      "path": "artifacts/fnd04-actors/create-fixture-final.log",
+      "sha256": "cf05ea0e6af0d85ddc98fc3b54c051a7c463cba34e18306d3c9c5bbb1f8d00ce"
+    },
+    {
+      "path": "artifacts/fnd04-actors/create-daylight-fixture.log",
+      "sha256": "b8656398614ae6bbd9490fc79ca320618ba6bf1c275de30647ffb10fa12ab30b"
+    },
+    {
+      "path": "artifacts/fnd04-actors/unit-cdda-final.log",
+      "sha256": "dd5b03a03f7ad630076381dcadc92d58468b52cbb78bbefc4e41e59cbda935f0"
+    },
+    {
+      "path": "artifacts/fnd04-actors/unit-protocol-final.log",
+      "sha256": "bb191b18ac5e14d7c91176b50fc0cfd864bbc9dc76002d53d8acf448d928c0b9"
+    },
+    {
+      "path": "artifacts/fnd04-actors/unit-luanti.log",
+      "sha256": "a56c29a370ab9630bd53b94d028910c72f26b6bf0f6151c3a422ff3fd62748f7"
+    },
+    {
+      "path": "artifacts/fnd04-actors/unit-luanti-engine.log",
+      "sha256": "256927e50927b49b29cd6c37e411d92a129c78ffe2ca4e212fd1896d51772507"
+    },
+    {
+      "path": "artifacts/fnd04-actors/native-runtime-acceptance.log",
+      "sha256": "758f93198245aaf58ef642aa7071b00c869fe5171758f970a6c53c07a9aad7c5"
+    },
+    {
+      "path": "artifacts/fnd04-actors/gui-final.log",
+      "sha256": "9b89dd2d5678245a0c65f135472d57380cac6f274528566d1a6331d114901cdf"
+    },
+    {
+      "path": "artifacts/fnd04-actors/native-gui-final.log",
+      "sha256": "7c6444eac8b553ae7e638caccc482ad2a6cf59fdecb30dd22d34e6ba6b55eb11"
+    },
+    {
+      "path": "artifacts/fnd04-actors/vertical-regression.log",
+      "sha256": "2e88da9dedd6c7ea00bf91c6aa5ce24427922081a7a176c94800d3998b0e4eb6"
+    },
+    {
+      "path": "artifacts/fnd04-actors/session-regression.log",
+      "sha256": "b521251668986731c33eb286286031728feae84c80dc459679a2e9be6633373b"
+    },
+    {
+      "path": "artifacts/fnd04-actors/pacing-regression.log",
+      "sha256": "b4b93006ba03d61bae36efeb1379607f63533a26bf7ecf0f5066cc9323ce0218"
+    },
+    {
+      "path": "artifacts/fnd04-actors/transport-gui-regression.log",
+      "sha256": "888f9a8a18df2d8344b8e9aca828a1052500596e9157b25967fa382ab107d121"
+    },
+    {
+      "path": "artifacts/fnd04-actors/daylight-native-gui.log",
+      "sha256": "7c6444eac8b553ae7e638caccc482ad2a6cf59fdecb30dd22d34e6ba6b55eb11"
+    },
+    {
+      "path": "artifacts/fnd04-actors/source-acceptance.log",
+      "sha256": "c9e227edf26de84ef92ec13e07e2a46d65f4a28cc6560e9cb14f19c8e5f7fc11"
+    },
+    {
+      "path": "artifacts/fnd04-actors/baseline-final.log",
+      "sha256": "b6d5285e2433a806fa92052bdade15cf55986c5a15f8f0b82c28b07393632ca5"
+    },
+    {
+      "path": "artifacts/fnd04-actors/refresh-daylight.log",
+      "sha256": "5ac0e701fa06a67746668413ae8f9d3f081efc57f7743737f3acf8877643dde3"
+    },
+    {
+      "path": "artifacts/fnd04-actors/refresh-native-gui.json",
+      "sha256": "c15f7e0d84c80bb85a04a9df26f9a3c6e3886f7eec766beaa5f27319c6fe4329"
+    },
+    {
+      "path": "artifacts/fnd04-actors/refresh-daylight.json",
+      "sha256": "d023b15d7a4c2c068bf3f216c6d9824ba46efe2bb4b80de7da4c0bb6fe71ba4d"
+    },
+    {
+      "path": "artifacts/fnd04-actors/source-acceptance.json",
+      "sha256": "782667fd2018d8ce6da5dc494a998b3f3e62e2aa785b920d41ac84c8df1fbe44"
+    },
+    {
+      "path": "artifacts/fnd04-actors/installed-binaries.json",
+      "sha256": "61a32c25e64d2cc779b09bfe03602f832fffb3cee8278ebe4a957dbc29ed85ff"
+    },
+    {
+      "path": "artifacts/fnd04-actors/rollback.json",
+      "sha256": "77e15cf869cd6a1c0b42dd20719e8b9744f549ef0d8f22c2cd7c115926bc1031"
+    },
+    {
+      "path": "artifacts/fnd04-actors/fixture-baseline.json",
+      "sha256": "fd13fc96404a65fe7f09d9614154c97ba57cbec587d053287d15398f287d2ac2"
+    },
+    {
+      "path": "artifacts/fnd04-actors/demo-fixture-baseline.json",
+      "sha256": "554470afdb1f800543655d53dd6b89b746472b52ce7668cd3bc759462c2546dc"
+    },
+    {
+      "path": "artifacts/fnd04-actors/native-save-reader-final.build.json",
+      "sha256": "28720d7a6079f41ad92a7648116539d3a39fbda8373022942ea57d6694065963"
+    },
+    {
+      "path": "artifacts/fnd04-actors/native-save-reader-daylight.build.json",
+      "sha256": "ab61f2695bf7589cbacb014d06cbd85ea0f642edb3c1bcfe7a8e30708a7836dd"
+    },
+    {
+      "path": "artifacts/fnd04-actors/environment.json",
+      "sha256": "e7040963ae72b72312ab317c6c4dc1afce47637806b0361adc737b3c1ba87db7"
+    },
+    {
+      "path": "artifacts/fnd04-actors/post-acceptance-source-changes.json",
+      "sha256": "d85659dccf4ee000e2b7ef476ae6f8bee5b0198c01eaad2ef7cc3a0441b69650"
+    },
+    {
+      "path": "artifacts/fnd04-actors/native-runtime-acceptance/command.json",
+      "sha256": "8ac5ab38721be8fe36a179765cc1f77001c208aab2de5daa62419f6fb3006c45"
+    },
+    {
+      "path": "artifacts/fnd04-actors/native-gui-final/initial/launcher.log",
+      "sha256": "a7b828f6937c4bde456eefdd627761a1f341fd35910d9167b74f9d516b49d468"
+    },
+    {
+      "path": "artifacts/fnd04-actors/gui-final/command.json",
+      "sha256": "88ac207d784f52f2574b290d871e7e1b7f94abf0c904267f89f47767042918eb"
+    },
+    {
+      "path": "artifacts/fnd04-actors/session-regression/command.json",
+      "sha256": "5df9d6ab5de894352e78164e3d16cf0987822907a21f70e23f0780e2534d1a7e"
+    },
+    {
+      "path": "artifacts/fnd04-actors/transport-gui-regression/command.json",
+      "sha256": "e093666a02f527c037c51ac18d1cd299989819a1480a227c158535b52469338c"
+    },
+    {
+      "path": "artifacts/fnd04-actors/native-runtime-acceptance/history.json",
+      "sha256": "1ef4b72b4a249b8fc66b2293d066747e4144bc032cf1e84576068e9e99c2f311"
+    },
+    {
+      "path": "artifacts/fnd04-actors/native-runtime-acceptance/offloaded-native-save.json",
+      "sha256": "dfd800ef8b4a0765b197e583973b4e38dc23b2bf2128115d234ec1a28f33515c"
+    },
+    {
+      "path": "artifacts/fnd04-actors/native-runtime-acceptance/home-native-resave.json",
+      "sha256": "cf0cd4472371633e1c94c8f4679dc61b0c37de613b56901202eb197cd2c17ab0"
+    },
+    {
+      "path": "artifacts/fnd04-actors/native-gui-final/canonical.json",
+      "sha256": "e199d8269d0429035a2c22a74f2bf5ddc02637f4f34be0068d9f4dce450c8772"
+    },
+    {
+      "path": "artifacts/fnd04-actors/daylight-native-gui/canonical.json",
+      "sha256": "2c5bc78ac1a89897d647b0158e375a0f5ffd533740abc8e3ce26f71ca3ab70fc"
+    },
+    {
+      "path": "artifacts/fnd04-actors/installed-daylight-smoke/canonical.json",
+      "sha256": "8469bd7a203f652e834303fe7d056a0e17d1aaa323b70805768b21cef246d461"
+    },
+    {
+      "path": "artifacts/fnd04-actors/installed-daylight-smoke/session.json",
+      "sha256": "46c965141074b3231676bac9fa62da8ffe44a634950140de02afe8ae074f2ad5"
+    },
+    {
+      "path": "artifacts/fnd04-actors/installed-daylight-smoke/command.json",
+      "sha256": "938663519615b24f856cf6a7c1487de05849f706df536df2c05ea9e6156ea8af"
+    },
+    {
+      "path": "artifacts/fnd04-actors/installed-daylight-smoke/canonical-command.json",
+      "sha256": "e49959972e45e10288dd49ccad9006a9dfa57d914db46f061b49cd1f5836c319"
+    },
+    {
+      "path": "artifacts/fnd04-actors/installed-daylight-smoke/logs/cdda.log",
+      "sha256": "37dfb7cc81f1c1a3e63a64c55899a5d8d992c0a832c6e837be798900fc4be43d"
+    },
+    {
+      "path": "artifacts/fnd04-actors/installed-daylight-smoke/npc.png",
+      "sha256": "2aad2b7b4366722aedd13f16b4784202c1e67fc5743fe1b43360136904061ff2"
+    },
+    {
+      "path": "artifacts/fnd04-actors/gui-final/actors.csv",
+      "sha256": "2d67f16ba9eb145965c4fb6416e0ffb1ab725bf0c93f4853925fe28720968f51"
+    },
+    {
+      "path": "artifacts/fnd04-actors/gui-final/camera.csv",
+      "sha256": "22a36d956c223be52a19fbf97094548034687bf84b9310112d56bfe174b432db"
+    },
+    {
+      "path": "artifacts/fnd04-actors/native-gui-final/initial/actors.csv",
+      "sha256": "0e532ae752458e308d5e471cf2b480f7dd2a06adc0117eb54717cb55ba20e6d1"
+    },
+    {
+      "path": "artifacts/fnd04-actors/daylight-native-gui/initial/actors.csv",
+      "sha256": "5ac45984022d0b0e19cca4e433be784c625b8240d5de15cc2fed71940273d39e"
+    }
+  ],
+  "development_attempts": {
+    "build-cdda.log": "Unit helper initially used obsolete JsonIn API; corrected to native json_loader.",
+    "gui.log": "Diagnostic actor trace initially ran only on camera-offset callbacks; fixed to trace every rendered frame before final verification.",
+    "native-runtime.log": "Fixture/harness confused incidental native wildlife with the three target actors; selected uniquely labelled target actors.",
+    "native-runtime-final.log": "Harness required redundant lifecycle events in complete rebases; corrected to full-roster semantics and incremental event validation.",
+    "native-gui.log": "Harness forbade additional legitimate static wildlife; corrected target selection.",
+    "installed-demo-smoke": "Eight automated checks passed, but visual inspection found fixture too dark. Superseded by independently created native-noon outdoor variant.",
+    "demo-fixture-night-user": "Retained development variant; not the user-facing demo."
+  },
+  "manual_status": "Earlier vertical tests accepted. New actor lifecycle manual checklist pending; actor-demo.sh uses isolated persistent daylight copy.",
+  "limits": [
+    "Native world ID allocator remains positive signed int; no global repair of corrupted save counters.",
+    "Action-driven time unchanged; realtime, animations and orientation remain separate work.",
+    "Perception remains native; unperceived records are still transmitted and hidden by renderer.",
+    "No complete bestiary/dialogue/trade/vehicle-identity/threading certification.",
+    "Luanti auxiliary-avatar moved-too-fast logs persist; CWM camera and positions pass scoped tests.",
+    "Local illumination/perception, underwater view, panorama/fog and low-priority door variants remain pending.",
+    "At first playable realtime prototype, revisit automatic continuous traversal of stairs and ladders before choosing final controller."
+  ]
+}
