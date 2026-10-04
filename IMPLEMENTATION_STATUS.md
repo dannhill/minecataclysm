@@ -25,8 +25,12 @@ now implements recognizable native vertical connections and authoritative
 up/down input, with scoped verification PASS and installed runtimes. Jump
 ascends; Sneak + Jump descends, once per press. Stairfinding, underwater
 transitions and save/load on other floors remain native. `vertical-demo.sh`
-provides a persistent isolated manual fixture; its new geometry awaits the
-user's assessment. Full FND-04 and M5.5 are not recertified.
+provides a persistent isolated manual fixture; the user
+[accepts all four manual checks and the visual transition](docs/source/vertical-validation-2026-10-04.md).
+No additional manual checks are needed to accept this slice. Revisit automatic,
+continuous traversal of stairs and ladders with the user when the first real-time
+scheduler prototype is playable, before choosing the final controller.
+Full FND-04 and M5.5 are not recertified.
 Product decisions and planned prototypes do not certify implementation.
 
 Manual feedback accepted movement, structures, door opening, safe mode and

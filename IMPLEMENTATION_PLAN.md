@@ -94,8 +94,9 @@ nelle porte doppie. Il [passo sulle connessioni verticali](docs/fixes/fnd04-vert
 è implementato e verificato: scale/scale a pioli riconoscibili, salita/discesa
 contestuali native e immersione/emersione, un passaggio per pressione.
 `vertical-demo.sh` offre la prova isolata, riprendibile dopo quit/load;
-la nuova resa resta da valutare manualmente. Non finalizza il controller
-continuo né lo scheduler della fase 2 e non chiude l'intero FND-04.
+l'utente [accetta tutti e quattro i test e la transizione visiva](docs/source/vertical-validation-2026-10-04.md).
+Non servono altre prove manuali per accettare questo passo. Non finalizza
+il controller continuo né lo scheduler della fase 2 e non chiude l'intero FND-04.
 
 ## Fase 2 — Prototipo di tempo, movimento e percezione
 
@@ -112,6 +113,12 @@ Dipende da FND-01–03 e dalla proiezione sufficiente alla scena di confronto.
 - Confrontare walk/run/crouch/prone, diagonali, porte/finestre/muri, strettoie,
   scale/bordi, arrampicata/salti, acqua e taglie differenti. Investigare il costo
   effettivo del salto `iexamine::ledge` prima di adattarlo.
+- Quando il primo prototipo di scheduler in tempo reale sarà giocabile,
+  ricordare all'utente di rivalutare la salita/discesa automatica e continua
+  sia delle scale a gradini sia delle scale a pioli. Includerle nella prova
+  prima di scegliere il controller definitivo: la transizione attuale è
+  accettata provvisoriamente, la preferenza per il tempo reale è da confrontare.
+  Riferimento: [validazione e promemoria](docs/source/vertical-validation-2026-10-04.md).
 - Portata e ostacoli coerenti con geometria visibile; inizialmente esigere
   legalità nativa e coerenza geometrica. Estensioni ulteriori documentate.
 - Percezione CDDA indipendente dal cono camera; indizi periferici/sonori con

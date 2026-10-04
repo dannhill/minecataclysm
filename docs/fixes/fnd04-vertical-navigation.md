@@ -4,7 +4,9 @@
 alle connessioni verticali e ai comandi salita/discesa. Sorgenti `7a72692`,
 branch `fix/fnd04-vertical-navigation`; checksum, ambiente e risultati nel
 [registro delle evidenze](fnd04-vertical-navigation-evidence.json).
-La verifica manuale della nuova resa resta da svolgere. FND-04 completo,
+L'utente [accetta i quattro test manuali e la transizione visiva](../source/vertical-validation-2026-10-04.md).
+La salita/discesa automatica e continua di scale e scale a pioli sarà rivalutata
+con l'utente quando il prototipo di tempo reale sarà giocabile. FND-04 completo,
 SAVE-001 e M5.5 non sono certificati da questo passo.
 
 ## Comportamento
