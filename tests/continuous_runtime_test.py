@@ -105,7 +105,8 @@ def main():
                         origin=[origin.X(), origin.Y(), origin.Z()], completed=w.CompletedCommandId())
                     self.completed.add(w.CompletedCommandId())
                     history.append(dict(wall=time.monotonic(), **self.state))
-                    (out / 'history.json').write_text(json.dumps(history, indent=2) + '\n')
+                    with (out / 'history.jsonl').open('a') as stream:
+                        stream.write(json.dumps(history[-1], separators=(',',':')) + '\n')
                 elif msg.PayloadType() == Payload.Payload.DecisionPrompt:
                     prompt=parse(msg, DecisionPrompt)
                     self.prompts.append(dict(id=prompt.DecisionId(), text=prompt.Text().decode(),
@@ -280,6 +281,7 @@ def main():
             try:proc.wait(timeout=40)
             except subprocess.TimeoutExpired:proc.kill();proc.wait()
     check('reload_shutdown_clean',proc.returncode==0)
+    (out/'history.json').write_text(json.dumps(history,indent=2)+'\n')
     print('continuous native checks:',len(checks),'PASS',flush=True)
 
 if __name__=='__main__':main()
