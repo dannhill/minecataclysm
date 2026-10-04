@@ -32,6 +32,7 @@ int main(int argc, const char *argv[]) {
     bool create_ledge = false;
     bool create_exploration = false;
     bool create_vertical = false;
+    bool create_actors = false;
     bool resave = false;
     for (int i = 1; i < argc; ++i) {
         std::string arg(argv[i]);
@@ -39,6 +40,7 @@ int main(int argc, const char *argv[]) {
         else if (arg == "--create-ledge") { create = true; create_ledge = true; }
         else if (arg == "--create-exploration") { create = true; create_exploration = true; }
         else if (arg == "--create-vertical") { create = true; create_vertical = true; }
+        else if (arg == "--create-actors") { create = true; create_vertical = true; create_actors = true; }
         else if (arg == "--resave") resave = true;
         else if (i + 1 < argc && arg == "--userdir") userdir = argv[++i];
         else if (i + 1 < argc && arg == "--datadir") datadir = argv[++i];
@@ -133,6 +135,43 @@ int main(int argc, const char *argv[]) {
             m.ter_set(tripoint(62,60,-2), ter_str_id("t_water_cube"));
             u.remove_weapon();
             u.set_skill_level(skill_id("swimming"),10);
+        }
+        if (create_actors) {
+            // Long canonical corridor for genuine bubble departure/return.
+            // Save the initial map before editing overlapping native tinymaps.
+            m.save();
+            for (int sx = 0; sx <= 14; sx += 2) {
+                tinymap section;
+                section.load(tripoint_abs_sm(sx,4,0), false);
+                for (int y = 0; y < 24; ++y) for (int x = 0; x < 24; ++x) {
+                    section.ter_set(tripoint(x,y,0), ter_str_id("t_floor"));
+                    section.furn_set(tripoint(x,y,0), furn_str_id("f_null"));
+                    section.ter_set(tripoint(x,y,1), ter_str_id("t_wood_treated_roof"));
+                    section.furn_set(tripoint(x,y,1), furn_str_id("f_null"));
+                }
+                section.save();
+            }
+            m.load(tripoint_abs_sm(0,0,0), false);
+            m.ter_set(tripoint(60,59,0), ter_str_id("t_stairs_up"));
+            m.ter_set(tripoint(60,59,1), ter_str_id("t_stairs_down"));
+            calendar::turn = calendar::turn_zero + 1_hours;
+            for (const auto& entry : {std::pair<const char*,tripoint>{"mon_zombie",tripoint(63,58,0)},
+                                     {"mon_dog",tripoint(65,58,0)}}) {
+                auto* actor = g->place_critter_at(mtype_id(entry.first),entry.second);
+                if (!actor) return 10;
+                actor->friendly = -1;
+                actor->add_effect(efftype_id("stunned"), 10_days, true);
+            }
+            auto guy = make_shared_fast<npc>();
+            guy->normalize();
+            guy->randomize();
+            guy->name = "Lifecycle NPC";
+            guy->set_fac(faction_id("no_faction"));
+            guy->set_attitude(NPCATT_NULL);
+            guy->spawn_at_precise(tripoint_abs_ms(m.getabs(tripoint(60,64,0))));
+            guy->add_effect(efftype_id("stunned"), 10_days, true);
+            overmap_buffer.insert_npc(guy);
+            g->load_npcs();
         }
         if (create_exploration) {
             m.ter_set(tripoint(60,59,0), ter_str_id("t_water_dp"));

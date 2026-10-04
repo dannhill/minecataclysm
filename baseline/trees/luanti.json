@@ -7232,12 +7232,12 @@
   {
     "path": "src/cdda/cdda_bridge.cpp",
     "mode": "100644",
-    "sha256": "1e27f80cb8bfb422d8b4affa0bcd0738d2925dc70e003173c2a2ab50b8e61166"
+    "sha256": "f587c952b0e82c3ade00ed0949105ea4d1d42d4935d82c0706ea3ec4a8ad4f27"
   },
   {
     "path": "src/cdda/cdda_bridge.h",
     "mode": "100644",
-    "sha256": "124fe72eca0fc741570a679afb8893aa191bfccb27df79aeda8e5b7e8064307c"
+    "sha256": "109e26ca38f4b936368734ae512514e92e91c2fa319bfb6dd488c61f78f34966"
   },
   {
     "path": "src/chat.cpp",

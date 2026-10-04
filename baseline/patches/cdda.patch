@@ -833,10 +833,10 @@ index 0000000..4138acf
 +}
 diff --git a/src/cwm/cwm_map_exporter.cpp b/src/cwm/cwm_map_exporter.cpp
 new file mode 100644
-index 0000000..a76ede3
+index 0000000..154b358
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.cpp
-@@ -0,0 +1,408 @@
+@@ -0,0 +1,436 @@
 +// CDDA CWM Map & Entity Exporter Implementation
 +// Licensed under Apache-2.0
 +
@@ -856,8 +856,43 @@ index 0000000..a76ede3
 +#include "vehicle.h"
 +#include "field.h"
 +#include "units.h"
++#include <charconv>
++#include <stdexcept>
 +
 +namespace cwm {
++
++namespace {
++constexpr uint64_t monster_namespace = uint64_t(1) << 62;
++constexpr const char* monster_identity_key = "cwm_monster_id";
++
++int stored_monster_id(const monster& critter) {
++    const std::string stored = critter.get_value(monster_identity_key);
++    int id = 0;
++    const auto parsed = std::from_chars(stored.data(), stored.data() + stored.size(), id);
++    return parsed.ec == std::errc() && parsed.ptr == stored.data() + stored.size() && id > 0 ? id : 0;
++}
++
++uint64_t persistent_monster_id(monster& critter, game& g, std::set<uint64_t>& used,
++                              const std::set<uint64_t>& reserved) {
++    // Creature::values is canonical native metadata, retained even by the
++    // pristine reader/writer. The world's native character allocator is shared
++    // by avatars and NPCs already; consume it without consuming gameplay RNG.
++    int native_id = stored_monster_id(critter);
++    if (!native_id || used.count(monster_namespace | uint64_t(native_id))) {
++        // Legacy saves need a first identity. A simultaneous native copy with
++        // copied metadata needs a new identity, rather than aliasing its owner.
++        do {
++            native_id = g.assign_npc_id().get_value();
++            if (native_id <= 0) throw std::runtime_error("Native actor identity allocator exhausted");
++        } while (used.count(monster_namespace | uint64_t(native_id)) ||
++                 reserved.count(monster_namespace | uint64_t(native_id)));
++        critter.set_value(monster_identity_key, std::to_string(native_id));
++    }
++    const uint64_t id = monster_namespace | uint64_t(native_id);
++    used.insert(id);
++    return id;
++}
++} // namespace
 +
 +CDDA::CWM::CwmBlock CwmMapExporter::export_block(const tripoint& p, map& m, uint8_t light) {
 +    using namespace cdda::cwm;
@@ -1040,14 +1075,16 @@ index 0000000..a76ede3
 +        entity_offsets.push_back(player_state);
 +    }
 +
-+    // Monsters
-+    if (cache) {
-+        for (auto it = cache->creature_ids.begin(); it != cache->creature_ids.end();) {
-+            if (it->second.owner.expired()) it = cache->creature_ids.erase(it);
-+            else ++it;
++    // Identity belongs to the native creature, never the projection cache or
++    // a process address. Offloading/copying through an overmap keeps metadata.
++    std::set<uint64_t> monster_ids;
++    std::set<uint64_t> reserved_monster_ids;
++    for (const monster& critter : g.all_monsters()) {
++        if (!critter.is_hallucination() && !critter.is_dead()) {
++            const int id = stored_monster_id(critter);
++            if (id) reserved_monster_ids.insert(monster_namespace | uint64_t(id));
 +        }
 +    }
-+    uint64_t fallback_entity_id = 1000;
 +    for (monster& critter : g.all_monsters()) {
 +        if (!critter.is_hallucination() && !critter.is_dead()) {
 +            tripoint m_pos = critter.pos();
@@ -1060,16 +1097,7 @@ index 0000000..a76ede3
 +                hp_pct = static_cast<uint8_t>((critter.get_hp() * 100) / critter.get_hp_max());
 +            }
 +
-+            uint64_t entity_id = fallback_entity_id++;
-+            if (cache) {
-+                auto it = cache->creature_ids.find(&critter);
-+                if (it == cache->creature_ids.end()) {
-+                    auto owner = get_creature_tracker().find(m.getglobal(critter.pos()));
-+                    it = cache->creature_ids.emplace(&critter,
-+                        ProjectionCache::CreatureIdentity{owner, cache->next_entity_id++}).first;
-+                }
-+                entity_id = it->second.id;
-+            }
++            const uint64_t entity_id = persistent_monster_id(critter, g, monster_ids, reserved_monster_ids);
 +            auto mon_state = CDDA::CWM::CreateEntityState(
 +                fbb,
 +                entity_id,
@@ -1247,21 +1275,18 @@ index 0000000..a76ede3
 +} // namespace cwm
 diff --git a/src/cwm/cwm_map_exporter.h b/src/cwm/cwm_map_exporter.h
 new file mode 100644
-index 0000000..776779c
+index 0000000..497e579
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.h
-@@ -0,0 +1,66 @@
+@@ -0,0 +1,57 @@
 +// CDDA CWM Map & Entity Exporter
 +// Licensed under Apache-2.0
 +#pragma once
 +
 +#include <vector>
 +#include <cstdint>
-+#include <memory>
-+#include <unordered_map>
 +#include <set>
 +#include "cwm/cwm_protocol.hpp"
-+#include "memory_fast.h"
 +#include "point.h"
 +#include "cwm/cwm_generated.h"
 +
@@ -1277,12 +1302,6 @@ index 0000000..776779c
 +    struct ProjectionCache {
 +        tripoint origin;
 +        std::vector<uint64_t> tiles;
-+        uint64_t next_entity_id{1000};
-+        struct CreatureIdentity {
-+            weak_ptr_fast<monster> owner;
-+            uint64_t id;
-+        };
-+        std::unordered_map<const monster*, CreatureIdentity> creature_ids;
 +        std::set<uint64_t> actors;
 +    };
 +    static CDDA::CWM::CwmBlock export_block(const tripoint& p, map& m, uint8_t light);
@@ -1847,10 +1866,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644
-index 0000000..fedfa80
+index 0000000..7f6e944
 --- /dev/null
 +++ b/tests/cwm_projection_test.cpp
-@@ -0,0 +1,254 @@
+@@ -0,0 +1,400 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "avatar_action.h"
@@ -1859,8 +1878,154 @@ index 0000000..fedfa80
 +#include "mapdata.h"
 +#include "map_helpers.h"
 +#include "player_helpers.h"
++#include "calendar.h"
++#include "creature_tracker.h"
++#include "json.h"
++#include "monster.h"
++#include "npc.h"
++#include "rng.h"
++#include <sstream>
 +#include "cwm/cwm_map_exporter.h"
 +#include "cwm/tile_semantics.hpp"
++
++TEST_CASE("cwm_actor_identity_survives_native_serialization_and_projection_lifecycle", "[cwm][actors]")
++{
++    clear_avatar();
++    clear_map();
++    clear_creatures();
++    map& m = get_map();
++    avatar& u = get_avatar();
++    u.setpos(tripoint(60, 60, 0));
++    auto* mon = g->place_critter_at(mtype_id("mon_zombie"), tripoint(63, 60, 0));
++    REQUIRE(mon);
++    const auto time_before = calendar::turn;
++    const int moves_before = mon->moves;
++    const int hp_before = mon->get_hp();
++    const auto rng_before = rng_get_engine();
++    cwm::CwmMapExporter::ProjectionCache cache;
++    const auto snapshot = [&](bool full = false) {
++        return cwm::CwmMapExporter::export_world_snapshot(1, 1, u, m, *g, full, &cache);
++    };
++    auto first = snapshot(true);
++    const auto* world = CDDA::CWM::GetCwmMessage(first.data())->payload_as_WorldSnapshot();
++    REQUIRE(world->entities()->size() == 2);
++    const uint64_t id = world->entities()->Get(1)->id();
++    CHECK((id >> 62) == 1);
++    CHECK_FALSE(mon->get_value("cwm_monster_id").empty());
++    CHECK(calendar::turn == time_before);
++    CHECK(mon->moves == moves_before);
++    CHECK(mon->get_hp() == hp_before);
++    CHECK(rng_get_engine() == rng_before);
++
++    mon->setpos(tripoint(64, 60, 0));
++    auto moved = snapshot();
++    world = CDDA::CWM::GetCwmMessage(moved.data())->payload_as_WorldSnapshot();
++    CHECK(world->entities()->Get(1)->id() == id);
++    CHECK(world->entities()->Get(1)->pos()->x() == 64);
++    CHECK(world->spawned()->size() == 0);
++    CHECK(world->removed()->size() == 0);
++    // A newly constructed projection/session cache cannot redefine identity.
++    cache = {};
++    auto recovered = snapshot(true);
++    CHECK(CDDA::CWM::GetCwmMessage(recovered.data())->payload_as_WorldSnapshot()->entities()->Get(1)->id() == id);
++
++    std::ostringstream saved;
++    JsonOut out(saved);
++    mon->serialize(out);
++    get_creature_tracker().remove(*mon);
++    auto removed = snapshot();
++    world = CDDA::CWM::GetCwmMessage(removed.data())->payload_as_WorldSnapshot();
++    REQUIRE(world->entities()->size() == 1);
++    REQUIRE(world->removed()->size() == 1);
++    CHECK(world->removed()->Get(0)->id() == id);
++    auto restored = make_shared_fast<monster>();
++    std::istringstream stream(saved.str());
++    JsonIn in(stream);
++    restored->deserialize(in.get_object());
++    REQUIRE(g->place_critter_at(restored, tripoint(64, 60, 0)));
++    auto returned = snapshot();
++    world = CDDA::CWM::GetCwmMessage(returned.data())->payload_as_WorldSnapshot();
++    REQUIRE(world->spawned()->size() == 1);
++    CHECK(world->spawned()->Get(0)->state()->id() == id);
++
++    // A simultaneous copied creature is distinct; its copied metadata cannot
++    // cause duplicate wire IDs. An offloaded/reloaded sole owner above keeps ID.
++    auto copied = make_shared_fast<monster>(*restored);
++    REQUIRE(g->place_critter_at(copied, tripoint(65, 60, 0)));
++    auto cloned = snapshot();
++    world = CDDA::CWM::GetCwmMessage(cloned.data())->payload_as_WorldSnapshot();
++    REQUIRE(world->entities()->size() == 3);
++    CHECK(world->entities()->Get(1)->id() == id);
++    const uint64_t copy_id = world->entities()->Get(2)->id();
++    CHECK(copy_id != id);
++    CHECK(copied->get_value("cwm_monster_id") != restored->get_value("cwm_monster_id"));
++    restored->poly(mtype_id("mon_zombie_brute"));
++    restored->setpos(tripoint(64, 60, 1));
++    auto evolved = snapshot();
++    world = CDDA::CWM::GetCwmMessage(evolved.data())->payload_as_WorldSnapshot();
++    CHECK(world->entities()->Get(1)->id() == id);
++    CHECK(world->entities()->Get(1)->type_id()->str() == "mon_zombie_brute");
++    CHECK(world->entities()->Get(1)->pos()->z() == 1);
++    copied->set_hp(0);
++    get_creature_tracker().kill_marked_for_death();
++    get_creature_tracker().remove_dead();
++    auto dead = snapshot();
++    world = CDDA::CWM::GetCwmMessage(dead.data())->payload_as_WorldSnapshot();
++    REQUIRE(world->removed()->size() == 1);
++    CHECK(world->removed()->Get(0)->id() == copy_id);
++    clear_creatures();
++}
++
++TEST_CASE("cwm_legacy_monster_identity_is_validated_without_changing_other_metadata", "[cwm][actors]")
++{
++    clear_avatar();
++    clear_map();
++    clear_creatures();
++    get_avatar().setpos(tripoint(60, 60, 0));
++    auto* mon = g->place_critter_at(mtype_id("mon_zombie"), tripoint(63, 60, 0));
++    REQUIRE(mon);
++    mon->set_value("existing_native_value", "preserved");
++    for (const char* value : {"", "-1", "0", "12suffix", "18446744073709551615"}) {
++        CAPTURE(value);
++        mon->set_value("cwm_monster_id", value);
++        auto bytes = cwm::CwmMapExporter::export_world_snapshot(1, 1, get_avatar(), get_map(), *g, false);
++        const auto* world = CDDA::CWM::GetCwmMessage(bytes.data())->payload_as_WorldSnapshot();
++        CHECK((world->entities()->Get(1)->id() >> 62) == 1);
++        CHECK(mon->get_value("cwm_monster_id") != value);
++        CHECK(mon->get_value("existing_native_value") == "preserved");
++    }
++    clear_creatures();
++}
++
++TEST_CASE("cwm_npc_identity_tracks_native_id_across_motion_and_removal", "[cwm][actors]")
++{
++    clear_avatar();
++    clear_map();
++    clear_creatures();
++    get_avatar().setpos(tripoint(60, 60, 0));
++    npc& person = spawn_npc(point(63, 60), "test_talker");
++    const uint64_t expected = (uint64_t(1) << 63) | uint64_t(person.getID().get_value());
++    cwm::CwmMapExporter::ProjectionCache cache;
++    auto first = cwm::CwmMapExporter::export_world_snapshot(1, 1, get_avatar(), get_map(), *g, true, &cache);
++    auto* world = CDDA::CWM::GetCwmMessage(first.data())->payload_as_WorldSnapshot();
++    REQUIRE(world->entities()->size() == 2);
++    CHECK(world->entities()->Get(1)->id() == expected);
++    CHECK(world->entities()->Get(1)->type() == CDDA::CWM::EntityType::NPC);
++    person.setpos(tripoint(64, 60, 1));
++    auto moved = cwm::CwmMapExporter::export_world_snapshot(2, 2, get_avatar(), get_map(), *g, false, &cache);
++    world = CDDA::CWM::GetCwmMessage(moved.data())->payload_as_WorldSnapshot();
++    CHECK(world->entities()->Get(1)->id() == expected);
++    CHECK(world->entities()->Get(1)->pos()->z() == 1);
++    CHECK(world->spawned()->size() == 0);
++    const auto native_id = person.getID();
++    g->remove_npc(native_id);
++    auto removed = cwm::CwmMapExporter::export_world_snapshot(3, 3, get_avatar(), get_map(), *g, false, &cache);
++    world = CDDA::CWM::GetCwmMessage(removed.data())->payload_as_WorldSnapshot();
++    REQUIRE(world->entities()->size() == 1);
++    REQUIRE(world->removed()->size() == 1);
++    CHECK(world->removed()->Get(0)->id() == expected);
++    clear_creatures();
++}
 +
 +TEST_CASE("cwm_terrain_catalog_has_visible_obstacles", "[cwm]")
 +{

@@ -497,10 +497,10 @@ index 7f3f860..c4c4482 100644
  void TestMapBlock::testSaveLoad(IGameDef *gamedef, const u8 version)
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..a753758
+index 0000000..0c17136
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,1106 @@
+@@ -0,0 +1,1138 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
@@ -565,6 +565,8 @@ index 0000000..a753758
 +    std::chrono::steady_clock::time_point next_move_{};
 +    std::chrono::steady_clock::time_point sent_move_{};
 +    std::ofstream trace_;
++    std::ofstream entity_trace_;
++    uint64_t next_actor_node_{0};
 +    bool player_ready_{false};
 +    float reconnect_timer_{0.f};
 +    cdda::cwm::IpcWork ipc_work_;
@@ -696,6 +698,7 @@ index 0000000..a753758
 +            if (node) {
 +                node->forEachMaterial([](auto& material) { material.FogEnable = true; });
 +                ent.scene_node = node;
++                ent.node_generation = ++next_actor_node_;
 +                infostream << "[Luanti-CDDA] Visual creature " << ent.id << ": " << ent.type_id << std::endl;
 +            }
 +        }
@@ -1211,11 +1214,20 @@ index 0000000..a753758
 +                                if (it->second.scene_node)
 +                                    static_cast<irr::scene::ISceneNode*>(it->second.scene_node)->remove();
 +                                it->second.scene_node = nullptr;
++                                it->second.node_generation = 0;
 +                                it->second.type_id = type_id;
 +                            }
 +                            it->second.name = ent_state->name() ? ent_state->name()->str() : "";
 +                            it->second.humanoid = ent_state->type() == CDDA::CWM::EntityType::NPC;
-+                            if (target != it->second.target_pos) {
++                            // A full recovery state or newly perceived actor
++                            // establishes its position now. Never animate a
++                            // path through the unseen interval or reconnect gap.
++                            if (previous_state != cdda::cwm::SessionState::Running ||
++                                !it->second.perceived || !ent_state->perceived()) {
++                                it->second.current_pos = target;
++                                it->second.start_pos = target;
++                                it->second.interpolation_time = step_duration;
++                            } else if (target != it->second.target_pos) {
 +                                it->second.start_pos = it->second.current_pos;
 +                                it->second.interpolation_time = 0.0f;
 +                            }
@@ -1379,6 +1391,10 @@ index 0000000..a753758
 +        pimpl_->trace_.open(trace_path);
 +        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog,ipc_connected,ipc_input,ipc_output,ipc_read_bytes,ipc_write_bytes,ipc_frames,ipc_dispatch_bytes,ipc_read_calls,ipc_write_calls,session_state,input_ready,session_id,player_id,connection_id,sequence,resync_count,entity_cache,vehicle_cache,scene_origin_x,scene_origin_y\n";
 +    }
++    if (g_settings->getNoEx("cwm_entity_trace_file", trace_path) && !trace_path.empty()) {
++        pimpl_->entity_trace_.open(trace_path);
++        pimpl_->entity_trace_ << "time_ns,revision,session_id,connection_id,id,type,perceived,ready,current_x,current_y,current_z,target_x,target_y,target_z,node_generation,node_visible,node_x,node_y,node_z\n";
++    }
 +    return pimpl_->connect();
 +}
 +
@@ -1467,8 +1483,24 @@ index 0000000..a753758
 +}
 +
 +void CddaBridge::updateScenePositions() {
-+    if (pimpl_)
-+        for (auto& [id, ent] : pimpl_->entities_) pimpl_->render_entity(ent);
++    if (!pimpl_) return;
++    const auto now = std::chrono::duration_cast<std::chrono::nanoseconds>(
++        std::chrono::steady_clock::now().time_since_epoch()).count();
++    for (auto& [id, ent] : pimpl_->entities_) {
++        pimpl_->render_entity(ent);
++        if (!pimpl_->entity_trace_.is_open()) continue;
++        const auto* node = static_cast<irr::scene::ISceneNode*>(ent.scene_node);
++        const auto pos = node ? node->getPosition() : v3f();
++        pimpl_->entity_trace_ << now << ',' << pimpl_->metrics_.current_revision << ','
++            << pimpl_->session_.identity.session << ',' << pimpl_->session_.identity.connection << ','
++            << id << ',' << (ent.humanoid ? "npc" : id == 1 ? "player" : "monster") << ','
++            << ent.perceived << ',' << pimpl_->session_.ready() << ','
++            << ent.current_pos.X << ',' << ent.current_pos.Y << ',' << ent.current_pos.Z << ','
++            << ent.target_pos.X << ',' << ent.target_pos.Y << ',' << ent.target_pos.Z << ','
++            << ent.node_generation << ',' << (node && node->isVisible()) << ','
++            << pos.X << ',' << pos.Y << ',' << pos.Z << '\n';
++    }
++    if (pimpl_->entity_trace_.is_open()) pimpl_->entity_trace_.flush();
 +}
 +
 +bool CddaBridge::handleMoveInput(int dir) {
@@ -1609,10 +1641,10 @@ index 0000000..a753758
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.h b/src/cdda/cdda_bridge.h
 new file mode 100644
-index 0000000..aa2fd3b
+index 0000000..66004ab
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.h
-@@ -0,0 +1,117 @@
+@@ -0,0 +1,118 @@
 +// Luanti C++ CWM Presentation Bridge
 +// Licensed under Apache-2.0
 +#pragma once
@@ -1666,6 +1698,7 @@ index 0000000..aa2fd3b
 +    bool perceived{true};
 +    bool humanoid{false};
 +    void* scene_node{nullptr};
++    uint64_t node_generation{0};
 +    float model_y_offset{0.0f};
 +};
 +

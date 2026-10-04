@@ -58,6 +58,7 @@ def main():
         actors=[entity]
         if revision==1000:
             Entity.EntityStateStart(b); Entity.EntityStateAddId(b,1000)
+            Entity.EntityStateAddType(b,2)
             Entity.EntityStateAddPos(b,Vec3f.CreateVec3f(b,8,8,0)); actors.append(Entity.EntityStateEnd(b))
         World.WorldSnapshotStartEntitiesVector(b,len(actors))
         for actor in reversed(actors): b.PrependUOffsetTRelative(actor)

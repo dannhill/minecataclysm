@@ -28,6 +28,9 @@ inline bool valid_world(const CDDA::CWM::WorldSnapshot* world) {
     bool player = false;
     for (const auto* actor : *world->entities()) {
         if (!actor || !actor->id() || !actor->pos() || !ids.insert(actor->id()).second) return false;
+        if (actor->type() < CDDA::CWM::EntityType::PLAYER || actor->type() > CDDA::CWM::EntityType::MONSTER ||
+            (actor->id() == 1) != (actor->type() == CDDA::CWM::EntityType::PLAYER) ||
+            !std::isfinite(actor->rotation()) || actor->hp_percent() > 100) return false;
         const auto* p = actor->pos();
         if (!std::isfinite(p->x()) || !std::isfinite(p->y()) || !std::isfinite(p->z()) ||
             std::abs(p->x()) > 32767 || std::abs(p->y()) > 32767 || std::abs(p->z()) > 1024) return false;
@@ -53,10 +56,27 @@ inline bool valid_world(const CDDA::CWM::WorldSnapshot* world) {
             if (!part || !part->offset() || !std::isfinite(part->offset()->x()) ||
                 !std::isfinite(part->offset()->y()) || !std::isfinite(part->offset()->z())) return false;
     }
-    if (world->spawned()) for (const auto* spawn : *world->spawned())
-        if (!spawn || !spawn->state() || !ids.count(spawn->state()->id())) return false;
+    std::set<uint64_t> spawned_ids, removed_ids;
+    if (world->spawned()) for (const auto* spawn : *world->spawned()) {
+        if (!spawn || !spawn->state() || !ids.count(spawn->state()->id()) ||
+            !spawned_ids.insert(spawn->state()->id()).second) return false;
+        const auto* declared = spawn->state();
+        const auto found = std::find_if(world->entities()->begin(), world->entities()->end(),
+            [declared](const auto* actor) { return actor->id() == declared->id(); });
+        const auto* actor = *found;
+        const auto string_equal = [](const auto* a, const auto* b) {
+            return a && b ? a->str() == b->str() : a == b;
+        };
+        if (!declared->pos() || actor->type() != declared->type() ||
+            actor->pos()->x() != declared->pos()->x() || actor->pos()->y() != declared->pos()->y() ||
+            actor->pos()->z() != declared->pos()->z() || actor->rotation() != declared->rotation() ||
+            actor->animation_hint() != declared->animation_hint() || actor->hp_percent() != declared->hp_percent() ||
+            actor->perceived() != declared->perceived() || actor->state_flags() != declared->state_flags() ||
+            !string_equal(actor->type_id(), declared->type_id()) || !string_equal(actor->name(), declared->name())) return false;
+    }
     if (world->removed()) for (const auto* removed : *world->removed())
-        if (!removed || ids.count(removed->id())) return false;
+        if (!removed || !removed->id() || ids.count(removed->id()) ||
+            !removed_ids.insert(removed->id()).second) return false;
     return true;
 }
 
@@ -98,7 +118,7 @@ public:
                 state = SessionState::Rejected; channel.close(); return false;
             }
             clear_world = identity.session && (identity.session != msg.session_id() || identity.player != msg.player_id());
-            if (clear_world) revision = 0;
+            if (clear_world) { revision = 0; actor_types_.clear(); }
             identity = {msg.session_id(), msg.player_id(), msg.connection_id()};
             next_command = std::max(next_command, hello->next_command_id());
             sequence = 1; expected_resync_ = 0; state = SessionState::Accepted;
@@ -126,6 +146,14 @@ public:
                 (!syncing && world->base_revision() != revision)) {
                 request_resync(channel); return false;
             }
+            // Evolution may change archetype, but an existing native ID
+            // cannot silently switch between player, NPC and monster.
+            for (const auto* actor : *world->entities()) {
+                const auto previous = actor_types_.find(actor->id());
+                if (previous != actor_types_.end() && previous->second != actor->type()) {
+                    request_resync(channel); return false;
+                }
+            }
             return true;
         }
         if (msg.payload_type() == Payload::HeartbeatAck) return true;
@@ -133,6 +161,8 @@ public:
         request_resync(channel); return false;
     }
     bool commit(const CDDA::CWM::WorldSnapshot& world, CwmTransport& channel) {
+        actor_types_.clear();
+        for (const auto* actor : *world.entities()) actor_types_.emplace(actor->id(), actor->type());
         revision = world.world_revision(); state = SessionState::Running;
         if (!world.full()) return true;
         auto b = builder();
@@ -142,6 +172,7 @@ public:
     }
 private:
     uint64_t tx_{0}, request_id_{0}, expected_resync_{0};
+    std::unordered_map<uint64_t, CDDA::CWM::EntityType> actor_types_;
 };
 
 struct CommandOutcome { uint64_t id{0}; bool accepted{false}; std::string error; uint64_t revision{0}; };

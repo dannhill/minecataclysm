@@ -42,6 +42,24 @@ bool accept(ClientSession& s, MemoryChannel& c, const std::vector<uint8_t>& byte
     CHECK(MessageVerifier::verify(bytes.data(),bytes.size()));
     return s.accept(*GetCwmMessage(bytes.data()),c);
 }
+std::vector<uint8_t> roster(uint64_t seq, EntityType kind=EntityType::MONSTER,
+    bool duplicate_spawn=false, bool contradictory_spawn=false, bool duplicate_remove=false) {
+    MessageBuilder b(seq,seq+2,{11,22,33}); auto& f=b.builder();
+    Vec3f pos(2,3,0), other(5,3,0); Coord3i origin(0,0,0);
+    auto player=CreateEntityState(f,1,EntityType::PLAYER,0,&pos);
+    auto actor=CreateEntityState(f,2,kind,0,&pos);
+    auto actors=f.CreateVector(std::vector{player,actor});
+    auto announced=contradictory_spawn?CreateEntityState(f,2,kind,0,&other):actor;
+    auto spawn=CreateEntitySpawned(f,announced);
+    auto spawned=f.CreateVector(duplicate_spawn?std::vector{spawn,spawn}:std::vector{spawn});
+    auto removal=CreateEntityRemoved(f,9);
+    auto removed=f.CreateVector(duplicate_remove?std::vector{removal,removal}:std::vector<flatbuffers::Offset<EntityRemoved>>{});
+    auto vehicles=f.CreateVector(std::vector<flatbuffers::Offset<VehicleState>>{});
+    auto fields=f.CreateVector(std::vector<flatbuffers::Offset<FieldState>>{});
+    auto body=CreateWorldSnapshot(f,seq+2,&origin,0,0,actors,vehicles,fields,0,false,false,
+        seq+1,seq,0,0,spawned,removed);
+    return b.finish_message(Payload::WorldSnapshot,body.Union());
+}
 void handshake(ClientSession& s, MemoryChannel& c) {
     CHECK(s.begin(c)); CHECK(!s.ready());
     MessageBuilder b(1,5,{11,22,33}); CHECK(accept(s,c,b.build_hello_response(true,"test","",8)));
@@ -65,6 +83,11 @@ int main() {
     test("rejected_hello_never_ready",[]{ClientSession s; MemoryChannel c; CHECK(s.begin(c)); MessageBuilder b(1,0,{11,22,33}); CHECK(!accept(s,c,b.build_hello_response(false,"test"))); CHECK(s.state==SessionState::Rejected && !c.valid);});
     test("fresh_server_discards_previous_world",[]{ClientSession s; MemoryChannel c; handshake(s,c); CHECK(s.begin(c)); MessageBuilder b(1,1,{12,22,1}); CHECK(accept(s,c,b.build_hello_response(true,"test"))); CHECK(s.clear_world && s.revision==0);});
     test("same_session_reconnect_retains_revision",[]{ClientSession s; MemoryChannel c; handshake(s,c); CHECK(s.begin(c)); MessageBuilder b(1,5,{11,22,34}); CHECK(accept(s,c,b.build_hello_response(true,"test","",2))); CHECK(!s.clear_world && s.revision==5 && s.next_command==8);});
+    test("duplicate_spawn_metadata_requires_resync",[]{ClientSession s; MemoryChannel c; handshake(s,c); CHECK(!accept(s,c,roster(4,EntityType::MONSTER,true))); CHECK(!s.ready() && s.revision==5);});
+    test("contradictory_spawn_position_requires_resync",[]{ClientSession s; MemoryChannel c; handshake(s,c); CHECK(!accept(s,c,roster(4,EntityType::MONSTER,false,true))); CHECK(!s.ready() && s.revision==5);});
+    test("duplicate_remove_metadata_requires_resync",[]{ClientSession s; MemoryChannel c; handshake(s,c); CHECK(!accept(s,c,roster(4,EntityType::MONSTER,false,false,true))); CHECK(!s.ready() && s.revision==5);});
+    test("second_player_or_unknown_kind_requires_resync",[]{for(auto kind:{EntityType::PLAYER,static_cast<EntityType>(99)}) {ClientSession s; MemoryChannel c; handshake(s,c); CHECK(!accept(s,c,roster(4,kind))); CHECK(!s.ready());}});
+    test("existing_actor_cannot_switch_between_npc_and_monster",[]{ClientSession s; MemoryChannel c; handshake(s,c); auto bytes=roster(4); CHECK(accept(s,c,bytes)); CHECK(s.commit(*GetCwmMessage(bytes.data())->payload_as_WorldSnapshot(),c)); CHECK(!accept(s,c,roster(5,EntityType::NPC))); CHECK(s.revision==6 && !s.ready());});
     test("deduplicate_pending_and_complete",[]{CommandLedger l; CHECK(l.begin(7,1,"move")==CommandLedger::Status::Fresh); CHECK(l.begin(7,1,"move")==CommandLedger::Status::Pending); l.complete({1,true,"",20}); CHECK(l.begin(7,1,"move")==CommandLedger::Status::Complete); l.complete({1,false,"late",30}); CHECK(l.find(1)->outcome.accepted && l.find(1)->outcome.revision==20);});
     test("conflicting_semantics_or_author_rejected",[]{CommandLedger l; l.begin(7,1,"move"); CHECK(l.begin(7,1,"interact")==CommandLedger::Status::Conflict); CHECK(l.begin(8,1,"move")==CommandLedger::Status::Conflict);});
     test("bounded_cache_expiry_never_reexecutes",[]{CommandLedger l(2); for(uint64_t i=1;i<=100;i++){ CHECK(l.begin(7,i,"wait")==CommandLedger::Status::Fresh); l.complete({i,true,"",i}); CHECK(l.size()<=2); } CHECK(l.begin(7,1,"wait")==CommandLedger::Status::Expired); CHECK(l.next_id()==101);});
