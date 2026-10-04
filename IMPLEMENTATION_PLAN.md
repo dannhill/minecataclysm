@@ -27,7 +27,7 @@ le riparazioni già completate a visibilità, strutture e movimento.
 | Task | Risultato verificabile | Stato |
 |---|---|---|
 | FND-01 | Distinguere nuova partita e caricamento; mantenere identità, inventario, posizione, orologio e mondo. Comandi e verifiche headless usano il ciclo nativo completo. | IMPLEMENTED — verifica mirata PASS; SAVE-001 completo in FND-05 |
-| FND-02 | Framing e code limitati; EOF, input malformato e client lento non bloccano o terminano il runtime. | PLANNED |
+| FND-02 | Framing e code limitati; EOF, framing/FlatBuffers strutturalmente invalidi e client lento sono contenuti. I/O non bloccante e lavoro limitato per aggiornamento. | IMPLEMENTED — verifica mirata PASS; [evidenze](docs/fixes/fnd02-transport.md) |
 | FND-03 | Negoziazione, identità di sessione, deduplicazione, revisioni, sequenze, reconnect/resync e abilitazione dell'input su stato completo. | PLANNED |
 | FND-04 | Entità reali persistenti, picking, verticalità, campi, luce/percezione e HUD autorevoli; lifecycle e threading verificati. | IN PROGRESS: rebase, creature base, decisioni native, OPEN/CLOSE puntati, varianti porte/finestre e presentazione acqua; copertura incompleta |
 | FND-05 | SAVE-001 completo, test discovery, licenze/media e benchmark popolati riproducibili; nuova certificazione M5.5 soltanto dopo le evidenze. | PLANNED |
@@ -43,7 +43,8 @@ movimento, strutture, apertura porte, safe mode e riavvio. Dopo la
 sfarfallio assente/impercettibile, zombie visibili e morte da zombie senza
 crash. Il pozzo/bordo resta da riprovare manualmente. Questa riparazione
 anticipa parte di FND-04; animazioni/orientamento e copertura completa restano
-aperti. Il prossimo task di fondazione rimane FND-02. Il nuovo abort nell'acqua e le varianti
+aperti. FND-02 è ora implementato con verifica mirata; il prossimo task di
+fondazione è FND-03. Il nuovo abort nell'acqua e le varianti
 di porte/finestre segnalate nel [riscontro sul terreno](docs/source/terrain-feedback-2026-10-04.md)
 sono stati affrontati nella [riparazione esplorativa](docs/fixes/exploration-apertures.md):
 avviso degli oggetti vulnerabili tramite UI esterna, stati derivati dalle
@@ -54,7 +55,7 @@ accetta OPEN/CLOSE puntati, B normale, ingresso/uscita nell'acqua e avviso degli
 oggetti vulnerabili. Posizione e stati delle aperture persistono anche dopo
 allontanamento oltre la proiezione, quit/load e ritorno. Nei casi provati la
 riparazione è accettata; non serve ripetere la stessa checklist prima di
-FND-02/03. Puntamento sul davanzale funzionale, ergonomia ancora da valutare:
+FND-03. Puntamento sul davanzale funzionale, ergonomia ancora da valutare:
 proposta di selezione dell'intera apertura con evidenziazione/azione esplicita,
 occlusione e portata native, senza collisioni aggiunte.
 L'accettazione delle strutture nei casi precedenti non copre queste anomalie.
@@ -69,8 +70,7 @@ non è approvata come soluzione definitiva. La
 [proposta su distanza e memoria](docs/design/visibility-and-world-memory.md)
 conserva le alternative e raccomanda panorama statico ricordato, dettaglio
 ridotto lontano e haze al confine effettivo. La raccomandazione non è ancora
-una scelta dell'utente né un'implementazione; il prototipo non completa le
-dipendenze FND-02/03 o la fase 2.
+una scelta dell'utente né un'implementazione; FND-03 e la fase 2 restano aperti.
 
 FND-04 deve inoltre distinguere stato del vetro/telaio/davanzale e
 attraversabilità nativa, coprire famiglie open/closed/locked/broken delle

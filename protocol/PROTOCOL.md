@@ -16,22 +16,23 @@ unverified.
 ## Wire format
 
 Each message is a four-byte unsigned big-endian length followed by one
-FlatBuffers `CwmMessage`. The current size limit is 16 MiB. There is no
+nonempty FlatBuffers `CwmMessage`. The absolute size limit is 16 MiB; a
+connection can configure a smaller limit through `IpcLimits`. There is no
 FlatBuffers file identifier, compression, checksum, authentication or session
 identifier. The schema carries sequence number, world revision, timestamp and
 a typed union payload. C++ and Python bindings regenerate identically with
 flatc 24.3.25.
 
 `MessageVerifier` validates FlatBuffers structure. It does not establish
-semantic validity: optional `origin`, entity `pos`, vehicle `pivot` and
-component `offset` can be absent while the bridge dereferences them. Vector
-length/dimension consistency, enum ranges and coordinate bounds also require
-validation at the boundary.
+semantic validity. The bridge rejects a snapshot without `origin` and skips
+entities/vehicles/components lacking `pos`/`pivot`/`offset`. Vector
+length/dimension consistency, enum ranges and finite/in-range coordinates
+still require comprehensive validation at the boundary.
 
 The schema contains no Luanti `MapNode` or `content_t`. Framing currently
 includes POSIX `arpa/inet.h`, and endpoints directly use `IpcConnection`.
-Only Unix-domain socket connection/listening is implemented; TCP headers and
-comments do not provide a TCP backend or the required transport abstraction.
+Only Unix-domain socket connection/listening is implemented; an alternate
+backend and the required transport abstraction remain absent.
 
 ## Takeover-baseline message coverage (historical)
 
@@ -166,13 +167,58 @@ cannot overwrite it. Shutdown clears bridge-owned visual state. Removal of
 absent actors within complete rosters is implemented; complete vehicle
 lifecycle and reconnect recovery remain uncertified.
 
-## Framing and scheduling defects retained for remediation
+## Bounded transport after FND-02
 
-The takeover probes reproduce loss of a final frame when EOF/HUP arrives,
-uncaught exceptions on oversized incoming frames, and synchronous sends that
-block for about 100 ms under backpressure. Receive staging has no bounded
-per-frame/per-update work budget. A closed or slow peer must be isolated from
-simulation, render responsiveness and canonical save safety.
+The historical takeover reproduced lost final frames, uncaught oversized-frame
+exceptions and approximately 100-ms synchronous sends under backpressure.
+[FND-02](../docs/fixes/fnd02-transport.md) repairs that transport behavior;
+the original behavioral probe is retained unchanged and now passes.
 
-See `tests/takeover_transport.cpp`, `tests/takeover_runtime.py` and
-`tests/takeover_render.py`. Failing probes are deliberately retained.
+`send_message` accepts a frame into a bounded FIFO; success does **not** mean
+delivery. `poll_and_receive` pumps both directions. CDDA and Luanti call it
+with zero timeout. Partial writes retain the head offset; EAGAIN returns to
+the runtime without waiting or dropping queued frames. Each connection defaults
+to the following limits, configurable through `IpcLimits`:
+
+| Resource/work per connection | Default |
+| --- | --- |
+| Payload | 16 MiB absolute ceiling |
+| Pending input staging | 16 MiB + 4 bytes |
+| Retained output frames | 32 MiB and 128 frames |
+| Read/write per pump | 256 KiB each |
+| Delivered frames per pump | 8 |
+| Delivered payload per pump | 1 MiB; one legal larger first frame may be delivered |
+| recv/send attempts per pump | 64 each, including EINTR |
+
+Read the leading four-byte prefix and validate it before staging its body.
+The decoder uses a cursor and bounded growth/occasional compaction. Zero or
+oversized lengths, structurally invalid FlatBuffers and output overflow close
+the offending connection. Truncated input closes after delivering preceding
+complete frames. Queue overflow disconnects rather than dropping a delta while
+keeping the client apparently synchronized. A fresh connection receives a
+full authoritative snapshot under the existing lifecycle; full negotiation,
+gap detection, deduplication and recovery correctness remain FND-03.
+
+POLLHUP/ERR does not precede readable bytes: recv establishes EOF. Complete
+buffered frames drain across successive bounded pumps. A **false** return may
+still accompany final complete frames; both runtime adapters consume these
+before disabling the connection. CDDA cancels movement/interactions still in
+its command queue when the connection departs. A complete valid response to
+the currently pending native decision can be consumed before EOF; absent
+responses retain the safe native default. No unexecuted command crosses into
+a replacement connection.
+
+Additional connections are rejected while the current one is live. The
+visual thread uses nonblocking connect without waiting; the bridge owns its
+retry timer and is initialized once per Luanti Client. Disconnect disables
+command readiness and hides actors while retaining the static projection.
+Unix socket path lengths and fd flags are checked. There is still no alternate
+transport backend or negotiated session/world reset contract.
+
+These are byte/frame/syscall budgets, not a general wall-clock bound on native
+snapshot generation or renderer ingestion of a legal 16-MiB frame. Benchmarks
+and further semantic vector/coordinate validation remain FND-04/05.
+Tests cover the actual socket layer plus adverse peers in real native and
+graphical runtimes. The optional camera trace records connection status,
+queue sizes and per-pump counters. Historical broader session failures in
+`tests/takeover_runtime.py` and `tests/takeover_render.py` remain separate debt.

@@ -7,7 +7,13 @@ FND-01 (canonical startup/loading and shared native turns) is implemented with
 scoped verification PASS; see [the repair](docs/fixes/canonical-runtime.md).
 Existing-avatar/time preconditions now pass through the actual 3D client.
 Full SAVE-001 remains incomplete; the failed M5.5 gate has not been recertified.
-FND-02 is next.
+FND-02 (bounded framing, queues and nonblocking I/O) is implemented with
+scoped verification PASS; see [the transport repair](docs/fixes/fnd02-transport.md).
+Final complete frames survive EOF, malformed framing/FlatBuffers close the
+offending connection, and slow readers cannot cause peer-dependent send waits.
+The real renderer and isolated native saves are included in verification.
+FND-03 (negotiation, identities, deduplication, sequencing and coherent recovery)
+is next; transport reconnect tests do not certify that contract.
 Product decisions and planned prototypes do not certify implementation.
 
 Manual feedback accepted movement, structures, door opening, safe mode and
@@ -70,7 +76,7 @@ issues are dark-room NPC pop-in without corresponding local darkness,
 black underwater presentation and the unsoftened projection border. Window
 sill targeting works but its final ergonomics remain open. These are recorded
 for FND-04/phase 2; flatness/relief is deferred until sufficient visual detail.
-No further repeated manual checklist is needed before FND-02/03 work.
+No further repeated manual checklist is needed before FND-03 work.
 
 **M5.5 takeover audit: COMPLETE. Architectural conformance gate: FAILED.**
 The findings are documented in [the audit](docs/audits/M5.5.md), with
