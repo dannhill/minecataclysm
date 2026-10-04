@@ -77,6 +77,7 @@ def main():
             world = parse(msg, WorldSnapshot)
             origin = world.Origin()
             self.origin = [origin.X(), origin.Y(), origin.Z()]
+            previous_ids = set(self.actors)
             self.actors = {}
             for i in range(world.EntitiesLength()):
                 actor = world.Entities(i)
@@ -88,9 +89,17 @@ def main():
                     position=[origin.X()+actor.Pos().X(), origin.Y()+actor.Pos().Y(), actor.Pos().Z()],
                     perceived=actor.Perceived(), hp=actor.HpPercent())
             self.player = self.actors[1]['position']
+            spawned = [world.Spawned(i).State().Id() for i in range(world.SpawnedLength())]
+            removed = [world.Removed(i).Id() for i in range(world.RemovedLength())]
+            added_ids = set(self.actors) - previous_ids
+            removed_ids = previous_ids - set(self.actors)
+            # Full rebase/recovery states replace the complete roster. Embedded
+            # spawn/removal metadata belongs to incremental batches only.
+            if not world.Full() and (set(spawned) != added_ids or set(removed) != removed_ids):
+                raise AssertionError('Incremental native lifecycle metadata contradicts complete roster')
             history.append(dict(revision=world.WorldRevision(), origin=self.origin, actors=list(self.actors.values()),
-                spawned=[world.Spawned(i).State().Id() for i in range(world.SpawnedLength())],
-                removed=[world.Removed(i).Id() for i in range(world.RemovedLength())]))
+                full=world.Full(), spawned=spawned, removed=removed,
+                roster_added=sorted(added_ids), roster_removed=sorted(removed_ids)))
             return world
 
         def settle(self):
@@ -217,9 +226,9 @@ def main():
         check('native_npc_id_preserved', {(1 << 63) | a['id'] for a in state['npcs']
               if a['name'] == 'Lifecycle NPC'} == {expected['npc']})
         run('after-pristine-writer', lambda c: check('pristine_writer_roundtrip_keeps_actor_ids', identities(c) == expected))
-    check('spawn_removal_batches_cover_bubble_departure_return',
-          set(expected.values()) <= {i for state in history for i in state['removed']} and
-          set(expected.values()) <= {i for state in history for i in state['spawned']})
+    check('authoritative_rosters_cover_bubble_departure_return',
+          set(expected.values()) <= {i for state in history for i in state['roster_removed']} and
+          set(expected.values()) <= {i for state in history for i in state['roster_added']})
     return 0
 
 
