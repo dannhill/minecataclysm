@@ -84,6 +84,41 @@ minetest.register_node("cdda_nodes:furniture_wood", {
     walkable = true,
 })
 
+-- Compact visual entries for CDDA's one-tile vertical connections. Input and
+-- native stairfinding choose the destination; these nodes never move a player.
+local steps = {}
+for i = 0, 5 do
+    steps[#steps + 1] = {-0.48, -0.5, -0.5 + i / 6, 0.48, -0.5 + (i + 1) / 6, -0.5 + (i + 1) / 6}
+end
+minetest.register_node("cdda_nodes:stairs_entry", {
+    description = "Native stairs up",
+    drawtype = "nodebox", paramtype = "light", tiles = {"default_stone.png"},
+    node_box = {type = "fixed", fixed = steps}, walkable = false,
+})
+local well = {
+    {-0.5, -0.5, -0.5, -0.38, 0.5, 0.5}, {0.38, -0.5, -0.5, 0.5, 0.5, 0.5},
+    {-0.38, -0.5, -0.5, 0.38, 0.5, -0.38}, {-0.38, -0.5, 0.38, 0.38, 0.5, 0.5},
+}
+for i = 0, 5 do
+    well[#well + 1] = {-0.38, -0.5, -0.38 + i * 0.76 / 6,
+        0.38, 0.5 - (i + 1) / 6, -0.38 + (i + 1) * 0.76 / 6}
+end
+minetest.register_node("cdda_nodes:stairwell", {
+    description = "Native stairs down",
+    drawtype = "nodebox", paramtype = "light", tiles = {"default_stone.png"},
+    node_box = {type = "fixed", fixed = well}, walkable = false,
+})
+for _, half in ipairs({"lower", "upper"}) do
+    local rungs = {{-0.4, -0.5, 0.32, -0.3, 0.5, 0.42}, {0.3, -0.5, 0.32, 0.4, 0.5, 0.42}}
+    for i = 0, 3 do
+        rungs[#rungs + 1] = {-0.3, -0.43 + i / 4, 0.32, 0.3, -0.36 + i / 4, 0.42}
+    end
+    minetest.register_node("cdda_nodes:ladder_" .. half, {
+        description = "Native ladder up", drawtype = "nodebox", paramtype = "light",
+        tiles = {"default_wood.png"}, node_box = {type = "fixed", fixed = rungs}, walkable = false,
+    })
+end
+
 minetest.log("action", "[CDDA] Pruned visual voxel nodes registered successfully.")
 dofile(minetest.get_modpath("cdda_nodes") .. "/terrain-demo.lua")
 

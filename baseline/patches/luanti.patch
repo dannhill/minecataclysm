@@ -85,7 +85,7 @@ index b6ae675..9e33201 100644
  		/*
  			Local player handling
 diff --git a/src/client/game.cpp b/src/client/game.cpp
-index 27b5833..f12065a 100644
+index 27b5833..37f7733 100644
 --- a/src/client/game.cpp
 +++ b/src/client/game.cpp
 @@ -8,6 +8,7 @@
@@ -96,7 +96,15 @@ index 27b5833..f12065a 100644
  #include "client.h"
  #include "client/clientevent.h"
  #include "client/gameui.h"
-@@ -1009,6 +1010,8 @@ Game::Game() :
+@@ -932,6 +933,7 @@ class Game {
+ 	bool m_first_loop_after_window_activation = false;
+ 	bool m_camera_offset_changed = false;
+ 	bool m_game_focused = false;
++	bool m_cdda_vertical_held = false;
+ 
+ 	bool m_does_lost_focus_pause_game = false;
+ 
+@@ -1009,6 +1011,8 @@ Game::Game() :
  
  Game::~Game()
  {
@@ -105,7 +113,7 @@ index 27b5833..f12065a 100644
  	delete client;
  	delete soundmaker;
  	sound_manager.reset();
-@@ -1239,6 +1242,8 @@ void Game::shutdown()
+@@ -1239,6 +1243,8 @@ void Game::shutdown()
  		}
  	}
  
@@ -114,7 +122,17 @@ index 27b5833..f12065a 100644
  	delete client;
  	client = nullptr;
  	delete soundmaker;
-@@ -2154,9 +2159,13 @@ void Game::processKeyInput()
+@@ -2083,7 +2089,8 @@ void Game::processKeyInput()
+ 	} else if (wasKeyDown(KeyType::FREEMOVE)) {
+ 		toggleFreeMove();
+ 	} else if (wasKeyDown(KeyType::JUMP)) {
+-		toggleFreeMoveAlt();
++		if (!cdda_client::CddaBridge::getInstance().ownsPlayer(client))
++			toggleFreeMoveAlt();
+ 	} else if (wasKeyDown(KeyType::PITCHMOVE)) {
+ 		togglePitchMove();
+ 	} else if (wasKeyDown(KeyType::FASTMOVE)) {
+@@ -2154,9 +2161,13 @@ void Game::processKeyInput()
  	} else if (wasKeyDown(KeyType::ZOOM)) {
  		checkZoomEnabled();
  	} else if (wasKeyDown(KeyType::QUICKTUNE_NEXT)) {
@@ -130,7 +148,7 @@ index 27b5833..f12065a 100644
  	} else if (wasKeyDown(KeyType::QUICKTUNE_INC)) {
  		quicktune->inc();
  	} else if (wasKeyDown(KeyType::QUICKTUNE_DEC)) {
-@@ -2178,6 +2187,9 @@ void Game::processItemSelection(u16 *new_playeritem)
+@@ -2178,6 +2189,9 @@ void Game::processItemSelection(u16 *new_playeritem)
  	LocalPlayer *player = client->getEnv().getLocalPlayer();
  
  	*new_playeritem = player->getWieldIndex();
@@ -140,7 +158,7 @@ index 27b5833..f12065a 100644
  	u16 max_item = player->getMaxHotbarItemcount();
  	if (max_item == 0)
  		return;
-@@ -2737,8 +2749,62 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
+@@ -2737,8 +2751,72 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
  		control.aux1 = control.aux1 ^ true;
  	}
  
@@ -156,6 +174,11 @@ index 27b5833..f12065a 100644
 +	// [CDDA-Mineclonia] Send Movement Commands
 +	if (cdda_client::CddaBridge::getInstance().ownsPlayer(client)) {
 +		auto &bridge = cdda_client::CddaBridge::getInstance();
++		// A fresh press selects one native transition. Holding Jump cannot
++		// cascade through floors, repeat a dive, or replay after recovery.
++		const bool vertical_down = isKeyDown(KeyType::JUMP);
++		const bool vertical_pressed = vertical_down && !m_cdda_vertical_held;
++		m_cdda_vertical_held = vertical_down;
 +		static bool decision_held[9] = {};
 +		if (bridge.getMetrics().pending_decision) {
 +			const auto choices = bridge.getMetrics().decision_choices;
@@ -180,6 +203,11 @@ index 27b5833..f12065a 100644
 +				bridge.getMetrics().safety_stop)
 +			bridge.acknowledgeThreat();
 +		acknowledgement_held = acknowledgement_down;
++		if (vertical_pressed) {
++			if (!bridge.getMetrics().safety_stop)
++				bridge.handleMoveInput(isKeyDown(KeyType::SNEAK) ? 10 : 9);
++			return;
++		}
 +		// Camera-relative WASD: build a local vector, rotate by yaw, snap to
 +		// one of CDDA's 8 grid directions (diagonals included).
 +		float lf = (isKeyDown(KeyType::FORWARD) ? 1.f : 0.f) - (isKeyDown(KeyType::BACKWARD) ? 1.f : 0.f);
@@ -203,7 +231,7 @@ index 27b5833..f12065a 100644
  	//tt.stop();
  }
  
-@@ -2784,6 +2850,24 @@ inline void Game::step(f32 dtime)
+@@ -2784,6 +2862,24 @@ inline void Game::step(f32 dtime)
  
  	if (!m_is_paused)
  		client->step(dtime);
@@ -228,7 +256,7 @@ index 27b5833..f12065a 100644
  }
  
  static void pauseNodeAnimation(PausedNodesList &paused, scene::ISceneNode *node) {
-@@ -3246,6 +3330,7 @@ void Game::updateCamera(f32 dtime)
+@@ -3246,6 +3342,7 @@ void Game::updateCamera(f32 dtime)
  	tool_reload_ratio = MYMIN(tool_reload_ratio, 1.0);
  	camera->update(player, dtime, tool_reload_ratio);
  	camera->step(dtime);
@@ -236,7 +264,7 @@ index 27b5833..f12065a 100644
  
  	f32 camera_fov = camera->getFovMax();
  	v3s16 camera_offset = camera->getOffset();
-@@ -3262,6 +3347,7 @@ void Game::updateCamera(f32 dtime)
+@@ -3262,6 +3359,7 @@ void Game::updateCamera(f32 dtime)
  		if (m_camera_offset_changed) {
  			client->updateCameraOffset(camera_offset);
  			client->getEnv().updateCameraOffset(camera_offset);
@@ -244,7 +272,7 @@ index 27b5833..f12065a 100644
  
  			if (clouds)
  				clouds->updateCameraOffset(camera_offset);
-@@ -3365,6 +3451,21 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
+@@ -3365,6 +3463,21 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
  	// but the halo rendering code is already inefficient so there's no point in optimizing it here
  	hud->updateSelectionMesh(camera_offset);
  
@@ -266,7 +294,7 @@ index 27b5833..f12065a 100644
  	// Allow digging again if button is not pressed
  	if (runData.digging_blocked && !isKeyDown(KeyType::DIG))
  		runData.digging_blocked = false;
-@@ -4319,7 +4420,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
+@@ -4319,7 +4432,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
  	/*
  		Fog
  	*/
@@ -469,10 +497,10 @@ index 7f3f860..c4c4482 100644
  void TestMapBlock::testSaveLoad(IGameDef *gamedef, const u8 version)
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..94ccf60
+index 0000000..da5b0ab
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,1066 @@
+@@ -0,0 +1,1104 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
@@ -549,6 +577,7 @@ index 0000000..94ccf60
 +    irr::gui::IGUIStaticText* debug_text_{nullptr};
 +    irr::gui::IGUIStaticText* safety_text_{nullptr};
 +    irr::gui::IGUIStaticText* decision_text_{nullptr};
++    irr::gui::IGUIStaticText* vertical_text_{nullptr};
 +    std::wstring decision_body_;
 +    irr::scene::ISceneManager* smgr_{nullptr};
 +    std::unordered_map<uint16_t, content_t> material_map_;
@@ -824,6 +853,17 @@ index 0000000..94ccf60
 +        if (flags & FURNITURE) {
 +            lower = get_node_for_material(LEGACY_FURNITURE);
 +            if (flags & TALL_FURNITURE) upper = lower;
++        }
++        // Recognizable entry geometry for native connections. These are
++        // contextual transitions, not Luanti stairs with their own physics.
++        // Water can have GOES_UP too: keep its native water presentation.
++        if (material != WATER && (flags & (GOES_UP | GOES_DOWN))) {
++            if (flags & GOES_DOWN) floor = terrain_node("cdda_nodes:stairwell");
++            if (flags & GOES_UP) {
++                lower = terrain_node(flags & DIFFICULT_Z ?
++                    "cdda_nodes:ladder_lower" : "cdda_nodes:stairs_entry");
++                upper = flags & DIFFICULT_Z ? terrain_node("cdda_nodes:ladder_upper") : CONTENT_AIR;
++            }
 +        }
 +        set_voxel(base, floor, light, 0, modified);
 +        set_voxel(base + v3s16(0, 1, 0), lower, light, facedir, modified);
@@ -1347,6 +1387,7 @@ index 0000000..94ccf60
 +        if (pimpl_->debug_text_) pimpl_->debug_text_->remove();
 +        if (pimpl_->safety_text_) pimpl_->safety_text_->remove();
 +        if (pimpl_->decision_text_) pimpl_->decision_text_->remove();
++        if (pimpl_->vertical_text_) pimpl_->vertical_text_->remove();
 +        if (pimpl_->terrain_text_) pimpl_->terrain_text_->remove();
 +        for (auto& [id, ent] : pimpl_->entities_) if (ent.scene_node)
 +            static_cast<irr::scene::ISceneNode*>(ent.scene_node)->remove();
@@ -1494,6 +1535,31 @@ index 0000000..94ccf60
 +    if (pimpl_->decision_text_) {
 +        pimpl_->decision_text_->setText(pimpl_->decision_body_.c_str());
 +        pimpl_->decision_text_->setVisible(pimpl_->metrics_.pending_decision != 0);
++    }
++
++    if (!pimpl_->vertical_text_) {
++        pimpl_->vertical_text_ = guienv->addStaticText(L"",
++            irr::core::rect<irr::s32>(10, 210, 760, 240), false, true);
++        if (pimpl_->vertical_text_)
++            pimpl_->vertical_text_->setOverrideColor(irr::video::SColor(255, 180, 235, 255));
++    }
++    if (pimpl_->vertical_text_) {
++        const auto player = pimpl_->entities_.find(1);
++        const uint32_t flags = player == pimpl_->entities_.end() ? 0 : player->second.state_flags;
++        using namespace cdda::cwm;
++        std::wstring hint;
++        if (flags & (SWIMMING | UNDERWATER))
++            hint = L"Swim: Jump to rise/surface | Sneak + Jump to dive/descend";
++        else {
++            if (flags & ON_UP_CONNECTION) hint = L"Jump: ascend";
++            if (flags & ON_DOWN_CONNECTION) {
++                if (!hint.empty()) hint += L" | ";
++                hint += L"Sneak + Jump: descend";
++            }
++        }
++        pimpl_->vertical_text_->setText(hint.c_str());
++        pimpl_->vertical_text_->setVisible(pimpl_->player_ready_ &&
++            !pimpl_->metrics_.pending_decision && !pimpl_->metrics_.safety_stop && !hint.empty());
 +    }
 +
 +    if (!pimpl_->safety_text_) {

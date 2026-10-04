@@ -833,10 +833,10 @@ index 0000000..4138acf
 +}
 diff --git a/src/cwm/cwm_map_exporter.cpp b/src/cwm/cwm_map_exporter.cpp
 new file mode 100644
-index 0000000..99f9230
+index 0000000..a76ede3
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.cpp
-@@ -0,0 +1,399 @@
+@@ -0,0 +1,408 @@
 +// CDDA CWM Map & Entity Exporter Implementation
 +// Licensed under Apache-2.0
 +
@@ -867,6 +867,9 @@ index 0000000..99f9230
 +    const bool blocked = m.impassable_ter_furn(p);
 +    uint32_t flags = 0;
 +    if (blocked) flags |= BLOCKS_MOVEMENT;
++    if (m.has_flag(ter_furn_flag::TFLAG_GOES_UP, p)) flags |= GOES_UP;
++    if (m.has_flag(ter_furn_flag::TFLAG_GOES_DOWN, p)) flags |= GOES_DOWN;
++    if (m.has_flag(ter_furn_flag::TFLAG_DIFFICULT_Z, p)) flags |= DIFFICULT_Z;
 +    uint16_t material = DIRT;
 +    const std::string& id = t.id.str();
 +    // Open/close are native transitions, not synonyms for passability. Locked
@@ -1006,6 +1009,12 @@ index 0000000..99f9230
 +
 +        uint32_t player_flags = 0;
 +        const auto player_tile = export_block(u_pos, m, 15);
++        if (player_tile.material_id() != cdda::cwm::WATER) {
++            if (player_tile.state_flags() & cdda::cwm::GOES_UP)
++                player_flags |= cdda::cwm::ON_UP_CONNECTION;
++            if (player_tile.state_flags() & cdda::cwm::GOES_DOWN)
++                player_flags |= cdda::cwm::ON_DOWN_CONNECTION;
++        }
 +        if (player_tile.material_id() == cdda::cwm::WINDOW_OPEN ||
 +            player_tile.material_id() == cdda::cwm::WINDOW ||
 +            player_tile.material_id() == cdda::cwm::WINDOW_BOARDED)
@@ -1310,10 +1319,10 @@ index 0000000..776779c
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..43cb665
+index 0000000..6188df5
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,379 @@
+@@ -0,0 +1,410 @@
 +// CDDA CWM IPC Server Implementation
 +// Licensed under Apache-2.0
 +
@@ -1333,11 +1342,29 @@ index 0000000..43cb665
 +#include "gates.h"
 +#include "safe_mode_actions.h"
 +#include "npc.h"
++#include "monster.h"
++#include "mtype.h"
++#include "overmap.h"
 +
 +namespace cwm {
 +namespace {
 +const point directions[] = {point_zero, point(0,-1), point(1,-1), point(1,0),
 +    point(1,1), point(0,1), point(-1,1), point(-1,0), point(-1,-1)};
++
++std::string vertical_error(const avatar& u, const map& m, int direction) {
++    // Contextual connections/swimming only. Free climbing requires a spatial
++    // choice UI; never fall through into the native terminal point selector.
++    if (u.in_vehicle) return "Vertical vehicle controls are not implemented yet";
++    if (u.is_mounted() && !u.mounted_creature->has_flag(mon_flag_RIDEABLE_MECH))
++        return "You cannot use stairs while riding this creature";
++    const bool up = direction == int(CDDA::CWM::MoveDirection::UP);
++    const int z = u.posz() + (up ? 1 : -1);
++    if (z < -OVERMAP_DEPTH || z > OVERMAP_HEIGHT) return "Vertical world boundary reached";
++    if (m.has_flag(up ? ter_furn_flag::TFLAG_GOES_UP : ter_furn_flag::TFLAG_GOES_DOWN, u.pos()) ||
++        u.is_underwater() || (!up && m.has_flag(ter_furn_flag::TFLAG_NO_FLOOR_WATER, u.pos())))
++        return {};
++    return "No native vertical connection here; free climbing is not available yet";
++}
 +}
 +
 +CwmServer::CwmServer(const std::string& socket_path)
@@ -1539,6 +1566,16 @@ index 0000000..43cb665
 +        } else if (command.action == 0) {
 +            u.pause();
 +            accepted = true;
++        } else if (command.action >= int(CDDA::CWM::MoveDirection::UP)) {
++            const auto error = vertical_error(u, m, command.action);
++            if (!error.empty()) {
++                result_ = Result{command.id, false, error};
++                return false;
++            }
++            const tripoint before = u.pos();
++            const bool underwater = u.is_underwater();
++            g.vertical_move(command.action == int(CDDA::CWM::MoveDirection::UP) ? 1 : -1, false);
++            accepted = before != u.pos() || underwater != u.is_underwater();
 +        } else {
 +            const tripoint target = u.pos() + tripoint(directions[command.action], 0);
 +            const npc* person = get_creature_tracker().creature_at<npc>(target);
@@ -1656,8 +1693,11 @@ index 0000000..43cb665
 +        const auto* request = msg->payload_as_MoveRequest();
 +        if (!request) return;
 +        command = Command{request->command_id(), true, int(request->direction())};
-+        if (command.action < 0 || command.action > 8) error = "Unsupported movement direction";
++        if (command.action < 0 || command.action > int(CDDA::CWM::MoveDirection::DOWN))
++            error = "Unsupported movement direction";
 +        else if (!g.check_safe_mode_allowed(false)) error = "Safe mode: threat requires acknowledgement";
++        else if (command.action >= int(CDDA::CWM::MoveDirection::UP))
++            error = vertical_error(u, m, command.action);
 +        else if (command.action != 0) {
 +            const tripoint target = u.pos() + tripoint(directions[command.action], 0);
 +            if (!m.inbounds(target)) error = "Movement target outside reality bubble";
@@ -1807,10 +1847,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644
-index 0000000..ca196fd
+index 0000000..f1c9b27
 --- /dev/null
 +++ b/tests/cwm_projection_test.cpp
-@@ -0,0 +1,222 @@
+@@ -0,0 +1,251 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "avatar_action.h"
@@ -1835,6 +1875,9 @@ index 0000000..ca196fd
 +        m.ter_set(p, id);
 +        const auto tile = cwm::CwmMapExporter::export_block(p, m, 15);
 +        CHECK(bool(tile.state_flags() & BLOCKS_MOVEMENT) == m.impassable_ter_furn(p));
++        CHECK(bool(tile.state_flags() & GOES_UP) == m.has_flag(ter_furn_flag::TFLAG_GOES_UP, p));
++        CHECK(bool(tile.state_flags() & GOES_DOWN) == m.has_flag(ter_furn_flag::TFLAG_GOES_DOWN, p));
++        CHECK(bool(tile.state_flags() & DIFFICULT_Z) == m.has_flag(ter_furn_flag::TFLAG_DIFFICULT_Z, p));
 +        if (terrain.movecost == 0 && !terrain.has_flag(ter_furn_flag::TFLAG_NO_FLOOR)) {
 +            CHECK((tile.material_id() == WALL || tile.material_id() == WINDOW ||
 +                   tile.material_id() == WINDOW_BOARDED || tile.material_id() == DOOR_CLOSED ||
@@ -1843,6 +1886,32 @@ index 0000000..ca196fd
 +                   tile.material_id() == WATER || tile.material_id() == TREE));
 +        }
 +    }
++}
++
++TEST_CASE("cwm_vertical_connection_cues_follow_native_terrain_and_furniture", "[cwm]")
++{
++    using namespace cdda::cwm;
++    clear_avatar();
++    clear_map();
++    map& m = get_map();
++    avatar& u = get_avatar();
++    const tripoint p(60, 60, 0);
++    u.setpos(p);
++    for (const auto& id : {"t_stairs_up", "t_stairs_down", "t_ladder_up_down", "t_water_cube", "t_floor"}) {
++        CAPTURE(id);
++        m.ter_set(p, ter_str_id(id));
++        auto bytes = cwm::CwmMapExporter::export_world_snapshot(1, 1, u, m, *g, true);
++        const auto* player = CDDA::CWM::GetCwmMessage(bytes.data())->payload_as_WorldSnapshot()->entities()->Get(0);
++        const bool dry = !m.has_flag(ter_furn_flag::TFLAG_SWIMMABLE, p);
++        CHECK(bool(player->state_flags() & ON_UP_CONNECTION) ==
++              (dry && m.has_flag(ter_furn_flag::TFLAG_GOES_UP, p)));
++        CHECK(bool(player->state_flags() & ON_DOWN_CONNECTION) ==
++              (dry && m.has_flag(ter_furn_flag::TFLAG_GOES_DOWN, p)));
++    }
++    m.ter_set(p, ter_str_id("t_floor"));
++    m.furn_set(p, furn_str_id("f_rope_up"));
++    CHECK(cwm::CwmMapExporter::export_block(p, m, 15).state_flags() & GOES_UP);
++    CHECK(cwm::CwmMapExporter::export_block(p, m, 15).state_flags() & FURNITURE);
 +}
 +
 +TEST_CASE("cwm_terrain_comparison_preserves_native_movement_and_delta", "[cwm]")

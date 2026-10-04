@@ -17,6 +17,7 @@ def main():
     parser.add_argument('--pristine-cdda', type=Path, required=True)
     parser.add_argument('--workspace', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--strip-debug', action='store_true', help='Omit debug sections from this test executable')
     args = parser.parse_args()
     source = args.workspace.resolve()/'tests/takeover_save_reader.cpp'
     pristine = args.pristine_cdda.resolve()
@@ -38,6 +39,10 @@ def main():
     output.with_suffix('.build.json').write_text(json.dumps(record, indent=2)+'\n')
     subprocess.run(compile_command, cwd=build/'src', check=True)
     subprocess.run(link_command, cwd=build/'src', check=True)
+    if args.strip_debug:
+        strip_command = ['/usr/bin/strip', '--strip-debug', str(output)]
+        subprocess.run(strip_command, check=True)
+        record['commands'].append(strip_command)
     record['binary_sha256'] = hashlib.sha256(output.read_bytes()).hexdigest()
     output.with_suffix('.build.json').write_text(json.dumps(record, indent=2)+'\n')
     print(json.dumps({'binary':str(output), 'sha256':record['binary_sha256']}))

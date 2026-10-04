@@ -111,12 +111,15 @@ native transitions, independently of DOOR flags or passability alone. Open but
 blocking trailer doors retain a visible threshold. Window states retain a
 lower wall/sill; only the upper pane changes. `CwmBlock.state_flags` bit 0 identifies doors, bit 1 records
 `map::impassable_ter_furn`, bit 2 adds furniture over the terrain and bit 3
-requests tall furniture. `orientation` 0/1 describes east-west/north-south wall
+requests tall furniture. Bits 4/5/6 record native GOES_UP, GOES_DOWN and
+DIFFICULT_Z (terrain or furniture). Water can carry GOES_UP too: that bit
+does not imply a staircase. `orientation` 0/1 describes east-west/north-south wall
 alignment inferred from adjacent CDDA wall connections. No native node IDs
 are transmitted. Furniture, unfamiliar solid terrain and passable damaged
 walls no longer disappear into floor textures. Material/geometry remains an
 approximation: fences/rocks and baseline trees share an obstacle placeholder, furniture
-uses wooden boxes and stairs/roof surfaces are not detailed meshes.
+uses wooden boxes. Vertical connections have compact stair/ladder entry
+geometry; they are not full physical flights. Roof surfaces remain simplified.
 
 `WorldSnapshot.tiles` is an appended FlatBuffers vector of `TileDelta`. An
 end-of-action comparison of the complete projected semantic tiles emits only
@@ -139,6 +142,18 @@ state, excluding vehicle-supported water tiles. Luanti smoothly adjusts feet
 and first-person eye height; authoritative positions, action costs and time do
 not change. They are distinct from the tile obstruction flags above. See the
 [exploration repair](../docs/fixes/exploration-apertures.md) for evidence/limits.
+
+Within CWM 2.0, actor bits 4/5 indicate ON_UP_CONNECTION/ON_DOWN_CONNECTION
+on non-water native terrain. They are contextual hints, not a promise that a
+blocked connection can be used. Existing MoveDirection UP (9) and DOWN (10)
+invoke native `game::vertical_move` through the same command ledger and
+ACK/state gate as horizontal movement. Costs, underwater state, stairfinding,
+offset destinations, followers and canonical saves remain CDDA-owned.
+Only native connections and underwater transitions are supported in this
+slice; free climbing/ledge direction selection and vertical vehicle controls
+are explicitly rejected, rather than invoking an unadapted terminal selector.
+Desktop Jump selects UP; Sneak + Jump selects DOWN, once per fresh press.
+These use the remappable engine actions. No Luanti jump/fly movement is enabled.
 
 Desktop picking sends native OPEN/CLOSE through the existing coordinator:
 right-click opens, Sneak + right-click closes; an empty pane/door can be targeted

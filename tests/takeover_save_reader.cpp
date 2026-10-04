@@ -31,12 +31,14 @@ int main(int argc, const char *argv[]) {
     bool create = false;
     bool create_ledge = false;
     bool create_exploration = false;
+    bool create_vertical = false;
     bool resave = false;
     for (int i = 1; i < argc; ++i) {
         std::string arg(argv[i]);
         if (arg == "--create") create = true;
         else if (arg == "--create-ledge") { create = true; create_ledge = true; }
         else if (arg == "--create-exploration") { create = true; create_exploration = true; }
+        else if (arg == "--create-vertical") { create = true; create_vertical = true; }
         else if (arg == "--resave") resave = true;
         else if (i + 1 < argc && arg == "--userdir") userdir = argv[++i];
         else if (i + 1 < argc && arg == "--datadir") datadir = argv[++i];
@@ -105,6 +107,33 @@ int main(int argc, const char *argv[]) {
         u.move_to(tripoint_abs_ms(tripoint(60,60,0)));
         calendar::turn = calendar::turn_zero + 36_hours;
         u.i_add(item(itype_id("rock"), calendar::turn));
+        if (create_vertical) {
+            // Canonical multi-Z fixture, built by the pristine pinned core.
+            // No production exporter, projection or CWM server creates it.
+            for (int z = -2; z <= 2; ++z) {
+                for (int y = 48; y <= 76; ++y) {
+                    for (int x = 48; x <= 76; ++x) {
+                        m.ter_set(tripoint(x,y,z), ter_str_id("t_floor"));
+                        m.furn_set(tripoint(x,y,z), furn_str_id("f_null"));
+                    }
+                }
+            }
+            m.ter_set(tripoint(60,59,0), ter_str_id("t_stairs_up"));
+            m.ter_set(tripoint(60,59,1), ter_str_id("t_stairs_down"));
+            m.ter_set(tripoint(61,59,1), ter_str_id("t_door_c"));
+            m.ter_set(tripoint(60,61,0), ter_str_id("t_stairs_down"));
+            m.ter_set(tripoint(60,61,-1), ter_str_id("t_stairs_up"));
+            m.ter_set(tripoint(61,60,0), ter_str_id("t_ladder_up"));
+            m.ter_set(tripoint(61,60,1), ter_str_id("t_ladder_up_down"));
+            m.ter_set(tripoint(61,60,2), ter_str_id("t_ladder_down"));
+            m.ter_set(tripoint(68,59,0), ter_str_id("t_stairs_up"));
+            m.ter_set(tripoint(70,59,1), ter_str_id("t_stairs_down"));
+            m.ter_set(tripoint(62,60,0), ter_str_id("t_water_dp"));
+            m.ter_set(tripoint(62,60,-1), ter_str_id("t_water_cube"));
+            m.ter_set(tripoint(62,60,-2), ter_str_id("t_water_cube"));
+            u.remove_weapon();
+            u.set_skill_level(skill_id("swimming"),10);
+        }
         if (create_exploration) {
             m.ter_set(tripoint(60,59,0), ter_str_id("t_water_dp"));
             m.ter_set(tripoint(60,61,0), ter_str_id("t_water_sh"));
@@ -117,7 +146,7 @@ int main(int argc, const char *argv[]) {
             u.set_skill_level(skill_id("swimming"),10);
             get_weather().update_weather();
             if (!g->save()) return 5;
-        } else {
+        } else if (!create_vertical) {
         g->place_critter_at(mtype_id("mon_zombie"), tripoint(65,65,0));
         auto guy = make_shared_fast<npc>();
         guy->normalize();
@@ -129,6 +158,10 @@ int main(int argc, const char *argv[]) {
         if (!m.add_vehicle(vproto_id("bicycle"),tripoint(60,66,0),0_degrees,0,0)) return 4;
         get_weather().update_weather();
         if (!g->save()) return 5;
+        }
+        if (create_vertical) {
+            get_weather().update_weather();
+            if (!g->save()) return 5;
         }
     } else if (!g->load(world_name)) {
         std::cerr << "Canonical game::load(world) failed\n";

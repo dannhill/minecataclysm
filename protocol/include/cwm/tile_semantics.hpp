@@ -9,6 +9,9 @@ enum TileState : uint32_t {
     BLOCKS_MOVEMENT = 1u << 1,
     FURNITURE = 1u << 2,
     TALL_FURNITURE = 1u << 3,
+    GOES_UP = 1u << 4,
+    GOES_DOWN = 1u << 5,
+    DIFFICULT_Z = 1u << 6,
 };
 // Presentation cues from the native avatar state; they never change coordinates
 // or grant passage/swimming abilities in the presentation runtime.
@@ -17,6 +20,8 @@ enum ActorState : uint32_t {
     WADING = 1u << 1,
     SWIMMING = 1u << 2,
     UNDERWATER = 1u << 3,
+    ON_UP_CONNECTION = 1u << 4,
+    ON_DOWN_CONNECTION = 1u << 5,
 };
 enum Material : uint16_t {
     AIR = 0, DIRT = 1, GRASS = 2, WALL = 3, FLOOR = 4,
