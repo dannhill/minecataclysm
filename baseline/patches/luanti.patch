@@ -497,10 +497,10 @@ index 7f3f860..c4c4482 100644
  void TestMapBlock::testSaveLoad(IGameDef *gamedef, const u8 version)
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..da5b0ab
+index 0000000..a753758
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,1104 @@
+@@ -0,0 +1,1106 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
@@ -1548,8 +1548,10 @@ index 0000000..da5b0ab
 +        const uint32_t flags = player == pimpl_->entities_.end() ? 0 : player->second.state_flags;
 +        using namespace cdda::cwm;
 +        std::wstring hint;
-+        if (flags & (SWIMMING | UNDERWATER))
++        if (flags & UNDERWATER)
 +            hint = L"Swim: Jump to rise/surface | Sneak + Jump to dive/descend";
++        else if (flags & SWIMMING)
++            hint = L"Swim: Sneak + Jump to dive";
 +        else {
 +            if (flags & ON_UP_CONNECTION) hint = L"Jump: ascend";
 +            if (flags & ON_DOWN_CONNECTION) {

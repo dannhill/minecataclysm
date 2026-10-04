@@ -101,7 +101,7 @@ local well = {
 }
 for i = 0, 5 do
     well[#well + 1] = {-0.38, -0.5, -0.38 + i * 0.76 / 6,
-        0.38, 0.5 - (i + 1) / 6, -0.38 + (i + 1) * 0.76 / 6}
+        -0.12, 0.5 - (i + 1) / 6, -0.38 + (i + 1) * 0.76 / 6}
 end
 minetest.register_node("cdda_nodes:stairwell", {
     description = "Native stairs down",

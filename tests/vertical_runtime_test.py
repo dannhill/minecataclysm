@@ -28,7 +28,7 @@ def main():
     import flatbuffers
     from session_wire import NativeWire
     from CDDA.CWM import CwmMessage, HelloRequest, HelloResponse, MoveRequest
-    from CDDA.CWM import Payload, CommandAck, WorldSnapshot, DecisionPrompt, DecisionResponse
+    from CDDA.CWM import Payload, CommandAck, WorldSnapshot, DecisionPrompt, DecisionResponse, Heartbeat
     checks, events = {}, []
 
     def check(name, ok):
@@ -58,6 +58,7 @@ def main():
             self.state = {}
             self.read()  # ordered WorldReset, covered independently by FND-03
             self.snapshot(self.read())
+            self.settle()
 
         def close(self):
             self.c.close()
@@ -87,6 +88,20 @@ def main():
                                       full=world.Full(), revision=world.WorldRevision())
             return world
 
+        def settle(self):
+            # The native turn prelude can publish a calendar increment after
+            # the command's result state. A heartbeat fences that prelude;
+            # compare replay costs only from a quiescent input boundary.
+            b = flatbuffers.Builder(64)
+            Heartbeat.HeartbeatStart(b)
+            self.wire.send(self.c, b, Payload.Payload.Heartbeat, Heartbeat.HeartbeatEnd(b))
+            while True:
+                msg = self.read()
+                if msg.PayloadType() == Payload.Payload.WorldSnapshot:
+                    self.snapshot(msg)
+                if msg.PayloadType() == Payload.Payload.HeartbeatAck:
+                    return
+
         def move(self, direction, ident=None):
             if ident is None:
                 ident = self.next_id
@@ -101,9 +116,13 @@ def main():
                 msg = self.read()
                 if msg.PayloadType() == Payload.Payload.DecisionPrompt:
                     prompt = parse(msg, DecisionPrompt)
-                    # Only the existing native vulnerable-item water question
-                    # is expected in this fixture; don't auto-accept other risks.
-                    check('water_question_is_native', b'waterproof' in prompt.Text())
+                    # Only the native entry/vulnerable-item water questions
+                    # are expected; don't auto-accept unrelated risks.
+                    (out / 'last-water-prompt.json').write_text(json.dumps(dict(
+                        text=prompt.Text().decode(),
+                        choices=[prompt.Choices(i).decode() for i in range(prompt.ChoicesLength())]), indent=2))
+                    check('water_question_is_native', b'waterproof' in prompt.Text() or
+                          prompt.Text() == b'Dive into the water?')
                     b = flatbuffers.Builder(64)
                     DecisionResponse.DecisionResponseStart(b)
                     DecisionResponse.DecisionResponseAddDecisionId(b, prompt.DecisionId())
@@ -116,7 +135,9 @@ def main():
                 if msg.PayloadType() == Payload.Payload.WorldSnapshot:
                     world = self.snapshot(msg)
                     if ack is not None and world.CompletedCommandId() == ident:
-                        events.append(dict(id=ident, direction=direction, accepted=ack.Accepted(), **self.state))
+                        self.last_ack = ack
+                        events.append(dict(id=ident, direction=direction, accepted=ack.Accepted(),
+                                           result_revision=ack.ResultRevision(), **self.state))
                         (out / 'events.json').write_text(json.dumps(events, indent=2) + '\n')
                         return ack, ident
 
@@ -171,20 +192,25 @@ def main():
             before = c.state['time']
             expect(c, 'up_without_connection_rejected', 9, [60, 60, 0], False)
             expect(c, 'down_without_connection_rejected', 10, [60, 60, 0], False)
-            expect(c, 'unknown_direction_rejected', 255, [60, 60, 0], False)
+            expect(c, 'negative_direction_rejected', -1, [60, 60, 0], False)
+            expect(c, 'unknown_direction_rejected', 11, [60, 60, 0], False)
             check('rejected_directions_spend_no_time', c.state['time'] == before)
             expect(c, 'step_on_upstairs', 1, [60, 59, 0], flags=16)
             before = c.state['time']
             ident = expect(c, 'native_ascend', 9, [60, 59, 1], flags=32)
+            result_revision = c.last_ack.ResultRevision()
             check('ascend_native_time_and_full_reprojection', c.state['time'] > before and c.state['full'])
+            c.settle()
             stamp = c.state['time']
             expect(c, 'duplicate_ascend_has_one_effect', 9, [60, 59, 1], ident=ident)
+            check('duplicate_returns_original_revision', c.last_ack.ResultRevision() == result_revision)
             check('duplicate_does_not_spend_time', c.state['time'] == stamp)
             c.close()
             time.sleep(.15)
             resumed = Connection(path)
             try:
                 expect(resumed, 'duplicate_after_reconnect_has_one_effect', 9, [60, 59, 1], ident=ident)
+                check('reconnect_duplicate_returns_original_revision', resumed.last_ack.ResultRevision() == result_revision)
                 check('reconnect_duplicate_does_not_spend_time', resumed.state['time'] == stamp)
                 expect(resumed, 'native_descend', 10, [60, 59, 0], flags=16)
                 expect(resumed, 'return_from_upstairs', 5, [60, 60, 0])
@@ -200,7 +226,11 @@ def main():
             expect(c, 'return_from_basement', 9, [60, 61, 0])
             expect(c, 'ground_center', 1, [60, 60, 0])
             expect(c, 'ladder_entry', 3, [61, 60, 0], flags=16)
-            expect(c, 'ladder_first_floor', 9, [61, 60, 1], flags=48)
+            ident = expect(c, 'ladder_first_floor', 9, [61, 60, 1], flags=48)
+            c.settle()
+            stamp = c.state['time']
+            expect(c, 'ladder_replay_does_not_reach_next_floor', 9, [61, 60, 1], ident=ident)
+            check('ladder_replay_spends_no_time', c.state['time'] == stamp)
             expect(c, 'ladder_second_floor', 9, [61, 60, 2], flags=32)
             expect(c, 'ladder_return_first', 10, [61, 60, 1])
             expect(c, 'ladder_return_ground', 10, [61, 60, 0])
