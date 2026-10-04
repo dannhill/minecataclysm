@@ -113,6 +113,7 @@ table EntityState {
     perceived: bool = true;
     // Native posture/environment cues; presentation offsets do not alter pos.
     state_flags: uint32 = 0;
+    motion_seconds: float32 = 0.2;
 }
 
 table EntitySpawned {
@@ -166,6 +167,25 @@ table WorldSnapshot {
     completed_command_id: uint64;
     spawned: [EntitySpawned];
     removed: [EntityRemoved];
+    clock: SimulationState;
+}
+
+table SimulationState {
+    realtime: bool;
+    pause_reasons: uint32;
+    time_scale: float32 = 1.0;
+}
+
+enum SimulationControl : byte { PAUSE = 0, RESUME = 1, SET_SPEED = 2, MENU_OPEN = 3, MENU_CLOSE = 4 }
+table SimulationControlRequest {
+    command_id: uint64;
+    action: SimulationControl;
+    time_scale: float32 = 1.0;
+}
+// An idempotent intent update; native actions are generated only while held.
+table MovementIntentRequest {
+    command_id: uint64;
+    direction: MoveDirection;
 }
 
 table MoveRequest {
@@ -241,6 +261,8 @@ union Payload {
     WorldReset,
     SnapshotAck,
     EntitySpawned
+    ,SimulationControlRequest
+    ,MovementIntentRequest
 }
 
 table CwmMessage {

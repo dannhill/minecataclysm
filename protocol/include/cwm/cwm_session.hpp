@@ -24,6 +24,10 @@ inline bool valid_world(const CDDA::CWM::WorldSnapshot* world) {
         world->vehicles()->size() > 8192 || world->fields()->size() > 65536) return false;
     if (world->full() && (!world->chunks() || !world->chunks()->size() || world->chunks()->size() > 1024)) return false;
     if (!world->full() && world->chunks() && world->chunks()->size()) return false;
+    if (const auto* clock = world->clock()) {
+        if (!std::isfinite(clock->time_scale()) || clock->time_scale() < .25f || clock->time_scale() > 4.f ||
+            (clock->pause_reasons() & ~uint32_t(31))) return false;
+    }
     std::set<uint64_t> ids;
     std::unordered_map<uint64_t, const CDDA::CWM::EntityState*> actor_states;
     actor_states.reserve(world->entities()->size());
@@ -32,7 +36,8 @@ inline bool valid_world(const CDDA::CWM::WorldSnapshot* world) {
         if (!actor || !actor->id() || !actor->pos() || !ids.insert(actor->id()).second) return false;
         if (actor->type() < CDDA::CWM::EntityType::PLAYER || actor->type() > CDDA::CWM::EntityType::MONSTER ||
             (actor->id() == 1) != (actor->type() == CDDA::CWM::EntityType::PLAYER) ||
-            !std::isfinite(actor->rotation()) || actor->hp_percent() > 100) return false;
+            !std::isfinite(actor->rotation()) || actor->hp_percent() > 100 ||
+            !std::isfinite(actor->motion_seconds()) || actor->motion_seconds() < .01f || actor->motion_seconds() > 60.f) return false;
         const auto* p = actor->pos();
         if (!std::isfinite(p->x()) || !std::isfinite(p->y()) || !std::isfinite(p->z()) ||
             std::abs(p->x()) > 32767 || std::abs(p->y()) > 32767 || std::abs(p->z()) > 1024) return false;
@@ -75,6 +80,7 @@ inline bool valid_world(const CDDA::CWM::WorldSnapshot* world) {
             actor->pos()->z() != declared->pos()->z() || actor->rotation() != declared->rotation() ||
             actor->animation_hint() != declared->animation_hint() || actor->hp_percent() != declared->hp_percent() ||
             actor->perceived() != declared->perceived() || actor->state_flags() != declared->state_flags() ||
+            actor->motion_seconds() != declared->motion_seconds() ||
             !string_equal(actor->type_id(), declared->type_id()) || !string_equal(actor->name(), declared->name())) return false;
     }
     if (world->removed()) for (const auto* removed : *world->removed())

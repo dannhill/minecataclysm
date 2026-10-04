@@ -85,7 +85,7 @@ index b6ae675..9e33201 100644
  		/*
  			Local player handling
 diff --git a/src/client/game.cpp b/src/client/game.cpp
-index 27b5833..37f7733 100644
+index 27b5833..9a88221 100644
 --- a/src/client/game.cpp
 +++ b/src/client/game.cpp
 @@ -8,6 +8,7 @@
@@ -132,23 +132,27 @@ index 27b5833..37f7733 100644
  	} else if (wasKeyDown(KeyType::PITCHMOVE)) {
  		togglePitchMove();
  	} else if (wasKeyDown(KeyType::FASTMOVE)) {
-@@ -2154,9 +2161,13 @@ void Game::processKeyInput()
+@@ -2154,9 +2161,17 @@ void Game::processKeyInput()
  	} else if (wasKeyDown(KeyType::ZOOM)) {
  		checkZoomEnabled();
  	} else if (wasKeyDown(KeyType::QUICKTUNE_NEXT)) {
 -		quicktune->next();
-+		if (cdda_client::CddaBridge::getInstance().terrainComparisonEnabled())
++		if (cdda_client::CddaBridge::getInstance().getMetrics().realtime)
++			cdda_client::CddaBridge::getInstance().toggleSimulationPause();
++		else if (cdda_client::CddaBridge::getInstance().terrainComparisonEnabled())
 +			cdda_client::CddaBridge::getInstance().toggleTerrainStyle();
 +		else quicktune->next();
  	} else if (wasKeyDown(KeyType::QUICKTUNE_PREV)) {
 -		quicktune->prev();
-+		if (cdda_client::CddaBridge::getInstance().terrainComparisonEnabled())
++		if (cdda_client::CddaBridge::getInstance().getMetrics().realtime)
++			cdda_client::CddaBridge::getInstance().cycleSimulationSpeed();
++		else if (cdda_client::CddaBridge::getInstance().terrainComparisonEnabled())
 +			cdda_client::CddaBridge::getInstance().toggleTerrainFog();
 +		else quicktune->prev();
  	} else if (wasKeyDown(KeyType::QUICKTUNE_INC)) {
  		quicktune->inc();
  	} else if (wasKeyDown(KeyType::QUICKTUNE_DEC)) {
-@@ -2178,6 +2189,9 @@ void Game::processItemSelection(u16 *new_playeritem)
+@@ -2178,6 +2193,9 @@ void Game::processItemSelection(u16 *new_playeritem)
  	LocalPlayer *player = client->getEnv().getLocalPlayer();
  
  	*new_playeritem = player->getWieldIndex();
@@ -158,7 +162,7 @@ index 27b5833..37f7733 100644
  	u16 max_item = player->getMaxHotbarItemcount();
  	if (max_item == 0)
  		return;
-@@ -2737,8 +2751,72 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
+@@ -2737,8 +2755,75 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
  		control.aux1 = control.aux1 ^ true;
  	}
  
@@ -204,6 +208,7 @@ index 27b5833..37f7733 100644
 +			bridge.acknowledgeThreat();
 +		acknowledgement_held = acknowledgement_down;
 +		if (vertical_pressed) {
++			bridge.handleMovementIntent(0);
 +			if (!bridge.getMetrics().safety_stop)
 +				bridge.handleMoveInput(isKeyDown(KeyType::SNEAK) ? 10 : 9);
 +			return;
@@ -224,14 +229,16 @@ index 27b5833..37f7733 100644
 +			cdda_dir = oct_to_cdda[oct];
 +		}
 +
-+		if (cdda_dir != 0 && !bridge.getMetrics().safety_stop)
++		if (bridge.getMetrics().realtime)
++			bridge.handleMovementIntent(cdda_dir);
++		else if (cdda_dir != 0 && !bridge.getMetrics().safety_stop)
 +			cdda_client::CddaBridge::getInstance().handleMoveInput(cdda_dir);
 +	}
 +
  	//tt.stop();
  }
  
-@@ -2784,6 +2862,24 @@ inline void Game::step(f32 dtime)
+@@ -2784,6 +2869,25 @@ inline void Game::step(f32 dtime)
  
  	if (!m_is_paused)
  		client->step(dtime);
@@ -250,13 +257,14 @@ index 27b5833..37f7733 100644
 +			g_settings->getNoEx("cwm_socket_path", socket_path);
 +			bridge.initialize(client, socket_path);
 +		}
++		bridge.setMenuPause(g_menumgr.menuCount() > 0);
 +		bridge.update(dtime);
 +		bridge.renderDebugOverlay(m_rendering_engine->get_gui_env());
 +	}
  }
  
  static void pauseNodeAnimation(PausedNodesList &paused, scene::ISceneNode *node) {
-@@ -3246,6 +3342,7 @@ void Game::updateCamera(f32 dtime)
+@@ -3246,6 +3350,7 @@ void Game::updateCamera(f32 dtime)
  	tool_reload_ratio = MYMIN(tool_reload_ratio, 1.0);
  	camera->update(player, dtime, tool_reload_ratio);
  	camera->step(dtime);
@@ -264,7 +272,7 @@ index 27b5833..37f7733 100644
  
  	f32 camera_fov = camera->getFovMax();
  	v3s16 camera_offset = camera->getOffset();
-@@ -3262,6 +3359,7 @@ void Game::updateCamera(f32 dtime)
+@@ -3262,6 +3367,7 @@ void Game::updateCamera(f32 dtime)
  		if (m_camera_offset_changed) {
  			client->updateCameraOffset(camera_offset);
  			client->getEnv().updateCameraOffset(camera_offset);
@@ -272,7 +280,7 @@ index 27b5833..37f7733 100644
  
  			if (clouds)
  				clouds->updateCameraOffset(camera_offset);
-@@ -3365,6 +3463,21 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
+@@ -3365,6 +3471,21 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
  	// but the halo rendering code is already inefficient so there's no point in optimizing it here
  	hud->updateSelectionMesh(camera_offset);
  
@@ -294,7 +302,7 @@ index 27b5833..37f7733 100644
  	// Allow digging again if button is not pressed
  	if (runData.digging_blocked && !isKeyDown(KeyType::DIG))
  		runData.digging_blocked = false;
-@@ -4319,7 +4432,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
+@@ -4319,7 +4440,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
  	/*
  		Fog
  	*/
@@ -497,10 +505,10 @@ index 7f3f860..c4c4482 100644
  void TestMapBlock::testSaveLoad(IGameDef *gamedef, const u8 version)
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..a72024d
+index 0000000..de12a4a
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,1152 @@
+@@ -0,0 +1,1231 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
@@ -559,6 +567,10 @@ index 0000000..a72024d
 +    cdda::cwm::ClientSession session_;
 +    float sync_timer_{0.f};
 +    Metrics metrics_;
++    int sent_intent_{0};
++    bool intent_needs_release_{false};
++    int sent_menu_pause_{-1};
++    irr::gui::IGUIStaticText* clock_text_{nullptr};
 +    uint64_t ack_revision_{0};
 +    uint64_t pending_move_{0};
 +    bool move_acked_{false};
@@ -905,10 +917,34 @@ index 0000000..a72024d
 +        player_feet_offset_ = player_eye_offset_ = 0.f;
 +    }
 +
++    bool send_clock_control(CDDA::CWM::SimulationControl action, float scale = 1.f) {
++        if (!metrics_.realtime || !player_ready_ || !session_.ready()) return false;
++        auto builder = session_.builder();
++        auto request = CDDA::CWM::CreateSimulationControlRequest(builder.builder(), session_.next_command++, action, scale);
++        const auto bytes = builder.finish_message(CDDA::CWM::Payload::SimulationControlRequest, request.Union());
++        return connection_->send_message(bytes.data(), bytes.size());
++    }
++
++    void movement_intent(int direction) {
++        if (!metrics_.realtime) return;
++        if (!player_ready_ || !session_.ready() || metrics_.pause_reasons || metrics_.pending_decision) {
++            sent_intent_ = 0; intent_needs_release_ = direction != 0; return;
++        }
++        if (!direction) intent_needs_release_ = false;
++        if (direction && intent_needs_release_) return;
++        if (sent_intent_ == direction) return;
++        auto builder = session_.builder();
++        auto request = CDDA::CWM::CreateMovementIntentRequest(builder.builder(), session_.next_command++,
++            static_cast<CDDA::CWM::MoveDirection>(direction));
++        const auto bytes = builder.finish_message(CDDA::CWM::Payload::MovementIntentRequest, request.Union());
++        if (connection_->send_message(bytes.data(), bytes.size())) sent_intent_ = direction;
++    }
++
 +    bool connect() {
 +        connection_ = cdda::cwm::IpcClient::connect_unix(socket_path_, 0);
 +        metrics_.connected = false; player_ready_ = false; pending_move_ = 0;
 +        sync_timer_ = 0.f;
++        sent_intent_ = 0; intent_needs_release_ = true; sent_menu_pause_ = -1;
 +        if (connection_ && connection_->is_valid() && session_.begin(*connection_)) return true;
 +        return false;
 +    }
@@ -960,9 +996,10 @@ index 0000000..a72024d
 +
 +        // Interpolate visual entities
 +        for (auto& [id, ent] : entities_) {
-+            ent.interpolation_time = std::min(step_duration, ent.interpolation_time + dtime);
++            const float elapsed = metrics_.realtime && metrics_.pause_reasons ? 0.f : dtime;
++            ent.interpolation_time = std::min(ent.motion_seconds, ent.interpolation_time + elapsed);
 +            ent.current_pos = ent.start_pos + (ent.target_pos - ent.start_pos) *
-+                              (ent.interpolation_time / step_duration);
++                              (ent.interpolation_time / ent.motion_seconds);
 +            render_entity(ent);
 +            
 +            // Sync Luanti camera to CDDA player (id == 1)
@@ -976,7 +1013,7 @@ index 0000000..a72024d
 +                    } else if (ent.state_flags & UNDERWATER) feet = -1.8f;
 +                    else if (ent.state_flags & SWIMMING) feet = -1.2f;
 +                    else if (ent.state_flags & WADING) feet = -.3f;
-+                    const float blend = 1.f - std::exp(-20.f * dtime);
++                    const float blend = 1.f - std::exp(-20.f * (metrics_.realtime && metrics_.pause_reasons ? 0.f : dtime));
 +                    player_feet_offset_ += (feet - player_feet_offset_) * blend;
 +                    player_eye_offset_ += (eye - player_eye_offset_) * blend;
 +                    local_player->eye_offset_first.Y = player_eye_offset_ * 10.f;
@@ -1180,6 +1217,13 @@ index 0000000..a72024d
 +                    it = vehicles_.erase(it);
 +                }
 +
++                metrics_.simulation_time = snap->simulation_time_seconds();
++                metrics_.realtime = snap->clock() && snap->clock()->realtime();
++                metrics_.pause_reasons = snap->clock() ? snap->clock()->pause_reasons() : 0;
++                metrics_.time_scale = snap->clock() ? snap->clock()->time_scale() : 1.f;
++                if (metrics_.realtime && metrics_.pause_reasons) {
++                    sent_intent_ = 0; intent_needs_release_ = true;
++                }
 +                // Sync entities
 +                if (snap->entities()) {
 +                    std::set<uint64_t> present;
@@ -1199,6 +1243,8 @@ index 0000000..a72024d
 +                        if (it == entities_.end()) {
 +                            VisualEntity ve;
 +                            ve.id = eid;
++                            ve.motion_seconds = ent_state->motion_seconds();
++                            ve.interpolation_time = ve.motion_seconds;
 +                            ve.type_id = ent_state->type_id() ? ent_state->type_id()->str() : "";
 +                            ve.name = ent_state->name() ? ent_state->name()->str() : "";
 +                            ve.current_pos = target;
@@ -1211,6 +1257,9 @@ index 0000000..a72024d
 +                            ve.humanoid = ent_state->type() == CDDA::CWM::EntityType::NPC;
 +                            entities_[eid] = ve;
 +                        } else {
++                            const float fraction = it->second.interpolation_time / it->second.motion_seconds;
++                            it->second.motion_seconds = ent_state->motion_seconds();
++                            it->second.interpolation_time = fraction * it->second.motion_seconds;
 +                            const std::string type_id = ent_state->type_id() ? ent_state->type_id()->str() : "";
 +                            if (it->second.type_id != type_id) {
 +                                if (it->second.scene_node)
@@ -1228,7 +1277,7 @@ index 0000000..a72024d
 +                                !it->second.perceived || !ent_state->perceived()) {
 +                                it->second.current_pos = target;
 +                                it->second.start_pos = target;
-+                                it->second.interpolation_time = step_duration;
++                                it->second.interpolation_time = it->second.motion_seconds;
 +                            } else if (target != it->second.target_pos) {
 +                                it->second.start_pos = it->second.current_pos;
 +                                it->second.interpolation_time = 0.0f;
@@ -1391,7 +1440,7 @@ index 0000000..a72024d
 +    std::string trace_path;
 +    if (g_settings->getNoEx("cwm_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->trace_.open(trace_path);
-+        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog,ipc_connected,ipc_input,ipc_output,ipc_read_bytes,ipc_write_bytes,ipc_frames,ipc_dispatch_bytes,ipc_read_calls,ipc_write_calls,session_state,input_ready,session_id,player_id,connection_id,sequence,resync_count,entity_cache,vehicle_cache,scene_origin_x,scene_origin_y\n";
++        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog,ipc_connected,ipc_input,ipc_output,ipc_read_bytes,ipc_write_bytes,ipc_frames,ipc_dispatch_bytes,ipc_read_calls,ipc_write_calls,session_state,input_ready,session_id,player_id,connection_id,sequence,resync_count,entity_cache,vehicle_cache,scene_origin_x,scene_origin_y,simulation_time,realtime,pause_reasons,time_scale,sent_intent\n";
 +    }
 +    if (g_settings->getNoEx("cwm_entity_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->entity_trace_.open(trace_path);
@@ -1502,7 +1551,9 @@ index 0000000..a72024d
 +        << pimpl_->session_.identity.session << ',' << pimpl_->session_.identity.player << ','
 +        << pimpl_->session_.identity.connection << ',' << pimpl_->session_.sequence << ','
 +        << pimpl_->session_.resync_count << ',' << pimpl_->entities_.size() << ',' << pimpl_->vehicles_.size()
-+        << ',' << pimpl_->scene_origin_.X << ',' << pimpl_->scene_origin_.Y << '\n';
++        << ',' << pimpl_->scene_origin_.X << ',' << pimpl_->scene_origin_.Y << ','
++        << pimpl_->metrics_.simulation_time << ',' << pimpl_->metrics_.realtime << ','
++        << pimpl_->metrics_.pause_reasons << ',' << pimpl_->metrics_.time_scale << ',' << pimpl_->sent_intent_ << '\n';
 +    pimpl_->trace_.flush();
 +}
 +
@@ -1541,6 +1592,29 @@ index 0000000..a72024d
 +    return pimpl_ && pimpl_->acknowledge_threat();
 +}
 +
++void CddaBridge::handleMovementIntent(int direction) {
++    if (pimpl_) pimpl_->movement_intent(direction);
++}
++
++void CddaBridge::setMenuPause(bool paused) {
++    if (!pimpl_ || !pimpl_->metrics_.realtime) return;
++    if (pimpl_->sent_menu_pause_ != int(paused) && pimpl_->send_clock_control(paused ?
++        CDDA::CWM::SimulationControl::MENU_OPEN : CDDA::CWM::SimulationControl::MENU_CLOSE))
++        pimpl_->sent_menu_pause_ = int(paused);
++}
++
++void CddaBridge::toggleSimulationPause() {
++    if (pimpl_) pimpl_->send_clock_control(pimpl_->metrics_.pause_reasons & 1 ?
++        CDDA::CWM::SimulationControl::RESUME : CDDA::CWM::SimulationControl::PAUSE);
++}
++
++void CddaBridge::cycleSimulationSpeed() {
++    if (!pimpl_) return;
++    const float current = pimpl_->metrics_.time_scale;
++    const float next = current < .75f ? 1.f : current < 1.5f ? 2.f : current < 3.f ? 4.f : .5f;
++    pimpl_->send_clock_control(CDDA::CWM::SimulationControl::SET_SPEED, next);
++}
++
 +bool CddaBridge::answerDecision(uint16_t choice) {
 +    return pimpl_ && pimpl_->answer_decision(choice);
 +}
@@ -1555,6 +1629,19 @@ index 0000000..a72024d
 +namespace cdda_client {
 +void CddaBridge::renderDebugOverlay(irr::gui::IGUIEnvironment* guienv) {
 +    if (!guienv || !pimpl_) return;
++
++    if (pimpl_->metrics_.realtime) {
++        if (!pimpl_->clock_text_) {
++            pimpl_->clock_text_ = guienv->addStaticText(L"", irr::core::rect<irr::s32>(420, 10, 1030, 95), true, true, nullptr, -1, true);
++            pimpl_->clock_text_->setOverrideColor(irr::video::SColor(255, 255, 255, 255));
++            pimpl_->clock_text_->setBackgroundColor(irr::video::SColor(225, 25, 35, 32));
++        }
++        wchar_t text[256];
++        swprintf(text, 256, L"TEMPO REALE %.2fx - %ls\nF7: pausa/riprendi | F8: velocita\nMinaccia: E per riprendere; rilascia prima WASD",
++            pimpl_->metrics_.time_scale, pimpl_->metrics_.pause_reasons ? L"IN PAUSA" : L"ATTIVO");
++        pimpl_->clock_text_->setText(text);
++        pimpl_->clock_text_->setVisible(true);
++    } else if (pimpl_->clock_text_) pimpl_->clock_text_->setVisible(false);
 +
 +    if (pimpl_->terrain_demo_) {
 +        if (!pimpl_->terrain_text_) {
@@ -1655,10 +1742,10 @@ index 0000000..a72024d
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.h b/src/cdda/cdda_bridge.h
 new file mode 100644
-index 0000000..66004ab
+index 0000000..e9d8aaa
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.h
-@@ -0,0 +1,118 @@
+@@ -0,0 +1,127 @@
 +// Luanti C++ CWM Presentation Bridge
 +// Licensed under Apache-2.0
 +#pragma once
@@ -1705,6 +1792,7 @@ index 0000000..66004ab
 +    v3f target_pos;
 +    v3f start_pos;
 +    float interpolation_time{0.2f};
++    float motion_seconds{0.2f};
 +    float rotation{0.0f};
 +    uint8_t hp_percent{100};
 +    uint32_t state_flags{0};
@@ -1745,6 +1833,10 @@ index 0000000..66004ab
 +    bool handlePointedOpening(const v3s16& node, bool close);
 +    bool acknowledgeThreat();
 +    bool answerDecision(uint16_t choice);
++    void handleMovementIntent(int direction);
++    void setMenuPause(bool paused);
++    void toggleSimulationPause();
++    void cycleSimulationSpeed();
 +
 +    // Coordinate conversion
 +    static v3s16 cddaToLuantiCoord(int x, int y, int z);
@@ -1752,6 +1844,10 @@ index 0000000..66004ab
 +
 +    // Metrics for F3 Debug Overlay
 +    struct Metrics {
++        bool realtime{false};
++        uint32_t pause_reasons{0};
++        float time_scale{1.f};
++        uint64_t simulation_time{0};
 +        uint64_t current_revision{0};
 +        uint32_t fps{60};
 +        float ipc_latency_ms{0.0f};

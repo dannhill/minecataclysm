@@ -1,6 +1,7 @@
 #include "cwm/cwm_session.hpp"
 #include <functional>
 #include <iostream>
+#include <limits>
 #include <stdexcept>
 using namespace cdda::cwm;
 using namespace CDDA::CWM;
@@ -24,18 +25,19 @@ std::vector<uint8_t> reset(uint64_t seq, uint64_t request=0, Identity ids={11,22
     return b.finish_message(Payload::WorldReset, CreateWorldReset(b.builder(),request).Union());
 }
 std::vector<uint8_t> world(uint64_t seq, bool full=true, uint64_t base=0,
-    uint64_t revision=5, uint64_t resync=0, bool malformed=false, Identity ids={11,22,33}) {
+    uint64_t revision=5, uint64_t resync=0, bool malformed=false, Identity ids={11,22,33}, float scale=1.f, uint32_t reasons=0, float motion=.2f) {
     MessageBuilder b(seq,revision,ids); auto& f=b.builder();
     Vec3f pos(2,3,0); Coord3i origin(0,0,0);
-    auto actor=CreateEntityState(f,1,EntityType::PLAYER,0,&pos);
+    auto actor=CreateEntityState(f,1,EntityType::PLAYER,0,&pos,0,0,0,0,true,0,motion);
     auto actors=f.CreateVector(std::vector{actor});
     std::vector<CwmBlock> blocks(malformed ? 2 : 256,CwmBlock(0,1,15,0));
     auto chunk=CreateChunkSnapshot(f,0,0,0,16,16,1,f.CreateVectorOfStructs(blocks));
     auto chunks=f.CreateVector(std::vector{chunk});
     auto vehicles=f.CreateVector(std::vector<flatbuffers::Offset<VehicleState>>{});
     auto fields=f.CreateVector(std::vector<flatbuffers::Offset<FieldState>>{});
+    auto clock=CreateSimulationState(f,true,reasons,scale);
     auto body=CreateWorldSnapshot(f,revision,&origin,0,full?chunks:0,actors,vehicles,fields,0,false,
-        full,base,seq,resync);
+        full,base,seq,resync,0,0,0,clock);
     return b.finish_message(Payload::WorldSnapshot,body.Union());
 }
 bool accept(ClientSession& s, MemoryChannel& c, const std::vector<uint8_t>& bytes) {
@@ -88,6 +90,18 @@ int main() {
     test("duplicate_remove_metadata_requires_resync",[]{ClientSession s; MemoryChannel c; handshake(s,c); CHECK(!accept(s,c,roster(4,EntityType::MONSTER,false,false,true))); CHECK(!s.ready() && s.revision==5);});
     test("second_player_or_unknown_kind_requires_resync",[]{for(auto kind:{EntityType::PLAYER,static_cast<EntityType>(99)}) {ClientSession s; MemoryChannel c; handshake(s,c); CHECK(!accept(s,c,roster(4,kind))); CHECK(!s.ready());}});
     test("existing_actor_cannot_switch_between_npc_and_monster",[]{ClientSession s; MemoryChannel c; handshake(s,c); auto bytes=roster(4); CHECK(accept(s,c,bytes)); CHECK(s.commit(*GetCwmMessage(bytes.data())->payload_as_WorldSnapshot(),c)); CHECK(!accept(s,c,roster(5,EntityType::NPC))); CHECK(s.revision==6 && !s.ready());});
+    test("invalid_clock_or_motion_requires_resync",[]{
+        for (float scale : {0.f,5.f,std::numeric_limits<float>::quiet_NaN(),std::numeric_limits<float>::infinity()}) {
+            ClientSession s; MemoryChannel c; handshake(s,c);
+            CHECK(!accept(s,c,world(4,false,5,6,0,false,{11,22,33},scale))); CHECK(s.revision==5 && !s.ready());
+        }
+        for (float motion : {0.f,-1.f,61.f,std::numeric_limits<float>::quiet_NaN()}) {
+            ClientSession s; MemoryChannel c; handshake(s,c);
+            CHECK(!accept(s,c,world(4,false,5,6,0,false,{11,22,33},1,0,motion))); CHECK(!s.ready());
+        }
+        ClientSession s; MemoryChannel c; handshake(s,c);
+        CHECK(!accept(s,c,world(4,false,5,6,0,false,{11,22,33},1,32))); CHECK(!s.ready());
+    });
     test("deduplicate_pending_and_complete",[]{CommandLedger l; CHECK(l.begin(7,1,"move")==CommandLedger::Status::Fresh); CHECK(l.begin(7,1,"move")==CommandLedger::Status::Pending); l.complete({1,true,"",20}); CHECK(l.begin(7,1,"move")==CommandLedger::Status::Complete); l.complete({1,false,"late",30}); CHECK(l.find(1)->outcome.accepted && l.find(1)->outcome.revision==20);});
     test("conflicting_semantics_or_author_rejected",[]{CommandLedger l; l.begin(7,1,"move"); CHECK(l.begin(7,1,"interact")==CommandLedger::Status::Conflict); CHECK(l.begin(8,1,"move")==CommandLedger::Status::Conflict);});
     test("bounded_cache_expiry_never_reexecutes",[]{CommandLedger l(2); for(uint64_t i=1;i<=100;i++){ CHECK(l.begin(7,i,"wait")==CommandLedger::Status::Fresh); l.complete({i,true,"",i}); CHECK(l.size()<=2); } CHECK(l.begin(7,1,"wait")==CommandLedger::Status::Expired); CHECK(l.next_id()==101);});

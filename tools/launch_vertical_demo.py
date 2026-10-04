@@ -14,12 +14,13 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--fresh', action='store_true', help='Create a new copy; preserve previous demo saves')
     parser.add_argument('--actors', action='store_true', help='Use the actor lifecycle fixture')
+    parser.add_argument('--realtime', action='store_true', help='Use the real-time scheduler fixture')
     args, client_args = parser.parse_known_args()
     root = Path(__file__).resolve().parents[1]
-    artifact = 'fnd04-actors' if args.actors else 'fnd04-vertical'
-    source = root / 'artifacts' / artifact / ('demo-fixture-user' if args.actors else 'fixture-user')
-    baseline = root / 'artifacts' / artifact / ('demo-fixture-baseline.json' if args.actors else 'fixture-baseline.json')
-    directory = root / 'artifacts' / ('actor-demo' if args.actors else 'vertical-demo')
+    artifact = 'rt01-scheduler' if args.realtime else ('fnd04-actors' if args.actors else 'fnd04-vertical')
+    source = root / 'artifacts' / artifact / ('demo-fixture-user' if args.actors or args.realtime else 'fixture-user')
+    baseline = root / 'artifacts' / artifact / ('demo-fixture-baseline.json' if args.actors or args.realtime else 'fixture-baseline.json')
+    directory = root / 'artifacts' / ('realtime-demo' if args.realtime else ('actor-demo' if args.actors else 'vertical-demo'))
     pointer = directory / 'last-session'
     directory.mkdir(parents=True, exist_ok=True)
     if pointer.exists() and not args.fresh:
@@ -51,8 +52,17 @@ def main():
                CDDA_CHARACTER='Audit Survivor', LUANTI_WORLD=str(session / 'luanti'),
                LUANTI_CONFIG=str(config))
     env.pop('CDDA_TERRAIN_DEMO', None)
-    print(('Prova creature isolata' if args.actors else 'Prova verticale isolata') + ' — salvataggio:', session, flush=True)
-    if args.actors:
+    if args.realtime:
+        env['CDDA_REALTIME'] = '1'
+    else:
+        env.pop('CDDA_REALTIME', None)
+    print(('Prova tempo reale isolata' if args.realtime else ('Prova creature isolata' if args.actors else 'Prova verticale isolata')) + ' — salvataggio:', session, flush=True)
+    if args.realtime:
+        print('Il cane e il compagno possono muoversi mentre resti fermo. F7: pausa, F8: velocità globale.', flush=True)
+        print('Scala a gradini davanti alla partenza, a pioli subito a destra; stanza con porta chiusa più avanti a destra lungo la strada.', flush=True)
+        print('Apri la stanza: nuova minaccia percepita → autopausa. E riconosce e riprende; rilascia e ripremi WASD.', flush=True)
+        print('Prototipo su griglia: rivalutiamo ora scale e scale a pioli automatiche/continue prima del controller definitivo.', flush=True)
+    elif args.actors:
         print('Zombie/cane verso nord-est, NPC verso sud: innocui e immobilizzati per questa prova.', flush=True)
         print('Scala a nord. Corridoio verso est: percorri circa 80 caselle e ritorna per scaricare/ricaricare le creature.', flush=True)
     else:
@@ -60,7 +70,7 @@ def main():
     print('Spazio: sali/emergi. Maiusc+Spazio: scendi/immergiti. Un passaggio per pressione.', flush=True)
     print('Rilancia per riprendere questa prova; --fresh crea una copia nuova senza cancellarla.', flush=True)
     os.execve(root / 'start.sh', [str(root / 'start.sh'), '--go', '--name',
-        'actor_demo' if args.actors else 'vertical_demo', *client_args], env)
+        'realtime_demo' if args.realtime else ('actor_demo' if args.actors else 'vertical_demo'), *client_args], env)
 
 
 if __name__ == '__main__':

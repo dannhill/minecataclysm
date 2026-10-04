@@ -50,3 +50,7 @@ add_test(NAME test_transport_limits COMMAND test_transport_limits)
 add_executable(test_session tests/test_session.cpp)
 target_link_libraries(test_session PRIVATE cwm_protocol)
 add_test(NAME test_session COMMAND test_session)
+
+add_executable(test_clock tests/test_clock.cpp)
+target_link_libraries(test_clock PRIVATE cwm_protocol)
+add_test(NAME test_clock COMMAND test_clock)

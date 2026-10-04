@@ -37322,27 +37322,27 @@
   {
     "path": "src/cwm/cwm_main.cpp",
     "mode": "100644",
-    "sha256": "33a277e5c584573016b498299a83e5f54a8fa6adf132f3ca009bf40cb55b1024"
+    "sha256": "d4ad9fa394c37c7ee278fc325c5da483428c63ac68cefbadb7b85122bb91938e"
   },
   {
     "path": "src/cwm/cwm_map_exporter.cpp",
     "mode": "100644",
-    "sha256": "4a81bf55c4b583d4c8aaf415a6d10877298cce59a5985444a67327181bb861fb"
+    "sha256": "2eafc1080a189c0f7ac24457c83d4b6aa9ec1e5a7a20dcd7dd700595ac6cf7c5"
   },
   {
     "path": "src/cwm/cwm_map_exporter.h",
     "mode": "100644",
-    "sha256": "599a0d7fca24ff37f4aa281096715dd305b17eba6e1d010c604ec793fdc47fb6"
+    "sha256": "3270c306738c15c0207f6a8f905a3a2f323a3711f0121f931ff8beacd4df17a7"
   },
   {
     "path": "src/cwm/cwm_server.cpp",
     "mode": "100644",
-    "sha256": "b0a7b77eaad0a7b663acd5ad4a632fe206f1ff52128165b767ddca5f68401ab6"
+    "sha256": "fc36e197e9523adc6dd0ede43a59a51facc173e5610145d8ca79a22b297dccb4"
   },
   {
     "path": "src/cwm/cwm_server.h",
     "mode": "100644",
-    "sha256": "989d88b08d404f9d741ef6872487dd915ad11eca63293348c2e18364f46d71ef"
+    "sha256": "00c5dfffe48c26f258e2eb8bbc939a74eb41875b2fbf164fafd9211cda334265"
   },
   {
     "path": "src/damage.cpp",
@@ -37502,12 +37502,12 @@
   {
     "path": "src/do_turn.cpp",
     "mode": "100644",
-    "sha256": "f5a5e718d636a9a36b9400974f165965b2ddd3e5169ba4146b4fb4716191fcd7"
+    "sha256": "6904827a00f44c725bbfe0889414a636473bb147b5fea744417c3d769a7deac8"
   },
   {
     "path": "src/do_turn.h",
     "mode": "100644",
-    "sha256": "23d20a308be3f7141fdecacfd487b422dc7938d40aca9df3b6eae0b4237ab582"
+    "sha256": "51e9ed45b6680403a3a9fc636c465d1abe7da0a0376933ec50a125176cd57878"
   },
   {
     "path": "src/drawing_primitives.cpp",
@@ -40867,7 +40867,7 @@
   {
     "path": "tests/cwm_runtime_test.cpp",
     "mode": "100644",
-    "sha256": "877f77d2a23f4158342752293a91791c50c5502c773f9f21308c4f95af29ed80"
+    "sha256": "196ff8786234f6b5de114a77971d078f800f862e24b3aa3f6105e1dc284bd482"
   },
   {
     "path": "tests/data/name.json",

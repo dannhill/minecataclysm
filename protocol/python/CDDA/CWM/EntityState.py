@@ -98,8 +98,15 @@ class EntityState(object):
             return self._tab.Get(flatbuffers.number_types.Uint32Flags, o + self._tab.Pos)
         return 0
 
+    # EntityState
+    def MotionSeconds(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(24))
+        if o != 0:
+            return self._tab.Get(flatbuffers.number_types.Float32Flags, o + self._tab.Pos)
+        return 0.2
+
 def EntityStateStart(builder):
-    builder.StartObject(10)
+    builder.StartObject(11)
 
 def Start(builder):
     EntityStateStart(builder)
@@ -163,6 +170,12 @@ def EntityStateAddStateFlags(builder, stateFlags):
 
 def AddStateFlags(builder, stateFlags):
     EntityStateAddStateFlags(builder, stateFlags)
+
+def EntityStateAddMotionSeconds(builder, motionSeconds):
+    builder.PrependFloat32Slot(10, motionSeconds, 0.2)
+
+def AddMotionSeconds(builder, motionSeconds):
+    EntityStateAddMotionSeconds(builder, motionSeconds)
 
 def EntityStateEnd(builder):
     return builder.EndObject()

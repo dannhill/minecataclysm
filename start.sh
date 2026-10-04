@@ -50,6 +50,9 @@ BASE_CONFIG="${LUANTI_CONFIG:-$HOME/.minetest/minetest.conf}"
 if [[ -f "$BASE_CONFIG" ]]; then cp -- "$BASE_CONFIG" "$CLIENT_CONFIG"; else : > "$CLIENT_CONFIG"; fi
 printf '\n' >> "$CLIENT_CONFIG"
 cat "$PROJECT_DIR/game/minetest.conf" >> "$CLIENT_CONFIG"
+if [[ "${CDDA_REALTIME:-0}" == 1 ]]; then
+    printf '\nkeymap_quicktune_next = KEY_F7\nkeymap_quicktune_prev = KEY_F8\n' >> "$CLIENT_CONFIG"
+fi
 printf '\nbind_address = 127.0.0.1\ncwm_socket_path = %s\n' "$SOCKET_PATH" >> "$CLIENT_CONFIG"
 
 # This is a disposable presentation world. Existing user worlds are untouched.
@@ -69,6 +72,7 @@ cd -- "$PROJECT_DIR"
 SERVER_ARGS=()
 if [[ -n "$CDDA_CHARACTER" ]]; then SERVER_ARGS+=(--character "$CDDA_CHARACTER"); fi
 if [[ "${CDDA_TERRAIN_DEMO:-0}" == 1 ]]; then SERVER_ARGS+=(--terrain-demo); fi
+if [[ "${CDDA_REALTIME:-0}" == 1 ]]; then SERVER_ARGS+=(--realtime); fi
 stdbuf -oL -eL "$CDDA_BIN" --socket "$SOCKET_PATH" --world "$CDDA_WORLD" "${SERVER_ARGS[@]}" \
     --userdir "$CDDA_USERDIR" --datadir "$PROJECT_DIR/cdda/data" \
     > "$LOG_DIR/cdda.log" 2>&1 &

@@ -34,6 +34,7 @@ int main(int argc, const char *argv[]) {
     bool create_vertical = false;
     bool create_actors = false;
     bool create_actor_demo = false;
+    bool create_realtime = false;
     bool resave = false;
     for (int i = 1; i < argc; ++i) {
         std::string arg(argv[i]);
@@ -43,6 +44,7 @@ int main(int argc, const char *argv[]) {
         else if (arg == "--create-vertical") { create = true; create_vertical = true; }
         else if (arg == "--create-actors") { create = true; create_vertical = true; create_actors = true; }
         else if (arg == "--create-actor-demo") { create = true; create_vertical = true; create_actors = true; create_actor_demo = true; }
+        else if (arg == "--create-realtime") { create = true; create_vertical = true; create_actors = true; create_actor_demo = true; create_realtime = true; }
         else if (arg == "--resave") resave = true;
         else if (i + 1 < argc && arg == "--userdir") userdir = argv[++i];
         else if (i + 1 < argc && arg == "--datadir") datadir = argv[++i];
@@ -187,20 +189,37 @@ int main(int argc, const char *argv[]) {
                 if (!actor) return 10;
                 actor->friendly = -1;
                 actor->unique_name = entry.first == std::string("mon_zombie") ? "Lifecycle Zombie" : "Lifecycle Dog";
-                actor->add_effect(efftype_id("tied"), 10_days, true);
+                if (!create_realtime || entry.first == std::string("mon_zombie"))
+                    actor->add_effect(efftype_id("tied"), 10_days, true);
             }
             auto guy = make_shared_fast<npc>();
             guy->normalize();
             guy->randomize();
             guy->name = "Lifecycle NPC";
             guy->set_fac(faction_id("no_faction"));
-            guy->set_attitude(NPCATT_NULL);
+            guy->set_attitude(create_realtime ? NPCATT_FOLLOW : NPCATT_NULL);
             guy->spawn_at_precise(tripoint_abs_ms(m.getabs(tripoint(60,64,0))));
             guy->set_guard_pos(guy->get_location());
-            guy->set_speed_base(0);
+            guy->set_speed_base(create_realtime ? 100 : 0);
             guy->moves = 0;
             overmap_buffer.insert_npc(guy);
             g->load_npcs();
+            if (create_realtime) {
+                m.ter_set(tripoint(61,60,0), ter_str_id("t_ladder_up"));
+                m.ter_set(tripoint(61,60,1), ter_str_id("t_ladder_up_down"));
+                m.ter_set(tripoint(61,60,2), ter_str_id("t_ladder_down"));
+                // A closed native room hides a hostile actor until perceived.
+                // Tied for a safe manual autopause demonstration, not fake AI.
+                for (int y = 58; y <= 62; ++y) for (int x = 74; x <= 78; ++x) {
+                    m.ter_set(tripoint(x,y,0), ter_str_id(x==74 || x==78 || y==58 || y==62 ? "t_wall" : "t_floor"));
+                    m.ter_set(tripoint(x,y,1), ter_str_id("t_wood_treated_roof"));
+                }
+                m.ter_set(tripoint(74,60,0), ter_str_id("t_door_c"));
+                auto* hostile = g->place_critter_at(mtype_id("mon_zombie"),tripoint(75,60,0));
+                if (!hostile) return 12;
+                hostile->unique_name = "Realtime Threat";
+                hostile->add_effect(efftype_id("tied"),10_days,true);
+            }
         }
         if (create_exploration) {
             m.ter_set(tripoint(60,59,0), ter_str_id("t_water_dp"));

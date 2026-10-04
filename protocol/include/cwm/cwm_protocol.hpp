@@ -11,7 +11,7 @@
 namespace cdda::cwm {
 
 constexpr uint16_t PROTOCOL_VERSION_MAJOR = 2;
-constexpr uint16_t PROTOCOL_VERSION_MINOR = 0;
+constexpr uint16_t PROTOCOL_VERSION_MINOR = 1;
 
 struct Identity { uint64_t session{0}, player{0}, connection{0}; };
 

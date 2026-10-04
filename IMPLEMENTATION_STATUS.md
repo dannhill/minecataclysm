@@ -45,7 +45,8 @@ The user [accepts all three actor lifecycle manual checks](docs/source/actor-lif
 No repeat checklist is needed. Black-screen loss of context after leaving the
 demo road is reported separately, not yet reproduced; preserve that demo save.
 The proposed next slice is the first phase-2 authoritative real-time scheduler
-prototype; it has not started. Other FND-04 criteria remain open.
+prototype is in implementation on `prototype/rt01-scheduler`. Verification
+and manual comparison are pending; it is not certified. Other FND-04 criteria remain open.
 Product decisions and planned prototypes do not certify implementation.
 
 Manual feedback accepted movement, structures, door opening, safe mode and

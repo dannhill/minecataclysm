@@ -86,7 +86,7 @@ index d7e91fc..75f4886 100644
          } else {
              popup( _( "You need to breathe but you can't swim!  Get to dry land, quick!" ) );
 diff --git a/src/do_turn.cpp b/src/do_turn.cpp
-index 2455a6f..a6a40aa 100644
+index 2455a6f..25c923d 100644
 --- a/src/do_turn.cpp
 +++ b/src/do_turn.cpp
 @@ -120,14 +120,21 @@ bool cleanup_at_end()
@@ -144,7 +144,7 @@ index 2455a6f..a6a40aa 100644
          }
          if( g->gamemode ) {
              g->gamemode = std::make_unique<special_game>(); // null gamemode or something..
-@@ -400,6 +414,40 @@ void overmap_npc_move()
+@@ -400,6 +414,54 @@ void overmap_npc_move()
  
  // MAIN GAME LOOP
  // Returns true if game is over (death, saved, quit, etc)
@@ -154,6 +154,13 @@ index 2455a6f..a6a40aa 100644
 +// keeps the ordinary client on handle_action(), including after exceptions.
 +const std::function<bool()> *external_action = nullptr;
 +const external_choice_provider *external_choice = nullptr;
++const std::function<bool()> *external_world_gate = nullptr;
++bool external_phase_finished = false;
++}
++
++void finish_external_action_phase()
++{
++    external_phase_finished = true;
 +}
 +
 +bool external_ui_active()
@@ -167,25 +174,32 @@ index 2455a6f..a6a40aa 100644
 +}
 +
 +bool do_turn_with_action( const std::function<bool()> &action,
-+                         const external_choice_provider &choice )
++                         const external_choice_provider &choice,
++                         const std::function<bool()> &world_gate )
 +{
 +    struct restore_input {
 +        const std::function<bool()> *previous;
 +        const external_choice_provider *previous_choice;
++        const std::function<bool()> *previous_gate;
++        bool previous_finished;
 +        ~restore_input() {
 +            external_action = previous;
 +            external_choice = previous_choice;
++            external_world_gate = previous_gate;
++            external_phase_finished = previous_finished;
 +        }
-+    } restore{ external_action, external_choice };
++    } restore{ external_action, external_choice, external_world_gate, external_phase_finished };
 +    external_action = &action;
 +    external_choice = &choice;
++    external_world_gate = &world_gate;
++    external_phase_finished = false;
 +    return do_turn();
 +}
 +
  bool do_turn()
  {
      if( g->is_game_over() ) {
-@@ -533,7 +581,7 @@ bool do_turn()
+@@ -533,7 +595,7 @@ bool do_turn()
                      g->queue_screenshot = false;
                  }
  
@@ -194,11 +208,33 @@ index 2455a6f..a6a40aa 100644
                      ++g->moves_since_last_save;
                      u.action_taken();
                  }
+@@ -542,6 +604,10 @@ bool do_turn()
+                     return turn_handler::cleanup_at_end();
+                 }
+ 
++                if( external_action && external_phase_finished ) {
++                    break;
++                }
++
+                 if( g->uquit == QUIT_WATCH ) {
+                     break;
+                 }
+@@ -578,6 +644,10 @@ bool do_turn()
+         }
+     }
+ 
++    if( external_world_gate && *external_world_gate && !( *external_world_gate )() ) {
++        return turn_handler::cleanup_at_end();
++    }
++
+     if( g->driving_view_offset.x != 0 || g->driving_view_offset.y != 0 ) {
+         // Still have a view offset, but might not be driving anymore,
+         // or the option has been deactivated,
 diff --git a/src/do_turn.h b/src/do_turn.h
-index 6ebdaa7..b5af8ff 100644
+index 6ebdaa7..205549f 100644
 --- a/src/do_turn.h
 +++ b/src/do_turn.h
-@@ -2,8 +2,19 @@
+@@ -2,8 +2,22 @@
  #ifndef CATA_SRC_DO_TURN_H
  #define CATA_SRC_DO_TURN_H
  
@@ -212,7 +248,10 @@ index 6ebdaa7..b5af8ff 100644
 +using external_choice_provider = std::function<int( const std::string &,
 +                                 const std::vector<std::string> & )>;
 +bool do_turn_with_action( const std::function<bool()> &action,
-+                         const external_choice_provider &choice = {} );
++                         const external_choice_provider &choice = {},
++                         const std::function<bool()> &world_gate = {} );
++// End this native player phase without discarding remaining move credit.
++void finish_external_action_phase();
 +bool external_ui_active();
 +int external_ui_choice( const std::string &text, const std::vector<std::string> &choices );
  void handle_key_blocking_activity();
@@ -439,10 +478,10 @@ index 09a7711..9b0c484 100644
          DebugLog( D_INFO, DC_ALL ) <<
 diff --git a/src/cwm/cwm_main.cpp b/src/cwm/cwm_main.cpp
 new file mode 100644
-index 0000000..4138acf
+index 0000000..bd1511a
 --- /dev/null
 +++ b/src/cwm/cwm_main.cpp
-@@ -0,0 +1,388 @@
+@@ -0,0 +1,393 @@
 +// CDDA Headless CWM Server Entrypoint
 +// Licensed under Apache-2.0
 +
@@ -583,6 +622,7 @@ index 0000000..4138acf
 +    bool headless = false;
 +    bool new_character = false;
 +    bool terrain_demo = false;
++    bool realtime = false;
 +    std::string character;
 +
 +    for (int i = 1; i < argc; ++i) {
@@ -610,6 +650,8 @@ index 0000000..4138acf
 +            character = argv[++i];
 +        } else if (arg == "--new-character") {
 +            new_character = true;
++        } else if (arg == "--realtime") {
++            realtime = true;
 +        } else if (arg == "--terrain-demo") {
 +            terrain_demo = true;
 +        } else if (arg == "--help" || arg == "-h") {
@@ -620,6 +662,7 @@ index 0000000..4138acf
 +                      << "  --datadir <path>      Data directory (default: auto-detected)\n"
 +                      << "  --character <id>      Select a decoded save ID (or a name with --new-character)\n"
 +                      << "  --new-character       Explicitly create a character; existing saves are preserved\n"
++                      << "  --realtime           Enable the isolated real-time scheduler prototype\n"
 +                      << "  --terrain-demo        Create the isolated terrain_comparison fixture in a new world\n"
 +                      << "  --headless-ticks <n>  Advance n simulation turns headlessly and save (Milestone 0.5 verification)\n"
 +                      << "  --help                Show this help message\n";
@@ -775,6 +818,7 @@ index 0000000..4138acf
 +              << u.pos().x << ", " << u.pos().y << ", " << u.pos().z << ")\n";
 +
 +    cwm::CwmServer server(socket_path);
++    if (realtime) server.enable_realtime();
 +    if (!server.start()) {
 +        std::cerr << "[CDDA-Server] ERROR: Failed to bind Unix socket at " << socket_path << "\n";
 +        return 1;
@@ -808,7 +852,7 @@ index 0000000..4138acf
 +    // Show the restored save before resuming any owed movement/turn debt.
 +    // Bootstrap requires an admitted action; malformed/unsupported requests
 +    // and handshakes cannot advance the inherited calendar.
-+    while (g_running && !server.has_queued_action()) {
++    while (g_running && !server.realtime_enabled() && !server.has_queued_action()) {
 +        server.update(u, here, *g);
 +        std::this_thread::sleep_for(std::chrono::milliseconds(1));
 +    }
@@ -833,10 +877,10 @@ index 0000000..4138acf
 +}
 diff --git a/src/cwm/cwm_map_exporter.cpp b/src/cwm/cwm_map_exporter.cpp
 new file mode 100644
-index 0000000..154b358
+index 0000000..6db9efc
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.cpp
-@@ -0,0 +1,436 @@
+@@ -0,0 +1,444 @@
 +// CDDA CWM Map & Entity Exporter Implementation
 +// Licensed under Apache-2.0
 +
@@ -968,10 +1012,11 @@ index 0000000..154b358
 +    bool include_chunks,
 +    ProjectionCache* cache, cdda::cwm::Identity identity,
 +    uint64_t base_revision, uint64_t state_id, uint64_t resync_id,
-+    uint64_t completed_command_id
++    uint64_t completed_command_id, const ClockView* clock
 +) {
 +    cdda::cwm::MessageBuilder builder(sequence_num, world_rev, identity);
 +    auto& fbb = builder.builder();
++    fbb.ForceDefaults(true);
 +
 +    tripoint u_pos = u.pos();
 +
@@ -1125,6 +1170,10 @@ index 0000000..154b358
 +            CDDA::CWM::EntityType::NPC, type, &pos, 0.0f, 0, 100, name, u.sees(person)));
 +    }
 +
++    if (clock && clock->realtime) for (const auto& actor : entity_offsets) {
++        auto* state = flatbuffers::GetMutableTemporaryPointer(fbb, actor);
++        state->mutate_motion_seconds(state->id() == 1 ? clock->motion_seconds : 1.f / clock->scale);
++    }
 +    auto entities_vec = fbb.CreateVector(entity_offsets);
 +    std::set<uint64_t> actor_ids;
 +    std::vector<flatbuffers::Offset<CDDA::CWM::EntitySpawned>> spawned;
@@ -1212,6 +1261,8 @@ index 0000000..154b358
 +
 +    uint64_t sim_seconds = static_cast<uint64_t>(to_turn<int>(calendar::turn));
 +
++    const auto clock_state = clock ? CDDA::CWM::CreateSimulationState(fbb,
++        clock->realtime, clock->pause_reasons, clock->scale) : flatbuffers::Offset<CDDA::CWM::SimulationState>{};
 +    auto world_snap = CDDA::CWM::CreateWorldSnapshot(
 +        fbb,
 +        world_rev,
@@ -1222,9 +1273,10 @@ index 0000000..154b358
 +        vehicles_vec,
 +        fields_vec,
 +        tiles_vec,
-+        g.safe_mode == SAFE_MODE_STOP || u.has_effect(efftype_id("laserlocked")),
++        g.safe_mode == SAFE_MODE_STOP || u.has_effect(efftype_id("laserlocked")) ||
++            (clock && (clock->pause_reasons & 4)),
 +        include_chunks, base_revision, state_id, resync_id, completed_command_id,
-+        spawned_vec, removed_vec
++        spawned_vec, removed_vec, clock_state
 +    );
 +
 +    return builder.finish_message(CDDA::CWM::Payload::WorldSnapshot, world_snap.Union());
@@ -1275,10 +1327,10 @@ index 0000000..154b358
 +} // namespace cwm
 diff --git a/src/cwm/cwm_map_exporter.h b/src/cwm/cwm_map_exporter.h
 new file mode 100644
-index 0000000..497e579
+index 0000000..eed54f3
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.h
-@@ -0,0 +1,57 @@
+@@ -0,0 +1,59 @@
 +// CDDA CWM Map & Entity Exporter
 +// Licensed under Apache-2.0
 +#pragma once
@@ -1304,6 +1356,7 @@ index 0000000..497e579
 +        std::vector<uint64_t> tiles;
 +        std::set<uint64_t> actors;
 +    };
++    struct ClockView { bool realtime{false}; uint32_t pause_reasons{0}; float scale{1.f}; float motion_seconds{.2f}; };
 +    static CDDA::CWM::CwmBlock export_block(const tripoint& p, map& m, uint8_t light);
 +    static std::vector<uint8_t> export_world_snapshot(
 +        uint64_t sequence_num,
@@ -1315,7 +1368,8 @@ index 0000000..497e579
 +        ProjectionCache* cache = nullptr,
 +        cdda::cwm::Identity identity = {},
 +        uint64_t base_revision = 0, uint64_t state_id = 1,
-+        uint64_t resync_id = 0, uint64_t completed_command_id = 0
++        uint64_t resync_id = 0, uint64_t completed_command_id = 0,
++        const ClockView* clock = nullptr
 +    );
 +
 +    static std::vector<uint8_t> export_tile_delta(
@@ -1338,10 +1392,10 @@ index 0000000..497e579
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..6188df5
+index 0000000..744e7a8
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,410 @@
+@@ -0,0 +1,566 @@
 +// CDDA CWM IPC Server Implementation
 +// Licensed under Apache-2.0
 +
@@ -1352,6 +1406,7 @@ index 0000000..6188df5
 +
 +#include <chrono>
 +#include <thread>
++#include <cstring>
 +#include "avatar.h"
 +#include "avatar_action.h"
 +#include "creature_tracker.h"
@@ -1401,6 +1456,7 @@ index 0000000..6188df5
 +}
 +
 +void CwmServer::cancel_connection() {
++    held_direction_ = 0; menu_pause_ = false;
 +    for (const auto& command : commands_)
 +        ledger_.complete({command.id, false, "Connection closed before execution", world_revision_});
 +    commands_.clear();
@@ -1413,9 +1469,11 @@ index 0000000..6188df5
 +void CwmServer::send_state(avatar& u, map& m, game& g, bool full, uint64_t completed) {
 +    if (!has_active_client() || !negotiated_ || rejecting_) return;
 +    const auto state_id = next_state_++;
++    const CwmMapExporter::ClockView clock{realtime_, pause_reasons(g),
++        static_cast<float>(clock_.scale()), motion_seconds_};
 +    auto snapshot = CwmMapExporter::export_world_snapshot(sequence_counter_, world_revision_,
 +                    u, m, g, full, &projection_cache_, identity_, sent_revision_, state_id,
-+                    resync_id_, completed);
++                    resync_id_, completed, realtime_ ? &clock : nullptr);
 +    const bool is_full = CDDA::CWM::GetCwmMessage(snapshot.data())->payload_as_WorldSnapshot()->full();
 +    if (emit(snapshot)) {
 +        snapshot_sent_ = true;
@@ -1428,6 +1486,7 @@ index 0000000..6188df5
 +}
 +
 +void CwmServer::reset_world(avatar& u, map& m, game& g, uint64_t request_id) {
++    if (realtime_) drop_realtime_input(u, m, g);
 +    resync_id_ = request_id;
 +    ready_ = false;
 +    cdda::cwm::MessageBuilder builder(sequence_counter_, world_revision_, identity_);
@@ -1487,8 +1546,115 @@ index 0000000..6188df5
 +    return true;
 +}
 +
++uint32_t CwmServer::pause_reasons(const game& g) const {
++    if (!realtime_) return 0;
++    using namespace cdda::cwm;
++    return (manual_pause_ ? Manual : 0) | (menu_pause_ ? Menu : 0) |
++        ((g.uquit != QUIT_WATCH && (threat_pause_ || g.safe_mode == SAFE_MODE_STOP || get_avatar().has_effect(efftype_id("laserlocked")))) ? Threat : 0) |
++        ((!ready_ || !has_active_client()) ? Recovery : 0) | (pending_decision_ ? Decision : 0);
++}
++
++void CwmServer::service_clock(avatar& u, map& m, game& g) {
++    clock_.sample(cdda::cwm::SimulationClock::Wall::now(), pause_reasons(g) == 0);
++    update(u, m, g);
++    clock_.sample(cdda::cwm::SimulationClock::Wall::now(), pause_reasons(g) == 0);
++}
++
++void CwmServer::drop_realtime_input(avatar& u, map& m, game& g) {
++    held_direction_ = 0;
++    const auto cancelled = std::move(commands_);
++    commands_.clear();
++    for (const auto& command : cancelled)
++        send_result({command.id, false, "Paused or recovering before execution"}, u, m, g);
++}
++
++void CwmServer::detect_threats(avatar& u, map& m, game& g) {
++    if (!realtime_ || g.uquit == QUIT_WATCH) return;
++    std::set<std::string> current;
++    for (monster& creature : g.all_monsters()) {
++        if (creature.is_dead() || creature.is_hallucination() || !u.sees(creature)) continue;
++        const auto attitude = creature.attitude(&u);
++        if (attitude != MATT_ATTACK && attitude != MATT_FOLLOW) continue;
++        const auto id = creature.get_value("cwm_monster_id");
++        if (!id.empty()) current.insert("m:" + id);
++    }
++    for (npc& person : g.all_npcs())
++        if (!person.is_dead() && person.is_enemy() && u.sees(person))
++            current.insert("n:" + std::to_string(person.getID().get_value()));
++    bool unseen = false;
++    for (const auto& id : current) if (!perceived_threats_.count(id)) unseen = true;
++    perceived_threats_ = std::move(current);
++    if (unseen && !threat_pause_) {
++        threat_pause_ = true;
++        drop_realtime_input(u, m, g);
++        ++world_revision_;
++        send_state(u, m, g);
++    }
++}
++
++bool CwmServer::finish_shutdown(avatar& u, game& g) {
++    saved_on_shutdown_ = save_world(g);
++    g.uquit = saved_on_shutdown_ ? QUIT_SAVED : QUIT_NOSAVED;
++    u.moves = 0;
++    return false;
++}
++
++bool CwmServer::realtime_action(avatar& u, map& m, game& g,
++                              const std::function<bool()>& keep_running) {
++    while (keep_running()) {
++        service_clock(u, m, g);
++        if (pause_reasons(g)) { std::this_thread::sleep_for(std::chrono::milliseconds(1)); continue; }
++        if (clock_.tick_due()) {
++            if (held_direction_ || !commands_.empty()) {
++                // Held intent still owns unused native credit. A wall boundary
++                // is not an idle action and must not erase a fast actor's moves.
++                finish_external_action_phase();
++                return false;
++            }
++            u.pause();
++            return true;
++        }
++        if (clock_.action_due() && (!commands_.empty() || held_direction_)) {
++            Command command{};
++            if (!commands_.empty()) { command = commands_.front(); commands_.pop_front(); }
++            else command = Command{0, true, held_direction_};
++            const int before = u.moves;
++            const int speed = u.get_speed();
++            const bool acted = execute(command, u, m, g);
++            motion_seconds_ = static_cast<float>(std::clamp(clock_.charge_action(before-u.moves, speed), .05, 60.));
++            if (!acted && !command.id) held_direction_ = 0;
++            if (result_) {
++                if (command.id) send_result(*result_, u, m, g);
++                else send_state(u, m, g);
++                result_.reset();
++            }
++            detect_threats(u, m, g);
++            return acted;
++        }
++        std::this_thread::sleep_for(std::chrono::milliseconds(1));
++    }
++    return finish_shutdown(u, g);
++}
++
++bool CwmServer::pace_world(avatar& u, map& m, game& g,
++                         const std::function<bool()>& keep_running) {
++    while (keep_running()) {
++        service_clock(u, m, g);
++        if (!pause_reasons(g) && clock_.tick_due()) return true;
++        std::this_thread::sleep_for(std::chrono::milliseconds(1));
++    }
++    return finish_shutdown(u, g);
++}
++
 +bool CwmServer::advance_turn(avatar& u, map& m, game& g,
 +                           const std::function<bool()>& keep_running) {
++    if (realtime_) {
++        while (keep_running() && pause_reasons(g)) {
++            service_clock(u, m, g);
++            std::this_thread::sleep_for(std::chrono::milliseconds(1));
++        }
++        if (!keep_running()) { finish_shutdown(u, g); return true; }
++    }
 +    bool prelude_sent = false;
 +    const bool ended = do_turn_with_action([&]() {
 +        if (g.uquit == QUIT_WATCH) {
@@ -1509,6 +1675,7 @@ index 0000000..6188df5
 +            send_result(*result_, u, m, g);
 +            result_.reset();
 +        }
++        if (realtime_) { detect_threats(u, m, g); return realtime_action(u, m, g, keep_running); }
 +        while (keep_running()) {
 +            update(u, m, g);
 +            if (!commands_.empty()) {
@@ -1525,13 +1692,15 @@ index 0000000..6188df5
 +        return false;
 +    }, [&](const std::string& text, const std::vector<std::string>& choices) {
 +        return ask_decision(text, choices, u, m, g, keep_running);
-+    });
++    }, realtime_ ? std::function<bool()>([&]() { return pace_world(u, m, g, keep_running); }) : std::function<bool()>{});
 +    if (!ended) {
++        if (realtime_) clock_.complete_tick();
 +        ++world_revision_;
 +        if (result_) {
 +            send_result(*result_, u, m, g);
 +            result_.reset();
 +        } else send_state(u, m, g);
++        detect_threats(u, m, g);
 +    }
 +    return ended;
 +}
@@ -1557,6 +1726,7 @@ index 0000000..6188df5
 +        }
 +        return choices.size() - 1;
 +    }
++    if (realtime_) { clock_.sample(cdda::cwm::SimulationClock::Wall::now(), false); drop_realtime_input(u, m, g); }
 +    pending_decision_ = next_decision_++;
 +    decision_choices_ = choices.size();
 +    decision_answer_.reset();
@@ -1572,6 +1742,7 @@ index 0000000..6188df5
 +    const int selected = decision_answer_.value_or(static_cast<int>(choices.size()) - 1);
 +    pending_decision_ = 0;
 +    decision_answer_.reset();
++    if (realtime_) { clock_.sample(cdda::cwm::SimulationClock::Wall::now(), false); ++world_revision_; send_state(u, m, g); }
 +    return selected;
 +}
 +
@@ -1636,7 +1807,7 @@ index 0000000..6188df5
 +            hello->protocol_version_minor() == cdda::cwm::PROTOCOL_VERSION_MINOR;
 +        cdda::cwm::MessageBuilder reply(sequence_counter_, world_revision_, identity_);
 +        emit(reply.build_hello_response(accepted, "cdda-server-cwm-2",
-+            accepted ? "" : "CWM 2.0 Hello required before state or commands", ledger_.next_id()));
++            accepted ? "" : "CWM 2.1 Hello required before state or commands", ledger_.next_id()));
 +        if (!accepted) { rejecting_ = true; return; }
 +        client_id_ = hello->client_id(); received_sequence_ = 1; negotiated_ = true;
 +        reset_world(u, m, g, 0);
@@ -1657,6 +1828,7 @@ index 0000000..6188df5
 +        const auto* ack = msg->payload_as_SnapshotAck();
 +        if (ack && awaiting_state_ && ack->state_id() == awaiting_state_) {
 +            awaiting_state_ = 0; ready_ = true; send_decision();
++            if (realtime_) { ++world_revision_; send_state(u, m, g); detect_threats(u, m, g); }
 +        }
 +        return;
 +    }
@@ -1675,7 +1847,8 @@ index 0000000..6188df5
 +            decision_answer_ = response->choice();
 +        return;
 +    }
-+    if (pending_decision_) return;
++    if (pending_decision_ && msg->payload_type() != Payload::SimulationControlRequest &&
++        msg->payload_type() != Payload::MovementIntentRequest) return;
 +    uint64_t id = 0;
 +    std::string signature;
 +    if (const auto* request = msg->payload_as_MoveRequest()) {
@@ -1686,6 +1859,12 @@ index 0000000..6188df5
 +            ":" + std::to_string(p->y()) + ":" + std::to_string(p->z());
 +    } else if (const auto* request = msg->payload_as_AcknowledgeThreatRequest()) {
 +        id = request->command_id(); signature = "threat";
++    } else if (const auto* request = msg->payload_as_MovementIntentRequest()) {
++        id = request->command_id(); signature = "intent:" + std::to_string(int(request->direction()));
++    } else if (const auto* request = msg->payload_as_SimulationControlRequest()) {
++        uint32_t scale_bits; const float scale = request->time_scale();
++        std::memcpy(&scale_bits, &scale, sizeof(scale_bits));
++        id = request->command_id(); signature = "clock:" + std::to_string(int(request->action())) + ":" + std::to_string(scale_bits);
 +    } else { server_->client()->close(); return; }
 +    const auto status = ledger_.begin(client_id_, id, signature);
 +    using Status = cdda::cwm::CommandLedger::Status;
@@ -1699,10 +1878,40 @@ index 0000000..6188df5
 +    }
 +    if (status == Status::Expired) { send_result({id, false, "Command identity expired"}, u, m, g); return; }
 +    if (status != Status::Fresh) { server_->client()->close(); return; }
++    if (const auto* request = msg->payload_as_MovementIntentRequest()) {
++        const int direction = int(request->direction());
++        const bool valid = realtime_ && direction >= 0 && direction <= 8 &&
++            (direction == 0 || !pause_reasons(g));
++        if (valid) { held_direction_ = direction; ++world_revision_; }
++        send_result({id, valid, valid ? "" : "Movement intent unavailable or invalid"}, u, m, g);
++        return;
++    }
++    if (const auto* request = msg->payload_as_SimulationControlRequest()) {
++        bool valid = realtime_;
++        using CDDA::CWM::SimulationControl;
++        if (valid) switch (request->action()) {
++            case SimulationControl::PAUSE: manual_pause_ = true; drop_realtime_input(u, m, g); break;
++            case SimulationControl::RESUME: manual_pause_ = false; break;
++            case SimulationControl::SET_SPEED: {
++                const float previous = static_cast<float>(clock_.scale());
++                valid = clock_.set_scale(request->time_scale());
++                if (valid) motion_seconds_ = std::clamp(motion_seconds_ * previous / request->time_scale(), .05f, 60.f);
++                break;
++            }
++            case SimulationControl::MENU_OPEN: menu_pause_ = true; drop_realtime_input(u, m, g); break;
++            case SimulationControl::MENU_CLOSE: menu_pause_ = false; break;
++            default: valid = false; break;
++        }
++        if (valid) ++world_revision_;
++        send_result({id, valid, valid ? "" : "Clock control unavailable or invalid"}, u, m, g);
++        return;
++    }
 +    if (msg->payload_type() == CDDA::CWM::Payload::AcknowledgeThreatRequest) {
 +        const auto* request = msg->payload_as_AcknowledgeThreatRequest();
 +        if (!request) return;
-+        if (acknowledge_current_threat(u)) ++world_revision_;
++        const bool acknowledged = acknowledge_current_threat(u);
++        if (acknowledged || threat_pause_) ++world_revision_;
++        if (realtime_) { threat_pause_ = false; held_direction_ = 0; }
 +        send_result(Result{request->command_id(), true, ""}, u, m, g);
 +        return;
 +    }
@@ -1747,6 +1956,7 @@ index 0000000..6188df5
 +        }
 +    } else return;
 +    if (commands_.size() >= 32) error = "Command queue full";
++    if (realtime_ && pause_reasons(g)) error = "Simulation is paused";
 +    if (!error.empty()) send_result(Result{command.id, false, error}, u, m, g);
 +    else commands_.push_back(command);
 +}
@@ -1754,10 +1964,10 @@ index 0000000..6188df5
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.h b/src/cwm/cwm_server.h
 new file mode 100644
-index 0000000..c3c865b
+index 0000000..d8d02d5
 --- /dev/null
 +++ b/src/cwm/cwm_server.h
-@@ -0,0 +1,90 @@
+@@ -0,0 +1,106 @@
 +// CDDA CWM IPC Server
 +// Licensed under Apache-2.0
 +#pragma once
@@ -1770,6 +1980,7 @@ index 0000000..c3c865b
 +#include <optional>
 +#include "cwm_map_exporter.h"
 +#include "cwm/cwm_session.hpp"
++#include "cwm/cwm_clock.hpp"
 +
 +class avatar;
 +class map;
@@ -1793,6 +2004,8 @@ index 0000000..c3c865b
 +    bool update(avatar& u, map& m, game& g);
 +    bool advance_turn(avatar& u, map& m, game& g, const std::function<bool()>& keep_running);
 +    bool has_queued_action() const { return !commands_.empty(); }
++    void enable_realtime() { realtime_ = true; }
++    bool realtime_enabled() const { return realtime_; }
 +    bool saved_on_shutdown() const { return saved_on_shutdown_; }
 +
 +    bool save_world(game& g);
@@ -1801,6 +2014,19 @@ index 0000000..c3c865b
 +    bool has_active_client() const;
 +
 +private:
++    bool realtime_{false};
++    bool manual_pause_{false}, menu_pause_{false}, threat_pause_{false};
++    int held_direction_{0};
++    float motion_seconds_{1.f};
++    cdda::cwm::SimulationClock clock_;
++    std::set<std::string> perceived_threats_;
++    uint32_t pause_reasons(const game& g) const;
++    void service_clock(avatar& u, map& m, game& g);
++    void detect_threats(avatar& u, map& m, game& g);
++    void drop_realtime_input(avatar& u, map& m, game& g);
++    bool realtime_action(avatar& u, map& m, game& g, const std::function<bool()>& keep_running);
++    bool pace_world(avatar& u, map& m, game& g, const std::function<bool()>& keep_running);
++    bool finish_shutdown(avatar& u, game& g);
 +    std::string socket_path_;
 +    std::unique_ptr<cdda::cwm::CwmListener> server_;
 +    uint64_t sequence_counter_{1};
@@ -2271,10 +2497,10 @@ index 0000000..609ac58
 +}
 diff --git a/tests/cwm_runtime_test.cpp b/tests/cwm_runtime_test.cpp
 new file mode 100644
-index 0000000..c93b96d
+index 0000000..87bbda3
 --- /dev/null
 +++ b/tests/cwm_runtime_test.cpp
-@@ -0,0 +1,276 @@
+@@ -0,0 +1,305 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "avatar_action.h"
@@ -2550,4 +2776,33 @@ index 0000000..c93b96d
 +    for( int i = 0; i < 4 && u.activity; ++i ) REQUIRE_FALSE( do_turn_with_action( pause ) );
 +    CHECK_FALSE( u.activity );
 +    CHECK( calendar::turn > before );
++}
++
++TEST_CASE( "cwm_external_tick_boundary_retains_native_speed_credit", "[cwm][realtime]" )
++{
++    const override_option no_autosave( "AUTOSAVE", "false" );
++    prepare_runtime();
++    avatar &u = get_avatar();
++    u.moves = 125;
++    const int speed = u.get_speed();
++    const auto before = calendar::turn;
++    int gates = 0, actions = 0;
++    REQUIRE_FALSE( do_turn_with_action( [&]() {
++        ++actions;
++        finish_external_action_phase();
++        return false;
++    }, {}, [&]() {
++        ++gates;
++        CHECK( u.moves == 125 );
++        CHECK( calendar::turn == before + 1_turns );
++        return true;
++    } ) );
++    CHECK( gates == 1 );
++    CHECK( actions == 1 );
++    CHECK( u.moves == 125 + speed );
++    // The scoped boundary signal cannot leak to a later ordinary native turn.
++    actions = 0;
++    REQUIRE_FALSE( do_turn_with_action( [&]() { ++actions; u.pause(); return true; } ) );
++    CHECK( actions == 1 );
++    CHECK( u.moves == speed );
 +}

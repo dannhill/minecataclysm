@@ -27,3 +27,5 @@ class Payload(object):
     WorldReset = 21
     SnapshotAck = 22
     EntitySpawned = 23
+    SimulationControlRequest = 24
+    MovementIntentRequest = 25
