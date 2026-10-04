@@ -110,8 +110,11 @@ resta da riprodurre, conservando la sessione; non riapre questi tre controlli.
 Il seguito autorizzato è il [primo prototipo dello scheduler della fase 2](docs/prototypes/rt01-real-time.md):
 tick nativi temporizzati, idle, velocità globale, pause/menu/minacce e input
 mantenuto senza coda di passi. `realtime-demo.sh` offre la prova isolata.
-La validazione manuale e il confronto con il futuro controller continuo
-restano aperti; non è una scelta definitiva né la chiusura della fase 2.
+L'utente [accetta la checklist manuale dello scheduler](docs/source/rt01-validation-2026-10-04.md),
+ma giudica il ritmo base 1× troppo lento e chiede il controller continuo già
+previsto. Il baseline tecnico a griglia è implementato; offset continuo,
+arresto dentro una casella e direzione arbitraria restano da confrontare.
+Ritmo e controller finali sono aperti; la fase 2 non è chiusa.
 Gli altri criteri FND-04 restano aperti.
 
 ## Fase 2 — Prototipo di tempo, movimento e percezione
@@ -120,6 +123,8 @@ Dipende da FND-01–03 e dalla proiezione sufficiente alla scena di confronto.
 
 - Scheduler unico CDDA: default 1:1 e velocità globale regolabile, pausa
   esplicita/menu, attività lunghe accelerate, interruzioni native rilevanti.
+  Il rapporto 1:1 è il baseline RT-01 verificato; dopo il riscontro sulla
+  lentezza, il ritmo predefinito del prodotto è da ricalibrare e scegliere.
 - Autopausa su nuova minaccia percepita; ripresa in tempo reale. Verificare
   fattibilità del combattimento opzionale scandito dalle azioni sullo stesso
   scheduler. La pausa di scelta non migliora gratuitamente la mira.

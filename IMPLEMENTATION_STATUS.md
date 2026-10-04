@@ -48,7 +48,12 @@ The authorized [RT-01 real-time prototype](docs/prototypes/rt01-real-time.md)
 implements paced native turns, idle AI, global speed, manual/menu/threat/recovery
 pauses and held movement intent. `realtime-demo.sh` offers the isolated manual
 scene; ordinary `start.sh` remains action-driven unless explicitly opted in.
-Scoped verification is recorded in its evidence; manual validation is pending.
+Scoped verification is recorded in its evidence. The user
+[accepts the scoped manual checklist](docs/source/rt01-validation-2026-10-04.md),
+but rejects the base 1x pace as too slow and asks about the planned continuous
+controller. Native-grid interpolation is the implemented baseline; continuous
+authoritative offset remains unimplemented. Final pace/controller decisions
+are open; do not repeat the accepted scheduler checklist.
 Automatic continuous stairs/ladders must now be revisited with the user before
 choosing the final controller. Other phase-2/FND-04 criteria remain open.
 Product decisions and planned prototypes do not certify implementation.

@@ -40,8 +40,11 @@ continuo autorevole CDDA, resta da implementare e confrontare.
 scandito dalle azioni. L'opt-in tecnico per una sessione normale è
 `CDDA_REALTIME=1 ./start.sh`; per il confronto iniziale usare la demo isolata.
 I due binari verificati sono installati; anche l’avvio di `realtime-demo.sh`
-è verificato sul client grafico reale. La validazione manuale di RT-01 è
-ancora da raccogliere.
+è verificato sul client grafico reale. L'utente
+[accetta la checklist manuale](../source/rt01-validation-2026-10-04.md), ma
+giudica il ritmo base 1× troppo lento e chiede chiarimenti sul controller
+continuo previsto. Lo scheduler è accettato per questa prova; velocità e
+controller finali restano da scegliere.
 
 ## Contratto implementato
 
