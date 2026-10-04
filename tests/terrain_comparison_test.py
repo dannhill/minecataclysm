@@ -3,6 +3,7 @@
 import argparse
 import csv
 import json
+import math
 import os
 from pathlib import Path
 import signal
@@ -70,16 +71,27 @@ def main():
                 if stable and 'revision' in stable[0]:
                     checks['comparison_keeps_authoritative_revision'] = len({r['revision'] for r in stable}) == 1
             else: checks['comparison_trace_recorded'] = False
-            # Repeat from the opposite direction, then walk through a rebase.
-            xdo('mousemove', '--window', window, '360', '360')
-            time.sleep(.15)
-            xdo('mousemove_relative', '--', '650', '0'); time.sleep(1)
+            # Rotate south in bounded mouse steps, using the measured view.
+            # A single large X11 move can hit the window edge and be clamped.
+            for _ in range(14):
+                latest=list(csv.DictReader((play/'camera.csv').open()))[-1]
+                yaw=math.degrees(math.atan2(-float(latest['dir_x']),float(latest['dir_z'])))
+                delta=(180-yaw+180)%360-180
+                if abs(delta)<2: break
+                pixels=max(-180,min(180,round(-delta/.2)))
+                xdo('mousemove_relative','--',str(pixels),'0');time.sleep(.12)
+            time.sleep(1)
+            latest=list(csv.DictReader((play/'camera.csv').open()))[-1]
+            checks['street_and_shore_viewpoint_exercised'] = float(latest['dir_z']) < -.95
             shot('B-street-shore.png')
             tap('F7'); shot('A-street-shore.png'); tap('F7')
             xdo('keydown', '--window', window, 'w'); time.sleep(2)
             xdo('keyup', '--window', window, 'w'); time.sleep(1)
             shot('B-after-movement.png')
             checks['native_runtime_survives_comparison_and_movement'] = proc.poll() is None
+            rows=list(csv.DictReader((play/'camera.csv').open()))
+            checks['native_movement_changes_authoritative_target'] = len({
+                (r['target_x'],r['target_y'],r['target_z']) for r in rows}) > 1
             engine = (play / 'logs/luanti-engine.log').read_text(errors='replace')
             checks['both_styles_installed_in_actual_renderer'] = 'Terrain comparison A:' in engine and 'Terrain comparison B:' in engine
             checks['no_missing_textures_or_runtime_error'] = not any(text in engine for text in ('Could not load texture', 'ERROR[Main]', 'ServerError:'))
