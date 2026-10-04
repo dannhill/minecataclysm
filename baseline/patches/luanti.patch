@@ -497,10 +497,10 @@ index 7f3f860..c4c4482 100644
  void TestMapBlock::testSaveLoad(IGameDef *gamedef, const u8 version)
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..1a229a7
+index 0000000..a72024d
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,1149 @@
+@@ -0,0 +1,1152 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
@@ -1455,6 +1455,34 @@ index 0000000..1a229a7
 +}
 +
 +void CddaBridge::traceCamera(const v3f& position, const v3f& direction) {
++    // Called every rendered frame after the native camera update. Camera
++    // offset changes alone are too rare to observe actor motion/lifecycle.
++    if (pimpl_ && pimpl_->entity_trace_.is_open()) {
++        const auto now = std::chrono::duration_cast<std::chrono::nanoseconds>(
++            std::chrono::steady_clock::now().time_since_epoch()).count();
++        size_t scene_actors = 0, visible_actors = 0;
++        if (pimpl_->smgr_) {
++            for (const auto* node : pimpl_->smgr_->getRootSceneNode()->getChildren()) {
++                if (node->getID() == Impl::actor_scene_tag) {
++                    ++scene_actors;
++                    if (node->isVisible()) ++visible_actors;
++                }
++            }
++        }
++        for (const auto& [id, ent] : pimpl_->entities_) {
++            const auto* node = static_cast<irr::scene::ISceneNode*>(ent.scene_node);
++            const auto pos = node ? node->getPosition() : v3f();
++            pimpl_->entity_trace_ << now << ',' << pimpl_->metrics_.current_revision << ','
++                << pimpl_->session_.identity.session << ',' << pimpl_->session_.identity.connection << ','
++                << id << ',' << (ent.humanoid ? "npc" : id == 1 ? "player" : "monster") << ','
++                << ent.perceived << ',' << pimpl_->session_.ready() << ','
++                << ent.current_pos.X << ',' << ent.current_pos.Y << ',' << ent.current_pos.Z << ','
++                << ent.target_pos.X << ',' << ent.target_pos.Y << ',' << ent.target_pos.Z << ','
++                << ent.node_generation << ',' << (node && node->isVisible()) << ','
++                << pos.X << ',' << pos.Y << ',' << pos.Z << ',' << scene_actors << ',' << visible_actors << '\n';
++        }
++        pimpl_->entity_trace_.flush();
++    }
 +    if (!pimpl_ || !pimpl_->trace_.is_open() || !pimpl_->entities_.count(1)) return;
 +    const auto& entity = pimpl_->entities_.at(1);
 +    pimpl_->trace_ << std::chrono::duration_cast<std::chrono::nanoseconds>(
@@ -1485,33 +1513,8 @@ index 0000000..1a229a7
 +}
 +
 +void CddaBridge::updateScenePositions() {
-+    if (!pimpl_) return;
-+    const auto now = std::chrono::duration_cast<std::chrono::nanoseconds>(
-+        std::chrono::steady_clock::now().time_since_epoch()).count();
-+    for (auto& [id, ent] : pimpl_->entities_) pimpl_->render_entity(ent);
-+    if (!pimpl_->entity_trace_.is_open()) return;
-+    size_t scene_actors = 0, visible_actors = 0;
-+    if (pimpl_->smgr_) {
-+        for (const auto* node : pimpl_->smgr_->getRootSceneNode()->getChildren()) {
-+            if (node->getID() == Impl::actor_scene_tag) {
-+                ++scene_actors;
-+                if (node->isVisible()) ++visible_actors;
-+            }
-+        }
-+    }
-+    for (auto& [id, ent] : pimpl_->entities_) {
-+        const auto* node = static_cast<irr::scene::ISceneNode*>(ent.scene_node);
-+        const auto pos = node ? node->getPosition() : v3f();
-+        pimpl_->entity_trace_ << now << ',' << pimpl_->metrics_.current_revision << ','
-+            << pimpl_->session_.identity.session << ',' << pimpl_->session_.identity.connection << ','
-+            << id << ',' << (ent.humanoid ? "npc" : id == 1 ? "player" : "monster") << ','
-+            << ent.perceived << ',' << pimpl_->session_.ready() << ','
-+            << ent.current_pos.X << ',' << ent.current_pos.Y << ',' << ent.current_pos.Z << ','
-+            << ent.target_pos.X << ',' << ent.target_pos.Y << ',' << ent.target_pos.Z << ','
-+            << ent.node_generation << ',' << (node && node->isVisible()) << ','
-+            << pos.X << ',' << pos.Y << ',' << pos.Z << ',' << scene_actors << ',' << visible_actors << '\n';
-+    }
-+    if (pimpl_->entity_trace_.is_open()) pimpl_->entity_trace_.flush();
++    if (pimpl_)
++        for (auto& [id, ent] : pimpl_->entities_) pimpl_->render_entity(ent);
 +}
 +
 +bool CddaBridge::handleMoveInput(int dir) {
