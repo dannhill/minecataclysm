@@ -33,6 +33,7 @@ int main(int argc, const char *argv[]) {
     bool create_exploration = false;
     bool create_vertical = false;
     bool create_actors = false;
+    bool create_actor_demo = false;
     bool resave = false;
     for (int i = 1; i < argc; ++i) {
         std::string arg(argv[i]);
@@ -41,6 +42,7 @@ int main(int argc, const char *argv[]) {
         else if (arg == "--create-exploration") { create = true; create_exploration = true; }
         else if (arg == "--create-vertical") { create = true; create_vertical = true; }
         else if (arg == "--create-actors") { create = true; create_vertical = true; create_actors = true; }
+        else if (arg == "--create-actor-demo") { create = true; create_vertical = true; create_actors = true; create_actor_demo = true; }
         else if (arg == "--resave") resave = true;
         else if (i + 1 < argc && arg == "--userdir") userdir = argv[++i];
         else if (i + 1 < argc && arg == "--datadir") datadir = argv[++i];
@@ -160,6 +162,20 @@ int main(int argc, const char *argv[]) {
             m.ter_set(tripoint(60,59,0), ter_str_id("t_stairs_up"));
             m.ter_set(tripoint(60,59,1), ter_str_id("t_stairs_down"));
             calendar::turn = calendar::turn_zero + 1_hours;
+            if (create_actor_demo) {
+                // The covered regression fixture deliberately exercises native
+                // perception. The manual variant is outdoors in native daylight,
+                // without changing presentation lighting or gameplay visibility.
+                for (int y = 48; y < 72; ++y) for (int x = 0; x < 132; ++x) {
+                    m.ter_set(tripoint(x,y,0), ter_str_id("t_pavement"));
+                    for (int z = 1; z <= 10; ++z) {
+                        m.ter_set(tripoint(x,y,z), ter_str_id("t_open_air_rooved"));
+                        m.furn_set(tripoint(x,y,z), furn_str_id("f_null"));
+                    }
+                }
+                m.ter_set(tripoint(60,59,0), ter_str_id("t_stairs_up"));
+                m.ter_set(tripoint(60,59,1), ter_str_id("t_stairs_down"));
+            }
             for (const auto& entry : {std::pair<const char*,tripoint>{"mon_zombie",tripoint(63,58,0)},
                                      {"mon_dog",tripoint(65,58,0)}}) {
                 auto* actor = g->place_critter_at(mtype_id(entry.first),entry.second);

@@ -17,8 +17,8 @@ def main():
     args, client_args = parser.parse_known_args()
     root = Path(__file__).resolve().parents[1]
     artifact = 'fnd04-actors' if args.actors else 'fnd04-vertical'
-    source = root / 'artifacts' / artifact / 'fixture-user'
-    baseline = root / 'artifacts' / artifact / 'fixture-baseline.json'
+    source = root / 'artifacts' / artifact / ('demo-fixture-user' if args.actors else 'fixture-user')
+    baseline = root / 'artifacts' / artifact / ('demo-fixture-baseline.json' if args.actors else 'fixture-baseline.json')
     directory = root / 'artifacts' / ('actor-demo' if args.actors else 'vertical-demo')
     pointer = directory / 'last-session'
     directory.mkdir(parents=True, exist_ok=True)
