@@ -434,10 +434,10 @@ index 7f3f860..663a6ec 100644
  void TestMapBlock::testSaveLoad(IGameDef *gamedef, const u8 version)
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..8ef3246
+index 0000000..a355057
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,985 @@
+@@ -0,0 +1,988 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
@@ -523,6 +523,7 @@ index 0000000..8ef3246
 +    irr::gui::IGUIStaticText* terrain_text_{nullptr};
 +
 +    void update_terrain_bounds() {
++        if (!terrain_demo_) return;
 +        terrain_bounds_.clear();
 +        for (const auto& [pos, tile] : terrain_tiles_) {
 +            auto [it, added] = terrain_bounds_.try_emplace(pos.Y,
@@ -720,8 +721,10 @@ index 0000000..8ef3246
 +    void place_cdda_tile(const v3s16& base, uint16_t material, uint32_t flags,
 +                         uint8_t light, uint8_t orientation, std::set<v3s16>& modified) {
 +        using namespace cdda::cwm;
-+        if (material == AIR) terrain_tiles_.erase(base);
-+        else terrain_tiles_.insert_or_assign(base, CDDA::CWM::CwmBlock(flags, material, light, orientation));
++        if (terrain_demo_) {
++            if (material == AIR) terrain_tiles_.erase(base);
++            else terrain_tiles_.insert_or_assign(base, CDDA::CWM::CwmBlock(flags, material, light, orientation));
++        }
 +        // The baseline retains the previous renderer's material mapping.
 +        if (!terrain_enriched_) {
 +            if (material == SAND || material == SHRUB) material = DIRT;
