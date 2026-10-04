@@ -1,0 +1,68 @@
+{
+  "description": "Terrain prototype additions; exact pinned Mineclonia media and upstream notice",
+  "assets": [
+    {
+      "asset": "game/mods/cdda_nodes/textures/default_sand.png",
+      "source": "mineclonia/mods/ITEMS/mcl_core/textures/default_sand.png",
+      "sha256": "0710fe5e8f194c2037ec792024e00894d7e0d149710d715caa352c6e3a153488",
+      "upstream_commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+      "notice": "media-notices/mcl_core-README.txt"
+    },
+    {
+      "asset": "game/mods/cdda_nodes/textures/default_tree.png",
+      "source": "mineclonia/mods/ITEMS/mcl_core/textures/default_tree.png",
+      "sha256": "cfed4aa80b0eeb97f28c56508fa9308fe336e9ed9f598a0618a7de4d4805366c",
+      "upstream_commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+      "notice": "media-notices/mcl_core-README.txt"
+    },
+    {
+      "asset": "game/mods/cdda_nodes/textures/default_tree_top.png",
+      "source": "mineclonia/mods/ITEMS/mcl_core/textures/default_tree_top.png",
+      "sha256": "1e6ce5091cce092d46e687485caf5f7bb4a0763068183328bad5b6f7efdc2e4f",
+      "upstream_commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+      "notice": "media-notices/mcl_core-README.txt"
+    },
+    {
+      "asset": "game/mods/cdda_nodes/textures/default_leaves.png",
+      "source": "mineclonia/mods/ITEMS/mcl_core/textures/default_leaves.png",
+      "sha256": "b7678d51990bc8686cd3309a57c25c8bcb4e6cfdbc2ca7ea7d54c3eeae82dda5",
+      "upstream_commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+      "notice": "media-notices/mcl_core-README.txt"
+    },
+    {
+      "asset": "game/mods/cdda_nodes/textures/mcl_core_grass_block_top.png",
+      "source": "mineclonia/mods/ITEMS/mcl_core/textures/mcl_core_grass_block_top.png",
+      "sha256": "f30b371b0536966c9b0b8b0e3d1943f8305383109f88d84b0f9df14e3a33f11f",
+      "upstream_commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+      "notice": "media-notices/mcl_core-README.txt"
+    },
+    {
+      "asset": "game/mods/cdda_nodes/textures/mcl_core_grass_block_side_overlay.png",
+      "source": "mineclonia/mods/ITEMS/mcl_core/textures/mcl_core_grass_block_side_overlay.png",
+      "sha256": "0a2b22adf0e327163f179fd2b662d99c7ccb022536726af9adff82e3e72234d0",
+      "upstream_commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+      "notice": "media-notices/mcl_core-README.txt"
+    },
+    {
+      "asset": "game/mods/cdda_nodes/textures/mcl_core_coarse_dirt.png",
+      "source": "mineclonia/mods/ITEMS/mcl_core/textures/mcl_core_coarse_dirt.png",
+      "sha256": "8a31fd7fef65d0a3e0de5b410d73ca206ddc2ce7fd2a4bad028c5628c6ad2139",
+      "upstream_commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+      "notice": "media-notices/mcl_core-README.txt"
+    },
+    {
+      "asset": "game/mods/cdda_nodes/textures/mcl_core_grass_path_top.png",
+      "source": "mineclonia/mods/ITEMS/mcl_core/textures/mcl_core_grass_path_top.png",
+      "sha256": "c8d6cc1befc1261aa6998de0af3d81f9b8a01aa262378ff3b9318d7c6ee8ef3d",
+      "upstream_commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+      "notice": "media-notices/mcl_core-README.txt"
+    },
+    {
+      "asset": "game/mods/cdda_nodes/textures/default_water_source_animated.png",
+      "source": "mineclonia/mods/ITEMS/mcl_core/textures/default_water_source_animated.png",
+      "sha256": "32e41398980fda0a46401394d3a73e1a56734d466b01fa0e9d47f5c3673151dd",
+      "upstream_commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+      "notice": "media-notices/mcl_core-README.txt"
+    }
+  ]
+}

@@ -85,6 +85,7 @@ minetest.register_node("cdda_nodes:furniture_wood", {
 })
 
 minetest.log("action", "[CDDA] Pruned visual voxel nodes registered successfully.")
+dofile(minetest.get_modpath("cdda_nodes") .. "/terrain-demo.lua")
 
 -- CDDA is the only world authority: force an empty Luanti mapgen.
 minetest.set_mapgen_setting("mg_name", "singlenode", true)

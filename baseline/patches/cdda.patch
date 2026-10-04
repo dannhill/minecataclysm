@@ -383,10 +383,10 @@ index 09a7711..9b0c484 100644
          DebugLog( D_INFO, DC_ALL ) <<
 diff --git a/src/cwm/cwm_main.cpp b/src/cwm/cwm_main.cpp
 new file mode 100644
-index 0000000..fbd5097
+index 0000000..4c3bea3
 --- /dev/null
 +++ b/src/cwm/cwm_main.cpp
-@@ -0,0 +1,301 @@
+@@ -0,0 +1,375 @@
 +// CDDA Headless CWM Server Entrypoint
 +// Licensed under Apache-2.0
 +
@@ -421,6 +421,10 @@ index 0000000..fbd5097
 +#include "coordinate_conversions.h"
 +#include "cata_utility.h"
 +#include "json.h"
++#include "rng.h"
++#include "monster.h"
++#include "npc.h"
++#include "vehicle.h"
 +#include <flatbuffers/util.h>
 +
 +#if defined(FLATBUFFERS_LOCALE_INDEPENDENT) && (FLATBUFFERS_LOCALE_INDEPENDENT > 0)
@@ -451,6 +455,61 @@ index 0000000..fbd5097
 +    return result;
 +}
 +
++// Explicit disposable comparison fixture. Uses native terrain/map/save APIs;
++// never runs on an existing world or as part of ordinary startup.
++static void create_terrain_comparison(avatar& u, map& m) {
++    g->clear_zombies();
++    std::vector<character_id> npcs;
++    for (const npc& person : g->all_npcs()) npcs.push_back(person.getID());
++    for (const auto& id : npcs) g->remove_npc(id);
++    const auto vehicles = m.get_vehicles();
++    for (const auto& vehicle : vehicles) m.destroy_vehicle(vehicle.v);
++    for (int y = 0; y < 132; ++y) for (int x = 0; x < 132; ++x) {
++        for (int z = -1; z <= 1; ++z) {
++            const tripoint p(x, y, z);
++            m.ter_set(p, ter_str_id(z < 0 ? "t_rock" : z == 0 ? "t_grass" : "t_open_air"));
++            m.furn_set(p, furn_str_id("f_null"));
++            m.i_clear(p);
++            m.clear_fields(p);
++            m.remove_trap(p);
++        }
++        const tripoint p(x, y, 0);
++        // Four compact areas around the starting plaza (60,60).
++        if (x < 57 && y < 57) {
++            if ((x * 7 + y * 13) % 11 == 0) m.ter_set(p, ter_str_id("t_tree"));
++            else if ((x * 3 + y * 5) % 9 == 0) m.ter_set(p, ter_str_id("t_shrub"));
++        } else if (x > 63 && y < 57) {
++            if ((x + y * 3) % 5 == 0) m.ter_set(p, ter_str_id("t_grass_long"));
++            else if ((x * 3 + y) % 17 == 0) m.ter_set(p, ter_str_id("t_dirt"));
++        } else if (x > 63 && y > 63) {
++            m.ter_set(p, ter_str_id(x > 75 ? "t_water_sh" : "t_sand"));
++        } else if (x < 57 && y > 63) {
++            m.ter_set(p, ter_str_id("t_pavement"));
++            if (y < 67 || x > 53) m.ter_set(p, ter_str_id("t_sidewalk"));
++        }
++        if ((x >= 57 && x <= 63) || (y >= 57 && y <= 63))
++            m.ter_set(p, ter_str_id("t_sidewalk"));
++    }
++    // One recognizable house, with native windows, door, furniture and roof.
++    for (int y = 71; y <= 81; ++y) for (int x = 41; x <= 51; ++x) {
++        const bool edge = x == 41 || x == 51 || y == 71 || y == 81;
++        m.ter_set(tripoint(x,y,0), ter_str_id(edge ? "t_wall" : "t_floor"));
++        m.ter_set(tripoint(x,y,1), ter_str_id("t_wood_treated_roof"));
++    }
++    m.ter_set(tripoint(46,71,0), ter_str_id("t_door_c"));
++    m.ter_set(tripoint(43,71,0), ter_str_id("t_window"));
++    m.ter_set(tripoint(49,71,0), ter_str_id("t_window"));
++    m.furn_set(tripoint(44,75,0), furn_str_id("f_table"));
++    u.setpos(tripoint(60,60,0));
++    calendar::turn = calendar::turn_zero + 36_hours;
++    get_weather().weather_override = weather_type_id("clear");
++    get_weather().update_weather();
++    m.invalidate_map_cache(0);
++    m.build_map_cache(0);
++    if (!g->save()) throw std::runtime_error("Terrain comparison fixture could not be saved");
++    std::cout << "[CDDA-Server] Terrain comparison ready: plaza 60,60; NW forest, NE field, SW street, SE shore.\n";
++}
++
 +int main(int argc, const char* argv[]) {
 +    std::string socket_path = "/tmp/cdda_cwm.sock";
 +    std::string world_name = "cwm_world";
@@ -459,6 +518,7 @@ index 0000000..fbd5097
 +    int headless_ticks = 0;
 +    bool headless = false;
 +    bool new_character = false;
++    bool terrain_demo = false;
 +    std::string character;
 +
 +    for (int i = 1; i < argc; ++i) {
@@ -486,6 +546,8 @@ index 0000000..fbd5097
 +            character = argv[++i];
 +        } else if (arg == "--new-character") {
 +            new_character = true;
++        } else if (arg == "--terrain-demo") {
++            terrain_demo = true;
 +        } else if (arg == "--help" || arg == "-h") {
 +            std::cout << "Usage: cdda-server [options]\n"
 +                      << "  --socket <path>       Unix domain socket path (default: /tmp/cdda_cwm.sock)\n"
@@ -494,6 +556,7 @@ index 0000000..fbd5097
 +                      << "  --datadir <path>      Data directory (default: auto-detected)\n"
 +                      << "  --character <id>      Select a decoded save ID (or a name with --new-character)\n"
 +                      << "  --new-character       Explicitly create a character; existing saves are preserved\n"
++                      << "  --terrain-demo        Create the isolated terrain_comparison fixture in a new world\n"
 +                      << "  --headless-ticks <n>  Advance n simulation turns headlessly and save (Milestone 0.5 verification)\n"
 +                      << "  --help                Show this help message\n";
 +            return 0;
@@ -568,6 +631,12 @@ index 0000000..fbd5097
 +    world_generator->set_active_world(nullptr);
 +    world_generator->init();
 +
++    if (terrain_demo && (world_name != "terrain_comparison" || world_generator->has_world(world_name))) {
++        std::cerr << "--terrain-demo requires a new terrain_comparison world; use terrain-demo.sh.\n";
++        return 2;
++    }
++    if (terrain_demo) rng_set_engine_seed(42);
++
 +    WORLD* world = nullptr;
 +    if (world_generator->has_world(world_name)) {
 +        std::cout << "[CDDA-Server] Loading existing world: " << world_name << "\n";
@@ -587,6 +656,10 @@ index 0000000..fbd5097
 +        return 1;
 +    }
 +    world_generator->set_active_world(world);
++    if (terrain_demo) {
++        world->WORLD_OPTIONS["SPAWN_DENSITY"].setValue("0");
++        world->save();
++    }
 +
 +    if (!new_character && !world->world_saves.empty()) {
 +        const save_t* selected = nullptr;
@@ -627,6 +700,7 @@ index 0000000..fbd5097
 +    }
 +    avatar& u = get_avatar();
 +    map& here = get_map();
++    if (terrain_demo) create_terrain_comparison(u, here);
 +
 +    std::cout << "[CDDA-Server] World loaded. Player position: ("
 +              << u.pos().x << ", " << u.pos().y << ", " << u.pos().z << ")\n";
@@ -690,10 +764,10 @@ index 0000000..fbd5097
 +}
 diff --git a/src/cwm/cwm_map_exporter.cpp b/src/cwm/cwm_map_exporter.cpp
 new file mode 100644
-index 0000000..c439b28
+index 0000000..7398102
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.cpp
-@@ -0,0 +1,354 @@
+@@ -0,0 +1,359 @@
 +// CDDA CWM Map & Entity Exporter Implementation
 +// Licensed under Apache-2.0
 +
@@ -739,9 +813,14 @@ index 0000000..c439b28
 +        material = t.movecost > 0 ? LOW_OBSTACLE :
 +                   t.has_flag(ter_furn_flag::TFLAG_TRANSPARENT) ? GLASS_WALL : WALL;
 +    } else if (t.has_flag(ter_furn_flag::TFLAG_SWIMMABLE)) material = WATER;
++    else if (t.has_flag(ter_furn_flag::TFLAG_TREE) && t.movecost == 0) material = TREE;
++    else if (t.has_flag(ter_furn_flag::TFLAG_SHRUB) && t.movecost > 0) material = SHRUB;
 +    else if (t.movecost == 0) material = OBSTACLE;
++    else if (id == "t_grass_long" || id == "t_grass_tall") material = TALL_GRASS;
 +    else if (id.find("grass") != std::string::npos) material = GRASS;
-+    else if (id.find("pavement") != std::string::npos || id == "t_sidewalk" ||
++    else if (id == "t_sand" || id == "t_sand_underground") material = SAND;
++    else if (id == "t_sidewalk") material = SIDEWALK;
++    else if (id.find("pavement") != std::string::npos ||
 +             id.find("asphalt") != std::string::npos) material = PAVEMENT;
 +    else if (t.has_flag(ter_furn_flag::TFLAG_INDOORS) || id.find("floor") != std::string::npos ||
 +             id.find("stairs") != std::string::npos || id.find("roof") != std::string::npos)
@@ -1500,10 +1579,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644
-index 0000000..ae4a2a3
+index 0000000..17a3eda
 --- /dev/null
 +++ b/tests/cwm_projection_test.cpp
-@@ -0,0 +1,115 @@
+@@ -0,0 +1,143 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "avatar_action.h"
@@ -1532,9 +1611,37 @@ index 0000000..ae4a2a3
 +            CHECK((tile.material_id() == WALL || tile.material_id() == WINDOW ||
 +                   tile.material_id() == WINDOW_BOARDED || tile.material_id() == DOOR_CLOSED ||
 +                   tile.material_id() == OBSTACLE || tile.material_id() == GLASS_WALL ||
-+                   tile.material_id() == WATER));
++                   tile.material_id() == WATER || tile.material_id() == TREE));
 +        }
 +    }
++}
++
++TEST_CASE("cwm_terrain_comparison_preserves_native_movement_and_delta", "[cwm]")
++{
++    using namespace cdda::cwm;
++    clear_avatar();
++    clear_map();
++    map& m = get_map();
++    const tripoint p(60, 60, 0);
++    get_avatar().setpos(p + tripoint_south);
++    for (const auto& entry : {std::pair<const char*, uint16_t>{"t_sand", SAND},
++                             {"t_tree", TREE}, {"t_shrub", SHRUB},
++                             {"t_grass_long", TALL_GRASS}, {"t_sidewalk", SIDEWALK}}) {
++        CAPTURE(entry.first);
++        m.ter_set(p, ter_str_id(entry.first));
++        const auto block = cwm::CwmMapExporter::export_block(p, m, 15);
++        CHECK(block.material_id() == entry.second);
++        CHECK(bool(block.state_flags() & BLOCKS_MOVEMENT) == m.impassable(p));
++    }
++    cwm::CwmMapExporter::ProjectionCache cache;
++    cwm::CwmMapExporter::export_world_snapshot(1, 1, get_avatar(), m, *g, true, &cache);
++    m.ter_set(p, ter_str_id("t_tree"));
++    auto bytes = cwm::CwmMapExporter::export_world_snapshot(2, 2, get_avatar(), m, *g, false, &cache);
++    const auto* snap = CDDA::CWM::GetCwmMessage(bytes.data())->payload_as_WorldSnapshot();
++    REQUIRE(snap->tiles());
++    REQUIRE(snap->tiles()->size() == 1);
++    CHECK(snap->tiles()->Get(0)->block()->material_id() == TREE);
++    CHECK(snap->tiles()->Get(0)->block()->state_flags() & BLOCKS_MOVEMENT);
 +}
 +
 +TEST_CASE("cwm_windows_stairs_and_furniture_keep_semantics", "[cwm]")

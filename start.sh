@@ -68,6 +68,7 @@ printf '[Launcher] Starting CDDA; logs: %s\n' "$LOG_DIR"
 cd -- "$PROJECT_DIR"
 SERVER_ARGS=()
 if [[ -n "$CDDA_CHARACTER" ]]; then SERVER_ARGS+=(--character "$CDDA_CHARACTER"); fi
+if [[ "${CDDA_TERRAIN_DEMO:-0}" == 1 ]]; then SERVER_ARGS+=(--terrain-demo); fi
 stdbuf -oL -eL "$CDDA_BIN" --socket "$SOCKET_PATH" --world "$CDDA_WORLD" "${SERVER_ARGS[@]}" \
     --userdir "$CDDA_USERDIR" --datadir "$PROJECT_DIR/cdda/data" \
     > "$LOG_DIR/cdda.log" 2>&1 &

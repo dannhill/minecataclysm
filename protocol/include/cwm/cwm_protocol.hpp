@@ -11,7 +11,7 @@
 namespace cdda::cwm {
 
 constexpr uint16_t PROTOCOL_VERSION_MAJOR = 1;
-constexpr uint16_t PROTOCOL_VERSION_MINOR = 2;
+constexpr uint16_t PROTOCOL_VERSION_MINOR = 3;
 
 inline uint64_t current_time_ms() {
     using namespace std::chrono;

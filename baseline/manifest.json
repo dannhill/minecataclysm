@@ -6,9 +6,9 @@
       "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
       "shallow": true,
       "patch": "baseline/patches/cdda.patch",
-      "patch_sha256": "539d614d0796a5dab0979b2ddc9d7dcdd251a7aa912f482c88acb746c8242a06",
+      "patch_sha256": "f21721170c564372a3edeb97f30df2cab5677b2be7b0b31af4e4afb923fc4562",
       "tree_inventory": "baseline/trees/cdda.json",
-      "tree_sha256": "fb036bb6b330fd5794829439108d784da052bae966a3ecda66c2c00653e54a65",
+      "tree_sha256": "6b14dc8be656e93b0e385f2c2d135bc753f689662d960adea3b226cdf320d285",
       "file_count": 8579,
       "original_status": " M src/CMakeLists.txt\n M src/do_turn.cpp\n M src/do_turn.h\n M src/game.cpp\n M src/game.h\n M src/handle_action.cpp\n M src/iexamine.cpp\n M src/output.cpp\n M tests/CMakeLists.txt\n M tests/test_main.cpp\n?? src/cwm/cwm_main.cpp\n?? src/cwm/cwm_map_exporter.cpp\n?? src/cwm/cwm_map_exporter.h\n?? src/cwm/cwm_server.cpp\n?? src/cwm/cwm_server.h\n?? src/safe_mode_actions.h\n?? tests/cwm_projection_test.cpp\n?? tests/cwm_runtime_test.cpp\n"
     },
@@ -17,9 +17,9 @@
       "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
       "shallow": true,
       "patch": "baseline/patches/luanti.patch",
-      "patch_sha256": "347be89833d7358b0854d48fa8a7add0c4e20e46d88f8c31e0610bdceabb4f44",
+      "patch_sha256": "88a5fff24b1fc706edcfb691b2c055afa58e691ac2863cc9c649ca2703945196",
       "tree_inventory": "baseline/trees/luanti.json",
-      "tree_sha256": "a10ed864cc66b47bf4730aad97607c9e3894fefe045791e3ab3dc44915cd7375",
+      "tree_sha256": "2d27802892817c9b4fce687a9b2d25699050a053318ad3afcf9015c7364deb1b",
       "file_count": 2251,
       "original_status": " M src/CMakeLists.txt\n M src/client/CMakeLists.txt\n M src/client/client.cpp\n M src/client/clientenvironment.cpp\n M src/client/game.cpp\n M src/client/mesh_generator_thread.cpp\n M src/client/mesh_generator_thread.h\n M src/network/clientpackethandler.cpp\n M src/unittest/test_mapblock.cpp\n?? src/cdda/cdda_bridge.cpp\n?? src/cdda/cdda_bridge.h\n"
     },

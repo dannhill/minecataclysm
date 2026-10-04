@@ -15,6 +15,7 @@ enum Material : uint16_t {
     DOOR_CLOSED = 5, DOOR_OPEN = 6, WINDOW = 7, PAVEMENT = 8,
     LEGACY_FURNITURE = 9, WINDOW_OPEN = 10, WINDOW_BOARDED = 11,
     OBSTACLE = 12, GLASS_WALL = 13, WATER = 14, LOW_OBSTACLE = 15,
+    SAND = 16, SHRUB = 17, TREE = 18, SIDEWALK = 19, TALL_GRASS = 20,
 };
 // orientation 0: opening in an east-west wall; 1: north-south wall.
 }

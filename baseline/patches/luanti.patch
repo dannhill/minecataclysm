@@ -85,7 +85,7 @@ index b6ae675..9e33201 100644
  		/*
  			Local player handling
 diff --git a/src/client/game.cpp b/src/client/game.cpp
-index 27b5833..d37664f 100644
+index 27b5833..7725451 100644
 --- a/src/client/game.cpp
 +++ b/src/client/game.cpp
 @@ -8,6 +8,7 @@
@@ -114,7 +114,23 @@ index 27b5833..d37664f 100644
  	delete client;
  	client = nullptr;
  	delete soundmaker;
-@@ -2178,6 +2183,9 @@ void Game::processItemSelection(u16 *new_playeritem)
+@@ -2154,9 +2159,13 @@ void Game::processKeyInput()
+ 	} else if (wasKeyDown(KeyType::ZOOM)) {
+ 		checkZoomEnabled();
+ 	} else if (wasKeyDown(KeyType::QUICKTUNE_NEXT)) {
+-		quicktune->next();
++		if (cdda_client::CddaBridge::getInstance().terrainComparisonEnabled())
++			cdda_client::CddaBridge::getInstance().toggleTerrainStyle();
++		else quicktune->next();
+ 	} else if (wasKeyDown(KeyType::QUICKTUNE_PREV)) {
+-		quicktune->prev();
++		if (cdda_client::CddaBridge::getInstance().terrainComparisonEnabled())
++			cdda_client::CddaBridge::getInstance().toggleTerrainFog();
++		else quicktune->prev();
+ 	} else if (wasKeyDown(KeyType::QUICKTUNE_INC)) {
+ 		quicktune->inc();
+ 	} else if (wasKeyDown(KeyType::QUICKTUNE_DEC)) {
+@@ -2178,6 +2187,9 @@ void Game::processItemSelection(u16 *new_playeritem)
  	LocalPlayer *player = client->getEnv().getLocalPlayer();
  
  	*new_playeritem = player->getWieldIndex();
@@ -124,7 +140,7 @@ index 27b5833..d37664f 100644
  	u16 max_item = player->getMaxHotbarItemcount();
  	if (max_item == 0)
  		return;
-@@ -2737,8 +2745,62 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
+@@ -2737,8 +2749,62 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
  		control.aux1 = control.aux1 ^ true;
  	}
  
@@ -187,7 +203,7 @@ index 27b5833..d37664f 100644
  	//tt.stop();
  }
  
-@@ -2784,6 +2846,25 @@ inline void Game::step(f32 dtime)
+@@ -2784,6 +2850,25 @@ inline void Game::step(f32 dtime)
  
  	if (!m_is_paused)
  		client->step(dtime);
@@ -213,7 +229,7 @@ index 27b5833..d37664f 100644
  }
  
  static void pauseNodeAnimation(PausedNodesList &paused, scene::ISceneNode *node) {
-@@ -3246,6 +3327,7 @@ void Game::updateCamera(f32 dtime)
+@@ -3246,6 +3331,7 @@ void Game::updateCamera(f32 dtime)
  	tool_reload_ratio = MYMIN(tool_reload_ratio, 1.0);
  	camera->update(player, dtime, tool_reload_ratio);
  	camera->step(dtime);
@@ -221,7 +237,7 @@ index 27b5833..d37664f 100644
  
  	f32 camera_fov = camera->getFovMax();
  	v3s16 camera_offset = camera->getOffset();
-@@ -3262,6 +3344,7 @@ void Game::updateCamera(f32 dtime)
+@@ -3262,6 +3348,7 @@ void Game::updateCamera(f32 dtime)
  		if (m_camera_offset_changed) {
  			client->updateCameraOffset(camera_offset);
  			client->getEnv().updateCameraOffset(camera_offset);
@@ -229,6 +245,20 @@ index 27b5833..d37664f 100644
  
  			if (clouds)
  				clouds->updateCameraOffset(camera_offset);
+@@ -4319,7 +4406,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
+ 	/*
+ 		Fog
+ 	*/
+-	if (this->fogEnabled()) {
++	const auto &terrain_bridge = cdda_client::CddaBridge::getInstance();
++	const float terrain_fog = terrain_bridge.terrainFogDistance();
++	if (terrain_fog > 0.f) {
++		this->driver->setFog(fog_color, video::EFT_FOG_LINEAR,
++			terrain_fog * BS * .45f, terrain_fog * BS, 0.f, false, true);
++	} else if (this->fogEnabled() && !terrain_bridge.terrainComparisonEnabled()) {
+ 		this->driver->setFog(
+ 				fog_color,
+ 				video::EFT_FOG_LINEAR,
 diff --git a/src/client/mesh_generator_thread.cpp b/src/client/mesh_generator_thread.cpp
 index ec86898..3f99071 100644
 --- a/src/client/mesh_generator_thread.cpp
@@ -404,10 +434,10 @@ index 7f3f860..663a6ec 100644
  void TestMapBlock::testSaveLoad(IGameDef *gamedef, const u8 version)
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..e2d43ad
+index 0000000..984d9d4
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,847 @@
+@@ -0,0 +1,984 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
@@ -443,6 +473,7 @@ index 0000000..e2d43ad
 +#include <set>
 +#include <map>
 +#include <unordered_map>
++#include <array>
 +
 +namespace cdda_client {
 +
@@ -484,6 +515,60 @@ index 0000000..e2d43ad
 +    v3s32 scene_origin_;
 +    bool origin_valid_{false};
 +    std::map<v3s16, std::vector<MapNode>> projected_blocks_;
++    std::map<v3s16, CDDA::CWM::CwmBlock> terrain_tiles_;
++    std::map<s16, std::array<float, 4>> terrain_bounds_;
++    bool terrain_demo_{false};
++    bool terrain_enriched_{false};
++    bool terrain_fog_{false};
++    irr::gui::IGUIStaticText* terrain_text_{nullptr};
++
++    void update_terrain_bounds() {
++        terrain_bounds_.clear();
++        for (const auto& [pos, tile] : terrain_tiles_) {
++            auto [it, added] = terrain_bounds_.try_emplace(pos.Y,
++                std::array<float, 4>{32767.f, -32767.f, 32767.f, -32767.f});
++            auto& bounds = it->second;
++            bounds[0] = std::min(bounds[0], static_cast<float>(pos.X));
++            bounds[1] = std::max(bounds[1], static_cast<float>(pos.X));
++            bounds[2] = std::min(bounds[2], static_cast<float>(pos.Z));
++            bounds[3] = std::max(bounds[3], static_cast<float>(pos.Z));
++        }
++    }
++
++    uint32_t terrain_variant(const v3s16& base) const {
++        // Absolute CDDA XY: appearance survives bubble rebases and reloads.
++        uint32_t x = static_cast<uint32_t>(base.X + scene_origin_.X);
++        uint32_t y = static_cast<uint32_t>(-base.Z + scene_origin_.Y);
++        uint32_t value = x * 0x9e3779b9u ^ y * 0x85ebca6bu;
++        value ^= value >> 16;
++        return value % 3;
++    }
++
++    content_t terrain_node(const char* name) const {
++        const auto id = client_->getNodeDefManager()->getId(name);
++        return id == CONTENT_IGNORE ? CONTENT_AIR : id;
++    }
++
++    void rebuild_terrain_style() {
++        std::lock_guard<std::recursive_mutex> lock(CddaBridge::projectionMutex());
++        auto previous = std::move(projected_blocks_);
++        projected_blocks_.clear();
++        std::set<v3s16> changed;
++        for (const auto& [pos, tile] : terrain_tiles_)
++            place_cdda_tile(pos, tile.material_id(), tile.state_flags(),
++                            tile.light_level(), tile.orientation(), changed);
++        for (auto it = changed.begin(); it != changed.end();) {
++            auto old = previous.find(*it);
++            if (old != previous.end() && old->second == projected_blocks_.at(*it))
++                it = changed.erase(it);
++            else ++it;
++        }
++        for (const auto& [pos, nodes] : previous)
++            if (!projected_blocks_.count(pos)) changed.insert(pos);
++        commit_projection(changed);
++        infostream << "[Luanti-CDDA] Terrain comparison " << (terrain_enriched_ ? "B" : "A")
++                   << ": " << changed.size() << " changed mesh blocks; authoritative state unchanged" << std::endl;
++    }
 +
 +    v3f project_position(float x, float y, float z) const {
 +        return v3f(x + projection_origin_.X - scene_origin_.X, z * 3.0f,
@@ -635,6 +720,15 @@ index 0000000..e2d43ad
 +    void place_cdda_tile(const v3s16& base, uint16_t material, uint32_t flags,
 +                         uint8_t light, uint8_t orientation, std::set<v3s16>& modified) {
 +        using namespace cdda::cwm;
++        if (material == AIR) terrain_tiles_.erase(base);
++        else terrain_tiles_.insert_or_assign(base, CDDA::CWM::CwmBlock(flags, material, light, orientation));
++        // The baseline retains the previous renderer's material mapping.
++        if (!terrain_enriched_) {
++            if (material == SAND || material == SHRUB) material = DIRT;
++            else if (material == TALL_GRASS) material = GRASS;
++            else if (material == TREE) material = OBSTACLE;
++            else if (material == SIDEWALK) material = PAVEMENT;
++        }
 +        // Each nodebox stays inside its own cell; split doors avoid cross-cell
 +        // occlusion, and ordinary cubes retain faces visible from either side.
 +        const uint8_t facedir = orientation == 1 ? 1 : 0;
@@ -656,7 +750,29 @@ index 0000000..e2d43ad
 +                lower = get_node_for_material(LEGACY_FURNITURE); break;
 +            case LOW_OBSTACLE:
 +                lower = get_node_for_material(LOW_OBSTACLE); break;
++            case SAND: floor = terrain_node("cdda_nodes:demo_sand"); break;
++            case SIDEWALK: floor = terrain_node("cdda_nodes:demo_sidewalk"); break;
++            case TREE:
++                floor = get_node_for_material(DIRT);
++                lower = terrain_node("cdda_nodes:demo_tree");
++                upper = terrain_node("cdda_nodes:demo_leaves"); break;
++            case SHRUB:
++                floor = get_node_for_material(GRASS);
++                lower = terrain_node("cdda_nodes:demo_shrub"); break;
++            case TALL_GRASS:
++                floor = get_node_for_material(GRASS);
++                lower = terrain_node("cdda_nodes:demo_tall_grass"); break;
 +            default: floor = get_node_for_material(material); break;
++        }
++        if (terrain_enriched_) {
++            if (material == GRASS || material == TALL_GRASS || material == SHRUB) {
++                const std::string name = "cdda_nodes:demo_grass_" + std::to_string(terrain_variant(base));
++                floor = terrain_node(name.c_str());
++            } else if (material == DIRT) {
++                const std::string name = "cdda_nodes:demo_dirt_" + std::to_string(terrain_variant(base));
++                floor = terrain_node(name.c_str());
++            } else if (material == PAVEMENT) floor = terrain_node("cdda_nodes:demo_asphalt");
++            else if (material == WATER) floor = terrain_node("cdda_nodes:demo_water");
 +        }
 +        if (flags & FURNITURE) {
 +            lower = get_node_for_material(LEGACY_FURNITURE);
@@ -841,6 +957,7 @@ index 0000000..e2d43ad
 +                    // only. A CDDA rebase must not remesh the world under the camera.
 +                    auto previous_blocks = std::move(projected_blocks_);
 +                    projected_blocks_.clear();
++                    terrain_tiles_.clear();
 +
 +                    for (size_t ci = 0; ci < snap->chunks()->size(); ++ci) {
 +                        const auto* chunk = snap->chunks()->Get(ci);
@@ -886,14 +1003,16 @@ index 0000000..e2d43ad
 +                        if (!projected_blocks_.count(previous.first)) modified_blocks.insert(previous.first);
 +
 +                    commit_projection(modified_blocks);
++                    update_terrain_bounds();
 +                    infostream << "[Luanti-CDDA] Installed terrain projection in "
 +                               << projected_blocks_.size() << " local map blocks" << std::endl;
 +                }
 +
-+                if (client_ && snap->tiles()) {
++                if (client_ && snap->tiles() && snap->tiles()->size() > 0) {
 +                    std::set<v3s16> modified_blocks;
 +                    for (const auto* delta : *snap->tiles()) apply_tile(delta, modified_blocks);
 +                    commit_projection(modified_blocks);
++                    update_terrain_bounds();
 +                }
 +
 +                // Sync vehicles
@@ -1112,6 +1231,10 @@ index 0000000..e2d43ad
 +    pimpl_ = std::make_unique<Impl>();
 +    pimpl_->client_ = client;
 +    pimpl_->socket_path_ = socket_path;
++    pimpl_->terrain_demo_ = g_settings->exists("cdda_terrain_comparison") &&
++                            g_settings->getBool("cdda_terrain_comparison");
++    pimpl_->terrain_enriched_ = pimpl_->terrain_demo_;
++    pimpl_->terrain_fog_ = pimpl_->terrain_demo_;
 +    std::string trace_path;
 +    if (g_settings->getNoEx("cwm_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->trace_.open(trace_path);
@@ -1125,6 +1248,7 @@ index 0000000..e2d43ad
 +        if (pimpl_->debug_text_) pimpl_->debug_text_->remove();
 +        if (pimpl_->safety_text_) pimpl_->safety_text_->remove();
 +        if (pimpl_->decision_text_) pimpl_->decision_text_->remove();
++        if (pimpl_->terrain_text_) pimpl_->terrain_text_->remove();
 +        for (auto& [id, ent] : pimpl_->entities_) if (ent.scene_node)
 +            static_cast<irr::scene::ISceneNode*>(ent.scene_node)->remove();
 +        for (auto& vehicle : pimpl_->vehicles_)
@@ -1141,6 +1265,35 @@ index 0000000..e2d43ad
 +
 +bool CddaBridge::ownsPlayer(const Client* client) const {
 +    return pimpl_ && pimpl_->client_ == client;
++}
++
++bool CddaBridge::terrainComparisonEnabled() const {
++    return pimpl_ && pimpl_->terrain_demo_;
++}
++
++void CddaBridge::toggleTerrainStyle() {
++    if (!terrainComparisonEnabled()) return;
++    pimpl_->terrain_enriched_ = !pimpl_->terrain_enriched_;
++    pimpl_->rebuild_terrain_style();
++}
++
++void CddaBridge::toggleTerrainFog() {
++    if (terrainComparisonEnabled()) pimpl_->terrain_fog_ = !pimpl_->terrain_fog_;
++}
++
++float CddaBridge::terrainFogDistance() const {
++    if (!terrainComparisonEnabled() || !pimpl_->terrain_fog_ || !pimpl_->player_ready_)
++        return 0;
++    const auto player = pimpl_->entities_.find(1);
++    if (player == pimpl_->entities_.end() || pimpl_->terrain_tiles_.empty()) return 0;
++    // End before the nearest edge of the projected surface, not at a guessed
++    // world radius. Bound distance keeps nearby threats/doors fully readable.
++    const auto it = pimpl_->terrain_bounds_.find(static_cast<s16>(player->second.target_pos.Y));
++    if (it == pimpl_->terrain_bounds_.end()) return 0;
++    const auto& b = it->second;
++    const auto& p = player->second.current_pos;
++    const float edge = std::min({p.X - b[0], b[1] - p.X, p.Z - b[2], b[3] - p.Z});
++    return std::max(8.f, std::min(40.f, edge - 3.f));
 +}
 +
 +void CddaBridge::traceCamera(const v3f& position, const v3f& direction) {
@@ -1198,6 +1351,20 @@ index 0000000..e2d43ad
 +namespace cdda_client {
 +void CddaBridge::renderDebugOverlay(irr::gui::IGUIEnvironment* guienv) {
 +    if (!guienv || !pimpl_) return;
++
++    if (pimpl_->terrain_demo_) {
++        if (!pimpl_->terrain_text_) {
++            pimpl_->terrain_text_ = guienv->addStaticText(L"", irr::core::rect<irr::s32>(420, 10, 1010, 115),
++                true, true, nullptr, -1, true);
++            pimpl_->terrain_text_->setOverrideColor(irr::video::SColor(255, 255, 255, 255));
++            pimpl_->terrain_text_->setBackgroundColor(irr::video::SColor(225, 25, 35, 32));
++        }
++        const std::wstring text = std::wstring(L"CONFRONTO TERRENO: ") +
++            (pimpl_->terrain_enriched_ ? L"B - materiali e vegetazione" : L"A - resa attuale") +
++            L"\nF7: cambia A/B   |   F8: nebbia " + (pimpl_->terrain_fog_ ? L"ON" : L"OFF") +
++            L"\nWASD + mouse. Dal centro:\nNO bosco | NE campo | SO strada/casa | SE riva";
++        pimpl_->terrain_text_->setText(text.c_str());
++    }
 +
 +    if (!pimpl_->decision_text_) {
 +        pimpl_->decision_text_ = guienv->addStaticText(L"", irr::core::rect<irr::s32>(100, 230, 850, 480),
@@ -1257,10 +1424,10 @@ index 0000000..e2d43ad
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.h b/src/cdda/cdda_bridge.h
 new file mode 100644
-index 0000000..2820761
+index 0000000..9a15a86
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.h
-@@ -0,0 +1,111 @@
+@@ -0,0 +1,115 @@
 +// Luanti C++ CWM Presentation Bridge
 +// Licensed under Apache-2.0
 +#pragma once
@@ -1334,6 +1501,10 @@ index 0000000..2820761
 +    bool ownsPlayer(const Client* client) const;
 +    void traceCamera(const v3f& position, const v3f& direction);
 +    void updateScenePositions();
++    bool terrainComparisonEnabled() const;
++    void toggleTerrainStyle();
++    void toggleTerrainFog();
++    float terrainFogDistance() const;
 +
 +    // Input hooks
 +    bool handleMoveInput(int dir);
