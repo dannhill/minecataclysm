@@ -1479,10 +1479,10 @@ index 0000000..5bdd176
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..aa48301
+index 0000000..cb5fbde
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,628 @@
+@@ -0,0 +1,632 @@
 +#include "cwm_motion.h"
 +// CDDA CWM IPC Server Implementation
 +// Licensed under Apache-2.0
@@ -1495,6 +1495,7 @@ index 0000000..aa48301
 +#include <chrono>
 +#include <thread>
 +#include <cstring>
++#include <iostream>
 +#include "avatar.h"
 +#include "avatar_action.h"
 +#include "creature_tracker.h"
@@ -1631,7 +1632,10 @@ index 0000000..aa48301
 +        server_->client()->close();
 +    if (negotiated_ && awaiting_state_ && std::chrono::steady_clock::now() > handshake_deadline_)
 +        server_->client()->close();
-+    if (!alive || !has_active_client()) cancel_connection();
++    if (!alive || !has_active_client()) {
++        std::cerr << "[CWM] Connection closed; transport reason " << int(server_->client()->close_reason()) << "\n";
++        cancel_connection();
++    }
 +    return true;
 +}
 +
@@ -2230,7 +2234,7 @@ index 0000000..cfd8c9d
 +} // namespace cwm
 diff --git a/src/cwm_motion.cpp b/src/cwm_motion.cpp
 new file mode 100644
-index 0000000..debccc5
+index 0000000..fdfb69f
 --- /dev/null
 +++ b/src/cwm_motion.cpp
 @@ -0,0 +1,204 @@
@@ -2361,8 +2365,8 @@ index 0000000..debccc5
 +    bool contact = false;
 +    // Sliding keeps the tangent component, without renormalizing its speed.
 +    if( !clear( u, m, next_x, next_y ) ) {
-+        const bool x_clear = clear( u, m, next_x, state.y );
-+        const bool y_clear = clear( u, m, state.x, next_y );
++        const bool x_clear = std::abs( x * distance ) > 1e-9 && clear( u, m, next_x, state.y );
++        const bool y_clear = std::abs( y * distance ) > 1e-9 && clear( u, m, state.x, next_y );
 +        contacted = tripoint( static_cast<int>( std::floor( next_x + .5 + x * radius ) ),
 +                             static_cast<int>( std::floor( next_y + .5 + y * radius ) ), 0 );
 +        contact = contacted != tripoint_zero;
@@ -2893,10 +2897,10 @@ index 0000000..609ac58
 +}
 diff --git a/tests/cwm_runtime_test.cpp b/tests/cwm_runtime_test.cpp
 new file mode 100644
-index 0000000..5b0db0c
+index 0000000..21d7702
 --- /dev/null
 +++ b/tests/cwm_runtime_test.cpp
-@@ -0,0 +1,391 @@
+@@ -0,0 +1,392 @@
 +#include "cwm_motion.h"
 +#include "cata_catch.h"
 +#include "avatar.h"
@@ -3264,7 +3268,8 @@ index 0000000..5b0db0c
 +        m.ter_set( u.pos() + tripoint_east, ter_str_id( "t_door_c" ) );
 +        for( int i = 0; i < 10; ++i ) cwm_motion::advance( u, m, 1, 0, .1 * cost / speed );
 +        CHECK( m.getabs( u.pos() ) == origin + tripoint_east );
-+        CHECK( 1000 - u.moves == cost + 100 );
++        const double traveled = m.getabs( u.pos() ).x - origin.x + cwm_motion::load( u, m ).x;
++        CHECK( 1000 - u.moves == static_cast<int>( std::ceil( traveled * cost - 1e-9 ) ) + 100 );
 +        CHECK( m.ter( u.pos() ) == ter_str_id( "t_door_o" ) );
 +    }
 +    SECTION( "restraints do not grant within-tile movement or rapid escape rolls" ) {
