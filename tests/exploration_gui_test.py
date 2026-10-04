@@ -78,7 +78,7 @@ def main():
                         descendants.extend(map(int, Path(f'/proc/{pid}/task/{pid}/children').read_text().split()))
                         if Path(f'/proc/{pid}/comm').read_text().strip() != 'luanti':
                             continue
-                    except FileNotFoundError:
+                    except (FileNotFoundError, ProcessLookupError):
                         continue
                     found = subprocess.run(['xdotool', 'search', '--onlyvisible', '--pid', str(pid)], capture_output=True, text=True)
                     if found.stdout.strip():
