@@ -309,8 +309,13 @@ def main():
         for direction,endpoint in ((9,[60,59,1]),(10,[60,59,0])):
             c.complete(c.send(MoveRequest,dict(Direction=direction)))
             check('continuous_native_stair_endpoint_'+str(endpoint),c.pos()==endpoint)
-        c.vector(0,1); c.until(lambda: round(c.pos()[1])==60); c.vector(0,0)
-        c.vector(1,0); c.until(lambda: round(c.pos()[0])==61); c.vector(0,0)
+        # The realtime fixture contains a mobile Lifecycle NPC which may
+        # occupy either orthogonal approach to the ladder. A diagonal
+        # continuous intent lets native circle collision slide around an
+        # occupied side while still requiring the authoritative ladder tile.
+        c.vector(1,1)
+        c.until(lambda: round(c.pos()[0])==61 and round(c.pos()[1])==60, timeout=20)
+        c.vector(0,0)
         for direction,endpoint in ((9,[61,60,1]),(9,[61,60,2]),(10,[61,60,1]),(10,[61,60,0])):
             c.complete(c.send(MoveRequest,dict(Direction=direction)))
             check('continuous_native_ladder_endpoint_'+str(endpoint),c.pos()==endpoint)
