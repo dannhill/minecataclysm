@@ -23,7 +23,7 @@ le riparazioni già completate a visibilità, strutture e movimento.
 
 | Task | Risultato verificabile | Stato |
 |---|---|---|
-| FND-01 | Distinguere nuova partita e caricamento; mantenere identità, inventario, posizione, orologio e mondo. Comandi e verifiche headless usano il ciclo nativo completo. | IN PROGRESS |
+| FND-01 | Distinguere nuova partita e caricamento; mantenere identità, inventario, posizione, orologio e mondo. Comandi e verifiche headless usano il ciclo nativo completo. | IMPLEMENTED — verifica mirata PASS; SAVE-001 completo in FND-05 |
 | FND-02 | Framing e code limitati; EOF, input malformato e client lento non bloccano o terminano il runtime. | PLANNED |
 | FND-03 | Negoziazione, identità di sessione, deduplicazione, revisioni, sequenze, reconnect/resync e abilitazione dell'input su stato completo. | PLANNED |
 | FND-04 | Entità reali persistenti, picking, verticalità, campi, luce/percezione e HUD autorevoli; lifecycle e threading verificati. | IN PROGRESS: geometria/input riparati, copertura incompleta |
@@ -33,6 +33,7 @@ FND-01 applica il preset CDDA raccomandato ai nuovi mondi e conserva mod/opzioni
 dei mondi esistenti. Selezione esplicita se esistono più personaggi; niente
 sovrascrittura silenziosa. Il ciclo comandato dalle azioni è un passaggio
 tecnico verso il tempo reale approvato, non il comportamento finale del prodotto.
+Implementazione ed evidenze in [FND-01](docs/fixes/canonical-runtime.md).
 
 ## Fase 2 — Prototipo di tempo, movimento e percezione
 

@@ -1,0 +1,200 @@
+{
+  "scope": "FND-01 implementation and scoped verification PASS; historical M5.5 gate FAILED; full SAVE-001 INCOMPLETE",
+  "code_commit": "f3cea9c8502a0caac938a9b4047540e4a2a31b02",
+  "branch": "fix/canonical-runtime",
+  "sources": {
+    "cdda": {
+      "url": "https://github.com/CleverRaven/Cataclysm-DDA.git",
+      "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+      "shallow": true,
+      "patch": "baseline/patches/cdda.patch",
+      "patch_sha256": "4c225accd4999d198907840e7c10bee1df329708cb33c29f4a880bf5fff86f7f",
+      "tree_inventory": "baseline/trees/cdda.json",
+      "tree_sha256": "be490271257cf11a3b6e05980e51fc31477817b8425d2e58a062725050f48604",
+      "file_count": 8579,
+      "original_status": " M src/CMakeLists.txt\n M src/do_turn.cpp\n M src/do_turn.h\n M src/game.h\n M src/handle_action.cpp\n M tests/CMakeLists.txt\n M tests/test_main.cpp\n?? src/cwm/cwm_main.cpp\n?? src/cwm/cwm_map_exporter.cpp\n?? src/cwm/cwm_map_exporter.h\n?? src/cwm/cwm_server.cpp\n?? src/cwm/cwm_server.h\n?? src/safe_mode_actions.h\n?? tests/cwm_projection_test.cpp\n?? tests/cwm_runtime_test.cpp\n"
+    },
+    "luanti": {
+      "url": "https://github.com/luanti-org/luanti.git",
+      "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
+      "shallow": true,
+      "patch": "baseline/patches/luanti.patch",
+      "patch_sha256": "35402989d458ce3d40f982c8b855d828cd60bef1e848c46f849e9c16af44f27b",
+      "tree_inventory": "baseline/trees/luanti.json",
+      "tree_sha256": "0cb8b1bcf24bc6b4d33cbeaf6c9ec8204ca53c101c43f4f7ddcde9ddeec16632",
+      "file_count": 2251,
+      "original_status": " M src/CMakeLists.txt\n M src/client/CMakeLists.txt\n M src/client/client.cpp\n M src/client/clientenvironment.cpp\n M src/client/game.cpp\n M src/client/mesh_generator_thread.cpp\n M src/client/mesh_generator_thread.h\n M src/network/clientpackethandler.cpp\n M src/unittest/test_mapblock.cpp\n?? src/cdda/cdda_bridge.cpp\n?? src/cdda/cdda_bridge.h\n"
+    },
+    "mineclonia": {
+      "url": "https://github.com/mark-wiemer/mineclonia.git",
+      "commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+      "shallow": true,
+      "patch": "baseline/patches/mineclonia.patch",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree_inventory": "baseline/trees/mineclonia.json",
+      "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36",
+      "file_count": 9359,
+      "original_status": ""
+    }
+  },
+  "environment": {
+    "platform": "Linux-7.0.11-76070011-generic-x86_64-with-glibc2.35",
+    "python": "3.10.12",
+    "compiler": "g++ (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0",
+    "gui": "X11, xdotool, ImageMagick; isolated worlds/configs and private Unix sockets"
+  },
+  "binaries": {
+    "cdda/build/src/cdda-server": "69f4d29e9523cf473bb0762e8a18a8681129b5d9ea2b47c8dca8e0e6cf51ea22",
+    "luanti/bin/luanti": "5b2d61f554b2e6050e4ce34a1a1a6a5c7f9a563711f16321b14a1d8a44438ff6",
+    "artifacts/canonical-runtime/reconstruction/workspace/cdda/build/tests/cata_test": "0d0c9fd0e75ed1bac7b22e8777d67efcc801de5eacef9df4137df52cef5995c6",
+    "artifacts/canonical-runtime/native-save-reader": "f819ff7b2c45330d506009ebbe385c35fa0bbcc3c436a6504c62a712ef582ef5",
+    "artifacts/canonical-runtime/frameprobe.so": "0ed81e042353c903766e36f245411699ba1a40b50107d675a782258a1ed5c603"
+  },
+  "results": {
+    "accepted-runtime": {
+      "passed": 40,
+      "total": 40,
+      "all_pass": true,
+      "artifacts": "artifacts/canonical-runtime/accepted-runtime"
+    },
+    "accepted-bridge": {
+      "passed": 11,
+      "total": 11,
+      "all_pass": true,
+      "artifacts": "artifacts/canonical-runtime/accepted-bridge"
+    },
+    "launcher": {
+      "passed": 8,
+      "total": 8,
+      "all_pass": true,
+      "artifacts": "artifacts/canonical-runtime/launcher"
+    },
+    "presentation": {
+      "passed": 48,
+      "total": 48,
+      "artifacts": "artifacts/canonical-runtime/presentation"
+    },
+    "native-cdda": {
+      "passed_cases": 7,
+      "total_cases": 7,
+      "assertions": 3376,
+      "log": "artifacts/canonical-runtime/native-tests-final.log"
+    },
+    "native-luanti": {
+      "passed": 303,
+      "total": 303,
+      "log": "artifacts/canonical-runtime/luanti-native-final.log"
+    },
+    "protocol-debug": {
+      "passed": 2,
+      "total": 2,
+      "log": "artifacts/canonical-runtime/protocol-tests.log"
+    }
+  },
+  "commands": [
+    [
+      "cmake",
+      "--build",
+      "/home/dannhill/Projects/cdda-mineclonia/artifacts/canonical-runtime/reconstruction/workspace/cdda/build",
+      "--target",
+      "cdda-server",
+      "cata_test",
+      "--parallel",
+      "2"
+    ],
+    [
+      "build/tests/cata_test",
+      "[cwm]",
+      "--rng-seed",
+      "42",
+      "--user-dir=<isolated-artifact-directory>"
+    ],
+    [
+      "cmake",
+      "--build",
+      "luanti/build",
+      "--target",
+      "luanti",
+      "--parallel",
+      "2"
+    ],
+    [
+      "luanti/bin/luanti",
+      "--run-unittests"
+    ],
+    [
+      "ctest",
+      "--test-dir",
+      "/home/dannhill/Projects/cdda-mineclonia/artifacts/canonical-runtime/reconstruction/workspace/protocol/build",
+      "--output-on-failure"
+    ],
+    [
+      "python3",
+      "tests/canonical_runtime_test.py",
+      "--workspace",
+      "/home/dannhill/Projects/cdda-mineclonia/artifacts/canonical-runtime/reconstruction/workspace",
+      "--artifacts",
+      "/home/dannhill/Projects/cdda-mineclonia/artifacts/canonical-runtime/accepted-runtime",
+      "--native-reader",
+      "/home/dannhill/Projects/cdda-mineclonia/artifacts/canonical-runtime/native-save-reader"
+    ],
+    [
+      "python3",
+      "tests/takeover_save_compat.py",
+      "--workspace",
+      "/home/dannhill/Projects/cdda-mineclonia/artifacts/canonical-runtime/reconstruction/workspace",
+      "--artifacts",
+      "/home/dannhill/Projects/cdda-mineclonia/artifacts/canonical-runtime/accepted-bridge",
+      "--native-reader",
+      "/home/dannhill/Projects/cdda-mineclonia/artifacts/canonical-runtime/native-save-reader",
+      "--probe-library",
+      "/home/dannhill/Projects/cdda-mineclonia/artifacts/canonical-runtime/frameprobe.so"
+    ],
+    [
+      "python3",
+      "tests/presentation_regression.py",
+      "--workspace",
+      "/home/dannhill/Projects/cdda-mineclonia/artifacts/canonical-runtime/reconstruction/workspace",
+      "--artifacts",
+      "/home/dannhill/Projects/cdda-mineclonia/artifacts/canonical-runtime/presentation"
+    ],
+    [
+      "python3",
+      "tests/startup_visibility_test.py",
+      "--workspace",
+      "/home/dannhill/Projects/cdda-mineclonia/artifacts/canonical-runtime/reconstruction/workspace",
+      "--artifacts",
+      "/home/dannhill/Projects/cdda-mineclonia/artifacts/canonical-runtime/launcher",
+      "--movement"
+    ]
+  ],
+  "build_strategy": {
+    "note": "Initial root incremental build stopped to avoid rebuilding unchanged common sources. The verification build used a fresh source reconstruction and content-validated object reuse from the historical audit, recompiling changed dependencies. This is not a cold-cache clean-build claim."
+  },
+  "dependency_object_reuse_receipt": "artifacts/canonical-runtime/cdda-object-cache.json",
+  "independent_native_reader_build_receipt": "artifacts/canonical-runtime/native-save-reader.build.json",
+  "tested_fork_files_match_final_inventory": true,
+  "final_reconstruction_log": "artifacts/canonical-runtime/accepted-reconstruction.log",
+  "limitations": [
+    "Native NPC physiology catch-up is compared to an independent pinned load/save/load control; native on_load bookkeeping quirks are not fixed or hidden.",
+    "NPC CWM export/visual models, full lifecycle/dialog choices, complete interactions, framing/backpressure and session/recovery conformance remain unverified.",
+    "Current scheduler remains action-driven; real-time and movement/driving prototypes are still planned.",
+    "Save test covers one fixture; full SAVE-001 including expanded inventories/progression/activity/vehicle/reconnect cases remains pending.",
+    "Cold-cache clean builds are not claimed for this scoped change."
+  ],
+  "artifact_sha256": {
+    "artifacts/canonical-runtime/native-tests-final.log": "10a024435768dbc4b910f26597ad42dffc504101559db3ec1688504c302fb71e",
+    "artifacts/canonical-runtime/luanti-native-final.log": "5818eb6e825ded016209fa53ba997096b722cf214323743df99d4f5e1ffa79d7",
+    "artifacts/canonical-runtime/protocol-tests.log": "ea9253d1c90aa39d0273d9cdaad2fdcb89a36d97f1a835dd50cedde5385a381b",
+    "artifacts/canonical-runtime/accepted-reconstruction.log": "317c2b417f424290b49ea0836b68426c2f25e7a54265974957ff789ff1c4910a",
+    "artifacts/canonical-runtime/cdda-object-cache.json": "cd87d2e0cda1e2827165f72a84ec2eaf786c7584fd6a11d33e7d090395e2bd14",
+    "artifacts/canonical-runtime/native-save-reader.build.json": "5ae072db22b72373d771ec72c95ecfd790521abe25dd20a4e42f4069f474ab8e",
+    "artifacts/canonical-runtime/accepted-runtime/checks.json": "3cecfb1f1321663873e8521da75910a1fe7970a1022f8730a9b5da32c8a53fbb",
+    "artifacts/canonical-runtime/accepted-runtime/commands.json": "6a2ff663f10c8b11898141ffaa554556a2ea3b32479871a5576b9a4a25064739",
+    "artifacts/canonical-runtime/accepted-bridge/checks.json": "fb2a28e234647367745e7dd80cee8c320dff176a37cf472d725ca885f70a42eb",
+    "artifacts/canonical-runtime/accepted-bridge/events.json": "1919fca55ae6b545faeb2660092a904ff255ecdfcc3e269b00e101103385e312",
+    "artifacts/canonical-runtime/accepted-bridge/scene.png": "55178c848fd11f5e0aff6bdcfee1a96f5768edcd56c76b76a3531fbc74c4a981",
+    "artifacts/canonical-runtime/accepted-bridge/scope.json": "d7994cc9451167e04bde4ca0631c504d5c1b88995bf2743a98c9290497e3e2b0",
+    "artifacts/canonical-runtime/launcher/checks.json": "2abe7156cdba4ac4a7a2803e2dae434365a6eff1dfb79af33caf4b38d41da024"
+  }
+}

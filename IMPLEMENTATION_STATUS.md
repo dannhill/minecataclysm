@@ -3,7 +3,11 @@
 The [complete implementation plan](IMPLEMENTATION_PLAN.md) now incorporates
 all 15 source-grounded feature questionnaires. Detailed accepted decisions
 are in [the product directive](docs/source/feature-decisions-2026-10-04.md).
-FND-01 (canonical startup/loading and shared native turns) is in progress.
+FND-01 (canonical startup/loading and shared native turns) is implemented with
+scoped verification PASS; see [the repair](docs/fixes/canonical-runtime.md).
+Existing-avatar/time preconditions now pass through the actual 3D client.
+Full SAVE-001 remains incomplete; the failed M5.5 gate has not been recertified.
+FND-02 is next.
 Product decisions and planned prototypes do not certify implementation.
 
 **M5.5 takeover audit: COMPLETE. Architectural conformance gate: FAILED.**
@@ -31,6 +35,10 @@ visibility repair is on `fix/visible-world-startup`. During the audit only two p
 changes were made to enable verification: trap-registry/map initialization
 (`53ec1d4`) and the native `main` declaration (`6f0d415`). Complete fork patches,
 upstream pins and source identities are in `baseline/manifest.json`.
+
+The following results/findings describe the historical audit baseline.
+Later scoped repairs above supersede their addressed failures without
+recertifying the remaining gate.
 
 Clean component builds pass. Protocol tests pass 2/2; Luanti native tests pass
 302/302; CDDA's native default suite passes 1,067/1,068 cases; Mineclonia's
