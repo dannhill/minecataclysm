@@ -188,7 +188,9 @@ def main():
                         send(c, Payload.Payload.DecisionResponse,
                              lambda b: response(b, prompt.DecisionId(), 0 if case == 'confirm' else 1))
                         accepted = result(c, 1)
-                        check(case + '_native_action_result', accepted == (case == 'confirm'))
+                        # Native move() handles a declined deep-water choice by
+                        # returning true. Verify effects, never infer a step from ACK.
+                        check(case + '_native_action_result', accepted)
                         expected = [start[0], start[1] - 1, start[2]] if case == 'confirm' else start
                         check(case + '_native_position', state['position'] == expected)
                         if case == 'confirm':

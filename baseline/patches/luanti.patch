@@ -470,10 +470,10 @@ index 7f3f860..c4c4482 100644
  void TestMapBlock::testSaveLoad(IGameDef *gamedef, const u8 version)
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..4b747dc
+index 0000000..6201641
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,1020 @@
+@@ -0,0 +1,1022 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
@@ -783,6 +783,8 @@ index 0000000..4b747dc
 +                floor = lower = upper = get_node_for_material(material); break;
 +            case DOOR_CLOSED: case DOOR_OPEN:
 +                lower = get_node_for_material(material);
++                if (material == DOOR_OPEN && (flags & BLOCKS_MOVEMENT))
++                    lower = get_node_for_material(LOW_OBSTACLE);
 +                upper = get_node_for_material(WALL); break;
 +            case WINDOW: case WINDOW_OPEN: case WINDOW_BOARDED:
 +                // The sill belongs to the wall; opening removes only the pane.

@@ -1653,10 +1653,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644
-index 0000000..7e3c91f
+index 0000000..ca196fd
 --- /dev/null
 +++ b/tests/cwm_projection_test.cpp
-@@ -0,0 +1,215 @@
+@@ -0,0 +1,222 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "avatar_action.h"
@@ -1684,6 +1684,7 @@ index 0000000..7e3c91f
 +        if (terrain.movecost == 0 && !terrain.has_flag(ter_furn_flag::TFLAG_NO_FLOOR)) {
 +            CHECK((tile.material_id() == WALL || tile.material_id() == WINDOW ||
 +                   tile.material_id() == WINDOW_BOARDED || tile.material_id() == DOOR_CLOSED ||
++                   tile.material_id() == DOOR_OPEN ||
 +                   tile.material_id() == OBSTACLE || tile.material_id() == GLASS_WALL ||
 +                   tile.material_id() == WATER || tile.material_id() == TREE));
 +        }
@@ -1843,6 +1844,12 @@ index 0000000..7e3c91f
 +    CHECK(cwm::CwmMapExporter::export_block(p, m, 15).material_id() == WINDOW_BOARDED);
 +    REQUIRE(m.open_door(u, p, true));
 +    CHECK(cwm::CwmMapExporter::export_block(p, m, 15).material_id() == WINDOW_OPEN);
++    // The pinned trailer door is open but still impassable. Keep both facts;
++    // the renderer must show its native obstruction rather than infer passage.
++    m.ter_set(p, ter_str_id("t_bullettrailer_inner_door_o"));
++    const auto raised = cwm::CwmMapExporter::export_block(p, m, 15);
++    CHECK(raised.material_id() == DOOR_OPEN);
++    CHECK(raised.state_flags() & BLOCKS_MOVEMENT);
 +}
 +
 +TEST_CASE("cwm_avatar_water_and_sill_cues_preserve_native_coordinates", "[cwm]")
@@ -1874,10 +1881,10 @@ index 0000000..7e3c91f
 +}
 diff --git a/tests/cwm_runtime_test.cpp b/tests/cwm_runtime_test.cpp
 new file mode 100644
-index 0000000..df63207
+index 0000000..f962264
 --- /dev/null
 +++ b/tests/cwm_runtime_test.cpp
-@@ -0,0 +1,240 @@
+@@ -0,0 +1,241 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "avatar_action.h"
@@ -1929,6 +1936,7 @@ index 0000000..df63207
 +    item matches( itype_id( "matches" ), calendar::turn );
 +    REQUIRE( u.wield( matches ) );
 +    u.set_skill_level( skill_id( "swimming" ), 10 );
++    u.moves = 1000; // Wielding has already paid its native cost before the action under test.
 +    int answer = 1;
 +    SECTION( "decline preserves character and vulnerable item" ) { answer = 1; }
 +    SECTION( "confirm executes native swimming and water damage" ) { answer = 0; }
