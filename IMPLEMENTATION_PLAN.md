@@ -114,7 +114,9 @@ L'utente [accetta la checklist manuale dello scheduler](docs/source/rt01-validat
 ma giudica il ritmo base 1× troppo lento e chiede il controller continuo già
 previsto. Il baseline tecnico a griglia è implementato; offset continuo,
 arresto dentro una casella e direzione arbitraria restano da confrontare.
-Ritmo e controller finali sono aperti; la fase 2 non è chiusa.
+Fra le velocità provate, l'utente preferisce 4×: usarlo come ritmo globale
+di riferimento del prossimo prototipo continuo. Controller e bilanciamento
+finali restano da confrontare; la fase 2 non è chiusa.
 Gli altri criteri FND-04 restano aperti.
 
 ## Fase 2 — Prototipo di tempo, movimento e percezione
@@ -123,8 +125,10 @@ Dipende da FND-01–03 e dalla proiezione sufficiente alla scena di confronto.
 
 - Scheduler unico CDDA: default 1:1 e velocità globale regolabile, pausa
   esplicita/menu, attività lunghe accelerate, interruzioni native rilevanti.
-  Il rapporto 1:1 è il baseline RT-01 verificato; dopo il riscontro sulla
-  lentezza, il ritmo predefinito del prodotto è da ricalibrare e scegliere.
+  Il rapporto 1:1 è il baseline RT-01 verificato; l'utente preferisce 4×
+  fra i ritmi provati. Il prossimo prototipo continuo usa 4× globale come
+  riferimento, mantenendo la regolazione. Il bilanciamento finale richiede
+  anche il confronto di combattimento, posture e attività.
 - Autopausa su nuova minaccia percepita; ripresa in tempo reale. Verificare
   fattibilità del combattimento opzionale scandito dalle azioni sullo stesso
   scheduler. La pausa di scelta non migliora gratuitamente la mira.

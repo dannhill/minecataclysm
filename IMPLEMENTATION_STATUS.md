@@ -52,8 +52,10 @@ Scoped verification is recorded in its evidence. The user
 [accepts the scoped manual checklist](docs/source/rt01-validation-2026-10-04.md),
 but rejects the base 1x pace as too slow and asks about the planned continuous
 controller. Native-grid interpolation is the implemented baseline; continuous
-authoritative offset remains unimplemented. Final pace/controller decisions
-are open; do not repeat the accepted scheduler checklist.
+authoritative offset remains unimplemented. The user prefers the tested global
+4x pace; use it as the reference for the next continuous prototype. The installed
+RT-01 default is still 1x with F8 selection. Final controller/balance remain
+open; do not repeat the accepted scheduler checklist.
 Automatic continuous stairs/ladders must now be revisited with the user before
 choosing the final controller. Other phase-2/FND-04 criteria remain open.
 Product decisions and planned prototypes do not certify implementation.

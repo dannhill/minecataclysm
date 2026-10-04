@@ -1,6 +1,6 @@
 {
   "task": "RT-01 first authoritative real-time scheduler prototype",
-  "status": "SCOPED AUTOMATED PASS; manual scheduler checklist accepted; final pace/controller open",
+  "status": "SCOPED AUTOMATED PASS; manual scheduler accepted; global 4x preferred for next prototype; continuous controller pending",
   "source_commit": "e76a8de016a88937e8b5ec73a453f7e88db16608",
   "branch": "prototype/rt01-scheduler",
   "gate": "Historical M5.5 remains FAILED; no full phase-2/FND-04 certification",
@@ -887,7 +887,11 @@
     "command": "./realtime-demo.sh --fresh",
     "prompt": "Revisit automatic continuous stairs AND ladders before choosing final controller",
     "feedback_source": "docs/source/rt01-validation-2026-10-04.md",
-    "delivered_report": "6e96ff3; identifies associated delivery, not a user-supplied binary checksum"
+    "delivered_report": "6e96ff3; identifies associated delivery, not a user-supplied binary checksum",
+    "preferred_prototype_time_scale": 4.0,
+    "time_scale_scope": "Global acceleration tested with F8; reference for next continuous prototype, not a player-only movement multiplier",
+    "installed_default_time_scale": 1.0,
+    "preference_quote": "tra quelle disponibili quella che mi piace di pi\u00f9 \u00e8 x4."
   },
   "limits": [
     "native turn/action-phase quantization",

@@ -27,3 +27,20 @@ default, moltiplicatore o bilanciamento è approvato da questo messaggio.
 Segue il dialogo su velocità e controller. Sono ancora da confrontare anche
 le scale a gradini e a pioli automatiche/continue. Gli esiti e i limiti di
 fase 2, FND-04 e M5.5 restano distinti dalla validazione di questa demo.
+
+## Preferenza di ritmo dopo il chiarimento
+
+Alla domanda su quale velocità provata con F8 sia più vicina a quella
+desiderata, l'utente risponde:
+
+> tra quelle disponibili quella che mi piace di più è x4.
+
+Usare **4× globale come ritmo di riferimento del prossimo prototipo continuo**.
+È la modalità effettivamente provata: accelera anche gli altri attori e i
+sistemi nativi, conservando i rapporti fra costi e velocità. Non interpretarla
+come richiesta di quadruplicare soltanto la locomozione del giocatore.
+
+Il default installato di RT-01 rimane 1×, selezionabile fino a 4× con F8;
+questo aggiornamento registra la preferenza e non modifica i binari.
+Restano da confrontare il controller continuo e il ritmo con combattimento,
+posture e attività più complete prima di fissare il bilanciamento finale.

@@ -43,8 +43,10 @@ I due binari verificati sono installati; anche l’avvio di `realtime-demo.sh`
 è verificato sul client grafico reale. L'utente
 [accetta la checklist manuale](../source/rt01-validation-2026-10-04.md), ma
 giudica il ritmo base 1× troppo lento e chiede chiarimenti sul controller
-continuo previsto. Lo scheduler è accettato per questa prova; velocità e
-controller finali restano da scegliere.
+continuo previsto. Nel chiarimento successivo preferisce 4× fra i ritmi
+disponibili: è il riferimento per il prossimo prototipo continuo. Il default
+installato rimane 1× con selezione tramite F8. Lo scheduler è accettato per
+questa prova; controller e bilanciamento finali restano da confrontare.
 
 ## Contratto implementato
 
