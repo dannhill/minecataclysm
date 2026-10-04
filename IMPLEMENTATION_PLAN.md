@@ -4,6 +4,9 @@ Piano corrente, aggiornato con i 15 questionari del 2026-10-04.
 Le [decisioni dettagliate](docs/source/feature-decisions-2026-10-04.md) e il loro
 [registro strutturato](docs/source/feature-decisions-2026-10-04.json) integrano
 specifica v1.0, emendamenti v1.1 e direttiva di scope del 2026-10-03.
+Il successivo [riscontro sul terreno](docs/source/terrain-feedback-2026-10-04.md)
+approva i materiali/vegetazione B, riapre alcuni casi esplorativi e richiede
+un panorama più ampio; nebbia, memoria distante e rilievo restano da scegliere.
 Lo [stato implementato](IMPLEMENTATION_STATUS.md) e le evidenze restano separati
 dagli obiettivi. La roadmap originale M0–M9 conserva i propri significati.
 
@@ -40,13 +43,30 @@ movimento, strutture, apertura porte, safe mode e riavvio. Dopo la
 sfarfallio assente/impercettibile, zombie visibili e morte da zombie senza
 crash. Il pozzo/bordo resta da riprovare manualmente. Questa riparazione
 anticipa parte di FND-04; animazioni/orientamento e copertura completa restano
-aperti. Il prossimo task di fondazione rimane FND-02.
+aperti. Il prossimo task di fondazione rimane FND-02. Prima di ulteriori prove
+esplorative estese, trattare in FND-04 il nuovo abort nell'acqua e le varianti
+di porte/finestre segnalate nel [riscontro sul terreno](docs/source/terrain-feedback-2026-10-04.md).
+L'accettazione delle strutture nei casi precedenti non copre queste anomalie.
 FND-04 comprende anche OPEN/CLOSE puntati senza attraversamento; la fase 2
 comprende una nebbia del confine della proiezione che non sveli terreno ignoto.
 Su richiesta dell'utente, il [confronto del terreno](docs/prototypes/terrain-comparison.md)
 è stato anticipato come prototipo isolato: A/B nella stessa scena nativa e
-nebbia ON/OFF separata, tramite `terrain-demo.sh`. La scelta estetica attende
-la prova dell'utente; questo non completa le dipendenze FND-02/03 o la fase 2.
+nebbia ON/OFF separata, tramite `terrain-demo.sh`. L'utente ha approvato B
+per materiali/vegetazione; promuoverla al gioco normale separando stile e
+fixture, senza importare le opzioni speciali della demo. La nebbia attuale
+non è approvata come soluzione definitiva. La
+[proposta su distanza e memoria](docs/design/visibility-and-world-memory.md)
+conserva le alternative e raccomanda panorama statico ricordato, dettaglio
+ridotto lontano e haze al confine effettivo. La raccomandazione non è ancora
+una scelta dell'utente né un'implementazione; il prototipo non completa le
+dipendenze FND-02/03 o la fase 2.
+
+FND-04 deve inoltre distinguere stato del vetro/telaio/davanzale e
+attraversabilità nativa, coprire famiglie open/closed/locked/broken delle
+porte, adattare i menu nativi di ingresso in acqua e presentare guado/nuoto,
+arredi e connessioni verticali riconoscibili. Non correggere placeholder
+aggiungendo collisioni o scale indipendenti da CDDA. Riproduzione isolata e
+verifica della causa precedono l'attestazione di ogni fix.
 
 ## Fase 2 — Prototipo di tempo, movimento e percezione
 
@@ -67,12 +87,27 @@ Dipende da FND-01–03 e dalla proiezione sufficiente alla scena di confronto.
   legalità nativa e coerenza geometrica. Estensioni ulteriori documentate.
 - Percezione CDDA indipendente dal cono camera; indizi periferici/sonori con
   conoscenza e incertezza native. Luce e sensi speciali coerenti.
+- Separare distanza di presentazione, realtà simulata e conoscenza. Il
+  [contratto proposto](docs/design/visibility-and-world-memory.md) distingue
+  terreno osservato, memoria statica e overmap nota. Verificare/popolare la
+  memoria nativa anche in headless; non conservare come ricordo tutti i tile
+  del bridge corrente, che include terreno non filtrato dalla percezione.
+  Prototipare panorama ricordato con cache limitate, dettaglio ridotto,
+  restart/reconnect e assenza di aggiornamenti occulti. Nessuna creatura
+  lontana resa visibile per attenuare il pop-in; eventuale breve transizione
+  dopo percezione non ritarda avvisi/attacchi. Fog e distanza sono controlli
+  distinti da confrontare, con prestazioni misurate e scelta manuale finale.
 - Terreno: definire ora il contratto e confrontare in questa fase una scena
   più ricca (nebbia del bordo, materiali, vegetazione) con le necessità di
   rilievo giocabile, prima di consolidare veicoli/combattimento/costruzioni.
-  La [proposta](docs/design/terrain-presentation.md) è da valutare; nessuna
-  variante o nuova generazione del mondo è stata scelta. Rilievi percorribili
-  richiedono quote e regole autorevoli CDDA, non colline autonome Luanti.
+  Materiali/vegetazione B sono scelti come direzione; distanza/nebbia, alberi
+  maturi e rilievo restano da sviluppare secondo la
+  [proposta aggiornata](docs/design/terrain-presentation.md). Pianura cittadina
+  e costiera accettabile; dettaglio naturale e skyline da migliorare.
+  Piccole irregolarità facoltative in una prova più ampia, senza test manuale
+  dedicato; nessun gradino di un cubo soltanto grafico assunto innocuo.
+  Rilievi percorribili richiedono quote e regole autorevoli CDDA, non colline
+  autonome Luanti. Nessuna nuova generazione del mondo è stata scelta.
 - Animazione e orientamento delle creature coerenti con stato, movimento e
   cronologia simulata; pose leggibili anche in pausa. La visibilità base già
   validata non certifica animazioni, AI in tempo reale o bestiario completo.

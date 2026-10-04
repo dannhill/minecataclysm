@@ -143,6 +143,15 @@ applicata a tutti i sistemi, incluse micce/nemici/veicoli/attività. Pausa e
 accelerazione delle attività come sopra. Animazioni/esiti/coordinate devono
 riferirsi alla stessa cronologia.
 
+## Integrazione successiva: terreno e distanza
+
+Il successivo [riscontro sul terreno](terrain-feedback-2026-10-04.md) integra
+queste decisioni: B approvata come direzione dei materiali/vegetazione;
+distanza/nebbia non finalizzate, alternative conservate nella
+[proposta di panorama ricordato](../design/visibility-and-world-memory.md).
+Piccoli dislivelli facoltativi e non prioritari, senza test dedicato richiesto.
+Non modifica le scelte di autorità, percezione o tempo sopra.
+
 ## Sorgenti esaminate
 
 CDDA: `do_turn`, `calendar`, `avatar_action`, `game`, `creature`, tasche e item

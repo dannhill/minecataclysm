@@ -2,9 +2,12 @@
 
 Fonte: [seconda prova manuale](../source/manual-validation-2026-10-04.md).
 Stato: punti 1 e 2 autorizzati dall'utente e realizzati nel
-[prototipo di confronto](../prototypes/terrain-comparison.md), in attesa della
-prova manuale. Dettaglio superficiale e rilievo percorribile restano proposte;
-nessuna variante estetica definitiva è stata scelta.
+[prototipo di confronto](../prototypes/terrain-comparison.md). La
+[prova manuale successiva](../source/terrain-feedback-2026-10-04.md) approva B
+per materiali/vegetazione, ma trova troppo corta la distanza della nebbia.
+Distanza, alberi maturi, dettaglio superficiale e rilievo percorribile restano
+da sviluppare. Le alternative e il contratto di memoria sono nella
+[proposta su panorama e conoscenza](visibility-and-world-memory.md).
 Il problema va definito adesso; il confronto giocabile appartiene alla fase 2,
 prima di consolidare guida, combattimento e costruzioni. FND-02/03 restano le
 prossime fondazioni da implementare.
@@ -37,11 +40,15 @@ geometria piatta.
 | Dettaglio superficiale | Piccole irregolarità decorative entro un limite da scegliere nella scena di prova. Più complesso per piedi, picking e silhouette. | Non introdurre una salita/discesa, alterare portata o nascondere aperture/pericoli. |
 | Rilievo percorribile | Colline, avvallamenti e raccordi reali. Intervento architetturale e sui dati del mondo. | Quote autorevoli in CDDA integrato, condivise da attori, percorsi, interazioni e persistenza. |
 
-Raccomandazione iniziale: provare la prima variante e valutare l'aspetto in
-prima persona. Il dettaglio superficiale è opzionale, non una dipendenza
-necessaria. Se la pianura resta inaccettabile, confrontare presto il rilievo
-giocabile anziché coprirlo soltanto con cosmetica. Non attivare un mapgen
-autonomo Luanti che inventi colline sopra la mappa CDDA.
+La prima variante è stata provata e scelta per i materiali/vegetazione B.
+La pianura cittadina/costiera è accettabile, quella naturale resta poco
+credibile; campo visivo e alberi piccoli amplificano il problema. Sviluppare
+prima panorama e vegetazione matura. Dettaglio superficiale opzionale in una
+prova più ampia, senza test dedicato richiesto ora. Un gradino grafico di un
+cubo può alterare piedi, visuale e copertura anche conservando la logica
+piatta: non introdurlo come modifica innocua. Se servirà rilievo percorribile,
+confrontarlo con il contratto sotto. Non attivare un mapgen autonomo Luanti
+che inventi colline sopra la mappa CDDA.
 
 ## Contratto prima del rilievo percorribile
 
@@ -60,11 +67,11 @@ preservazione standalone. Il prototipo dovrà specificare:
 - Dati semantici CWM, delta/rebase/reconnect e save/load canonici con eventuale
   versione/migrazione esplicita; nessun formato Luanti nel protocollo.
 
-La possibilità di modificare CDDA per il prodotto è già autorizzata. La
-scelta del terreno e gli effetti sulle meccaniche restano da discutere e
-provare; worldgen e trattamento dei salvataggi esistenti faranno parte della
-variante scelta. Questa nota definisce il confronto, senza scegliere una
-soluzione al posto dell'utente.
+La possibilità di modificare CDDA per il prodotto è già autorizzata. B è
+approvata per materiali/vegetazione; rilievo e suoi effetti sulle meccaniche
+restano da discutere e provare. Worldgen e trattamento dei salvataggi esistenti
+faranno parte di un'eventuale variante di rilievo scelta. Questa nota non
+finalizza nebbia, distanza o nuova generazione al posto dell'utente.
 
 ## Scene e criteri di prova
 

@@ -25,9 +25,31 @@ The user also reported flat, monotonous ground; a
 questions for phase 2. The user then requested points 1/2: an
 [isolated playable comparison](docs/prototypes/terrain-comparison.md) now
 provides A/B materials/vegetation and independent border fog via
-`terrain-demo.sh`. Final terrain choice awaits hands-on feedback; ordinary
-`start.sh` keeps the baseline style. Real-time scheduling and terrain relief
+`terrain-demo.sh`. Ordinary `start.sh` keeps the baseline style.
+Real-time scheduling and terrain relief
 are not part of this prototype.
+
+Subsequent [manual terrain feedback](docs/source/terrain-feedback-2026-10-04.md)
+**accepts B as the materials/vegetation direction**. Promotion to ordinary
+`start.sh` is planned, not implemented. The current short border fog is not
+accepted as the final solution. The
+[distance/memory proposal](docs/design/visibility-and-world-memory.md) records
+the user's alternatives and recommends a larger static remembered panorama
+with bounded rendering and no extra creature knowledge. No distant memory,
+new perception filter, larger view distance or relief has been implemented.
+The current terrain export is not filtered by perception; the actor renderer
+uses native `sees`. These must not be described as the same fog-of-war system.
+
+The same feedback reports missing windows, inconsistent door states,
+double-height disappearing window glass, generic traversable wooden objects,
+apparent water-surface walking and unclear access to an upper floor. These
+reopen variant/geometry coverage within FND-04 rather than invalidate all
+earlier scoped tests. A demo-session CDDA log contains a terminal-input abort;
+deep-water item warnings still have an unadapted native menu, a concrete
+candidate requiring isolated reproduction. The reported pond exit is not
+certified as death or as fixed. Address that abort and aperture variants
+before further broad exploration tests. Historical M5.5 and SAVE-001 outcomes
+remain unchanged.
 
 **M5.5 takeover audit: COMPLETE. Architectural conformance gate: FAILED.**
 The findings are documented in [the audit](docs/audits/M5.5.md), with
@@ -44,9 +66,10 @@ safely rejected. See [the scoped repair evidence](docs/fixes/visible-world.md).
 The original failed M5.5 gate and remaining findings are not recertified.
 
 Post-audit structural/movement repair: semantic CDDA terrain/furniture export,
-batched end-of-action tile changes, consistent window/door geometry, exclusive
+batched end-of-action tile changes, scoped window/door geometry repairs, exclusive
 CWM player positioning and frame-independent bounded movement input. See
 [the scoped repair](docs/fixes/projection-and-movement.md) for evidence and limits.
+Later manual feedback above identifies aperture variants outside that evidence.
 
 The frozen claimed-M5 baseline is `1c37927`, tagged
 `pre-takeover-m5-claimed`. The audit is on `audit/m5-conformance`; the scoped

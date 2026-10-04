@@ -2,7 +2,8 @@
 
 Prototipo richiesto dall'utente: punti 1 e 2 della proposta sul terreno.
 Confronta presentazione attuale e materiali/vegetazione più distinti, con
-nebbia regolabile separatamente. La scelta finale resta alla prova dell'utente.
+nebbia regolabile separatamente. La prova successiva approva B per
+materiali/vegetazione; la soluzione finale della distanza/nebbia resta aperta.
 
 ## Avvio e confronto
 
@@ -36,7 +37,23 @@ lì; il mondo normale e il suo personaggio non vengono caricati. Per ripetere
 il confronto dal centro basta rilanciare lo script. `start.sh` mantiene la
 resa normale: nessuna nuova variante è imposta alla partita dell'utente.
 
-## Cosa valutare
+## Riscontro della prova manuale
+
+L'utente ha scelto B per materiali/vegetazione: resa più naturale e varia.
+La fog riduce pop-in e isola nel vuoto, ma la distanza è troppo corta per
+essere la soluzione definitiva. Pianura cittadina/costiera accettabile;
+bosco/campo, alberi e panorama restano da migliorare. Non sono stati scelti
+nuova scala, rilievo o visibilità aggiuntiva delle creature.
+
+La [segnalazione completa](../source/terrain-feedback-2026-10-04.md) registra
+anche finestre/porte incoerenti, acqua, arredi e accesso ai piani. Una sessione
+della demo contiene un abort da input terminale: le evidenze sotto sul
+confronto non certificano tutti i percorsi esplorativi o varianti native.
+La [proposta sulla distanza](../design/visibility-and-world-memory.md) distingue
+percezione, memoria e confine grafico. Promozione B e correzioni sono nel piano;
+il codice/binario di questo confronto non cambia con il presente aggiornamento.
+
+## Criteri usati per la prova
 
 - Sensazione del paesaggio: resta troppo piatto anche con la vegetazione?
 - Distinzione di erba, terra, sabbia, asfalto, marciapiede e acqua.
