@@ -470,10 +470,10 @@ index 7f3f860..c4c4482 100644
  void TestMapBlock::testSaveLoad(IGameDef *gamedef, const u8 version)
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..4f54568
+index 0000000..40b61eb
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,1026 @@
+@@ -0,0 +1,1042 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
@@ -537,6 +537,8 @@ index 0000000..4f54568
 +    std::chrono::steady_clock::time_point sent_move_{};
 +    std::ofstream trace_;
 +    bool player_ready_{false};
++    float reconnect_timer_{0.f};
++    cdda::cwm::IpcWork ipc_work_;
 +    static constexpr float step_duration = 0.2f;
 +    float player_feet_offset_{0.f};
 +    float player_eye_offset_{0.f};
@@ -841,7 +843,8 @@ index 0000000..4f54568
 +    }
 +
 +    bool connect() {
-+        connection_ = cdda::cwm::IpcClient::connect_unix(socket_path_);
++        // Never wait for connect completion on the visual thread.
++        connection_ = cdda::cwm::IpcClient::connect_unix(socket_path_, 0);
 +        if (connection_ && connection_->is_valid()) {
 +            metrics_.connected = true;
 +            pending_move_ = 0;
@@ -850,28 +853,13 @@ index 0000000..4f54568
 +            // Send Hello
 +            cdda::cwm::MessageBuilder builder(command_counter_++, 0);
 +            auto hello = builder.build_hello_request("luanti_cdda_client_5.10.0");
-+            connection_->send_message(hello.data(), hello.size());
-+            return true;
++            if (connection_->send_message(hello.data(), hello.size())) return true;
 +        }
 +        metrics_.connected = false;
 +        return false;
 +    }
 +
-+    void update(float dtime) {
-+        if (!connection_ || !connection_->is_valid()) {
-+            // Periodic reconnect attempt
-+            static float reconnect_timer = 0.0f;
-+            reconnect_timer += dtime;
-+            if (reconnect_timer > 2.0f) {
-+                reconnect_timer = 0.0f;
-+                connect();
-+            }
-+            return;
-+        }
-+
-+        std::vector<std::vector<uint8_t>> incoming;
-+        bool ok = connection_->poll_and_receive(incoming, 0);
-+        if (!ok) {
++    void disconnected() {
 +            metrics_.connected = false;
 +            player_ready_ = false;
 +            pending_move_ = 0;
@@ -879,11 +867,34 @@ index 0000000..4f54568
 +            metrics_.pending_decision = 0;
 +            for (auto& [id, ent] : entities_) if (ent.scene_node)
 +                static_cast<irr::scene::ISceneNode*>(ent.scene_node)->setVisible(false);
++    }
++
++    void update(float dtime) {
++        ipc_work_ = {};
++        if (!connection_ || !connection_->is_valid()) {
++            disconnected();
++            reconnect_timer_ += dtime;
++            if (reconnect_timer_ > 2.0f) {
++                reconnect_timer_ = 0.0f;
++                connect();
++            }
 +            return;
 +        }
 +
++        std::vector<std::vector<uint8_t>> incoming;
++        const bool ok = connection_->poll_and_receive(incoming, 0);
++        ipc_work_ = connection_->last_work();
 +        for (const auto& frame : incoming) {
++            if (!cdda::cwm::MessageVerifier::verify(frame.data(), frame.size())) {
++                connection_->close_fd(cdda::cwm::IpcCloseReason::InvalidFrame);
++                break;
++            }
 +            process_message(frame.data(), frame.size());
++            if (ok && !connection_->is_valid()) break;
++        }
++        if (!ok || !connection_->is_valid()) {
++            disconnected();
++            return;
 +        }
 +
 +        // Interpolate visual entities
@@ -969,7 +980,6 @@ index 0000000..4f54568
 +    }
 +
 +    void process_message(const uint8_t* data, size_t size) {
-+        if (!cdda::cwm::MessageVerifier::verify(data, size)) return;
 +        const auto* msg = cdda::cwm::MessageVerifier::parse(data, size);
 +        if (!msg) return;
 +
@@ -1309,7 +1319,7 @@ index 0000000..4f54568
 +    std::string trace_path;
 +    if (g_settings->getNoEx("cwm_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->trace_.open(trace_path);
-+        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog\n";
++        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog,ipc_connected,ipc_input,ipc_output,ipc_read_bytes,ipc_write_bytes,ipc_frames,ipc_dispatch_bytes,ipc_read_calls,ipc_write_calls\n";
 +    }
 +    return pimpl_->connect();
 +}
@@ -1376,7 +1386,13 @@ index 0000000..4f54568
 +        << entity.target_pos.X << ',' << entity.target_pos.Y << ',' << entity.target_pos.Z << ','
 +        << pimpl_->pending_move_ << ',' << direction.X << ',' << direction.Y << ','
 +        << direction.Z << ',' << pimpl_->metrics_.current_revision << ','
-+        << pimpl_->terrain_enriched_ << ',' << pimpl_->terrain_fog_ << '\n';
++        << pimpl_->terrain_enriched_ << ',' << pimpl_->terrain_fog_ << ','
++        << pimpl_->metrics_.connected << ','
++        << (pimpl_->connection_ ? pimpl_->connection_->pending_input_bytes() : 0) << ','
++        << (pimpl_->connection_ ? pimpl_->connection_->queued_output_bytes() : 0) << ','
++        << pimpl_->ipc_work_.read_bytes << ',' << pimpl_->ipc_work_.written_bytes << ','
++        << pimpl_->ipc_work_.delivered_frames << ',' << pimpl_->ipc_work_.delivered_bytes << ','
++        << pimpl_->ipc_work_.read_calls << ',' << pimpl_->ipc_work_.write_calls << '\n';
 +    pimpl_->trace_.flush();
 +}
 +

@@ -41,14 +41,24 @@ def main():
         return normalize('\n'.join(line for line in path.read_text().splitlines()
             if line.strip() and (not line.startswith('# Custom ') or key + '_' in line)), root)
 
+    def target_flags(obj, build):
+        # Nested CMake objects (e.g. src/client/foo.cpp.o) share flags.make
+        # at their target directory, not at the object's immediate parent.
+        for directory in obj.parents:
+            if directory == build: break
+            candidate = directory/'flags.make'
+            if candidate.is_file(): return candidate
+        return None
+
     for dependency in sorted(old_build.rglob('*.o.d')):
         obj = dependency.with_suffix('')
         relative = obj.relative_to(old_build)
         target = new_build/relative
-        flags, target_flags = obj.parent/'flags.make', target.parent/'flags.make'
+        flags = target_flags(obj, old_build)
+        current_flags = target_flags(target, new_build)
         reason = None
-        if not obj.exists() or not target_flags.exists() or not flags.exists(): continue
-        if effective_flags(flags, obj, old) != effective_flags(target_flags, target, new):
+        if not obj.exists() or flags is None or current_flags is None: continue
+        if effective_flags(flags, obj, old) != effective_flags(current_flags, target, new):
             reason = 'compiler flags differ'
         text = dependency.read_text()
         inputs = shlex.split(text.split(':', 1)[1].replace('\\\n', ' '))

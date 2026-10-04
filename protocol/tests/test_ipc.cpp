@@ -9,7 +9,7 @@
 
 using namespace cdda::cwm;
 
-const std::string TEST_SOCKET = "/tmp/test_cdda_cwm_ipc.sock";
+const std::string TEST_SOCKET = "/tmp/test_cdda_cwm_ipc_" + std::to_string(::getpid()) + ".sock";
 
 void test_ipc_handshake_and_exchange() {
     IpcServer server(TEST_SOCKET);
@@ -28,6 +28,8 @@ void test_ipc_handshake_and_exchange() {
     MessageBuilder client_builder(1, 0);
     auto hello_bytes = client_builder.build_hello_request("test_client");
     assert(client->send_message(hello_bytes.data(), hello_bytes.size()));
+    std::vector<std::vector<uint8_t>> unused;
+    assert(client->poll_and_receive(unused)); // Pump the queued Hello.
 
     // Server receives Hello
     std::vector<std::vector<uint8_t>> server_incoming;
@@ -43,6 +45,7 @@ void test_ipc_handshake_and_exchange() {
     MessageBuilder server_builder(1, 1);
     auto resp_bytes = server_builder.build_hello_response(true, "test_cdda_server");
     assert(server.client()->send_message(resp_bytes.data(), resp_bytes.size()));
+    assert(server.client()->poll_and_receive(unused));
 
     // Client receives HelloResponse
     std::vector<std::vector<uint8_t>> client_incoming;
@@ -57,6 +60,7 @@ void test_ipc_handshake_and_exchange() {
     // Server sends TileDelta
     auto delta_bytes = server_builder.build_tile_delta(10, 20, 0, 101, 1, 15, 0);
     assert(server.client()->send_message(delta_bytes.data(), delta_bytes.size()));
+    assert(server.client()->poll_and_receive(unused));
 
     client_incoming.clear();
     assert(client->poll_and_receive(client_incoming, 500));

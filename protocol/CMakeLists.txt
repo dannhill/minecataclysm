@@ -42,3 +42,7 @@ add_test(NAME test_serialization COMMAND test_serialization)
 add_executable(test_ipc tests/test_ipc.cpp)
 target_link_libraries(test_ipc PRIVATE cwm_protocol)
 add_test(NAME test_ipc COMMAND test_ipc)
+
+add_executable(test_transport_limits tests/test_transport_limits.cpp)
+target_link_libraries(test_transport_limits PRIVATE cwm_protocol)
+add_test(NAME test_transport_limits COMMAND test_transport_limits)

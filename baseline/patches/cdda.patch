@@ -1281,10 +1281,10 @@ index 0000000..978f98d
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..26cac0c
+index 0000000..44a5610
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,279 @@
+@@ -0,0 +1,296 @@
 +// CDDA CWM IPC Server Implementation
 +// Licensed under Apache-2.0
 +
@@ -1323,8 +1323,7 @@ index 0000000..26cac0c
 +    if (!has_active_client()) return;
 +    auto snapshot = CwmMapExporter::export_world_snapshot(sequence_counter_++, world_revision_,
 +                    u, m, g, full, &projection_cache_);
-+    server_->client()->send_message(snapshot.data(), snapshot.size());
-+    snapshot_sent_ = true;
++    snapshot_sent_ = server_->client()->send_message(snapshot.data(), snapshot.size());
 +}
 +
 +void CwmServer::send_result(const Result& result, avatar& u, map& m, game& g) {
@@ -1338,16 +1337,35 @@ index 0000000..26cac0c
 +
 +bool CwmServer::update(avatar& u, map& m, game& g) {
 +    if (!server_) return false;
-+    if (server_->poll_accept(0)) snapshot_sent_ = false;
-+    if (!has_active_client()) return true;
-+    std::vector<std::vector<uint8_t>> frames;
-+    if (!server_->client()->poll_and_receive(frames, 0)) {
++    if (server_->poll_accept(0)) {
++        commands_.clear();
++        result_.reset();
++        snapshot_sent_ = false;
++    }
++    if (!has_active_client()) {
 +        commands_.clear();
 +        result_.reset();
 +        snapshot_sent_ = false;
 +        return true;
 +    }
-+    for (const auto& frame : frames) handle_client_message(frame.data(), frame.size(), u, m, g);
++    std::vector<std::vector<uint8_t>> frames;
++    const bool alive = server_->client()->poll_and_receive(frames, 0);
++    // Transport may return complete final frames together with EOF.
++    for (const auto& frame : frames) {
++        if (!cdda::cwm::MessageVerifier::verify(frame.data(), frame.size())) {
++            server_->client()->close_fd(cdda::cwm::IpcCloseReason::InvalidFrame);
++            break;
++        }
++        handle_client_message(frame.data(), frame.size(), u, m, g);
++        if (alive && !has_active_client()) break;
++    }
++    if (!alive || !has_active_client()) {
++        // Commands not yet executed belong to the departed connection.
++        commands_.clear();
++        result_.reset();
++        snapshot_sent_ = false;
++        return true;
++    }
 +    if (!snapshot_sent_) send_state(u, m, g, true);
 +    return true;
 +}
@@ -1486,7 +1504,6 @@ index 0000000..26cac0c
 +
 +void CwmServer::handle_client_message(const uint8_t* data, size_t size,
 +                                      avatar& u, map& m, game& g) {
-+    if (!cdda::cwm::MessageVerifier::verify(data, size)) return;
 +    const auto* msg = cdda::cwm::MessageVerifier::parse(data, size);
 +    if (!msg) return;
 +    if (msg->payload_type() == CDDA::CWM::Payload::DecisionResponse) {
