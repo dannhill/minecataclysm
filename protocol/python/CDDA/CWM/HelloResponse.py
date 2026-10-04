@@ -59,8 +59,15 @@ class HelloResponse(object):
             return self._tab.String(o + self._tab.Pos)
         return None
 
+    # HelloResponse
+    def NextCommandId(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(14))
+        if o != 0:
+            return self._tab.Get(flatbuffers.number_types.Uint64Flags, o + self._tab.Pos)
+        return 0
+
 def HelloResponseStart(builder):
-    builder.StartObject(5)
+    builder.StartObject(6)
 
 def Start(builder):
     HelloResponseStart(builder)
@@ -94,6 +101,12 @@ def HelloResponseAddRejectReason(builder, rejectReason):
 
 def AddRejectReason(builder, rejectReason):
     HelloResponseAddRejectReason(builder, rejectReason)
+
+def HelloResponseAddNextCommandId(builder, nextCommandId):
+    builder.PrependUint64Slot(5, nextCommandId, 0)
+
+def AddNextCommandId(builder, nextCommandId):
+    HelloResponseAddNextCommandId(builder, nextCommandId)
 
 def HelloResponseEnd(builder):
     return builder.EndObject()

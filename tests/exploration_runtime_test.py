@@ -26,6 +26,8 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
     sys.path.insert(0, str(ws / 'protocol/python'))
     import flatbuffers
+    from session_wire import NativeWire
+    wire = NativeWire()
     from CDDA.CWM import CwmMessage as Msg, Payload, HelloRequest as Hello
     from CDDA.CWM import MoveRequest as Move, InteractRequest as Interact, Coord3i
     from CDDA.CWM import WorldSnapshot as World, CommandAck as Ack
@@ -42,11 +44,8 @@ def main():
     def message(kind, build):
         b = flatbuffers.Builder(256)
         payload = build(b)
-        Msg.CwmMessageStart(b)
-        Msg.CwmMessageAddPayloadType(b, kind)
-        Msg.CwmMessageAddPayload(b, payload)
-        b.Finish(Msg.CwmMessageEnd(b))
-        return bytes(b.Output())
+        with wire.lock:
+            return wire.finish(b,kind,payload)
 
     def read(c):
         def exact(n):
@@ -60,7 +59,7 @@ def main():
         size = struct.unpack('>I', exact(4))[0]
         if size > 16 * 1024 * 1024:
             raise ValueError('oversized frame')
-        return Msg.CwmMessage.GetRootAsCwmMessage(exact(size), 0)
+        return wire.observe(c, Msg.CwmMessage.GetRootAsCwmMessage(exact(size), 0))
 
     def send(c, kind, build):
         data = message(kind, build)
@@ -68,8 +67,7 @@ def main():
 
     def hello(b):
         Hello.HelloRequestStart(b)
-        Hello.HelloRequestAddProtocolVersionMajor(b, 1)
-        Hello.HelloRequestAddProtocolVersionMinor(b, 4)
+        wire.hello_fields(b)
         return Hello.HelloRequestEnd(b)
 
     def response(b, ident, choice):

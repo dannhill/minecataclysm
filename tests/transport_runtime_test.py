@@ -22,6 +22,8 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
     sys.path.insert(0, str(ws/'protocol/python'))
     import flatbuffers
+    from session_wire import NativeWire
+    wire = NativeWire()
     from CDDA.CWM import CwmMessage as Msg, Payload, HelloRequest as Hello, Heartbeat
     from CDDA.CWM import MoveRequest as Move, DecisionPrompt as Prompt, DecisionResponse as Response
     from CDDA.CWM import WorldSnapshot as World
@@ -37,13 +39,11 @@ def main():
         if not ok: raise AssertionError(name)
     def message(kind, build):
         b = flatbuffers.Builder(256); value = build(b)
-        Msg.CwmMessageStart(b); Msg.CwmMessageAddPayloadType(b, kind); Msg.CwmMessageAddPayload(b, value)
-        b.Finish(Msg.CwmMessageEnd(b)); body = bytes(b.Output())
-        return struct.pack('>I', len(body))+body
+        body = wire.finish(b,kind,value)
+        return struct.pack('>I',len(body))+body
     def hello(b):
-        Hello.HelloRequestStart(b); Hello.HelloRequestAddProtocolVersionMajor(b, 1)
-        Hello.HelloRequestAddProtocolVersionMinor(b, 4); return Hello.HelloRequestEnd(b)
-    greeting = message(Payload.Payload.HelloRequest, hello)
+        Hello.HelloRequestStart(b); wire.hello_fields(b); return Hello.HelloRequestEnd(b)
+    def greeting(): return message(Payload.Payload.HelloRequest, hello)
     def read(c):
         def exact(n):
             data = b''
@@ -54,7 +54,7 @@ def main():
             return data
         size = struct.unpack('>I', exact(4))[0]
         if not 0 < size <= 16*1024*1024: raise ValueError('Invalid CWM length')
-        return Msg.CwmMessage.GetRootAsCwmMessage(exact(size), 0)
+        return wire.observe(c,Msg.CwmMessage.GetRootAsCwmMessage(exact(size), 0))
     def state(msg):
         world = World.WorldSnapshot(); world.Init(msg.Payload().Bytes, msg.Payload().Pos)
         origin = world.Origin()
@@ -74,8 +74,8 @@ def main():
             c = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM); c.settimeout(15); c.connect(str(path)); return c
         def initialized(c, label, fragmented=False):
             if fragmented:
-                for byte in greeting: c.sendall(bytes([byte]))
-            else: c.sendall(greeting)
+                for byte in greeting(): c.sendall(bytes([byte]))
+            else: c.sendall(greeting())
             accepted = full = False; pos = None; revision = None
             for _ in range(20):
                 msg = read(c)
@@ -127,7 +127,7 @@ def main():
                 with connect() as c: initialized(c, label+'_after')
                 time.sleep(.05)
             with connect() as c:
-                c.sendall(greeting); time.sleep(.5)  # Deliberately exceed the old 100-ms timeout.
+                c.sendall(greeting()); time.sleep(.5)  # Deliberately exceed the old 100-ms timeout.
                 hello_seen = snapshot_seen = False
                 for _ in range(10):
                     msg = read(c)
@@ -137,13 +137,13 @@ def main():
                 check('slow_reader_resumes_same_connection', hello_seen and snapshot_seen)
             time.sleep(.05)
             with connect() as c:
-                c.sendall(greeting*400)  # No reads until output saturation closes the offender.
+                c.sendall(greeting()*400)  # Repeated Hello is now a session violation; queue saturation is tested at transport level.
                 time.sleep(2)
                 discarded = eof(c)
-                observations.append(dict(label='output_saturation', received_bytes=discarded))
-                check('output_saturation_closes_peer_without_process_loss', proc.poll() is None)
+                observations.append(dict(label='repeated_hello', received_bytes=discarded))
+                check('repeated_hello_closes_peer_without_process_loss', proc.poll() is None)
             with connect() as c:
-                initialized(c, 'after_output_saturation')
+                initialized(c, 'after_repeated_hello')
                 def move(b):
                     Move.MoveRequestStart(b); Move.MoveRequestAddCommandId(b, 99)
                     Move.MoveRequestAddDirection(b, 1); return Move.MoveRequestEnd(b)

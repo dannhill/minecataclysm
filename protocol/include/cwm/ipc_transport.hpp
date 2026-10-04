@@ -15,6 +15,9 @@
 #include <fcntl.h>
 #include <poll.h>
 #include "cwm_framing.hpp"
+#include "cwm_transport.hpp"
+#include <arpa/inet.h>
+#include <sys/stat.h>
 
 namespace cdda::cwm {
 
@@ -28,15 +31,6 @@ struct IpcLimits {
     size_t frames_per_pump{8};
     size_t dispatch_bytes_per_pump{1024 * 1024};
     size_t syscalls_per_direction{64};
-};
-
-enum class IpcCloseReason {
-    None, LocalClose, PeerEof, TruncatedFrame, InvalidFrame, OutputLimit, IoError
-};
-
-struct IpcWork {
-    size_t read_bytes{0}, written_bytes{0}, delivered_frames{0}, delivered_bytes{0};
-    size_t read_calls{0}, write_calls{0};
 };
 
 inline bool configure_ipc_fd(int fd) {
@@ -55,7 +49,7 @@ inline bool ipc_would_block(int error) {
 #endif
 }
 
-class IpcConnection {
+class IpcConnection : public CwmTransport {
 public:
     explicit IpcConnection(int fd, IpcLimits limits = {}) try
         : fd_(fd), limits_(limits), decoder_(limits.max_frame_bytes, limits.max_input_bytes) {
@@ -105,6 +99,7 @@ public:
     size_t queued_output_frames() const { return output_.size(); }
     const IpcWork& last_work() const { return work_; }
 
+    void close(IpcCloseReason reason = IpcCloseReason::LocalClose) override { close_fd(reason); }
     void close_fd(IpcCloseReason reason = IpcCloseReason::LocalClose) {
         if (fd_ >= 0 || reason != IpcCloseReason::LocalClose) reason_ = reason;
         if (fd_ >= 0) { ::close(fd_); fd_ = -1; }
@@ -246,7 +241,7 @@ private:
     IpcWork work_;
 };
 
-class IpcServer {
+class IpcServer : public CwmListener {
 public:
     explicit IpcServer(const std::string& socket_path, IpcLimits limits = {})
         : socket_path_(socket_path), limits_(limits) {}
@@ -258,18 +253,19 @@ public:
         server_fd_ = ::socket(AF_UNIX, SOCK_STREAM, 0);
         if (server_fd_ < 0) return false;
         if (!configure_ipc_fd(server_fd_)) { stop(); return false; }
-        ::unlink(socket_path_.c_str());
         addr.sun_family = AF_UNIX;
         std::memcpy(addr.sun_path, socket_path_.c_str(), socket_path_.size() + 1);
-        if (::bind(server_fd_, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) < 0 ||
-            ::listen(server_fd_, 4) < 0) { stop(); return false; }
+        if (::bind(server_fd_, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) < 0) { stop(); return false; }
+        bound_ = true;
+        if (::chmod(socket_path_.c_str(), 0600) < 0 || ::listen(server_fd_, 4) < 0) { stop(); return false; }
         return true;
     }
     void stop() {
         active_client_.reset();
         if (server_fd_ >= 0) {
             ::close(server_fd_); server_fd_ = -1;
-            ::unlink(socket_path_.c_str());
+            if (bound_) ::unlink(socket_path_.c_str());
+            bound_ = false;
         }
     }
     // Single-client ownership: an additional live peer cannot replace it.
@@ -292,6 +288,7 @@ private:
     std::string socket_path_;
     IpcLimits limits_;
     int server_fd_{-1};
+    bool bound_{false};
     std::unique_ptr<IpcConnection> active_client_;
 };
 

@@ -21,6 +21,8 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
     sys.path.insert(0, str(ws/'protocol/python'))
     import flatbuffers
+    from session_wire import NativeWire
+    wire = NativeWire()
     from CDDA.CWM import CwmMessage as Msg, Payload, HelloRequest as Hello, MoveRequest as Move
     from CDDA.CWM import DecisionPrompt as Prompt, DecisionResponse as Response, WorldSnapshot as World
     checks, events, commands = {}, [], []
@@ -32,11 +34,10 @@ def main():
 
     def message(kind, build):
         b = flatbuffers.Builder(256); value = build(b)
-        Msg.CwmMessageStart(b); Msg.CwmMessageAddPayloadType(b, kind); Msg.CwmMessageAddPayload(b, value)
-        b.Finish(Msg.CwmMessageEnd(b)); return bytes(b.Output())
+        return wire.finish(b,kind,value)
 
     def hello(b):
-        Hello.HelloRequestStart(b); Hello.HelloRequestAddProtocolVersionMajor(b,1)
+        Hello.HelloRequestStart(b); wire.hello_fields(b)
         return Hello.HelloRequestEnd(b)
 
     def move(b, direction):
@@ -59,7 +60,7 @@ def main():
             return data
         size = struct.unpack('>I',exact(4))[0]
         if size > 16*1024*1024: raise ValueError('oversized server frame')
-        return Msg.CwmMessage.GetRootAsCwmMessage(exact(size),0)
+        return wire.observe(c,Msg.CwmMessage.GetRootAsCwmMessage(exact(size),0))
 
     base = out/'fixture'
     command = [str(reader),'--userdir',str(base),'--datadir',str(ws/'cdda/data'),

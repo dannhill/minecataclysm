@@ -6,9 +6,9 @@
       "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
       "shallow": true,
       "patch": "baseline/patches/cdda.patch",
-      "patch_sha256": "0651822277936d1c50c67b7e6e403e9e75bf4c182d6208739f95d0f70df09be9",
+      "patch_sha256": "7757a5643c53312a94aebb37d0d5b9e11b75c33cd38f5ee47df12e3c5b76ce5e",
       "tree_inventory": "baseline/trees/cdda.json",
-      "tree_sha256": "f94b2a3af32a40439a45d194496d37e41cd52f22063befd4f388753a7dd573de",
+      "tree_sha256": "2209f29d9cd64674270e7f8fae45cf53568782a11e9258c531c8f0041b22b841",
       "file_count": 8579,
       "original_status": " M src/CMakeLists.txt\n M src/avatar_action.cpp\n M src/do_turn.cpp\n M src/do_turn.h\n M src/game.cpp\n M src/game.h\n M src/handle_action.cpp\n M src/iexamine.cpp\n M src/output.cpp\n M tests/CMakeLists.txt\n M tests/test_main.cpp\n?? src/cwm/cwm_main.cpp\n?? src/cwm/cwm_map_exporter.cpp\n?? src/cwm/cwm_map_exporter.h\n?? src/cwm/cwm_server.cpp\n?? src/cwm/cwm_server.h\n?? src/safe_mode_actions.h\n?? tests/cwm_projection_test.cpp\n?? tests/cwm_runtime_test.cpp\n"
     },
@@ -17,9 +17,9 @@
       "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
       "shallow": true,
       "patch": "baseline/patches/luanti.patch",
-      "patch_sha256": "c2341b029abcc6793458cfe4e7a6240a1c0c00d050f2a46d9999f49f130efc83",
+      "patch_sha256": "60193b6a2e6e5c541add81ad46fd1bcebec71ef21282ca162b56c1deedc20f4d",
       "tree_inventory": "baseline/trees/luanti.json",
-      "tree_sha256": "269b1f136023a02ec34bd83133f1e6e73c057cda2d292bb949f8b3a8e95ee118",
+      "tree_sha256": "9a86f7851a43315dfab48af760cf534569616386ffaa8d246439219c92821446",
       "file_count": 2251,
       "original_status": " M src/CMakeLists.txt\n M src/client/CMakeLists.txt\n M src/client/client.cpp\n M src/client/clientenvironment.cpp\n M src/client/game.cpp\n M src/client/mesh_generator_thread.cpp\n M src/client/mesh_generator_thread.h\n M src/network/clientpackethandler.cpp\n M src/unittest/test_mapblock.cpp\n?? src/cdda/cdda_bridge.cpp\n?? src/cdda/cdda_bridge.h\n"
     },

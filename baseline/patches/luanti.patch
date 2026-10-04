@@ -85,7 +85,7 @@ index b6ae675..9e33201 100644
  		/*
  			Local player handling
 diff --git a/src/client/game.cpp b/src/client/game.cpp
-index 27b5833..c3ed3a4 100644
+index 27b5833..f12065a 100644
 --- a/src/client/game.cpp
 +++ b/src/client/game.cpp
 @@ -8,6 +8,7 @@
@@ -218,7 +218,7 @@ index 27b5833..c3ed3a4 100644
 +		if (!bridge.ownsPlayer(client) &&
 +				client->getState() == LC_Ready &&
 +				client->getNodeDefManager()->getId("cdda_nodes:stone") != CONTENT_IGNORE) {
-+			std::string socket_path = "/tmp/cwm_bench_ipc.sock";
++			std::string socket_path;
 +			g_settings->getNoEx("cwm_socket_path", socket_path);
 +			bridge.initialize(client, socket_path);
 +		}
@@ -469,16 +469,16 @@ index 7f3f860..c4c4482 100644
  void TestMapBlock::testSaveLoad(IGameDef *gamedef, const u8 version)
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..40b61eb
+index 0000000..078df2c
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,1042 @@
+@@ -0,0 +1,1064 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
 +#include "cdda_bridge.h"
 +#include "cwm/ipc_transport.hpp"
-+#include "cwm/cwm_protocol.hpp"
++#include "cwm/cwm_session.hpp"
 +#include "cwm/tile_semantics.hpp"
 +#include "settings.h"
 +#include <fstream>
@@ -527,9 +527,11 @@ index 0000000..40b61eb
 +public:
 +    Client* client_{nullptr};
 +    std::string socket_path_;
-+    std::unique_ptr<cdda::cwm::IpcConnection> connection_;
++    std::unique_ptr<cdda::cwm::CwmTransport> connection_;
++    cdda::cwm::ClientSession session_;
++    float sync_timer_{0.f};
 +    Metrics metrics_;
-+    uint64_t command_counter_{1};
++    uint64_t ack_revision_{0};
 +    uint64_t pending_move_{0};
 +    bool move_acked_{false};
 +    std::chrono::steady_clock::time_point next_move_{};
@@ -671,7 +673,7 @@ index 0000000..40b61eb
 +        if (ent.scene_node) {
 +            auto* node = static_cast<irr::scene::ISceneNode*>(ent.scene_node);
 +            const v3s16 offset = client_->getEnv().getCameraOffset();
-+            node->setVisible(metrics_.connected && ent.perceived);
++            node->setVisible(session_.ready() && ent.perceived);
 +            node->setPosition((ent.current_pos + v3f(0, .5f, 0) - v3f(offset.X, offset.Y, offset.Z)) * 10.0f +
 +                              v3f(0, ent.model_y_offset, 0));
 +            node->setRotation(v3f(0, -ent.rotation, 0));
@@ -841,31 +843,39 @@ index 0000000..40b61eb
 +                       block->orientation(), modified);
 +    }
 +
-+    bool connect() {
-+        // Never wait for connect completion on the visual thread.
-+        connection_ = cdda::cwm::IpcClient::connect_unix(socket_path_, 0);
-+        if (connection_ && connection_->is_valid()) {
-+            metrics_.connected = true;
-+            pending_move_ = 0;
-+            player_ready_ = false;
++    void clear_world() {
++        std::lock_guard<std::recursive_mutex> lock(CddaBridge::projectionMutex());
++        for (auto& [id, ent] : entities_) if (ent.scene_node)
++            static_cast<irr::scene::ISceneNode*>(ent.scene_node)->remove();
++        entities_.clear();
++        for (auto& [id, vehicle] : vehicles_) for (auto& part : vehicle.components)
++            if (part.scene_node) static_cast<irr::scene::ISceneNode*>(part.scene_node)->remove();
++        vehicles_.clear();
++        std::set<v3s16> old_blocks;
++        for (const auto& [pos, nodes] : projected_blocks_) old_blocks.insert(pos);
++        projected_blocks_.clear(); terrain_tiles_.clear(); terrain_bounds_.clear();
++        commit_projection(old_blocks);
++        origin_valid_ = false;
++        pending_move_ = 0; metrics_.pending_decision = 0;
++        player_feet_offset_ = player_eye_offset_ = 0.f;
++    }
 +
-+            // Send Hello
-+            cdda::cwm::MessageBuilder builder(command_counter_++, 0);
-+            auto hello = builder.build_hello_request("luanti_cdda_client_5.10.0");
-+            if (connection_->send_message(hello.data(), hello.size())) return true;
-+        }
-+        metrics_.connected = false;
++    bool connect() {
++        connection_ = cdda::cwm::IpcClient::connect_unix(socket_path_, 0);
++        metrics_.connected = false; player_ready_ = false; pending_move_ = 0;
++        sync_timer_ = 0.f;
++        if (connection_ && connection_->is_valid() && session_.begin(*connection_)) return true;
 +        return false;
 +    }
 +
 +    void disconnected() {
-+            metrics_.connected = false;
-+            player_ready_ = false;
-+            pending_move_ = 0;
-+            connection_.reset();
-+            metrics_.pending_decision = 0;
-+            for (auto& [id, ent] : entities_) if (ent.scene_node)
-+                static_cast<irr::scene::ISceneNode*>(ent.scene_node)->setVisible(false);
++        session_.disconnected();
++        metrics_.connected = false; player_ready_ = false; pending_move_ = 0;
++        connection_.reset(); metrics_.pending_decision = 0;
++        for (auto& [id, ent] : entities_) if (ent.scene_node)
++            static_cast<irr::scene::ISceneNode*>(ent.scene_node)->setVisible(false);
++        for (auto& [id, vehicle] : vehicles_) for (auto& part : vehicle.components)
++            if (part.scene_node) static_cast<irr::scene::ISceneNode*>(part.scene_node)->setVisible(false);
 +    }
 +
 +    void update(float dtime) {
@@ -885,7 +895,7 @@ index 0000000..40b61eb
 +        ipc_work_ = connection_->last_work();
 +        for (const auto& frame : incoming) {
 +            if (!cdda::cwm::MessageVerifier::verify(frame.data(), frame.size())) {
-+                connection_->close_fd(cdda::cwm::IpcCloseReason::InvalidFrame);
++                connection_->close(cdda::cwm::IpcCloseReason::InvalidFrame);
 +                break;
 +            }
 +            process_message(frame.data(), frame.size());
@@ -894,6 +904,13 @@ index 0000000..40b61eb
 +        if (!ok || !connection_->is_valid()) {
 +            disconnected();
 +            return;
++        }
++
++        player_ready_ = session_.ready() && entities_.count(1);
++        if (player_ready_) sync_timer_ = 0.f;
++        else {
++            sync_timer_ += dtime;
++            if (sync_timer_ > 5.f) { connection_->close(); disconnected(); return; }
 +        }
 +
 +        // Interpolate visual entities
@@ -970,6 +987,7 @@ index 0000000..40b61eb
 +                            (veh.current_pos.Z + rz) * 10.0f
 +                        );
 +                        
++                        node->setVisible(session_.ready());
 +                        node->setPosition(world_pos);
 +                        node->setRotation(v3f(0.0f, -veh.rotation, 0.0f));
 +                    }
@@ -982,7 +1000,20 @@ index 0000000..40b61eb
 +        const auto* msg = cdda::cwm::MessageVerifier::parse(data, size);
 +        if (!msg) return;
 +
-+        metrics_.current_revision = msg->world_revision();
++        const auto previous_state = session_.state;
++        if (!session_.accept(*msg, *connection_)) {
++            player_ready_ = false;
++            if (previous_state != session_.state) sync_timer_ = 0.f;
++            return;
++        }
++        if (previous_state != session_.state) sync_timer_ = 0.f;
++        metrics_.connected = true;
++        if (session_.clear_world) { clear_world(); session_.clear_world = false; }
++        if (msg->payload_type() == CDDA::CWM::Payload::WorldReset) {
++            player_ready_ = false;
++            metrics_.pending_decision = 0;
++            pending_move_ = 0;
++        }
 +
 +        switch (msg->payload_type()) {
 +            case CDDA::CWM::Payload::HelloResponse: {
@@ -1079,44 +1110,28 @@ index 0000000..40b61eb
 +                    update_terrain_bounds();
 +                }
 +
-+                // Sync vehicles
-+                if (snap->vehicles()) {
-+                    metrics_.vehicles_count = snap->vehicles()->size();
-+                    for (size_t i = 0; i < snap->vehicles()->size(); ++i) {
-+                        const auto* veh_state = snap->vehicles()->Get(i);
-+                        if (!veh_state || !veh_state->pivot()) continue;
-+                        uint64_t vid = veh_state->id();
-+                        v3f target = project_position(veh_state->pivot()->x(),
-+                            veh_state->pivot()->y(), veh_state->pivot()->z());
-+
-+                        auto it = vehicles_.find(vid);
-+                        if (it == vehicles_.end()) {
-+                            VisualVehicle vv;
-+                            vv.id = vid;
-+                            vv.name = veh_state->name() ? veh_state->name()->str() : "";
-+                            vv.current_pos = target;
-+                            vv.target_pos = target;
-+                            vv.rotation = veh_state->rotation();
-+                            if (veh_state->components()) {
-+                                for (size_t ci = 0; ci < veh_state->components()->size(); ++ci) {
-+                                    const auto* comp = veh_state->components()->Get(ci);
-+                                    if (!comp || !comp->offset()) continue;
-+                                    VisualVehicleComponent vc;
-+                                    vc.name = comp->part_id() ? comp->part_id()->str() : "";
-+                                    vc.mount_offset = v3f(comp->offset()->x(), 0.0f, -comp->offset()->y());
-+                                    vc.is_broken = comp->broken();
-+                                    vc.is_open = comp->open();
-+                                    vc.scene_node = nullptr; // Initialize lazily
-+                                    vv.components.push_back(vc);
-+                                }
-+                            }
-+                            vehicles_[vid] = vv;
-+                        } else {
-+                            it->second.target_pos = target;
-+                            it->second.rotation = veh_state->rotation();
-+                            // Assuming components don't change frequently for this prototype, or update them here
-+                        }
-+                    }
++                // Each atomic state carries the full vehicle roster.
++                std::set<uint64_t> vehicle_ids;
++                metrics_.vehicles_count = snap->vehicles()->size();
++                for (const auto* state : *snap->vehicles()) {
++                    const auto id = state->id(); vehicle_ids.insert(id);
++                    auto& vehicle = vehicles_[id];
++                    const auto target = project_position(state->pivot()->x(), state->pivot()->y(), state->pivot()->z());
++                    if (!vehicle.id) vehicle.current_pos = target;
++                    vehicle.id = id; vehicle.target_pos = target; vehicle.rotation = state->rotation();
++                    vehicle.name = state->name() ? state->name()->str() : "";
++                    for (auto& part : vehicle.components) if (part.scene_node)
++                        static_cast<irr::scene::ISceneNode*>(part.scene_node)->remove();
++                    vehicle.components.clear();
++                    if (state->components()) for (const auto* part : *state->components())
++                        vehicle.components.push_back({part->part_id() ? part->part_id()->str() : "",
++                            v3f(part->offset()->x(), 0.f, -part->offset()->y()), part->broken(), part->open(), nullptr});
++                }
++                for (auto it = vehicles_.begin(); it != vehicles_.end();) {
++                    if (vehicle_ids.count(it->first)) { ++it; continue; }
++                    for (auto& part : it->second.components) if (part.scene_node)
++                        static_cast<irr::scene::ISceneNode*>(part.scene_node)->remove();
++                    it = vehicles_.erase(it);
 +                }
 +
 +                // Sync entities
@@ -1178,12 +1193,15 @@ index 0000000..40b61eb
 +                        } else ++it;
 +                    }
 +                }
-+                player_ready_ = entities_.count(1) != 0;
++                if (!session_.commit(*snap, *connection_)) { connection_->close(); return; }
++                metrics_.current_revision = session_.revision;
++                player_ready_ = session_.ready() && entities_.count(1) != 0;
 +                metrics_.projection_ms = std::chrono::duration<float, std::milli>(
 +                    std::chrono::steady_clock::now() - projection_started).count();
 +                // ACK can arrive before simulation ends. Unlock only when its
 +                // authoritative result has also arrived; never queue held keys.
-+                if (pending_move_ && move_acked_) {
++                if (pending_move_ && move_acked_ && snap->completed_command_id() == pending_move_ &&
++                    snap->world_revision() >= ack_revision_) {
 +                    metrics_.ipc_latency_ms = std::chrono::duration<float, std::milli>(
 +                        std::chrono::steady_clock::now() - sent_move_).count();
 +                    pending_move_ = 0;
@@ -1204,7 +1222,7 @@ index 0000000..40b61eb
 +            case CDDA::CWM::Payload::CommandAck: {
 +                const auto* ack = msg->payload_as_CommandAck();
 +                if (ack) {
-+                    if (ack->command_id() == pending_move_) move_acked_ = true;
++                    if (ack->command_id() == pending_move_) { move_acked_ = true; ack_revision_ = ack->result_revision(); }
 +                }
 +                break;
 +            }
@@ -1230,10 +1248,10 @@ index 0000000..40b61eb
 +
 +    bool send_move_request(int dir) {
 +        const auto now = std::chrono::steady_clock::now();
-+        if (!connection_ || !connection_->is_valid() || !player_ready_ ||
++        if (!connection_ || !connection_->is_valid() || !session_.ready() || !player_ready_ ||
 +            pending_move_ || now < next_move_) return false;
-+        const uint64_t command = command_counter_++;
-+        cdda::cwm::MessageBuilder builder(command, metrics_.current_revision);
++        const uint64_t command = session_.next_command++;
++        auto builder = session_.builder();
 +        auto req = builder.build_move_request(command, static_cast<CDDA::CWM::MoveDirection>(dir));
 +        if (!connection_->send_message(req.data(), req.size())) return false;
 +        pending_move_ = command;
@@ -1245,10 +1263,10 @@ index 0000000..40b61eb
 +
 +    bool send_interact_request(int x, int y, int z, int action) {
 +        const auto now = std::chrono::steady_clock::now();
-+        if (!connection_ || !connection_->is_valid() || !player_ready_ || pending_move_ ||
++        if (!connection_ || !connection_->is_valid() || !session_.ready() || !player_ready_ || pending_move_ ||
 +            metrics_.pending_decision || now < next_move_) return false;
-+        const uint64_t command = command_counter_++;
-+        cdda::cwm::MessageBuilder builder(command, metrics_.current_revision);
++        const uint64_t command = session_.next_command++;
++        auto builder = session_.builder();
 +        auto req = builder.build_interact_request(
 +            command,
 +            x - projection_origin_.X + scene_origin_.X,
@@ -1268,10 +1286,10 @@ index 0000000..40b61eb
 +    }
 +
 +    bool acknowledge_threat() {
-+        if (!connection_ || !connection_->is_valid() || !player_ready_ || pending_move_)
++        if (!connection_ || !connection_->is_valid() || !session_.ready() || !player_ready_ || pending_move_)
 +            return false;
-+        const uint64_t command = command_counter_++;
-+        cdda::cwm::MessageBuilder builder(command, metrics_.current_revision);
++        const uint64_t command = session_.next_command++;
++        auto builder = session_.builder();
 +        const auto request = builder.finish_message(CDDA::CWM::Payload::AcknowledgeThreatRequest,
 +            CDDA::CWM::CreateAcknowledgeThreatRequest(builder.builder(), command).Union());
 +        if (!connection_->send_message(request.data(), request.size())) return false;
@@ -1282,9 +1300,9 @@ index 0000000..40b61eb
 +    }
 +
 +    bool answer_decision(uint16_t choice) {
-+        if (!connection_ || !connection_->is_valid() || !metrics_.pending_decision ||
++        if (!connection_ || !connection_->is_valid() || !session_.ready() || !metrics_.pending_decision ||
 +            choice >= metrics_.decision_choices) return false;
-+        cdda::cwm::MessageBuilder builder(command_counter_++, metrics_.current_revision);
++        auto builder = session_.builder();
 +        const auto request = builder.finish_message(CDDA::CWM::Payload::DecisionResponse,
 +            CDDA::CWM::CreateDecisionResponse(builder.builder(), metrics_.pending_decision, choice).Union());
 +        if (!connection_->send_message(request.data(), request.size())) return false;
@@ -1318,7 +1336,7 @@ index 0000000..40b61eb
 +    std::string trace_path;
 +    if (g_settings->getNoEx("cwm_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->trace_.open(trace_path);
-+        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog,ipc_connected,ipc_input,ipc_output,ipc_read_bytes,ipc_write_bytes,ipc_frames,ipc_dispatch_bytes,ipc_read_calls,ipc_write_calls\n";
++        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog,ipc_connected,ipc_input,ipc_output,ipc_read_bytes,ipc_write_bytes,ipc_frames,ipc_dispatch_bytes,ipc_read_calls,ipc_write_calls,session_state,input_ready,session_id,player_id,connection_id,sequence,resync_count\n";
 +    }
 +    return pimpl_->connect();
 +}
@@ -1391,7 +1409,11 @@ index 0000000..40b61eb
 +        << (pimpl_->connection_ ? pimpl_->connection_->queued_output_bytes() : 0) << ','
 +        << pimpl_->ipc_work_.read_bytes << ',' << pimpl_->ipc_work_.written_bytes << ','
 +        << pimpl_->ipc_work_.delivered_frames << ',' << pimpl_->ipc_work_.delivered_bytes << ','
-+        << pimpl_->ipc_work_.read_calls << ',' << pimpl_->ipc_work_.write_calls << '\n';
++        << pimpl_->ipc_work_.read_calls << ',' << pimpl_->ipc_work_.write_calls << ','
++        << static_cast<int>(pimpl_->session_.state) << ',' << pimpl_->player_ready_ << ','
++        << pimpl_->session_.identity.session << ',' << pimpl_->session_.identity.player << ','
++        << pimpl_->session_.identity.connection << ',' << pimpl_->session_.sequence << ','
++        << pimpl_->session_.resync_count << '\n';
 +    pimpl_->trace_.flush();
 +}
 +

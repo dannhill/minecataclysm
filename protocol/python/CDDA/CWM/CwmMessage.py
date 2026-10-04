@@ -62,8 +62,29 @@ class CwmMessage(object):
             return obj
         return None
 
+    # CwmMessage
+    def SessionId(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(14))
+        if o != 0:
+            return self._tab.Get(flatbuffers.number_types.Uint64Flags, o + self._tab.Pos)
+        return 0
+
+    # CwmMessage
+    def PlayerId(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(16))
+        if o != 0:
+            return self._tab.Get(flatbuffers.number_types.Uint64Flags, o + self._tab.Pos)
+        return 0
+
+    # CwmMessage
+    def ConnectionId(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(18))
+        if o != 0:
+            return self._tab.Get(flatbuffers.number_types.Uint64Flags, o + self._tab.Pos)
+        return 0
+
 def CwmMessageStart(builder):
-    builder.StartObject(5)
+    builder.StartObject(8)
 
 def Start(builder):
     CwmMessageStart(builder)
@@ -97,6 +118,24 @@ def CwmMessageAddPayload(builder, payload):
 
 def AddPayload(builder, payload):
     CwmMessageAddPayload(builder, payload)
+
+def CwmMessageAddSessionId(builder, sessionId):
+    builder.PrependUint64Slot(5, sessionId, 0)
+
+def AddSessionId(builder, sessionId):
+    CwmMessageAddSessionId(builder, sessionId)
+
+def CwmMessageAddPlayerId(builder, playerId):
+    builder.PrependUint64Slot(6, playerId, 0)
+
+def AddPlayerId(builder, playerId):
+    CwmMessageAddPlayerId(builder, playerId)
+
+def CwmMessageAddConnectionId(builder, connectionId):
+    builder.PrependUint64Slot(7, connectionId, 0)
+
+def AddConnectionId(builder, connectionId):
+    CwmMessageAddConnectionId(builder, connectionId)
 
 def CwmMessageEnd(builder):
     return builder.EndObject()

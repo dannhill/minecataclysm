@@ -181,8 +181,93 @@ class WorldSnapshot(object):
             return bool(self._tab.Get(flatbuffers.number_types.BoolFlags, o + self._tab.Pos))
         return False
 
+    # WorldSnapshot
+    def Full(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(22))
+        if o != 0:
+            return bool(self._tab.Get(flatbuffers.number_types.BoolFlags, o + self._tab.Pos))
+        return False
+
+    # WorldSnapshot
+    def BaseRevision(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(24))
+        if o != 0:
+            return self._tab.Get(flatbuffers.number_types.Uint64Flags, o + self._tab.Pos)
+        return 0
+
+    # WorldSnapshot
+    def StateId(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(26))
+        if o != 0:
+            return self._tab.Get(flatbuffers.number_types.Uint64Flags, o + self._tab.Pos)
+        return 0
+
+    # WorldSnapshot
+    def ResyncId(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(28))
+        if o != 0:
+            return self._tab.Get(flatbuffers.number_types.Uint64Flags, o + self._tab.Pos)
+        return 0
+
+    # WorldSnapshot
+    def CompletedCommandId(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(30))
+        if o != 0:
+            return self._tab.Get(flatbuffers.number_types.Uint64Flags, o + self._tab.Pos)
+        return 0
+
+    # WorldSnapshot
+    def Spawned(self, j):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(32))
+        if o != 0:
+            x = self._tab.Vector(o)
+            x += flatbuffers.number_types.UOffsetTFlags.py_type(j) * 4
+            x = self._tab.Indirect(x)
+            from CDDA.CWM.EntitySpawned import EntitySpawned
+            obj = EntitySpawned()
+            obj.Init(self._tab.Bytes, x)
+            return obj
+        return None
+
+    # WorldSnapshot
+    def SpawnedLength(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(32))
+        if o != 0:
+            return self._tab.VectorLen(o)
+        return 0
+
+    # WorldSnapshot
+    def SpawnedIsNone(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(32))
+        return o == 0
+
+    # WorldSnapshot
+    def Removed(self, j):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(34))
+        if o != 0:
+            x = self._tab.Vector(o)
+            x += flatbuffers.number_types.UOffsetTFlags.py_type(j) * 4
+            x = self._tab.Indirect(x)
+            from CDDA.CWM.EntityRemoved import EntityRemoved
+            obj = EntityRemoved()
+            obj.Init(self._tab.Bytes, x)
+            return obj
+        return None
+
+    # WorldSnapshot
+    def RemovedLength(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(34))
+        if o != 0:
+            return self._tab.VectorLen(o)
+        return 0
+
+    # WorldSnapshot
+    def RemovedIsNone(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(34))
+        return o == 0
+
 def WorldSnapshotStart(builder):
-    builder.StartObject(9)
+    builder.StartObject(16)
 
 def Start(builder):
     WorldSnapshotStart(builder)
@@ -270,6 +355,60 @@ def WorldSnapshotAddSafetyStop(builder, safetyStop):
 
 def AddSafetyStop(builder, safetyStop):
     WorldSnapshotAddSafetyStop(builder, safetyStop)
+
+def WorldSnapshotAddFull(builder, full):
+    builder.PrependBoolSlot(9, full, 0)
+
+def AddFull(builder, full):
+    WorldSnapshotAddFull(builder, full)
+
+def WorldSnapshotAddBaseRevision(builder, baseRevision):
+    builder.PrependUint64Slot(10, baseRevision, 0)
+
+def AddBaseRevision(builder, baseRevision):
+    WorldSnapshotAddBaseRevision(builder, baseRevision)
+
+def WorldSnapshotAddStateId(builder, stateId):
+    builder.PrependUint64Slot(11, stateId, 0)
+
+def AddStateId(builder, stateId):
+    WorldSnapshotAddStateId(builder, stateId)
+
+def WorldSnapshotAddResyncId(builder, resyncId):
+    builder.PrependUint64Slot(12, resyncId, 0)
+
+def AddResyncId(builder, resyncId):
+    WorldSnapshotAddResyncId(builder, resyncId)
+
+def WorldSnapshotAddCompletedCommandId(builder, completedCommandId):
+    builder.PrependUint64Slot(13, completedCommandId, 0)
+
+def AddCompletedCommandId(builder, completedCommandId):
+    WorldSnapshotAddCompletedCommandId(builder, completedCommandId)
+
+def WorldSnapshotAddSpawned(builder, spawned):
+    builder.PrependUOffsetTRelativeSlot(14, flatbuffers.number_types.UOffsetTFlags.py_type(spawned), 0)
+
+def AddSpawned(builder, spawned):
+    WorldSnapshotAddSpawned(builder, spawned)
+
+def WorldSnapshotStartSpawnedVector(builder, numElems):
+    return builder.StartVector(4, numElems, 4)
+
+def StartSpawnedVector(builder, numElems):
+    return WorldSnapshotStartSpawnedVector(builder, numElems)
+
+def WorldSnapshotAddRemoved(builder, removed):
+    builder.PrependUOffsetTRelativeSlot(15, flatbuffers.number_types.UOffsetTFlags.py_type(removed), 0)
+
+def AddRemoved(builder, removed):
+    WorldSnapshotAddRemoved(builder, removed)
+
+def WorldSnapshotStartRemovedVector(builder, numElems):
+    return builder.StartVector(4, numElems, 4)
+
+def StartRemovedVector(builder, numElems):
+    return WorldSnapshotStartRemovedVector(builder, numElems)
 
 def WorldSnapshotEnd(builder):
     return builder.EndObject()

@@ -28,6 +28,8 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
     sys.path.insert(0, str(ws/'protocol/python'))
     import flatbuffers
+    from session_wire import NativeWire
+    wire = NativeWire()
     from CDDA.CWM import (CwmMessage, Payload, HelloRequest, MoveRequest, InteractRequest,
                          Coord3i, AcknowledgeThreatRequest, CommandAck, WorldSnapshot, EntityType)
     checks, commands = [], []
@@ -70,17 +72,12 @@ def main():
     def message(kind, build):
         builder = flatbuffers.Builder(256)
         payload = build(builder)
-        CwmMessage.CwmMessageStart(builder)
-        CwmMessage.CwmMessageAddPayloadType(builder, kind)
-        CwmMessage.CwmMessageAddPayload(builder, payload)
-        builder.Finish(CwmMessage.CwmMessageEnd(builder))
-        return bytes(builder.Output())
+        return wire.finish(builder,kind,payload)
 
     def hello():
         def build(b):
             HelloRequest.HelloRequestStart(b)
-            HelloRequest.HelloRequestAddProtocolVersionMajor(b, 1)
-            HelloRequest.HelloRequestAddProtocolVersionMinor(b, 1)
+            wire.hello_fields(b)
             return HelloRequest.HelloRequestEnd(b)
         return message(Payload.Payload.HelloRequest, build)
 
@@ -118,7 +115,7 @@ def main():
             return bytes(result)
         size = struct.unpack('>I', exact(4))[0]
         if size > 16*1024*1024: raise ValueError('Oversized server frame')
-        return CwmMessage.CwmMessage.GetRootAsCwmMessage(exact(size), 0)
+        return wire.observe(client,CwmMessage.CwmMessage.GetRootAsCwmMessage(exact(size), 0))
 
     def state(msg):
         snap = WorldSnapshot.WorldSnapshot()

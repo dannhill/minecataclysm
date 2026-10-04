@@ -4,4 +4,5 @@ project(cwm_coordinator CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_executable(cwm-coordinator src/launcher_main.cpp)
+add_executable(cwm-coordinator ../launcher/src/launcher_main.cpp)
+target_compile_definitions(cwm-coordinator PRIVATE CWM_PROJECT_ROOT="${CMAKE_CURRENT_SOURCE_DIR}/..")

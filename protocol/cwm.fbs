@@ -57,6 +57,7 @@ table HelloRequest {
     protocol_version_major: uint16;
     protocol_version_minor: uint16;
     build_id: string;
+    client_id: uint64;
 }
 
 table HelloResponse {
@@ -65,6 +66,7 @@ table HelloResponse {
     server_build_id: string;
     accepted: bool;
     reject_reason: string;
+    next_command_id: uint64;
 }
 
 table Heartbeat {
@@ -113,6 +115,10 @@ table EntityState {
     state_flags: uint32 = 0;
 }
 
+table EntitySpawned {
+    state: EntityState;
+}
+
 table EntityRemoved {
     id: uint64;
 }
@@ -152,6 +158,14 @@ table WorldSnapshot {
     tiles: [TileDelta];
     // Native safety/laser-targeting stop; presentation must offer explicit acknowledgement.
     safety_stop: bool;
+    // A full replaces all projected domains; a batch advances base_revision atomically.
+    full: bool;
+    base_revision: uint64;
+    state_id: uint64;
+    resync_id: uint64;
+    completed_command_id: uint64;
+    spawned: [EntitySpawned];
+    removed: [EntityRemoved];
 }
 
 table MoveRequest {
@@ -174,6 +188,7 @@ table CommandAck {
     command_id: uint64;
     accepted: bool;
     error_message: string;
+    result_revision: uint64;
 }
 
 table TimeEvent {
@@ -198,6 +213,10 @@ table DecisionResponse {
     choice: uint16;
 }
 
+table ResyncRequest { request_id: uint64; }
+table WorldReset { request_id: uint64; }
+table SnapshotAck { state_id: uint64; }
+
 union Payload {
     HelloRequest,
     HelloResponse,
@@ -217,7 +236,11 @@ union Payload {
     TimeEvent,
     AcknowledgeThreatRequest,
     DecisionPrompt,
-    DecisionResponse
+    DecisionResponse,
+    ResyncRequest,
+    WorldReset,
+    SnapshotAck,
+    EntitySpawned
 }
 
 table CwmMessage {
@@ -225,6 +248,9 @@ table CwmMessage {
     world_revision: uint64;
     timestamp_ms: uint64;
     payload: Payload;
+    session_id: uint64;
+    player_id: uint64;
+    connection_id: uint64;
 }
 
 root_type CwmMessage;

@@ -43,6 +43,9 @@ struct TileDeltaBuilder;
 struct EntityState;
 struct EntityStateBuilder;
 
+struct EntitySpawned;
+struct EntitySpawnedBuilder;
+
 struct EntityRemoved;
 struct EntityRemovedBuilder;
 
@@ -81,6 +84,15 @@ struct DecisionPromptBuilder;
 
 struct DecisionResponse;
 struct DecisionResponseBuilder;
+
+struct ResyncRequest;
+struct ResyncRequestBuilder;
+
+struct WorldReset;
+struct WorldResetBuilder;
+
+struct SnapshotAck;
+struct SnapshotAckBuilder;
 
 struct CwmMessage;
 struct CwmMessageBuilder;
@@ -253,11 +265,15 @@ enum class Payload : uint8_t {
   AcknowledgeThreatRequest = 17,
   DecisionPrompt = 18,
   DecisionResponse = 19,
+  ResyncRequest = 20,
+  WorldReset = 21,
+  SnapshotAck = 22,
+  EntitySpawned = 23,
   MIN = NONE,
-  MAX = DecisionResponse
+  MAX = EntitySpawned
 };
 
-inline const Payload (&EnumValuesPayload())[20] {
+inline const Payload (&EnumValuesPayload())[24] {
   static const Payload values[] = {
     Payload::NONE,
     Payload::HelloRequest,
@@ -278,13 +294,17 @@ inline const Payload (&EnumValuesPayload())[20] {
     Payload::TimeEvent,
     Payload::AcknowledgeThreatRequest,
     Payload::DecisionPrompt,
-    Payload::DecisionResponse
+    Payload::DecisionResponse,
+    Payload::ResyncRequest,
+    Payload::WorldReset,
+    Payload::SnapshotAck,
+    Payload::EntitySpawned
   };
   return values;
 }
 
 inline const char * const *EnumNamesPayload() {
-  static const char * const names[21] = {
+  static const char * const names[25] = {
     "NONE",
     "HelloRequest",
     "HelloResponse",
@@ -305,13 +325,17 @@ inline const char * const *EnumNamesPayload() {
     "AcknowledgeThreatRequest",
     "DecisionPrompt",
     "DecisionResponse",
+    "ResyncRequest",
+    "WorldReset",
+    "SnapshotAck",
+    "EntitySpawned",
     nullptr
   };
   return names;
 }
 
 inline const char *EnumNamePayload(Payload e) {
-  if (::flatbuffers::IsOutRange(e, Payload::NONE, Payload::DecisionResponse)) return "";
+  if (::flatbuffers::IsOutRange(e, Payload::NONE, Payload::EntitySpawned)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesPayload()[index];
 }
@@ -394,6 +418,22 @@ template<> struct PayloadTraits<CDDA::CWM::DecisionPrompt> {
 
 template<> struct PayloadTraits<CDDA::CWM::DecisionResponse> {
   static const Payload enum_value = Payload::DecisionResponse;
+};
+
+template<> struct PayloadTraits<CDDA::CWM::ResyncRequest> {
+  static const Payload enum_value = Payload::ResyncRequest;
+};
+
+template<> struct PayloadTraits<CDDA::CWM::WorldReset> {
+  static const Payload enum_value = Payload::WorldReset;
+};
+
+template<> struct PayloadTraits<CDDA::CWM::SnapshotAck> {
+  static const Payload enum_value = Payload::SnapshotAck;
+};
+
+template<> struct PayloadTraits<CDDA::CWM::EntitySpawned> {
+  static const Payload enum_value = Payload::EntitySpawned;
 };
 
 bool VerifyPayload(::flatbuffers::Verifier &verifier, const void *obj, Payload type);
@@ -527,7 +567,8 @@ struct HelloRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_PROTOCOL_VERSION_MAJOR = 4,
     VT_PROTOCOL_VERSION_MINOR = 6,
-    VT_BUILD_ID = 8
+    VT_BUILD_ID = 8,
+    VT_CLIENT_ID = 10
   };
   uint16_t protocol_version_major() const {
     return GetField<uint16_t>(VT_PROTOCOL_VERSION_MAJOR, 0);
@@ -547,12 +588,19 @@ struct HelloRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   ::flatbuffers::String *mutable_build_id() {
     return GetPointer<::flatbuffers::String *>(VT_BUILD_ID);
   }
+  uint64_t client_id() const {
+    return GetField<uint64_t>(VT_CLIENT_ID, 0);
+  }
+  bool mutate_client_id(uint64_t _client_id = 0) {
+    return SetField<uint64_t>(VT_CLIENT_ID, _client_id, 0);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint16_t>(verifier, VT_PROTOCOL_VERSION_MAJOR, 2) &&
            VerifyField<uint16_t>(verifier, VT_PROTOCOL_VERSION_MINOR, 2) &&
            VerifyOffset(verifier, VT_BUILD_ID) &&
            verifier.VerifyString(build_id()) &&
+           VerifyField<uint64_t>(verifier, VT_CLIENT_ID, 8) &&
            verifier.EndTable();
   }
 };
@@ -570,6 +618,9 @@ struct HelloRequestBuilder {
   void add_build_id(::flatbuffers::Offset<::flatbuffers::String> build_id) {
     fbb_.AddOffset(HelloRequest::VT_BUILD_ID, build_id);
   }
+  void add_client_id(uint64_t client_id) {
+    fbb_.AddElement<uint64_t>(HelloRequest::VT_CLIENT_ID, client_id, 0);
+  }
   explicit HelloRequestBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -585,8 +636,10 @@ inline ::flatbuffers::Offset<HelloRequest> CreateHelloRequest(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint16_t protocol_version_major = 0,
     uint16_t protocol_version_minor = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> build_id = 0) {
+    ::flatbuffers::Offset<::flatbuffers::String> build_id = 0,
+    uint64_t client_id = 0) {
   HelloRequestBuilder builder_(_fbb);
+  builder_.add_client_id(client_id);
   builder_.add_build_id(build_id);
   builder_.add_protocol_version_minor(protocol_version_minor);
   builder_.add_protocol_version_major(protocol_version_major);
@@ -597,13 +650,15 @@ inline ::flatbuffers::Offset<HelloRequest> CreateHelloRequestDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint16_t protocol_version_major = 0,
     uint16_t protocol_version_minor = 0,
-    const char *build_id = nullptr) {
+    const char *build_id = nullptr,
+    uint64_t client_id = 0) {
   auto build_id__ = build_id ? _fbb.CreateString(build_id) : 0;
   return CDDA::CWM::CreateHelloRequest(
       _fbb,
       protocol_version_major,
       protocol_version_minor,
-      build_id__);
+      build_id__,
+      client_id);
 }
 
 struct HelloResponse FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -613,7 +668,8 @@ struct HelloResponse FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_PROTOCOL_VERSION_MINOR = 6,
     VT_SERVER_BUILD_ID = 8,
     VT_ACCEPTED = 10,
-    VT_REJECT_REASON = 12
+    VT_REJECT_REASON = 12,
+    VT_NEXT_COMMAND_ID = 14
   };
   uint16_t protocol_version_major() const {
     return GetField<uint16_t>(VT_PROTOCOL_VERSION_MAJOR, 0);
@@ -645,6 +701,12 @@ struct HelloResponse FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   ::flatbuffers::String *mutable_reject_reason() {
     return GetPointer<::flatbuffers::String *>(VT_REJECT_REASON);
   }
+  uint64_t next_command_id() const {
+    return GetField<uint64_t>(VT_NEXT_COMMAND_ID, 0);
+  }
+  bool mutate_next_command_id(uint64_t _next_command_id = 0) {
+    return SetField<uint64_t>(VT_NEXT_COMMAND_ID, _next_command_id, 0);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint16_t>(verifier, VT_PROTOCOL_VERSION_MAJOR, 2) &&
@@ -654,6 +716,7 @@ struct HelloResponse FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyField<uint8_t>(verifier, VT_ACCEPTED, 1) &&
            VerifyOffset(verifier, VT_REJECT_REASON) &&
            verifier.VerifyString(reject_reason()) &&
+           VerifyField<uint64_t>(verifier, VT_NEXT_COMMAND_ID, 8) &&
            verifier.EndTable();
   }
 };
@@ -677,6 +740,9 @@ struct HelloResponseBuilder {
   void add_reject_reason(::flatbuffers::Offset<::flatbuffers::String> reject_reason) {
     fbb_.AddOffset(HelloResponse::VT_REJECT_REASON, reject_reason);
   }
+  void add_next_command_id(uint64_t next_command_id) {
+    fbb_.AddElement<uint64_t>(HelloResponse::VT_NEXT_COMMAND_ID, next_command_id, 0);
+  }
   explicit HelloResponseBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -694,8 +760,10 @@ inline ::flatbuffers::Offset<HelloResponse> CreateHelloResponse(
     uint16_t protocol_version_minor = 0,
     ::flatbuffers::Offset<::flatbuffers::String> server_build_id = 0,
     bool accepted = false,
-    ::flatbuffers::Offset<::flatbuffers::String> reject_reason = 0) {
+    ::flatbuffers::Offset<::flatbuffers::String> reject_reason = 0,
+    uint64_t next_command_id = 0) {
   HelloResponseBuilder builder_(_fbb);
+  builder_.add_next_command_id(next_command_id);
   builder_.add_reject_reason(reject_reason);
   builder_.add_server_build_id(server_build_id);
   builder_.add_protocol_version_minor(protocol_version_minor);
@@ -710,7 +778,8 @@ inline ::flatbuffers::Offset<HelloResponse> CreateHelloResponseDirect(
     uint16_t protocol_version_minor = 0,
     const char *server_build_id = nullptr,
     bool accepted = false,
-    const char *reject_reason = nullptr) {
+    const char *reject_reason = nullptr,
+    uint64_t next_command_id = 0) {
   auto server_build_id__ = server_build_id ? _fbb.CreateString(server_build_id) : 0;
   auto reject_reason__ = reject_reason ? _fbb.CreateString(reject_reason) : 0;
   return CDDA::CWM::CreateHelloResponse(
@@ -719,7 +788,8 @@ inline ::flatbuffers::Offset<HelloResponse> CreateHelloResponseDirect(
       protocol_version_minor,
       server_build_id__,
       accepted,
-      reject_reason__);
+      reject_reason__,
+      next_command_id);
 }
 
 struct Heartbeat FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -1215,6 +1285,51 @@ inline ::flatbuffers::Offset<EntityState> CreateEntityStateDirect(
       state_flags);
 }
 
+struct EntitySpawned FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef EntitySpawnedBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_STATE = 4
+  };
+  const CDDA::CWM::EntityState *state() const {
+    return GetPointer<const CDDA::CWM::EntityState *>(VT_STATE);
+  }
+  CDDA::CWM::EntityState *mutable_state() {
+    return GetPointer<CDDA::CWM::EntityState *>(VT_STATE);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_STATE) &&
+           verifier.VerifyTable(state()) &&
+           verifier.EndTable();
+  }
+};
+
+struct EntitySpawnedBuilder {
+  typedef EntitySpawned Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_state(::flatbuffers::Offset<CDDA::CWM::EntityState> state) {
+    fbb_.AddOffset(EntitySpawned::VT_STATE, state);
+  }
+  explicit EntitySpawnedBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<EntitySpawned> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<EntitySpawned>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<EntitySpawned> CreateEntitySpawned(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<CDDA::CWM::EntityState> state = 0) {
+  EntitySpawnedBuilder builder_(_fbb);
+  builder_.add_state(state);
+  return builder_.Finish();
+}
+
 struct EntityRemoved FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef EntityRemovedBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
@@ -1584,7 +1699,14 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_VEHICLES = 14,
     VT_FIELDS = 16,
     VT_TILES = 18,
-    VT_SAFETY_STOP = 20
+    VT_SAFETY_STOP = 20,
+    VT_FULL = 22,
+    VT_BASE_REVISION = 24,
+    VT_STATE_ID = 26,
+    VT_RESYNC_ID = 28,
+    VT_COMPLETED_COMMAND_ID = 30,
+    VT_SPAWNED = 32,
+    VT_REMOVED = 34
   };
   uint64_t world_revision() const {
     return GetField<uint64_t>(VT_WORLD_REVISION, 0);
@@ -1640,6 +1762,48 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   bool mutate_safety_stop(bool _safety_stop = 0) {
     return SetField<uint8_t>(VT_SAFETY_STOP, static_cast<uint8_t>(_safety_stop), 0);
   }
+  bool full() const {
+    return GetField<uint8_t>(VT_FULL, 0) != 0;
+  }
+  bool mutate_full(bool _full = 0) {
+    return SetField<uint8_t>(VT_FULL, static_cast<uint8_t>(_full), 0);
+  }
+  uint64_t base_revision() const {
+    return GetField<uint64_t>(VT_BASE_REVISION, 0);
+  }
+  bool mutate_base_revision(uint64_t _base_revision = 0) {
+    return SetField<uint64_t>(VT_BASE_REVISION, _base_revision, 0);
+  }
+  uint64_t state_id() const {
+    return GetField<uint64_t>(VT_STATE_ID, 0);
+  }
+  bool mutate_state_id(uint64_t _state_id = 0) {
+    return SetField<uint64_t>(VT_STATE_ID, _state_id, 0);
+  }
+  uint64_t resync_id() const {
+    return GetField<uint64_t>(VT_RESYNC_ID, 0);
+  }
+  bool mutate_resync_id(uint64_t _resync_id = 0) {
+    return SetField<uint64_t>(VT_RESYNC_ID, _resync_id, 0);
+  }
+  uint64_t completed_command_id() const {
+    return GetField<uint64_t>(VT_COMPLETED_COMMAND_ID, 0);
+  }
+  bool mutate_completed_command_id(uint64_t _completed_command_id = 0) {
+    return SetField<uint64_t>(VT_COMPLETED_COMMAND_ID, _completed_command_id, 0);
+  }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::EntitySpawned>> *spawned() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::EntitySpawned>> *>(VT_SPAWNED);
+  }
+  ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::EntitySpawned>> *mutable_spawned() {
+    return GetPointer<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::EntitySpawned>> *>(VT_SPAWNED);
+  }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::EntityRemoved>> *removed() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::EntityRemoved>> *>(VT_REMOVED);
+  }
+  ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::EntityRemoved>> *mutable_removed() {
+    return GetPointer<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::EntityRemoved>> *>(VT_REMOVED);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint64_t>(verifier, VT_WORLD_REVISION, 8) &&
@@ -1661,6 +1825,17 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyVector(tiles()) &&
            verifier.VerifyVectorOfTables(tiles()) &&
            VerifyField<uint8_t>(verifier, VT_SAFETY_STOP, 1) &&
+           VerifyField<uint8_t>(verifier, VT_FULL, 1) &&
+           VerifyField<uint64_t>(verifier, VT_BASE_REVISION, 8) &&
+           VerifyField<uint64_t>(verifier, VT_STATE_ID, 8) &&
+           VerifyField<uint64_t>(verifier, VT_RESYNC_ID, 8) &&
+           VerifyField<uint64_t>(verifier, VT_COMPLETED_COMMAND_ID, 8) &&
+           VerifyOffset(verifier, VT_SPAWNED) &&
+           verifier.VerifyVector(spawned()) &&
+           verifier.VerifyVectorOfTables(spawned()) &&
+           VerifyOffset(verifier, VT_REMOVED) &&
+           verifier.VerifyVector(removed()) &&
+           verifier.VerifyVectorOfTables(removed()) &&
            verifier.EndTable();
   }
 };
@@ -1696,6 +1871,27 @@ struct WorldSnapshotBuilder {
   void add_safety_stop(bool safety_stop) {
     fbb_.AddElement<uint8_t>(WorldSnapshot::VT_SAFETY_STOP, static_cast<uint8_t>(safety_stop), 0);
   }
+  void add_full(bool full) {
+    fbb_.AddElement<uint8_t>(WorldSnapshot::VT_FULL, static_cast<uint8_t>(full), 0);
+  }
+  void add_base_revision(uint64_t base_revision) {
+    fbb_.AddElement<uint64_t>(WorldSnapshot::VT_BASE_REVISION, base_revision, 0);
+  }
+  void add_state_id(uint64_t state_id) {
+    fbb_.AddElement<uint64_t>(WorldSnapshot::VT_STATE_ID, state_id, 0);
+  }
+  void add_resync_id(uint64_t resync_id) {
+    fbb_.AddElement<uint64_t>(WorldSnapshot::VT_RESYNC_ID, resync_id, 0);
+  }
+  void add_completed_command_id(uint64_t completed_command_id) {
+    fbb_.AddElement<uint64_t>(WorldSnapshot::VT_COMPLETED_COMMAND_ID, completed_command_id, 0);
+  }
+  void add_spawned(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::EntitySpawned>>> spawned) {
+    fbb_.AddOffset(WorldSnapshot::VT_SPAWNED, spawned);
+  }
+  void add_removed(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::EntityRemoved>>> removed) {
+    fbb_.AddOffset(WorldSnapshot::VT_REMOVED, removed);
+  }
   explicit WorldSnapshotBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -1717,16 +1913,30 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshot(
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::VehicleState>>> vehicles = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::FieldState>>> fields = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::TileDelta>>> tiles = 0,
-    bool safety_stop = false) {
+    bool safety_stop = false,
+    bool full = false,
+    uint64_t base_revision = 0,
+    uint64_t state_id = 0,
+    uint64_t resync_id = 0,
+    uint64_t completed_command_id = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::EntitySpawned>>> spawned = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::EntityRemoved>>> removed = 0) {
   WorldSnapshotBuilder builder_(_fbb);
+  builder_.add_completed_command_id(completed_command_id);
+  builder_.add_resync_id(resync_id);
+  builder_.add_state_id(state_id);
+  builder_.add_base_revision(base_revision);
   builder_.add_simulation_time_seconds(simulation_time_seconds);
   builder_.add_world_revision(world_revision);
+  builder_.add_removed(removed);
+  builder_.add_spawned(spawned);
   builder_.add_tiles(tiles);
   builder_.add_fields(fields);
   builder_.add_vehicles(vehicles);
   builder_.add_entities(entities);
   builder_.add_chunks(chunks);
   builder_.add_origin(origin);
+  builder_.add_full(full);
   builder_.add_safety_stop(safety_stop);
   return builder_.Finish();
 }
@@ -1741,12 +1951,21 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshotDirect(
     const std::vector<::flatbuffers::Offset<CDDA::CWM::VehicleState>> *vehicles = nullptr,
     const std::vector<::flatbuffers::Offset<CDDA::CWM::FieldState>> *fields = nullptr,
     const std::vector<::flatbuffers::Offset<CDDA::CWM::TileDelta>> *tiles = nullptr,
-    bool safety_stop = false) {
+    bool safety_stop = false,
+    bool full = false,
+    uint64_t base_revision = 0,
+    uint64_t state_id = 0,
+    uint64_t resync_id = 0,
+    uint64_t completed_command_id = 0,
+    const std::vector<::flatbuffers::Offset<CDDA::CWM::EntitySpawned>> *spawned = nullptr,
+    const std::vector<::flatbuffers::Offset<CDDA::CWM::EntityRemoved>> *removed = nullptr) {
   auto chunks__ = chunks ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::ChunkSnapshot>>(*chunks) : 0;
   auto entities__ = entities ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::EntityState>>(*entities) : 0;
   auto vehicles__ = vehicles ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::VehicleState>>(*vehicles) : 0;
   auto fields__ = fields ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::FieldState>>(*fields) : 0;
   auto tiles__ = tiles ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::TileDelta>>(*tiles) : 0;
+  auto spawned__ = spawned ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::EntitySpawned>>(*spawned) : 0;
+  auto removed__ = removed ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::EntityRemoved>>(*removed) : 0;
   return CDDA::CWM::CreateWorldSnapshot(
       _fbb,
       world_revision,
@@ -1757,7 +1976,14 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshotDirect(
       vehicles__,
       fields__,
       tiles__,
-      safety_stop);
+      safety_stop,
+      full,
+      base_revision,
+      state_id,
+      resync_id,
+      completed_command_id,
+      spawned__,
+      removed__);
 }
 
 struct MoveRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -1949,7 +2175,8 @@ struct CommandAck FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_COMMAND_ID = 4,
     VT_ACCEPTED = 6,
-    VT_ERROR_MESSAGE = 8
+    VT_ERROR_MESSAGE = 8,
+    VT_RESULT_REVISION = 10
   };
   uint64_t command_id() const {
     return GetField<uint64_t>(VT_COMMAND_ID, 0);
@@ -1969,12 +2196,19 @@ struct CommandAck FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   ::flatbuffers::String *mutable_error_message() {
     return GetPointer<::flatbuffers::String *>(VT_ERROR_MESSAGE);
   }
+  uint64_t result_revision() const {
+    return GetField<uint64_t>(VT_RESULT_REVISION, 0);
+  }
+  bool mutate_result_revision(uint64_t _result_revision = 0) {
+    return SetField<uint64_t>(VT_RESULT_REVISION, _result_revision, 0);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint64_t>(verifier, VT_COMMAND_ID, 8) &&
            VerifyField<uint8_t>(verifier, VT_ACCEPTED, 1) &&
            VerifyOffset(verifier, VT_ERROR_MESSAGE) &&
            verifier.VerifyString(error_message()) &&
+           VerifyField<uint64_t>(verifier, VT_RESULT_REVISION, 8) &&
            verifier.EndTable();
   }
 };
@@ -1992,6 +2226,9 @@ struct CommandAckBuilder {
   void add_error_message(::flatbuffers::Offset<::flatbuffers::String> error_message) {
     fbb_.AddOffset(CommandAck::VT_ERROR_MESSAGE, error_message);
   }
+  void add_result_revision(uint64_t result_revision) {
+    fbb_.AddElement<uint64_t>(CommandAck::VT_RESULT_REVISION, result_revision, 0);
+  }
   explicit CommandAckBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -2007,8 +2244,10 @@ inline ::flatbuffers::Offset<CommandAck> CreateCommandAck(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint64_t command_id = 0,
     bool accepted = false,
-    ::flatbuffers::Offset<::flatbuffers::String> error_message = 0) {
+    ::flatbuffers::Offset<::flatbuffers::String> error_message = 0,
+    uint64_t result_revision = 0) {
   CommandAckBuilder builder_(_fbb);
+  builder_.add_result_revision(result_revision);
   builder_.add_command_id(command_id);
   builder_.add_error_message(error_message);
   builder_.add_accepted(accepted);
@@ -2019,13 +2258,15 @@ inline ::flatbuffers::Offset<CommandAck> CreateCommandAckDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint64_t command_id = 0,
     bool accepted = false,
-    const char *error_message = nullptr) {
+    const char *error_message = nullptr,
+    uint64_t result_revision = 0) {
   auto error_message__ = error_message ? _fbb.CreateString(error_message) : 0;
   return CDDA::CWM::CreateCommandAck(
       _fbb,
       command_id,
       accepted,
-      error_message__);
+      error_message__,
+      result_revision);
 }
 
 struct TimeEvent FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -2299,6 +2540,138 @@ inline ::flatbuffers::Offset<DecisionResponse> CreateDecisionResponse(
   return builder_.Finish();
 }
 
+struct ResyncRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef ResyncRequestBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_REQUEST_ID = 4
+  };
+  uint64_t request_id() const {
+    return GetField<uint64_t>(VT_REQUEST_ID, 0);
+  }
+  bool mutate_request_id(uint64_t _request_id = 0) {
+    return SetField<uint64_t>(VT_REQUEST_ID, _request_id, 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_REQUEST_ID, 8) &&
+           verifier.EndTable();
+  }
+};
+
+struct ResyncRequestBuilder {
+  typedef ResyncRequest Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_request_id(uint64_t request_id) {
+    fbb_.AddElement<uint64_t>(ResyncRequest::VT_REQUEST_ID, request_id, 0);
+  }
+  explicit ResyncRequestBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<ResyncRequest> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<ResyncRequest>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<ResyncRequest> CreateResyncRequest(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t request_id = 0) {
+  ResyncRequestBuilder builder_(_fbb);
+  builder_.add_request_id(request_id);
+  return builder_.Finish();
+}
+
+struct WorldReset FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef WorldResetBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_REQUEST_ID = 4
+  };
+  uint64_t request_id() const {
+    return GetField<uint64_t>(VT_REQUEST_ID, 0);
+  }
+  bool mutate_request_id(uint64_t _request_id = 0) {
+    return SetField<uint64_t>(VT_REQUEST_ID, _request_id, 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_REQUEST_ID, 8) &&
+           verifier.EndTable();
+  }
+};
+
+struct WorldResetBuilder {
+  typedef WorldReset Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_request_id(uint64_t request_id) {
+    fbb_.AddElement<uint64_t>(WorldReset::VT_REQUEST_ID, request_id, 0);
+  }
+  explicit WorldResetBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<WorldReset> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<WorldReset>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<WorldReset> CreateWorldReset(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t request_id = 0) {
+  WorldResetBuilder builder_(_fbb);
+  builder_.add_request_id(request_id);
+  return builder_.Finish();
+}
+
+struct SnapshotAck FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef SnapshotAckBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_STATE_ID = 4
+  };
+  uint64_t state_id() const {
+    return GetField<uint64_t>(VT_STATE_ID, 0);
+  }
+  bool mutate_state_id(uint64_t _state_id = 0) {
+    return SetField<uint64_t>(VT_STATE_ID, _state_id, 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_STATE_ID, 8) &&
+           verifier.EndTable();
+  }
+};
+
+struct SnapshotAckBuilder {
+  typedef SnapshotAck Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_state_id(uint64_t state_id) {
+    fbb_.AddElement<uint64_t>(SnapshotAck::VT_STATE_ID, state_id, 0);
+  }
+  explicit SnapshotAckBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<SnapshotAck> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<SnapshotAck>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<SnapshotAck> CreateSnapshotAck(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t state_id = 0) {
+  SnapshotAckBuilder builder_(_fbb);
+  builder_.add_state_id(state_id);
+  return builder_.Finish();
+}
+
 struct CwmMessage FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef CwmMessageBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
@@ -2306,7 +2679,10 @@ struct CwmMessage FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_WORLD_REVISION = 6,
     VT_TIMESTAMP_MS = 8,
     VT_PAYLOAD_TYPE = 10,
-    VT_PAYLOAD = 12
+    VT_PAYLOAD = 12,
+    VT_SESSION_ID = 14,
+    VT_PLAYER_ID = 16,
+    VT_CONNECTION_ID = 18
   };
   uint64_t sequence_number() const {
     return GetField<uint64_t>(VT_SEQUENCE_NUMBER, 0);
@@ -2390,8 +2766,38 @@ struct CwmMessage FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const CDDA::CWM::DecisionResponse *payload_as_DecisionResponse() const {
     return payload_type() == CDDA::CWM::Payload::DecisionResponse ? static_cast<const CDDA::CWM::DecisionResponse *>(payload()) : nullptr;
   }
+  const CDDA::CWM::ResyncRequest *payload_as_ResyncRequest() const {
+    return payload_type() == CDDA::CWM::Payload::ResyncRequest ? static_cast<const CDDA::CWM::ResyncRequest *>(payload()) : nullptr;
+  }
+  const CDDA::CWM::WorldReset *payload_as_WorldReset() const {
+    return payload_type() == CDDA::CWM::Payload::WorldReset ? static_cast<const CDDA::CWM::WorldReset *>(payload()) : nullptr;
+  }
+  const CDDA::CWM::SnapshotAck *payload_as_SnapshotAck() const {
+    return payload_type() == CDDA::CWM::Payload::SnapshotAck ? static_cast<const CDDA::CWM::SnapshotAck *>(payload()) : nullptr;
+  }
+  const CDDA::CWM::EntitySpawned *payload_as_EntitySpawned() const {
+    return payload_type() == CDDA::CWM::Payload::EntitySpawned ? static_cast<const CDDA::CWM::EntitySpawned *>(payload()) : nullptr;
+  }
   void *mutable_payload() {
     return GetPointer<void *>(VT_PAYLOAD);
+  }
+  uint64_t session_id() const {
+    return GetField<uint64_t>(VT_SESSION_ID, 0);
+  }
+  bool mutate_session_id(uint64_t _session_id = 0) {
+    return SetField<uint64_t>(VT_SESSION_ID, _session_id, 0);
+  }
+  uint64_t player_id() const {
+    return GetField<uint64_t>(VT_PLAYER_ID, 0);
+  }
+  bool mutate_player_id(uint64_t _player_id = 0) {
+    return SetField<uint64_t>(VT_PLAYER_ID, _player_id, 0);
+  }
+  uint64_t connection_id() const {
+    return GetField<uint64_t>(VT_CONNECTION_ID, 0);
+  }
+  bool mutate_connection_id(uint64_t _connection_id = 0) {
+    return SetField<uint64_t>(VT_CONNECTION_ID, _connection_id, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -2401,6 +2807,9 @@ struct CwmMessage FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyField<uint8_t>(verifier, VT_PAYLOAD_TYPE, 1) &&
            VerifyOffset(verifier, VT_PAYLOAD) &&
            VerifyPayload(verifier, payload(), payload_type()) &&
+           VerifyField<uint64_t>(verifier, VT_SESSION_ID, 8) &&
+           VerifyField<uint64_t>(verifier, VT_PLAYER_ID, 8) &&
+           VerifyField<uint64_t>(verifier, VT_CONNECTION_ID, 8) &&
            verifier.EndTable();
   }
 };
@@ -2481,6 +2890,22 @@ template<> inline const CDDA::CWM::DecisionResponse *CwmMessage::payload_as<CDDA
   return payload_as_DecisionResponse();
 }
 
+template<> inline const CDDA::CWM::ResyncRequest *CwmMessage::payload_as<CDDA::CWM::ResyncRequest>() const {
+  return payload_as_ResyncRequest();
+}
+
+template<> inline const CDDA::CWM::WorldReset *CwmMessage::payload_as<CDDA::CWM::WorldReset>() const {
+  return payload_as_WorldReset();
+}
+
+template<> inline const CDDA::CWM::SnapshotAck *CwmMessage::payload_as<CDDA::CWM::SnapshotAck>() const {
+  return payload_as_SnapshotAck();
+}
+
+template<> inline const CDDA::CWM::EntitySpawned *CwmMessage::payload_as<CDDA::CWM::EntitySpawned>() const {
+  return payload_as_EntitySpawned();
+}
+
 struct CwmMessageBuilder {
   typedef CwmMessage Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
@@ -2500,6 +2925,15 @@ struct CwmMessageBuilder {
   void add_payload(::flatbuffers::Offset<void> payload) {
     fbb_.AddOffset(CwmMessage::VT_PAYLOAD, payload);
   }
+  void add_session_id(uint64_t session_id) {
+    fbb_.AddElement<uint64_t>(CwmMessage::VT_SESSION_ID, session_id, 0);
+  }
+  void add_player_id(uint64_t player_id) {
+    fbb_.AddElement<uint64_t>(CwmMessage::VT_PLAYER_ID, player_id, 0);
+  }
+  void add_connection_id(uint64_t connection_id) {
+    fbb_.AddElement<uint64_t>(CwmMessage::VT_CONNECTION_ID, connection_id, 0);
+  }
   explicit CwmMessageBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -2517,8 +2951,14 @@ inline ::flatbuffers::Offset<CwmMessage> CreateCwmMessage(
     uint64_t world_revision = 0,
     uint64_t timestamp_ms = 0,
     CDDA::CWM::Payload payload_type = CDDA::CWM::Payload::NONE,
-    ::flatbuffers::Offset<void> payload = 0) {
+    ::flatbuffers::Offset<void> payload = 0,
+    uint64_t session_id = 0,
+    uint64_t player_id = 0,
+    uint64_t connection_id = 0) {
   CwmMessageBuilder builder_(_fbb);
+  builder_.add_connection_id(connection_id);
+  builder_.add_player_id(player_id);
+  builder_.add_session_id(session_id);
   builder_.add_timestamp_ms(timestamp_ms);
   builder_.add_world_revision(world_revision);
   builder_.add_sequence_number(sequence_number);
@@ -2606,6 +3046,22 @@ inline bool VerifyPayload(::flatbuffers::Verifier &verifier, const void *obj, Pa
     }
     case Payload::DecisionResponse: {
       auto ptr = reinterpret_cast<const CDDA::CWM::DecisionResponse *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::ResyncRequest: {
+      auto ptr = reinterpret_cast<const CDDA::CWM::ResyncRequest *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::WorldReset: {
+      auto ptr = reinterpret_cast<const CDDA::CWM::WorldReset *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::SnapshotAck: {
+      auto ptr = reinterpret_cast<const CDDA::CWM::SnapshotAck *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::EntitySpawned: {
+      auto ptr = reinterpret_cast<const CDDA::CWM::EntitySpawned *>(obj);
       return verifier.VerifyTable(ptr);
     }
     default: return true;

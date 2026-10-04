@@ -8,7 +8,7 @@
 #include <cstring>
 #include <stdexcept>
 #include <algorithm>
-#include <arpa/inet.h>
+
 
 namespace cdda::cwm {
 
@@ -26,9 +26,9 @@ public:
         if (!data || !size || size > MAX_FRAME_SIZE)
             throw FramingError("Invalid CWM payload length or pointer");
         std::vector<uint8_t> buffer(sizeof(uint32_t) + size);
-        const uint32_t net_len = htonl(static_cast<uint32_t>(size));
-        std::memcpy(buffer.data(), &net_len, sizeof(net_len));
-        std::memcpy(buffer.data() + sizeof(net_len), data, size);
+        const uint32_t length = static_cast<uint32_t>(size);
+        for (size_t i = 0; i < 4; ++i) buffer[i] = static_cast<uint8_t>(length >> ((3-i)*8));
+        std::memcpy(buffer.data() + 4, data, size);
         return buffer;
     }
 };
@@ -51,9 +51,8 @@ public:
             const size_t pending = pending_bytes();
             if (pending) std::memcpy(prefix, buffer_.data() + head_, pending);
             std::memcpy(prefix + pending, data, 4 - pending);
-            uint32_t net_len;
-            std::memcpy(&net_len, prefix, 4);
-            if (!ntohl(net_len) || ntohl(net_len) > max_frame_)
+            const size_t length = decode_length(prefix);
+            if (!length || length > max_frame_)
                 throw FramingError("Invalid CWM frame length");
         }
         // Compact only when necessary; do not shift the tail after every frame.
@@ -68,12 +67,10 @@ public:
     // Zero means incomplete; a zero-length wire frame is invalid.
     size_t next_frame_size() const {
         if (pending_bytes() < sizeof(uint32_t)) return 0;
-        uint32_t net_len = 0;
-        std::memcpy(&net_len, buffer_.data() + head_, sizeof(net_len));
-        const size_t size = ntohl(net_len);
+        const size_t size = decode_length(buffer_.data() + head_);
         if (!size || size > max_frame_)
             throw FramingError("Invalid CWM frame length");
-        return pending_bytes() >= sizeof(net_len) + size ? size : 0;
+        return pending_bytes() >= 4 + size ? size : 0;
     }
 
     bool pop_frame(std::vector<uint8_t>& out_payload) {
@@ -91,6 +88,9 @@ public:
     size_t remaining_capacity() const { return max_buffer_ - pending_bytes(); }
 
 private:
+    static uint32_t decode_length(const uint8_t* p) {
+        return (uint32_t(p[0]) << 24) | (uint32_t(p[1]) << 16) | (uint32_t(p[2]) << 8) | p[3];
+    }
     void compact() {
         buffer_.erase(buffer_.begin(), buffer_.begin() + head_);
         head_ = 0;

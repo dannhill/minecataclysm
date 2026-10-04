@@ -34,7 +34,8 @@ def run(ws, out, fps, delayed=False, rebases=False, threats=False):
     from CDDA.CWM import TileDelta as Tile
     from CDDA.CWM import DecisionPrompt as Prompt, DecisionResponse as Response
 
-    sequence = 0
+    from session_wire import AuthorityWire
+    wire = AuthorityWire()
     player = [8, 24]
     events = []
     error = []
@@ -49,20 +50,13 @@ def run(ws, out, fps, delayed=False, rebases=False, threats=False):
     prompt_requested = threading.Event()
 
     def envelope(b, kind, value):
-        nonlocal sequence
-        sequence += 1
-        Msg.CwmMessageStart(b)
-        Msg.CwmMessageAddSequenceNumber(b, sequence)
-        Msg.CwmMessageAddWorldRevision(b, sequence)
-        Msg.CwmMessageAddPayloadType(b, kind)
-        Msg.CwmMessageAddPayload(b, value)
-        b.Finish(Msg.CwmMessageEnd(b))
-        return bytes(b.Output())
+        return wire.finish(b,kind,value)
 
     def hello():
         b = flatbuffers.Builder(128)
         Hello.HelloResponseStart(b)
         Hello.HelloResponseAddAccepted(b, True)
+        wire.hello_fields(b)
         return envelope(b, Payload.Payload.HelloResponse, Hello.HelloResponseEnd(b))
 
     def ack(command, accepted):
@@ -85,7 +79,7 @@ def run(ws, out, fps, delayed=False, rebases=False, threats=False):
         Prompt.DecisionPromptAddChoices(b, choices)
         return envelope(b, Payload.Payload.DecisionPrompt, Prompt.DecisionPromptEnd(b))
 
-    def snapshot(full=False, window_delta=False):
+    def snapshot(full=False, window_delta=False, completed=0):
         b = flatbuffers.Builder(32768)
         offsets = []
         if full:
@@ -145,7 +139,9 @@ def run(ws, out, fps, delayed=False, rebases=False, threats=False):
             World.WorldSnapshotStartTilesVector(b, 1)
             b.PrependUOffsetTRelative(delta)
             tiles = b.EndVector()
+        empty = wire.empty_vectors(b)
         World.WorldSnapshotStart(b)
+        wire.world_fields(b,full,empty,completed)
         World.WorldSnapshotAddEntities(b, entities)
         World.WorldSnapshotAddChunks(b, chunks)
         World.WorldSnapshotAddTiles(b, tiles)
@@ -179,7 +175,7 @@ def run(ws, out, fps, delayed=False, rebases=False, threats=False):
                         if pending and now >= pending[0]:
                             _, command, accepted, full = pending
                             if accepted: player[1] -= 1
-                            send(snapshot(full))
+                            send(snapshot(full,completed=command))
                             events.append({"kind": "result", "command": command, "time": now, "player": player[:]})
                             pending = None
                         if geometry.is_set() and not geometry_sent:
@@ -209,7 +205,7 @@ def run(ws, out, fps, delayed=False, rebases=False, threats=False):
                             msg = Msg.CwmMessage.GetRootAsCwmMessage(buffer[4:size+4], 0)
                             buffer = buffer[size+4:]
                             if msg.PayloadType() == Payload.Payload.HelloRequest:
-                                send(hello()); send(snapshot(True)); synchronized.set()
+                                send(hello()); send(wire.reset()); send(snapshot(True)); synchronized.set()
                             elif msg.PayloadType() == Payload.Payload.MoveRequest:
                                 req = Move.MoveRequest(); req.Init(msg.Payload().Bytes, msg.Payload().Pos)
                                 n = sum(e["kind"] == "request" for e in events) + 1

@@ -45,8 +45,15 @@ class HelloRequest(object):
             return self._tab.String(o + self._tab.Pos)
         return None
 
+    # HelloRequest
+    def ClientId(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(10))
+        if o != 0:
+            return self._tab.Get(flatbuffers.number_types.Uint64Flags, o + self._tab.Pos)
+        return 0
+
 def HelloRequestStart(builder):
-    builder.StartObject(3)
+    builder.StartObject(4)
 
 def Start(builder):
     HelloRequestStart(builder)
@@ -68,6 +75,12 @@ def HelloRequestAddBuildId(builder, buildId):
 
 def AddBuildId(builder, buildId):
     HelloRequestAddBuildId(builder, buildId)
+
+def HelloRequestAddClientId(builder, clientId):
+    builder.PrependUint64Slot(3, clientId, 0)
+
+def AddClientId(builder, clientId):
+    HelloRequestAddClientId(builder, clientId)
 
 def HelloRequestEnd(builder):
     return builder.EndObject()

@@ -23,3 +23,7 @@ class Payload(object):
     AcknowledgeThreatRequest = 17
     DecisionPrompt = 18
     DecisionResponse = 19
+    ResyncRequest = 20
+    WorldReset = 21
+    SnapshotAck = 22
+    EntitySpawned = 23

@@ -45,8 +45,15 @@ class CommandAck(object):
             return self._tab.String(o + self._tab.Pos)
         return None
 
+    # CommandAck
+    def ResultRevision(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(10))
+        if o != 0:
+            return self._tab.Get(flatbuffers.number_types.Uint64Flags, o + self._tab.Pos)
+        return 0
+
 def CommandAckStart(builder):
-    builder.StartObject(3)
+    builder.StartObject(4)
 
 def Start(builder):
     CommandAckStart(builder)
@@ -68,6 +75,12 @@ def CommandAckAddErrorMessage(builder, errorMessage):
 
 def AddErrorMessage(builder, errorMessage):
     CommandAckAddErrorMessage(builder, errorMessage)
+
+def CommandAckAddResultRevision(builder, resultRevision):
+    builder.PrependUint64Slot(3, resultRevision, 0)
+
+def AddResultRevision(builder, resultRevision):
+    CommandAckAddResultRevision(builder, resultRevision)
 
 def CommandAckEnd(builder):
     return builder.EndObject()

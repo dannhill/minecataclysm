@@ -439,10 +439,10 @@ index 09a7711..9b0c484 100644
          DebugLog( D_INFO, DC_ALL ) <<
 diff --git a/src/cwm/cwm_main.cpp b/src/cwm/cwm_main.cpp
 new file mode 100644
-index 0000000..7f51bdb
+index 0000000..4138acf
 --- /dev/null
 +++ b/src/cwm/cwm_main.cpp
-@@ -0,0 +1,383 @@
+@@ -0,0 +1,388 @@
 +// CDDA Headless CWM Server Entrypoint
 +// Licensed under Apache-2.0
 +
@@ -575,7 +575,7 @@ index 0000000..7f51bdb
 +}
 +
 +int main(int argc, const char* argv[]) {
-+    std::string socket_path = "/tmp/cdda_cwm.sock";
++    std::string socket_path;
 +    std::string world_name = "cwm_world";
 +    std::string user_dir = "./user";
 +    std::string data_dir = "";
@@ -614,7 +614,7 @@ index 0000000..7f51bdb
 +            terrain_demo = true;
 +        } else if (arg == "--help" || arg == "-h") {
 +            std::cout << "Usage: cdda-server [options]\n"
-+                      << "  --socket <path>       Unix domain socket path (default: /tmp/cdda_cwm.sock)\n"
++                      << "  --socket <path>       Private Unix domain socket path (required for IPC)\n"
 +                      << "  --world <name>        World name to load or create (default: cwm_world)\n"
 +                      << "  --userdir <path>      User directory for savegames and config (default: ./user)\n"
 +                      << "  --datadir <path>      Data directory (default: auto-detected)\n"
@@ -628,6 +628,11 @@ index 0000000..7f51bdb
 +            std::cerr << "Unknown or incomplete option: " << arg << "\n";
 +            return 2;
 +        }
++    }
++
++    if (!headless && socket_path.empty()) {
++        std::cerr << "--socket is required for IPC; use start.sh for supervised play\n";
++        return 2;
 +    }
 +
 +    std::signal(SIGINT, sig_handler);
@@ -828,10 +833,10 @@ index 0000000..7f51bdb
 +}
 diff --git a/src/cwm/cwm_map_exporter.cpp b/src/cwm/cwm_map_exporter.cpp
 new file mode 100644
-index 0000000..98d1292
+index 0000000..54c69a1
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.cpp
-@@ -0,0 +1,381 @@
+@@ -0,0 +1,399 @@
 +// CDDA CWM Map & Entity Exporter Implementation
 +// Licensed under Apache-2.0
 +
@@ -923,9 +928,11 @@ index 0000000..98d1292
 +    map& m,
 +    game& g,
 +    bool include_chunks,
-+    ProjectionCache* cache
++    ProjectionCache* cache, cdda::cwm::Identity identity,
++    uint64_t base_revision, uint64_t state_id, uint64_t resync_id,
++    uint64_t completed_command_id
 +) {
-+    cdda::cwm::MessageBuilder builder(sequence_num, world_rev);
++    cdda::cwm::MessageBuilder builder(sequence_num, world_rev, identity);
 +    auto& fbb = builder.builder();
 +
 +    tripoint u_pos = u.pos();
@@ -1082,6 +1089,20 @@ index 0000000..98d1292
 +    }
 +
 +    auto entities_vec = fbb.CreateVector(entity_offsets);
++    std::set<uint64_t> actor_ids;
++    std::vector<flatbuffers::Offset<CDDA::CWM::EntitySpawned>> spawned;
++    std::vector<flatbuffers::Offset<CDDA::CWM::EntityRemoved>> removed;
++    for (const auto& actor : entity_offsets) {
++        const auto id = flatbuffers::GetTemporaryPointer(fbb, actor)->id();
++        actor_ids.insert(id);
++        if (!include_chunks && cache && !cache->actors.count(id))
++            spawned.push_back(CDDA::CWM::CreateEntitySpawned(fbb, actor));
++    }
++    if (!include_chunks && cache) for (const auto id : cache->actors)
++        if (!actor_ids.count(id)) removed.push_back(CDDA::CWM::CreateEntityRemoved(fbb, id));
++    if (cache) cache->actors = std::move(actor_ids);
++    const auto spawned_vec = fbb.CreateVector(spawned);
++    const auto removed_vec = fbb.CreateVector(removed);
 +
 +    // 4. Vehicles
 +    std::vector<flatbuffers::Offset<CDDA::CWM::VehicleState>> vehicle_offsets;
@@ -1164,7 +1185,9 @@ index 0000000..98d1292
 +        vehicles_vec,
 +        fields_vec,
 +        tiles_vec,
-+        g.safe_mode == SAFE_MODE_STOP || u.has_effect(efftype_id("laserlocked"))
++        g.safe_mode == SAFE_MODE_STOP || u.has_effect(efftype_id("laserlocked")),
++        include_chunks, base_revision, state_id, resync_id, completed_command_id,
++        spawned_vec, removed_vec
 +    );
 +
 +    return builder.finish_message(CDDA::CWM::Payload::WorldSnapshot, world_snap.Union());
@@ -1215,10 +1238,10 @@ index 0000000..98d1292
 +} // namespace cwm
 diff --git a/src/cwm/cwm_map_exporter.h b/src/cwm/cwm_map_exporter.h
 new file mode 100644
-index 0000000..978f98d
+index 0000000..776779c
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.h
-@@ -0,0 +1,60 @@
+@@ -0,0 +1,66 @@
 +// CDDA CWM Map & Entity Exporter
 +// Licensed under Apache-2.0
 +#pragma once
@@ -1227,6 +1250,8 @@ index 0000000..978f98d
 +#include <cstdint>
 +#include <memory>
 +#include <unordered_map>
++#include <set>
++#include "cwm/cwm_protocol.hpp"
 +#include "memory_fast.h"
 +#include "point.h"
 +#include "cwm/cwm_generated.h"
@@ -1249,6 +1274,7 @@ index 0000000..978f98d
 +            uint64_t id;
 +        };
 +        std::unordered_map<const monster*, CreatureIdentity> creature_ids;
++        std::set<uint64_t> actors;
 +    };
 +    static CDDA::CWM::CwmBlock export_block(const tripoint& p, map& m, uint8_t light);
 +    static std::vector<uint8_t> export_world_snapshot(
@@ -1258,7 +1284,10 @@ index 0000000..978f98d
 +        map& m,
 +        game& g,
 +        bool include_chunks = true,
-+        ProjectionCache* cache = nullptr
++        ProjectionCache* cache = nullptr,
++        cdda::cwm::Identity identity = {},
++        uint64_t base_revision = 0, uint64_t state_id = 1,
++        uint64_t resync_id = 0, uint64_t completed_command_id = 0
 +    );
 +
 +    static std::vector<uint8_t> export_tile_delta(
@@ -1281,10 +1310,10 @@ index 0000000..978f98d
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..44a5610
+index 0000000..4b3c93c
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,296 @@
+@@ -0,0 +1,374 @@
 +// CDDA CWM IPC Server Implementation
 +// Licensed under Apache-2.0
 +
@@ -1319,54 +1348,91 @@ index 0000000..44a5610
 +bool CwmServer::has_active_client() const { return server_ && server_->has_client(); }
 +bool CwmServer::save_world(game& g) { return g.save(); }
 +
-+void CwmServer::send_state(avatar& u, map& m, game& g, bool full) {
-+    if (!has_active_client()) return;
-+    auto snapshot = CwmMapExporter::export_world_snapshot(sequence_counter_++, world_revision_,
-+                    u, m, g, full, &projection_cache_);
-+    snapshot_sent_ = server_->client()->send_message(snapshot.data(), snapshot.size());
++bool CwmServer::emit(const std::vector<uint8_t>& bytes) {
++    if (!has_active_client() || !server_->client()->send_message(bytes.data(), bytes.size())) return false;
++    ++sequence_counter_; // Count successfully queued wire messages, not attempted exports.
++    return true;
++}
++
++void CwmServer::cancel_connection() {
++    for (const auto& command : commands_)
++        ledger_.complete({command.id, false, "Connection closed before execution", world_revision_});
++    commands_.clear();
++    if (result_) ledger_.complete({result_->id, result_->accepted, result_->error, world_revision_});
++    result_.reset();
++    snapshot_sent_ = negotiated_ = ready_ = rejecting_ = false;
++    awaiting_state_ = 0;
++}
++
++void CwmServer::send_state(avatar& u, map& m, game& g, bool full, uint64_t completed) {
++    if (!has_active_client() || !negotiated_ || rejecting_) return;
++    const auto state_id = next_state_++;
++    auto snapshot = CwmMapExporter::export_world_snapshot(sequence_counter_, world_revision_,
++                    u, m, g, full, &projection_cache_, identity_, sent_revision_, state_id,
++                    resync_id_, completed);
++    const bool is_full = CDDA::CWM::GetCwmMessage(snapshot.data())->payload_as_WorldSnapshot()->full();
++    if (emit(snapshot)) {
++        snapshot_sent_ = true;
++        sent_revision_ = world_revision_;
++        if (is_full) { ready_ = false; awaiting_state_ = state_id; }
++    }
++}
++
++void CwmServer::reset_world(avatar& u, map& m, game& g, uint64_t request_id) {
++    resync_id_ = request_id;
++    ready_ = false;
++    cdda::cwm::MessageBuilder builder(sequence_counter_, world_revision_, identity_);
++    auto message = builder.finish_message(CDDA::CWM::Payload::WorldReset,
++        CDDA::CWM::CreateWorldReset(builder.builder(), request_id).Union());
++    if (emit(message)) send_state(u, m, g, true);
++}
++
++void CwmServer::send_decision() {
++    if (!pending_decision_ || !ready_ || !has_active_client()) return;
++    cdda::cwm::MessageBuilder builder(sequence_counter_, world_revision_, identity_);
++    auto& fbb = builder.builder();
++    const auto text = fbb.CreateString(decision_text_);
++    const auto labels = fbb.CreateVectorOfStrings(decision_labels_);
++    emit(builder.finish_message(CDDA::CWM::Payload::DecisionPrompt,
++        CDDA::CWM::CreateDecisionPrompt(fbb, pending_decision_, text, labels).Union()));
 +}
 +
 +void CwmServer::send_result(const Result& result, avatar& u, map& m, game& g) {
-+    if (!has_active_client()) return;
-+    cdda::cwm::MessageBuilder reply(sequence_counter_++, world_revision_);
-+    auto ack = reply.build_command_ack(result.id, result.accepted, result.error);
-+    server_->client()->send_message(ack.data(), ack.size());
-+    // The real client releases input only after its ACK and authoritative state.
-+    send_state(u, m, g);
++    ledger_.complete({result.id, result.accepted, result.error, world_revision_});
++    if (!has_active_client() || !negotiated_) return;
++    const auto* entry = ledger_.find(result.id);
++    const auto revision = entry && entry->complete ? entry->outcome.revision : world_revision_;
++    cdda::cwm::MessageBuilder reply(sequence_counter_, world_revision_, identity_);
++    if (emit(reply.build_command_ack(result.id, result.accepted, result.error, revision)))
++        send_state(u, m, g, false, result.id);
 +}
 +
 +bool CwmServer::update(avatar& u, map& m, game& g) {
 +    if (!server_) return false;
 +    if (server_->poll_accept(0)) {
-+        commands_.clear();
-+        result_.reset();
-+        snapshot_sent_ = false;
++        cancel_connection();
++        sequence_counter_ = 1;
++        received_sequence_ = sent_revision_ = client_id_ = resync_id_ = 0;
++        identity_.player = static_cast<uint64_t>(u.getID().get_value());
++        ++identity_.connection;
++        handshake_deadline_ = std::chrono::steady_clock::now() + std::chrono::seconds(5);
 +    }
-+    if (!has_active_client()) {
-+        commands_.clear();
-+        result_.reset();
-+        snapshot_sent_ = false;
-+        return true;
-+    }
++    if (!has_active_client()) { cancel_connection(); return true; }
 +    std::vector<std::vector<uint8_t>> frames;
 +    const bool alive = server_->client()->poll_and_receive(frames, 0);
-+    // Transport may return complete final frames together with EOF.
 +    for (const auto& frame : frames) {
 +        if (!cdda::cwm::MessageVerifier::verify(frame.data(), frame.size())) {
-+            server_->client()->close_fd(cdda::cwm::IpcCloseReason::InvalidFrame);
++            server_->client()->close(cdda::cwm::IpcCloseReason::InvalidFrame);
 +            break;
 +        }
 +        handle_client_message(frame.data(), frame.size(), u, m, g);
-+        if (alive && !has_active_client()) break;
++        if (rejecting_ || (alive && !has_active_client())) break;
 +    }
-+    if (!alive || !has_active_client()) {
-+        // Commands not yet executed belong to the departed connection.
-+        commands_.clear();
-+        result_.reset();
-+        snapshot_sent_ = false;
-+        return true;
-+    }
-+    if (!snapshot_sent_) send_state(u, m, g, true);
++    if (rejecting_ && (!server_->client()->queued_output_bytes() ||
++        std::chrono::steady_clock::now() > handshake_deadline_)) server_->client()->close();
++    if (!negotiated_ && std::chrono::steady_clock::now() > handshake_deadline_)
++        server_->client()->close();
++    if (!alive || !has_active_client()) cancel_connection();
 +    return true;
 +}
 +
@@ -1443,16 +1509,10 @@ index 0000000..44a5610
 +    pending_decision_ = next_decision_++;
 +    decision_choices_ = choices.size();
 +    decision_answer_.reset();
++    decision_text_ = text;
++    decision_labels_ = choices;
 +    send_state(u, m, g, !snapshot_sent_);
-+    if (has_active_client()) {
-+        cdda::cwm::MessageBuilder builder(sequence_counter_++, world_revision_);
-+        auto& fbb = builder.builder();
-+        const auto body = fbb.CreateString(text);
-+        const auto labels = fbb.CreateVectorOfStrings(choices);
-+        const auto message = builder.finish_message(CDDA::CWM::Payload::DecisionPrompt,
-+            CDDA::CWM::CreateDecisionPrompt(fbb, pending_decision_, body, labels).Union());
-+        server_->client()->send_message(message.data(), message.size());
-+    }
++    send_decision();
 +    while (keep_running() && has_active_client() && !decision_answer_) {
 +        update(u, m, g);
 +        std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -1506,31 +1566,78 @@ index 0000000..44a5610
 +                                      avatar& u, map& m, game& g) {
 +    const auto* msg = cdda::cwm::MessageVerifier::parse(data, size);
 +    if (!msg) return;
-+    if (msg->payload_type() == CDDA::CWM::Payload::DecisionResponse) {
++    using CDDA::CWM::Payload;
++    if (!negotiated_) {
++        const auto* hello = msg->payload_as_HelloRequest();
++        const bool accepted = hello && msg->sequence_number() == 1 && !msg->session_id() &&
++            !msg->player_id() && !msg->connection_id() && hello->client_id() &&
++            hello->protocol_version_major() == cdda::cwm::PROTOCOL_VERSION_MAJOR &&
++            hello->protocol_version_minor() == cdda::cwm::PROTOCOL_VERSION_MINOR;
++        cdda::cwm::MessageBuilder reply(sequence_counter_, world_revision_, identity_);
++        emit(reply.build_hello_response(accepted, "cdda-server-cwm-2",
++            accepted ? "" : "CWM 2.0 Hello required before state or commands", ledger_.next_id()));
++        if (!accepted) { rejecting_ = true; return; }
++        client_id_ = hello->client_id(); received_sequence_ = 1; negotiated_ = true;
++        reset_world(u, m, g, 0);
++        return;
++    }
++    if (msg->session_id() != identity_.session || msg->player_id() != identity_.player ||
++        msg->connection_id() != identity_.connection || msg->sequence_number() != received_sequence_ + 1) {
++        server_->client()->close(cdda::cwm::IpcCloseReason::InvalidFrame); return;
++    }
++    received_sequence_ = msg->sequence_number();
++    if (msg->payload_type() == Payload::ResyncRequest) {
++        const auto* request = msg->payload_as_ResyncRequest();
++        if (!request || !request->request_id()) { server_->client()->close(); return; }
++        reset_world(u, m, g, request->request_id());
++        return;
++    }
++    if (msg->payload_type() == Payload::SnapshotAck) {
++        const auto* ack = msg->payload_as_SnapshotAck();
++        if (ack && awaiting_state_ && ack->state_id() == awaiting_state_) {
++            awaiting_state_ = 0; ready_ = true; send_decision();
++        }
++        return;
++    }
++    if (msg->payload_type() == Payload::Heartbeat) {
++        cdda::cwm::MessageBuilder reply(sequence_counter_, world_revision_, identity_);
++        emit(reply.finish_message(Payload::HeartbeatAck,
++            CDDA::CWM::CreateHeartbeatAck(reply.builder(), cdda::cwm::current_time_ms(),
++                                          cdda::cwm::current_time_ms()).Union()));
++        return;
++    }
++    if (!ready_) return; // No authority until the client confirms installed full state.
++    if (msg->payload_type() == Payload::DecisionResponse) {
 +        const auto* response = msg->payload_as_DecisionResponse();
 +        if (response && pending_decision_ && !decision_answer_ &&
 +            response->decision_id() == pending_decision_ && response->choice() < decision_choices_)
 +            decision_answer_ = response->choice();
 +        return;
 +    }
-+    if (pending_decision_ && (msg->payload_type() == CDDA::CWM::Payload::MoveRequest ||
-+        msg->payload_type() == CDDA::CWM::Payload::InteractRequest ||
-+        msg->payload_type() == CDDA::CWM::Payload::AcknowledgeThreatRequest)) return;
-+    if (msg->payload_type() == CDDA::CWM::Payload::HelloRequest) {
-+        cdda::cwm::MessageBuilder reply(sequence_counter_++, world_revision_);
-+        auto response = reply.build_hello_response(true, "cdda-server-0.H");
-+        server_->client()->send_message(response.data(), response.size());
-+        send_state(u, m, g, true);
++    if (pending_decision_) return;
++    uint64_t id = 0;
++    std::string signature;
++    if (const auto* request = msg->payload_as_MoveRequest()) {
++        id = request->command_id(); signature = "move:" + std::to_string(int(request->direction()));
++    } else if (const auto* request = msg->payload_as_InteractRequest()) {
++        id = request->command_id(); signature = "interact:" + std::to_string(int(request->action()));
++        if (const auto* p = request->target_coord()) signature += ":" + std::to_string(p->x()) +
++            ":" + std::to_string(p->y()) + ":" + std::to_string(p->z());
++    } else if (const auto* request = msg->payload_as_AcknowledgeThreatRequest()) {
++        id = request->command_id(); signature = "threat";
++    } else { server_->client()->close(); return; }
++    const auto status = ledger_.begin(client_id_, id, signature);
++    using Status = cdda::cwm::CommandLedger::Status;
++    if (status == Status::Pending) return;
++    if (status == Status::Complete) {
++        const auto outcome = ledger_.find(id)->outcome;
++        cdda::cwm::MessageBuilder reply(sequence_counter_, world_revision_, identity_);
++        if (emit(reply.build_command_ack(id, outcome.accepted, outcome.error, outcome.revision)))
++            send_state(u, m, g, true, id);
 +        return;
 +    }
-+    if (msg->payload_type() == CDDA::CWM::Payload::Heartbeat) {
-+        cdda::cwm::MessageBuilder reply(sequence_counter_++, world_revision_);
-+        auto response = reply.finish_message(CDDA::CWM::Payload::HeartbeatAck,
-+            CDDA::CWM::CreateHeartbeatAck(reply.builder(), cdda::cwm::current_time_ms(),
-+                                          cdda::cwm::current_time_ms()).Union());
-+        server_->client()->send_message(response.data(), response.size());
-+        return;
-+    }
++    if (status == Status::Expired) { send_result({id, false, "Command identity expired"}, u, m, g); return; }
++    if (status != Status::Fresh) { server_->client()->close(); return; }
 +    if (msg->payload_type() == CDDA::CWM::Payload::AcknowledgeThreatRequest) {
 +        const auto* request = msg->payload_as_AcknowledgeThreatRequest();
 +        if (!request) return;
@@ -1583,10 +1690,10 @@ index 0000000..44a5610
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.h b/src/cwm/cwm_server.h
 new file mode 100644
-index 0000000..1215970
+index 0000000..c3c865b
 --- /dev/null
 +++ b/src/cwm/cwm_server.h
-@@ -0,0 +1,77 @@
+@@ -0,0 +1,90 @@
 +// CDDA CWM IPC Server
 +// Licensed under Apache-2.0
 +#pragma once
@@ -1598,13 +1705,14 @@ index 0000000..1215970
 +#include <functional>
 +#include <optional>
 +#include "cwm_map_exporter.h"
++#include "cwm/cwm_session.hpp"
 +
 +class avatar;
 +class map;
 +class game;
 +
 +namespace cdda::cwm {
-+class IpcServer;
++class CwmListener;
 +}
 +
 +namespace cwm {
@@ -1630,10 +1738,16 @@ index 0000000..1215970
 +
 +private:
 +    std::string socket_path_;
-+    std::unique_ptr<cdda::cwm::IpcServer> server_;
++    std::unique_ptr<cdda::cwm::CwmListener> server_;
 +    uint64_t sequence_counter_{1};
 +    uint64_t world_revision_{1};
 +    bool snapshot_sent_{false};
++    cdda::cwm::Identity identity_{cdda::cwm::fresh_identity(), 0, 0};
++    cdda::cwm::CommandLedger ledger_;
++    uint64_t client_id_{0}, received_sequence_{0}, sent_revision_{0};
++    uint64_t next_state_{1}, awaiting_state_{0}, resync_id_{0};
++    bool negotiated_{false}, ready_{false}, rejecting_{false};
++    std::chrono::steady_clock::time_point handshake_deadline_;
 +    struct Command {
 +        uint64_t id;
 +        bool move;
@@ -1652,10 +1766,16 @@ index 0000000..1215970
 +    uint64_t pending_decision_{0};
 +    size_t decision_choices_{0};
 +    std::optional<int> decision_answer_;
++    std::string decision_text_;
++    std::vector<std::string> decision_labels_;
 +    CwmMapExporter::ProjectionCache projection_cache_;
 +
-+    void send_state(avatar& u, map& m, game& g, bool full = false);
++    void send_state(avatar& u, map& m, game& g, bool full = false, uint64_t completed = 0);
 +    void send_result(const Result& result, avatar& u, map& m, game& g);
++    bool emit(const std::vector<uint8_t>& bytes);
++    void reset_world(avatar& u, map& m, game& g, uint64_t request_id);
++    void send_decision();
++    void cancel_connection();
 +    bool execute(const Command& command, avatar& u, map& m, game& g);
 +    int ask_decision(const std::string& text, const std::vector<std::string>& choices,
 +                     avatar& u, map& m, game& g, const std::function<bool()>& keep_running);

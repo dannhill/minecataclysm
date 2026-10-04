@@ -26,6 +26,9 @@ def main():
     from CDDA.CWM import CwmMessage as Msg, Payload, HelloResponse as Hello, HeartbeatAck as Beat
     from CDDA.CWM import WorldSnapshot as World, ChunkSnapshot as Chunk, CwmBlock as Block
     from CDDA.CWM import EntityState as Entity, Vec3f, Coord3i
+    from session_wire import AuthorityWire
+    wire = AuthorityWire()
+    forbidden_inputs = []
     commands = queue.Queue(); errors = []; stop = threading.Event(); checks = {}
     trace = out/'camera.csv'; binary = ws/'luanti/bin/luanti'
     (out/'identity.json').write_text(json.dumps(dict(binary=str(binary), sha256=hashlib.sha256(binary.read_bytes()).hexdigest()), indent=2)+'\n')
@@ -34,17 +37,15 @@ def main():
         print(name, 'PASS' if ok else 'FAIL', flush=True)
         if not ok: raise AssertionError(name)
     def envelope(b, kind, value, revision):
-        Msg.CwmMessageStart(b); Msg.CwmMessageAddSequenceNumber(b, revision)
-        Msg.CwmMessageAddWorldRevision(b, revision); Msg.CwmMessageAddPayloadType(b, kind); Msg.CwmMessageAddPayload(b, value)
-        b.Finish(Msg.CwmMessageEnd(b)); return bytes(b.Output())
+        return wire.finish(b,kind,value)
     def hello():
-        b = flatbuffers.Builder(128); Hello.HelloResponseStart(b); Hello.HelloResponseAddAccepted(b, True)
+        b = flatbuffers.Builder(128); Hello.HelloResponseStart(b); Hello.HelloResponseAddAccepted(b, True); wire.hello_fields(b)
         return envelope(b, Payload.Payload.HelloResponse, Hello.HelloResponseEnd(b), 1)
-    def snapshot(revision, full=False):
+    def snapshot(revision, full=False, malformed=False):
         b = flatbuffers.Builder(4096); chunks = 0
         if full:
-            Chunk.ChunkSnapshotStartBlocksVector(b, 256)
-            for i in range(255, -1, -1):
+            Chunk.ChunkSnapshotStartBlocksVector(b, 128 if malformed else 256)
+            for i in range(127 if malformed else 255, -1, -1):
                 x, y = i%16, i//16; wall = x in (0, 15) or y in (0, 15)
                 Block.CreateCwmBlock(b, 2 if wall else 0, 3 if wall else 4, 15, 0)
             blocks = b.EndVector()
@@ -55,7 +56,9 @@ def main():
         Entity.EntityStateStart(b); Entity.EntityStateAddId(b, 1)
         Entity.EntityStateAddPos(b, Vec3f.CreateVec3f(b, 8, 12, 0)); entity = Entity.EntityStateEnd(b)
         World.WorldSnapshotStartEntitiesVector(b, 1); b.PrependUOffsetTRelative(entity); entities = b.EndVector()
-        World.WorldSnapshotStart(b); World.WorldSnapshotAddOrigin(b, Coord3i.CreateCoord3i(b, 0, 0, 0))
+        empty = wire.empty_vectors(b)
+        World.WorldSnapshotStart(b); wire.world_fields(b,full,empty,revision=revision)
+        World.WorldSnapshotAddOrigin(b, Coord3i.CreateCoord3i(b, 0, 0, 0))
         World.WorldSnapshotAddEntities(b, entities)
         if full: World.WorldSnapshotAddChunks(b, chunks)
         return envelope(b, Payload.Payload.WorldSnapshot, World.WorldSnapshotEnd(b), revision)
@@ -82,6 +85,7 @@ def main():
         scratch = Path(temporary); path = scratch/'cwm.sock'
         listener = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM); listener.bind(str(path)); listener.listen(4); listener.settimeout(.2)
         def serve():
+            nonlocal wire
             connection_index = 0
             try:
                 while not stop.is_set():
@@ -100,12 +104,40 @@ def main():
                             return data
                         size = struct.unpack('>I', exact(4))[0]; msg = Msg.CwmMessage.GetRootAsCwmMessage(exact(size), 0)
                         if msg.PayloadType() != Payload.Payload.HelloRequest: raise ValueError('Missing real Hello')
-                        wire = frame(hello())+frame(snapshot(connection_index*1000, True))
-                        c.sendall(wire[:2]); time.sleep(.02); c.sendall(wire[2:7]); time.sleep(.02); c.sendall(wire[7:])
+                        wire = AuthorityWire(connection=connection_index)
+                        initial = frame(hello())+frame(wire.reset())+frame(snapshot(connection_index*1000, True))
+                        c.sendall(initial[:2]); time.sleep(.02); c.sendall(initial[2:7]); time.sleep(.02); c.sendall(initial[7:])
+                        c.settimeout(.01)
+                        buffer=b''; recovery=None
+
                         while not stop.is_set():
-                            try: action = commands.get(timeout=.1)
+                            if recovery and time.monotonic() >= recovery[0]:
+                                _, request, revision = recovery
+                                c.sendall(frame(wire.reset(request))+frame(snapshot(revision, True)))
+                                recovery=None
+                            try: data=c.recv(65536)
+                            except socket.timeout: data=None
+                            if data == b'': break
+                            if data:
+                                buffer+=data
+                                while len(buffer)>=4:
+                                    n=struct.unpack('>I',buffer[:4])[0]
+                                    if len(buffer)<n+4: break
+                                    msg=Msg.CwmMessage.GetRootAsCwmMessage(buffer[4:n+4],0); buffer=buffer[n+4:]
+                                    if msg.PayloadType()==Payload.Payload.ResyncRequest:
+                                        from CDDA.CWM import ResyncRequest
+                                        r=ResyncRequest.ResyncRequest(); r.Init(msg.Payload().Bytes,msg.Payload().Pos)
+                                        recovery=(time.monotonic()+.6,r.RequestId(),1200 if r.RequestId()==1 else 1400)
+                                    if msg.PayloadType()==Payload.Payload.MoveRequest and recovery:
+                                        forbidden_inputs.append(msg.SequenceNumber())
+                            try: action = commands.get_nowait()
                             except queue.Empty: continue
-                            if action == 'flood':
+                            if action == 'gap':
+                                wire.sequence+=1
+                                c.sendall(frame(snapshot(1100)))
+                            elif action == 'badworld':
+                                c.sendall(frame(snapshot(1300, True, True)))
+                            elif action == 'flood':
                                 # Valid FlatBuffers followed by allowed trailing padding.
                                 c.sendall(b''.join(frame(beat(1100+i)+bytes(65536)) for i in range(40)))
                             elif action == 'final':
@@ -139,8 +171,22 @@ def main():
                 time.sleep(2)
                 check('real_client_applied_fragmented_initial_state', int(rows()[-1]['revision']) == 1000)
                 subprocess.run(['import', '-window', window, str(out/'before.png')], check=True, timeout=10)
+                commands.put('gap')
+                frozen=until(lambda r: int(r['resync_count'])==1 and int(r['input_ready'])==0)
+                check('sequence_gap_freezes_before_state_mutation',int(frozen['revision'])==1000)
+                subprocess.run(['xdotool','keydown','--window',window,'w'],check=True,capture_output=True)
+                time.sleep(.2)
+                subprocess.run(['xdotool','keyup','--window',window,'w'],check=True,capture_output=True)
+                until(lambda r: int(r['revision'])==1200 and int(r['input_ready'])==1)
+                check('full_resync_restores_readiness',True)
+                commands.put('badworld')
+                frozen=until(lambda r: int(r['resync_count'])==2 and int(r['input_ready'])==0)
+                check('malformed_full_state_does_not_mutate_world',int(frozen['revision'])==1200)
+                until(lambda r: int(r['revision'])==1400 and int(r['input_ready'])==1)
+                check('semantic_failure_recovers_with_full_state',True)
                 flood_start = time.monotonic(); commands.put('flood')
-                until(lambda r: int(r['revision']) == 1139)
+                until(lambda r: int(r['ipc_frames']) > 0 and int(r['sequence']) >= 53)
+                check('heartbeats_do_not_advance_world_revision', int(rows()[-1]['revision'])==1400)
                 flood_end = time.monotonic()
                 commands.put('final'); until(lambda r: int(r['revision']) == 1500 and int(r['ipc_connected']) == 0)
                 check('final_complete_state_applied_before_disconnect', int(rows()[-1]['revision']) == 1500)
@@ -165,6 +211,7 @@ def main():
     data = rows()
     check('renderer_clean_exit', proc.returncode == 0)
     check('adverse_authority_no_fixture_errors', not errors)
+    check('held_input_is_blocked_during_resync',not forbidden_inputs)
     check('real_frame_input_and_output_caps', all(int(r['ipc_input']) <= 16*1024*1024+4 and int(r['ipc_output']) <= 32*1024*1024 for r in data))
     check('real_frame_io_and_dispatch_budgets', all(int(r['ipc_read_bytes']) <= 256*1024 and
         int(r['ipc_write_bytes']) <= 256*1024 and int(r['ipc_frames']) <= 8 and

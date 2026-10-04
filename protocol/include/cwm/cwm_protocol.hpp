@@ -10,8 +10,10 @@
 
 namespace cdda::cwm {
 
-constexpr uint16_t PROTOCOL_VERSION_MAJOR = 1;
-constexpr uint16_t PROTOCOL_VERSION_MINOR = 4;
+constexpr uint16_t PROTOCOL_VERSION_MAJOR = 2;
+constexpr uint16_t PROTOCOL_VERSION_MINOR = 0;
+
+struct Identity { uint64_t session{0}, player{0}, connection{0}; };
 
 inline uint64_t current_time_ms() {
     using namespace std::chrono;
@@ -20,8 +22,9 @@ inline uint64_t current_time_ms() {
 
 class MessageBuilder {
 public:
-    explicit MessageBuilder(uint64_t sequence_number = 0, uint64_t world_revision = 0)
-        : sequence_number_(sequence_number), world_revision_(world_revision) {}
+    explicit MessageBuilder(uint64_t sequence_number = 0, uint64_t world_revision = 0,
+                            Identity identity = {})
+        : sequence_number_(sequence_number), world_revision_(world_revision), identity_(identity) {}
 
     flatbuffers::FlatBufferBuilder& builder() {
         return fbb_;
@@ -34,7 +37,7 @@ public:
             world_revision_,
             current_time_ms(),
             payload_type,
-            payload_offset
+            payload_offset, identity_.session, identity_.player, identity_.connection
         );
         fbb_.Finish(msg);
         const uint8_t* ptr = fbb_.GetBufferPointer();
@@ -44,16 +47,16 @@ public:
         return result;
     }
 
-    std::vector<uint8_t> build_hello_request(const std::string& build_id) {
+    std::vector<uint8_t> build_hello_request(const std::string& build_id, uint64_t client_id = 1) {
         auto b_id = fbb_.CreateString(build_id);
-        auto hello = CDDA::CWM::CreateHelloRequest(fbb_, PROTOCOL_VERSION_MAJOR, PROTOCOL_VERSION_MINOR, b_id);
+        auto hello = CDDA::CWM::CreateHelloRequest(fbb_, PROTOCOL_VERSION_MAJOR, PROTOCOL_VERSION_MINOR, b_id, client_id);
         return finish_message(CDDA::CWM::Payload::HelloRequest, hello.Union());
     }
 
-    std::vector<uint8_t> build_hello_response(bool accepted, const std::string& server_build_id, const std::string& reject_reason = "") {
+    std::vector<uint8_t> build_hello_response(bool accepted, const std::string& server_build_id, const std::string& reject_reason = "", uint64_t next_command_id = 1) {
         auto b_id = fbb_.CreateString(server_build_id);
         auto reason = fbb_.CreateString(reject_reason);
-        auto resp = CDDA::CWM::CreateHelloResponse(fbb_, PROTOCOL_VERSION_MAJOR, PROTOCOL_VERSION_MINOR, b_id, accepted, reason);
+        auto resp = CDDA::CWM::CreateHelloResponse(fbb_, PROTOCOL_VERSION_MAJOR, PROTOCOL_VERSION_MINOR, b_id, accepted, reason, next_command_id);
         return finish_message(CDDA::CWM::Payload::HelloResponse, resp.Union());
     }
 
@@ -68,9 +71,9 @@ public:
         return finish_message(CDDA::CWM::Payload::InteractRequest, req.Union());
     }
 
-    std::vector<uint8_t> build_command_ack(uint64_t command_id, bool accepted, const std::string& err_msg = "") {
+    std::vector<uint8_t> build_command_ack(uint64_t command_id, bool accepted, const std::string& err_msg = "", uint64_t result_revision = 0) {
         auto err = fbb_.CreateString(err_msg);
-        auto ack = CDDA::CWM::CreateCommandAck(fbb_, command_id, accepted, err);
+        auto ack = CDDA::CWM::CreateCommandAck(fbb_, command_id, accepted, err, result_revision);
         return finish_message(CDDA::CWM::Payload::CommandAck, ack.Union());
     }
 
@@ -85,6 +88,7 @@ private:
     flatbuffers::FlatBufferBuilder fbb_{2048};
     uint64_t sequence_number_{0};
     uint64_t world_revision_{0};
+    Identity identity_;
 };
 
 class MessageVerifier {
