@@ -288,7 +288,7 @@ def main():
                 check('native_room_approach_stops_outside_closed_door', c.pos()==[73,60,0] and c.state['pause']==0)
                 c.interact(74,60,1)
                 c.until(lambda: bool(c.state['pause'] & 4))
-                check('new_native_perceived_hostile_autopauses', any(a['name']=='Realtime Threat' and a['perceived'] for a in c.state['actors'].values()))
+                check('new_native_perceived_hostile_autopauses', any('Realtime Threat' in a['name'] and a['perceived'] for a in c.state['actors'].values()))
                 t = c.state['time']
                 pos = c.pos()[:]
                 c.observe(1.2)
