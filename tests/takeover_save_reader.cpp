@@ -30,11 +30,13 @@ int main(int argc, const char *argv[]) {
     std::string userdir, datadir, output, character, world_name = "audit_fixture";
     bool create = false;
     bool create_ledge = false;
+    bool create_exploration = false;
     bool resave = false;
     for (int i = 1; i < argc; ++i) {
         std::string arg(argv[i]);
         if (arg == "--create") create = true;
         else if (arg == "--create-ledge") { create = true; create_ledge = true; }
+        else if (arg == "--create-exploration") { create = true; create_exploration = true; }
         else if (arg == "--resave") resave = true;
         else if (i + 1 < argc && arg == "--userdir") userdir = argv[++i];
         else if (i + 1 < argc && arg == "--datadir") datadir = argv[++i];
@@ -103,6 +105,19 @@ int main(int argc, const char *argv[]) {
         u.move_to(tripoint_abs_ms(tripoint(60,60,0)));
         calendar::turn = calendar::turn_zero + 36_hours;
         u.i_add(item(itype_id("rock"), calendar::turn));
+        if (create_exploration) {
+            m.ter_set(tripoint(60,59,0), ter_str_id("t_water_dp"));
+            m.ter_set(tripoint(60,61,0), ter_str_id("t_water_sh"));
+            m.ter_set(tripoint(59,60,0), ter_str_id("t_window_no_curtains"));
+            m.ter_set(tripoint(59,59,0), ter_str_id("t_wall"));
+            m.ter_set(tripoint(59,61,0), ter_str_id("t_wall"));
+            u.remove_weapon();
+            item matches(itype_id("matches"), calendar::turn);
+            if (!u.wield(matches)) return 9;
+            u.set_skill_level(skill_id("swimming"),10);
+            get_weather().update_weather();
+            if (!g->save()) return 5;
+        } else {
         g->place_critter_at(mtype_id("mon_zombie"), tripoint(65,65,0));
         auto guy = make_shared_fast<npc>();
         guy->normalize();
@@ -114,6 +129,7 @@ int main(int argc, const char *argv[]) {
         if (!m.add_vehicle(vproto_id("bicycle"),tripoint(60,66,0),0_degrees,0,0)) return 4;
         get_weather().update_weather();
         if (!g->save()) return 5;
+        }
     } else if (!g->load(world_name)) {
         std::cerr << "Canonical game::load(world) failed\n";
         return 6;

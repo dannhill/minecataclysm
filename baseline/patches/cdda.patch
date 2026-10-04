@@ -29,6 +29,50 @@ index 6d5d148..4181ad1 100644
  endif ()
  
  if (MINGW AND NOT RELEASE)
+diff --git a/src/avatar_action.cpp b/src/avatar_action.cpp
+index d7e91fc..c01be43 100644
+--- a/src/avatar_action.cpp
++++ b/src/avatar_action.cpp
+@@ -22,6 +22,7 @@
+ #include "creature.h"
+ #include "creature_tracker.h"
+ #include "debug.h"
++#include "do_turn.h"
+ #include "enums.h"
+ #include "flag.h"
+ #include "game.h"
+@@ -110,6 +111,31 @@ static bool check_water_affect_items( avatar &you )
+         return query_yn( _( "Dive into the water?" ) );
+     }
+ 
++    if( external_ui_active() ) {
++        std::string warning = _( "Diving will destroy the following items.  Proceed?" );
++        warning += "\n";
++        warning += _( "These items are not inside a waterproof container." );
++        const auto append = [&warning]( const std::string &heading,
++                                       const std::vector<item_location> &items ) {
++            if( items.empty() ) {
++                return;
++            }
++            warning += "\n\n" + heading;
++            for( const item_location &loc : items ) {
++                warning += "\n" + loc->display_name();
++            }
++        };
++        append( _( "Will be dissolved:" ), dissolved );
++        append( _( "Will be destroyed:" ), destroyed );
++        append( _( "Will get wet:" ), wet );
++        // Cancel is last, as required by the coordinator's disconnect policy.
++        if( external_ui_choice( warning, { _( "Yes" ), _( "No" ) } ) != 0 ) {
++            you.add_msg_if_player( _( "You back away from the water." ) );
++            return false;
++        }
++        return true;
++    }
++
+     uilist menu;
+     menu.title = _( "Diving will destroy the following items.  Proceed?" );
+     menu.text = _( "These items are not inside a waterproof container." );
 diff --git a/src/do_turn.cpp b/src/do_turn.cpp
 index 2455a6f..a6a40aa 100644
 --- a/src/do_turn.cpp
@@ -772,10 +816,10 @@ index 0000000..7f51bdb
 +}
 diff --git a/src/cwm/cwm_map_exporter.cpp b/src/cwm/cwm_map_exporter.cpp
 new file mode 100644
-index 0000000..7398102
+index 0000000..90cd0d2
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.cpp
-@@ -0,0 +1,359 @@
+@@ -0,0 +1,379 @@
 +// CDDA CWM Map & Entity Exporter Implementation
 +// Licensed under Apache-2.0
 +
@@ -808,15 +852,24 @@ index 0000000..7398102
 +    if (blocked) flags |= BLOCKS_MOVEMENT;
 +    uint16_t material = DIRT;
 +    const std::string& id = t.id.str();
-+    const bool door = t.has_flag(ter_furn_flag::TFLAG_DOOR) ||
-+        (!t.close.is_null() && t.close.obj().has_flag(ter_furn_flag::TFLAG_DOOR));
++    // Open/close are native transitions, not synonyms for passability. Locked
++    // doors lack DOOR; some closed windows are already traversable in the data.
++    const bool window = t.has_flag(ter_furn_flag::TFLAG_WINDOW) ||
++        id == "t_window_empty_curtains_open" || id == "t_window_empty_curtains_closed";
++    const bool has_transition = !t.open.is_null() || !t.close.is_null();
++    const bool door = !window && (t.has_flag(ter_furn_flag::TFLAG_DOOR) ||
++        (has_transition && (id.find("door") != std::string::npos ||
++                            id.find("gate") != std::string::npos)) ||
++        (!t.close.is_null() && t.close.obj().has_flag(ter_furn_flag::TFLAG_DOOR)) ||
++        (!t.open.is_null() && !t.open.obj().close.is_null() &&
++         t.open.obj().close.obj().has_flag(ter_furn_flag::TFLAG_DOOR)));
 +    if (id == "t_null" || t.has_flag(ter_furn_flag::TFLAG_NO_FLOOR)) material = AIR;
-+    else if (t.has_flag(ter_furn_flag::TFLAG_WINDOW)) {
-+        material = t.movecost > 0 ? WINDOW_OPEN :
++    else if (window) {
++        material = t.movecost > 0 && t.open.is_null() ? WINDOW_OPEN :
 +                   t.has_flag(ter_furn_flag::TFLAG_TRANSPARENT) ? WINDOW : WINDOW_BOARDED;
 +    } else if (door) {
 +        flags |= DOOR;
-+        material = t.has_flag(ter_furn_flag::TFLAG_DOOR) ? DOOR_CLOSED : DOOR_OPEN;
++        material = !t.open.is_null() || t.close.is_null() ? DOOR_CLOSED : DOOR_OPEN;
 +    } else if (t.has_flag(ter_furn_flag::TFLAG_WALL)) {
 +        material = t.movecost > 0 ? LOW_OBSTACLE :
 +                   t.has_flag(ter_furn_flag::TFLAG_TRANSPARENT) ? GLASS_WALL : WALL;
@@ -838,7 +891,7 @@ index 0000000..7398102
 +        if (blocked && !f.has_flag(ter_furn_flag::TFLAG_SHORT)) flags |= TALL_FURNITURE;
 +    }
 +    uint8_t orientation = 0;
-+    if (door || t.has_flag(ter_furn_flag::TFLAG_WINDOW)) {
++    if (door || window) {
 +        const auto connects = [&m](const tripoint& neighbor) {
 +            if (!m.inbounds(neighbor)) return false;
 +            const auto& terrain = m.ter(neighbor).obj();
@@ -932,6 +985,17 @@ index 0000000..7398102
 +        auto player_type = fbb.CreateString("avatar");
 +        CDDA::CWM::Vec3f pos(static_cast<float>(u_pos.x), static_cast<float>(u_pos.y), static_cast<float>(u_pos.z));
 +
++        uint32_t player_flags = 0;
++        const auto player_tile = export_block(u_pos, m, 15);
++        if (player_tile.material_id() == cdda::cwm::WINDOW_OPEN ||
++            player_tile.material_id() == cdda::cwm::WINDOW ||
++            player_tile.material_id() == cdda::cwm::WINDOW_BOARDED)
++            player_flags |= cdda::cwm::WINDOW_PASSAGE;
++        if (!m.veh_at(u_pos) && m.has_flag(ter_furn_flag::TFLAG_SWIMMABLE, u_pos)) {
++            player_flags |= m.has_flag(ter_furn_flag::TFLAG_DEEP_WATER, u_pos) ?
++                            cdda::cwm::SWIMMING : cdda::cwm::WADING;
++        }
++        if (u.is_underwater()) player_flags |= cdda::cwm::UNDERWATER;
 +        auto player_state = CDDA::CWM::CreateEntityState(
 +            fbb,
 +            1, // Player authoritative ID is 1
@@ -939,7 +1003,7 @@ index 0000000..7398102
 +            player_type,
 +            &pos,
 +            0.0f,
-+            0,
++            player_flags,
 +            100,
 +            player_name
 +        );
@@ -1587,10 +1651,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644
-index 0000000..17a3eda
+index 0000000..7e3c91f
 --- /dev/null
 +++ b/tests/cwm_projection_test.cpp
-@@ -0,0 +1,143 @@
+@@ -0,0 +1,215 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "avatar_action.h"
@@ -1734,14 +1798,89 @@ index 0000000..17a3eda
 +    auto unchanged = cwm::CwmMapExporter::export_world_snapshot(3, 3, u, m, *g, false, &cache);
 +    CHECK(CDDA::CWM::GetCwmMessage(unchanged.data())->payload_as_WorldSnapshot()->tiles()->size() == 1);
 +}
++
++TEST_CASE("cwm_aperture_variants_follow_native_transitions", "[cwm][apertures]")
++{
++    using namespace cdda::cwm;
++    clear_avatar();
++    clear_map();
++    map& m = get_map();
++    avatar& u = get_avatar();
++    const tripoint p(60, 60, 0);
++    u.setpos(p + tripoint_south);
++    for (const char* name : {"t_door_c", "t_door_locked", "t_door_elocked",
++                            "t_door_metal_pickable", "t_door_bar_c", "t_door_glass_c",
++                            "t_door_metal_bulkhead_c", "t_fencegate_c"}) {
++        CAPTURE(name);
++        m.ter_set(p, ter_str_id(name));
++        const auto& native = m.ter(p).obj();
++        REQUIRE_FALSE(native.open.is_null());
++        const auto tile = cwm::CwmMapExporter::export_block(p, m, 15);
++        CHECK(tile.material_id() == DOOR_CLOSED);
++        CHECK(tile.state_flags() & DOOR);
++        CHECK(bool(tile.state_flags() & BLOCKS_MOVEMENT) == m.impassable_ter_furn(p));
++        // Locked and ordinary variants converge on the actual native open state.
++        m.ter_set(p, native.open);
++        CHECK(cwm::CwmMapExporter::export_block(p, m, 15).material_id() == DOOR_OPEN);
++        REQUIRE_FALSE(m.ter(p).obj().close.is_null());
++        m.ter_set(p, m.ter(p).obj().close);
++        CHECK(cwm::CwmMapExporter::export_block(p, m, 15).material_id() == DOOR_CLOSED);
++    }
++    for (const char* name : {"t_window_no_curtains", "t_window_domestic",
++                            "t_reinforced_double_pane_glass_with_curtain_open_window_closed",
++                            "t_reinforced_triple_pane_glass_with_curtain_open_window_closed"}) {
++        CAPTURE(name);
++        m.ter_set(p, ter_str_id(name));
++        CHECK(cwm::CwmMapExporter::export_block(p, m, 15).material_id() == WINDOW);
++        REQUIRE(m.open_door(u, p, true));
++        CHECK(cwm::CwmMapExporter::export_block(p, m, 15).material_id() == WINDOW_OPEN);
++        m.ter_set(p, m.ter(p).obj().close);
++        CHECK(cwm::CwmMapExporter::export_block(p, m, 15).material_id() == WINDOW);
++    }
++    m.ter_set(p, ter_str_id("t_window_empty_curtains_closed"));
++    CHECK(cwm::CwmMapExporter::export_block(p, m, 15).material_id() == WINDOW_BOARDED);
++    REQUIRE(m.open_door(u, p, true));
++    CHECK(cwm::CwmMapExporter::export_block(p, m, 15).material_id() == WINDOW_OPEN);
++}
++
++TEST_CASE("cwm_avatar_water_and_sill_cues_preserve_native_coordinates", "[cwm]")
++{
++    using namespace cdda::cwm;
++    clear_avatar();
++    clear_map();
++    avatar& u = get_avatar();
++    map& m = get_map();
++    const tripoint p(60, 60, 0);
++    u.setpos(p);
++    for (const auto& entry : {std::pair<const char*, uint32_t>{"t_floor", 0},
++                             {"t_water_sh", WADING}, {"t_water_dp", SWIMMING},
++                             {"t_window_open", WINDOW_PASSAGE}}) {
++        CAPTURE(entry.first);
++        m.ter_set(p, ter_str_id(entry.first));
++        auto bytes = cwm::CwmMapExporter::export_world_snapshot(1, 1, u, m, *g, false);
++        const auto* player = CDDA::CWM::GetCwmMessage(bytes.data())->payload_as_WorldSnapshot()->entities()->Get(0);
++        CHECK(player->state_flags() == entry.second);
++        CHECK(player->pos()->x() == p.x);
++        CHECK(player->pos()->y() == p.y);
++        CHECK(player->pos()->z() == p.z);
++    }
++    m.ter_set(p, ter_str_id("t_water_dp"));
++    u.set_underwater(true);
++    auto bytes = cwm::CwmMapExporter::export_world_snapshot(1, 1, u, m, *g, false);
++    CHECK(CDDA::CWM::GetCwmMessage(bytes.data())->payload_as_WorldSnapshot()->entities()->Get(0)->state_flags() == (SWIMMING | UNDERWATER));
++    u.set_underwater(false);
++}
 diff --git a/tests/cwm_runtime_test.cpp b/tests/cwm_runtime_test.cpp
 new file mode 100644
-index 0000000..14b3c38
+index 0000000..df63207
 --- /dev/null
 +++ b/tests/cwm_runtime_test.cpp
-@@ -0,0 +1,200 @@
+@@ -0,0 +1,240 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
++#include "avatar_action.h"
++#include "item.h"
++#include "item_location.h"
 +#include "calendar.h"
 +#include "do_turn.h"
 +#include "field.h"
@@ -1774,6 +1913,43 @@ index 0000000..14b3c38
 +    get_map().build_map_cache( 0 );
 +    get_map().invalidate_visibility_cache();
 +    get_map().update_visibility_cache( 0 );
++}
++
++TEST_CASE( "cwm_deep_water_warning_keeps_native_item_effects", "[cwm][water]" )
++{
++    const override_option no_autosave( "AUTOSAVE", "false" );
++    prepare_runtime();
++    avatar &u = get_avatar();
++    map &m = get_map();
++    const tripoint start = u.pos();
++    m.ter_set( start, ter_str_id( "t_floor" ) );
++    m.ter_set( start + tripoint_north, ter_str_id( "t_water_dp" ) );
++    item matches( itype_id( "matches" ), calendar::turn );
++    REQUIRE( u.wield( matches ) );
++    u.set_skill_level( skill_id( "swimming" ), 10 );
++    int answer = 1;
++    SECTION( "decline preserves character and vulnerable item" ) { answer = 1; }
++    SECTION( "confirm executes native swimming and water damage" ) { answer = 0; }
++    int prompts = 0;
++    REQUIRE_FALSE( do_turn_with_action( [&]() {
++        const int before = u.moves;
++        REQUIRE( avatar_action::move( u, m, tripoint_north ) );
++        CHECK( u.pos() == ( answer == 0 ? start + tripoint_north : start ) );
++        CHECK( u.get_wielded_item()->is_broken() == ( answer == 0 ) );
++        if( answer == 1 ) { CHECK( u.moves == before ); }
++        else { CHECK( u.moves < before ); }
++        u.pause();
++        return true;
++    }, [&]( const std::string &text, const std::vector<std::string> &choices ) {
++        ++prompts;
++        CHECK( text.find( "waterproof" ) != std::string::npos );
++        CHECK( text.find( "matchbook" ) != std::string::npos );
++        REQUIRE( choices.size() == 2 );
++        CHECK( choices.back() == "No" );
++        return answer;
++    } ) );
++    CHECK( prompts == 1 );
++    CHECK_FALSE( external_ui_active() );
 +}
 +
 +TEST_CASE( "cwm_native_questions_use_scoped_external_choices", "[cwm][runtime]" )

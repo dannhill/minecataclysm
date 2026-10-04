@@ -85,7 +85,7 @@ index b6ae675..9e33201 100644
  		/*
  			Local player handling
 diff --git a/src/client/game.cpp b/src/client/game.cpp
-index 27b5833..7725451 100644
+index 27b5833..9e48105 100644
 --- a/src/client/game.cpp
 +++ b/src/client/game.cpp
 @@ -8,6 +8,7 @@
@@ -245,7 +245,29 @@ index 27b5833..7725451 100644
  
  			if (clouds)
  				clouds->updateCameraOffset(camera_offset);
-@@ -4319,7 +4406,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
+@@ -3365,6 +3452,21 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
+ 	// but the halo rendering code is already inefficient so there's no point in optimizing it here
+ 	hud->updateSelectionMesh(camera_offset);
+ 
++	// Native CDDA validates openings and pays their action cost. Do not run
++	// Luanti digging/placing callbacks against its disposable projection.
++	if (cdda_client::CddaBridge::getInstance().ownsPlayer(client)) {
++		auto &bridge = cdda_client::CddaBridge::getInstance();
++		if (!bridge.getMetrics().pending_decision &&
++				pointed.type == POINTEDTHING_NODE && wasKeyPressed(KeyType::PLACE))
++			bridge.handlePointedOpening(pointed.node_undersurface, isKeyDown(KeyType::SNEAK));
++		runData.pointed_old = pointed;
++		input->clearWasKeyPressed();
++		input->clearWasKeyReleased();
++		wasKeyDown(KeyType::DIG);
++		wasKeyDown(KeyType::PLACE);
++		return;
++	}
++
+ 	// Allow digging again if button is not pressed
+ 	if (runData.digging_blocked && !isKeyDown(KeyType::DIG))
+ 		runData.digging_blocked = false;
+@@ -4319,7 +4421,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
  	/*
  		Fog
  	*/
@@ -373,20 +395,21 @@ index 9f987cc..005fbfb 100644
  
  	*pkt >> added_pos;
 diff --git a/src/unittest/test_mapblock.cpp b/src/unittest/test_mapblock.cpp
-index 7f3f860..663a6ec 100644
+index 7f3f860..c4c4482 100644
 --- a/src/unittest/test_mapblock.cpp
 +++ b/src/unittest/test_mapblock.cpp
-@@ -10,6 +10,9 @@
+@@ -10,6 +10,10 @@
  #include "serialization.h"
  #include "noise.h"
  #include "inventory.h"
 +#if CHECK_CLIENT_BUILD()
 +#include "client/mesh_generator_thread.h"
++#include "cdda/cdda_bridge.h"
 +#endif
  
  class TestMapBlock : public TestBase
  {
-@@ -32,7 +35,10 @@ class TestMapBlock : public TestBase
+@@ -32,7 +36,11 @@ class TestMapBlock : public TestBase
  	void testLoad20(IGameDef *gamedef);
  
  	// Tests loading a non-standard MapBlock
@@ -394,11 +417,12 @@ index 7f3f860..663a6ec 100644
 +    void testLoadNonStd(IGameDef *gamedef);
 +#if CHECK_CLIENT_BUILD()
 +    void testMeshResultOrder();
++    void testCddaOpeningCoordinates();
 +#endif
  };
  
  static TestMapBlock g_test_instance;
-@@ -44,9 +50,32 @@ void TestMapBlock::runTests(IGameDef *gamedef)
+@@ -44,9 +52,44 @@ void TestMapBlock::runTests(IGameDef *gamedef)
  	TEST(testSave29, gamedef);
  	TEST(testLoad29, gamedef);
  	TEST(testLoad20, gamedef);
@@ -406,10 +430,22 @@ index 7f3f860..663a6ec 100644
 +    TEST(testLoadNonStd, gamedef);
 +#if CHECK_CLIENT_BUILD()
 +    TEST(testMeshResultOrder);
++    TEST(testCddaOpeningCoordinates);
 +#endif
  }
  
 +#if CHECK_CLIENT_BUILD()
++void TestMapBlock::testCddaOpeningCoordinates()
++{
++    for (int z = -3; z <= 3; ++z) {
++        for (int height = 0; height < 3; ++height) {
++            const auto node = cdda_client::CddaBridge::cddaToLuantiCoord(13, -17, z) + v3s16(0, height, 0);
++            const auto tile = cdda_client::CddaBridge::luantiToCddaCoord(node);
++            UASSERT(tile == v3s16(13, -17, z));
++        }
++    }
++}
++
 +void TestMapBlock::testMeshResultOrder()
 +{
 +    // No renderer/workers are started. Reproduce the actual completion path
@@ -434,10 +470,10 @@ index 7f3f860..663a6ec 100644
  void TestMapBlock::testSaveLoad(IGameDef *gamedef, const u8 version)
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..a355057
+index 0000000..4b747dc
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,988 @@
+@@ -0,0 +1,1020 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
@@ -483,7 +519,9 @@ index 0000000..a355057
 +}
 +
 +v3s16 CddaBridge::luantiToCddaCoord(v3s16 pos) {
-+    return v3s16(pos.X, -pos.Z, static_cast<int>(std::round(pos.Y / 3.0f)));
++    // All three presentation nodes belong to the same native Z level,
++    // including the upper pane/door half and negative underground levels.
++    return v3s16(pos.X, -pos.Z, static_cast<int>(std::floor(pos.Y / 3.0f)));
 +}
 +
 +class CddaBridge::Impl {
@@ -500,6 +538,8 @@ index 0000000..a355057
 +    std::ofstream trace_;
 +    bool player_ready_{false};
 +    static constexpr float step_duration = 0.2f;
++    float player_feet_offset_{0.f};
++    float player_eye_offset_{0.f};
 +
 +    std::unordered_map<uint64_t, VisualEntity> entities_;
 +    std::unordered_map<uint64_t, VisualVehicle> vehicles_;
@@ -745,10 +785,9 @@ index 0000000..a355057
 +                lower = get_node_for_material(material);
 +                upper = get_node_for_material(WALL); break;
 +            case WINDOW: case WINDOW_OPEN: case WINDOW_BOARDED:
-+                // A passable window has a genuinely open aperture.
-+                floor = get_node_for_material(WALL);
-+                lower = get_node_for_material(material);
-+                upper = lower; break;
++                // The sill belongs to the wall; opening removes only the pane.
++                floor = lower = get_node_for_material(WALL);
++                upper = get_node_for_material(material); break;
 +            case LEGACY_FURNITURE:
 +                lower = get_node_for_material(LEGACY_FURNITURE); break;
 +            case LOW_OBSTACLE:
@@ -856,8 +895,19 @@ index 0000000..a355057
 +            if (id == 1 && client_) {
 +                auto* local_player = client_->getEnv().getLocalPlayer();
 +                if (local_player) {
-+                    // BS = 10.0f. Player camera typically is +1.5 blocks up, but CDDA handles Z
-+                    local_player->setPosition((ent.current_pos + v3f(0, 0.5f, 0)) * 10.0f); // feet on top of floor node
++                    using namespace cdda::cwm;
++                    float feet = 0.f, eye = 0.f;
++                    if (ent.state_flags & WINDOW_PASSAGE) {
++                        feet = 1.f; eye = -.85f; // crouched passage over the sill
++                    } else if (ent.state_flags & UNDERWATER) feet = -1.8f;
++                    else if (ent.state_flags & SWIMMING) feet = -1.2f;
++                    else if (ent.state_flags & WADING) feet = -.3f;
++                    const float blend = 1.f - std::exp(-20.f * dtime);
++                    player_feet_offset_ += (feet - player_feet_offset_) * blend;
++                    player_eye_offset_ += (eye - player_eye_offset_) * blend;
++                    local_player->eye_offset_first.Y = player_eye_offset_ * 10.f;
++                    local_player->setPosition((ent.current_pos +
++                        v3f(0, 0.5f + player_feet_offset_, 0)) * 10.0f);
 +                }
 +            }
 +        }
@@ -1084,6 +1134,7 @@ index 0000000..a355057
 +                            ve.start_pos = target;
 +                            ve.rotation = ent_state->rotation();
 +                            ve.hp_percent = ent_state->hp_percent();
++                            ve.state_flags = ent_state->state_flags();
 +                            ve.perceived = ent_state->perceived();
 +                            ve.humanoid = ent_state->type() == CDDA::CWM::EntityType::NPC;
 +                            entities_[eid] = ve;
@@ -1104,6 +1155,7 @@ index 0000000..a355057
 +                            it->second.target_pos = target;
 +                            it->second.rotation = ent_state->rotation();
 +                            it->second.hp_percent = ent_state->hp_percent();
++                            it->second.state_flags = ent_state->state_flags();
 +                            it->second.perceived = ent_state->perceived();
 +                        }
 +                    }
@@ -1181,7 +1233,9 @@ index 0000000..a355057
 +    }
 +
 +    bool send_interact_request(int x, int y, int z, int action) {
-+        if (!connection_ || !connection_->is_valid()) return false;
++        const auto now = std::chrono::steady_clock::now();
++        if (!connection_ || !connection_->is_valid() || !player_ready_ || pending_move_ ||
++            metrics_.pending_decision || now < next_move_) return false;
 +        const uint64_t command = command_counter_++;
 +        cdda::cwm::MessageBuilder builder(command, metrics_.current_revision);
 +        auto req = builder.build_interact_request(
@@ -1190,7 +1244,12 @@ index 0000000..a355057
 +            y - projection_origin_.Y + scene_origin_.Y, z,
 +            static_cast<CDDA::CWM::InteractAction>(action)
 +        );
-+        return connection_->send_message(req.data(), req.size());
++        if (!connection_->send_message(req.data(), req.size())) return false;
++        pending_move_ = command;
++        move_acked_ = false;
++        sent_move_ = now;
++        next_move_ = now + std::chrono::milliseconds(200);
++        return true;
 +    }
 +
 +    bool acknowledge_threat() {
@@ -1236,7 +1295,10 @@ index 0000000..a355057
 +    pimpl_->socket_path_ = socket_path;
 +    pimpl_->terrain_demo_ = g_settings->exists("cdda_terrain_comparison") &&
 +                            g_settings->getBool("cdda_terrain_comparison");
-+    pimpl_->terrain_enriched_ = pimpl_->terrain_demo_;
++    // The approved B style is independent of the isolated native demo fixture.
++    // Only comparison mode keeps the additional cache needed for live A/B.
++    pimpl_->terrain_enriched_ = !g_settings->exists("cdda_terrain_enriched") ||
++                                g_settings->getBool("cdda_terrain_enriched");
 +    pimpl_->terrain_fog_ = pimpl_->terrain_demo_;
 +    std::string trace_path;
 +    if (g_settings->getNoEx("cwm_trace_file", trace_path) && !trace_path.empty()) {
@@ -1337,6 +1399,12 @@ index 0000000..a355057
 +    return false;
 +}
 +
++bool CddaBridge::handlePointedOpening(const v3s16& node, bool close) {
++    const auto tile = luantiToCddaCoord(node);
++    return handleInteract(tile.X, tile.Y, tile.Z, static_cast<int>(close ?
++        CDDA::CWM::InteractAction::CLOSE : CDDA::CWM::InteractAction::OPEN));
++}
++
 +bool CddaBridge::acknowledgeThreat() {
 +    return pimpl_ && pimpl_->acknowledge_threat();
 +}
@@ -1428,10 +1496,10 @@ index 0000000..a355057
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.h b/src/cdda/cdda_bridge.h
 new file mode 100644
-index 0000000..9a15a86
+index 0000000..aa2fd3b
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.h
-@@ -0,0 +1,115 @@
+@@ -0,0 +1,117 @@
 +// Luanti C++ CWM Presentation Bridge
 +// Licensed under Apache-2.0
 +#pragma once
@@ -1480,6 +1548,7 @@ index 0000000..9a15a86
 +    float interpolation_time{0.2f};
 +    float rotation{0.0f};
 +    uint8_t hp_percent{100};
++    uint32_t state_flags{0};
 +    std::string name;
 +    bool perceived{true};
 +    bool humanoid{false};
@@ -1513,6 +1582,7 @@ index 0000000..9a15a86
 +    // Input hooks
 +    bool handleMoveInput(int dir);
 +    bool handleInteract(int x, int y, int z, int action);
++    bool handlePointedOpening(const v3s16& node, bool close);
 +    bool acknowledgeThreat();
 +    bool answerDecision(uint16_t choice);
 +
