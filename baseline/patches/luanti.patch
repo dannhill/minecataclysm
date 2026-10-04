@@ -469,10 +469,10 @@ index 7f3f860..c4c4482 100644
  void TestMapBlock::testSaveLoad(IGameDef *gamedef, const u8 version)
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..4ca67a2
+index 0000000..94ccf60
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,1065 @@
+@@ -0,0 +1,1066 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
@@ -1337,7 +1337,7 @@ index 0000000..4ca67a2
 +    std::string trace_path;
 +    if (g_settings->getNoEx("cwm_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->trace_.open(trace_path);
-+        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog,ipc_connected,ipc_input,ipc_output,ipc_read_bytes,ipc_write_bytes,ipc_frames,ipc_dispatch_bytes,ipc_read_calls,ipc_write_calls,session_state,input_ready,session_id,player_id,connection_id,sequence,resync_count\n";
++        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog,ipc_connected,ipc_input,ipc_output,ipc_read_bytes,ipc_write_bytes,ipc_frames,ipc_dispatch_bytes,ipc_read_calls,ipc_write_calls,session_state,input_ready,session_id,player_id,connection_id,sequence,resync_count,entity_cache,vehicle_cache,scene_origin_x,scene_origin_y\n";
 +    }
 +    return pimpl_->connect();
 +}
@@ -1414,7 +1414,8 @@ index 0000000..4ca67a2
 +        << static_cast<int>(pimpl_->session_.state) << ',' << pimpl_->player_ready_ << ','
 +        << pimpl_->session_.identity.session << ',' << pimpl_->session_.identity.player << ','
 +        << pimpl_->session_.identity.connection << ',' << pimpl_->session_.sequence << ','
-+        << pimpl_->session_.resync_count << '\n';
++        << pimpl_->session_.resync_count << ',' << pimpl_->entities_.size() << ',' << pimpl_->vehicles_.size()
++        << ',' << pimpl_->scene_origin_.X << ',' << pimpl_->scene_origin_.Y << '\n';
 +    pimpl_->trace_.flush();
 +}
 +

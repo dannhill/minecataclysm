@@ -25,7 +25,7 @@ def main():
     import flatbuffers
     from CDDA.CWM import CwmMessage as Msg, Payload, HelloResponse as Hello, HeartbeatAck as Beat
     from CDDA.CWM import WorldSnapshot as World, ChunkSnapshot as Chunk, CwmBlock as Block
-    from CDDA.CWM import EntityState as Entity, Vec3f, Coord3i
+    from CDDA.CWM import EntityState as Entity, VehicleState as Vehicle, Vec3f, Coord3i
     from session_wire import AuthorityWire
     wire = AuthorityWire()
     forbidden_inputs = []
@@ -55,10 +55,22 @@ def main():
             World.WorldSnapshotStartChunksVector(b, 1); b.PrependUOffsetTRelative(chunk); chunks = b.EndVector()
         Entity.EntityStateStart(b); Entity.EntityStateAddId(b, 1)
         Entity.EntityStateAddPos(b, Vec3f.CreateVec3f(b, 8, 12, 0)); entity = Entity.EntityStateEnd(b)
-        World.WorldSnapshotStartEntitiesVector(b, 1); b.PrependUOffsetTRelative(entity); entities = b.EndVector()
+        actors=[entity]
+        if revision==1000:
+            Entity.EntityStateStart(b); Entity.EntityStateAddId(b,1000)
+            Entity.EntityStateAddPos(b,Vec3f.CreateVec3f(b,8,8,0)); actors.append(Entity.EntityStateEnd(b))
+        World.WorldSnapshotStartEntitiesVector(b,len(actors))
+        for actor in reversed(actors): b.PrependUOffsetTRelative(actor)
+        entities=b.EndVector()
+        vehicles=0
+        if revision==1000:
+            Vehicle.VehicleStateStart(b); Vehicle.VehicleStateAddId(b,5)
+            Vehicle.VehicleStateAddPivot(b,Vec3f.CreateVec3f(b,8,8,0)); vehicle=Vehicle.VehicleStateEnd(b)
+            World.WorldSnapshotStartVehiclesVector(b,1); b.PrependUOffsetTRelative(vehicle); vehicles=b.EndVector()
         empty = wire.empty_vectors(b)
         World.WorldSnapshotStart(b); wire.world_fields(b,full,empty,revision=revision)
-        World.WorldSnapshotAddOrigin(b, Coord3i.CreateCoord3i(b, 0, 0, 0))
+        World.WorldSnapshotAddOrigin(b, Coord3i.CreateCoord3i(b,100000 if wire.identity[0]==99 else 0,-84000 if wire.identity[0]==99 else 0,0))
+        if vehicles: World.WorldSnapshotAddVehicles(b,vehicles)
         World.WorldSnapshotAddEntities(b, entities)
         if full: World.WorldSnapshotAddChunks(b, chunks)
         return envelope(b, Payload.Payload.WorldSnapshot, World.WorldSnapshotEnd(b), revision)
@@ -104,7 +116,7 @@ def main():
                             return data
                         size = struct.unpack('>I', exact(4))[0]; msg = Msg.CwmMessage.GetRootAsCwmMessage(exact(size), 0)
                         if msg.PayloadType() != Payload.Payload.HelloRequest: raise ValueError('Missing real Hello')
-                        wire = AuthorityWire(connection=connection_index)
+                        wire = AuthorityWire(connection=connection_index,session=88 if connection_index<3 else 99)
                         initial = frame(hello())+frame(wire.reset())+frame(snapshot(connection_index*1000, True))
                         c.sendall(initial[:2]); time.sleep(.02); c.sendall(initial[2:7]); time.sleep(.02); c.sendall(initial[7:])
                         c.settimeout(.01)
@@ -179,13 +191,14 @@ def main():
                 subprocess.run(['xdotool','keyup','--window',window,'w'],check=True,capture_output=True)
                 until(lambda r: int(r['revision'])==1200 and int(r['input_ready'])==1)
                 check('full_resync_restores_readiness',True)
+                check('full_resync_removes_absent_actor_and_vehicle',int(rows()[-1]['entity_cache'])==1 and int(rows()[-1]['vehicle_cache'])==0)
                 commands.put('badworld')
                 frozen=until(lambda r: int(r['resync_count'])==2 and int(r['input_ready'])==0)
                 check('malformed_full_state_does_not_mutate_world',int(frozen['revision'])==1200)
                 until(lambda r: int(r['revision'])==1400 and int(r['input_ready'])==1)
                 check('semantic_failure_recovers_with_full_state',True)
                 flood_start = time.monotonic(); commands.put('flood')
-                until(lambda r: int(r['ipc_frames']) > 0 and int(r['sequence']) >= 53)
+                until(lambda r: int(r['ipc_frames']) > 0 and int(r['sequence']) >= 50)
                 check('heartbeats_do_not_advance_world_revision', int(rows()[-1]['revision'])==1400)
                 flood_end = time.monotonic()
                 commands.put('final'); until(lambda r: int(r['revision']) == 1500 and int(r['ipc_connected']) == 0)
@@ -196,6 +209,7 @@ def main():
                 commands.put('oversize'); until(lambda r: int(r['ipc_connected']) == 0)
                 check('renderer_survives_oversized_prefix', proc.poll() is None)
                 until(lambda r: int(r['revision']) == 3000 and int(r['ipc_connected']) == 1)
+                check('new_session_clears_old_scene_origin',int(rows()[-1]['session_id'])==99 and int(rows()[-1]['scene_origin_x'])==100000 and float(rows()[-1]['target_x'])==8)
                 commands.put('malformed'); until(lambda r: int(r['ipc_connected']) == 0)
                 check('renderer_survives_invalid_flatbuffer', proc.poll() is None)
                 until(lambda r: int(r['revision']) == 4000 and int(r['ipc_connected']) == 1)

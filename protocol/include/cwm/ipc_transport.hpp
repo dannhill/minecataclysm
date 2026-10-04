@@ -90,14 +90,14 @@ public:
         return *this;
     }
 
-    bool is_valid() const { return fd_ >= 0; }
+    bool is_valid() const override { return fd_ >= 0; }
     int native_handle() const { return fd_; }
-    IpcCloseReason close_reason() const { return reason_; }
-    size_t pending_input_bytes() const { return decoder_.pending_bytes(); }
+    IpcCloseReason close_reason() const override { return reason_; }
+    size_t pending_input_bytes() const override { return decoder_.pending_bytes(); }
     // Counts retained allocations, including the already-written part of the head frame.
-    size_t queued_output_bytes() const { return output_bytes_; }
-    size_t queued_output_frames() const { return output_.size(); }
-    const IpcWork& last_work() const { return work_; }
+    size_t queued_output_bytes() const override { return output_bytes_; }
+    size_t queued_output_frames() const override { return output_.size(); }
+    const IpcWork& last_work() const override { return work_; }
 
     void close(IpcCloseReason reason = IpcCloseReason::LocalClose) override { close_fd(reason); }
     void close_fd(IpcCloseReason reason = IpcCloseReason::LocalClose) {
@@ -108,7 +108,7 @@ public:
 
     // True means accepted into the bounded FIFO, not delivered to the peer.
     // Only poll_and_receive pumps socket writes. No peer-dependent wait here.
-    bool send_message(const uint8_t* data, size_t size) {
+    bool send_message(const uint8_t* data, size_t size) override {
         if (!is_valid() || read_eof_ || write_failed_) return false;
         if (!data || !size || size > limits_.max_frame_bytes) {
             close_fd(IpcCloseReason::InvalidFrame); return false;
@@ -128,7 +128,7 @@ public:
     // IMPORTANT: false may accompany final complete frames. Consume out_frames
     // before handling disconnect. EOF with remaining complete frames drains over
     // successive pumps. An incomplete tail is then classified as truncation.
-    bool poll_and_receive(std::vector<std::vector<uint8_t>>& out_frames, int timeout_ms = 0) {
+    bool poll_and_receive(std::vector<std::vector<uint8_t>>& out_frames, int timeout_ms = 0) override {
         work_ = {};
         dispatch_blocked_ = false;
         if (!is_valid()) return false;
@@ -246,7 +246,7 @@ public:
     explicit IpcServer(const std::string& socket_path, IpcLimits limits = {})
         : socket_path_(socket_path), limits_(limits) {}
     ~IpcServer() { stop(); }
-    bool start() {
+    bool start() override {
         stop();
         sockaddr_un addr{};
         if (socket_path_.empty() || socket_path_.size() >= sizeof(addr.sun_path)) return false;
@@ -260,7 +260,7 @@ public:
         if (::chmod(socket_path_.c_str(), 0600) < 0 || ::listen(server_fd_, 4) < 0) { stop(); return false; }
         return true;
     }
-    void stop() {
+    void stop() override {
         active_client_.reset();
         if (server_fd_ >= 0) {
             ::close(server_fd_); server_fd_ = -1;
@@ -269,7 +269,7 @@ public:
         }
     }
     // Single-client ownership: an additional live peer cannot replace it.
-    bool poll_accept(int timeout_ms = 0) {
+    bool poll_accept(int timeout_ms = 0) override {
         if (server_fd_ < 0) return false;
         pollfd pfd{server_fd_, POLLIN, 0};
         if (::poll(&pfd, 1, std::max(0, timeout_ms)) > 0 && (pfd.revents & POLLIN)) {
@@ -282,8 +282,8 @@ public:
         }
         return false;
     }
-    bool has_client() const { return active_client_ && active_client_->is_valid(); }
-    IpcConnection* client() { return active_client_.get(); }
+    bool has_client() const override { return active_client_ && active_client_->is_valid(); }
+    IpcConnection* client() override { return active_client_.get(); }
 private:
     std::string socket_path_;
     IpcLimits limits_;

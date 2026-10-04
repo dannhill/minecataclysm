@@ -17,9 +17,9 @@
       "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
       "shallow": true,
       "patch": "baseline/patches/luanti.patch",
-      "patch_sha256": "c6dbbaa097c85b160e3aa11b327d6bb8f86e1253722e683bf01b531a8edccf51",
+      "patch_sha256": "d5d8bbc731cdcbcb03d2a4943089ce9e618f33ba460d6415b3a065644dae7ecf",
       "tree_inventory": "baseline/trees/luanti.json",
-      "tree_sha256": "80906bd8f4ebaf34a208f5fe19f85acfe8941c506fd102dd9001505d7e290327",
+      "tree_sha256": "83d06bb7445db34ac373b9808b8b1b71ea65803147a202b5f199071ae66757d7",
       "file_count": 2251,
       "original_status": " M src/CMakeLists.txt\n M src/client/CMakeLists.txt\n M src/client/client.cpp\n M src/client/clientenvironment.cpp\n M src/client/game.cpp\n M src/client/mesh_generator_thread.cpp\n M src/client/mesh_generator_thread.h\n M src/network/clientpackethandler.cpp\n M src/unittest/test_mapblock.cpp\n?? src/cdda/cdda_bridge.cpp\n?? src/cdda/cdda_bridge.h\n"
     },

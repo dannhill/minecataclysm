@@ -6,33 +6,31 @@ captured implementation; it does not approve its gaps. The executable schema
 is [cwm.fbs](cwm.fbs). Audit findings and evidence are in
 [M5.5](../docs/audits/M5.5.md).
 
-This document retains takeover-baseline coverage below. Subsequent scoped
-repairs are recorded in their evidence: native canonical turns/loading,
-stable presentation through rebases, perceived creature models and native
-decisions. The current implementation uses minor 4: minor 3 appended the terrain
-catalog, minor 4 appends actor state cues. Negotiation/session/recovery conformance remains
-unverified.
+The current runtime requires **CWM 2.0**. This breaks the old negotiation
+contract; schema fields and union members are appended without changing the
+existing FlatBuffers offsets. Both executables must be rebuilt together.
+The historical coverage table below is retained as audit evidence.
 
 ## Wire format
 
 Each message is a four-byte unsigned big-endian length followed by one
 nonempty FlatBuffers `CwmMessage`. The absolute size limit is 16 MiB; a
-connection can configure a smaller limit through `IpcLimits`. There is no
-FlatBuffers file identifier, compression, checksum, authentication or session
-identifier. The schema carries sequence number, world revision, timestamp and
-a typed union payload. C++ and Python bindings regenerate identically with
-flatc 24.3.25.
+connection can configure a smaller limit through `IpcLimits`. No file
+identifier, compression, checksum or authentication is added. The envelope
+carries sequence number, world revision, timestamp, typed union payload and
+explicit session/player/connection IDs. Bindings use flatc 24.3.25.
 
-`MessageVerifier` validates FlatBuffers structure. It does not establish
-semantic validity. The bridge rejects a snapshot without `origin` and skips
-entities/vehicles/components lacking `pos`/`pivot`/`offset`. Vector
-length/dimension consistency, enum ranges and finite/in-range coordinates
-still require comprehensive validation at the boundary.
+`MessageVerifier` checks structure. `ClientSession` validates ordering and
+snapshot completeness before ingestion: required origin/player/rosters,
+finite positions, bounded vectors, exact chunk dimensions/block counts and
+consistent spawn/removal references. This is not complete semantic validation
+of every enum, coordinate transform, field or interaction; see FND-04.
 
-The schema contains no Luanti `MapNode` or `content_t`. Framing currently
-includes POSIX `arpa/inet.h`, and endpoints directly use `IpcConnection`.
-Only Unix-domain socket connection/listening is implemented; an alternate
-backend and the required transport abstraction remain absent.
+CWM contains no Luanti structures. `CwmTransport`/`CwmListener` are independent
+of OS and framing; endpoints use those interfaces, with POSIX instantiated
+only at the backend factory. Framing encodes big-endian bytes without POSIX
+headers. Unix sockets are the sole production backend. The in-memory test
+backend exercises the same client session controller without descriptors.
 
 ## Takeover-baseline message coverage (historical)
 
@@ -52,9 +50,9 @@ backend and the required transport abstraction remain absent.
 | CommandAck | Replies to implemented requests | Movement waits for matching ACK and subsequent authoritative snapshot |
 | TimeEvent | Defined, not emitted | Ignored |
 
-`ResyncRequest`, `WorldReset`, session/player/connection identities, stable
-archetype identifiers and spawn events required by v1.1 are absent. The union
-cannot express those operations without a schema extension.
+That table describes the frozen takeover, not the current payload contract.
+CWM 2 adds `ResyncRequest`, `WorldReset`, `SnapshotAck`, `EntitySpawned`,
+envelope identities and explicit full/incremental state metadata.
 
 ## Coordinates and material interpretation
 
@@ -157,15 +155,59 @@ freeze input and obtain a fresh authoritative snapshot. Commands need stable
 IDs and bounded deduplication scoped to the session; receiving the same command
 must not repeat gameplay.
 
-Currently the server allocates some sequence numbers without emitting a
-message; neither side validates ordering. The client stores every incoming
-world revision without checking monotonicity. Movement now has a tile batch
-inside its result snapshot, but a general revision/recovery contract and
-deduplication are absent. Full terrain ingestion replaces the
-terrain cache and clears absent projected blocks; native Luanti air blocks
-cannot overwrite it. Shutdown clears bridge-owned visual state. Removal of
-absent actors within complete rosters is implemented; complete vehicle
-lifecycle and reconnect recovery remain uncertified.
+The implemented lifecycle is Disconnected → HelloSent → Accepted → Syncing
+→ Running. Sequence/revision/semantic failure enters Resyncing and disables
+input. A lost transport returns to Disconnected with one retry timer. Five
+seconds without completing negotiation/full sync causes disconnect; native
+player decision prompts do not time out.
+
+1. Client Hello has sequence 1, zero envelope identities and a nonzero client
+   ID retained across reconnects. Exact major/minor 2.0 is required. The server
+   sends no gameplay state before accepting Hello. Rejection is sent and the
+   connection closed; there is no permissive legacy fallback.
+2. Accepted HelloResponse is sequence 1 and carries a fresh server-runtime
+   session ID, native canonical avatar ID, new connection ID and command-ID
+   floor. Initial WorldReset(request=0) precedes a full WorldSnapshot.
+3. Client installs the complete state on the presentation thread, then sends
+   SnapshotAck(state_id). Only that matching acknowledgement enables server
+   command acceptance. Input is also gated by client readiness and player state.
+4. Each subsequent message matches all three IDs and a contiguous sequence
+   in its direction. Counters count messages successfully queued, independently
+   of simulation revisions, and restart per connection. WorldSnapshot carries
+   full, base_revision, state_id, resync_id and completed_command_id. A running
+   update requires base_revision equal to the installed revision; revision
+   never decreases. Chunks indicate full replacement, not an inferred delta.
+5. Terrain changes and complete actor/vehicle rosters are one atomic message;
+   full replacement removes absent terrain, actors and vehicle components.
+   Spawn/removal lists are embedded in that batch. Separate TileDelta or actor
+   messages cannot bypass the state gate. Dynamic-field rendering remains
+   absent and is not certified by this lifecycle.
+6. On a gap, reorder or invalid state the client retains its last trusted
+   projection, freezes new commands and sends one correlated ResyncRequest.
+   Untrusted tail messages are discarded. A matching WorldReset establishes
+   the new sequence barrier; the next contiguous full state must match the
+   request. State ACK completes recovery. Pending native prompts are replayed
+   after state ACK on the same connection. No missing state is inferred.
+7. Reconnect to the same session installs a fresh full state with a new
+   connection ID. A different session/player discards old caches, visual
+   objects and scene origin before ingestion. No uncertain command is
+   automatically resent. Full authoritative state resolves its actual effect.
+
+The server has a bounded 1,024-entry at-most-once command ledger. IDs are
+monotonic across a server session/player, with client ownership and canonical
+request signature. A pending duplicate is not queued again. A completed
+duplicate returns the original outcome/result revision and a fresh full state.
+Reusing an ID with different semantics/author closes the offender. IDs evicted
+below the high-water mark are rejected as expired, never executed again.
+Queued actions canceled on disconnect retain a negative outcome. A native
+action already in progress may complete and records its result even without
+an active client. The ledger is volatile: fresh session identity invalidates
+old commands after a server restart. Canonical saves contain no protocol state.
+
+The client releases a movement/interaction only after the matching CommandAck
+and WorldSnapshot.completed_command_id, with sufficient result revision.
+Unrelated heartbeat/state traffic cannot unlock it. WorldReset cancels uncertain
+local pending input; recovery never synthesizes or retries gameplay commands.
 
 ## Bounded transport after FND-02
 
@@ -196,8 +238,7 @@ oversized lengths, structurally invalid FlatBuffers and output overflow close
 the offending connection. Truncated input closes after delivering preceding
 complete frames. Queue overflow disconnects rather than dropping a delta while
 keeping the client apparently synchronized. A fresh connection receives a
-full authoritative snapshot under the existing lifecycle; full negotiation,
-gap detection, deduplication and recovery correctness remain FND-03.
+negotiated full authoritative snapshot under the CWM 2 lifecycle above.
 
 POLLHUP/ERR does not precede readable bytes: recv establishes EOF. Complete
 buffered frames drain across successive bounded pumps. A **false** return may
@@ -212,13 +253,15 @@ Additional connections are rejected while the current one is live. The
 visual thread uses nonblocking connect without waiting; the bridge owns its
 retry timer and is initialized once per Luanti Client. Disconnect disables
 command readiness and hides actors while retaining the static projection.
-Unix socket path lengths and fd flags are checked. There is still no alternate
-transport backend or negotiated session/world reset contract.
+Unix socket path lengths and fd flags are checked. Socket creation uses mode
+0600 and never unlinks another process’s bound path. All launch entry points
+exec the single start.sh supervisor; shared fallback socket paths are removed.
 
 These are byte/frame/syscall budgets, not a general wall-clock bound on native
 snapshot generation or renderer ingestion of a legal 16-MiB frame. Benchmarks
 and further semantic vector/coordinate validation remain FND-04/05.
 Tests cover the actual socket layer plus adverse peers in real native and
 graphical runtimes. The optional camera trace records connection status,
-queue sizes and per-pump counters. Historical broader session failures in
-`tests/takeover_runtime.py` and `tests/takeover_render.py` remain separate debt.
+queue sizes, per-pump counters, session IDs, readiness, received sequence and
+resync count. The original takeover probes remain frozen evidence; CWM 2
+fixtures test the new contract with substantive native and graphical cases.
