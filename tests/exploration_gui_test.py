@@ -148,11 +148,13 @@ def main():
             turn(90, -45)
             shot('window-sill-target.png')
             revision = int(latest()['revision'])
-            xdo('keydown', '--window', window, 'Shift_L')
+            # XTest maintains the real X modifier state; synthetic XSendEvent
+            # key events do not hold Shift while mouse events are generated.
+            xdo('keydown', 'Shift_L')
             time.sleep(.12)  # Keep the modifier down across client input frames.
-            xdo('click', '--window', window, '3')
+            xdo('click', '3')
             time.sleep(.12)
-            xdo('keyup', '--window', window, 'Shift_L')
+            xdo('keyup', 'Shift_L')
             wait(lambda r: int(r['revision']) > revision and int(r['pending_move']) == 0)
             time.sleep(1)
             turn(90)
@@ -169,6 +171,7 @@ def main():
             check('native_close_restores_visible_pane', changed(opened, reclosed) > 100)
         finally:
             if window:
+                subprocess.run(['xdotool', 'keyup', 'Shift_L'], capture_output=True)
                 for key in ('w', 's', 'Shift_L', '1', '2'):
                     subprocess.run(['xdotool', 'keyup', '--window', window, key], capture_output=True)
             if proc.poll() is None:
