@@ -28,7 +28,7 @@ le riparazioni già completate a visibilità, strutture e movimento.
 |---|---|---|
 | FND-01 | Distinguere nuova partita e caricamento; mantenere identità, inventario, posizione, orologio e mondo. Comandi e verifiche headless usano il ciclo nativo completo. | IMPLEMENTED — verifica mirata PASS; SAVE-001 completo in FND-05 |
 | FND-02 | Framing e code limitati; EOF, framing/FlatBuffers strutturalmente invalidi e client lento sono contenuti. I/O non bloccante e lavoro limitato per aggiornamento. | IMPLEMENTED — verifica mirata PASS; [evidenze](docs/fixes/fnd02-transport.md) |
-| FND-03 | Negoziazione, identità di sessione, deduplicazione, revisioni, sequenze, reconnect/resync e abilitazione dell'input su stato completo. | PLANNED |
+| FND-03 | Negoziazione, identità di sessione, deduplicazione, revisioni, sequenze, reconnect/resync e abilitazione dell'input su stato completo. | IMPLEMENTED — verifica mirata PASS; [evidenze](docs/fixes/fnd03-session-recovery.md) |
 | FND-04 | Entità reali persistenti, picking, verticalità, campi, luce/percezione e HUD autorevoli; lifecycle e threading verificati. | IN PROGRESS: rebase, creature base, decisioni native, OPEN/CLOSE puntati, varianti porte/finestre e presentazione acqua; copertura incompleta |
 | FND-05 | SAVE-001 completo, test discovery, licenze/media e benchmark popolati riproducibili; nuova certificazione M5.5 soltanto dopo le evidenze. | PLANNED |
 
@@ -43,8 +43,8 @@ movimento, strutture, apertura porte, safe mode e riavvio. Dopo la
 sfarfallio assente/impercettibile, zombie visibili e morte da zombie senza
 crash. Il pozzo/bordo resta da riprovare manualmente. Questa riparazione
 anticipa parte di FND-04; animazioni/orientamento e copertura completa restano
-aperti. FND-02 è ora implementato con verifica mirata; il prossimo task di
-fondazione è FND-03. Il nuovo abort nell'acqua e le varianti
+aperti. FND-02 e FND-03 sono implementati con verifica mirata; il prossimo
+task di fondazione è completare FND-04. Il nuovo abort nell'acqua e le varianti
 di porte/finestre segnalate nel [riscontro sul terreno](docs/source/terrain-feedback-2026-10-04.md)
 sono stati affrontati nella [riparazione esplorativa](docs/fixes/exploration-apertures.md):
 avviso degli oggetti vulnerabili tramite UI esterna, stati derivati dalle
@@ -55,7 +55,7 @@ accetta OPEN/CLOSE puntati, B normale, ingresso/uscita nell'acqua e avviso degli
 oggetti vulnerabili. Posizione e stati delle aperture persistono anche dopo
 allontanamento oltre la proiezione, quit/load e ritorno. Nei casi provati la
 riparazione è accettata; non serve ripetere la stessa checklist prima di
-FND-03. Puntamento sul davanzale funzionale, ergonomia ancora da valutare:
+FND-03, ora verificato. Puntamento sul davanzale funzionale, ergonomia ancora da valutare:
 proposta di selezione dell'intera apertura con evidenziazione/azione esplicita,
 occlusione e portata native, senza collisioni aggiunte.
 L'accettazione delle strutture nei casi precedenti non copre queste anomalie.
@@ -70,7 +70,7 @@ non è approvata come soluzione definitiva. La
 [proposta su distanza e memoria](docs/design/visibility-and-world-memory.md)
 conserva le alternative e raccomanda panorama statico ricordato, dettaglio
 ridotto lontano e haze al confine effettivo. La raccomandazione non è ancora
-una scelta dell'utente né un'implementazione; FND-03 e la fase 2 restano aperti.
+una scelta dell'utente né un'implementazione; la fase 2 resta aperta.
 
 FND-04 deve inoltre distinguere stato del vetro/telaio/davanzale e
 attraversabilità nativa, coprire famiglie open/closed/locked/broken delle
@@ -78,6 +78,14 @@ porte, adattare i menu nativi di ingresso in acqua e presentare guado/nuoto,
 arredi e connessioni verticali riconoscibili. Non correggere placeholder
 aggiungendo collisioni o scale indipendenti da CDDA. Riproduzione isolata e
 verifica della causa precedono l'attestazione di ogni fix.
+
+FND-03 usa CWM 2.0: Hello compatibile prima dello stato, identità distinte,
+sequenze per connessione, registro limitato dei comandi e resync completo
+con conferma dello snapshot. `start.sh` è l'unico supervisore, anche per gli
+alias compilati. Le regressioni includono il client grafico reale, salvataggi
+isolati, input/camera e menu nativi. Non occorre ripetere le validazioni
+manuali già accettate; M5.5 completo rimane FAILED e SAVE-001 resta in FND-05.
+I dettagli e i binari installati sono nel [report FND-03](docs/fixes/fnd03-session-recovery.md).
 
 ## Fase 2 — Prototipo di tempo, movimento e percezione
 

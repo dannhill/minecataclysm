@@ -13,7 +13,11 @@ Final complete frames survive EOF, malformed framing/FlatBuffers close the
 offending connection, and slow readers cannot cause peer-dependent send waits.
 The real renderer and isolated native saves are included in verification.
 FND-03 (negotiation, identities, deduplication, sequencing and coherent recovery)
-is next; transport reconnect tests do not certify that contract.
+is implemented with scoped verification PASS; see [the session repair](docs/fixes/fnd03-session-recovery.md).
+CWM 2.0 gates input on installed full state, deduplicates commands across
+connections, and freezes/resynchronizes the actual renderer after gaps or
+invalid updates. Both runtime binaries and compiled launcher aliases are installed.
+FND-04 coverage and the phase 2 prototypes remain next; full M5.5 is not recertified.
 Product decisions and planned prototypes do not certify implementation.
 
 Manual feedback accepted movement, structures, door opening, safe mode and
