@@ -87,6 +87,13 @@ isolati, input/camera e menu nativi. Non occorre ripetere le validazioni
 manuali già accettate; M5.5 completo rimane FAILED e SAVE-001 resta in FND-05.
 I dettagli e i binari installati sono nel [report FND-03](docs/fixes/fnd03-session-recovery.md).
 
+L'utente [valida la checklist FND-03](docs/source/fnd03-manual-validation-2026-10-04.md)
+e autorizza il seguito. Restano a priorità bassa porte con stato visivo
+invertito, soprattutto in strutture di pietra, e il perno centrale di un'anta
+nelle porte doppie. Il passo corrente di FND-04 è rendere riconoscibili le
+connessioni verticali native e collegare salita/discesa ai controlli CDDA.
+Non finalizza il controller continuo né lo scheduler della fase 2.
+
 ## Fase 2 — Prototipo di tempo, movimento e percezione
 
 Dipende da FND-01–03 e dalla proiezione sufficiente alla scena di confronto.

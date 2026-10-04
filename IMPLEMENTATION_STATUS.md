@@ -17,7 +17,11 @@ is implemented with scoped verification PASS; see [the session repair](docs/fixe
 CWM 2.0 gates input on installed full state, deduplicates commands across
 connections, and freezes/resynchronizes the actual renderer after gaps or
 invalid updates. Both runtime binaries and compiled launcher aliases are installed.
-FND-04 coverage and the phase 2 prototypes remain next; full M5.5 is not recertified.
+The user [accepts the FND-03 manual checklist](docs/source/fnd03-manual-validation-2026-10-04.md)
+and authorizes continuation. Visual state inversion on some stone-building
+doors and the center hinge on one double-door leaf remain low-priority reports;
+neither is claimed fixed or reproduced. FND-04 next covers recognizable native
+vertical connections and authoritative up/down input. Full M5.5 is not recertified.
 Product decisions and planned prototypes do not certify implementation.
 
 Manual feedback accepted movement, structures, door opening, safe mode and
