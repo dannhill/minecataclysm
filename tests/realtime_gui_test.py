@@ -166,6 +166,37 @@ def main():
             tap('F7')
             paused=until(lambda r:int(r['pause_reasons'])&1)
             subprocess.run(['import','-window',window,str(out/'paused.png')],check=True,timeout=10)
+            # Native auto-open while walking into the isolated hostile room.
+            tap('F7')
+            until(lambda r:r['pause_reasons']=='0')
+            tap('F8')
+            until(lambda r:float(r['time_scale'])==4)
+            xdo('keydown','--window',window,'d')
+            until(lambda r:float(r['target_x'])>=73)
+            xdo('keyup','--window',window,'d')
+            time.sleep(.15)
+            xdo('keydown','--window',window,'w')
+            until(lambda r:float(r['target_z'])>=-60)
+            xdo('keyup','--window',window,'w')
+            time.sleep(.15)
+            xdo('keydown','--window',window,'d')
+            threatened=until(lambda r:int(r['pause_reasons'])&4)
+            xdo('keyup','--window',window,'d')
+            time.sleep(.2)
+            frozen=latest()
+            frozen_pose=pose(roster())
+            time.sleep(1)
+            check('actual_new_threat_autopause_freezes_native_and_visual_time',
+                native_time(latest())==native_time(frozen) and pose(roster())==frozen_pose)
+            check('autopause_does_not_enter_hostile_room',float(threatened['target_x'])==73)
+            subprocess.run(['import','-window',window,str(out/'threat.png')],check=True,timeout=10)
+            tap('e')
+            until(lambda r:r['pause_reasons']=='0')
+            t=native_time(latest())
+            time.sleep(.6)
+            check('actual_acknowledge_key_resumes_native_clock',native_time(latest())>t)
+            tap('F7')
+            paused=until(lambda r:int(r['pause_reasons'])&1)
             saved_time = native_time(paused)
             saved_target = target(paused)
             samples = rows(actors)
@@ -173,7 +204,7 @@ def main():
             check('real_scene_has_no_unowned_actor_nodes',all(int(r['scene_actors'])<=int(latest()['entity_cache'])-1 for r in roster().values()))
         finally:
             if window:
-                for key in ('s','w','F7','F8','Escape'):
+                for key in ('s','w','d','e','F7','F8','Escape'):
                     subprocess.run(['xdotool','keyup','--window',window,key],capture_output=True)
             if proc.poll() is None:
                 os.killpg(proc.pid,signal.SIGTERM)

@@ -165,7 +165,7 @@ def main():
             InteractRequest.InteractRequestAddCommandId(b, ident)
             InteractRequest.InteractRequestAddAction(b, action)
             InteractRequest.InteractRequestAddTargetCoord(b, Coord3i.CreateCoord3i(b,
-                x-self.state['origin'][0], y-self.state['origin'][1], self.pos()[2]))
+                x-self.state['origin'][0], y-self.state['origin'][1], int(self.pos()[2])))
             self.wire.send(self.sock, b, Payload.Payload.InteractRequest, InteractRequest.InteractRequestEnd(b))
             return self.complete(ident)
 
@@ -212,6 +212,10 @@ def main():
                 check('menu_pause_freezes_native_time', c.state['pause']==2 and c.state['time']==t)
                 c.control(4)
                 c.intent(99, False)
+                for direction, expected in ((1,[60,59,0]),(9,[60,59,1]),(10,[60,59,0]),(5,[60,60,0]),
+                                            (3,[61,60,0]),(9,[61,60,1]),(10,[61,60,0]),(7,[60,60,0])):
+                    c.complete(c.send(MoveRequest,dict(Direction=direction)))
+                    check('realtime_vertical_endpoint_'+str(expected),c.pos()==expected)
                 # Held direction into open corridor; native cost/speed sets cadence.
                 c.intent(7)
                 c.observe(2.2)
@@ -277,10 +281,12 @@ def main():
                 # Approach the closed room from the safe corridor.
                 c.control(2,4)
                 c.intent(3)
-                c.until(lambda: c.pos()[0]>=73)
+                c.until(lambda: c.pos()[0]>=70)
                 c.intent(0)
-                check('native_room_approach_stops_outside_closed_door', c.pos()==[73,60,0])
-                c.interact(74,60,0)
+                while c.pos()[0]<73:
+                    c.complete(c.send(MoveRequest,dict(Direction=3)))
+                check('native_room_approach_stops_outside_closed_door', c.pos()==[73,60,0] and c.state['pause']==0)
+                c.interact(74,60,1)
                 c.until(lambda: bool(c.state['pause'] & 4))
                 check('new_native_perceived_hostile_autopauses', any(a['name']=='Realtime Threat' and a['perceived'] for a in c.state['actors'].values()))
                 t = c.state['time']
