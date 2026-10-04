@@ -6,7 +6,7 @@ captured implementation; it does not approve its gaps. The executable schema
 is [cwm.fbs](cwm.fbs). Audit findings and evidence are in
 [M5.5](../docs/audits/M5.5.md).
 
-The current runtime requires **CWM 2.1**. This breaks the old negotiation
+The current runtime requires **CWM 2.2**. This breaks the old negotiation
 contract; schema fields and union members are appended without changing the
 existing FlatBuffers offsets. Both executables must be rebuilt together.
 The historical coverage table below is retained as audit evidence.
@@ -300,7 +300,7 @@ queue sizes, per-pump counters, session IDs, readiness, received sequence and
 resync count. The original takeover probes remain frozen evidence; CWM 2
 fixtures test the new contract with substantive native and graphical cases.
 
-## CWM 2.1 — Optional real-time prototype
+## CWM 2.2 — Optional real-time prototype
 
 `SimulationControlRequest` and `MovementIntentRequest` append command payloads.
 Both use the existing command ledger and exact version negotiation. A held
@@ -325,3 +325,21 @@ world does not progress while waiting for its ACK. The calendar, native action
 and post-player world phases remain distinct; an action result can precede that
 tick's AI phase. See [RT-01](../docs/prototypes/rt01-real-time.md) for quantization,
 stall policy, evidence and remaining controller decisions.
+
+
+## Continuous prototype (2.2)
+
+`SimulationState.continuous_motion` advertises the opt-in native controller.
+`ContinuousIntentRequest` carries an idempotent command ID and native XY
+floats, never a position. Finite directions of length at most sqrt(2) are
+normalized; zero releases. Invalid/paused intents are rejected. Grid held
+intent and horizontal MoveRequest are rejected in this mode. Vertical and
+interaction requests continue through native actions. Player Vec3f contains
+native tile plus the server's paid, saved offset. The initial rate is global
+4x; the same clock advances every gameplay system.
+
+Continuous offset, fractional debit credit and stamina remainder are stored
+in canonical CDDA Creature values. Native tile-based perception, AI and combat
+still use the anchor. This is a spatial prototype, not a claim that every CDDA
+system now uses continuous distances. An anchor mismatch after an external
+teleport resets offsets but retains already-paid rounding credit.

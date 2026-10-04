@@ -36662,7 +36662,7 @@
   {
     "path": "src/avatar_action.cpp",
     "mode": "100644",
-    "sha256": "25213ae31a7f6385a1cb00aca3065145d7ab4f2aaaca8d8a801114dc7f7c3aa3"
+    "sha256": "c60d55bba6d11380a2705762a83823aaba720813df6f351b7686efbff1167364"
   },
   {
     "path": "src/avatar_action.h",
@@ -36947,7 +36947,7 @@
   {
     "path": "src/character.cpp",
     "mode": "100644",
-    "sha256": "d123a64d32b7834402544614191913f857b86ca625deda4e01150de44c5d08b9"
+    "sha256": "ae3d2da138d710a477e94989cac71638ba7c56d625f4a33df90cc4f7ae9b6a00"
   },
   {
     "path": "src/character.h",
@@ -37322,27 +37322,37 @@
   {
     "path": "src/cwm/cwm_main.cpp",
     "mode": "100644",
-    "sha256": "d4ad9fa394c37c7ee278fc325c5da483428c63ac68cefbadb7b85122bb91938e"
+    "sha256": "15b3d9dc9c6b05def849294df84f51072b397d4083f579777445f3d1654c0070"
   },
   {
     "path": "src/cwm/cwm_map_exporter.cpp",
     "mode": "100644",
-    "sha256": "2eafc1080a189c0f7ac24457c83d4b6aa9ec1e5a7a20dcd7dd700595ac6cf7c5"
+    "sha256": "a771cb7b05ad4b7feca826a9c5e21be3acc1c68b27ce27b45980dd4accdb6e45"
   },
   {
     "path": "src/cwm/cwm_map_exporter.h",
     "mode": "100644",
-    "sha256": "3270c306738c15c0207f6a8f905a3a2f323a3711f0121f931ff8beacd4df17a7"
+    "sha256": "79f62f072062860e71acd09fcbd9e4f6787711168bc6afe245129afabdde332a"
   },
   {
     "path": "src/cwm/cwm_server.cpp",
     "mode": "100644",
-    "sha256": "15c60326d754b98bc2f0820e8bc36788f92438b5b0c18957f0b2fec76de1a678"
+    "sha256": "0171de3d047d2ac989f80d07e92de2478e052dd65bd8f98c2d0ae25b3721872a"
   },
   {
     "path": "src/cwm/cwm_server.h",
     "mode": "100644",
-    "sha256": "00c5dfffe48c26f258e2eb8bbc939a74eb41875b2fbf164fafd9211cda334265"
+    "sha256": "26b20d7eb35be64271df0c4999eb11b018cfef560d5484991286db20601211b2"
+  },
+  {
+    "path": "src/cwm_motion.cpp",
+    "mode": "100644",
+    "sha256": "36fbb3e801726d31e7aab1664eeda2a3827f48c4308cc0d0bf2f108206672021"
+  },
+  {
+    "path": "src/cwm_motion.h",
+    "mode": "100644",
+    "sha256": "2420f9fe15dbc58c9f55470e0d82d00fa8d915195d9ad1cc6157ab962f11efa6"
   },
   {
     "path": "src/damage.cpp",
@@ -37792,7 +37802,7 @@
   {
     "path": "src/game.cpp",
     "mode": "100644",
-    "sha256": "9a1f79a3a10e484843bf25029c794521a9efa30c39b6f110cecb80469c87346e"
+    "sha256": "77ad9adca543f30b74b8bc9dbdbded60fe2bb24e734f3f3623f5c4c3b8b3c945"
   },
   {
     "path": "src/game.h",
@@ -40867,7 +40877,7 @@
   {
     "path": "tests/cwm_runtime_test.cpp",
     "mode": "100644",
-    "sha256": "196ff8786234f6b5de114a77971d078f800f862e24b3aa3f6105e1dc284bd482"
+    "sha256": "9cd832d921bcdbb272104aac6ca37f84a39af6ea2ff83cb9d127ea8836080dd5"
   },
   {
     "path": "tests/data/name.json",

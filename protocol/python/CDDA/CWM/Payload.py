@@ -29,3 +29,4 @@ class Payload(object):
     EntitySpawned = 23
     SimulationControlRequest = 24
     MovementIntentRequest = 25
+    ContinuousIntentRequest = 26

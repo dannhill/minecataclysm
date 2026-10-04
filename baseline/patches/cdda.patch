@@ -30,10 +30,15 @@ index 6d5d148..4181ad1 100644
  
  if (MINGW AND NOT RELEASE)
 diff --git a/src/avatar_action.cpp b/src/avatar_action.cpp
-index d7e91fc..75f4886 100644
+index d7e91fc..6d99647 100644
 --- a/src/avatar_action.cpp
 +++ b/src/avatar_action.cpp
-@@ -22,6 +22,7 @@
+@@ -1,3 +1,4 @@
++#include "cwm_motion.h"
+ #include "avatar_action.h"
+ 
+ #include <algorithm>
+@@ -22,6 +23,7 @@
  #include "creature.h"
  #include "creature_tracker.h"
  #include "debug.h"
@@ -41,7 +46,7 @@ index d7e91fc..75f4886 100644
  #include "enums.h"
  #include "flag.h"
  #include "game.h"
-@@ -110,6 +111,31 @@ static bool check_water_affect_items( avatar &you )
+@@ -110,6 +112,31 @@ static bool check_water_affect_items( avatar &you )
          return query_yn( _( "Dive into the water?" ) );
      }
  
@@ -73,7 +78,7 @@ index d7e91fc..75f4886 100644
      uilist menu;
      menu.title = _( "Diving will destroy the following items.  Proceed?" );
      menu.text = _( "These items are not inside a waterproof container." );
-@@ -631,7 +657,10 @@ void avatar_action::swim( map &m, avatar &you, const tripoint &p )
+@@ -631,7 +658,10 @@ void avatar_action::swim( map &m, avatar &you, const tripoint &p )
          }
      }
      if( you.oxygen <= 5 && you.is_underwater() ) {
@@ -85,6 +90,61 @@ index d7e91fc..75f4886 100644
              popup( _( "You need to breathe!  (%s to surface.)" ), press_x( ACTION_MOVE_UP ) );
          } else {
              popup( _( "You need to breathe but you can't swim!  Get to dry land, quick!" ) );
+@@ -659,11 +689,13 @@ void avatar_action::swim( map &m, avatar &you, const tripoint &p )
+     if( m.veh_at( you.pos() ).part_with_feature( VPFLAG_BOARDABLE, true ) ) {
+         m.board_vehicle( you.pos(), &you );
+     }
+-    you.moves -= ( movecost > 200 ? 200 : movecost ) * ( trigdist && diagonal ? M_SQRT2 : 1 );
++    if( !cwm_motion::prepaid_crossing() ) {
++        you.moves -= ( movecost > 200 ? 200 : movecost ) * ( trigdist && diagonal ? M_SQRT2 : 1 );
++    }
+     you.inv->rust_iron_items();
+ 
+     if( !you.is_mounted() ) {
+-        you.burn_move_stamina( movecost );
++        you.burn_move_stamina( cwm_motion::prepaid_crossing() ? 0 : movecost );
+     }
+ 
+     body_part_set flags;
+diff --git a/src/character.cpp b/src/character.cpp
+index a90f830..39fc8a5 100644
+--- a/src/character.cpp
++++ b/src/character.cpp
+@@ -1,3 +1,6 @@
++#include <iomanip>
++#include <sstream>
++#include "cwm_motion.h"
+ #include "character.h"
+ 
+ #include <algorithm>
+@@ -6979,9 +6982,24 @@ void Character::burn_move_stamina( int moves )
+     }
+ 
+     burn_ratio *= move_mode->stamina_mult();
+-    mod_stamina( -( ( moves * burn_ratio ) / 100.0 ) * get_modifier(
+-                     character_modifier_stamina_move_cost_mod ) * get_modifier(
+-                     character_modifier_move_mode_move_cost_mod ) );
++    double burn = ( moves * burn_ratio ) / 100.0 * get_modifier(
++                      character_modifier_stamina_move_cost_mod ) * get_modifier(
++                      character_modifier_move_mode_move_cost_mod );
++    if( cwm_motion::fractional_stamina() ) {
++        double remainder = 0;
++        std::istringstream( get_value( "cwm_stamina_fraction" ) ) >> remainder;
++        if( !std::isfinite( remainder ) || remainder < 0 || remainder >= 1 ) remainder = 0;
++        burn += remainder;
++        const int whole = static_cast<int>( std::floor( burn ) );
++        std::ostringstream saved;
++        saved << std::setprecision( 17 ) << burn - whole;
++        set_value( "cwm_stamina_fraction", saved.str() );
++        mod_stamina( -whole );
++        // Random overburden pain remains a native tile-boundary effect rather
++        // than acquiring a sampling-frequency dependency.
++        return;
++    }
++    mod_stamina( -burn );
+     add_msg_debug( debugmode::DF_CHARACTER, "Stamina burn: %d", -( ( moves * burn_ratio ) / 100 ) );
+     // Chance to suffer pain if overburden and stamina runs out or has trait BADBACK
+     // Starts at 1 in 25, goes down by 5 for every 50% more carried
 diff --git a/src/do_turn.cpp b/src/do_turn.cpp
 index 2455a6f..25c923d 100644
 --- a/src/do_turn.cpp
@@ -258,16 +318,17 @@ index 6ebdaa7..205549f 100644
  
  #endif // CATA_SRC_DO_TURN_H
 diff --git a/src/game.cpp b/src/game.cpp
-index 195bc1e..b40e2d3 100644
+index 195bc1e..5809a8c 100644
 --- a/src/game.cpp
 +++ b/src/game.cpp
-@@ -1,4 +1,5 @@
+@@ -1,4 +1,6 @@
++#include "cwm_motion.h"
  #include "game.h"
 +#include "do_turn.h"
  
  #include <functional>
  #include <clocale>
-@@ -2763,6 +2764,17 @@ bool game::is_game_over()
+@@ -2763,6 +2765,17 @@ bool game::is_game_over()
  void game::bury_screen() const
  {
      avatar &u = get_avatar();
@@ -285,7 +346,7 @@ index 195bc1e..b40e2d3 100644
  
      std::vector<std::string> vRip;
  
-@@ -2951,6 +2963,13 @@ void game::bury_screen() const
+@@ -2951,6 +2964,13 @@ void game::bury_screen() const
  void game::death_screen()
  {
      gamemode->game_over();
@@ -299,6 +360,15 @@ index 195bc1e..b40e2d3 100644
      Messages::display_messages();
      u.get_avatar_diary()->death_entry();
      show_scores_ui( *achievements_tracker_ptr, stats(), get_kill_tracker() );
+@@ -10496,7 +10516,7 @@ bool game::walk_move( const tripoint &dest_loc, const bool via_ramp, const bool
+         u.moves -= static_cast<int>( std::ceil( base_moves + encumb_moves ) );
+         crit->use_mech_power( u.current_movement_mode()->mech_power_use() );
+     } else {
+-        u.moves -= u.run_cost( mcost, diag );
++        u.moves -= cwm_motion::prepaid_crossing() ? 0 : u.run_cost( mcost, diag );
+         /**
+         TODO:
+         This should really use the mounted creatures stamina, if mounted.
 diff --git a/src/game.h b/src/game.h
 index c25584e..fdb835f 100644
 --- a/src/game.h
@@ -478,10 +548,10 @@ index 09a7711..9b0c484 100644
          DebugLog( D_INFO, DC_ALL ) <<
 diff --git a/src/cwm/cwm_main.cpp b/src/cwm/cwm_main.cpp
 new file mode 100644
-index 0000000..bd1511a
+index 0000000..1a0308e
 --- /dev/null
 +++ b/src/cwm/cwm_main.cpp
-@@ -0,0 +1,393 @@
+@@ -0,0 +1,398 @@
 +// CDDA Headless CWM Server Entrypoint
 +// Licensed under Apache-2.0
 +
@@ -623,6 +693,7 @@ index 0000000..bd1511a
 +    bool new_character = false;
 +    bool terrain_demo = false;
 +    bool realtime = false;
++    bool continuous = false;
 +    std::string character;
 +
 +    for (int i = 1; i < argc; ++i) {
@@ -650,6 +721,8 @@ index 0000000..bd1511a
 +            character = argv[++i];
 +        } else if (arg == "--new-character") {
 +            new_character = true;
++        } else if (arg == "--continuous") {
++            continuous = realtime = true;
 +        } else if (arg == "--realtime") {
 +            realtime = true;
 +        } else if (arg == "--terrain-demo") {
@@ -662,6 +735,7 @@ index 0000000..bd1511a
 +                      << "  --datadir <path>      Data directory (default: auto-detected)\n"
 +                      << "  --character <id>      Select a decoded save ID (or a name with --new-character)\n"
 +                      << "  --new-character       Explicitly create a character; existing saves are preserved\n"
++                      << "  --continuous         Native tile+offset prototype at global 4x\n"
 +                      << "  --realtime           Enable the isolated real-time scheduler prototype\n"
 +                      << "  --terrain-demo        Create the isolated terrain_comparison fixture in a new world\n"
 +                      << "  --headless-ticks <n>  Advance n simulation turns headlessly and save (Milestone 0.5 verification)\n"
@@ -819,6 +893,7 @@ index 0000000..bd1511a
 +
 +    cwm::CwmServer server(socket_path);
 +    if (realtime) server.enable_realtime();
++    if (continuous) server.enable_continuous();
 +    if (!server.start()) {
 +        std::cerr << "[CDDA-Server] ERROR: Failed to bind Unix socket at " << socket_path << "\n";
 +        return 1;
@@ -877,10 +952,11 @@ index 0000000..bd1511a
 +}
 diff --git a/src/cwm/cwm_map_exporter.cpp b/src/cwm/cwm_map_exporter.cpp
 new file mode 100644
-index 0000000..6db9efc
+index 0000000..4447667
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.cpp
-@@ -0,0 +1,444 @@
+@@ -0,0 +1,447 @@
++#include "cwm_motion.h"
 +// CDDA CWM Map & Entity Exporter Implementation
 +// Licensed under Apache-2.0
 +
@@ -1085,7 +1161,9 @@ index 0000000..6db9efc
 +    {
 +        auto player_name = fbb.CreateString(u.name.empty() ? "Player" : u.name);
 +        auto player_type = fbb.CreateString("avatar");
-+        CDDA::CWM::Vec3f pos(static_cast<float>(u_pos.x), static_cast<float>(u_pos.y), static_cast<float>(u_pos.z));
++        const auto motion = cwm_motion::load(u, m);
++        CDDA::CWM::Vec3f pos(static_cast<float>(u_pos.x + (clock && clock->continuous ? motion.x : 0)),
++            static_cast<float>(u_pos.y + (clock && clock->continuous ? motion.y : 0)), static_cast<float>(u_pos.z));
 +
 +        uint32_t player_flags = 0;
 +        const auto player_tile = export_block(u_pos, m, 15);
@@ -1262,7 +1340,7 @@ index 0000000..6db9efc
 +    uint64_t sim_seconds = static_cast<uint64_t>(to_turn<int>(calendar::turn));
 +
 +    const auto clock_state = clock ? CDDA::CWM::CreateSimulationState(fbb,
-+        clock->realtime, clock->pause_reasons, clock->scale) : flatbuffers::Offset<CDDA::CWM::SimulationState>{};
++        clock->realtime, clock->pause_reasons, clock->scale, clock->continuous) : flatbuffers::Offset<CDDA::CWM::SimulationState>{};
 +    auto world_snap = CDDA::CWM::CreateWorldSnapshot(
 +        fbb,
 +        world_rev,
@@ -1327,7 +1405,7 @@ index 0000000..6db9efc
 +} // namespace cwm
 diff --git a/src/cwm/cwm_map_exporter.h b/src/cwm/cwm_map_exporter.h
 new file mode 100644
-index 0000000..eed54f3
+index 0000000..5bdd176
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.h
 @@ -0,0 +1,59 @@
@@ -1356,7 +1434,7 @@ index 0000000..eed54f3
 +        std::vector<uint64_t> tiles;
 +        std::set<uint64_t> actors;
 +    };
-+    struct ClockView { bool realtime{false}; uint32_t pause_reasons{0}; float scale{1.f}; float motion_seconds{.2f}; };
++    struct ClockView { bool realtime{false}; uint32_t pause_reasons{0}; float scale{1.f}; float motion_seconds{.2f}; bool continuous{false}; };
 +    static CDDA::CWM::CwmBlock export_block(const tripoint& p, map& m, uint8_t light);
 +    static std::vector<uint8_t> export_world_snapshot(
 +        uint64_t sequence_num,
@@ -1392,10 +1470,11 @@ index 0000000..eed54f3
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..72b95cf
+index 0000000..e80d831
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,566 @@
+@@ -0,0 +1,619 @@
++#include "cwm_motion.h"
 +// CDDA CWM IPC Server Implementation
 +// Licensed under Apache-2.0
 +
@@ -1456,7 +1535,8 @@ index 0000000..72b95cf
 +}
 +
 +void CwmServer::cancel_connection() {
-+    held_direction_ = 0; menu_pause_ = false;
++    held_direction_ = 0; intent_x_ = intent_y_ = 0; menu_pause_ = false;
++    motion_sample_ = clock_.elapsed();
 +    for (const auto& command : commands_)
 +        ledger_.complete({command.id, false, "Connection closed before execution", world_revision_});
 +    commands_.clear();
@@ -1470,7 +1550,7 @@ index 0000000..72b95cf
 +    if (!has_active_client() || !negotiated_ || rejecting_) return;
 +    const auto state_id = next_state_++;
 +    const CwmMapExporter::ClockView clock{realtime_, pause_reasons(g),
-+        static_cast<float>(clock_.scale()), motion_seconds_};
++        static_cast<float>(clock_.scale()), motion_seconds_, continuous_};
 +    auto snapshot = CwmMapExporter::export_world_snapshot(sequence_counter_, world_revision_,
 +                    u, m, g, full, &projection_cache_, identity_, sent_revision_, state_id,
 +                    resync_id_, completed, realtime_ ? &clock : nullptr);
@@ -1558,10 +1638,29 @@ index 0000000..72b95cf
 +    clock_.sample(cdda::cwm::SimulationClock::Wall::now(), pause_reasons(g) == 0);
 +    update(u, m, g);
 +    clock_.sample(cdda::cwm::SimulationClock::Wall::now(), pause_reasons(g) == 0);
++    if (continuous_ && (pause_reasons(g) || (!intent_x_ && !intent_y_) || !clock_.action_due()))
++        motion_sample_ = clock_.elapsed();
++}
++
++bool CwmServer::sample_motion(avatar& u, map& m, game& g, bool flush) {
++    if (!continuous_ || pause_reasons(g) || !clock_.action_due() || (!intent_x_ && !intent_y_)) return false;
++    const double dt = clock_.elapsed() - motion_sample_;
++    // 25 wall samples/s. A delayed frame is capped, never caught up in bursts.
++    if (dt <= 1e-8 || (!flush && dt < .04 * clock_.scale())) return false;
++    motion_sample_ = clock_.elapsed();
++    const auto step = cwm_motion::advance(u, m, intent_x_, intent_y_, std::min(dt, .20));
++    motion_seconds_ = .04f;
++    if (step.extra_moves) clock_.charge_action(step.extra_moves, u.get_speed());
++    if (step.distance > 1e-8 || step.extra_moves) {
++        ++world_revision_; send_state(u, m, g);
++        detect_threats(u, m, g);
++    }
++    return step.crossed || step.extra_moves;
 +}
 +
 +void CwmServer::drop_realtime_input(avatar& u, map& m, game& g) {
-+    held_direction_ = 0;
++    held_direction_ = 0; intent_x_ = intent_y_ = 0;
++    motion_sample_ = clock_.elapsed();
 +    const auto cancelled = std::move(commands_);
 +    commands_.clear();
 +    for (const auto& command : cancelled)
@@ -1605,7 +1704,7 @@ index 0000000..72b95cf
 +        service_clock(u, m, g);
 +        if (pause_reasons(g)) { std::this_thread::sleep_for(std::chrono::milliseconds(1)); continue; }
 +        if (clock_.tick_due()) {
-+            if (held_direction_ || !commands_.empty()) {
++            if (held_direction_ || intent_x_ || intent_y_ || !commands_.empty()) {
 +                // Held intent still owns unused native credit. A wall boundary
 +                // is not an idle action and must not erase a fast actor's moves.
 +                finish_external_action_phase();
@@ -1613,6 +1712,13 @@ index 0000000..72b95cf
 +            }
 +            u.pause();
 +            return true;
++        }
++        if (continuous_ && commands_.empty() && (intent_x_ || intent_y_)) {
++            if (sample_motion(u, m, g)) return true;
++            // Fractional debit can exhaust native credit without crossing.
++            // do_turn must regain control to run the paced native world tick.
++            if (u.moves <= 0) return false;
++            std::this_thread::sleep_for(std::chrono::milliseconds(1)); continue;
 +        }
 +        if (clock_.action_due() && (!commands_.empty() || held_direction_)) {
 +            Command command{};
@@ -1640,6 +1746,7 @@ index 0000000..72b95cf
 +                         const std::function<bool()>& keep_running) {
 +    while (keep_running()) {
 +        service_clock(u, m, g);
++        if (continuous_) motion_sample_ = clock_.elapsed();
 +        if (!pause_reasons(g) && clock_.tick_due()) return true;
 +        std::this_thread::sleep_for(std::chrono::milliseconds(1));
 +    }
@@ -1766,6 +1873,7 @@ index 0000000..72b95cf
 +            const bool underwater = u.is_underwater();
 +            g.vertical_move(command.action == int(CDDA::CWM::MoveDirection::UP) ? 1 : -1, false);
 +            accepted = before != u.pos() || underwater != u.is_underwater();
++            if (accepted && continuous_) cwm_motion::recenter(u, m);
 +        } else {
 +            const tripoint target = u.pos() + tripoint(directions[command.action], 0);
 +            const npc* person = get_creature_tracker().creature_at<npc>(target);
@@ -1807,7 +1915,7 @@ index 0000000..72b95cf
 +            hello->protocol_version_minor() == cdda::cwm::PROTOCOL_VERSION_MINOR;
 +        cdda::cwm::MessageBuilder reply(sequence_counter_, world_revision_, identity_);
 +        emit(reply.build_hello_response(accepted, "cdda-server-cwm-2",
-+            accepted ? "" : "CWM 2.1 Hello required before state or commands", ledger_.next_id()));
++            accepted ? "" : "CWM 2.2 Hello required before state or commands", ledger_.next_id()));
 +        if (!accepted) { rejecting_ = true; return; }
 +        client_id_ = hello->client_id(); received_sequence_ = 1; negotiated_ = true;
 +        reset_world(u, m, g, 0);
@@ -1848,7 +1956,8 @@ index 0000000..72b95cf
 +        return;
 +    }
 +    if (pending_decision_ && msg->payload_type() != Payload::SimulationControlRequest &&
-+        msg->payload_type() != Payload::MovementIntentRequest) return;
++        msg->payload_type() != Payload::MovementIntentRequest &&
++        msg->payload_type() != Payload::ContinuousIntentRequest) return;
 +    uint64_t id = 0;
 +    std::string signature;
 +    if (const auto* request = msg->payload_as_MoveRequest()) {
@@ -1861,6 +1970,10 @@ index 0000000..72b95cf
 +        id = request->command_id(); signature = "threat";
 +    } else if (const auto* request = msg->payload_as_MovementIntentRequest()) {
 +        id = request->command_id(); signature = "intent:" + std::to_string(int(request->direction()));
++    } else if (const auto* request = msg->payload_as_ContinuousIntentRequest()) {
++        uint32_t xb, yb; const float x = request->x(), y = request->y();
++        std::memcpy(&xb, &x, sizeof(xb)); std::memcpy(&yb, &y, sizeof(yb));
++        id = request->command_id(); signature = "continuous:" + std::to_string(xb) + ":" + std::to_string(yb);
 +    } else if (const auto* request = msg->payload_as_SimulationControlRequest()) {
 +        uint32_t scale_bits; const float scale = request->time_scale();
 +        std::memcpy(&scale_bits, &scale, sizeof(scale_bits));
@@ -1878,9 +1991,25 @@ index 0000000..72b95cf
 +    }
 +    if (status == Status::Expired) { send_result({id, false, "Command identity expired"}, u, m, g); return; }
 +    if (status != Status::Fresh) { server_->client()->close(); return; }
++    if (const auto* request = msg->payload_as_ContinuousIntentRequest()) {
++        const float x = request->x(), y = request->y();
++        const double length = std::hypot(double(x), double(y));
++        const bool valid = continuous_ && std::isfinite(x) && std::isfinite(y) && length <= 1.415 &&
++            (length < 1e-6 || (!pause_reasons(g) && !u.in_vehicle && !u.is_mounted() && u.get_grab_type() == object_type::NONE));
++        if (valid) {
++            // Account for the old direction up to admission, including a
++            // short tap. Frequent camera changes cannot postpone sampling.
++            sample_motion(u, m, g, true);
++            intent_x_ = length < 1e-6 ? 0 : x / length;
++            intent_y_ = length < 1e-6 ? 0 : y / length;
++            motion_sample_ = clock_.elapsed(); ++world_revision_;
++        }
++        send_result({id, valid, valid ? "" : "Continuous intent unavailable or invalid"}, u, m, g);
++        return;
++    }
 +    if (const auto* request = msg->payload_as_MovementIntentRequest()) {
 +        const int direction = int(request->direction());
-+        const bool valid = realtime_ && direction >= 0 && direction <= 8 &&
++        const bool valid = realtime_ && !continuous_ && direction >= 0 && direction <= 8 &&
 +            (direction == 0 || !pause_reasons(g));
 +        if (valid) { held_direction_ = direction; ++world_revision_; }
 +        send_result({id, valid, valid ? "" : "Movement intent unavailable or invalid"}, u, m, g);
@@ -1911,7 +2040,7 @@ index 0000000..72b95cf
 +        if (!request) return;
 +        const bool acknowledged = acknowledge_current_threat(u);
 +        if (acknowledged || threat_pause_) ++world_revision_;
-+        if (realtime_) { threat_pause_ = false; held_direction_ = 0; }
++        if (realtime_) { threat_pause_ = false; held_direction_ = 0; intent_x_ = intent_y_ = 0; }
 +        send_result(Result{request->command_id(), true, ""}, u, m, g);
 +        return;
 +    }
@@ -1923,6 +2052,8 @@ index 0000000..72b95cf
 +        command = Command{request->command_id(), true, int(request->direction())};
 +        if (command.action < 0 || command.action > int(CDDA::CWM::MoveDirection::DOWN))
 +            error = "Unsupported movement direction";
++        else if (continuous_ && command.action > 0 && command.action < int(CDDA::CWM::MoveDirection::UP))
++            error = "Continuous mode requires direction intent for horizontal movement";
 +        else if (!g.check_safe_mode_allowed(false)) error = "Safe mode: threat requires acknowledgement";
 +        else if (command.action >= int(CDDA::CWM::MoveDirection::UP))
 +            error = vertical_error(u, m, command.action);
@@ -1964,10 +2095,10 @@ index 0000000..72b95cf
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.h b/src/cwm/cwm_server.h
 new file mode 100644
-index 0000000..d8d02d5
+index 0000000..cfd8c9d
 --- /dev/null
 +++ b/src/cwm/cwm_server.h
-@@ -0,0 +1,106 @@
+@@ -0,0 +1,111 @@
 +// CDDA CWM IPC Server
 +// Licensed under Apache-2.0
 +#pragma once
@@ -2005,6 +2136,7 @@ index 0000000..d8d02d5
 +    bool advance_turn(avatar& u, map& m, game& g, const std::function<bool()>& keep_running);
 +    bool has_queued_action() const { return !commands_.empty(); }
 +    void enable_realtime() { realtime_ = true; }
++    void enable_continuous() { realtime_ = continuous_ = true; clock_.set_scale(4); }
 +    bool realtime_enabled() const { return realtime_; }
 +    bool saved_on_shutdown() const { return saved_on_shutdown_; }
 +
@@ -2015,6 +2147,9 @@ index 0000000..d8d02d5
 +
 +private:
 +    bool realtime_{false};
++    bool continuous_{false};
++    float intent_x_{0}, intent_y_{0};
++    double motion_sample_{0};
 +    bool manual_pause_{false}, menu_pause_{false}, threat_pause_{false};
 +    int held_direction_{0};
 +    float motion_seconds_{1.f};
@@ -2022,6 +2157,7 @@ index 0000000..d8d02d5
 +    std::set<std::string> perceived_threats_;
 +    uint32_t pause_reasons(const game& g) const;
 +    void service_clock(avatar& u, map& m, game& g);
++    bool sample_motion(avatar& u, map& m, game& g, bool flush = false);
 +    void detect_threats(avatar& u, map& m, game& g);
 +    void drop_realtime_input(avatar& u, map& m, game& g);
 +    bool realtime_action(avatar& u, map& m, game& g, const std::function<bool()>& keep_running);
@@ -2074,6 +2210,231 @@ index 0000000..d8d02d5
 +};
 +
 +} // namespace cwm
+diff --git a/src/cwm_motion.cpp b/src/cwm_motion.cpp
+new file mode 100644
+index 0000000..ddf079d
+--- /dev/null
++++ b/src/cwm_motion.cpp
+@@ -0,0 +1,188 @@
++#include "cwm_motion.h"
++
++#include <algorithm>
++#include <cmath>
++#include <iomanip>
++#include <sstream>
++#include "avatar.h"
++#include "avatar_action.h"
++#include "creature_tracker.h"
++#include "game.h"
++#include "map.h"
++#include "npc.h"
++#include "move_mode.h"
++#include "flag.h"
++
++namespace cwm_motion {
++namespace {
++thread_local bool prepaid = false, fractional = false;
++struct Scope {
++    bool &flag;
++    bool previous;
++    explicit Scope( bool &value ) : flag( value ), previous( value ) { flag = true; }
++    ~Scope() { flag = previous; }
++};
++constexpr double radius = .22;
++bool solid( const avatar &u, const map &m, const tripoint &p )
++{
++    return !m.inbounds( p ) || m.impassable( p ) ||
++           ( p != u.pos() && get_creature_tracker().creature_at( p, true ) );
++}
++// Circle against native tile rectangles; prevents diagonal corner clipping.
++bool clear( const avatar &u, const map &m, double x, double y )
++{
++    for( int dy = -1; dy <= 1; ++dy ) for( int dx = -1; dx <= 1; ++dx ) {
++        if( !solid( u, m, u.pos() + tripoint( dx, dy, 0 ) ) ) continue;
++        const double near_x = std::clamp( x, dx - .5, dx + .5 );
++        const double near_y = std::clamp( y, dy - .5, dy + .5 );
++        if( std::hypot( x - near_x, y - near_y ) < radius - 1e-8 ) return false;
++    }
++    return true;
++}
++}
++bool prepaid_crossing() { return prepaid; }
++bool fractional_stamina() { return fractional; }
++
++State load( const avatar &u, const map &m )
++{
++    State state;
++    state.anchor = m.getabs( u.pos() );
++    State saved;
++    std::istringstream in( u.get_value( "cwm_motion_v1" ) );
++    if( in >> saved.anchor.x >> saved.anchor.y >> saved.anchor.z >> saved.x >> saved.y >> saved.credit &&
++        std::isfinite( saved.x ) && std::isfinite( saved.y ) && std::isfinite( saved.credit ) &&
++        std::abs( saved.x ) < .50001 && std::abs( saved.y ) < .50001 &&
++        saved.credit >= 0 && saved.credit < 1.00001 ) {
++        // An external teleport/rebase must not attach a stale offset to a new
++        // tile. Monetary rounding credit remains paid across teleports.
++        state.credit = saved.credit;
++        if( saved.anchor == state.anchor ) { state.x = saved.x; state.y = saved.y; }
++    }
++    return state;
++}
++void store( avatar &u, const map &m, State state )
++{
++    state.anchor = m.getabs( u.pos() );
++    std::ostringstream out;
++    out << std::setprecision( 17 ) << state.anchor.x << ' ' << state.anchor.y << ' ' <<
++        state.anchor.z << ' ' << state.x << ' ' << state.y << ' ' << state.credit;
++    u.set_value( "cwm_motion_v1", out.str() );
++}
++void recenter( avatar &u, const map &m )
++{
++    auto state = load( u, m ); state.x = state.y = 0; store( u, m, state );
++}
++Step advance( avatar &u, map &m, double x, double y, double seconds )
++{
++    Step result;
++    if( !std::isfinite( x ) || !std::isfinite( y ) || !std::isfinite( seconds ) ||
++        seconds <= 0 || u.moves <= 0 || u.in_vehicle || u.is_mounted() ||
++        u.get_grab_type() != object_type::NONE || !g->check_safe_mode_allowed( false ) ) return result;
++    const double length = std::hypot( x, y );
++    if( length < 1e-6 ) return result;
++    x /= length; y /= length;
++    // Restraints/status actions keep their native one-attempt cost and random
++    // rolls. Sampling must not grant free motion or 25 escape rolls/second.
++    bool native_status = u.has_flag( flag_id( "GRAB" ) ) ||
++                         u.has_effect_with_flag( flag_EFFECT_IMPEDING ) ||
++                         u.has_active_mutation( trait_id( "SHELL2" ) ) ||
++                         u.has_active_mutation( trait_id( "SHELL3" ) ) ||
++                         ( !u.enough_working_legs() && !u.is_prone() );
++    for( const char *id : { "downed", "webbed", "lightsnare", "heavysnare", "beartrap", "crushed", "in_pit", "stunned", "psi_stunned" } )
++        native_status = native_status || u.has_effect( efftype_id( id ) );
++    if( native_status ) {
++        const int before = u.moves;
++        const tripoint position = m.getabs( u.pos() );
++        const point direction( std::abs( x ) > .38 ? ( x > 0 ? 1 : -1 ) : 0,
++                               std::abs( y ) > .38 ? ( y > 0 ? 1 : -1 ) : 0 );
++        avatar_action::move( u, m, direction );
++        result.extra_moves = std::max( 0, before - u.moves );
++        result.crossed = m.getabs( u.pos() ) != position;
++        if( result.crossed ) recenter( u, m );
++        return result;
++    }
++    State state = load( u, m );
++    const tripoint start = state.anchor;
++    const int before_moves = u.moves;
++    const bool swimming = m.has_flag( ter_furn_flag::TFLAG_DEEP_WATER, u.pos() ) &&
++                          m.has_flag( ter_furn_flag::TFLAG_SWIMMABLE, u.pos() );
++    const int native_cost = swimming ? std::min( 200, u.swim_speed() ) :
++                            u.run_cost( std::max( 2, m.move_cost( u.pos() ) ) * 50, false );
++    const double cost = std::max( 1, native_cost );
++    const double distance = std::min( { std::max( 0, u.get_speed() ) * std::min( seconds, .20 ) / cost,
++                                       ( u.moves + state.credit ) / cost, .20 } );
++    const double old_x = state.x, old_y = state.y;
++    double next_x = state.x + x * distance, next_y = state.y + y * distance;
++    tripoint contacted;
++    bool contact = false;
++    // Sliding keeps the tangent component, without renormalizing its speed.
++    if( !clear( u, m, next_x, next_y ) ) {
++        const bool x_clear = clear( u, m, next_x, state.y );
++        const bool y_clear = clear( u, m, state.x, next_y );
++        contacted = tripoint( static_cast<int>( std::floor( next_x + .5 + x * radius ) ),
++                             static_cast<int>( std::floor( next_y + .5 + y * radius ) ), 0 );
++        contact = contacted != tripoint_zero;
++        if( x_clear ) next_y = state.y;
++        else if( y_clear ) next_x = state.x;
++        else {
++            // Approach the surface instead of stopping a whole quantum early.
++            double low = 0, high = 1;
++            for( int i = 0; i < 18; ++i ) {
++                const double t = ( low + high ) / 2;
++                if( clear( u, m, state.x + x * distance * t, state.y + y * distance * t ) ) low = t;
++                else high = t;
++            }
++            next_x = state.x + x * distance * low;
++            next_y = state.y + y * distance * low;
++        }
++    }
++    const tripoint delta( static_cast<int>( std::floor( next_x + .5 ) ),
++                          static_cast<int>( std::floor( next_y + .5 ) ), 0 );
++    bool entered = false;
++    if( delta != tripoint_zero || contact ) {
++        const tripoint attempt = delta != tripoint_zero ? delta : contacted;
++        const tripoint target = u.pos() + attempt;
++        const npc *person = get_creature_tracker().creature_at<npc>( target );
++        // Friendly bump dialogue is not yet a nonblocking CWM action.
++        if( !person || person->is_enemy() ) {
++            // Do not invoke native movement toward an ordinary wall at 25Hz.
++            // Closed doors/windows and creatures retain their native action.
++            if( delta != tripoint_zero || get_creature_tracker().creature_at( target, true ) ||
++                m.open_door( u, target, !m.is_outside( u.pos() ), true ) ) {
++                const Scope scope( prepaid );
++                avatar_action::move( u, m, attempt );
++            }
++        }
++        const tripoint actual = m.getabs( u.pos() ) - start;
++        entered = actual != tripoint_zero;
++        if( delta != tripoint_zero && !entered ) {
++            // The native action can refuse a dangerous transition or open a
++            // door without entering. Stay on the authoritative side.
++            next_x = std::clamp( next_x, -.499999, .499999 );
++            next_y = std::clamp( next_y, -.499999, .499999 );
++        }
++        if( entered && actual != delta ) {
++            // Ramps, falls and native displacement keep their exact result.
++            next_x = actual.x; next_y = actual.y;
++        }
++    }
++    result.extra_moves = std::max( 0, before_moves - u.moves );
++    const tripoint actual = m.getabs( u.pos() ) - start;
++    result.distance = std::hypot( next_x - old_x, next_y - old_y );
++    const double debit = std::max( 0.0, cost * result.distance - state.credit );
++    const int paid = static_cast<int>( std::ceil( debit - 1e-9 ) );
++    state.credit = std::max( 0.0, state.credit + paid - cost * result.distance );
++    u.moves -= paid;
++    if( paid ) {
++        const Scope scope( fractional );
++        u.burn_move_stamina( swimming ? static_cast<int>( std::ceil( paid * double( u.swim_speed() ) / cost ) ) : paid );
++        u.set_activity_level( u.current_movement_mode()->exertion_level() );
++        u.recoil = MAX_RECOIL;
++        u.last_target_pos = std::nullopt;
++    }
++    state.x = next_x - actual.x; state.y = next_y - actual.y;
++    store( u, m, state );
++    result.crossed = entered;
++    return result;
++}
++}
+diff --git a/src/cwm_motion.h b/src/cwm_motion.h
+new file mode 100644
+index 0000000..5003c42
+--- /dev/null
++++ b/src/cwm_motion.h
+@@ -0,0 +1,25 @@
++// Native continuous avatar motion. No presentation-engine types or physics.
++#pragma once
++#include "point.h"
++
++class avatar;
++class map;
++namespace cwm_motion {
++struct State {
++    tripoint anchor;
++    double x{0}, y{0}, credit{0};
++};
++State load( const avatar &u, const map &m );
++void store( avatar &u, const map &m, State state );
++void recenter( avatar &u, const map &m );
++// These scopes affect only ordinary walking/swimming debit, never attacks,
++// opening doors, restraints or vertical traversal.
++bool prepaid_crossing();
++bool fractional_stamina();
++struct Step {
++    double distance{0};
++    int extra_moves{0};
++    bool crossed{false};
++};
++Step advance( avatar &u, map &m, double x, double y, double seconds );
++}
 diff --git a/src/safe_mode_actions.h b/src/safe_mode_actions.h
 new file mode 100644
 index 0000000..f5a7c0a
@@ -2497,10 +2858,11 @@ index 0000000..609ac58
 +}
 diff --git a/tests/cwm_runtime_test.cpp b/tests/cwm_runtime_test.cpp
 new file mode 100644
-index 0000000..87bbda3
+index 0000000..5b0db0c
 --- /dev/null
 +++ b/tests/cwm_runtime_test.cpp
-@@ -0,0 +1,305 @@
+@@ -0,0 +1,391 @@
++#include "cwm_motion.h"
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "avatar_action.h"
@@ -2805,4 +3167,89 @@ index 0000000..87bbda3
 +    REQUIRE_FALSE( do_turn_with_action( [&]() { ++actions; u.pause(); return true; } ) );
 +    CHECK( actions == 1 );
 +    CHECK( u.moves == speed );
++}
++
++TEST_CASE( "cwm_continuous_motion_pays_subtile_distance_and_native_crossings", "[cwm][continuous]" )
++{
++    prepare_runtime();
++    avatar &u = get_avatar();
++    map &m = get_map();
++    for( int y = 57; y < 65; ++y ) for( int x = 57; x < 65; ++x ) {
++        m.ter_set( tripoint( x, y, 0 ), ter_str_id( "t_floor" ) );
++        m.furn_set( tripoint( x, y, 0 ), furn_str_id( "f_null" ) );
++    }
++    u.remove_value( "cwm_motion_v1" );
++    u.remove_value( "cwm_stamina_fraction" );
++    const tripoint origin = m.getabs( u.pos() );
++    const int cost = u.run_cost( 100, false );
++    const int speed = u.get_speed();
++    u.moves = 1000;
++    SECTION( "short direction and stop retain paid offset inside the tile" ) {
++        auto step = cwm_motion::advance( u, m, .8, .6, .1 );
++        const auto state = cwm_motion::load( u, m );
++        CHECK( state.x == Approx( .08 * speed / cost ) );
++        CHECK( state.y == Approx( .06 * speed / cost ) );
++        CHECK( m.getabs( u.pos() ) == origin );
++        CHECK( 1000 - u.moves == static_cast<int>( std::ceil( step.distance * cost - 1e-9 ) ) );
++        const auto stopped = cwm_motion::advance( u, m, 0, 0, 1 );
++        CHECK( stopped.distance == 0 );
++        CHECK( cwm_motion::load( u, m ).x == state.x );
++        CHECK( cwm_motion::load( u, m ).y == state.y );
++    }
++    SECTION( "one physical tile charges native cost once, including the crossing" ) {
++        for( int i = 0; i < 10; ++i ) cwm_motion::advance( u, m, 1, 0, .1 * cost / speed );
++        auto state = cwm_motion::load( u, m );
++        CHECK( m.getabs( u.pos() ) == origin + tripoint_east );
++        CHECK( state.x == Approx( 0 ).margin( 1e-7 ) );
++        CHECK( 1000 - u.moves == cost );
++        CHECK_FALSE( cwm_motion::prepaid_crossing() );
++        CHECK_FALSE( cwm_motion::fractional_stamina() );
++    }
++    SECTION( "diagonal and axial physical speed are equal" ) {
++        const auto axial = cwm_motion::advance( u, m, 1, 0, .1 );
++        cwm_motion::recenter( u, m );
++        const auto diagonal = cwm_motion::advance( u, m, 1, 1, .1 );
++        CHECK( axial.distance == Approx( diagonal.distance ) );
++    }
++    SECTION( "walls and corners stop before visible tile geometry" ) {
++        m.ter_set( u.pos() + tripoint_east, ter_str_id( "t_wall" ) );
++        for( int i = 0; i < 10; ++i ) cwm_motion::advance( u, m, 1, 0, .1 );
++        CHECK( m.getabs( u.pos() ) == origin );
++        CHECK( cwm_motion::load( u, m ).x == Approx( .28 ).margin( 1e-5 ) );
++        const int paid = 1000 - u.moves;
++        for( int i = 0; i < 10; ++i ) cwm_motion::advance( u, m, 1, 0, .1 );
++        CHECK( 1000 - u.moves == paid );
++        m.ter_set( u.pos() + tripoint_south, ter_str_id( "t_wall" ) );
++        for( int i = 0; i < 10; ++i ) cwm_motion::advance( u, m, 1, 1, .1 );
++        CHECK( m.getabs( u.pos() ) == origin );
++        CHECK( cwm_motion::load( u, m ).x <= .28001 );
++        CHECK( cwm_motion::load( u, m ).y <= .28001 );
++    }
++    SECTION( "native auto-opening is paid separately from traveled distance" ) {
++        m.ter_set( u.pos() + tripoint_east, ter_str_id( "t_door_c" ) );
++        for( int i = 0; i < 10; ++i ) cwm_motion::advance( u, m, 1, 0, .1 * cost / speed );
++        CHECK( m.getabs( u.pos() ) == origin + tripoint_east );
++        CHECK( 1000 - u.moves == cost + 100 );
++        CHECK( m.ter( u.pos() ) == ter_str_id( "t_door_o" ) );
++    }
++    SECTION( "restraints do not grant within-tile movement or rapid escape rolls" ) {
++        u.add_effect( efftype_id( "beartrap" ), 1_hours );
++        const auto step = cwm_motion::advance( u, m, 1, 0, .1 );
++        CHECK( step.distance == 0 );
++        CHECK( step.extra_moves == 100 );
++        CHECK( cwm_motion::load( u, m ).x == 0 );
++    }
++    SECTION( "paid rounding credit survives reload and foreign anchor resets offsets" ) {
++        cwm_motion::advance( u, m, .8, .6, .001 );
++        const auto saved = cwm_motion::load( u, m );
++        CHECK( saved.credit > 0 );
++        const auto record = u.get_value( "cwm_motion_v1" );
++        u.remove_value( "cwm_motion_v1" );
++        u.set_value( "cwm_motion_v1", record );
++        CHECK( cwm_motion::load( u, m ).x == saved.x );
++        CHECK( cwm_motion::load( u, m ).credit == saved.credit );
++        u.setpos( u.pos() + tripoint_east );
++        CHECK( cwm_motion::load( u, m ).x == 0 );
++        CHECK( cwm_motion::load( u, m ).credit == saved.credit );
++    }
 +}

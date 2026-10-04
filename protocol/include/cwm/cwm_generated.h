@@ -70,6 +70,9 @@ struct SimulationControlRequestBuilder;
 struct MovementIntentRequest;
 struct MovementIntentRequestBuilder;
 
+struct ContinuousIntentRequest;
+struct ContinuousIntentRequestBuilder;
+
 struct MoveRequest;
 struct MoveRequestBuilder;
 
@@ -319,11 +322,12 @@ enum class Payload : uint8_t {
   EntitySpawned = 23,
   SimulationControlRequest = 24,
   MovementIntentRequest = 25,
+  ContinuousIntentRequest = 26,
   MIN = NONE,
-  MAX = MovementIntentRequest
+  MAX = ContinuousIntentRequest
 };
 
-inline const Payload (&EnumValuesPayload())[26] {
+inline const Payload (&EnumValuesPayload())[27] {
   static const Payload values[] = {
     Payload::NONE,
     Payload::HelloRequest,
@@ -350,13 +354,14 @@ inline const Payload (&EnumValuesPayload())[26] {
     Payload::SnapshotAck,
     Payload::EntitySpawned,
     Payload::SimulationControlRequest,
-    Payload::MovementIntentRequest
+    Payload::MovementIntentRequest,
+    Payload::ContinuousIntentRequest
   };
   return values;
 }
 
 inline const char * const *EnumNamesPayload() {
-  static const char * const names[27] = {
+  static const char * const names[28] = {
     "NONE",
     "HelloRequest",
     "HelloResponse",
@@ -383,13 +388,14 @@ inline const char * const *EnumNamesPayload() {
     "EntitySpawned",
     "SimulationControlRequest",
     "MovementIntentRequest",
+    "ContinuousIntentRequest",
     nullptr
   };
   return names;
 }
 
 inline const char *EnumNamePayload(Payload e) {
-  if (::flatbuffers::IsOutRange(e, Payload::NONE, Payload::MovementIntentRequest)) return "";
+  if (::flatbuffers::IsOutRange(e, Payload::NONE, Payload::ContinuousIntentRequest)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesPayload()[index];
 }
@@ -496,6 +502,10 @@ template<> struct PayloadTraits<CDDA::CWM::SimulationControlRequest> {
 
 template<> struct PayloadTraits<CDDA::CWM::MovementIntentRequest> {
   static const Payload enum_value = Payload::MovementIntentRequest;
+};
+
+template<> struct PayloadTraits<CDDA::CWM::ContinuousIntentRequest> {
+  static const Payload enum_value = Payload::ContinuousIntentRequest;
 };
 
 bool VerifyPayload(::flatbuffers::Verifier &verifier, const void *obj, Payload type);
@@ -2084,7 +2094,8 @@ struct SimulationState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_REALTIME = 4,
     VT_PAUSE_REASONS = 6,
-    VT_TIME_SCALE = 8
+    VT_TIME_SCALE = 8,
+    VT_CONTINUOUS_MOTION = 10
   };
   bool realtime() const {
     return GetField<uint8_t>(VT_REALTIME, 0) != 0;
@@ -2104,11 +2115,18 @@ struct SimulationState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   bool mutate_time_scale(float _time_scale = 1.0f) {
     return SetField<float>(VT_TIME_SCALE, _time_scale, 1.0f);
   }
+  bool continuous_motion() const {
+    return GetField<uint8_t>(VT_CONTINUOUS_MOTION, 0) != 0;
+  }
+  bool mutate_continuous_motion(bool _continuous_motion = 0) {
+    return SetField<uint8_t>(VT_CONTINUOUS_MOTION, static_cast<uint8_t>(_continuous_motion), 0);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint8_t>(verifier, VT_REALTIME, 1) &&
            VerifyField<uint32_t>(verifier, VT_PAUSE_REASONS, 4) &&
            VerifyField<float>(verifier, VT_TIME_SCALE, 4) &&
+           VerifyField<uint8_t>(verifier, VT_CONTINUOUS_MOTION, 1) &&
            verifier.EndTable();
   }
 };
@@ -2126,6 +2144,9 @@ struct SimulationStateBuilder {
   void add_time_scale(float time_scale) {
     fbb_.AddElement<float>(SimulationState::VT_TIME_SCALE, time_scale, 1.0f);
   }
+  void add_continuous_motion(bool continuous_motion) {
+    fbb_.AddElement<uint8_t>(SimulationState::VT_CONTINUOUS_MOTION, static_cast<uint8_t>(continuous_motion), 0);
+  }
   explicit SimulationStateBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -2141,10 +2162,12 @@ inline ::flatbuffers::Offset<SimulationState> CreateSimulationState(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     bool realtime = false,
     uint32_t pause_reasons = 0,
-    float time_scale = 1.0f) {
+    float time_scale = 1.0f,
+    bool continuous_motion = false) {
   SimulationStateBuilder builder_(_fbb);
   builder_.add_time_scale(time_scale);
   builder_.add_pause_reasons(pause_reasons);
+  builder_.add_continuous_motion(continuous_motion);
   builder_.add_realtime(realtime);
   return builder_.Finish();
 }
@@ -2273,6 +2296,76 @@ inline ::flatbuffers::Offset<MovementIntentRequest> CreateMovementIntentRequest(
   MovementIntentRequestBuilder builder_(_fbb);
   builder_.add_command_id(command_id);
   builder_.add_direction(direction);
+  return builder_.Finish();
+}
+
+struct ContinuousIntentRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef ContinuousIntentRequestBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_COMMAND_ID = 4,
+    VT_X = 6,
+    VT_Y = 8
+  };
+  uint64_t command_id() const {
+    return GetField<uint64_t>(VT_COMMAND_ID, 0);
+  }
+  bool mutate_command_id(uint64_t _command_id = 0) {
+    return SetField<uint64_t>(VT_COMMAND_ID, _command_id, 0);
+  }
+  float x() const {
+    return GetField<float>(VT_X, 0.0f);
+  }
+  bool mutate_x(float _x = 0.0f) {
+    return SetField<float>(VT_X, _x, 0.0f);
+  }
+  float y() const {
+    return GetField<float>(VT_Y, 0.0f);
+  }
+  bool mutate_y(float _y = 0.0f) {
+    return SetField<float>(VT_Y, _y, 0.0f);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_COMMAND_ID, 8) &&
+           VerifyField<float>(verifier, VT_X, 4) &&
+           VerifyField<float>(verifier, VT_Y, 4) &&
+           verifier.EndTable();
+  }
+};
+
+struct ContinuousIntentRequestBuilder {
+  typedef ContinuousIntentRequest Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_command_id(uint64_t command_id) {
+    fbb_.AddElement<uint64_t>(ContinuousIntentRequest::VT_COMMAND_ID, command_id, 0);
+  }
+  void add_x(float x) {
+    fbb_.AddElement<float>(ContinuousIntentRequest::VT_X, x, 0.0f);
+  }
+  void add_y(float y) {
+    fbb_.AddElement<float>(ContinuousIntentRequest::VT_Y, y, 0.0f);
+  }
+  explicit ContinuousIntentRequestBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<ContinuousIntentRequest> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<ContinuousIntentRequest>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<ContinuousIntentRequest> CreateContinuousIntentRequest(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t command_id = 0,
+    float x = 0.0f,
+    float y = 0.0f) {
+  ContinuousIntentRequestBuilder builder_(_fbb);
+  builder_.add_command_id(command_id);
+  builder_.add_y(y);
+  builder_.add_x(x);
   return builder_.Finish();
 }
 
@@ -3074,6 +3167,9 @@ struct CwmMessage FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const CDDA::CWM::MovementIntentRequest *payload_as_MovementIntentRequest() const {
     return payload_type() == CDDA::CWM::Payload::MovementIntentRequest ? static_cast<const CDDA::CWM::MovementIntentRequest *>(payload()) : nullptr;
   }
+  const CDDA::CWM::ContinuousIntentRequest *payload_as_ContinuousIntentRequest() const {
+    return payload_type() == CDDA::CWM::Payload::ContinuousIntentRequest ? static_cast<const CDDA::CWM::ContinuousIntentRequest *>(payload()) : nullptr;
+  }
   void *mutable_payload() {
     return GetPointer<void *>(VT_PAYLOAD);
   }
@@ -3208,6 +3304,10 @@ template<> inline const CDDA::CWM::SimulationControlRequest *CwmMessage::payload
 
 template<> inline const CDDA::CWM::MovementIntentRequest *CwmMessage::payload_as<CDDA::CWM::MovementIntentRequest>() const {
   return payload_as_MovementIntentRequest();
+}
+
+template<> inline const CDDA::CWM::ContinuousIntentRequest *CwmMessage::payload_as<CDDA::CWM::ContinuousIntentRequest>() const {
+  return payload_as_ContinuousIntentRequest();
 }
 
 struct CwmMessageBuilder {
@@ -3374,6 +3474,10 @@ inline bool VerifyPayload(::flatbuffers::Verifier &verifier, const void *obj, Pa
     }
     case Payload::MovementIntentRequest: {
       auto ptr = reinterpret_cast<const CDDA::CWM::MovementIntentRequest *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::ContinuousIntentRequest: {
+      auto ptr = reinterpret_cast<const CDDA::CWM::ContinuousIntentRequest *>(obj);
       return verifier.VerifyTable(ptr);
     }
     default: return true;

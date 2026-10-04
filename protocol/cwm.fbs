@@ -174,6 +174,7 @@ table SimulationState {
     realtime: bool;
     pause_reasons: uint32;
     time_scale: float32 = 1.0;
+    continuous_motion: bool;
 }
 
 enum SimulationControl : byte { PAUSE = 0, RESUME = 1, SET_SPEED = 2, MENU_OPEN = 3, MENU_CLOSE = 4 }
@@ -186,6 +187,13 @@ table SimulationControlRequest {
 table MovementIntentRequest {
     command_id: uint64;
     direction: MoveDirection;
+}
+// Normalized native XY direction, or (0,0) to release. Position is never
+// supplied by the client. Length is checked and normalized by CDDA.
+table ContinuousIntentRequest {
+    command_id: uint64;
+    x: float32;
+    y: float32;
 }
 
 table MoveRequest {
@@ -263,6 +271,7 @@ union Payload {
     EntitySpawned
     ,SimulationControlRequest
     ,MovementIntentRequest
+    ,ContinuousIntentRequest
 }
 
 table CwmMessage {

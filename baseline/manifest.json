@@ -6,20 +6,20 @@
       "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
       "shallow": true,
       "patch": "baseline/patches/cdda.patch",
-      "patch_sha256": "50eda8826650d6b191917c8412dbf86c48cd36d1cc3eeac5910c2e31c2c70710",
+      "patch_sha256": "22f98bb44911ac8098ecad509136bfc65e6e73da76c3d14c2e65463e9c50588b",
       "tree_inventory": "baseline/trees/cdda.json",
-      "tree_sha256": "d8afe9f6a3056d08bfb58c328c4fdc47512044d3bbdacaeed0a4be11ceb5c1b5",
-      "file_count": 8579,
-      "original_status": " M src/CMakeLists.txt\n M src/avatar_action.cpp\n M src/do_turn.cpp\n M src/do_turn.h\n M src/game.cpp\n M src/game.h\n M src/handle_action.cpp\n M src/iexamine.cpp\n M src/output.cpp\n M tests/CMakeLists.txt\n M tests/test_main.cpp\n?? src/cwm/cwm_main.cpp\n?? src/cwm/cwm_map_exporter.cpp\n?? src/cwm/cwm_map_exporter.h\n?? src/cwm/cwm_server.cpp\n?? src/cwm/cwm_server.h\n?? src/safe_mode_actions.h\n?? tests/cwm_projection_test.cpp\n?? tests/cwm_runtime_test.cpp\n"
+      "tree_sha256": "94765319596c5334d460e42c9e7896fbbdeadf4edddfda89c6636a317a201e15",
+      "file_count": 8581,
+      "original_status": " M src/CMakeLists.txt\n M src/avatar_action.cpp\n M src/character.cpp\n M src/do_turn.cpp\n M src/do_turn.h\n M src/game.cpp\n M src/game.h\n M src/handle_action.cpp\n M src/iexamine.cpp\n M src/output.cpp\n M tests/CMakeLists.txt\n M tests/test_main.cpp\n?? src/cwm/cwm_main.cpp\n?? src/cwm/cwm_map_exporter.cpp\n?? src/cwm/cwm_map_exporter.h\n?? src/cwm/cwm_server.cpp\n?? src/cwm/cwm_server.h\n?? src/cwm_motion.cpp\n?? src/cwm_motion.h\n?? src/safe_mode_actions.h\n?? tests/cwm_projection_test.cpp\n?? tests/cwm_runtime_test.cpp\n"
     },
     "luanti": {
       "url": "https://github.com/luanti-org/luanti.git",
       "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
       "shallow": true,
       "patch": "baseline/patches/luanti.patch",
-      "patch_sha256": "99575a24383d91e78464706315365ed4709260e1b57b09c7359e1e3998afe8d5",
+      "patch_sha256": "cef7c63909d6dd8fecda8b690f326b8524a2307959a1fb1cb43630dbb335ce1c",
       "tree_inventory": "baseline/trees/luanti.json",
-      "tree_sha256": "d1ff1e98a3965a1c72741f8ab2bbbcc5c36c37672916207932f7066c0eb0f658",
+      "tree_sha256": "1bad5db27482129304b7ab529337be5dbd314068f6b6d74d94ed382e7df31819",
       "file_count": 2251,
       "original_status": " M src/CMakeLists.txt\n M src/client/CMakeLists.txt\n M src/client/client.cpp\n M src/client/clientenvironment.cpp\n M src/client/game.cpp\n M src/client/mesh_generator_thread.cpp\n M src/client/mesh_generator_thread.h\n M src/network/clientpackethandler.cpp\n M src/unittest/test_mapblock.cpp\n?? src/cdda/cdda_bridge.cpp\n?? src/cdda/cdda_bridge.h\n"
     },
