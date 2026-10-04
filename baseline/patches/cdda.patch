@@ -816,10 +816,10 @@ index 0000000..7f51bdb
 +}
 diff --git a/src/cwm/cwm_map_exporter.cpp b/src/cwm/cwm_map_exporter.cpp
 new file mode 100644
-index 0000000..90cd0d2
+index 0000000..98d1292
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.cpp
-@@ -0,0 +1,379 @@
+@@ -0,0 +1,381 @@
 +// CDDA CWM Map & Entity Exporter Implementation
 +// Licensed under Apache-2.0
 +
@@ -1003,9 +1003,11 @@ index 0000000..90cd0d2
 +            player_type,
 +            &pos,
 +            0.0f,
-+            player_flags,
++            0,
 +            100,
-+            player_name
++            player_name,
++            true,
++            player_flags
 +        );
 +        entity_offsets.push_back(player_state);
 +    }

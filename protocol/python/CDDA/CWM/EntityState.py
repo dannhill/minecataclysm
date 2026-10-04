@@ -91,8 +91,15 @@ class EntityState(object):
             return bool(self._tab.Get(flatbuffers.number_types.BoolFlags, o + self._tab.Pos))
         return True
 
+    # EntityState
+    def StateFlags(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(22))
+        if o != 0:
+            return self._tab.Get(flatbuffers.number_types.Uint32Flags, o + self._tab.Pos)
+        return 0
+
 def EntityStateStart(builder):
-    builder.StartObject(9)
+    builder.StartObject(10)
 
 def Start(builder):
     EntityStateStart(builder)
@@ -150,6 +157,12 @@ def EntityStateAddPerceived(builder, perceived):
 
 def AddPerceived(builder, perceived):
     EntityStateAddPerceived(builder, perceived)
+
+def EntityStateAddStateFlags(builder, stateFlags):
+    builder.PrependUint32Slot(9, stateFlags, 0)
+
+def AddStateFlags(builder, stateFlags):
+    EntityStateAddStateFlags(builder, stateFlags)
 
 def EntityStateEnd(builder):
     return builder.EndObject()

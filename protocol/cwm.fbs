@@ -109,6 +109,8 @@ table EntityState {
     name: string;
     // CDDA sensory visibility, independent of the presentation camera.
     perceived: bool = true;
+    // Native posture/environment cues; presentation offsets do not alter pos.
+    state_flags: uint32 = 0;
 }
 
 table EntityRemoved {

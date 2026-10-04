@@ -1035,7 +1035,8 @@ struct EntityState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_ANIMATION_HINT = 14,
     VT_HP_PERCENT = 16,
     VT_NAME = 18,
-    VT_PERCEIVED = 20
+    VT_PERCEIVED = 20,
+    VT_STATE_FLAGS = 22
   };
   uint64_t id() const {
     return GetField<uint64_t>(VT_ID, 0);
@@ -1091,6 +1092,12 @@ struct EntityState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   bool mutate_perceived(bool _perceived = 1) {
     return SetField<uint8_t>(VT_PERCEIVED, static_cast<uint8_t>(_perceived), 1);
   }
+  uint32_t state_flags() const {
+    return GetField<uint32_t>(VT_STATE_FLAGS, 0);
+  }
+  bool mutate_state_flags(uint32_t _state_flags = 0) {
+    return SetField<uint32_t>(VT_STATE_FLAGS, _state_flags, 0);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint64_t>(verifier, VT_ID, 8) &&
@@ -1104,6 +1111,7 @@ struct EntityState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_NAME) &&
            verifier.VerifyString(name()) &&
            VerifyField<uint8_t>(verifier, VT_PERCEIVED, 1) &&
+           VerifyField<uint32_t>(verifier, VT_STATE_FLAGS, 4) &&
            verifier.EndTable();
   }
 };
@@ -1139,6 +1147,9 @@ struct EntityStateBuilder {
   void add_perceived(bool perceived) {
     fbb_.AddElement<uint8_t>(EntityState::VT_PERCEIVED, static_cast<uint8_t>(perceived), 1);
   }
+  void add_state_flags(uint32_t state_flags) {
+    fbb_.AddElement<uint32_t>(EntityState::VT_STATE_FLAGS, state_flags, 0);
+  }
   explicit EntityStateBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -1160,9 +1171,11 @@ inline ::flatbuffers::Offset<EntityState> CreateEntityState(
     uint16_t animation_hint = 0,
     uint8_t hp_percent = 0,
     ::flatbuffers::Offset<::flatbuffers::String> name = 0,
-    bool perceived = true) {
+    bool perceived = true,
+    uint32_t state_flags = 0) {
   EntityStateBuilder builder_(_fbb);
   builder_.add_id(id);
+  builder_.add_state_flags(state_flags);
   builder_.add_name(name);
   builder_.add_rotation(rotation);
   builder_.add_pos(pos);
@@ -1184,7 +1197,8 @@ inline ::flatbuffers::Offset<EntityState> CreateEntityStateDirect(
     uint16_t animation_hint = 0,
     uint8_t hp_percent = 0,
     const char *name = nullptr,
-    bool perceived = true) {
+    bool perceived = true,
+    uint32_t state_flags = 0) {
   auto type_id__ = type_id ? _fbb.CreateString(type_id) : 0;
   auto name__ = name ? _fbb.CreateString(name) : 0;
   return CDDA::CWM::CreateEntityState(
@@ -1197,7 +1211,8 @@ inline ::flatbuffers::Offset<EntityState> CreateEntityStateDirect(
       animation_hint,
       hp_percent,
       name__,
-      perceived);
+      perceived,
+      state_flags);
 }
 
 struct EntityRemoved FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
