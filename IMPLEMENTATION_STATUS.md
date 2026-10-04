@@ -31,6 +31,16 @@ No additional manual checks are needed to accept this slice. Revisit automatic,
 continuous traversal of stairs and ladders with the user when the first real-time
 scheduler prototype is playable, before choosing the final controller.
 Full FND-04 and M5.5 are not recertified.
+The next authorized [actor lifecycle slice](docs/fixes/fnd04-actor-lifecycle.md)
+persists monster identity in native Creature metadata using the native world
+character-ID allocator; NPCs retain their canonical IDs. Motion, multi-Z,
+bubble departure/return, reconnect, native save/reload and pristine writer
+roundtrips have scoped coverage. The real renderer removes owned scene nodes,
+replaces changed archetype meshes and snaps re-perceived/recovered actors to
+their confirmed position without animating unseen motion. Invalid actor-kind
+aliases and contradictory lifecycle metadata are rejected before ingestion.
+`actor-demo.sh` provides the persistent isolated manual fixture. This does not
+implement animations, real-time scheduling, local light or full FND-04 conformance.
 Product decisions and planned prototypes do not certify implementation.
 
 Manual feedback accepted movement, structures, door opening, safe mode and

@@ -128,12 +128,29 @@ The renderer applies this batch before updating entity targets. A rebase or
 invalidated export cache requires full chunks. Both project runtime binaries
 must be rebuilt together to render the new materials/batched changes.
 
-Player wire ID is always 1. Cached runtime export uses monotonic monster IDs
-from 1000, associated with native weak ownership, and a separate NPC namespace
-containing the canonical NPC ID. Actor `perceived` controls rendered visibility;
-unperceived records are still sent. Monster IDs do not persist across runtime
-restart; vehicle IDs remain process memory addresses. This is not a complete
-persisted identity/session registry.
+Player wire ID is always 1. Monster wire ID is `(1 << 62) | native_id`; NPC
+wire ID is `(1 << 63) | canonical_npc_id`. Missing/invalid monster metadata is
+initialized using the native world character-ID allocator, already shared by
+avatars/NPCs. Decimal `native_id` is stored in `Creature::values["cwm_monster_id"]`,
+which the pinned native reader/writer preserves. No save serializer or wire layout
+changes. Allocation consumes native IDs but no gameplay RNG, moves or time.
+The allocator retains its native positive-int range; the 64-bit wire namespaces
+do not enlarge that allocator. Simultaneously loaded copies with the same metadata
+are given distinct IDs; the first native roster occurrence retains the existing
+ID. Normal overmap offload/reload and runtime restart preserve the sole owner's ID.
+
+Actor `perceived` controls rendered visibility; unperceived records are still
+sent. A newly perceived actor or recovery snapshot establishes its current
+position immediately, rather than interpolating an unobserved interval.
+Ordinary perceived motion and terrain rebases retain visual interpolation.
+Complete rosters govern scene creation/removal. Announced spawn states must
+agree with their roster entries; duplicate spawn/removal metadata, invalid actor
+kinds, nonfinite rotation and changing kind under a currently installed ID cause
+resynchronization before ingestion. Lifecycle vectors and actor rosters are
+bounded; spawn validation uses indexed lookup. Archetype evolution within MONSTER
+can replace a mesh while preserving identity. Vehicle IDs remain process memory
+addresses, pending the separate vehicle work. See the
+[actor lifecycle evidence](../docs/fixes/fnd04-actor-lifecycle.md).
 
 Minor 4 appends `EntityState.state_flags:uint32=0` after `perceived`, leaving
 older fields unchanged. Actor bits are WINDOW_PASSAGE (1), WADING (2),
@@ -217,7 +234,9 @@ below the high-water mark are rejected as expired, never executed again.
 Queued actions canceled on disconnect retain a negative outcome. A native
 action already in progress may complete and records its result even without
 an active client. The ledger is volatile: fresh session identity invalidates
-old commands after a server restart. Canonical saves contain no protocol state.
+old commands after a server restart. Session/connection identities and command
+ledger state are not persisted; native actor identity metadata is canonical as
+described above.
 
 The client releases a movement/interaction only after the matching CommandAck
 and WorldSnapshot.completed_command_id, with sufficient result revision.

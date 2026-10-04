@@ -29,7 +29,7 @@ le riparazioni già completate a visibilità, strutture e movimento.
 | FND-01 | Distinguere nuova partita e caricamento; mantenere identità, inventario, posizione, orologio e mondo. Comandi e verifiche headless usano il ciclo nativo completo. | IMPLEMENTED — verifica mirata PASS; SAVE-001 completo in FND-05 |
 | FND-02 | Framing e code limitati; EOF, framing/FlatBuffers strutturalmente invalidi e client lento sono contenuti. I/O non bloccante e lavoro limitato per aggiornamento. | IMPLEMENTED — verifica mirata PASS; [evidenze](docs/fixes/fnd02-transport.md) |
 | FND-03 | Negoziazione, identità di sessione, deduplicazione, revisioni, sequenze, reconnect/resync e abilitazione dell'input su stato completo. | IMPLEMENTED — verifica mirata PASS; [evidenze](docs/fixes/fnd03-session-recovery.md) |
-| FND-04 | Entità reali persistenti, picking, verticalità, campi, luce/percezione e HUD autorevoli; lifecycle e threading verificati. | IN PROGRESS: rebase, creature base, decisioni native, OPEN/CLOSE, aperture/acqua e [connessioni verticali native](docs/fixes/fnd04-vertical-navigation.md) implementate con verifica mirata; copertura incompleta |
+| FND-04 | Entità reali persistenti, picking, verticalità, campi, luce/percezione e HUD autorevoli; lifecycle e threading verificati. | IN PROGRESS: rebase, creature base, decisioni native, OPEN/CLOSE, aperture/acqua, [connessioni verticali native](docs/fixes/fnd04-vertical-navigation.md) e [identità/ciclo di vita degli attori](docs/fixes/fnd04-actor-lifecycle.md) implementati con verifica mirata; copertura incompleta |
 | FND-05 | SAVE-001 completo, test discovery, licenze/media e benchmark popolati riproducibili; nuova certificazione M5.5 soltanto dopo le evidenze. | PLANNED |
 
 FND-01 applica il preset CDDA raccomandato ai nuovi mondi e conserva mod/opzioni
@@ -97,6 +97,14 @@ contestuali native e immersione/emersione, un passaggio per pressione.
 l'utente [accetta tutti e quattro i test e la transizione visiva](docs/source/vertical-validation-2026-10-04.md).
 Non servono altre prove manuali per accettare questo passo. Non finalizza
 il controller continuo né lo scheduler della fase 2 e non chiude l'intero FND-04.
+
+Il seguito autorizzato consolida [creature e NPC](docs/fixes/fnd04-actor-lifecycle.md):
+identità canoniche, ingresso/uscita dall'area simulata, riconnessione, salvataggio
+e caricamento, cambio di modello e rimozione effettiva delle mesh. `actor-demo.sh`
+offre una prova isolata riprendibile. La visibilità resta CDDA; alla ricomparsa
+non si anima il percorso non osservato. Animazioni, AI in tempo reale, dialoghi,
+scambi e luce locale restano nei task previsti. La prova manuale di questa nuova
+consegna resta da svolgere; quelle precedenti rimangono accettate.
 
 ## Fase 2 — Prototipo di tempo, movimento e percezione
 
