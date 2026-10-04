@@ -34,8 +34,16 @@ keymap_toggle_profiler =
 debug_log_level = info
 CONFIG
 printf '\ncwm_trace_file = %s/camera.csv\n' "$PLAY_DIR" >> "$PLAY_DIR/client.conf"
+DEMO_PORT="$(python3 - <<'PY'
+import socket
+with socket.socket() as sock:
+    sock.bind(('127.0.0.1', 0))
+    print(sock.getsockname()[1])
+PY
+)"
+printf 'port = %s\n' "$DEMO_PORT" >> "$PLAY_DIR/client.conf"
 printf 'Confronto terreno: F7 cambia A/B, F8 nebbia. Scena isolata: %s\n' "$PLAY_DIR"
 exec env CDDA_USERDIR="$PLAY_DIR/cdda" CDDA_WORLD=terrain_comparison \
     CDDA_CHARACTER= CDDA_TERRAIN_DEMO=1 LUANTI_WORLD="$PLAY_DIR/luanti" \
     LUANTI_CONFIG="$PLAY_DIR/client.conf" LOG_DIR="$PLAY_DIR/logs" \
-    "$PROJECT_DIR/start.sh" --name "Terrain tester" "$@"
+    "$PROJECT_DIR/start.sh" --name terrain_tester "$@"

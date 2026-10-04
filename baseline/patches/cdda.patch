@@ -383,10 +383,10 @@ index 09a7711..9b0c484 100644
          DebugLog( D_INFO, DC_ALL ) <<
 diff --git a/src/cwm/cwm_main.cpp b/src/cwm/cwm_main.cpp
 new file mode 100644
-index 0000000..4c3bea3
+index 0000000..7f51bdb
 --- /dev/null
 +++ b/src/cwm/cwm_main.cpp
-@@ -0,0 +1,375 @@
+@@ -0,0 +1,383 @@
 +// CDDA Headless CWM Server Entrypoint
 +// Licensed under Apache-2.0
 +
@@ -474,13 +474,21 @@ index 0000000..4c3bea3
 +            m.remove_trap(p);
 +        }
 +        const tripoint p(x, y, 0);
++        uint32_t patch = static_cast<uint32_t>(x / 5) * 0x9e3779b9u ^
++                         static_cast<uint32_t>(y / 5) * 0x85ebca6bu;
++        patch ^= patch >> 16;
++        uint32_t scatter = static_cast<uint32_t>(x) * 0x45d9f3bu ^
++                           static_cast<uint32_t>(y) * 0x119de1f3u;
++        scatter ^= scatter >> 16;
 +        // Four compact areas around the starting plaza (60,60).
 +        if (x < 57 && y < 57) {
-+            if ((x * 7 + y * 13) % 11 == 0) m.ter_set(p, ter_str_id("t_tree"));
-+            else if ((x * 3 + y * 5) % 9 == 0) m.ter_set(p, ter_str_id("t_shrub"));
++            if (x % 5 == static_cast<int>(patch % 3) + 1 &&
++                y % 5 == static_cast<int>((patch >> 4) % 3) + 1)
++                m.ter_set(p, ter_str_id("t_tree"));
++            else if (scatter % 17 == 0) m.ter_set(p, ter_str_id("t_shrub"));
 +        } else if (x > 63 && y < 57) {
-+            if ((x + y * 3) % 5 == 0) m.ter_set(p, ter_str_id("t_grass_long"));
-+            else if ((x * 3 + y) % 17 == 0) m.ter_set(p, ter_str_id("t_dirt"));
++            if (scatter % 5 == 0) m.ter_set(p, ter_str_id("t_grass_long"));
++            else if (scatter % 29 == 0) m.ter_set(p, ter_str_id("t_dirt"));
 +        } else if (x > 63 && y > 63) {
 +            m.ter_set(p, ter_str_id(x > 75 ? "t_water_sh" : "t_sand"));
 +        } else if (x < 57 && y > 63) {

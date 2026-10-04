@@ -24,6 +24,7 @@ def main():
                                 stderr=subprocess.STDOUT, start_new_session=True)
         window = None
         play = None
+        ready = False
         try:
             deadline = time.monotonic() + 110
             while time.monotonic() < deadline and proc.poll() is None:
@@ -39,10 +40,12 @@ def main():
                         continue
                     result = subprocess.run(['xdotool', 'search', '--onlyvisible', '--pid', str(pid)], capture_output=True, text=True)
                     if result.stdout.strip(): window = result.stdout.splitlines()[0]; break
-                if window: break
+                if window and play and (play / 'camera.csv').exists() and (play / 'camera.csv').stat().st_size > 500:
+                    ready = True
+                    break
                 time.sleep(.25)
-            checks['actual_native_demo_window'] = bool(window)
-            if not window: raise RuntimeError('No demo window; inspect launcher log')
+            checks['actual_native_demo_window'] = ready
+            if not ready: raise RuntimeError('No ready demo window; inspect launcher log')
             def xdo(*argv): subprocess.run(['xdotool', *argv], check=True, capture_output=True, timeout=5)
             def shot(name): subprocess.run(['import', '-window', window, str(out / name)], check=True, timeout=10)
             def tap(key):
@@ -84,16 +87,16 @@ def main():
             checks['native_four_area_fixture_created'] = 'Terrain comparison ready: plaza 60,60' in server
             checks['native_scene_remains_in_isolated_world'] = 'Creating new canonical world: terrain_comparison' in server
             from PIL import Image, ImageChops
-            def image(name): return Image.open(out / name).convert('RGB').crop((0, 150, 1024, 650))
-            def pixels(a,b):
-                diff=ImageChops.difference(image(a),image(b))
+            def image(name, box): return Image.open(out / name).convert('RGB').crop(box)
+            def pixels(a,b,box=(0,150,1024,650)):
+                diff=ImageChops.difference(image(a,box),image(b,box))
                 return sum(max(p)>25 for p in diff.getdata())
             style_pixels=pixels('A-clear.png','B-clear.png')
             fog_pixels=pixels('B-fog.png','B-clear.png')
-            restored_pixels=pixels('B-clear.png','B-restored.png')
+            restored_pixels=pixels('B-clear.png','B-restored.png',(0,400,1024,650))
             checks['materials_and_vegetation_change_visible_scene'] = style_pixels > 10000
             checks['fog_changes_visible_distance'] = fog_pixels > 10000
-            # Water texture animation can alter a small region in the same view.
+            # Compare foreground terrain; cloud drift in the sky is unrelated.
             checks['style_restoration_is_visually_stable'] = restored_pixels < 3000
             (out / 'pixels.json').write_text(json.dumps(dict(style=style_pixels,fog=fog_pixels,restored=restored_pixels),indent=2)+'\n')
         finally:

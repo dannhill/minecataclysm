@@ -39,7 +39,7 @@ for _, entry in ipairs({{"shrub", 0.75}, {"tall_grass", 0.4}}) do
     minetest.register_node("cdda_nodes:demo_" .. entry[1], {
         description = "Terrain comparison: " .. entry[1],
         drawtype = "plantlike",
-        tiles = {entry[1] == "tall_grass" and "mcl_flowers_tallgrass.png"
+        tiles = {entry[1] == "tall_grass" and "mcl_flowers_tallgrass.png^[colorize:#67833e:110"
             or "default_leaves.png^[colorize:#557d32:110"},
         visual_scale = entry[2],
         paramtype = "light",
