@@ -470,10 +470,10 @@ index 7f3f860..c4c4482 100644
  void TestMapBlock::testSaveLoad(IGameDef *gamedef, const u8 version)
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..6201641
+index 0000000..4f54568
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,1022 @@
+@@ -0,0 +1,1026 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
@@ -1246,6 +1246,10 @@ index 0000000..6201641
 +            y - projection_origin_.Y + scene_origin_.Y, z,
 +            static_cast<CDDA::CWM::InteractAction>(action)
 +        );
++        infostream << "CWM opening request " << command << " action " << action
++                   << " target " << (x - projection_origin_.X + scene_origin_.X)
++                   << ',' << (y - projection_origin_.Y + scene_origin_.Y) << ',' << z
++                   << std::endl;
 +        if (!connection_->send_message(req.data(), req.size())) return false;
 +        pending_move_ = command;
 +        move_acked_ = false;

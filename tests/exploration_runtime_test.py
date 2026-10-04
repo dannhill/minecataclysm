@@ -4,12 +4,14 @@ import argparse
 import json
 from pathlib import Path
 import resource
+import queue
 import shutil
 import socket
 import struct
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 
 
@@ -105,26 +107,42 @@ def main():
         def snapshot(msg):
             world = World.WorldSnapshot()
             world.Init(msg.Payload().Bytes, msg.Payload().Pos)
+            ox, oy = world.Origin().X(), world.Origin().Y()
+            state['origin'] = [ox, oy]
             for i in range(world.ChunksLength()):
                 chunk = world.Chunks(i)
                 for j in range(chunk.BlocksLength()):
                     block = chunk.Blocks(j)
-                    tiles[(chunk.ChunkX() * 16 + j % 16,
-                           chunk.ChunkY() * 16 + j // 16, chunk.ChunkZ())] = block.MaterialId()
+                    tiles[(ox + chunk.ChunkX() * 16 + j % 16,
+                           oy + chunk.ChunkY() * 16 + j // 16, chunk.ChunkZ())] = block.MaterialId()
             for i in range(world.TilesLength()):
                 delta = world.Tiles(i)
-                tiles[(delta.Coord().X(), delta.Coord().Y(), delta.Coord().Z())] = delta.Block().MaterialId()
+                tiles[(ox + delta.Coord().X(), oy + delta.Coord().Y(), delta.Coord().Z())] = delta.Block().MaterialId()
             for i in range(world.EntitiesLength()):
                 actor = world.Entities(i)
                 if actor.Id() == 1:
-                    state.update(position=[actor.Pos().X(), actor.Pos().Y(), actor.Pos().Z()],
+                    state.update(position=[ox + actor.Pos().X(), oy + actor.Pos().Y(), actor.Pos().Z()],
                                  flags=actor.StateFlags(), time=world.SimulationTimeSeconds())
             events.append({'case': case, 'state': state.copy()})
+
+        inbox = queue.Queue()
+        def receive():
+            msg = inbox.get(timeout=20)
+            if isinstance(msg, Exception):
+                raise msg
+            return msg
+
+        def reader(c):
+            try:
+                while True:
+                    inbox.put(read(c))
+            except Exception as error:
+                inbox.put(error)
 
         def result(c, ident):
             accepted = None
             for _ in range(100):
-                msg = read(c)
+                msg = receive()
                 if msg.PayloadType() == Payload.Payload.CommandAck:
                     ack = Ack.CommandAck()
                     ack.Init(msg.Payload().Bytes, msg.Payload().Pos)
@@ -151,9 +169,13 @@ def main():
                 with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as c:
                     c.connect(str(path))
                     c.settimeout(15)
+                    # Drain frames independently of Python tile decoding, like
+                    # the bridge worker. Slow-client tolerance belongs to FND-02.
+                    receiver = threading.Thread(target=reader, args=(c,), daemon=True)
+                    receiver.start()
                     send(c, Payload.Payload.HelloRequest, hello)
                     while True:
-                        msg = read(c)
+                        msg = receive()
                         if msg.PayloadType() == Payload.Payload.WorldSnapshot:
                             snapshot(msg)
                             break
@@ -162,7 +184,7 @@ def main():
                     if args.expect_abort:
                         try:
                             while True:
-                                read(c)
+                                receive()
                         except EOFError:
                             pass
                         proc.wait(timeout=15)
@@ -170,7 +192,7 @@ def main():
                               'input_manager::get_input_event called in test mode' in (root / 'server.log').read_text())
                         continue
                     while True:
-                        msg = read(c)
+                        msg = receive()
                         if msg.PayloadType() == Payload.Payload.WorldSnapshot:
                             snapshot(msg)
                         if msg.PayloadType() == Payload.Payload.DecisionPrompt:
@@ -197,9 +219,12 @@ def main():
                             check('swimming_cue_with_native_z_unchanged', state['flags'] & 4 and state['position'][2] == start[2])
                             send(c, Payload.Payload.MoveRequest, lambda b: move(b, 2, 5))
                             check('return_from_swimming', result(c, 2) and state['position'] == start)
+                        # Interaction coordinates are local to the current
+                        # authoritative origin, including native rebases.
                         target = [int(start[0] - 1), int(start[1]), int(start[2])]
                         for ident, verb, material in [(3, 1, 10), (4, 2, 7)]:
-                            send(c, Payload.Payload.InteractRequest, lambda b: interact(b, ident, target, verb))
+                            local = [target[0] - state['origin'][0], target[1] - state['origin'][1], target[2]]
+                            send(c, Payload.Payload.InteractRequest, lambda b: interact(b, ident, local, verb))
                             check(case + '_window_' + str(verb), result(c, ident) and tiles[tuple(target)] == material)
                             check(case + '_pointed_action_keeps_position_' + str(verb), state['position'] == start)
                         send(c, Payload.Payload.MoveRequest, lambda b: move(b, 5, 5))

@@ -1881,10 +1881,10 @@ index 0000000..ca196fd
 +}
 diff --git a/tests/cwm_runtime_test.cpp b/tests/cwm_runtime_test.cpp
 new file mode 100644
-index 0000000..f962264
+index 0000000..f4edf2d
 --- /dev/null
 +++ b/tests/cwm_runtime_test.cpp
-@@ -0,0 +1,241 @@
+@@ -0,0 +1,243 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "avatar_action.h"
@@ -1931,6 +1931,7 @@ index 0000000..f962264
 +    avatar &u = get_avatar();
 +    map &m = get_map();
 +    const tripoint start = u.pos();
++    const auto absolute_start = m.getglobal( start );
 +    m.ter_set( start, ter_str_id( "t_floor" ) );
 +    m.ter_set( start + tripoint_north, ter_str_id( "t_water_dp" ) );
 +    item matches( itype_id( "matches" ), calendar::turn );
@@ -1944,7 +1945,8 @@ index 0000000..f962264
 +    REQUIRE_FALSE( do_turn_with_action( [&]() {
 +        const int before = u.moves;
 +        REQUIRE( avatar_action::move( u, m, tripoint_north ) );
-+        CHECK( u.pos() == ( answer == 0 ? start + tripoint_north : start ) );
++        CHECK( m.getglobal( u.pos() ) ==
++               ( answer == 0 ? absolute_start + tripoint_north : absolute_start ) );
 +        CHECK( u.get_wielded_item()->is_broken() == ( answer == 0 ) );
 +        if( answer == 1 ) { CHECK( u.moves == before ); }
 +        else { CHECK( u.moves < before ); }

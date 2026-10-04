@@ -145,10 +145,13 @@ def main():
             shot('window-open.png')
             check('pointed_open_keeps_position', float(latest()['target_x']) == x and float(latest()['target_z']) == z)
             # The open pane is air: aim at its persistent sill to close it.
-            turn(90, -30)
+            turn(90, -45)
+            shot('window-sill-target.png')
             revision = int(latest()['revision'])
             xdo('keydown', '--window', window, 'Shift_L')
+            time.sleep(.12)  # Keep the modifier down across client input frames.
             xdo('click', '--window', window, '3')
+            time.sleep(.12)
             xdo('keyup', '--window', window, 'Shift_L')
             wait(lambda r: int(r['revision']) > revision and int(r['pending_move']) == 0)
             time.sleep(1)
