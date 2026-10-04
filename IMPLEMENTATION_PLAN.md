@@ -103,8 +103,12 @@ identità canoniche, ingresso/uscita dall'area simulata, riconnessione, salvatag
 e caricamento, cambio di modello e rimozione effettiva delle mesh. `actor-demo.sh`
 offre una prova isolata riprendibile. La visibilità resta CDDA; alla ricomparsa
 non si anima il percorso non osservato. Animazioni, AI in tempo reale, dialoghi,
-scambi e luce locale restano nei task previsti. La prova manuale di questa nuova
-consegna resta da svolgere; quelle precedenti rimangono accettate.
+scambi e luce locale restano nei task previsti. L'utente
+[accetta tutti e tre i controlli manuali](docs/source/actor-lifecycle-validation-2026-10-04.md).
+Non serve ripeterli. Il caso di schermo nero fuori dal percorso della demo
+resta da riprodurre, conservando la sessione; non riapre questi tre controlli.
+Il seguito proposto è il primo prototipo circoscritto dello scheduler della
+fase 2, sulle fondazioni già verificate. Gli altri criteri FND-04 restano aperti.
 
 ## Fase 2 — Prototipo di tempo, movimento e percezione
 

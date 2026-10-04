@@ -41,6 +41,11 @@ their confirmed position without animating unseen motion. Invalid actor-kind
 aliases and contradictory lifecycle metadata are rejected before ingestion.
 `actor-demo.sh` provides the persistent isolated manual fixture. This does not
 implement animations, real-time scheduling, local light or full FND-04 conformance.
+The user [accepts all three actor lifecycle manual checks](docs/source/actor-lifecycle-validation-2026-10-04.md).
+No repeat checklist is needed. Black-screen loss of context after leaving the
+demo road is reported separately, not yet reproduced; preserve that demo save.
+The proposed next slice is the first phase-2 authoritative real-time scheduler
+prototype; it has not started. Other FND-04 criteria remain open.
 Product decisions and planned prototypes do not certify implementation.
 
 Manual feedback accepted movement, structures, door opening, safe mode and

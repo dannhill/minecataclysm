@@ -66,8 +66,10 @@ La scena serve a verificare sincronizzazione, non animazioni o qualità dei mode
 3. Esci vicino agli attori e rilancia la demo: posizione e presenze coerenti,
    senza duplicati. Le correzioni sono disponibili anche in `./start.sh`.
 
-La nuova accettazione manuale resta da raccogliere. Non occorre ripetere le
-checklist già accettate dei task precedenti.
+L'utente [accetta tutti e tre i controlli](../source/actor-lifecycle-validation-2026-10-04.md).
+Non occorre ripetere la checklist. Il nuovo schermo nero fuori dal percorso
+della demo è registrato separatamente, resta da riprodurre e non è attestato
+come risolto; conservare la sessione per l'eventuale investigazione.
 
 ## Verifica e riproduzione
 

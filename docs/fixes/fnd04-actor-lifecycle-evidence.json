@@ -751,7 +751,7 @@
     "installed-demo-smoke": "Eight automated checks passed, but visual inspection found fixture too dark. Superseded by independently created native-noon outdoor variant.",
     "demo-fixture-night-user": "Retained development variant; not the user-facing demo."
   },
-  "manual_status": "Earlier vertical tests accepted. New actor lifecycle manual checklist pending; actor-demo.sh uses isolated persistent daylight copy.",
+  "manual_status": "User accepts all three actor lifecycle checks. Black-screen report outside the demo road remains unreproduced; preserve the session. Full FND-04/SAVE-001/M5.5 outcomes unchanged.",
   "limits": [
     "Native world ID allocator remains positive signed int; no global repair of corrupted save counters.",
     "Action-driven time unchanged; realtime, animations and orientation remain separate work.",
@@ -760,5 +760,11 @@
     "Luanti auxiliary-avatar moved-too-fast logs persist; CWM camera and positions pass scoped tests.",
     "Local illumination/perception, underwater view, panorama/fog and low-priority door variants remain pending.",
     "At first playable realtime prototype, revisit automatic continuous traversal of stairs and ladders before choosing final controller."
-  ]
+  ],
+  "manual_validation": {
+    "source": "docs/source/actor-lifecycle-validation-2026-10-04.md",
+    "associated_delivery_report_commit": "933de02",
+    "accepted_checks": 3,
+    "new_black_screen_report": "Cause not established; does not certify a crash or a fix."
+  }
 }
