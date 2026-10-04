@@ -1,7 +1,10 @@
 # Terreno 3D: proposta prima delle feature che dipendono dalla geometria
 
 Fonte: [seconda prova manuale](../source/manual-validation-2026-10-04.md).
-Stato: analisi e proposta dell'agente, non decisione approvata né implementazione.
+Stato: punti 1 e 2 autorizzati dall'utente e realizzati nel
+[prototipo di confronto](../prototypes/terrain-comparison.md), in attesa della
+prova manuale. Dettaglio superficiale e rilievo percorribile restano proposte;
+nessuna variante estetica definitiva è stata scelta.
 Il problema va definito adesso; il confronto giocabile appartiene alla fase 2,
 prima di consolidare guida, combattimento e costruzioni. FND-02/03 restano le
 prossime fondazioni da implementare.

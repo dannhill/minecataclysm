@@ -1,0 +1,383 @@
+{
+  "scope": "Terrain presentation points 1/2 implemented as isolated playable comparison. User aesthetic decision pending. Historical M5.5 FAILED; full SAVE-001 incomplete.",
+  "code_commit": "3a830d86feffe84644bf6aab546f5419d3791a03",
+  "branch": "prototype/terrain-comparison",
+  "sources": {
+    "cdda": {
+      "url": "https://github.com/CleverRaven/Cataclysm-DDA.git",
+      "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+      "shallow": true,
+      "patch": "baseline/patches/cdda.patch",
+      "patch_sha256": "87202cab109d2cd4e204e8b5a339a8cc0c9c047c568f0414bcd1492d4e02bb0e",
+      "tree_inventory": "baseline/trees/cdda.json",
+      "tree_sha256": "02da38f72b807624393cf175fd1a36458b1a7f5aae5fcd582d6d2f96539b23a0",
+      "file_count": 8579,
+      "original_status": " M src/CMakeLists.txt\n M src/do_turn.cpp\n M src/do_turn.h\n M src/game.cpp\n M src/game.h\n M src/handle_action.cpp\n M src/iexamine.cpp\n M src/output.cpp\n M tests/CMakeLists.txt\n M tests/test_main.cpp\n?? src/cwm/cwm_main.cpp\n?? src/cwm/cwm_map_exporter.cpp\n?? src/cwm/cwm_map_exporter.h\n?? src/cwm/cwm_server.cpp\n?? src/cwm/cwm_server.h\n?? src/safe_mode_actions.h\n?? tests/cwm_projection_test.cpp\n?? tests/cwm_runtime_test.cpp\n"
+    },
+    "luanti": {
+      "url": "https://github.com/luanti-org/luanti.git",
+      "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
+      "shallow": true,
+      "patch": "baseline/patches/luanti.patch",
+      "patch_sha256": "eacf038212633fb97f5abd9864d0d1bece824b49098debe3eda0f51006bf66c6",
+      "tree_inventory": "baseline/trees/luanti.json",
+      "tree_sha256": "b993899ce3f0902dc51ab73ac57740749e6188c9343413a2577024c97d658e3e",
+      "file_count": 2251,
+      "original_status": " M src/CMakeLists.txt\n M src/client/CMakeLists.txt\n M src/client/client.cpp\n M src/client/clientenvironment.cpp\n M src/client/game.cpp\n M src/client/mesh_generator_thread.cpp\n M src/client/mesh_generator_thread.h\n M src/network/clientpackethandler.cpp\n M src/unittest/test_mapblock.cpp\n?? src/cdda/cdda_bridge.cpp\n?? src/cdda/cdda_bridge.h\n"
+    },
+    "mineclonia": {
+      "url": "https://github.com/mark-wiemer/mineclonia.git",
+      "commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+      "shallow": true,
+      "patch": "baseline/patches/mineclonia.patch",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree_inventory": "baseline/trees/mineclonia.json",
+      "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36",
+      "file_count": 9359,
+      "original_status": ""
+    }
+  },
+  "environment": {
+    "platform": "Linux-7.0.11-76070011-generic-x86_64-with-glibc2.35",
+    "python": "3.10.12",
+    "compiler": "g++ (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0",
+    "gui": "X11, xdotool, ImageMagick; actual CDDA fixture, Luanti client, isolated configs/user directories and private sockets"
+  },
+  "workspaces": {
+    "tested": "artifacts/terrain-prototype/accepted-reconstruction",
+    "fresh_final_reconstruction": "artifacts/terrain-prototype/final-source/workspace",
+    "provenance": "Initially reconstructed at a44bfed then updated with the final committed sources. Final baseline check confirms exact fork contents/modes. A separate final reconstruction verifies pins/patches. Dependency-validated incremental builds, not cold-cache."
+  },
+  "binaries": {
+    "cdda/build/src/cdda-server": "654257f96fcc3718cc80fd68bfc9559acf2c8aee055f656794b7ef1314999e5c",
+    "luanti/bin/luanti": "554c4733df193aab862f315559f9f47668c599f1bd05fea85b6682a7846cee17",
+    "artifacts/terrain-prototype/accepted-reconstruction/cdda/build/src/cdda-server": "654257f96fcc3718cc80fd68bfc9559acf2c8aee055f656794b7ef1314999e5c",
+    "artifacts/terrain-prototype/accepted-reconstruction/luanti/bin/luanti": "554c4733df193aab862f315559f9f47668c599f1bd05fea85b6682a7846cee17",
+    "artifacts/terrain-prototype/accepted-reconstruction/cdda/build/tests/cata_test": "d1d19ad7891ac6885f823badf68925923d0b56068acc042c858db6af28a4a240",
+    "artifacts/rebase-threat/native-save-reader": "0a547bcc3e320e65da6cc394d0030948595f6769342b2dd2b1d85894c43e2a62"
+  },
+  "installation": [
+    {
+      "path": "cdda/build/src/cdda-server",
+      "previous_sha256": "2dfc75c8102329bccce412fc67b18cfd76ee0a504112ef2c5505befecd2c53bd",
+      "verified_sha256": "654257f96fcc3718cc80fd68bfc9559acf2c8aee055f656794b7ef1314999e5c",
+      "installed_atomically": true
+    },
+    {
+      "path": "luanti/bin/luanti",
+      "previous_sha256": "94e362ad4755b6b0d750599386a5e789d259d346eebc5b81f7128061ed42ef40",
+      "verified_sha256": "554c4733df193aab862f315559f9f47668c599f1bd05fea85b6682a7846cee17",
+      "installed_atomically": true
+    }
+  ],
+  "results": {
+    "actual-demo": {
+      "passed": 14,
+      "total": 14,
+      "artifact": "artifacts/terrain-prototype/final-demo/checks.json"
+    },
+    "rebase": {
+      "passed": 15,
+      "total": 15,
+      "artifact": "artifacts/terrain-prototype/accepted-rebase/result.json"
+    },
+    "native-demo-guards": {
+      "passed": 4,
+      "total": 4,
+      "artifact": "artifacts/terrain-prototype/native-guards.json"
+    },
+    "presentation": {
+      "passed": 48,
+      "total": 48,
+      "scenarios": {
+        "delayed": {
+          "passed": 11,
+          "total": 11,
+          "artifact": "artifacts/terrain-prototype/accepted-presentation/delayed/result.json"
+        },
+        "fps-120": {
+          "passed": 11,
+          "total": 11,
+          "artifact": "artifacts/terrain-prototype/accepted-presentation/fps-120/result.json"
+        },
+        "fps-30": {
+          "passed": 11,
+          "total": 11,
+          "artifact": "artifacts/terrain-prototype/accepted-presentation/fps-30/result.json"
+        },
+        "fps-60": {
+          "passed": 15,
+          "total": 15,
+          "artifact": "artifacts/terrain-prototype/accepted-presentation/fps-60/result.json"
+        }
+      }
+    },
+    "native-cdda": {
+      "passed_cases": 10,
+      "total_cases": 10,
+      "assertions": 3410,
+      "filter": "[cwm]",
+      "log": "artifacts/terrain-prototype/native-tests.log"
+    },
+    "native-luanti": {
+      "passed": 303,
+      "total": 303,
+      "modules": 47,
+      "log": "artifacts/terrain-prototype/accepted-luanti-tests.log"
+    },
+    "protocol-debug": {
+      "passed": 2,
+      "total": 2,
+      "log": "artifacts/terrain-prototype/protocol-tests.log"
+    },
+    "canonical-demo-load": {
+      "passed": 1,
+      "total": 1,
+      "reader": "artifacts/rebase-threat/native-save-reader",
+      "artifact": "artifacts/terrain-prototype/native-scene-read.json",
+      "player_abs": [
+        2554,
+        734,
+        0
+      ],
+      "time": 129614,
+      "limitation": "Native load of a copied isolated demo save; not full SAVE-001 semantic equivalence."
+    }
+  },
+  "visual_pixel_checks": {
+    "style": 293198,
+    "fog": 30698,
+    "restored": 0
+  },
+  "build_cache": {
+    "cdda": {
+      "mode": "dependency-validated incremental reuse; not a cold clean build",
+      "reused": 593,
+      "rejected": 2,
+      "cache_workspace": "/home/dannhill/Projects/cdda-mineclonia/artifacts/rebase-threat/reconstruction/workspace"
+    },
+    "luanti": {
+      "mode": "dependency-validated incremental reuse; not a cold clean build",
+      "reused": 162,
+      "rejected": 1,
+      "cache_workspace": "/home/dannhill/Projects/cdda-mineclonia/artifacts/rebase-threat/reconstruction/workspace"
+    }
+  },
+  "media_provenance": {
+    "file": "game/mods/cdda_nodes/terrain-assets.json",
+    "sha256": "14bef400fcde5d826295db9c4735b398468558578aeca47279ac4fa845aea5fc",
+    "copied_files": 10,
+    "all_match_pinned_sources": true,
+    "license_scope": "Upstream per-mod and global notices copied. Complete license audit remains FND-05."
+  },
+  "commands": [
+    [
+      "python3",
+      "tools/takeover_baseline.py",
+      "reconstruct",
+      "--destination",
+      "artifacts/terrain-prototype/final-source/workspace"
+    ],
+    [
+      "python3",
+      "tools/takeover_baseline.py",
+      "check",
+      "--workspace",
+      "artifacts/terrain-prototype/accepted-reconstruction"
+    ],
+    [
+      "cmake",
+      "-S",
+      "artifacts/terrain-prototype/accepted-reconstruction/cdda",
+      "-B",
+      "artifacts/terrain-prototype/accepted-reconstruction/cdda/build",
+      "-DCMAKE_BUILD_TYPE=Release",
+      "-DCURSES=ON",
+      "-DTILES=OFF",
+      "-DLOCALIZE=OFF",
+      "-DBUILD_TESTING=ON",
+      "-DCATA_CCACHE=OFF"
+    ],
+    [
+      "cmake",
+      "--build",
+      "artifacts/terrain-prototype/accepted-reconstruction/cdda/build",
+      "--target",
+      "cdda-server",
+      "cata_test",
+      "--parallel",
+      "2"
+    ],
+    [
+      "build/tests/cata_test",
+      "[cwm]",
+      "--rng-seed",
+      "42",
+      "--user-dir=/home/dannhill/Projects/cdda-mineclonia/artifacts/terrain-prototype/native-test-user"
+    ],
+    [
+      "cmake",
+      "-S",
+      "artifacts/terrain-prototype/accepted-reconstruction/luanti",
+      "-B",
+      "artifacts/terrain-prototype/accepted-reconstruction/luanti/build",
+      "-DCMAKE_BUILD_TYPE=Release",
+      "-DBUILD_UNITTESTS=ON",
+      "-DBUILD_SERVER=OFF",
+      "-DENABLE_SOUND=OFF",
+      "-DRUN_IN_PLACE=ON",
+      "-DENABLE_LTO=FALSE",
+      "-DCMAKE_PREFIX_PATH=/home/dannhill/.local"
+    ],
+    [
+      "cmake",
+      "--build",
+      "artifacts/terrain-prototype/accepted-reconstruction/luanti/build",
+      "--target",
+      "luanti",
+      "--parallel",
+      "2"
+    ],
+    [
+      "artifacts/terrain-prototype/accepted-reconstruction/luanti/bin/luanti",
+      "--run-unittests"
+    ],
+    [
+      "ctest",
+      "--test-dir",
+      "artifacts/terrain-prototype/accepted-reconstruction/protocol/build",
+      "--output-on-failure"
+    ],
+    [
+      "python3",
+      "tests/terrain_comparison_test.py",
+      "--workspace",
+      "artifacts/terrain-prototype/accepted-reconstruction",
+      "--artifacts",
+      "artifacts/terrain-prototype/final-demo"
+    ],
+    [
+      "python3",
+      "tests/presentation_regression.py",
+      "--workspace",
+      "artifacts/terrain-prototype/accepted-reconstruction",
+      "--artifacts",
+      "artifacts/terrain-prototype/accepted-rebase",
+      "--rebase-only"
+    ],
+    [
+      "python3",
+      "tests/presentation_regression.py",
+      "--workspace",
+      "artifacts/terrain-prototype/accepted-reconstruction",
+      "--artifacts",
+      "artifacts/terrain-prototype/accepted-presentation"
+    ],
+    [
+      "artifacts/rebase-threat/native-save-reader",
+      "--userdir",
+      "artifacts/terrain-prototype/native-reader-user",
+      "--datadir",
+      "artifacts/terrain-prototype/accepted-reconstruction/cdda/data",
+      "--world",
+      "terrain_comparison",
+      "--expect-character",
+      "Survivor",
+      "--output",
+      "artifacts/terrain-prototype/native-scene-read.json"
+    ]
+  ],
+  "command_cwds": "Project root except native cata_test, run from the reconstructed cdda directory. Reuse receipts and CMake files retain compile provenance. Test scripts create fresh isolated worlds.",
+  "limitations": [
+    "User has not yet compared/selected aesthetics. Flat native surface retained; no relief or decorative undulation.",
+    "A/B affects presentation only; fog is independent and distance-limited. Normal start.sh keeps baseline rendering.",
+    "Actual native demo has no enemies; all-scenario threat readability/perception is not certified. Border fog does not implement native terrain knowledge filtering.",
+    "Trees are stylized within current tile height; furniture/structures and full bestiary remain incomplete.",
+    "Action-driven time and static creature animation unchanged; remaining phase 2, FND-02/03 and SAVE-001 work not completed.",
+    "Controlled CWM regressions exercise actual renderer/input; the comparison test separately uses the native CDDA scene.",
+    "120 FPS setting is a limit; presentation regression achieved about 60 FPS.",
+    "Foreground restoration comparison excludes moving sky clouds. Water animation and sky are visual; no new fluid/simulation authority."
+  ],
+  "user_worlds_used_or_modified": false,
+  "artifacts_sha256": {
+    "/home/dannhill/Projects/cdda-mineclonia/artifacts/terrain-prototype/accepted-reconstruction/artifacts/terrain-prototype/plays/run-L6iZ52/camera.csv": "1bbae77cb14a845838baf7835f0511abd1507e1185ca1c6aedeea9693c2a3689",
+    "/home/dannhill/Projects/cdda-mineclonia/artifacts/terrain-prototype/accepted-reconstruction/artifacts/terrain-prototype/plays/run-L6iZ52/client.conf": "a5c0734fbc4bbd5f44002790d66fb020a2c7b8725114be721d56a7c3c5918dd9",
+    "/home/dannhill/Projects/cdda-mineclonia/artifacts/terrain-prototype/accepted-reconstruction/artifacts/terrain-prototype/plays/run-L6iZ52/logs/cdda.log": "18563e983422c06494f67bd3d3b7bd0d6b8a4b9adda552b169ace954be5b6893",
+    "/home/dannhill/Projects/cdda-mineclonia/artifacts/terrain-prototype/accepted-reconstruction/artifacts/terrain-prototype/plays/run-L6iZ52/logs/luanti-engine.log": "1b2fc8fb4d2a751253ae2c06d726fa4b71da5cf887d33b7a956803a74d46ccc0",
+    "/home/dannhill/Projects/cdda-mineclonia/artifacts/terrain-prototype/accepted-reconstruction/artifacts/terrain-prototype/plays/run-L6iZ52/logs/luanti.log": "d0ac3330449a27f1143121aa8ee6d35aa8828b2747201e7db0e69ab5cd31c586",
+    "/home/dannhill/Projects/cdda-mineclonia/artifacts/terrain-prototype/accepted-reconstruction/artifacts/terrain-prototype/plays/run-popt4w/camera.csv": "3bc4cf2f9a6e2302a7d2af27c8ce67c5fc162b99c399840c6d2ddec34ef77fa9",
+    "/home/dannhill/Projects/cdda-mineclonia/artifacts/terrain-prototype/accepted-reconstruction/artifacts/terrain-prototype/plays/run-popt4w/client.conf": "da1033b9837866c1a298436c8299ee899eb98447c6c672aa495804b60943eda4",
+    "/home/dannhill/Projects/cdda-mineclonia/artifacts/terrain-prototype/accepted-reconstruction/artifacts/terrain-prototype/plays/run-popt4w/logs/cdda.log": "ee4c39381942303cab3cd2d2d6c93bb0792402d70f971af22400c09024ed5d78",
+    "/home/dannhill/Projects/cdda-mineclonia/artifacts/terrain-prototype/accepted-reconstruction/artifacts/terrain-prototype/plays/run-popt4w/logs/luanti-engine.log": "3a317f1e3b5fef586982123c8826caf70da23e091a19e8a0df0d719e558d285d",
+    "/home/dannhill/Projects/cdda-mineclonia/artifacts/terrain-prototype/accepted-reconstruction/artifacts/terrain-prototype/plays/run-popt4w/logs/luanti.log": "e806e8874b8feb1d2fff7c7798de2a1f35672d0545c248454b99e7d2fab49bce",
+    "artifacts/terrain-prototype/accepted-luanti-tests.log": "ea00982bd1687441989c2845b7a96575951f9ab450bafef4fc38ccc5f4bdad54",
+    "artifacts/terrain-prototype/accepted-presentation/delayed/camera.csv": "2f01576cc95ffdd2576ec08bbe34e03d4d994834575c412d343e66bfd1bfe5df",
+    "artifacts/terrain-prototype/accepted-presentation/delayed/console.log": "e758643f757692d6046b9fb4e1e966da4f9c61d2fc89660a9be9d43f06e83890",
+    "artifacts/terrain-prototype/accepted-presentation/delayed/engine.log": "62d5d156754b4b7020faabdf4b016cf46b89d78b7fae9d284ea83d24e5b85f54",
+    "artifacts/terrain-prototype/accepted-presentation/delayed/events.json": "8ccbe91845eedfdd44634bbcd10ae56df19c315cdf6bb7224b61f61848bdcc92",
+    "artifacts/terrain-prototype/accepted-presentation/delayed/result.json": "34c369d082cf7ee75cd2ecda86ee863af524c8f8d7623b8014218709163b8e25",
+    "artifacts/terrain-prototype/accepted-presentation/fps-120/camera.csv": "3e5e7ed4360edee2a3c401464c4ccbbd22ebe74a60f0941e83cc76e2b01f5d39",
+    "artifacts/terrain-prototype/accepted-presentation/fps-120/console.log": "7a110d50c03503020dc7368d018f61f1ce3cc9c2f0e71169b45474fe9e643699",
+    "artifacts/terrain-prototype/accepted-presentation/fps-120/engine.log": "880b42ed95101cc133297cbe62840b54b3e65b70ead4aacdfc46367037ef0754",
+    "artifacts/terrain-prototype/accepted-presentation/fps-120/events.json": "43e64272b2629c9db16a48bbc0aad1b9a03ab791e9fc1dfd9f128fb0298aabc6",
+    "artifacts/terrain-prototype/accepted-presentation/fps-120/result.json": "13a45171feb883eb26a49a67257126d5e5e323e337f6049ff5ddb717d05bc3fb",
+    "artifacts/terrain-prototype/accepted-presentation/fps-30/camera.csv": "8302997e2c399aa61993b4e3b6fac96616707f369a318a1e98d6b1f62a0fa4e2",
+    "artifacts/terrain-prototype/accepted-presentation/fps-30/console.log": "014ecaf2a20675f5cbd5c7518982bd32cf596267f60e72f417d118d7c4aafe0f",
+    "artifacts/terrain-prototype/accepted-presentation/fps-30/engine.log": "af5c47d695193192aec58c9383d857c2c8b537787802879ec5becc2b03b1e595",
+    "artifacts/terrain-prototype/accepted-presentation/fps-30/events.json": "e6df951aec6984c79c9cc49d97011bf08e6b48ddad6ea9fbc8405c1a1fa11e35",
+    "artifacts/terrain-prototype/accepted-presentation/fps-30/result.json": "cc3ddcee4b4c39440ec72c10b0690ae09a25b10d30b43fb587c798bb39bcc420",
+    "artifacts/terrain-prototype/accepted-presentation/fps-60/camera.csv": "b537571035b09b302f6d56108fc4c724637da3e51b466fcaf29f68db3f0a191e",
+    "artifacts/terrain-prototype/accepted-presentation/fps-60/console.log": "1bfd369e145312add0c2f7da3ac1c5c32385c9e54f68f2e39e8c7886e56bf8f3",
+    "artifacts/terrain-prototype/accepted-presentation/fps-60/engine.log": "fbcbf088edd8cc38d1e71bcfd4fba93474c1c5d4d45a9fca23a084352aad8211",
+    "artifacts/terrain-prototype/accepted-presentation/fps-60/events.json": "450a44b3b6e9318cf17ef36b509d5227198d67d2837349ecdb1e68696dfb989a",
+    "artifacts/terrain-prototype/accepted-presentation/fps-60/result.json": "1afe594eec08685a5f2564de8012d8a494d2bd71bdc1ece7a4bb746263c81ff7",
+    "artifacts/terrain-prototype/accepted-presentation/fps-60/window-inside-later.png": "bef98d2c15f62f12728c8f6e17daf5995f92aba4da0ea2f93244f4e5e7ba41b0",
+    "artifacts/terrain-prototype/accepted-presentation/fps-60/window-inside.png": "c97196bcc293125420310ec6b039e6f0dc0147170933c5d393701dc4f25d69c1",
+    "artifacts/terrain-prototype/accepted-presentation/fps-60/window-open.png": "ccd55509e5e7b7f96a1bbed4ba10141f5aa97e6f5ebec8ef31ebd4450f093dd4",
+    "artifacts/terrain-prototype/accepted-presentation/fps-60/window-outside.png": "b120f9b6d25d16f1d6d54b8642520339400329e6715040452eeab737ebefdf55",
+    "artifacts/terrain-prototype/accepted-presentation.log": "cb20902184d78536a584a17cf748d7d59d33c70a4c1debf62b56a50b7d142f4b",
+    "artifacts/terrain-prototype/accepted-rebase/camera.csv": "e6315933ed7c075034c2d8a2879a3392a38c118986bd4cfa41ee036ae6af75b8",
+    "artifacts/terrain-prototype/accepted-rebase/console.log": "14394f576f7c6a583ee5e51dbd126f8b57ece0478056c4237a559d2eee844d5a",
+    "artifacts/terrain-prototype/accepted-rebase/engine.log": "6b700c07753f784c72fca24eef2b79258e470a9859a3ef5be96f42aaea7b085e",
+    "artifacts/terrain-prototype/accepted-rebase/events.json": "6486597d51a4d4af1bad0251160057e4749bee485cecabdc37cd5c23ff5416fc",
+    "artifacts/terrain-prototype/accepted-rebase/rebase-after.png": "ba77267910d4d2810c13e8ec9e37396b2d398a719704566e57b1a91102726c25",
+    "artifacts/terrain-prototype/accepted-rebase/rebase-before.png": "73bba6be62520f36fb1655564dd0a12be68efe4b747a273b176afaaa25545f24",
+    "artifacts/terrain-prototype/accepted-rebase/result.json": "1a910f0fc4930b6a302ce844aaa0b3c688bad1da1e95378ee97854b29b0d9a35",
+    "artifacts/terrain-prototype/accepted-rebase.log": "5542554fd840b42b250fe0a5103474bc4eaf7e77bedcdc2e123698dd4266be95",
+    "artifacts/terrain-prototype/accepted-source-capture.log": "15749a2a1ea5fbeac47cea0832adb8fc2d0da68942698173d83be227636a9ebf",
+    "artifacts/terrain-prototype/accepted-source-check.log": "b6d5285e2433a806fa92052bdade15cf55986c5a15f8f0b82c28b07393632ca5",
+    "artifacts/terrain-prototype/cdda-build.log": "72b6f0c29ba6261800d5608e0a40dd70f62bad009f9d0cc77fb3da8cc7e2ac1c",
+    "artifacts/terrain-prototype/cdda-cache.json": "f5d837eb9de33d20e2c2d28e3aa2911c756f86b39452eaa574f6bd03404a5294",
+    "artifacts/terrain-prototype/cdda-configure.log": "40e775a5bbf6eeb4ecc05ddb9e49d9b0dda08a8bc6f54a16f94aeeb4e38cca8f",
+    "artifacts/terrain-prototype/cdda-final-build.log": "972c015fa3c2661489d506ec2fe3f875d11da77497f5020b82ab67c2c99994f2",
+    "artifacts/terrain-prototype/final-demo/A-clear.png": "447e07b7299e6a0cc1085f3a6b27751263a2fbc4f09049ac6a1598fb7163e01c",
+    "artifacts/terrain-prototype/final-demo/A-street-shore.png": "89a14cfa47274ac92ba75933c5a319412764860d91911d8e13bd615a9f1b4ceb",
+    "artifacts/terrain-prototype/final-demo/B-after-movement.png": "bff7dc582b591c2a4eb35fcfc93e0d8166cfc0209d01b8c10dece30dd427b734",
+    "artifacts/terrain-prototype/final-demo/B-clear.png": "891532f0a9ef2e47a45014b20a398bdd0f5a4f6e88eb79792225b4d5590344eb",
+    "artifacts/terrain-prototype/final-demo/B-fog.png": "ab3cab0479f87ac971abf854434a1624d91e08553e9ef195308925a12660e3e2",
+    "artifacts/terrain-prototype/final-demo/B-restored.png": "4b044a20965940f71daf6917fbaa1bd64b145b3e12da8f41389d51b7adffde0d",
+    "artifacts/terrain-prototype/final-demo/B-street-shore.png": "c520fd9b88d647f3ef3fbe34633f835b02086fdf3c2757c6615710a15a7cde40",
+    "artifacts/terrain-prototype/final-demo/checks.json": "f8955d8b6f4af60429344bf4fc76e2449a10d680e2a5a7ce942219cbef86777b",
+    "artifacts/terrain-prototype/final-demo/launcher.log": "dd63fc8127445f46cc370b4110bc4a1c4d83d61a7023f3d0423ef89047061de8",
+    "artifacts/terrain-prototype/final-demo/pixels.json": "e59f46a9b94a1173657be3bfc9fb9ed2125ac3d2a8a1a474f3f8f453f4e1bfa0",
+    "artifacts/terrain-prototype/final-demo/play-directory.txt": "b9ce89ed6a99ccfbfe9cb4164fae139cfb58a9e9636903e1225bc5941601872a",
+    "artifacts/terrain-prototype/final-demo.log": "5b622ffedf4dce3fdc26979b6dca5b6762f84cbec2a363e901ba44c6cea8e1b8",
+    "artifacts/terrain-prototype/final-source/reconstruction.json": "469bf176f236a4534019a44969c7cbeb35fc56a989e64d04e98495b77b797a68",
+    "artifacts/terrain-prototype/final-source.log": "cafb0f5ae9f59161b97aae17af33ba025bd9dc2b7d38163d98dec445c4c93d79",
+    "artifacts/terrain-prototype/guard-terrain_comparison.log": "1ea7ec5e309178716855391638203b91bd68976a064d2314549ec10d4f8a1365",
+    "artifacts/terrain-prototype/guard-unrelated_world.log": "1ea7ec5e309178716855391638203b91bd68976a064d2314549ec10d4f8a1365",
+    "artifacts/terrain-prototype/installed-binaries.json": "4d9cf2964b502964de05e51c69f13c252c6056d24ff99adf456260d35ca12a94",
+    "artifacts/terrain-prototype/luanti-accepted-build.log": "1078e104f24c1980439ad2b585c3510c0ec00191710557c8990c242482832e7f",
+    "artifacts/terrain-prototype/luanti-build.log": "a64dca9296241338409c4c9f023ff3919a6c773f4af9cf449cd2a25b4eb03c7d",
+    "artifacts/terrain-prototype/luanti-cache.json": "885587b9965df70c7e968ce300823abeeee5bf053713195bd5ed867300eadf81",
+    "artifacts/terrain-prototype/luanti-configure.log": "f1d87d4e15534aa57864e0c3e107995f57344c732e3619eb70509665ba58e0f1",
+    "artifacts/terrain-prototype/luanti-final-build.log": "57307721a8263736cfb0b19d17295bcd8f1f9f24cb343948c47e0cc4ee22733a",
+    "artifacts/terrain-prototype/native-guards.json": "2411bce52a4edcb302a8f0d4397bd45ee24d760dc15362251cf73a301516bf46",
+    "artifacts/terrain-prototype/native-scene-read.json": "b82cf39f26a1f15780a4bd1d83309d588459ecdd235ff93d5b2ccba3f8a9d10e",
+    "artifacts/terrain-prototype/native-scene-read.log": "bcbd042d4176450eb6e260500adfd12b0619cb0c25ca83644099b94c9a1348e1",
+    "artifacts/terrain-prototype/native-tests.log": "37e9bb280c3c2f4cdb2e101ef36cb20f2a33748252476903894151c09d284869",
+    "artifacts/terrain-prototype/protocol-build.log": "c2c95552b1fb9a152d1538d27c06b227cf653a5b2ddee87ded07077dc18a99e9",
+    "artifacts/terrain-prototype/protocol-configure.log": "e69b7bf4f0331a0f95779eb587c3b8ce04f16771816d53347970dc3e31bc5aa7",
+    "artifacts/terrain-prototype/protocol-tests.log": "7766960dc5f54e895a0bb02c53d2bef950f862a0842c8b85a65451e220bdf632"
+  }
+}

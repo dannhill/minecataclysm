@@ -43,6 +43,10 @@ anticipa parte di FND-04; animazioni/orientamento e copertura completa restano
 aperti. Il prossimo task di fondazione rimane FND-02.
 FND-04 comprende anche OPEN/CLOSE puntati senza attraversamento; la fase 2
 comprende una nebbia del confine della proiezione che non sveli terreno ignoto.
+Su richiesta dell'utente, il [confronto del terreno](docs/prototypes/terrain-comparison.md)
+è stato anticipato come prototipo isolato: A/B nella stessa scena nativa e
+nebbia ON/OFF separata, tramite `terrain-demo.sh`. La scelta estetica attende
+la prova dell'utente; questo non completa le dipendenze FND-02/03 o la fase 2.
 
 ## Fase 2 — Prototipo di tempo, movimento e percezione
 

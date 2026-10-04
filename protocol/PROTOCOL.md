@@ -6,6 +6,13 @@ captured implementation; it does not approve its gaps. The executable schema
 is [cwm.fbs](cwm.fbs). Audit findings and evidence are in
 [M5.5](../docs/audits/M5.5.md).
 
+This document retains takeover-baseline coverage below. Subsequent scoped
+repairs are recorded in their evidence: native canonical turns/loading,
+stable presentation through rebases, perceived creature models and native
+decisions. The current terrain comparison uses minor 3; its appended material
+catalog is described below. Negotiation/session/recovery conformance remains
+unverified.
+
 ## Wire format
 
 Each message is a four-byte unsigned big-endian length followed by one
@@ -26,7 +33,7 @@ includes POSIX `arpa/inet.h`, and endpoints directly use `IpcConnection`.
 Only Unix-domain socket connection/listening is implemented; TCP headers and
 comments do not provide a TCP backend or the required transport abstraction.
 
-## Observed message coverage
+## Takeover-baseline message coverage (historical)
 
 | Payload | CDDA server | Luanti bridge |
 | --- | --- | --- |
@@ -58,15 +65,14 @@ air; the exporter checks `map::inbounds` before reading terrain/furniture.
 
 `origin.x/y` equals the absolute submap origin times 12. Entity positions and
 chunk cells are local in X/Y; their Z value is a CDDA level. `origin.z` is
-currently the player's level minus one. The visibility repair uses local XY
-and absolute Z levels consistently for terrain, camera, vehicles and tile
-deltas. Origin is metadata identifying a reality-bubble rebase, not an extra
-translation applied only to entities. On a horizontal rebase visual positions
-are reset into the new local projection rather than interpolated across
-unrelated local coordinates. The incompatible pre-repair transforms remain
+currently the player's level minus one. The current bridge anchors presentation
+at the first snapshot's origin: local XY plus current origin minus initial
+origin. Terrain, camera, vehicles, actors and inverse interaction transforms
+share this frame. Rebases preserve interpolation and unchanged overlapping
+meshes. The incompatible pre-repair transforms remain
 documented in the frozen M5.5 audit.
 
-Presentation maps `(x,y,z)` to `(x,3z,-y)` in signed 16-bit coordinates, with
+Presentation maps stable scene XY and native Z to `(X,3z,-Y)` in signed 16-bit coordinates, with
 hardcoded voxel scale and eye height. A configurable, shared transform and
 explicit large-coordinate policy remain required.
 
@@ -84,6 +90,15 @@ explicit large-coordinate policy remain required.
 | 10 / 11 | open / boarded window |
 | 12 / 13 | generic solid obstacle / glass wall |
 | 14 / 15 | water surface / low traversable obstacle |
+| 16 / 17 / 18 | sand / traversable shrub / blocking tree |
+| 19 / 20 | sidewalk / long grass |
+
+Minor 3 appends these five terrain categories, retaining the 8-byte CwmBlock
+layout. Movement/obstruction flags remain native. The isolated A/B comparison
+can select richer textures/vegetation; ordinary presentation maps the appended
+IDs back to the earlier generic materials. Fog and visual variants are client
+configuration, not gameplay state or new wire data. See the
+[prototype evidence](../docs/prototypes/terrain-comparison.md).
 
 The exporter uses loaded CDDA terrain flags, open/close links and movement
 costs for structural geometry. Text matching remains only for floor/ground
@@ -93,7 +108,7 @@ requests tall furniture. `orientation` 0/1 describes east-west/north-south wall
 alignment inferred from adjacent CDDA wall connections. No native node IDs
 are transmitted. Furniture, unfamiliar solid terrain and passable damaged
 walls no longer disappear into floor textures. Material/geometry remains an
-approximation: fences/trees/rocks share an obstacle placeholder, furniture
+approximation: fences/rocks and baseline trees share an obstacle placeholder, furniture
 uses wooden boxes and stairs/roof surfaces are not detailed meshes.
 
 `WorldSnapshot.tiles` is an appended FlatBuffers vector of `TileDelta`. An
@@ -103,9 +118,12 @@ The renderer applies this batch before updating entity targets. A rebase or
 invalidated export cache requires full chunks. Both project runtime binaries
 must be rebuilt together to render the new materials/batched changes.
 
-Player wire ID is always 1. Monster IDs are reassigned from 1000 on every
-export. Vehicle IDs are process memory addresses. NPCs are not exported.
-These values must not be treated as stable persisted identities.
+Player wire ID is always 1. Cached runtime export uses monotonic monster IDs
+from 1000, associated with native weak ownership, and a separate NPC namespace
+containing the canonical NPC ID. Actor `perceived` controls rendered visibility;
+unperceived records are still sent. Monster IDs do not persist across runtime
+restart; vehicle IDs remain process memory addresses. This is not a complete
+persisted identity/session registry.
 
 ## Required ordering and recovery
 
@@ -123,8 +141,8 @@ inside its result snapshot, but a general revision/recovery contract and
 deduplication are absent. Full terrain ingestion replaces the
 terrain cache and clears absent projected blocks; native Luanti air blocks
 cannot overwrite it. Shutdown clears bridge-owned visual state. Removal of
-absent entities/vehicles within snapshots and complete reconnect recovery
-remain unimplemented.
+absent actors within complete rosters is implemented; complete vehicle
+lifecycle and reconnect recovery remain uncertified.
 
 ## Framing and scheduling defects retained for remediation
 

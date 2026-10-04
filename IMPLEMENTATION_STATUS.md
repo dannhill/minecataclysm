@@ -22,7 +22,12 @@ scheduling are not implemented; action-driven time is temporary. Border fog,
 pointed OPEN/CLOSE and full entity/lifecycle conformance remain pending.
 The user also reported flat, monotonous ground; a
 [terrain proposal](docs/design/terrain-presentation.md) records the design
-questions for phase 2 without selecting or implementing a terrain variant.
+questions for phase 2. The user then requested points 1/2: an
+[isolated playable comparison](docs/prototypes/terrain-comparison.md) now
+provides A/B materials/vegetation and independent border fog via
+`terrain-demo.sh`. Final terrain choice awaits hands-on feedback; ordinary
+`start.sh` keeps the baseline style. Real-time scheduling and terrain relief
+are not part of this prototype.
 
 **M5.5 takeover audit: COMPLETE. Architectural conformance gate: FAILED.**
 The findings are documented in [the audit](docs/audits/M5.5.md), with
