@@ -1,8 +1,11 @@
 # FND-04 — Connessioni verticali native
 
-Task circoscritto alle connessioni verticali e ai comandi salita/discesa.
-Verifica in corso; questo documento verrà completato con sorgenti e risultati.
-FND-04 completo, SAVE-001 e M5.5 restano separati.
+**Implementato con verifica mirata PASS e binari installati.** Task circoscritto
+alle connessioni verticali e ai comandi salita/discesa. Sorgenti `7a72692`,
+branch `fix/fnd04-vertical-navigation`; checksum, ambiente e risultati nel
+[registro delle evidenze](fnd04-vertical-navigation-evidence.json).
+La verifica manuale della nuova resa resta da svolgere. FND-04 completo,
+SAVE-001 e M5.5 non sono certificati da questo passo.
 
 ## Comportamento
 
@@ -73,3 +76,73 @@ artifacts/fnd04-vertical/native-save-reader --create-vertical \
 ```
 
 Non rigenerare sopra una directory di salvataggi esistente.
+
+## Evidenze e limiti
+
+- CDDA: 16 casi e 6.645 assertion pertinenti PASS. Il catalogo di terreno
+  conserva GOES_UP/DOWN/DIFFICULT_Z; una corda CLIMBABLE non diventa una scala.
+- Protocollo: quattro eseguibili PASS. Luanti: 304 test in 47 moduli e
+  648 assertion in quattro casi Catch PASS.
+- Runtime CDDA reale: 70 controlli PASS. Comprendono direzioni invalide senza
+  costo, salita/discesa, immersione/emersione anche senza cambio Z, scala a
+  pioli, arrivo sfalsato, replay dello stesso comando e reconnect. Il core
+  pinned indipendente rilegge salvataggi a Z=-1 e Z=1.
+- `start.sh` e client grafico reale: 17 controlli PASS. Camera ai piani
+  positivi/negativi, tasto tenuto, pressione nuova, rimappatura, riavvio a Z=2,
+  OPEN/CLOSE a Z=1 e persistenza canonica. Il picking supera anche il rebase
+  nativo: target locale `(61,71,1)` corrisponde alla porta assoluta `(61,59,1)`.
+  Screenshot della geometria e delle aperture ispezionati.
+- Regressioni: 21 controlli di sessione, 42 acqua/aperture e 48 di
+  movimento/camera PASS. Quelli di pacing usano autorità CWM sintetica e
+  renderer reale; i limiti FPS 30/60/120 non garantiscono quel throughput.
+- Demo installata: quattro controlli di startup/proiezione/isolamento PASS.
+
+Build incrementali nel workspace ricostruito `artifacts/fnd03-session/workspace`,
+aggiornato da Git e dai file catturati; **non cold-cache**. Tutti i 237 blob/modi
+Git della radice e 20.189 file dei fork corrispondono alla sorgente della prova.
+Una verifica indipendente riproduce le patch complete da file originali pinned
+in directory temporanee e confronta tutti gli altri blob Git: include anche
+i file esclusi da `git archive` tramite export-ignore. Non usa le working copy
+modificate per costruire il risultato. Il lettore canonico è collegato al core
+pristine pinned; soltanto il helper di prova viene ricompilato, senza sezioni debug.
+
+L'archivio originale FND-03 resta in
+`artifacts/fnd03-session/final-reconstruction.tar.gz`. I suoi due runtime
+precedenti sono conservati e verificati negli archivi rollback sotto
+`artifacts/fnd04-vertical/`; il workspace compilato ora contiene questo task.
+Nessun mondo/configurazione della partita normale è usato o cancellato.
+
+Durante lo sviluppo sono state corrette assunzioni dei harness: enum del wire
+signed a 8 bit; corda nativa priva di GOES_UP; domanda d'acqua senza oggetti
+vulnerabili; confronto del calendario dopo il prelude nativo. Quest'ultimo può
+avanzare il calendario dopo lo stato di esito di un'azione: un heartbeat delimita
+il punto di attesa stabile prima di misurare l'assenza di costo del replay.
+I tentativi falliti restano negli artifact; non sono attestati come PASS.
+
+Restano aperti controller/scheduler finali, arrampicata e rampe complete,
+identità persistenti di tutte le entità, campi/HUD/luce locale/percezione,
+panorama/nebbia e gli altri criteri di FND-04. La geometria delle connessioni è
+provvisoria; nessuna nuova collisione o inferenza del client determina l'arrivo.
+
+Il confronto pixel della porta certifica il cambio di geometria; la fixture
+usa una porta isolata, senza muri adiacenti, che riceve l'orientamento
+predefinito. Guardandola da est/ovest, l'anta aperta è frontale e quella chiusa
+di taglio. È un limite dell'orientamento/presentazione della fixture, non una
+verifica dell'allineamento di tutte le porte ai loro varchi. La segnalazione
+sugli edifici di pietra resta senza una riproduzione identificata; controllare
+le connessioni dei muri è una pista per l'audit futuro delle aperture.
+
+Comandi delle prove mirate, con directory output nuove:
+
+```bash
+python3 tools/takeover_baseline.py check
+python3 tools/verify_captured_sources.py --workspace <workspace> --receipt <output>/sources.json
+cmake --build <workspace>/cdda/build --target cdda-server cata_test --parallel 1
+cmake --build <workspace>/luanti/build --target luanti --parallel 1
+python3 <workspace>/tests/vertical_runtime_test.py --workspace <workspace> \
+  --fixture artifacts/fnd04-vertical/fixture-user \
+  --native-reader artifacts/fnd04-vertical/native-save-reader --artifacts <output>/native
+DISPLAY=:1 python3 <workspace>/tests/vertical_gui_test.py --workspace <workspace> \
+  --fixture artifacts/fnd04-vertical/fixture-user \
+  --native-reader artifacts/fnd04-vertical/native-save-reader --artifacts <output>/gui
+```

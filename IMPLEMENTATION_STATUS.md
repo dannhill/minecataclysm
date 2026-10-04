@@ -20,8 +20,13 @@ invalid updates. Both runtime binaries and compiled launcher aliases are install
 The user [accepts the FND-03 manual checklist](docs/source/fnd03-manual-validation-2026-10-04.md)
 and authorizes continuation. Visual state inversion on some stone-building
 doors and the center hinge on one double-door leaf remain low-priority reports;
-neither is claimed fixed or reproduced. FND-04 next covers recognizable native
-vertical connections and authoritative up/down input. Full M5.5 is not recertified.
+neither is claimed fixed or reproduced. A [scoped FND-04 slice](docs/fixes/fnd04-vertical-navigation.md)
+now implements recognizable native vertical connections and authoritative
+up/down input, with scoped verification PASS and installed runtimes. Jump
+ascends; Sneak + Jump descends, once per press. Stairfinding, underwater
+transitions and save/load on other floors remain native. `vertical-demo.sh`
+provides a persistent isolated manual fixture; its new geometry awaits the
+user's assessment. Full FND-04 and M5.5 are not recertified.
 Product decisions and planned prototypes do not certify implementation.
 
 Manual feedback accepted movement, structures, door opening, safe mode and
@@ -71,8 +76,11 @@ state cues lower the first-person camera for wading/swimming and raise the
 feet for window passage. Right-click opens; Sneak + right-click closes an
 adjacent pointed opening, including by pointing at the remaining sill/floor.
 The exact pond save reported by the user has not been reproduced. Full
-underwater/vertical input, furniture assets and upper-floor navigation remain
-incomplete. Historical M5.5 and SAVE-001 outcomes remain unchanged.
+underwater/vertical input, furniture assets and upper-floor navigation were
+incomplete at that repair. The later vertical slice above covers native
+connections and immersion controls; free climbing, vertical vehicles,
+underwater perception and complete furniture assets remain pending.
+Historical M5.5 and SAVE-001 outcomes remain unchanged.
 
 The subsequent [manual exploration validation](docs/source/exploration-validation-2026-10-04.md)
 accepts pointed OPEN/CLOSE on doors/windows, B in normal play, shallow/deep

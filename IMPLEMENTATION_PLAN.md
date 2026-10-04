@@ -29,7 +29,7 @@ le riparazioni già completate a visibilità, strutture e movimento.
 | FND-01 | Distinguere nuova partita e caricamento; mantenere identità, inventario, posizione, orologio e mondo. Comandi e verifiche headless usano il ciclo nativo completo. | IMPLEMENTED — verifica mirata PASS; SAVE-001 completo in FND-05 |
 | FND-02 | Framing e code limitati; EOF, framing/FlatBuffers strutturalmente invalidi e client lento sono contenuti. I/O non bloccante e lavoro limitato per aggiornamento. | IMPLEMENTED — verifica mirata PASS; [evidenze](docs/fixes/fnd02-transport.md) |
 | FND-03 | Negoziazione, identità di sessione, deduplicazione, revisioni, sequenze, reconnect/resync e abilitazione dell'input su stato completo. | IMPLEMENTED — verifica mirata PASS; [evidenze](docs/fixes/fnd03-session-recovery.md) |
-| FND-04 | Entità reali persistenti, picking, verticalità, campi, luce/percezione e HUD autorevoli; lifecycle e threading verificati. | IN PROGRESS: rebase, creature base, decisioni native, OPEN/CLOSE puntati, varianti porte/finestre e presentazione acqua; copertura incompleta |
+| FND-04 | Entità reali persistenti, picking, verticalità, campi, luce/percezione e HUD autorevoli; lifecycle e threading verificati. | IN PROGRESS: rebase, creature base, decisioni native, OPEN/CLOSE, aperture/acqua e [connessioni verticali native](docs/fixes/fnd04-vertical-navigation.md) implementate con verifica mirata; copertura incompleta |
 | FND-05 | SAVE-001 completo, test discovery, licenze/media e benchmark popolati riproducibili; nuova certificazione M5.5 soltanto dopo le evidenze. | PLANNED |
 
 FND-01 applica il preset CDDA raccomandato ai nuovi mondi e conserva mod/opzioni
@@ -90,9 +90,12 @@ I dettagli e i binari installati sono nel [report FND-03](docs/fixes/fnd03-sessi
 L'utente [valida la checklist FND-03](docs/source/fnd03-manual-validation-2026-10-04.md)
 e autorizza il seguito. Restano a priorità bassa porte con stato visivo
 invertito, soprattutto in strutture di pietra, e il perno centrale di un'anta
-nelle porte doppie. Il passo corrente di FND-04 è rendere riconoscibili le
-connessioni verticali native e collegare salita/discesa ai controlli CDDA.
-Non finalizza il controller continuo né lo scheduler della fase 2.
+nelle porte doppie. Il [passo sulle connessioni verticali](docs/fixes/fnd04-vertical-navigation.md)
+è implementato e verificato: scale/scale a pioli riconoscibili, salita/discesa
+contestuali native e immersione/emersione, un passaggio per pressione.
+`vertical-demo.sh` offre la prova isolata, riprendibile dopo quit/load;
+la nuova resa resta da valutare manualmente. Non finalizza il controller
+continuo né lo scheduler della fase 2 e non chiude l'intero FND-04.
 
 ## Fase 2 — Prototipo di tempo, movimento e percezione
 

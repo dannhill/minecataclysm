@@ -10,6 +10,13 @@ I pin, patch complete e inventari dei fork sono in `baseline/manifest.json`;
 checksum, ambiente, comandi, risultati e binari installati sono nel
 [registro delle evidenze](fnd03-session-recovery-evidence.json).
 
+Aggiornamento successivo: il [task verticale FND-04](fnd04-vertical-navigation.md)
+riusa il workspace compilato di questo task e installa nuovi runtime. Per
+riprodurre esattamente FND-03 usare il commit sopra e l'archivio originale
+`artifacts/fnd03-session/final-reconstruction.tar.gz`; i runtime FND-03 sono
+conservati con checksum negli archivi rollback di `artifacts/fnd04-vertical/`.
+I log e gli esiti FND-03 restano evidenza storica, non una nuova certificazione.
+
 ## Contratto implementato
 
 Prima di Hello compatibile il server non invia gameplay e non esegue comandi.
