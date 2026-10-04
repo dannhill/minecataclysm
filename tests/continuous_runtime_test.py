@@ -281,6 +281,60 @@ def main():
             try:proc.wait(timeout=40)
             except subprocess.TimeoutExpired:proc.kill();proc.wait()
     check('reload_shutdown_clean',proc.returncode==0)
+    from contextlib import contextmanager
+    @contextmanager
+    def scene(label,fixture):
+        scene_user=out/(label+'-user'); shutil.copytree(fixture.resolve(),scene_user)
+        (scene_user/'config/options.json').write_text(json.dumps([
+            {'name':'SAFEMODE','value':'false'},{'name':'AUTOSAFEMODE','value':'false'},{'name':'AUTOSAVE','value':'false'}]))
+        with tempfile.TemporaryDirectory(prefix='cwm-rt02-'+label+'-') as private,(out/(label+'.log')).open('w') as log:
+            path=Path(private)/'cwm.sock'
+            proc=subprocess.Popen([str(ws/'cdda/build/src/cdda-server'),'--continuous','--userdir',str(scene_user),
+                '--datadir',str(ws/'cdda/data'),'--world','audit_fixture','--socket',str(path)],stdout=log,stderr=subprocess.STDOUT)
+            client=None
+            try:
+                deadline=time.monotonic()+85
+                while not path.exists() and proc.poll() is None and time.monotonic()<deadline:time.sleep(.05)
+                check(label+'_scene_started',path.exists() and proc.poll() is None)
+                client=Connection(path); yield client
+            finally:
+                if client:client.sock.close()
+                proc.terminate()
+                try:proc.wait(timeout=40)
+                except subprocess.TimeoutExpired:proc.kill();proc.wait()
+        check(label+'_shutdown_clean',proc.returncode==0)
+    with scene('vertical',args.fixture) as c:
+        c.vector(0,-1); c.until(lambda: round(c.pos()[1])==59); c.vector(0,0)
+        check('continuous_stair_approach_has_native_anchor_and_offset',round(c.pos()[0])==60 and round(c.pos()[1])==59 and fractional(c.pos()))
+        for direction,endpoint in ((9,[60,59,1]),(10,[60,59,0])):
+            c.complete(c.send(MoveRequest,dict(Direction=direction)))
+            check('continuous_native_stair_endpoint_'+str(endpoint),c.pos()==endpoint)
+        c.vector(0,1); c.until(lambda: round(c.pos()[1])==60); c.vector(0,0)
+        c.vector(1,0); c.until(lambda: round(c.pos()[0])==61); c.vector(0,0)
+        for direction,endpoint in ((9,[61,60,1]),(9,[61,60,2]),(10,[61,60,1]),(10,[61,60,0])):
+            c.complete(c.send(MoveRequest,dict(Direction=direction)))
+            check('continuous_native_ladder_endpoint_'+str(endpoint),c.pos()==endpoint)
+    with scene('threat',args.fixture) as c:
+        c.vector(1,0); c.until(lambda: bool(c.state['pause']&4),timeout=20); c.vector(0,0)
+        check('continuous_native_autoopen_discovers_and_pauses_on_threat',
+            any('Realtime Threat' in a['name'] and a['perceived'] for a in c.state['actors'].values()) and 73<=c.pos()[0]<74)
+        stopped,t=c.pos()[:],c.state['time']; c.observe(.6)
+        check('continuous_threat_freezes_offset_and_world',c.pos()==stopped and c.state['time']==t)
+        c.complete(c.send(Threat,{})); c.observe(.4)
+        check('continuous_threat_ack_resumes_without_movement_backlog',c.pos()==stopped and not c.state['pause'] and c.state['time']>t)
+    with scene('water',args.decision_fixture) as c:
+        c.vector(0,-1); c.until(lambda:bool(c.prompts))
+        check('continuous_water_entry_uses_native_item_warning',c.state['pause']&16 and 'water' in c.prompts[-1]['text'].lower())
+        stopped,t=c.pos()[:],c.state['time']; c.observe(.6)
+        check('continuous_water_decision_freezes_offset_and_world',c.pos()==stopped and c.state['time']==t)
+        prompt=c.prompts[-1]; b=flatbuffers.Builder(64); DecisionResponse.DecisionResponseStart(b)
+        DecisionResponse.DecisionResponseAddDecisionId(b,prompt['id']); DecisionResponse.DecisionResponseAddChoice(b,len(prompt['choices'])-1)
+        c.wire.send(c.sock,b,Payload.Payload.DecisionResponse,DecisionResponse.DecisionResponseEnd(b))
+        c.until(lambda:not c.state['pause']&16); c.observe(.4)
+        declined=c.pos()[:]
+        check('continuous_water_decline_stays_on_dry_native_tile',round(declined[0])==60 and round(declined[1])==60 and distance(declined,stopped)<.09)
+        c.observe(.4)
+        check('continuous_water_decline_drops_held_direction',c.pos()==declined)
     (out/'history.json').write_text(json.dumps(history,indent=2)+'\n')
     print('continuous native checks:',len(checks),'PASS',flush=True)
 
