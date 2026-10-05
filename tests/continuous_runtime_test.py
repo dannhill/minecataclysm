@@ -240,7 +240,15 @@ def main():
                 b=flatbuffers.Builder(64); ResyncRequest.ResyncRequestStart(b); ResyncRequest.ResyncRequestAddRequestId(b,77)
                 c.wire.send(c.sock,b,Payload.Payload.ResyncRequest,ResyncRequest.ResyncRequestEnd(b))
                 c.until(lambda: c.state['pause']&8)
-                recovery,t=c.pos()[:],c.state['time']; c.observe(.6)
+                recovery,t=c.pos()[:],c.state['time']
+                # Directional intent is origin-independent. It must complete
+                # while a full-state install awaits SnapshotAck, without
+                # advancing authoritative space or time during Recovery.
+                c.vector(-1,0)
+                check('continuous_intent_completes_while_full_ack_pending',
+                    bool(c.state['pause']&8) and c.pos()==recovery and c.state['time']==t)
+                c.vector(0,0)
+                c.observe(.6)
                 check('resync_freezes_exact_fraction_until_full_ack',c.pos()==recovery and c.state['time']==t)
                 b=flatbuffers.Builder(64); SnapshotAck.SnapshotAckStart(b); SnapshotAck.SnapshotAckAddStateId(b,c.full_state_id)
                 c.wire.send(c.sock,b,Payload.Payload.SnapshotAck,SnapshotAck.SnapshotAckEnd(b)); c.auto_ack=True

@@ -1483,10 +1483,10 @@ index 0000000..5bdd176
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..cb5fbde
+index 0000000..6092903
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,632 @@
+@@ -0,0 +1,647 @@
 +#include "cwm_motion.h"
 +// CDDA CWM IPC Server Implementation
 +// Licensed under Apache-2.0
@@ -1973,7 +1973,9 @@ index 0000000..cb5fbde
 +                                          cdda::cwm::current_time_ms()).Union()));
 +        return;
 +    }
-+    if (!ready_) return; // No authority until the client confirms installed full state.
++    if (!ready_ &&
++        msg->payload_type() != Payload::ContinuousIntentRequest)
++        return; // Spatial authority waits for installed full state.
 +    if (msg->payload_type() == Payload::DecisionResponse) {
 +        const auto* response = msg->payload_as_DecisionResponse();
 +        if (response && pending_decision_ && !decision_answer_ &&
@@ -2020,14 +2022,27 @@ index 0000000..cb5fbde
 +    if (const auto* request = msg->payload_as_ContinuousIntentRequest()) {
 +        const float x = request->x(), y = request->y();
 +        const double length = std::hypot(double(x), double(y));
-+        const bool valid = continuous_ && std::isfinite(x) && std::isfinite(y) && length <= 1.415 &&
-+            (length < 1e-6 || (!pause_reasons(g) && !u.in_vehicle && !u.is_mounted() && u.get_grab_type() == object_type::NONE));
++        const uint32_t reasons = pause_reasons(g);
++        const bool recovery_only =
++            !ready_ && awaiting_state_ &&
++            reasons == static_cast<uint32_t>(cdda::cwm::Recovery);
++        const bool input_available = reasons == 0 || recovery_only;
++        const bool valid =
++            continuous_ &&
++            std::isfinite(x) &&
++            std::isfinite(y) &&
++            length <= 1.415 &&
++            (length < 1e-6 ||
++             (input_available &&
++              !u.in_vehicle &&
++              !u.is_mounted() &&
++              u.get_grab_type() == object_type::NONE));
 +        if (valid) {
 +            // Account for the old direction up to admission, including a
 +            // short tap. Frequent camera changes cannot postpone sampling.
 +            sample_motion(u, m, g, true);
-+            intent_x_ = length < 1e-6 || pause_reasons(g) ? 0 : x / length;
-+            intent_y_ = length < 1e-6 || pause_reasons(g) ? 0 : y / length;
++            intent_x_ = length < 1e-6 || !input_available ? 0 : x / length;
++            intent_y_ = length < 1e-6 || !input_available ? 0 : y / length;
 +            motion_sample_ = clock_.elapsed(); ++world_revision_;
 +        }
 +        send_result({id, valid, valid ? "" : "Continuous intent unavailable or invalid"}, u, m, g);
