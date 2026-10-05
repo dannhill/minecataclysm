@@ -56,11 +56,11 @@ envelope identities and explicit full/incremental state metadata.
 
 ## Coordinates and material interpretation
 
-Chunks are 16×16×1, indexed `x` fastest, then `y`, then `z`. The server exports
-9×9 chunks at each of the player's three Z levels (243 chunks), despite the
-comment and historical test expecting 8×8×3. Horizontal extent is 144 tiles,
-larger than the current 132-tile reality bubble. Out-of-bounds cells are explicitly
-air; the exporter checks `map::inbounds` before reading terrain/furniture.
+Chunks follow CDDA's native 12×12 submap geometry and are indexed `x` fastest,
+then `y`, then `z`. The server exports 11×11 chunks at each of the player's
+three Z levels (363 chunks), covering the native 132×132 reality bubble exactly.
+Ordinary XY bubble shifts are exported incrementally; full chunk snapshots remain
+for initial synchronization, recovery, and incompatible cache changes.
 
 `origin.x/y` equals the absolute submap origin times 12. Entity positions and
 chunk cells are local in X/Y; their Z value is a CDDA level. `origin.z` is

@@ -437,6 +437,28 @@ index 9f987cc..005fbfb 100644
  	v3f added_pos;
  
  	*pkt >> added_pos;
+diff --git a/src/server/player_sao.cpp b/src/server/player_sao.cpp
+index 5d6b891..48c0d59 100644
+--- a/src/server/player_sao.cpp
++++ b/src/server/player_sao.cpp
+@@ -631,6 +631,17 @@ void PlayerSAO::setMaxSpeedOverride(const v3f &vel)
+ 
+ bool PlayerSAO::checkMovementCheat()
+ {
++	// In a CWM presentation session CDDA owns authoritative player motion.
++	// Luanti still receives the projected position for streaming/camera state,
++	// but must never reinterpret that CDDA position as a movement cheat and
++	// send a corrective position back to the presentation client.
++	std::string cwm_socket_path;
++	if (g_settings->getNoEx("cwm_socket_path", cwm_socket_path) &&
++			!cwm_socket_path.empty()) {
++		m_last_good_position = m_base_position;
++		return false;
++	}
++
+ 	static thread_local const u32 anticheat_flags =
+ 		g_settings->getFlagStr("anticheat_flags", flagdesc_anticheat, nullptr);
+ 
 diff --git a/src/unittest/test_mapblock.cpp b/src/unittest/test_mapblock.cpp
 index 7f3f860..c4c4482 100644
 --- a/src/unittest/test_mapblock.cpp
@@ -513,10 +535,10 @@ index 7f3f860..c4c4482 100644
  void TestMapBlock::testSaveLoad(IGameDef *gamedef, const u8 version)
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..ae85c5a
+index 0000000..241ccb6
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,1256 @@
+@@ -0,0 +1,1315 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
@@ -953,17 +975,35 @@ index 0000000..ae85c5a
 +    void continuous_intent(float x, float y) {
 +        if (!metrics_.continuous_motion) return;
 +        const bool pressed = std::hypot(x, y) > 1e-5f;
-+        if (!player_ready_ || !session_.ready() || metrics_.pause_reasons || metrics_.pending_decision) {
++        // Pause bit 3 is Recovery.  The native server deliberately accepts
++        // ContinuousIntent while Recovery is the sole pause reason: simulation
++        // remains frozen, but current held/released direction must not become
++        // stale across the full-state acknowledgement window.
++        constexpr uint32_t recovery_pause = 1u << 3;
++        const bool recovery_only = metrics_.pause_reasons == recovery_pause;
++        if (!player_ready_ || !session_.ready() ||
++                (metrics_.pause_reasons && !recovery_only) || metrics_.pending_decision) {
 +            sent_intent_x_ = sent_intent_y_ = 0; intent_needs_release_ = pressed; return;
 +        }
 +        if (!pressed) intent_needs_release_ = false;
 +        if (pressed && intent_needs_release_) return;
 +        if (std::hypot(x-sent_intent_x_, y-sent_intent_y_) < .005f) return;
++
++        // Press/release stay immediate.  While held, coalesce camera-heading
++        // changes to CDDA's 25 Hz authoritative continuous-motion cadence.
++        static auto next_heading_update = std::chrono::steady_clock::time_point{};
++        const auto now = std::chrono::steady_clock::now();
++        const bool starting = std::hypot(sent_intent_x_, sent_intent_y_) <= 1e-5f;
++        if (pressed && !starting && now < next_heading_update) return;
++
 +        auto builder = session_.builder();
 +        auto request = CDDA::CWM::CreateContinuousIntentRequest(builder.builder(), session_.next_command++, x, y);
 +        const auto bytes = builder.finish_message(CDDA::CWM::Payload::ContinuousIntentRequest, request.Union());
 +        if (connection_->send_message(bytes.data(), bytes.size())) {
 +            sent_intent_x_ = x; sent_intent_y_ = y;
++            next_heading_update = pressed ?
++                now + std::chrono::milliseconds(40) :
++                std::chrono::steady_clock::time_point{};
 +        }
 +    }
 +
@@ -1144,7 +1184,9 @@ index 0000000..ae85c5a
 +                metrics_.safety_stop = snap->safety_stop();
 +                const auto projection_started = std::chrono::steady_clock::now();
 +                const v3s32 origin(snap->origin()->x(), snap->origin()->y(), snap->origin()->z());
-+                const bool rebased = !origin_valid_ || origin.X != projection_origin_.X ||
++                const bool had_origin = origin_valid_;
++                const v3s32 previous_projection_origin = projection_origin_;
++                const bool rebased = !had_origin || origin.X != projection_origin_.X ||
 +                                     origin.Y != projection_origin_.Y;
 +                if (!origin_valid_) scene_origin_ = origin;
 +                projection_origin_ = origin;
@@ -1213,9 +1255,40 @@ index 0000000..ae85c5a
 +                               << projected_blocks_.size() << " local map blocks" << std::endl;
 +                }
 +
-+                if (client_ && snap->tiles() && snap->tiles()->size() > 0) {
++                const bool incremental_rebase = had_origin && rebased &&
++                    (!snap->chunks() || snap->chunks()->size() == 0);
++
++                if (client_ && (incremental_rebase ||
++                    (snap->tiles() && snap->tiles()->size() > 0))) {
 +                    std::set<v3s16> modified_blocks;
-+                    for (const auto* delta : *snap->tiles()) apply_tile(delta, modified_blocks);
++
++                    if (incremental_rebase) {
++                        constexpr int projection_width = 132;
++                        for (int z = previous_projection_origin.Z;
++                             z < previous_projection_origin.Z + 3; ++z) {
++                            for (int y = 0; y < projection_width; ++y) {
++                                for (int x = 0; x < projection_width; ++x) {
++                                    const int abs_x = previous_projection_origin.X + x;
++                                    const int abs_y = previous_projection_origin.Y + y;
++                                    const int nx = abs_x - origin.X;
++                                    const int ny = abs_y - origin.Y;
++                                    if (nx >= 0 && nx < projection_width &&
++                                        ny >= 0 && ny < projection_width)
++                                        continue;
++                                    const v3s16 lpos = CddaBridge::cddaToLuantiCoord(
++                                        abs_x - scene_origin_.X,
++                                        abs_y - scene_origin_.Y, z);
++                                    place_cdda_tile(lpos, cdda::cwm::AIR, 0, 0, 0,
++                                                    modified_blocks);
++                                }
++                            }
++                        }
++                    }
++
++                    if (snap->tiles())
++                        for (const auto* delta : *snap->tiles())
++                            apply_tile(delta, modified_blocks);
++
 +                    commit_projection(modified_blocks);
 +                    update_terrain_bounds();
 +                }
@@ -1249,7 +1322,15 @@ index 0000000..ae85c5a
 +                metrics_.continuous_motion = snap->clock() && snap->clock()->continuous_motion();
 +                metrics_.pause_reasons = snap->clock() ? snap->clock()->pause_reasons() : 0;
 +                metrics_.time_scale = snap->clock() ? snap->clock()->time_scale() : 1.f;
-+                if (metrics_.realtime && metrics_.pause_reasons) {
++                // Recovery-only is a transport/full-state pause, not an
++                // authoritative input cancellation.  Preserve the last
++                // actually-sent continuous vector so camera changes and the
++                // eventual physical release can still reach CDDA.  Other
++                // pauses deliberately drop held input and require a fresh press.
++                constexpr uint32_t recovery_pause = 1u << 3;
++                const bool recovery_only = metrics_.pause_reasons == recovery_pause;
++                if (metrics_.realtime && metrics_.pause_reasons &&
++                        (!metrics_.continuous_motion || !recovery_only)) {
 +                    sent_intent_ = 0; sent_intent_x_ = sent_intent_y_ = 0; intent_needs_release_ = true;
 +                }
 +                // Sync entities
@@ -1468,7 +1549,7 @@ index 0000000..ae85c5a
 +    std::string trace_path;
 +    if (g_settings->getNoEx("cwm_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->trace_.open(trace_path);
-+        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog,ipc_connected,ipc_input,ipc_output,ipc_read_bytes,ipc_write_bytes,ipc_frames,ipc_dispatch_bytes,ipc_read_calls,ipc_write_calls,session_state,input_ready,session_id,player_id,connection_id,sequence,resync_count,entity_cache,vehicle_cache,scene_origin_x,scene_origin_y,simulation_time,realtime,pause_reasons,time_scale,sent_intent,continuous_motion,intent_x,intent_y\n";
++        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog,ipc_connected,ipc_input,ipc_output,ipc_read_bytes,ipc_write_bytes,ipc_frames,ipc_dispatch_bytes,ipc_read_calls,ipc_write_calls,session_state,input_ready,session_id,player_id,connection_id,sequence,resync_count,entity_cache,vehicle_cache,scene_origin_x,scene_origin_y,simulation_time,realtime,pause_reasons,time_scale,sent_intent,continuous_motion,intent_x,intent_y,ipc_latency_ms,projection_ms\n";
 +    }
 +    if (g_settings->getNoEx("cwm_entity_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->entity_trace_.open(trace_path);
@@ -1582,7 +1663,7 @@ index 0000000..ae85c5a
 +        << ',' << pimpl_->scene_origin_.X << ',' << pimpl_->scene_origin_.Y << ','
 +        << pimpl_->metrics_.simulation_time << ',' << pimpl_->metrics_.realtime << ','
 +        << pimpl_->metrics_.pause_reasons << ',' << pimpl_->metrics_.time_scale << ',' << pimpl_->sent_intent_ << ','
-+        << pimpl_->metrics_.continuous_motion << ',' << pimpl_->sent_intent_x_ << ',' << pimpl_->sent_intent_y_ << '\n';
++        << pimpl_->metrics_.continuous_motion << ',' << pimpl_->sent_intent_x_ << ',' << pimpl_->sent_intent_y_ << ',' << pimpl_->metrics_.ipc_latency_ms << ',' << pimpl_->metrics_.projection_ms << '\n';
 +    pimpl_->trace_.flush();
 +}
 +
