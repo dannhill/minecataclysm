@@ -2611,10 +2611,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644
-index 0000000..c0d411b
+index 0000000..4224ed7
 --- /dev/null
 +++ b/tests/cwm_projection_test.cpp
-@@ -0,0 +1,513 @@
+@@ -0,0 +1,560 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "avatar_action.h"
@@ -3126,6 +3126,53 @@ index 0000000..c0d411b
 +    REQUIRE(world->ground_item_tiles()->size() == 1);
 +    CHECK(world->ground_item_tiles()->Get(0)->coord()->x() == p.x);
 +    CHECK(world->ground_item_tiles()->Get(0)->coord()->y() == p.y);
++    CHECK(world->ground_item_tiles()->Get(0)->items()->size() == 0);
++}
++
++TEST_CASE("cwm_ground_items_follow_xy_rebase_without_false_delta",
++          "[cwm][items][projection][rebase]")
++{
++    clear_avatar();
++    clear_map(-2, 1);
++    clear_creatures();
++
++    map& m = get_map();
++    avatar& u = get_avatar();
++    const tripoint before_p(61, 60, 0);
++    const tripoint after_p(61 - SEEX, 60, 0);
++    u.setpos(tripoint(60, 60, 0));
++    m.add_item_or_charges(before_p, item(itype_id("bottle_plastic"), calendar::turn));
++
++    cwm::CwmMapExporter::ProjectionCache cache;
++    cwm::CwmMapExporter::export_world_snapshot(1, 1, u, m, *g, true, &cache);
++
++    m.shift(point_east);
++    auto rebased = cwm::CwmMapExporter::export_world_snapshot(
++        2, 2, u, m, *g, false, &cache);
++
++    m.i_clear(after_p);
++    auto removed = cwm::CwmMapExporter::export_world_snapshot(
++        3, 3, u, m, *g, false, &cache);
++    m.shift(point_west);
++
++    const auto* world =
++        CDDA::CWM::GetCwmMessage(rebased.data())->payload_as_WorldSnapshot();
++    REQUIRE(world->ground_item_tiles());
++    for (const auto* tile : *world->ground_item_tiles()) {
++        INFO("ground item rebase delta at "
++             << tile->coord()->x() << "," << tile->coord()->y()
++             << "," << tile->coord()->z());
++        CHECK(tile->coord()->x() >= 120);
++        CHECK_FALSE((tile->coord()->x() == after_p.x &&
++                     tile->coord()->y() == after_p.y &&
++                     tile->coord()->z() == after_p.z));
++    }
++
++    world = CDDA::CWM::GetCwmMessage(removed.data())->payload_as_WorldSnapshot();
++    REQUIRE(world->ground_item_tiles());
++    REQUIRE(world->ground_item_tiles()->size() == 1);
++    CHECK(world->ground_item_tiles()->Get(0)->coord()->x() == after_p.x);
++    CHECK(world->ground_item_tiles()->Get(0)->coord()->y() == after_p.y);
 +    CHECK(world->ground_item_tiles()->Get(0)->items()->size() == 0);
 +}
 diff --git a/tests/cwm_runtime_test.cpp b/tests/cwm_runtime_test.cpp

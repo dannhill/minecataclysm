@@ -6,9 +6,9 @@
       "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
       "shallow": true,
       "patch": "baseline/patches/cdda.patch",
-      "patch_sha256": "58506fc1533e0bfa4ad3302f0b89e729a173c220487939574547dc5a00bf324f",
+      "patch_sha256": "8a0e2937e90aa129b32ce2c9a5fcbdb61c28ddac97933c8f58bc66b4aad3b16a",
       "tree_inventory": "baseline/trees/cdda.json",
-      "tree_sha256": "48550bb603737276ff21f2fc2d2e7fb41aba3f746c0ede4314726ec05afe3a87",
+      "tree_sha256": "8b7c165d9f5c8e71974721b16d4516e12abc9435025882eab48bb7d9fe88631b",
       "file_count": 8581,
       "original_status": " M src/CMakeLists.txt\n M src/avatar_action.cpp\n M src/character.cpp\n M src/do_turn.cpp\n M src/do_turn.h\n M src/game.cpp\n M src/game.h\n M src/handle_action.cpp\n M src/iexamine.cpp\n M src/output.cpp\n M tests/CMakeLists.txt\n M tests/test_main.cpp\n?? src/cwm/cwm_main.cpp\n?? src/cwm/cwm_map_exporter.cpp\n?? src/cwm/cwm_map_exporter.h\n?? src/cwm/cwm_server.cpp\n?? src/cwm/cwm_server.h\n?? src/cwm_motion.cpp\n?? src/cwm_motion.h\n?? src/safe_mode_actions.h\n?? tests/cwm_projection_test.cpp\n?? tests/cwm_runtime_test.cpp\n"
     },
