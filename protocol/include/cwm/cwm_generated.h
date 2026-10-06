@@ -40,6 +40,12 @@ struct ChunkSnapshotBuilder;
 struct TileDelta;
 struct TileDeltaBuilder;
 
+struct GroundItemState;
+struct GroundItemStateBuilder;
+
+struct GroundItemTileState;
+struct GroundItemTileStateBuilder;
+
 struct EntityState;
 struct EntityStateBuilder;
 
@@ -1166,6 +1172,192 @@ inline ::flatbuffers::Offset<TileDelta> CreateTileDelta(
   return builder_.Finish();
 }
 
+struct GroundItemState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef GroundItemStateBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_STACK_INDEX = 4,
+    VT_TYPE_ID = 6,
+    VT_NAME = 8,
+    VT_CHARGES = 10,
+    VT_COUNT_BY_CHARGES = 12
+  };
+  uint32_t stack_index() const {
+    return GetField<uint32_t>(VT_STACK_INDEX, 0);
+  }
+  bool mutate_stack_index(uint32_t _stack_index = 0) {
+    return SetField<uint32_t>(VT_STACK_INDEX, _stack_index, 0);
+  }
+  const ::flatbuffers::String *type_id() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_TYPE_ID);
+  }
+  ::flatbuffers::String *mutable_type_id() {
+    return GetPointer<::flatbuffers::String *>(VT_TYPE_ID);
+  }
+  const ::flatbuffers::String *name() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_NAME);
+  }
+  ::flatbuffers::String *mutable_name() {
+    return GetPointer<::flatbuffers::String *>(VT_NAME);
+  }
+  int32_t charges() const {
+    return GetField<int32_t>(VT_CHARGES, 0);
+  }
+  bool mutate_charges(int32_t _charges = 0) {
+    return SetField<int32_t>(VT_CHARGES, _charges, 0);
+  }
+  bool count_by_charges() const {
+    return GetField<uint8_t>(VT_COUNT_BY_CHARGES, 0) != 0;
+  }
+  bool mutate_count_by_charges(bool _count_by_charges = 0) {
+    return SetField<uint8_t>(VT_COUNT_BY_CHARGES, static_cast<uint8_t>(_count_by_charges), 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_STACK_INDEX, 4) &&
+           VerifyOffset(verifier, VT_TYPE_ID) &&
+           verifier.VerifyString(type_id()) &&
+           VerifyOffset(verifier, VT_NAME) &&
+           verifier.VerifyString(name()) &&
+           VerifyField<int32_t>(verifier, VT_CHARGES, 4) &&
+           VerifyField<uint8_t>(verifier, VT_COUNT_BY_CHARGES, 1) &&
+           verifier.EndTable();
+  }
+};
+
+struct GroundItemStateBuilder {
+  typedef GroundItemState Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_stack_index(uint32_t stack_index) {
+    fbb_.AddElement<uint32_t>(GroundItemState::VT_STACK_INDEX, stack_index, 0);
+  }
+  void add_type_id(::flatbuffers::Offset<::flatbuffers::String> type_id) {
+    fbb_.AddOffset(GroundItemState::VT_TYPE_ID, type_id);
+  }
+  void add_name(::flatbuffers::Offset<::flatbuffers::String> name) {
+    fbb_.AddOffset(GroundItemState::VT_NAME, name);
+  }
+  void add_charges(int32_t charges) {
+    fbb_.AddElement<int32_t>(GroundItemState::VT_CHARGES, charges, 0);
+  }
+  void add_count_by_charges(bool count_by_charges) {
+    fbb_.AddElement<uint8_t>(GroundItemState::VT_COUNT_BY_CHARGES, static_cast<uint8_t>(count_by_charges), 0);
+  }
+  explicit GroundItemStateBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<GroundItemState> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<GroundItemState>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<GroundItemState> CreateGroundItemState(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t stack_index = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> type_id = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> name = 0,
+    int32_t charges = 0,
+    bool count_by_charges = false) {
+  GroundItemStateBuilder builder_(_fbb);
+  builder_.add_charges(charges);
+  builder_.add_name(name);
+  builder_.add_type_id(type_id);
+  builder_.add_stack_index(stack_index);
+  builder_.add_count_by_charges(count_by_charges);
+  return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<GroundItemState> CreateGroundItemStateDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t stack_index = 0,
+    const char *type_id = nullptr,
+    const char *name = nullptr,
+    int32_t charges = 0,
+    bool count_by_charges = false) {
+  auto type_id__ = type_id ? _fbb.CreateString(type_id) : 0;
+  auto name__ = name ? _fbb.CreateString(name) : 0;
+  return CDDA::CWM::CreateGroundItemState(
+      _fbb,
+      stack_index,
+      type_id__,
+      name__,
+      charges,
+      count_by_charges);
+}
+
+struct GroundItemTileState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef GroundItemTileStateBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_COORD = 4,
+    VT_ITEMS = 6
+  };
+  const CDDA::CWM::Coord3i *coord() const {
+    return GetStruct<const CDDA::CWM::Coord3i *>(VT_COORD);
+  }
+  CDDA::CWM::Coord3i *mutable_coord() {
+    return GetStruct<CDDA::CWM::Coord3i *>(VT_COORD);
+  }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::GroundItemState>> *items() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::GroundItemState>> *>(VT_ITEMS);
+  }
+  ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::GroundItemState>> *mutable_items() {
+    return GetPointer<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::GroundItemState>> *>(VT_ITEMS);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<CDDA::CWM::Coord3i>(verifier, VT_COORD, 4) &&
+           VerifyOffset(verifier, VT_ITEMS) &&
+           verifier.VerifyVector(items()) &&
+           verifier.VerifyVectorOfTables(items()) &&
+           verifier.EndTable();
+  }
+};
+
+struct GroundItemTileStateBuilder {
+  typedef GroundItemTileState Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_coord(const CDDA::CWM::Coord3i *coord) {
+    fbb_.AddStruct(GroundItemTileState::VT_COORD, coord);
+  }
+  void add_items(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::GroundItemState>>> items) {
+    fbb_.AddOffset(GroundItemTileState::VT_ITEMS, items);
+  }
+  explicit GroundItemTileStateBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<GroundItemTileState> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<GroundItemTileState>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<GroundItemTileState> CreateGroundItemTileState(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    const CDDA::CWM::Coord3i *coord = nullptr,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::GroundItemState>>> items = 0) {
+  GroundItemTileStateBuilder builder_(_fbb);
+  builder_.add_items(items);
+  builder_.add_coord(coord);
+  return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<GroundItemTileState> CreateGroundItemTileStateDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    const CDDA::CWM::Coord3i *coord = nullptr,
+    const std::vector<::flatbuffers::Offset<CDDA::CWM::GroundItemState>> *items = nullptr) {
+  auto items__ = items ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::GroundItemState>>(*items) : 0;
+  return CDDA::CWM::CreateGroundItemTileState(
+      _fbb,
+      coord,
+      items__);
+}
+
 struct EntityState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef EntityStateBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
@@ -1794,7 +1986,8 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_COMPLETED_COMMAND_ID = 30,
     VT_SPAWNED = 32,
     VT_REMOVED = 34,
-    VT_CLOCK = 36
+    VT_CLOCK = 36,
+    VT_GROUND_ITEM_TILES = 38
   };
   uint64_t world_revision() const {
     return GetField<uint64_t>(VT_WORLD_REVISION, 0);
@@ -1898,6 +2091,12 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   CDDA::CWM::SimulationState *mutable_clock() {
     return GetPointer<CDDA::CWM::SimulationState *>(VT_CLOCK);
   }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::GroundItemTileState>> *ground_item_tiles() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::GroundItemTileState>> *>(VT_GROUND_ITEM_TILES);
+  }
+  ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::GroundItemTileState>> *mutable_ground_item_tiles() {
+    return GetPointer<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::GroundItemTileState>> *>(VT_GROUND_ITEM_TILES);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint64_t>(verifier, VT_WORLD_REVISION, 8) &&
@@ -1932,6 +2131,9 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyVectorOfTables(removed()) &&
            VerifyOffset(verifier, VT_CLOCK) &&
            verifier.VerifyTable(clock()) &&
+           VerifyOffset(verifier, VT_GROUND_ITEM_TILES) &&
+           verifier.VerifyVector(ground_item_tiles()) &&
+           verifier.VerifyVectorOfTables(ground_item_tiles()) &&
            verifier.EndTable();
   }
 };
@@ -1991,6 +2193,9 @@ struct WorldSnapshotBuilder {
   void add_clock(::flatbuffers::Offset<CDDA::CWM::SimulationState> clock) {
     fbb_.AddOffset(WorldSnapshot::VT_CLOCK, clock);
   }
+  void add_ground_item_tiles(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::GroundItemTileState>>> ground_item_tiles) {
+    fbb_.AddOffset(WorldSnapshot::VT_GROUND_ITEM_TILES, ground_item_tiles);
+  }
   explicit WorldSnapshotBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -2020,7 +2225,8 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshot(
     uint64_t completed_command_id = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::EntitySpawned>>> spawned = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::EntityRemoved>>> removed = 0,
-    ::flatbuffers::Offset<CDDA::CWM::SimulationState> clock = 0) {
+    ::flatbuffers::Offset<CDDA::CWM::SimulationState> clock = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::GroundItemTileState>>> ground_item_tiles = 0) {
   WorldSnapshotBuilder builder_(_fbb);
   builder_.add_completed_command_id(completed_command_id);
   builder_.add_resync_id(resync_id);
@@ -2028,6 +2234,7 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshot(
   builder_.add_base_revision(base_revision);
   builder_.add_simulation_time_seconds(simulation_time_seconds);
   builder_.add_world_revision(world_revision);
+  builder_.add_ground_item_tiles(ground_item_tiles);
   builder_.add_clock(clock);
   builder_.add_removed(removed);
   builder_.add_spawned(spawned);
@@ -2060,7 +2267,8 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshotDirect(
     uint64_t completed_command_id = 0,
     const std::vector<::flatbuffers::Offset<CDDA::CWM::EntitySpawned>> *spawned = nullptr,
     const std::vector<::flatbuffers::Offset<CDDA::CWM::EntityRemoved>> *removed = nullptr,
-    ::flatbuffers::Offset<CDDA::CWM::SimulationState> clock = 0) {
+    ::flatbuffers::Offset<CDDA::CWM::SimulationState> clock = 0,
+    const std::vector<::flatbuffers::Offset<CDDA::CWM::GroundItemTileState>> *ground_item_tiles = nullptr) {
   auto chunks__ = chunks ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::ChunkSnapshot>>(*chunks) : 0;
   auto entities__ = entities ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::EntityState>>(*entities) : 0;
   auto vehicles__ = vehicles ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::VehicleState>>(*vehicles) : 0;
@@ -2068,6 +2276,7 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshotDirect(
   auto tiles__ = tiles ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::TileDelta>>(*tiles) : 0;
   auto spawned__ = spawned ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::EntitySpawned>>(*spawned) : 0;
   auto removed__ = removed ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::EntityRemoved>>(*removed) : 0;
+  auto ground_item_tiles__ = ground_item_tiles ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::GroundItemTileState>>(*ground_item_tiles) : 0;
   return CDDA::CWM::CreateWorldSnapshot(
       _fbb,
       world_revision,
@@ -2086,7 +2295,8 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshotDirect(
       completed_command_id,
       spawned__,
       removed__,
-      clock);
+      clock,
+      ground_item_tiles__);
 }
 
 struct SimulationState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {

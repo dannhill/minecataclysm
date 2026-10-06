@@ -2554,14 +2554,15 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644
-index 0000000..508b769
+index 0000000..2c8662d
 --- /dev/null
 +++ b/tests/cwm_projection_test.cpp
-@@ -0,0 +1,465 @@
+@@ -0,0 +1,513 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "avatar_action.h"
 +#include "game.h"
++#include "item.h"
 +#include "map.h"
 +#include "mapdata.h"
 +#include "map_helpers.h"
@@ -3022,6 +3023,53 @@ index 0000000..508b769
 +         << " min_x=" << min_x
 +         << " max_x=" << max_x);
 +    CHECK(world->tiles()->size() == entering_strip);
++}
++
++
++TEST_CASE("cwm_ground_items_export_full_and_incremental_removal", "[cwm][items][projection]")
++{
++    clear_avatar();
++    clear_map();
++    clear_creatures();
++
++    map& m = get_map();
++    avatar& u = get_avatar();
++    const tripoint p(61, 60, 0);
++    u.setpos(tripoint(60, 60, 0));
++    m.add_item_or_charges(p, item(itype_id("bottle_plastic"), calendar::turn));
++
++    cwm::CwmMapExporter::ProjectionCache cache;
++
++    auto full = cwm::CwmMapExporter::export_world_snapshot(
++        1, 1, u, m, *g, true, &cache);
++    const auto* world =
++        CDDA::CWM::GetCwmMessage(full.data())->payload_as_WorldSnapshot();
++
++    REQUIRE(world->ground_item_tiles());
++    REQUIRE(world->ground_item_tiles()->size() == 1);
++    const auto* tile = world->ground_item_tiles()->Get(0);
++    CHECK(tile->coord()->x() == p.x);
++    CHECK(tile->coord()->y() == p.y);
++    REQUIRE(tile->items()->size() == 1);
++    CHECK(tile->items()->Get(0)->stack_index() == 0);
++    CHECK(tile->items()->Get(0)->type_id()->str() == "bottle_plastic");
++
++    auto unchanged = cwm::CwmMapExporter::export_world_snapshot(
++        2, 2, u, m, *g, false, &cache);
++    world = CDDA::CWM::GetCwmMessage(unchanged.data())->payload_as_WorldSnapshot();
++    REQUIRE(world->ground_item_tiles());
++    CHECK(world->ground_item_tiles()->empty());
++
++    m.i_clear(p);
++
++    auto removed = cwm::CwmMapExporter::export_world_snapshot(
++        3, 3, u, m, *g, false, &cache);
++    world = CDDA::CWM::GetCwmMessage(removed.data())->payload_as_WorldSnapshot();
++    REQUIRE(world->ground_item_tiles());
++    REQUIRE(world->ground_item_tiles()->size() == 1);
++    CHECK(world->ground_item_tiles()->Get(0)->coord()->x() == p.x);
++    CHECK(world->ground_item_tiles()->Get(0)->coord()->y() == p.y);
++    CHECK(world->ground_item_tiles()->Get(0)->items()->empty());
 +}
 diff --git a/tests/cwm_runtime_test.cpp b/tests/cwm_runtime_test.cpp
 new file mode 100644

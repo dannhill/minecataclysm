@@ -277,8 +277,33 @@ class WorldSnapshot(object):
             return obj
         return None
 
+    # WorldSnapshot
+    def GroundItemTiles(self, j):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(38))
+        if o != 0:
+            x = self._tab.Vector(o)
+            x += flatbuffers.number_types.UOffsetTFlags.py_type(j) * 4
+            x = self._tab.Indirect(x)
+            from CDDA.CWM.GroundItemTileState import GroundItemTileState
+            obj = GroundItemTileState()
+            obj.Init(self._tab.Bytes, x)
+            return obj
+        return None
+
+    # WorldSnapshot
+    def GroundItemTilesLength(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(38))
+        if o != 0:
+            return self._tab.VectorLen(o)
+        return 0
+
+    # WorldSnapshot
+    def GroundItemTilesIsNone(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(38))
+        return o == 0
+
 def WorldSnapshotStart(builder):
-    builder.StartObject(17)
+    builder.StartObject(18)
 
 def Start(builder):
     WorldSnapshotStart(builder)
@@ -426,6 +451,18 @@ def WorldSnapshotAddClock(builder, clock):
 
 def AddClock(builder, clock):
     WorldSnapshotAddClock(builder, clock)
+
+def WorldSnapshotAddGroundItemTiles(builder, groundItemTiles):
+    builder.PrependUOffsetTRelativeSlot(17, flatbuffers.number_types.UOffsetTFlags.py_type(groundItemTiles), 0)
+
+def AddGroundItemTiles(builder, groundItemTiles):
+    WorldSnapshotAddGroundItemTiles(builder, groundItemTiles)
+
+def WorldSnapshotStartGroundItemTilesVector(builder, numElems):
+    return builder.StartVector(4, numElems, 4)
+
+def StartGroundItemTilesVector(builder, numElems):
+    return WorldSnapshotStartGroundItemTilesVector(builder, numElems)
 
 def WorldSnapshotEnd(builder):
     return builder.EndObject()
