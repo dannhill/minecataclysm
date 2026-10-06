@@ -965,10 +965,10 @@ index 0000000..1a0308e
 +}
 diff --git a/src/cwm/cwm_map_exporter.cpp b/src/cwm/cwm_map_exporter.cpp
 new file mode 100644
-index 0000000..c6757e1
+index 0000000..2896bd7
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.cpp
-@@ -0,0 +1,490 @@
+@@ -0,0 +1,545 @@
 +#include "cwm_motion.h"
 +// CDDA CWM Map & Entity Exporter Implementation
 +// Licensed under Apache-2.0
@@ -980,6 +980,7 @@ index 0000000..c6757e1
 +
 +#include "avatar.h"
 +#include "game.h"
++#include "item.h"
 +#include "map.h"
 +#include "monster.h"
 +#include "creature_tracker.h"
@@ -1128,12 +1129,15 @@ index 0000000..c6757e1
 +    constexpr int projection_height = MAPSIZE_Y;
 +    constexpr size_t tile_count = 3 * projection_width * projection_height;
 +    std::vector<uint64_t> previous_tiles;
++    std::vector<std::string> previous_ground_items;
 +    int cache_shift_x = 0;
 +    int cache_shift_y = 0;
 +    bool cache_rebased_xy = false;
 +
 +    if (cache && !include_chunks) {
-+        if (cache->tiles.size() != tile_count || cache->origin.z != cache_origin.z) {
++        if (cache->tiles.size() != tile_count ||
++            cache->ground_items.size() != tile_count ||
++            cache->origin.z != cache_origin.z) {
 +            include_chunks = true;
 +        } else if (cache->origin.x != cache_origin.x || cache->origin.y != cache_origin.y) {
 +            cache_shift_x = (cache_origin.x - cache->origin.x) * 12;
@@ -1143,7 +1147,9 @@ index 0000000..c6757e1
 +                include_chunks = true;
 +            } else {
 +                previous_tiles = std::move(cache->tiles);
++                previous_ground_items = std::move(cache->ground_items);
 +                cache->tiles.assign(tile_count, 0);
++                cache->ground_items.assign(tile_count, {});
 +                cache->origin = cache_origin;
 +                cache_rebased_xy = true;
 +            }
@@ -1152,8 +1158,10 @@ index 0000000..c6757e1
 +    if (cache && include_chunks) {
 +        cache->origin = cache_origin;
 +        cache->tiles.assign(tile_count, 0);
++        cache->ground_items.assign(tile_count, {});
 +    }
 +    std::vector<flatbuffers::Offset<CDDA::CWM::TileDelta>> tile_offsets;
++    std::vector<flatbuffers::Offset<CDDA::CWM::GroundItemTileState>> ground_item_tiles;
 +    size_t cache_index = 0;
 +    for (int z_level = z_min; z_level <= z_max; ++z_level) {
 +        float nat_light = g.natural_light_level(z_level);
@@ -1197,6 +1205,52 @@ index 0000000..c6757e1
 +                            tile_offsets.push_back(CDDA::CWM::CreateTileDelta(fbb, &coord, &block));
 +                        }
 +                        if (cache) cache->tiles[cache_index] = packed;
++
++                        const map_stack stack = m.i_at(p);
++                        std::string item_signature;
++                        std::vector<flatbuffers::Offset<CDDA::CWM::GroundItemState>> item_offsets;
++                        uint32_t stack_index = 0;
++                        for (const item& it : stack) {
++                            const std::string type = it.typeId().str();
++                            const std::string name = it.tname();
++                            const bool by_charges = it.count_by_charges();
++                            item_signature += std::to_string(type.size()) + ":" + type +
++                                std::to_string(name.size()) + ":" + name +
++                                ":" + std::to_string(it.charges) +
++                                ":" + (by_charges ? "1;" : "0;");
++                            item_offsets.push_back(CDDA::CWM::CreateGroundItemStateDirect(
++                                fbb, stack_index++, type.c_str(), name.c_str(),
++                                it.charges, by_charges));
++                        }
++
++                        bool items_changed = include_chunks || !cache;
++                        if (cache && !include_chunks) {
++                            if (cache_rebased_xy) {
++                                const int old_x = p.x + cache_shift_x;
++                                const int old_y = p.y + cache_shift_y;
++                                if (old_x < 0 || old_x >= projection_width ||
++                                    old_y < 0 || old_y >= projection_height) {
++                                    items_changed = !item_signature.empty();
++                                } else {
++                                    const size_t old_index =
++                                        size_t(z_level - z_min) * MAPSIZE_X * MAPSIZE_Y +
++                                        size_t(old_y / SEEY) * MAPSIZE * SEEX * SEEY +
++                                        size_t(old_x / SEEX) * SEEX * SEEY +
++                                        size_t(old_y % SEEY) * SEEX +
++                                        size_t(old_x % SEEX);
++                                    items_changed = previous_ground_items[old_index] != item_signature;
++                                }
++                            } else {
++                                items_changed = cache->ground_items[cache_index] != item_signature;
++                            }
++                        }
++
++                        if (items_changed && (!item_signature.empty() || !include_chunks)) {
++                            const CDDA::CWM::Coord3i coord(p.x, p.y, p.z);
++                            ground_item_tiles.push_back(CDDA::CWM::CreateGroundItemTileState(
++                                fbb, &coord, fbb.CreateVector(item_offsets)));
++                        }
++                        if (cache) cache->ground_items[cache_index] = std::move(item_signature);
 +                    }
 +                }
 +                if (include_chunks) {
@@ -1209,6 +1263,7 @@ index 0000000..c6757e1
 +    }
 +    auto chunks_vec = include_chunks ? fbb.CreateVector(chunk_offsets) : 0;
 +    const auto tiles_vec = fbb.CreateVector(tile_offsets);
++    const auto ground_items_vec = fbb.CreateVector(ground_item_tiles);
 +
 +    // 3. Entities (Player + Monsters)
 +    std::vector<flatbuffers::Offset<CDDA::CWM::EntityState>> entity_offsets;
@@ -1410,7 +1465,7 @@ index 0000000..c6757e1
 +        g.safe_mode == SAFE_MODE_STOP || u.has_effect(efftype_id("laserlocked")) ||
 +            (clock && (clock->pause_reasons & 4)),
 +        include_chunks, base_revision, state_id, resync_id, completed_command_id,
-+        spawned_vec, removed_vec, clock_state
++        spawned_vec, removed_vec, clock_state, ground_items_vec
 +    );
 +
 +    return builder.finish_message(CDDA::CWM::Payload::WorldSnapshot, world_snap.Union());
@@ -1461,10 +1516,10 @@ index 0000000..c6757e1
 +} // namespace cwm
 diff --git a/src/cwm/cwm_map_exporter.h b/src/cwm/cwm_map_exporter.h
 new file mode 100644
-index 0000000..5bdd176
+index 0000000..72bdfde
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.h
-@@ -0,0 +1,59 @@
+@@ -0,0 +1,61 @@
 +// CDDA CWM Map & Entity Exporter
 +// Licensed under Apache-2.0
 +#pragma once
@@ -1472,6 +1527,7 @@ index 0000000..5bdd176
 +#include <vector>
 +#include <cstdint>
 +#include <set>
++#include <string>
 +#include "cwm/cwm_protocol.hpp"
 +#include "point.h"
 +#include "cwm/cwm_generated.h"
@@ -1488,6 +1544,7 @@ index 0000000..5bdd176
 +    struct ProjectionCache {
 +        tripoint origin;
 +        std::vector<uint64_t> tiles;
++        std::vector<std::string> ground_items;
 +        std::set<uint64_t> actors;
 +    };
 +    struct ClockView { bool realtime{false}; uint32_t pause_reasons{0}; float scale{1.f}; float motion_seconds{.2f}; bool continuous{false}; };
