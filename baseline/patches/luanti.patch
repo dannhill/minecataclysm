@@ -460,21 +460,22 @@ index 5d6b891..48c0d59 100644
  		g_settings->getFlagStr("anticheat_flags", flagdesc_anticheat, nullptr);
  
 diff --git a/src/unittest/test_mapblock.cpp b/src/unittest/test_mapblock.cpp
-index 7f3f860..c4c4482 100644
+index 7f3f860..63b5853 100644
 --- a/src/unittest/test_mapblock.cpp
 +++ b/src/unittest/test_mapblock.cpp
-@@ -10,6 +10,10 @@
+@@ -10,6 +10,11 @@
  #include "serialization.h"
  #include "noise.h"
  #include "inventory.h"
 +#if CHECK_CLIENT_BUILD()
 +#include "client/mesh_generator_thread.h"
 +#include "cdda/cdda_bridge.h"
++#include "cdda/ground_item_projection.h"
 +#endif
  
  class TestMapBlock : public TestBase
  {
-@@ -32,7 +36,11 @@ class TestMapBlock : public TestBase
+@@ -32,7 +37,12 @@ class TestMapBlock : public TestBase
  	void testLoad20(IGameDef *gamedef);
  
  	// Tests loading a non-standard MapBlock
@@ -483,11 +484,12 @@ index 7f3f860..c4c4482 100644
 +#if CHECK_CLIENT_BUILD()
 +    void testMeshResultOrder();
 +    void testCddaOpeningCoordinates();
++    void testCddaGroundItemProjection();
 +#endif
  };
  
  static TestMapBlock g_test_instance;
-@@ -44,9 +52,44 @@ void TestMapBlock::runTests(IGameDef *gamedef)
+@@ -44,9 +54,76 @@ void TestMapBlock::runTests(IGameDef *gamedef)
  	TEST(testSave29, gamedef);
  	TEST(testLoad29, gamedef);
  	TEST(testLoad20, gamedef);
@@ -496,6 +498,7 @@ index 7f3f860..c4c4482 100644
 +#if CHECK_CLIENT_BUILD()
 +    TEST(testMeshResultOrder);
 +    TEST(testCddaOpeningCoordinates);
++    TEST(testCddaGroundItemProjection);
 +#endif
  }
  
@@ -509,6 +512,37 @@ index 7f3f860..c4c4482 100644
 +            UASSERT(tile == v3s16(13, -17, z));
 +        }
 +    }
++}
++
++void TestMapBlock::testCddaGroundItemProjection()
++{
++    using cdda_client::GroundItemProjection;
++    using cdda_client::GroundItemView;
++
++    const v3s32 scene_origin(1000, 2000, -1);
++    GroundItemProjection projection;
++    GroundItemView bottle{0, "bottle_plastic", "plastic bottle", 0, false};
++
++    const v3s16 overlap =
++        cdda_client::CddaBridge::cddaToLuantiCoord(61, 60, 0);
++    const v3s16 exiting =
++        cdda_client::CddaBridge::cddaToLuantiCoord(5, 60, 0);
++
++    projection.apply(overlap, std::vector<GroundItemView>{bottle});
++    projection.apply(exiting, std::vector<GroundItemView>{bottle});
++    UASSERT(projection.size() == 2);
++
++    projection.pruneWindow(v3s32(1012, 2000, -1), scene_origin);
++    UASSERT(projection.size() == 1);
++    UASSERT(projection.get(overlap) != nullptr);
++    UASSERT(projection.get(exiting) == nullptr);
++
++    projection.apply(overlap, {});
++    UASSERT(projection.size() == 0);
++
++    projection.apply(overlap, std::vector<GroundItemView>{bottle});
++    projection.clear();
++    UASSERT(projection.size() == 0);
 +}
 +
 +void TestMapBlock::testMeshResultOrder()
@@ -535,14 +569,15 @@ index 7f3f860..c4c4482 100644
  void TestMapBlock::testSaveLoad(IGameDef *gamedef, const u8 version)
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..241ccb6
+index 0000000..b161080
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,1315 @@
+@@ -0,0 +1,1348 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
 +#include "cdda_bridge.h"
++#include "ground_item_projection.h"
 +#include "cwm/ipc_transport.hpp"
 +#include "cwm/cwm_session.hpp"
 +#include "cwm/tile_semantics.hpp"
@@ -634,6 +669,7 @@ index 0000000..241ccb6
 +    bool origin_valid_{false};
 +    std::map<v3s16, std::vector<MapNode>> projected_blocks_;
 +    std::map<v3s16, CDDA::CWM::CwmBlock> terrain_tiles_;
++    GroundItemProjection ground_items_;
 +    std::map<s16, std::array<float, 4>> terrain_bounds_;
 +    bool terrain_demo_{false};
 +    bool terrain_enriched_{false};
@@ -942,6 +978,7 @@ index 0000000..241ccb6
 +        std::set<v3s16> old_blocks;
 +        for (const auto& [pos, nodes] : projected_blocks_) old_blocks.insert(pos);
 +        projected_blocks_.clear(); terrain_tiles_.clear(); terrain_bounds_.clear();
++        ground_items_.clear();
 +        commit_projection(old_blocks);
 +        origin_valid_ = false;
 +        pending_move_ = 0; metrics_.pending_decision = 0;
@@ -1291,6 +1328,36 @@ index 0000000..241ccb6
 +
 +                    commit_projection(modified_blocks);
 +                    update_terrain_bounds();
++                }
++
++                if (snap->full())
++                    ground_items_.clear();
++                else if (incremental_rebase)
++                    ground_items_.pruneWindow(origin, scene_origin_);
++
++                if (snap->ground_item_tiles()) {
++                    for (const auto* tile : *snap->ground_item_tiles()) {
++                        if (!tile || !tile->coord()) continue;
++
++                        std::vector<GroundItemView> items;
++                        if (tile->items()) {
++                            items.reserve(tile->items()->size());
++                            for (const auto* state : *tile->items()) {
++                                if (!state) continue;
++                                items.push_back({
++                                    state->stack_index(),
++                                    state->type_id() ? state->type_id()->str() : "",
++                                    state->name() ? state->name()->str() : "",
++                                    state->charges(),
++                                    state->count_by_charges()
++                                });
++                            }
++                        }
++
++                        const auto* p = tile->coord();
++                        ground_items_.apply(project_tile(p->x(), p->y(), p->z()),
++                                            std::move(items));
++                    }
 +                }
 +
 +                // Each atomic state carries the full vehicle roster.
@@ -1986,6 +2053,74 @@ index 0000000..551f2cc
 +    CddaBridge() = default;
 +    class Impl;
 +    std::unique_ptr<Impl> pimpl_;
++};
++
++} // namespace cdda_client
+diff --git a/src/cdda/ground_item_projection.h b/src/cdda/ground_item_projection.h
+new file mode 100644
+index 0000000..f93445c
+--- /dev/null
++++ b/src/cdda/ground_item_projection.h
+@@ -0,0 +1,62 @@
++#pragma once
++
++#include <cstdint>
++#include <map>
++#include <string>
++#include <utility>
++#include <vector>
++#include "irr_v3d.h"
++
++namespace cdda_client {
++
++struct GroundItemView {
++	uint32_t stack_index{0};
++	std::string type_id;
++	std::string name;
++	int32_t charges{0};
++	bool count_by_charges{false};
++};
++
++class GroundItemProjection {
++	std::map<v3s16, std::vector<GroundItemView>> tiles_;
++
++public:
++	void clear() { tiles_.clear(); }
++	size_t size() const { return tiles_.size(); }
++
++	const std::vector<GroundItemView> *get(const v3s16 &pos) const
++	{
++		const auto it = tiles_.find(pos);
++		return it == tiles_.end() ? nullptr : &it->second;
++	}
++
++	void apply(const v3s16 &pos, std::vector<GroundItemView> items)
++	{
++		if (items.empty())
++			tiles_.erase(pos);
++		else
++			tiles_[pos] = std::move(items);
++	}
++
++	void pruneWindow(const v3s32 &origin, const v3s32 &scene_origin, int width = 132)
++	{
++		const int min_x = origin.X - scene_origin.X;
++		const int min_y = origin.Y - scene_origin.Y;
++		const int min_z = origin.Z;
++
++		for (auto it = tiles_.begin(); it != tiles_.end();) {
++			const v3s16 &p = it->first;
++			const int x = p.X;
++			const int y = -p.Z;
++			const int z = p.Y / 3;
++			if (x < min_x || x >= min_x + width ||
++					y < min_y || y >= min_y + width ||
++					z < min_z || z >= min_z + 3)
++				it = tiles_.erase(it);
++			else
++				++it;
++		}
++	}
 +};
 +
 +} // namespace cdda_client

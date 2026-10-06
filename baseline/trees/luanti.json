@@ -7232,12 +7232,17 @@
   {
     "path": "src/cdda/cdda_bridge.cpp",
     "mode": "100644",
-    "sha256": "5a0f1bf91972cbcf3084fd8b7e0c12a38163fa1d67f4a3ba323dd54ae1ea7513"
+    "sha256": "a2aa0cafe40b98234d9de1e2b21125f4fa1aa585efa704379f77f70994e7fb07"
   },
   {
     "path": "src/cdda/cdda_bridge.h",
     "mode": "100644",
     "sha256": "1a1ec1850c0d9282d198c2b12527fe4ff03b40fd1f8548a8f0a7eda5a19892bd"
+  },
+  {
+    "path": "src/cdda/ground_item_projection.h",
+    "mode": "100644",
+    "sha256": "6023b1295a70afc773bae47c00e48124cdce29c0f4869f82756e86225c85021a"
   },
   {
     "path": "src/chat.cpp",
@@ -10282,7 +10287,7 @@
   {
     "path": "src/unittest/test_mapblock.cpp",
     "mode": "100644",
-    "sha256": "fbfb025f259dc14e314dc828a163c9e79cdd7494e6dcb6bdfaa2030e6fe46352"
+    "sha256": "0a3bc3d20820991a342b1cb597c5aef5e281d30aaa2df48e3dcac227b948b6e2"
   },
   {
     "path": "src/unittest/test_mapnode.cpp",

@@ -17,11 +17,11 @@
       "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
       "shallow": true,
       "patch": "baseline/patches/luanti.patch",
-      "patch_sha256": "b8e73f75a42147141992526d55ba719b920cb5f515fe94c9a3bb6b9428ab7c03",
+      "patch_sha256": "b449bb73ef0bd3b42ceb41efc7c22db457acf6971768c722affe28d03ccf4d8c",
       "tree_inventory": "baseline/trees/luanti.json",
-      "tree_sha256": "bc7db75226c1ad23b95c2d050d8f124ce8b71c8bcdf284ae9a1023f8494f09ed",
-      "file_count": 2251,
-      "original_status": " M src/CMakeLists.txt\n M src/client/CMakeLists.txt\n M src/client/client.cpp\n M src/client/clientenvironment.cpp\n M src/client/game.cpp\n M src/client/mesh_generator_thread.cpp\n M src/client/mesh_generator_thread.h\n M src/network/clientpackethandler.cpp\n M src/server/player_sao.cpp\n M src/unittest/test_mapblock.cpp\n?? src/cdda/cdda_bridge.cpp\n?? src/cdda/cdda_bridge.h\n"
+      "tree_sha256": "99a1afd21ae95e3f9b1bb1bea84ce62e7194bd433dc682d29372bfa1236b9e07",
+      "file_count": 2252,
+      "original_status": " M src/CMakeLists.txt\n M src/client/CMakeLists.txt\n M src/client/client.cpp\n M src/client/clientenvironment.cpp\n M src/client/game.cpp\n M src/client/mesh_generator_thread.cpp\n M src/client/mesh_generator_thread.h\n M src/network/clientpackethandler.cpp\n M src/server/player_sao.cpp\n M src/unittest/test_mapblock.cpp\n?? src/cdda/cdda_bridge.cpp\n?? src/cdda/cdda_bridge.h\n?? src/cdda/ground_item_projection.h\n"
     },
     "mineclonia": {
       "url": "https://github.com/mark-wiemer/mineclonia.git",
