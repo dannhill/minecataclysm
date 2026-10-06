@@ -2611,7 +2611,7 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644
-index 0000000..0a6cd2f
+index 0000000..c0d411b
 --- /dev/null
 +++ b/tests/cwm_projection_test.cpp
 @@ -0,0 +1,513 @@
@@ -3086,7 +3086,7 @@ index 0000000..0a6cd2f
 +TEST_CASE("cwm_ground_items_export_full_and_incremental_removal", "[cwm][items][projection]")
 +{
 +    clear_avatar();
-+    clear_map();
++    clear_map(-2, 1);
 +    clear_creatures();
 +
 +    map& m = get_map();
