@@ -186,6 +186,13 @@ Consegna: scene ripetibili, controlli selezionabili, misure di pacing/latency,
 differenze da CDDA pinned e prova dell'utente. La scelta finale del movimento
 dipende da quella prova e non può essere decisa silenziosamente dall'agente.
 
+## Priorità operativa — playable core
+
+Prima di espandere M6/veicoli, anticipare il minimo necessario dei punti 1–5
+della Fase 4 per ottenere un ciclo giocabile: interazioni, inventario/equipaggiamento,
+corpo/HUD, crafting/medicina essenziali e combattimento. M6 resta definita invariata
+qui sotto, ma viene ripresa dopo questo playable core minimo.
+
 ## Fase 3 — M6, veicoli
 
 Conformance prima del rilascio delle nuove feature. IDs semantici stabili di
