@@ -193,6 +193,16 @@ della Fase 4 per ottenere un ciclo giocabile: interazioni, inventario/equipaggia
 corpo/HUD, crafting/medicina essenziali e combattimento. M6 resta definita invariata
 qui sotto, ma viene ripresa dopo questo playable core minimo.
 
+Per gli item a terra, un singolo oggetto usa la normale rappresentazione Mineclonia
+dell'item flottante/rotante, ma senza pickup automatico: l'interazione esplicita
+avvia la corrispondente azione nativa CDDA. Più item sulla stessa casella sono
+presentati come una pila generica; interagirvi apre la stessa GUI Mineclonia usata
+per chest/container, popolata però dagli item realmente presenti sul tile CDDA.
+Spostamenti, pickup e altre operazioni della GUI sono tradotti nelle corrispondenti
+azioni CDDA e mai applicati a un inventario Luanti autonomo. La simulazione resta
+in pausa mentre la GUI è aperta. La presentazione passa automaticamente fra
+nessun item, item singolo e pila in base allo stato autorevole corrente.
+
 ## Fase 3 — M6, veicoli
 
 Conformance prima del rilascio delle nuove feature. IDs semantici stabili di
