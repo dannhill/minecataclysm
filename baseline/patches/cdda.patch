@@ -2554,7 +2554,7 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644
-index 0000000..2c8662d
+index 0000000..0a6cd2f
 --- /dev/null
 +++ b/tests/cwm_projection_test.cpp
 @@ -0,0 +1,513 @@
@@ -3058,7 +3058,7 @@ index 0000000..2c8662d
 +        2, 2, u, m, *g, false, &cache);
 +    world = CDDA::CWM::GetCwmMessage(unchanged.data())->payload_as_WorldSnapshot();
 +    REQUIRE(world->ground_item_tiles());
-+    CHECK(world->ground_item_tiles()->empty());
++    CHECK(world->ground_item_tiles()->size() == 0);
 +
 +    m.i_clear(p);
 +
@@ -3069,7 +3069,7 @@ index 0000000..2c8662d
 +    REQUIRE(world->ground_item_tiles()->size() == 1);
 +    CHECK(world->ground_item_tiles()->Get(0)->coord()->x() == p.x);
 +    CHECK(world->ground_item_tiles()->Get(0)->coord()->y() == p.y);
-+    CHECK(world->ground_item_tiles()->Get(0)->items()->empty());
++    CHECK(world->ground_item_tiles()->Get(0)->items()->size() == 0);
 +}
 diff --git a/tests/cwm_runtime_test.cpp b/tests/cwm_runtime_test.cpp
 new file mode 100644
