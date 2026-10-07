@@ -639,10 +639,10 @@ index 7f3f860..8bf1990 100644
  void TestMapBlock::testSaveLoad(IGameDef *gamedef, const u8 version)
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..6970aa9
+index 0000000..563c190
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,1647 @@
+@@ -0,0 +1,1648 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
@@ -2190,7 +2190,7 @@ index 0000000..6970aa9
 +            pimpl_->metrics_.time_scale, pimpl_->metrics_.pause_reasons ? L"IN PAUSA" : L"ATTIVO",
 +            pimpl_->metrics_.continuous_motion ? L"MOVIMENTO CONTINUO" : L"GRIGLIA");
 +        pimpl_->clock_text_->setText(text);
-+        pimpl_->clock_text_->setVisible(true);
++        pimpl_->clock_text_->setVisible(!pimpl_->ground_container_open_);
 +    } else if (pimpl_->clock_text_) pimpl_->clock_text_->setVisible(false);
 +
 +    if (pimpl_->terrain_demo_) {
@@ -2286,6 +2286,7 @@ index 0000000..6970aa9
 +                 pimpl_->metrics_.vehicles_count);
 +        
 +        pimpl_->debug_text_->setText(text);
++        pimpl_->debug_text_->setVisible(!pimpl_->ground_container_open_);
 +    }
 +}
 +
@@ -2438,7 +2439,7 @@ index 0000000..6856560
 +} // namespace cdda_client
 diff --git a/src/cdda/ground_item_formspec.h b/src/cdda/ground_item_formspec.h
 new file mode 100644
-index 0000000..aea7764
+index 0000000..97a6cfa
 --- /dev/null
 +++ b/src/cdda/ground_item_formspec.h
 @@ -0,0 +1,43 @@
@@ -2458,7 +2459,7 @@ index 0000000..aea7764
 +        "style_type[button;border=false;bgimg=mcl_inventory_button9.png;"
 +        "bgimg_pressed=mcl_inventory_button9_pressed.png;bgimg_middle=2,2]"
 +        "bgcolor[#00000000]"
-+        "background9[1,1;1,1;mcl_base_textures_background9.png;true;7]";
++        "background9[0,0;11.75,10.425;mcl_base_textures_background9.png;false;7]";
 +    const auto slots = [&](double x, double y, int w, int h) {
 +        for (int i = 0; i < w; ++i) for (int j = 0; j < h; ++j)
 +            form += "image[" + std::to_string(x + i * 1.25 - .05) + "," +
@@ -2477,7 +2478,7 @@ index 0000000..aea7764
 +    form += "list[detached:cwm_owned;main;0.375,9.05;9,1;" +
 +        std::to_string(owned_page * 36) + "]"
 +        "listring[detached:cwm_ground;main]listring[detached:cwm_owned;main]"
-+        "label[0.375,10.1;Trascina una pila intera nell'inventario: raccogli e riprendi.]";
++        "label[0.375,10.1;Trascina un oggetto qui sotto: raccogli la pila intera e riprendi.]";
 +    if (ground_count > 27)
 +        form += "button[9,0.05;1.1,0.5;ground_prev;<]button[10.35,0.05;1.1,0.5;ground_next;>]";
 +    if (owned_count > 36)

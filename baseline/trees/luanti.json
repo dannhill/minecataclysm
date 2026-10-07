@@ -7232,7 +7232,7 @@
   {
     "path": "src/cdda/cdda_bridge.cpp",
     "mode": "100644",
-    "sha256": "e4f5212d9218b738dbe4bc15bb63b4fb22edfc793ec397ddca738a12d5f05c47"
+    "sha256": "99b8e9c44f52802eb2b1a89d20ce310acaeec55ba5e3fb20440d4129ef7b0ed4"
   },
   {
     "path": "src/cdda/cdda_bridge.h",
@@ -7242,7 +7242,7 @@
   {
     "path": "src/cdda/ground_item_formspec.h",
     "mode": "100644",
-    "sha256": "f5a8538564c7b8c0ef6cffc00d28cf2ccccd8b25975b892803982d440eeafee4"
+    "sha256": "75aed13fc49ac8af2efda563f2cc90d456c1707a290009d79a33a67c1258bdbd"
   },
   {
     "path": "src/cdda/ground_item_projection.h",
