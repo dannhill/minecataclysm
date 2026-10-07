@@ -5,11 +5,14 @@ and its [Mineclonia container/pointer interface](docs/fixes/ground-items-ui.md)
 implemented. Scoped automated verification PASS; both runtimes are installed. Native CDDA
 checks pass with 7,032 assertions, Luanti with 305 tests, and installed GUI
 runs with 15 ordinary-mode and 18 continuous-mode checks. User visual
-validation of this interface is pending.
+validation of this interface is pending and explicitly deferred by the user
+on 2026-10-08. The [saved manual checklist](docs/validation/pending-manual.md)
+must be delivered together with the next independent feature.
 CWM 2.5 adds read-only native possessions to guarded, deduplicated pickup.
 Nine production mapping batches remain an independent lane. The lower panel
-is read-only; full inventory/equipment operations are the next playable-core
-slice after the user's visual validation. Historical backend evidence is
+is read-only. The authorized independent next slice is native survival HUD
+and read-only body status; interactive inventory/equipment follows later.
+This slice is being verified; no manual acceptance is claimed. Historical backend evidence is
 [retained](docs/fixes/ground-items-pickup.md).
 
 The [complete implementation plan](IMPLEMENTATION_PLAN.md) now incorporates

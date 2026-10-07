@@ -1071,10 +1071,10 @@ index 0000000..1a0308e
 +}
 diff --git a/src/cwm/cwm_map_exporter.cpp b/src/cwm/cwm_map_exporter.cpp
 new file mode 100644
-index 0000000..6b0a3d6
+index 0000000..096ecd7
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.cpp
-@@ -0,0 +1,554 @@
+@@ -0,0 +1,590 @@
 +#include "cwm_motion.h"
 +// CDDA CWM Map & Entity Exporter Implementation
 +// Licensed under Apache-2.0
@@ -1096,6 +1096,9 @@ index 0000000..6b0a3d6
 +#include "vehicle.h"
 +#include "field.h"
 +#include "units.h"
++#include "display.h"
++#include "output.h"
++#include "bodypart.h"
 +#include <charconv>
 +#include <stdexcept>
 +
@@ -1133,6 +1136,38 @@ index 0000000..6b0a3d6
 +    return id;
 +}
 +} // namespace
++
++flatbuffers::Offset<CDDA::CWM::AvatarStatus> CwmMapExporter::export_avatar_status(
++    flatbuffers::FlatBufferBuilder& fbb, const avatar& u)
++{
++    // Use the native UI's knowledge-filtered descriptions; do not publish
++    // hidden nutrition, diagnoses or raw pain/HP for a client to reinterpret.
++    const auto value = [&](const char* id, const char* label,
++                           const std::pair<std::string, nc_color>& display) {
++        return CDDA::CWM::CreateStatusValueDirect(fbb, id, label,
++            display.first.c_str(), get_all_colors().get_name(display.second).c_str());
++    };
++    const auto stamina = value("stamina", "Stamina", get_stamina_bar(u.get_stamina(), u.get_stamina_max()));
++    std::vector<flatbuffers::Offset<CDDA::CWM::StatusValue>> needs;
++    needs.push_back(value("hunger", "Fame", display::hunger_text_color(u)));
++    needs.push_back(value("thirst", "Sete", display::thirst_text_color(u)));
++    needs.push_back(value("fatigue", "Sonno", display::fatigue_text_color(u)));
++    needs.push_back(value("pain", "Dolore", display::pain_text_color(u)));
++    needs.push_back(value("weariness", "Affaticamento", display::weariness_text_color(u)));
++    needs.push_back(value("temperature", "Temperatura", display::temp_text_color(u)));
++    needs.push_back(value("morale", "Morale", display::morale_face_color(u)));
++    std::vector<flatbuffers::Offset<CDDA::CWM::BodyPartStatus>> parts;
++    for (const bodypart_id& bp : u.get_all_body_parts(get_body_part_flags::only_main)) {
++        const auto health = value("health", "Salute",
++            get_hp_bar(u.get_part_hp_cur(bp), u.get_part_hp_max(bp), false));
++        const auto temperature = value("temperature", "Temperatura", display::temp_text_color(u, bp.id()));
++        parts.push_back(CDDA::CWM::CreateBodyPartStatusDirect(fbb, bp.id().str().c_str(),
++            body_part_name_as_heading(bp, 1).c_str(), health, temperature));
++    }
++    const auto needs_vec = fbb.CreateVector(needs);
++    const auto parts_vec = fbb.CreateVector(parts);
++    return CDDA::CWM::CreateAvatarStatus(fbb, stamina, needs_vec, parts_vec);
++}
 +
 +CDDA::CWM::CwmBlock CwmMapExporter::export_block(const tripoint& p, map& m, uint8_t light) {
 +    using namespace cdda::cwm;
@@ -1562,6 +1597,7 @@ index 0000000..6b0a3d6
 +        return VisitResponse::NEXT;
 +    });
 +    const auto owned_items_vec = fbb.CreateVector(owned_items);
++    const auto avatar_status = export_avatar_status(fbb, u);
 +
 +    uint64_t sim_seconds = static_cast<uint64_t>(to_turn<int>(calendar::turn));
 +
@@ -1580,7 +1616,7 @@ index 0000000..6b0a3d6
 +        g.safe_mode == SAFE_MODE_STOP || u.has_effect(efftype_id("laserlocked")) ||
 +            (clock && (clock->pause_reasons & 4)),
 +        include_chunks, base_revision, state_id, resync_id, completed_command_id,
-+        spawned_vec, removed_vec, clock_state, ground_items_vec, owned_items_vec
++        spawned_vec, removed_vec, clock_state, ground_items_vec, owned_items_vec, avatar_status
 +    );
 +
 +    return builder.finish_message(CDDA::CWM::Payload::WorldSnapshot, world_snap.Union());
@@ -1631,10 +1667,10 @@ index 0000000..6b0a3d6
 +} // namespace cwm
 diff --git a/src/cwm/cwm_map_exporter.h b/src/cwm/cwm_map_exporter.h
 new file mode 100644
-index 0000000..72bdfde
+index 0000000..8fa5e66
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.h
-@@ -0,0 +1,61 @@
+@@ -0,0 +1,63 @@
 +// CDDA CWM Map & Entity Exporter
 +// Licensed under Apache-2.0
 +#pragma once
@@ -1664,6 +1700,8 @@ index 0000000..72bdfde
 +    };
 +    struct ClockView { bool realtime{false}; uint32_t pause_reasons{0}; float scale{1.f}; float motion_seconds{.2f}; bool continuous{false}; };
 +    static CDDA::CWM::CwmBlock export_block(const tripoint& p, map& m, uint8_t light);
++    static flatbuffers::Offset<CDDA::CWM::AvatarStatus> export_avatar_status(
++        flatbuffers::FlatBufferBuilder& fbb, const avatar& u);
 +    static std::vector<uint8_t> export_world_snapshot(
 +        uint64_t sequence_num,
 +        uint64_t world_rev,
@@ -3078,10 +3116,10 @@ index 0000000..63ae9d0
 +}
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644
-index 0000000..4224ed7
+index 0000000..401cff6
 --- /dev/null
 +++ b/tests/cwm_projection_test.cpp
-@@ -0,0 +1,560 @@
+@@ -0,0 +1,610 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "avatar_action.h"
@@ -3098,9 +3136,59 @@ index 0000000..4224ed7
 +#include "monster.h"
 +#include "npc.h"
 +#include "rng.h"
++#include "display.h"
++#include "output.h"
++#include "bodypart.h"
 +#include <sstream>
 +#include "cwm/cwm_map_exporter.h"
 +#include "cwm/tile_semantics.hpp"
++
++TEST_CASE("cwm_avatar_status_uses_native_visible_descriptions_without_mutation", "[cwm][body]")
++{
++    clear_avatar();
++    avatar& u = get_avatar();
++    u.set_thirst(300);
++    u.set_fatigue(400);
++    u.set_pain(50);
++    u.set_stamina(u.get_stamina_max() / 3);
++    const bodypart_id arm("arm_l");
++    u.set_part_hp_cur(arm, u.get_part_hp_max(arm) / 2);
++    const int moves = u.moves;
++    const auto time = calendar::turn;
++    const auto rng = rng_get_engine();
++    const int hp = u.get_part_hp_cur(arm);
++    flatbuffers::FlatBufferBuilder fbb;
++    fbb.Finish(cwm::CwmMapExporter::export_avatar_status(fbb, u));
++    const auto* state = flatbuffers::GetRoot<CDDA::CWM::AvatarStatus>(fbb.GetBufferPointer());
++    REQUIRE(state->stamina());
++    CHECK(state->stamina()->text()->str() == get_stamina_bar(u.get_stamina(), u.get_stamina_max()).first);
++    REQUIRE(state->needs()->size() == 7);
++    CHECK(state->needs()->Get(0)->text()->str() == display::hunger_text_color(u).first);
++    CHECK(state->needs()->Get(1)->text()->str() == display::thirst_text_color(u).first);
++    CHECK(state->needs()->Get(2)->text()->str() == display::fatigue_text_color(u).first);
++    CHECK(state->needs()->Get(3)->text()->str() == display::pain_text_color(u).first);
++    bool found = false;
++    for (const auto* part : *state->body_parts()) {
++        if (part->id()->str() == "arm_l") {
++            found = true;
++            CHECK(part->health()->text()->str() == get_hp_bar(hp, u.get_part_hp_max(arm), false).first);
++        }
++    }
++    CHECK(found);
++    CHECK(u.moves == moves);
++    CHECK(calendar::turn == time);
++    CHECK(rng_get_engine() == rng);
++    CHECK(u.get_part_hp_cur(arm) == hp);
++    CHECK(u.get_thirst() == 300);
++    // Analgesia changes the displayed perception without revealing raw pain.
++    u.set_painkiller(100);
++    flatbuffers::FlatBufferBuilder relieved;
++    relieved.Finish(cwm::CwmMapExporter::export_avatar_status(relieved, u));
++    const auto* after = flatbuffers::GetRoot<CDDA::CWM::AvatarStatus>(relieved.GetBufferPointer());
++    CHECK(after->needs()->Get(3)->text()->str() == display::pain_text_color(u).first);
++    CHECK(after->needs()->Get(3)->text()->str().empty());
++    CHECK(u.get_pain() == 50);
++}
 +
 +TEST_CASE("cwm_actor_identity_survives_native_serialization_and_projection_lifecycle", "[cwm][actors]")
 +{

@@ -6,9 +6,9 @@
       "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
       "shallow": true,
       "patch": "baseline/patches/cdda.patch",
-      "patch_sha256": "a1e23ab99272369996b401c1cdd91a7324e1f8640a96b463df8a0f6f04994342",
+      "patch_sha256": "607acf826c60b94af69087d997827c6925e7c65da28f1687f5601af1f1e61f2f",
       "tree_inventory": "baseline/trees/cdda.json",
-      "tree_sha256": "e97e2c6b66422fbe7d433601c8e8d7a3ab58670eb98f6db1bd0380cac3d62a70",
+      "tree_sha256": "9d35912429d433317b6fb84ddb4f274362cd6e431990c0b544a2be1efa1f36b4",
       "file_count": 8582,
       "original_status": " M src/CMakeLists.txt\n M src/avatar_action.cpp\n M src/character.cpp\n M src/character_inventory.cpp\n M src/do_turn.cpp\n M src/do_turn.h\n M src/game.cpp\n M src/game.h\n M src/handle_action.cpp\n M src/iexamine.cpp\n M src/output.cpp\n M src/pickup.cpp\n M tests/CMakeLists.txt\n M tests/test_main.cpp\n?? src/cwm/cwm_main.cpp\n?? src/cwm/cwm_map_exporter.cpp\n?? src/cwm/cwm_map_exporter.h\n?? src/cwm/cwm_server.cpp\n?? src/cwm/cwm_server.h\n?? src/cwm_motion.cpp\n?? src/cwm_motion.h\n?? src/safe_mode_actions.h\n?? tests/cwm_pickup_test.cpp\n?? tests/cwm_projection_test.cpp\n?? tests/cwm_runtime_test.cpp\n"
     },
@@ -17,11 +17,11 @@
       "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
       "shallow": true,
       "patch": "baseline/patches/luanti.patch",
-      "patch_sha256": "63897945cacbc192d091cbb72cb06afda7233f60ce8890da4e9ee71ef8ddad7a",
+      "patch_sha256": "7888dbd8a937e68c077ff381003718de8b04b5ac6a06dbba31f5e950dc7e00a9",
       "tree_inventory": "baseline/trees/luanti.json",
-      "tree_sha256": "1ad3765b8efa222e65fdeac58b8775862e812bf54967300974dbaeea6d926ced",
-      "file_count": 2254,
-      "original_status": " M src/CMakeLists.txt\n M src/client/CMakeLists.txt\n M src/client/client.cpp\n M src/client/clientenvironment.cpp\n M src/client/game.cpp\n M src/client/mesh_generator_thread.cpp\n M src/client/mesh_generator_thread.h\n M src/network/clientpackethandler.cpp\n M src/server/player_sao.cpp\n M src/unittest/test_mapblock.cpp\n?? src/cdda/cdda_bridge.cpp\n?? src/cdda/cdda_bridge.h\n?? src/cdda/ground_item_formspec.h\n?? src/cdda/ground_item_projection.h\n?? src/cdda/ground_item_visual.h\n"
+      "tree_sha256": "427864de8f240bc3541132db160d3b7a54f1d3bb692d3e843f55492f1fb09a28",
+      "file_count": 2255,
+      "original_status": " M src/CMakeLists.txt\n M src/client/CMakeLists.txt\n M src/client/client.cpp\n M src/client/clientenvironment.cpp\n M src/client/game.cpp\n M src/client/hud.cpp\n M src/client/inputhandler.cpp\n M src/client/keys.h\n M src/client/mesh_generator_thread.cpp\n M src/client/mesh_generator_thread.h\n M src/defaultsettings.cpp\n M src/network/clientpackethandler.cpp\n M src/server/player_sao.cpp\n M src/unittest/test_mapblock.cpp\n?? src/cdda/avatar_status.h\n?? src/cdda/cdda_bridge.cpp\n?? src/cdda/cdda_bridge.h\n?? src/cdda/ground_item_formspec.h\n?? src/cdda/ground_item_projection.h\n?? src/cdda/ground_item_visual.h\n"
     },
     "mineclonia": {
       "url": "https://github.com/mark-wiemer/mineclonia.git",

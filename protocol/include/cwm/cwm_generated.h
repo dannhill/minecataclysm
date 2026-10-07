@@ -64,6 +64,15 @@ struct VehicleStateBuilder;
 struct FieldState;
 struct FieldStateBuilder;
 
+struct StatusValue;
+struct StatusValueBuilder;
+
+struct BodyPartStatus;
+struct BodyPartStatusBuilder;
+
+struct AvatarStatus;
+struct AvatarStatusBuilder;
+
 struct WorldSnapshot;
 struct WorldSnapshotBuilder;
 
@@ -1967,6 +1976,303 @@ inline ::flatbuffers::Offset<FieldState> CreateFieldState(
   return builder_.Finish();
 }
 
+struct StatusValue FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef StatusValueBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_ID = 4,
+    VT_LABEL = 6,
+    VT_TEXT = 8,
+    VT_COLOR = 10
+  };
+  const ::flatbuffers::String *id() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_ID);
+  }
+  ::flatbuffers::String *mutable_id() {
+    return GetPointer<::flatbuffers::String *>(VT_ID);
+  }
+  const ::flatbuffers::String *label() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_LABEL);
+  }
+  ::flatbuffers::String *mutable_label() {
+    return GetPointer<::flatbuffers::String *>(VT_LABEL);
+  }
+  const ::flatbuffers::String *text() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_TEXT);
+  }
+  ::flatbuffers::String *mutable_text() {
+    return GetPointer<::flatbuffers::String *>(VT_TEXT);
+  }
+  const ::flatbuffers::String *color() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_COLOR);
+  }
+  ::flatbuffers::String *mutable_color() {
+    return GetPointer<::flatbuffers::String *>(VT_COLOR);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_ID) &&
+           verifier.VerifyString(id()) &&
+           VerifyOffset(verifier, VT_LABEL) &&
+           verifier.VerifyString(label()) &&
+           VerifyOffset(verifier, VT_TEXT) &&
+           verifier.VerifyString(text()) &&
+           VerifyOffset(verifier, VT_COLOR) &&
+           verifier.VerifyString(color()) &&
+           verifier.EndTable();
+  }
+};
+
+struct StatusValueBuilder {
+  typedef StatusValue Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_id(::flatbuffers::Offset<::flatbuffers::String> id) {
+    fbb_.AddOffset(StatusValue::VT_ID, id);
+  }
+  void add_label(::flatbuffers::Offset<::flatbuffers::String> label) {
+    fbb_.AddOffset(StatusValue::VT_LABEL, label);
+  }
+  void add_text(::flatbuffers::Offset<::flatbuffers::String> text) {
+    fbb_.AddOffset(StatusValue::VT_TEXT, text);
+  }
+  void add_color(::flatbuffers::Offset<::flatbuffers::String> color) {
+    fbb_.AddOffset(StatusValue::VT_COLOR, color);
+  }
+  explicit StatusValueBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<StatusValue> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<StatusValue>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<StatusValue> CreateStatusValue(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<::flatbuffers::String> id = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> label = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> text = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> color = 0) {
+  StatusValueBuilder builder_(_fbb);
+  builder_.add_color(color);
+  builder_.add_text(text);
+  builder_.add_label(label);
+  builder_.add_id(id);
+  return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<StatusValue> CreateStatusValueDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    const char *id = nullptr,
+    const char *label = nullptr,
+    const char *text = nullptr,
+    const char *color = nullptr) {
+  auto id__ = id ? _fbb.CreateString(id) : 0;
+  auto label__ = label ? _fbb.CreateString(label) : 0;
+  auto text__ = text ? _fbb.CreateString(text) : 0;
+  auto color__ = color ? _fbb.CreateString(color) : 0;
+  return CDDA::CWM::CreateStatusValue(
+      _fbb,
+      id__,
+      label__,
+      text__,
+      color__);
+}
+
+struct BodyPartStatus FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef BodyPartStatusBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_ID = 4,
+    VT_LABEL = 6,
+    VT_HEALTH = 8,
+    VT_TEMPERATURE = 10
+  };
+  const ::flatbuffers::String *id() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_ID);
+  }
+  ::flatbuffers::String *mutable_id() {
+    return GetPointer<::flatbuffers::String *>(VT_ID);
+  }
+  const ::flatbuffers::String *label() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_LABEL);
+  }
+  ::flatbuffers::String *mutable_label() {
+    return GetPointer<::flatbuffers::String *>(VT_LABEL);
+  }
+  const CDDA::CWM::StatusValue *health() const {
+    return GetPointer<const CDDA::CWM::StatusValue *>(VT_HEALTH);
+  }
+  CDDA::CWM::StatusValue *mutable_health() {
+    return GetPointer<CDDA::CWM::StatusValue *>(VT_HEALTH);
+  }
+  const CDDA::CWM::StatusValue *temperature() const {
+    return GetPointer<const CDDA::CWM::StatusValue *>(VT_TEMPERATURE);
+  }
+  CDDA::CWM::StatusValue *mutable_temperature() {
+    return GetPointer<CDDA::CWM::StatusValue *>(VT_TEMPERATURE);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_ID) &&
+           verifier.VerifyString(id()) &&
+           VerifyOffset(verifier, VT_LABEL) &&
+           verifier.VerifyString(label()) &&
+           VerifyOffset(verifier, VT_HEALTH) &&
+           verifier.VerifyTable(health()) &&
+           VerifyOffset(verifier, VT_TEMPERATURE) &&
+           verifier.VerifyTable(temperature()) &&
+           verifier.EndTable();
+  }
+};
+
+struct BodyPartStatusBuilder {
+  typedef BodyPartStatus Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_id(::flatbuffers::Offset<::flatbuffers::String> id) {
+    fbb_.AddOffset(BodyPartStatus::VT_ID, id);
+  }
+  void add_label(::flatbuffers::Offset<::flatbuffers::String> label) {
+    fbb_.AddOffset(BodyPartStatus::VT_LABEL, label);
+  }
+  void add_health(::flatbuffers::Offset<CDDA::CWM::StatusValue> health) {
+    fbb_.AddOffset(BodyPartStatus::VT_HEALTH, health);
+  }
+  void add_temperature(::flatbuffers::Offset<CDDA::CWM::StatusValue> temperature) {
+    fbb_.AddOffset(BodyPartStatus::VT_TEMPERATURE, temperature);
+  }
+  explicit BodyPartStatusBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<BodyPartStatus> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<BodyPartStatus>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<BodyPartStatus> CreateBodyPartStatus(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<::flatbuffers::String> id = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> label = 0,
+    ::flatbuffers::Offset<CDDA::CWM::StatusValue> health = 0,
+    ::flatbuffers::Offset<CDDA::CWM::StatusValue> temperature = 0) {
+  BodyPartStatusBuilder builder_(_fbb);
+  builder_.add_temperature(temperature);
+  builder_.add_health(health);
+  builder_.add_label(label);
+  builder_.add_id(id);
+  return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<BodyPartStatus> CreateBodyPartStatusDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    const char *id = nullptr,
+    const char *label = nullptr,
+    ::flatbuffers::Offset<CDDA::CWM::StatusValue> health = 0,
+    ::flatbuffers::Offset<CDDA::CWM::StatusValue> temperature = 0) {
+  auto id__ = id ? _fbb.CreateString(id) : 0;
+  auto label__ = label ? _fbb.CreateString(label) : 0;
+  return CDDA::CWM::CreateBodyPartStatus(
+      _fbb,
+      id__,
+      label__,
+      health,
+      temperature);
+}
+
+struct AvatarStatus FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef AvatarStatusBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_STAMINA = 4,
+    VT_NEEDS = 6,
+    VT_BODY_PARTS = 8
+  };
+  const CDDA::CWM::StatusValue *stamina() const {
+    return GetPointer<const CDDA::CWM::StatusValue *>(VT_STAMINA);
+  }
+  CDDA::CWM::StatusValue *mutable_stamina() {
+    return GetPointer<CDDA::CWM::StatusValue *>(VT_STAMINA);
+  }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::StatusValue>> *needs() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::StatusValue>> *>(VT_NEEDS);
+  }
+  ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::StatusValue>> *mutable_needs() {
+    return GetPointer<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::StatusValue>> *>(VT_NEEDS);
+  }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::BodyPartStatus>> *body_parts() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::BodyPartStatus>> *>(VT_BODY_PARTS);
+  }
+  ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::BodyPartStatus>> *mutable_body_parts() {
+    return GetPointer<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::BodyPartStatus>> *>(VT_BODY_PARTS);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_STAMINA) &&
+           verifier.VerifyTable(stamina()) &&
+           VerifyOffset(verifier, VT_NEEDS) &&
+           verifier.VerifyVector(needs()) &&
+           verifier.VerifyVectorOfTables(needs()) &&
+           VerifyOffset(verifier, VT_BODY_PARTS) &&
+           verifier.VerifyVector(body_parts()) &&
+           verifier.VerifyVectorOfTables(body_parts()) &&
+           verifier.EndTable();
+  }
+};
+
+struct AvatarStatusBuilder {
+  typedef AvatarStatus Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_stamina(::flatbuffers::Offset<CDDA::CWM::StatusValue> stamina) {
+    fbb_.AddOffset(AvatarStatus::VT_STAMINA, stamina);
+  }
+  void add_needs(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::StatusValue>>> needs) {
+    fbb_.AddOffset(AvatarStatus::VT_NEEDS, needs);
+  }
+  void add_body_parts(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::BodyPartStatus>>> body_parts) {
+    fbb_.AddOffset(AvatarStatus::VT_BODY_PARTS, body_parts);
+  }
+  explicit AvatarStatusBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<AvatarStatus> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<AvatarStatus>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<AvatarStatus> CreateAvatarStatus(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<CDDA::CWM::StatusValue> stamina = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::StatusValue>>> needs = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::BodyPartStatus>>> body_parts = 0) {
+  AvatarStatusBuilder builder_(_fbb);
+  builder_.add_body_parts(body_parts);
+  builder_.add_needs(needs);
+  builder_.add_stamina(stamina);
+  return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<AvatarStatus> CreateAvatarStatusDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<CDDA::CWM::StatusValue> stamina = 0,
+    const std::vector<::flatbuffers::Offset<CDDA::CWM::StatusValue>> *needs = nullptr,
+    const std::vector<::flatbuffers::Offset<CDDA::CWM::BodyPartStatus>> *body_parts = nullptr) {
+  auto needs__ = needs ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::StatusValue>>(*needs) : 0;
+  auto body_parts__ = body_parts ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::BodyPartStatus>>(*body_parts) : 0;
+  return CDDA::CWM::CreateAvatarStatus(
+      _fbb,
+      stamina,
+      needs__,
+      body_parts__);
+}
+
 struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef WorldSnapshotBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
@@ -1988,7 +2294,8 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_REMOVED = 34,
     VT_CLOCK = 36,
     VT_GROUND_ITEM_TILES = 38,
-    VT_OWNED_ITEMS = 40
+    VT_OWNED_ITEMS = 40,
+    VT_AVATAR_STATUS = 42
   };
   uint64_t world_revision() const {
     return GetField<uint64_t>(VT_WORLD_REVISION, 0);
@@ -2104,6 +2411,12 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::GroundItemState>> *mutable_owned_items() {
     return GetPointer<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::GroundItemState>> *>(VT_OWNED_ITEMS);
   }
+  const CDDA::CWM::AvatarStatus *avatar_status() const {
+    return GetPointer<const CDDA::CWM::AvatarStatus *>(VT_AVATAR_STATUS);
+  }
+  CDDA::CWM::AvatarStatus *mutable_avatar_status() {
+    return GetPointer<CDDA::CWM::AvatarStatus *>(VT_AVATAR_STATUS);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint64_t>(verifier, VT_WORLD_REVISION, 8) &&
@@ -2144,6 +2457,8 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_OWNED_ITEMS) &&
            verifier.VerifyVector(owned_items()) &&
            verifier.VerifyVectorOfTables(owned_items()) &&
+           VerifyOffset(verifier, VT_AVATAR_STATUS) &&
+           verifier.VerifyTable(avatar_status()) &&
            verifier.EndTable();
   }
 };
@@ -2209,6 +2524,9 @@ struct WorldSnapshotBuilder {
   void add_owned_items(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::GroundItemState>>> owned_items) {
     fbb_.AddOffset(WorldSnapshot::VT_OWNED_ITEMS, owned_items);
   }
+  void add_avatar_status(::flatbuffers::Offset<CDDA::CWM::AvatarStatus> avatar_status) {
+    fbb_.AddOffset(WorldSnapshot::VT_AVATAR_STATUS, avatar_status);
+  }
   explicit WorldSnapshotBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -2240,7 +2558,8 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshot(
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::EntityRemoved>>> removed = 0,
     ::flatbuffers::Offset<CDDA::CWM::SimulationState> clock = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::GroundItemTileState>>> ground_item_tiles = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::GroundItemState>>> owned_items = 0) {
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::GroundItemState>>> owned_items = 0,
+    ::flatbuffers::Offset<CDDA::CWM::AvatarStatus> avatar_status = 0) {
   WorldSnapshotBuilder builder_(_fbb);
   builder_.add_completed_command_id(completed_command_id);
   builder_.add_resync_id(resync_id);
@@ -2248,6 +2567,7 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshot(
   builder_.add_base_revision(base_revision);
   builder_.add_simulation_time_seconds(simulation_time_seconds);
   builder_.add_world_revision(world_revision);
+  builder_.add_avatar_status(avatar_status);
   builder_.add_owned_items(owned_items);
   builder_.add_ground_item_tiles(ground_item_tiles);
   builder_.add_clock(clock);
@@ -2284,7 +2604,8 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshotDirect(
     const std::vector<::flatbuffers::Offset<CDDA::CWM::EntityRemoved>> *removed = nullptr,
     ::flatbuffers::Offset<CDDA::CWM::SimulationState> clock = 0,
     const std::vector<::flatbuffers::Offset<CDDA::CWM::GroundItemTileState>> *ground_item_tiles = nullptr,
-    const std::vector<::flatbuffers::Offset<CDDA::CWM::GroundItemState>> *owned_items = nullptr) {
+    const std::vector<::flatbuffers::Offset<CDDA::CWM::GroundItemState>> *owned_items = nullptr,
+    ::flatbuffers::Offset<CDDA::CWM::AvatarStatus> avatar_status = 0) {
   auto chunks__ = chunks ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::ChunkSnapshot>>(*chunks) : 0;
   auto entities__ = entities ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::EntityState>>(*entities) : 0;
   auto vehicles__ = vehicles ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::VehicleState>>(*vehicles) : 0;
@@ -2314,7 +2635,8 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshotDirect(
       removed__,
       clock,
       ground_item_tiles__,
-      owned_items__);
+      owned_items__,
+      avatar_status);
 }
 
 struct SimulationState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {

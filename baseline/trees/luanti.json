@@ -7230,14 +7230,19 @@
     "sha256": "9fa64ca28d94d2e398bfa3ce48e34f22433eafd46751dc6716ef57cd791d89bf"
   },
   {
+    "path": "src/cdda/avatar_status.h",
+    "mode": "100644",
+    "sha256": "394342665d75f4207dea0d1c56c7ed394ede3b9fdfd0c4a2a850538fc82c4d43"
+  },
+  {
     "path": "src/cdda/cdda_bridge.cpp",
     "mode": "100644",
-    "sha256": "9df04204c921a1335727bdc34b51faeb91784ccbca642cf140ccfa20f0c6ac81"
+    "sha256": "edda69dbb11b21c550ad23fdc879938fb2aaeef35b9176fc08ade3a1a042bff7"
   },
   {
     "path": "src/cdda/cdda_bridge.h",
     "mode": "100644",
-    "sha256": "1b67a526fe2696ed6dff2b56acde9a84ceaeb7e51c2715fa745a3800dd38305f"
+    "sha256": "fab60f582ea5a6c3700a84e5672a9afb6e22dea3afc90b4bb8f64e7411c60c78"
   },
   {
     "path": "src/cdda/ground_item_formspec.h",
@@ -7437,7 +7442,7 @@
   {
     "path": "src/client/game.cpp",
     "mode": "100644",
-    "sha256": "8c6c10bbba32c09af3e16228e71a8d5968dc8d6760db2369df85ef140b3efec2"
+    "sha256": "2c270eee5462a7683ab58342e013742ceb4183a53112801cf538ed71fddc796b"
   },
   {
     "path": "src/client/game.h",
@@ -7467,7 +7472,7 @@
   {
     "path": "src/client/hud.cpp",
     "mode": "100644",
-    "sha256": "0c9e1b6ffe3bce82cda496a541f95d6c3ca971a6f976c0b1c1c6af6e0ae9b690"
+    "sha256": "ef8e57e1583b9d1c3a0e7a32112f420eaab52a703a3f25df8d35ff9a7fb6ad03"
   },
   {
     "path": "src/client/hud.h",
@@ -7497,7 +7502,7 @@
   {
     "path": "src/client/inputhandler.cpp",
     "mode": "100644",
-    "sha256": "21f6e47f08fb971f6734bf7836458b7eeb3423cafb6c4d798c43b7e64a3da12d"
+    "sha256": "4c9848422a128b7d407b9daac4cfdd2bbda104122b4c722aa05e33624c4dceb8"
   },
   {
     "path": "src/client/inputhandler.h",
@@ -7527,7 +7532,7 @@
   {
     "path": "src/client/keys.h",
     "mode": "100644",
-    "sha256": "625285e9ae30823e4bc3724cb0541929407c5a2b0858f631d741f39c16c91bef"
+    "sha256": "17d014d860c98dde869bfac74241e0c66d106c91fdbb1a8705fffe4be57f934c"
   },
   {
     "path": "src/client/localplayer.cpp",
@@ -8132,7 +8137,7 @@
   {
     "path": "src/defaultsettings.cpp",
     "mode": "100644",
-    "sha256": "045a1cd1909254f9bd24e1031fa672bf633edafee4843deca5eb25827c9db0cb"
+    "sha256": "799f96ba06514c239285474e3ba0b031beaac17d999b8750954f441908c33503"
   },
   {
     "path": "src/defaultsettings.h",
@@ -10297,7 +10302,7 @@
   {
     "path": "src/unittest/test_mapblock.cpp",
     "mode": "100644",
-    "sha256": "192c24f5fcc67b1dddde2bbb2edfeab28421c7f150837c49aed0dcaa7eec4a26"
+    "sha256": "d110502489b0cbdfcef6ca3a464d4d582953b3457cc4257bc6ad755ccc8ace3e"
   },
   {
     "path": "src/unittest/test_mapnode.cpp",

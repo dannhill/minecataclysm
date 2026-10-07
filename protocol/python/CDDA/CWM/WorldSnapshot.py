@@ -327,8 +327,19 @@ class WorldSnapshot(object):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(40))
         return o == 0
 
+    # WorldSnapshot
+    def AvatarStatus(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(42))
+        if o != 0:
+            x = self._tab.Indirect(o + self._tab.Pos)
+            from CDDA.CWM.AvatarStatus import AvatarStatus
+            obj = AvatarStatus()
+            obj.Init(self._tab.Bytes, x)
+            return obj
+        return None
+
 def WorldSnapshotStart(builder):
-    builder.StartObject(19)
+    builder.StartObject(20)
 
 def Start(builder):
     WorldSnapshotStart(builder)
@@ -500,6 +511,12 @@ def WorldSnapshotStartOwnedItemsVector(builder, numElems):
 
 def StartOwnedItemsVector(builder, numElems):
     return WorldSnapshotStartOwnedItemsVector(builder, numElems)
+
+def WorldSnapshotAddAvatarStatus(builder, avatarStatus):
+    builder.PrependUOffsetTRelativeSlot(19, flatbuffers.number_types.UOffsetTFlags.py_type(avatarStatus), 0)
+
+def AddAvatarStatus(builder, avatarStatus):
+    WorldSnapshotAddAvatarStatus(builder, avatarStatus)
 
 def WorldSnapshotEnd(builder):
     return builder.EndObject()

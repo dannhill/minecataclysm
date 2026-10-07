@@ -25,6 +25,9 @@
 #include "vehicle.h"
 #include "weather.h"
 #include "worldfactory.h"
+#include "display.h"
+#include "output.h"
+#include "bodypart.h"
 
 int main(int argc, const char *argv[]) {
     std::string userdir, datadir, output, character, world_name = "audit_fixture";
@@ -36,11 +39,13 @@ int main(int argc, const char *argv[]) {
     bool create_actor_demo = false;
     bool create_realtime = false;
     bool create_pickup = false;
+    bool create_body = false;
     bool resave = false;
     for (int i = 1; i < argc; ++i) {
         std::string arg(argv[i]);
         if (arg == "--create") create = true;
         else if (arg == "--create-pickup") { create = true; create_pickup = true; }
+        else if (arg == "--create-body") { create = true; create_body = true; }
         else if (arg == "--create-ledge") { create = true; create_ledge = true; }
         else if (arg == "--create-exploration") { create = true; create_exploration = true; }
         else if (arg == "--create-vertical") { create = true; create_vertical = true; }
@@ -237,6 +242,16 @@ int main(int argc, const char *argv[]) {
             if (!u.wear_item(item(itype_id("backpack_hiking"), calendar::turn))) return 13;
             g->set_safe_mode(SAFE_MODE_OFF);
         }
+        if (create_body) {
+            // Native-only fixture: no ground items or pickup UI dependency.
+            u.set_thirst(100);
+            u.set_fatigue(200);
+            u.set_pain(20);
+            u.set_stamina(u.get_stamina_max() / 3);
+            u.set_part_hp_cur(bodypart_id("arm_l"), u.get_part_hp_max(bodypart_id("arm_l")) / 2);
+            u.set_part_hp_cur(bodypart_id("head"), u.get_part_hp_max(bodypart_id("head")) * 2 / 3);
+            g->set_safe_mode(SAFE_MODE_OFF);
+        }
         if (create_exploration) {
             m.ter_set(tripoint(60,59,0), ter_str_id("t_water_dp"));
             m.ter_set(tripoint(60,61,0), ter_str_id("t_water_sh"));
@@ -249,7 +264,7 @@ int main(int argc, const char *argv[]) {
             u.set_skill_level(skill_id("swimming"),10);
             get_weather().update_weather();
             if (!g->save()) return 5;
-        } else if (!create_vertical && !create_pickup) {
+        } else if (!create_vertical && !create_pickup && !create_body) {
         g->place_critter_at(mtype_id("mon_zombie"), tripoint(65,65,0));
         auto guy = make_shared_fast<npc>();
         guy->normalize();
@@ -262,7 +277,7 @@ int main(int argc, const char *argv[]) {
         get_weather().update_weather();
         if (!g->save()) return 5;
         }
-        if (create_vertical || create_pickup) {
+        if (create_vertical || create_pickup || create_body) {
             get_weather().update_weather();
             if (!g->save()) return 5;
         }
@@ -284,6 +299,31 @@ int main(int argc, const char *argv[]) {
     json.member("time", to_turn<int>(calendar::turn));
     json.member("player_abs", std::vector<int>{center.x,center.y,center.z});
     json.member("player"); u.serialize(json);
+    json.member("visible_status"); json.start_object();
+    const auto status_value = [&](const char* id, const std::pair<std::string, nc_color>& value) {
+        json.member(id); json.start_object();
+        json.member("text", value.first);
+        json.member("color", get_all_colors().get_name(value.second));
+        json.end_object();
+    };
+    status_value("stamina", get_stamina_bar(u.get_stamina(),u.get_stamina_max()));
+    status_value("hunger", display::hunger_text_color(u));
+    status_value("thirst", display::thirst_text_color(u));
+    status_value("fatigue", display::fatigue_text_color(u));
+    status_value("pain", display::pain_text_color(u));
+    status_value("weariness", display::weariness_text_color(u));
+    status_value("temperature", display::temp_text_color(u));
+    status_value("morale", display::morale_face_color(u));
+    json.member("parts"); json.start_array();
+    for (const auto& bp : u.get_all_body_parts(get_body_part_flags::only_main)) {
+        json.start_object();
+        json.member("id", bp.id().str());
+        json.member("label", body_part_name_as_heading(bp,1));
+        status_value("health", get_hp_bar(u.get_part_hp_cur(bp),u.get_part_hp_max(bp),false));
+        status_value("temperature", display::temp_text_color(u,bp.id()));
+        json.end_object();
+    }
+    json.end_array(); json.end_object();
     json.member("terrain_and_furniture"); json.start_array();
     for (int z = center.z-1; z <= center.z+1; ++z) {
         for (int y = center.y-12; y <= center.y+12; ++y) {

@@ -25,7 +25,7 @@ std::vector<uint8_t> reset(uint64_t seq, uint64_t request=0, Identity ids={11,22
     return b.finish_message(Payload::WorldReset, CreateWorldReset(b.builder(),request).Union());
 }
 std::vector<uint8_t> world(uint64_t seq, bool full=true, uint64_t base=0,
-    uint64_t revision=5, uint64_t resync=0, bool malformed=false, Identity ids={11,22,33}, float scale=1.f, uint32_t reasons=0, float motion=.2f, bool realtime=true, bool continuous=false, int owned_case=0) {
+    uint64_t revision=5, uint64_t resync=0, bool malformed=false, Identity ids={11,22,33}, float scale=1.f, uint32_t reasons=0, float motion=.2f, bool realtime=true, bool continuous=false, int owned_case=0, int body_case=0) {
     MessageBuilder b(seq,revision,ids); auto& f=b.builder();
     Vec3f pos(2,3,0); Coord3i origin(0,0,0);
     auto actor=CreateEntityState(f,1,EntityType::PLAYER,0,&pos,0,0,0,0,true,0,motion);
@@ -41,8 +41,19 @@ std::vector<uint8_t> world(uint64_t seq, bool full=true, uint64_t base=0,
         auto item=CreateGroundItemStateDirect(f,owned_case==2?1:0,"9mm",owned_case==3?nullptr:"9mm round",7,true);
         owned=f.CreateVector(std::vector{item});
     }
+    flatbuffers::Offset<AvatarStatus> status;
+    if (body_case) {
+        const auto text = body_case == 4 ? f.CreateString(std::string("a\0b",3)) : f.CreateString("|||||");
+        auto stamina=CreateStatusValue(f,f.CreateString("stamina"),
+            body_case==2?0:f.CreateString("Stamina"),text,f.CreateString("c_cyan"));
+        auto thirst=CreateStatusValueDirect(f,"thirst","Sete","","c_white");
+        auto needs=f.CreateVector(body_case==3?std::vector{thirst,thirst}:std::vector{thirst});
+        auto part=CreateBodyPartStatusDirect(f,"torso","Torso",body_case==5?0:stamina,stamina);
+        auto parts=f.CreateVector(std::vector<flatbuffers::Offset<BodyPartStatus>>(body_case==6?65:1,part));
+        status=CreateAvatarStatus(f,stamina,needs,parts);
+    }
     auto body=CreateWorldSnapshot(f,revision,&origin,0,full?chunks:0,actors,vehicles,fields,0,false,
-        full,base,seq,resync,0,0,0,clock,0,owned);
+        full,base,seq,resync,0,0,0,clock,0,owned,status);
     return b.finish_message(Payload::WorldSnapshot,body.Union());
 }
 bool accept(ClientSession& s, MemoryChannel& c, const std::vector<uint8_t>& bytes) {
@@ -131,6 +142,15 @@ int main() {
             const auto bytes=world(4,false,5,6,0,false,{11,22,33},1.f,0,.2f,true,false,kind);
             CHECK(MessageVerifier::verify(bytes.data(),bytes.size()));
             CHECK(valid_world(GetCwmMessage(bytes.data())->payload_as_WorldSnapshot()) == (kind==1));
+        }
+    });
+    test("native_body_status_is_bounded_and_malformed_state_requests_resync",[]{
+        for(int kind : {1,2,3,4,5,6}) {
+            ClientSession s; MemoryChannel c; handshake(s,c);
+            auto bytes=world(4,false,5,6,0,false,{11,22,33},1.f,0,.2f,true,false,0,kind);
+            CHECK(MessageVerifier::verify(bytes.data(),bytes.size()));
+            CHECK(accept(s,c,bytes) == (kind==1));
+            if(kind!=1) CHECK(!s.ready() && s.revision==5 && s.resync_count==1);
         }
     });
     return failed?1:0;

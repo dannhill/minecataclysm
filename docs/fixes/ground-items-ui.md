@@ -89,9 +89,11 @@ l'ultima prova; `--fresh` ne crea un'altra senza cancellare quelle precedenti.
    Raccoglilo direttamente col tasto destro: nessuna GUI e nessun oggetto residuo.
 4. Esci e rientra ancora: gli oggetti raccolti non devono ricomparire.
 
-La validazione visiva dell'utente è ancora da ottenere. Il prossimo passo
-previsto dal playable core è l'inventario/equipaggiamento interattivo nativo,
-con tasche e contenitori; non serve ripetere la validazione RT-02 già accettata.
+La validazione visiva dell'utente è ancora da ottenere, esplicitamente
+rinviata il 2026-10-08. La [checklist persistente](../validation/pending-manual.md)
+sarà riproposta insieme al prossimo HUD/scheda corporea indipendente dalla
+raccolta. L'inventario/equipaggiamento interattivo viene dopo; non serve
+ripetere la validazione RT-02 già accettata.
 
 ## Evidenze della consegna
 

@@ -160,6 +160,27 @@ table FieldState {
     age: uint32;
 }
 
+// Native player-facing descriptions. No raw hidden disease/vitamin values.
+table StatusValue {
+    id: string;
+    label: string;
+    text: string;
+    color: string;
+}
+
+table BodyPartStatus {
+    id: string;
+    label: string;
+    health: StatusValue;
+    temperature: StatusValue;
+}
+
+table AvatarStatus {
+    stamina: StatusValue;
+    needs: [StatusValue];
+    body_parts: [BodyPartStatus];
+}
+
 table WorldSnapshot {
     world_revision: uint64;
     origin: Coord3i;
@@ -185,6 +206,8 @@ table WorldSnapshot {
     // Complete read-only possession projection (worn, wielded and nested items).
     // Indices are presentation order, not inventory mutation handles.
     owned_items: [GroundItemState];
+    // Complete native read-only status, replaced with each publication.
+    avatar_status: AvatarStatus;
 }
 
 table SimulationState {

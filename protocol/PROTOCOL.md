@@ -6,7 +6,7 @@ captured implementation; it does not approve its gaps. The executable schema
 is [cwm.fbs](cwm.fbs). Audit findings and evidence are in
 [M5.5](../docs/audits/M5.5.md).
 
-The current runtime requires **CWM 2.5**. This breaks the old negotiation
+The current runtime requires **CWM 2.6**. This breaks the old negotiation
 contract; schema fields and union members are appended without changing the
 existing FlatBuffers offsets. Both executables must be rebuilt together.
 The historical coverage table below is retained as audit evidence.
@@ -41,6 +41,21 @@ one complete native stack; native charges are shown in its tooltip. Partial
 quantities, dropping and equipment rearrangement are not implemented here.
 Disconnect/reset/resync cancels unsent selections and closes this form.
 These fields and widgets do not create a Luanti-owned gameplay inventory.
+
+CWM 2.6 appends `avatar_status`: complete native player-facing stamina,
+needs and main body-part descriptions, including native health bars and
+perceived temperature. IDs are semantic; colors are native palette names.
+No raw HP, pain, calorie/vitamin values or hidden diagnoses are exposed.
+Empty native descriptions remain empty. A present status replaces the view;
+an absent one clears it on a full snapshot and preserves it on a delta.
+The exporter includes it in every state. Read-only UI queries do not run a
+native action, consume moves or alter inventory. Status tables have bounded
+strings (IDs 128, labels 256, text 2048, palette 64 bytes), unique needs/part
+IDs, at most 32 needs and 64 parts; NUL strings and missing fields are invalid.
+Malformed status follows normal freeze/resynchronization before ingestion.
+The body sheet uses the existing native menu pause and is closed on IPC loss,
+reset or resynchronization. Local Luanti HP/breath/hotbar are suppressed while
+the bridge owns the player; they are not authoritative survival indicators.
 
 ## Wire format
 
