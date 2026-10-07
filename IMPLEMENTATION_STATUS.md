@@ -1,5 +1,12 @@
 # Implementation status
 
+The recovered local continuation now has scoped ground-item PICKUP backend
+verification PASS; see [the results](docs/fixes/ground-items-pickup.md).
+CWM 2.4 queues and revalidates native selections and deduplicates the complete
+pickup guard. Nine production mapping batches are imported independently.
+The native activity/save checks pass; the ground-item container UI and
+pointing input are the next approved slice, not yet implemented.
+
 The [complete implementation plan](IMPLEMENTATION_PLAN.md) now incorporates
 all 15 source-grounded feature questionnaires. Detailed accepted decisions
 are in [the product directive](docs/source/feature-decisions-2026-10-04.md).

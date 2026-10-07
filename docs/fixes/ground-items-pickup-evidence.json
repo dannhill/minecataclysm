@@ -1,0 +1,151 @@
+{
+  "scope": "Ground-item guarded pickup backend and production mapping import; item interaction UI pending",
+  "source_commit": "299a594da7ead1082feec132c6246f932ce5c1f7",
+  "status": "PASS",
+  "full_M5_5_gate": "FAILED (historical, not recertified)",
+  "artifact_root": "/home/dannhill/Projects/cdda-mineclonia/artifacts/playable-core-pickup-20261007",
+  "environment": {
+    "platform": "Linux-7.0.11-76070011-generic-x86_64-with-glibc2.35",
+    "compiler": "c++ (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0",
+    "python": "3.10.12"
+  },
+  "manifest": {
+    "format_version": 1,
+    "repositories": {
+      "cdda": {
+        "url": "https://github.com/CleverRaven/Cataclysm-DDA.git",
+        "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+        "shallow": true,
+        "patch": "baseline/patches/cdda.patch",
+        "patch_sha256": "cac5395a6136402a34430ccb73e5f131fa5e1836624ad2da705c540848199058",
+        "tree_inventory": "baseline/trees/cdda.json",
+        "tree_sha256": "eadaac0789487de38834225ed41496e8b05be51bc9858f21c775d14c5f0b238d",
+        "file_count": 8582,
+        "original_status": " M src/CMakeLists.txt\n M src/avatar_action.cpp\n M src/character.cpp\n M src/do_turn.cpp\n M src/do_turn.h\n M src/game.cpp\n M src/game.h\n M src/handle_action.cpp\n M src/iexamine.cpp\n M src/output.cpp\n M tests/CMakeLists.txt\n M tests/test_main.cpp\n?? src/cwm/cwm_main.cpp\n?? src/cwm/cwm_map_exporter.cpp\n?? src/cwm/cwm_map_exporter.h\n?? src/cwm/cwm_server.cpp\n?? src/cwm/cwm_server.h\n?? src/cwm_motion.cpp\n?? src/cwm_motion.h\n?? src/safe_mode_actions.h\n?? tests/cwm_pickup_test.cpp\n?? tests/cwm_projection_test.cpp\n?? tests/cwm_runtime_test.cpp\n"
+      },
+      "luanti": {
+        "url": "https://github.com/luanti-org/luanti.git",
+        "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
+        "shallow": true,
+        "patch": "baseline/patches/luanti.patch",
+        "patch_sha256": "1b94828b561cbeb8c5dfb2eeee470ecec63fac3dfaeb139c02a08df1dd292068",
+        "tree_inventory": "baseline/trees/luanti.json",
+        "tree_sha256": "dbc8a4b81553cfc99821f49aac978cb27f86523f55c843ca71985dbe6618ccaf",
+        "file_count": 2253,
+        "original_status": " M src/CMakeLists.txt\n M src/client/CMakeLists.txt\n M src/client/client.cpp\n M src/client/clientenvironment.cpp\n M src/client/game.cpp\n M src/client/mesh_generator_thread.cpp\n M src/client/mesh_generator_thread.h\n M src/network/clientpackethandler.cpp\n M src/server/player_sao.cpp\n M src/unittest/test_mapblock.cpp\n?? src/cdda/cdda_bridge.cpp\n?? src/cdda/cdda_bridge.h\n?? src/cdda/ground_item_projection.h\n?? src/cdda/ground_item_visual.h\n"
+      },
+      "mineclonia": {
+        "url": "https://github.com/mark-wiemer/mineclonia.git",
+        "commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+        "shallow": true,
+        "patch": "baseline/patches/mineclonia.patch",
+        "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "tree_inventory": "baseline/trees/mineclonia.json",
+        "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36",
+        "file_count": 9359,
+        "original_status": ""
+      }
+    }
+  },
+  "evidence": {
+    "source-replay-final.json": {
+      "sha256": "9cc4ee730e7dd48651099f13c4542dc5e20da0d75fa02f7e6f9f5226f5d50d9a",
+      "bytes": 946
+    },
+    "runtime-refresh-v3.json": {
+      "sha256": "22b97ce92a885b4ec5531154323fc581e25eee05a98060ed13f4819f6bbc947f",
+      "bytes": 3493
+    },
+    "baseline-check.log": {
+      "sha256": "8eaa4cb0aa552c806470e4dd0158d9ce9617300fe2ca1182f56da888ab742c7d",
+      "bytes": 89
+    },
+    "mapping-idempotence-final.json": {
+      "sha256": "9135af93733567c25429e6e74b75aadb00a22a6db80a5886ce112dae7ff3fcc3",
+      "bytes": 4863
+    },
+    "batch-format-repair.json": {
+      "sha256": "6d53aa0c080ef6fd8867bf883752be66455075ae4d5393c877759e007fbe32bc",
+      "bytes": 276
+    },
+    "protocol-test.log": {
+      "sha256": "70408b2ab380910f7338c9855c28160f71bcc5bb0bbae42c8885efbb207b57c7",
+      "bytes": 796
+    },
+    "cdda-tests.log": {
+      "sha256": "9814b65c26be7a17a88fb74d3edd1b5eeeb9134762d81044d06c1b884a4777ef",
+      "bytes": 706
+    },
+    "luanti-tests.log": {
+      "sha256": "b97027f5cc912130658fbe85dca0796b6d4c0d0f399e805d322cf04afd025823",
+      "bytes": 18787
+    },
+    "native-pickup-v3/checks.json": {
+      "sha256": "982f99d1a90ecaed83ffaffa6c4f82e5ae7e251e28b41a05a071f8d44ec4f18a",
+      "bytes": 706
+    },
+    "native-pickup-v3/server-command.json": {
+      "sha256": "edf2b2feed777c7c37fe463acd2d3c020dbc243e65a60427dcc8e18dd37f1352",
+      "bytes": 438
+    },
+    "native-pickup-v3/before.json": {
+      "sha256": "2872b3fa45ef6dfd4f4f017c3ab98c851eb0d587270573264af7cb974ec57223",
+      "bytes": 116771
+    },
+    "native-pickup-v3/after.json": {
+      "sha256": "04289a20309e2ec813b62a2388a5cb7bf565e7f4c03b5b5a59c847a3b0165441",
+      "bytes": 207303
+    },
+    "native-save-reader-v3.build.json": {
+      "sha256": "9ba4a5900ba75b2794a6e4fe7823977e95e75fdc7988d73a11fe4cb6c7d020f0",
+      "bytes": 25846
+    },
+    "gui-startup/checks.json": {
+      "sha256": "49ca2ce65d9227fcdb96221682cc7047cc05877a4176f5c08f61d99cd271fadd",
+      "bytes": 467
+    },
+    "gui-startup/actual-scene.png": {
+      "sha256": "6ee75cdc0acb8cacb12541a1e735d0c148cef84687a51f67197a18931df4ab68",
+      "bytes": 488980
+    },
+    "installed-gui-startup/checks.json": {
+      "sha256": "cbd76fc7a47e8f20a3dcb8f886219a848a8b53948552295ebb7555512e7e9eae",
+      "bytes": 467
+    },
+    "installed-gui-startup/actual-scene.png": {
+      "sha256": "e8e12cf3ce8ce3128f67365da4c470cb4f45fe4f47cec428410d2bf2de2f0cfe",
+      "bytes": 470304
+    },
+    "installed-runtime.json": {
+      "sha256": "dc282daa4c8000a07978c25326f782f1423781340d34640237e062b0e0f5eb24",
+      "bytes": 1039
+    }
+  },
+  "binaries": {
+    "source_commit": "299a594da7ead1082feec132c6246f932ce5c1f7",
+    "components": {
+      "cdda-server": {
+        "source": "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/cdda/build/src/cdda-server",
+        "installed": "/home/dannhill/Projects/cdda-mineclonia/cdda/build/src/cdda-server",
+        "sha256": "1d297d476e745feea8c5b1ed815224616b526f0cfbf2752ca5cc67acc5e64fbe",
+        "previous_sha256": null,
+        "rollback": null,
+        "previously_missing": true
+      },
+      "luanti": {
+        "source": "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/luanti/bin/luanti",
+        "installed": "/home/dannhill/Projects/cdda-mineclonia/luanti/bin/luanti",
+        "sha256": "d2c3dbec4fa0c40d3a334989eeaaad5360de3151fa558da0ee561ea5bd00c04d",
+        "previous_sha256": "9d2365286dacd8900f8f38c3f09c8bdfff1059fe7fa015007df9fc20ef9ef25b",
+        "rollback": "/home/dannhill/Projects/cdda-mineclonia/artifacts/playable-core-pickup-20261007/rollback/luanti",
+        "previously_missing": false
+      }
+    }
+  },
+  "known_limits": [
+    "No pointed pickup or ground-container GUI yet",
+    "Same-type/same-charges item instances are not uniquely identified",
+    "Special native pickup menus need presentation wiring",
+    "Passing startup does not certify detailed ground-item visual presentation"
+  ]
+}
