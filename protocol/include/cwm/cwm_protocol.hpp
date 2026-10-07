@@ -11,7 +11,7 @@
 namespace cdda::cwm {
 
 constexpr uint16_t PROTOCOL_VERSION_MAJOR = 2;
-constexpr uint16_t PROTOCOL_VERSION_MINOR = 3;
+constexpr uint16_t PROTOCOL_VERSION_MINOR = 4;
 
 struct Identity { uint64_t session{0}, player{0}, connection{0}; };
 
@@ -65,9 +65,15 @@ public:
         return finish_message(CDDA::CWM::Payload::MoveRequest, req.Union());
     }
 
-    std::vector<uint8_t> build_interact_request(uint64_t command_id, int32_t x, int32_t y, int32_t z, CDDA::CWM::InteractAction action) {
+    std::vector<uint8_t> build_interact_request(uint64_t command_id, int32_t x, int32_t y, int32_t z,
+            CDDA::CWM::InteractAction action, uint32_t pickup_stack_index = 0,
+            const std::string &pickup_type_id = {}, int32_t pickup_charges = 0,
+            bool pickup_count_by_charges = false) {
         CDDA::CWM::Coord3i coord(x, y, z);
-        auto req = CDDA::CWM::CreateInteractRequest(fbb_, command_id, &coord, action);
+        auto req = CDDA::CWM::CreateInteractRequestDirect(
+            fbb_, command_id, &coord, action, pickup_stack_index,
+            pickup_type_id.empty() ? nullptr : pickup_type_id.c_str(),
+            pickup_charges, pickup_count_by_charges);
         return finish_message(CDDA::CWM::Payload::InteractRequest, req.Union());
     }
 

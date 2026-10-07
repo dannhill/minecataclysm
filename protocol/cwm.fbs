@@ -219,6 +219,10 @@ table InteractRequest {
     command_id: uint64;
     target_coord: Coord3i;
     action: InteractAction;
+    pickup_stack_index: uint32;
+    pickup_type_id: string;
+    pickup_charges: int32;
+    pickup_count_by_charges: bool;
 }
 
 table AttackRequest {

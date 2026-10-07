@@ -1,0 +1,22 @@
+{
+  "mineclonia_pin": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+  "report": {
+    "production_batches": 9,
+    "records": 360,
+    "presentation_supported": 88,
+    "mapped_but_fallback": 25,
+    "no_good_match": 247,
+    "copied_textures": 18
+  },
+  "production_outputs": {
+    "batch-0001-output.json": "2725da96028b572f1cc159c9e6be4a8f14112b74caeef24782eba7cabe123cb1",
+    "batch-0002-output.json": "692374a08760986467255a4f02cbfbef89a9cd23a2a26ad18273f6d77d3523b6",
+    "batch-0003-output.json": "a4429416a4649ca2700a4aa7721a7572e3123e2a9d69ed72a73ea81429be1352",
+    "batch-0004-output.json": "c10625e0ef8aeca3d181887ab9b5b35ab97a0dca8eb6ae259af29c9e2e1450c2",
+    "batch-0005-output.json": "02da3d265bfdb69cf73487acf4eb3b129752d8c729ef998fc1a37ac8b4b13086",
+    "batch-0006-output.json": "4286fd511b619b95980a120a437fbedbf104c194a74718b6e9b20b2368306fe4",
+    "batch-0007-output.json": "3d05c645c61b72787dee5786caebbe09707903935c64cca3dc826c6d1659d87c",
+    "batch-0008-output.json": "fd447dcb9c7bcbbef832702d9b98e96ed044a3d0a2a6afcf57ef34708ef7f177",
+    "batch-0009-output.json": "2850a8e05f25105d2ab48593579398e70eadeb25fc54c0574f93e14a67c1b1f7"
+  }
+}

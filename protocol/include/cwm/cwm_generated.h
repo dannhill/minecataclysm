@@ -2641,7 +2641,11 @@ struct InteractRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_COMMAND_ID = 4,
     VT_TARGET_COORD = 6,
-    VT_ACTION = 8
+    VT_ACTION = 8,
+    VT_PICKUP_STACK_INDEX = 10,
+    VT_PICKUP_TYPE_ID = 12,
+    VT_PICKUP_CHARGES = 14,
+    VT_PICKUP_COUNT_BY_CHARGES = 16
   };
   uint64_t command_id() const {
     return GetField<uint64_t>(VT_COMMAND_ID, 0);
@@ -2661,11 +2665,40 @@ struct InteractRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   bool mutate_action(CDDA::CWM::InteractAction _action = static_cast<CDDA::CWM::InteractAction>(0)) {
     return SetField<int8_t>(VT_ACTION, static_cast<int8_t>(_action), 0);
   }
+  uint32_t pickup_stack_index() const {
+    return GetField<uint32_t>(VT_PICKUP_STACK_INDEX, 0);
+  }
+  bool mutate_pickup_stack_index(uint32_t _pickup_stack_index = 0) {
+    return SetField<uint32_t>(VT_PICKUP_STACK_INDEX, _pickup_stack_index, 0);
+  }
+  const ::flatbuffers::String *pickup_type_id() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_PICKUP_TYPE_ID);
+  }
+  ::flatbuffers::String *mutable_pickup_type_id() {
+    return GetPointer<::flatbuffers::String *>(VT_PICKUP_TYPE_ID);
+  }
+  int32_t pickup_charges() const {
+    return GetField<int32_t>(VT_PICKUP_CHARGES, 0);
+  }
+  bool mutate_pickup_charges(int32_t _pickup_charges = 0) {
+    return SetField<int32_t>(VT_PICKUP_CHARGES, _pickup_charges, 0);
+  }
+  bool pickup_count_by_charges() const {
+    return GetField<uint8_t>(VT_PICKUP_COUNT_BY_CHARGES, 0) != 0;
+  }
+  bool mutate_pickup_count_by_charges(bool _pickup_count_by_charges = 0) {
+    return SetField<uint8_t>(VT_PICKUP_COUNT_BY_CHARGES, static_cast<uint8_t>(_pickup_count_by_charges), 0);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint64_t>(verifier, VT_COMMAND_ID, 8) &&
            VerifyField<CDDA::CWM::Coord3i>(verifier, VT_TARGET_COORD, 4) &&
            VerifyField<int8_t>(verifier, VT_ACTION, 1) &&
+           VerifyField<uint32_t>(verifier, VT_PICKUP_STACK_INDEX, 4) &&
+           VerifyOffset(verifier, VT_PICKUP_TYPE_ID) &&
+           verifier.VerifyString(pickup_type_id()) &&
+           VerifyField<int32_t>(verifier, VT_PICKUP_CHARGES, 4) &&
+           VerifyField<uint8_t>(verifier, VT_PICKUP_COUNT_BY_CHARGES, 1) &&
            verifier.EndTable();
   }
 };
@@ -2683,6 +2716,18 @@ struct InteractRequestBuilder {
   void add_action(CDDA::CWM::InteractAction action) {
     fbb_.AddElement<int8_t>(InteractRequest::VT_ACTION, static_cast<int8_t>(action), 0);
   }
+  void add_pickup_stack_index(uint32_t pickup_stack_index) {
+    fbb_.AddElement<uint32_t>(InteractRequest::VT_PICKUP_STACK_INDEX, pickup_stack_index, 0);
+  }
+  void add_pickup_type_id(::flatbuffers::Offset<::flatbuffers::String> pickup_type_id) {
+    fbb_.AddOffset(InteractRequest::VT_PICKUP_TYPE_ID, pickup_type_id);
+  }
+  void add_pickup_charges(int32_t pickup_charges) {
+    fbb_.AddElement<int32_t>(InteractRequest::VT_PICKUP_CHARGES, pickup_charges, 0);
+  }
+  void add_pickup_count_by_charges(bool pickup_count_by_charges) {
+    fbb_.AddElement<uint8_t>(InteractRequest::VT_PICKUP_COUNT_BY_CHARGES, static_cast<uint8_t>(pickup_count_by_charges), 0);
+  }
   explicit InteractRequestBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -2698,12 +2743,41 @@ inline ::flatbuffers::Offset<InteractRequest> CreateInteractRequest(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint64_t command_id = 0,
     const CDDA::CWM::Coord3i *target_coord = nullptr,
-    CDDA::CWM::InteractAction action = CDDA::CWM::InteractAction::EXAMINE) {
+    CDDA::CWM::InteractAction action = CDDA::CWM::InteractAction::EXAMINE,
+    uint32_t pickup_stack_index = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> pickup_type_id = 0,
+    int32_t pickup_charges = 0,
+    bool pickup_count_by_charges = false) {
   InteractRequestBuilder builder_(_fbb);
   builder_.add_command_id(command_id);
+  builder_.add_pickup_charges(pickup_charges);
+  builder_.add_pickup_type_id(pickup_type_id);
+  builder_.add_pickup_stack_index(pickup_stack_index);
   builder_.add_target_coord(target_coord);
+  builder_.add_pickup_count_by_charges(pickup_count_by_charges);
   builder_.add_action(action);
   return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<InteractRequest> CreateInteractRequestDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t command_id = 0,
+    const CDDA::CWM::Coord3i *target_coord = nullptr,
+    CDDA::CWM::InteractAction action = CDDA::CWM::InteractAction::EXAMINE,
+    uint32_t pickup_stack_index = 0,
+    const char *pickup_type_id = nullptr,
+    int32_t pickup_charges = 0,
+    bool pickup_count_by_charges = false) {
+  auto pickup_type_id__ = pickup_type_id ? _fbb.CreateString(pickup_type_id) : 0;
+  return CDDA::CWM::CreateInteractRequest(
+      _fbb,
+      command_id,
+      target_coord,
+      action,
+      pickup_stack_index,
+      pickup_type_id__,
+      pickup_charges,
+      pickup_count_by_charges);
 }
 
 struct AttackRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {

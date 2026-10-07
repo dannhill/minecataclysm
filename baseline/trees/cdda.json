@@ -37337,12 +37337,12 @@
   {
     "path": "src/cwm/cwm_server.cpp",
     "mode": "100644",
-    "sha256": "bbe77c7c6d176793606611b9b5f7ae793cca9ca6ebb41b8dacf3af3efe45f8f8"
+    "sha256": "4b7ae2e1703a083ec5b797fc93a7d4f5fba0d97e93a5c125c43b759db313bdf9"
   },
   {
     "path": "src/cwm/cwm_server.h",
     "mode": "100644",
-    "sha256": "26b20d7eb35be64271df0c4999eb11b018cfef560d5484991286db20601211b2"
+    "sha256": "d2f74ee4e4a71919b609aa0034d2024485f4a79e0e0b7f85b39d559365f64c45"
   },
   {
     "path": "src/cwm_motion.cpp",
@@ -40627,7 +40627,7 @@
   {
     "path": "tests/CMakeLists.txt",
     "mode": "100644",
-    "sha256": "89607c7c6400d643fbb37982008a0c5f52b61ab9ea3cb5be0a3938d5ca92e1ee"
+    "sha256": "d11e7c1aaf9917f305f2930fea2bfe74d8d04172485d5e1f40f82fa986a33dba"
   },
   {
     "path": "tests/Makefile",
@@ -40868,6 +40868,11 @@
     "path": "tests/cube_direction_test.cpp",
     "mode": "100644",
     "sha256": "bba0e9be1ed9e9a68b58c68a75ab23ee76e3a2c80a1d524cad3bfea041f26b5b"
+  },
+  {
+    "path": "tests/cwm_pickup_test.cpp",
+    "mode": "100644",
+    "sha256": "85df5c6249713b9b0a5b3225af12272e033988114eecf1f33b872c7224493db9"
   },
   {
     "path": "tests/cwm_projection_test.cpp",

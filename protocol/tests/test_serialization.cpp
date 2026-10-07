@@ -43,6 +43,28 @@ void test_move_request_roundtrip() {
     std::cout << "[PASS] test_move_request_roundtrip" << std::endl;
 }
 
+void test_pickup_request_roundtrip() {
+    MessageBuilder builder(7, 123);
+    auto bytes = builder.build_interact_request(
+        77, 12, -4, 1, CDDA::CWM::InteractAction::PICKUP,
+        3, "bottle_plastic", 17, true);
+
+    assert(MessageVerifier::verify(bytes.data(), bytes.size()));
+    const auto *msg = MessageVerifier::parse(bytes.data(), bytes.size());
+    assert(msg && msg->payload_type() == CDDA::CWM::Payload::InteractRequest);
+
+    const auto *req = msg->payload_as_InteractRequest();
+    assert(req && req->command_id() == 77);
+    assert(req->target_coord()->x() == 12 && req->target_coord()->y() == -4 &&
+           req->target_coord()->z() == 1);
+    assert(req->action() == CDDA::CWM::InteractAction::PICKUP);
+    assert(req->pickup_stack_index() == 3);
+    assert(req->pickup_type_id() && req->pickup_type_id()->str() == "bottle_plastic");
+    assert(req->pickup_charges() == 17);
+    assert(req->pickup_count_by_charges());
+    std::cout << "[PASS] test_pickup_request_roundtrip" << std::endl;
+}
+
 void test_tile_delta_roundtrip() {
     MessageBuilder builder(10, 200);
     auto bytes = builder.build_tile_delta(15, -20, 1, 404, 0x01, 14, 2);
@@ -101,6 +123,7 @@ int main() {
     std::cout << "Running CWM Serialization Unit Tests..." << std::endl;
     test_hello_roundtrip();
     test_move_request_roundtrip();
+    test_pickup_request_roundtrip();
     test_tile_delta_roundtrip();
     test_ground_item_snapshot_roundtrip();
     test_malformed_buffer_rejected();

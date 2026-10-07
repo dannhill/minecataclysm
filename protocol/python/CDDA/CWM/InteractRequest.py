@@ -49,8 +49,36 @@ class InteractRequest(object):
             return self._tab.Get(flatbuffers.number_types.Int8Flags, o + self._tab.Pos)
         return 0
 
+    # InteractRequest
+    def PickupStackIndex(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(10))
+        if o != 0:
+            return self._tab.Get(flatbuffers.number_types.Uint32Flags, o + self._tab.Pos)
+        return 0
+
+    # InteractRequest
+    def PickupTypeId(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(12))
+        if o != 0:
+            return self._tab.String(o + self._tab.Pos)
+        return None
+
+    # InteractRequest
+    def PickupCharges(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(14))
+        if o != 0:
+            return self._tab.Get(flatbuffers.number_types.Int32Flags, o + self._tab.Pos)
+        return 0
+
+    # InteractRequest
+    def PickupCountByCharges(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(16))
+        if o != 0:
+            return bool(self._tab.Get(flatbuffers.number_types.BoolFlags, o + self._tab.Pos))
+        return False
+
 def InteractRequestStart(builder):
-    builder.StartObject(3)
+    builder.StartObject(7)
 
 def Start(builder):
     InteractRequestStart(builder)
@@ -72,6 +100,30 @@ def InteractRequestAddAction(builder, action):
 
 def AddAction(builder, action):
     InteractRequestAddAction(builder, action)
+
+def InteractRequestAddPickupStackIndex(builder, pickupStackIndex):
+    builder.PrependUint32Slot(3, pickupStackIndex, 0)
+
+def AddPickupStackIndex(builder, pickupStackIndex):
+    InteractRequestAddPickupStackIndex(builder, pickupStackIndex)
+
+def InteractRequestAddPickupTypeId(builder, pickupTypeId):
+    builder.PrependUOffsetTRelativeSlot(4, flatbuffers.number_types.UOffsetTFlags.py_type(pickupTypeId), 0)
+
+def AddPickupTypeId(builder, pickupTypeId):
+    InteractRequestAddPickupTypeId(builder, pickupTypeId)
+
+def InteractRequestAddPickupCharges(builder, pickupCharges):
+    builder.PrependInt32Slot(5, pickupCharges, 0)
+
+def AddPickupCharges(builder, pickupCharges):
+    InteractRequestAddPickupCharges(builder, pickupCharges)
+
+def InteractRequestAddPickupCountByCharges(builder, pickupCountByCharges):
+    builder.PrependBoolSlot(6, pickupCountByCharges, 0)
+
+def AddPickupCountByCharges(builder, pickupCountByCharges):
+    InteractRequestAddPickupCountByCharges(builder, pickupCountByCharges)
 
 def InteractRequestEnd(builder):
     return builder.EndObject()

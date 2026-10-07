@@ -11,7 +11,7 @@ class NativeWire:
         self.lock = threading.RLock()
     def hello_fields(self, b):
         Hello.HelloRequestAddProtocolVersionMajor(b,2)
-        Hello.HelloRequestAddProtocolVersionMinor(b,2)
+        Hello.HelloRequestAddProtocolVersionMinor(b,4)
         Hello.HelloRequestAddClientId(b,self.client_id)
     def finish(self, b, kind, value):
         if kind == Payload.Payload.HelloRequest:

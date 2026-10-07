@@ -460,10 +460,10 @@ index 5d6b891..48c0d59 100644
  		g_settings->getFlagStr("anticheat_flags", flagdesc_anticheat, nullptr);
  
 diff --git a/src/unittest/test_mapblock.cpp b/src/unittest/test_mapblock.cpp
-index 7f3f860..63b5853 100644
+index 7f3f860..0a8d108 100644
 --- a/src/unittest/test_mapblock.cpp
 +++ b/src/unittest/test_mapblock.cpp
-@@ -10,6 +10,11 @@
+@@ -10,6 +10,12 @@
  #include "serialization.h"
  #include "noise.h"
  #include "inventory.h"
@@ -471,11 +471,12 @@ index 7f3f860..63b5853 100644
 +#include "client/mesh_generator_thread.h"
 +#include "cdda/cdda_bridge.h"
 +#include "cdda/ground_item_projection.h"
++#include "cdda/ground_item_visual.h"
 +#endif
  
  class TestMapBlock : public TestBase
  {
-@@ -32,7 +37,12 @@ class TestMapBlock : public TestBase
+@@ -32,7 +38,12 @@ class TestMapBlock : public TestBase
  	void testLoad20(IGameDef *gamedef);
  
  	// Tests loading a non-standard MapBlock
@@ -489,7 +490,7 @@ index 7f3f860..63b5853 100644
  };
  
  static TestMapBlock g_test_instance;
-@@ -44,9 +54,76 @@ void TestMapBlock::runTests(IGameDef *gamedef)
+@@ -44,9 +55,82 @@ void TestMapBlock::runTests(IGameDef *gamedef)
  	TEST(testSave29, gamedef);
  	TEST(testLoad29, gamedef);
  	TEST(testLoad20, gamedef);
@@ -516,6 +517,12 @@ index 7f3f860..63b5853 100644
 +
 +void TestMapBlock::testCddaGroundItemProjection()
 +{
++	using cdda_client::groundItemRegistration;
++	UASSERT(groundItemRegistration("101_carpentry") ==
++			"cdda_items:i_14cb52be98520222");
++	UASSERT(groundItemRegistration("10l_aluminum") ==
++			"cdda_items:i_c3b327eeed8313bb");
++
 +    using cdda_client::GroundItemProjection;
 +    using cdda_client::GroundItemView;
 +
@@ -569,15 +576,19 @@ index 7f3f860..63b5853 100644
  void TestMapBlock::testSaveLoad(IGameDef *gamedef, const u8 version)
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..b161080
+index 0000000..101a278
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,1348 @@
+@@ -0,0 +1,1457 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
 +#include "cdda_bridge.h"
 +#include "ground_item_projection.h"
++#include "ground_item_visual.h"
++#include "client/wieldmesh.h"
++#include "inventory.h"
++#include "itemdef.h"
 +#include "cwm/ipc_transport.hpp"
 +#include "cwm/cwm_session.hpp"
 +#include "cwm/tile_semantics.hpp"
@@ -670,11 +681,111 @@ index 0000000..b161080
 +    std::map<v3s16, std::vector<MapNode>> projected_blocks_;
 +    std::map<v3s16, CDDA::CWM::CwmBlock> terrain_tiles_;
 +    GroundItemProjection ground_items_;
++
++    struct GroundItemVisual {
++        std::vector<std::string> item_names;
++        std::vector<WieldMeshSceneNode*> nodes;
++    };
++    std::map<v3s16, GroundItemVisual> ground_item_visuals_;
++    float ground_item_rotation_{0.f};
++
 +    std::map<s16, std::array<float, 4>> terrain_bounds_;
 +    bool terrain_demo_{false};
 +    bool terrain_enriched_{false};
 +    bool terrain_fog_{false};
 +    irr::gui::IGUIStaticText* terrain_text_{nullptr};
++
++    std::string ground_item_visual_name(const std::string& type_id) const {
++        if (!client_) return {};
++        auto* idef = client_->getItemDefManager();
++        if (!idef) return {};
++        const std::string mapped = groundItemRegistration(type_id);
++        if (idef->isKnown(mapped)) return mapped;
++        const std::string fallback = "cdda_items:fallback_generic";
++        return idef->isKnown(fallback) ? fallback : std::string{};
++    }
++
++    static void remove_ground_item_visual(GroundItemVisual& visual) {
++        for (auto* node : visual.nodes) {
++            if (!node) continue;
++            node->remove();
++            node->drop();
++        }
++        visual.nodes.clear();
++        visual.item_names.clear();
++    }
++
++    void clear_ground_item_visuals() {
++        for (auto& [pos, visual] : ground_item_visuals_)
++            remove_ground_item_visual(visual);
++        ground_item_visuals_.clear();
++    }
++
++    void reconcile_ground_item_visuals() {
++        if (!client_) return;
++        if (!smgr_) smgr_ = client_->getSceneManager();
++        if (!smgr_) return;
++
++        for (auto it = ground_item_visuals_.begin(); it != ground_item_visuals_.end();) {
++            if (ground_items_.get(it->first)) {
++                ++it;
++                continue;
++            }
++            remove_ground_item_visual(it->second);
++            it = ground_item_visuals_.erase(it);
++        }
++
++        auto* idef = client_->getItemDefManager();
++        if (!idef) return;
++
++        static const v3f pile_offsets[3] = {
++            v3f(-0.18f, 0.f, -0.08f),
++            v3f( 0.18f, 0.f, -0.06f),
++            v3f( 0.00f, 0.f,  0.18f),
++        };
++
++        for (const auto& [pos, items] : ground_items_.tiles()) {
++            const size_t count = std::min<size_t>(3, items.size());
++            std::vector<std::string> names;
++            names.reserve(count);
++            for (size_t i = 0; i < count; ++i) {
++                auto name = ground_item_visual_name(items[i].type_id);
++                if (!name.empty()) names.push_back(std::move(name));
++            }
++
++            auto& visual = ground_item_visuals_[pos];
++            if (visual.item_names != names) {
++                remove_ground_item_visual(visual);
++                visual.item_names = names;
++                for (const auto& name : names) {
++                    auto* node = new WieldMeshSceneNode(smgr_, -1);
++                    ItemStack stack(name, 1, 0, idef);
++                    node->setItem(stack, client_, true);
++                    node->setScale(v3f(0.2f, 0.2f, 0.2f));
++                    visual.nodes.push_back(node);
++                }
++            }
++
++            const bool pile = visual.nodes.size() > 1;
++            for (size_t i = 0; i < visual.nodes.size(); ++i) {
++                const v3f off = pile ? pile_offsets[i] : v3f(0.f, 0.f, 0.f);
++                visual.nodes[i]->setPosition(
++                    v3f(pos.X + off.X, pos.Y + 0.62f + 0.03f * i, pos.Z + off.Z) * 10.f);
++            }
++        }
++    }
++
++    void update_ground_item_visuals(float dtime) {
++        reconcile_ground_item_visuals();
++        ground_item_rotation_ = std::fmod(ground_item_rotation_ + dtime * 90.f, 360.f);
++        for (auto& [pos, visual] : ground_item_visuals_) {
++            for (size_t i = 0; i < visual.nodes.size(); ++i) {
++                visual.nodes[i]->setVisible(session_.ready());
++                visual.nodes[i]->setRotation(
++                    v3f(0.f, ground_item_rotation_ + static_cast<float>(i) * 120.f, 0.f));
++            }
++        }
++    }
 +
 +    void update_terrain_bounds() {
 +        if (!terrain_demo_) return;
@@ -978,6 +1089,7 @@ index 0000000..b161080
 +        std::set<v3s16> old_blocks;
 +        for (const auto& [pos, nodes] : projected_blocks_) old_blocks.insert(pos);
 +        projected_blocks_.clear(); terrain_tiles_.clear(); terrain_bounds_.clear();
++        clear_ground_item_visuals();
 +        ground_items_.clear();
 +        commit_projection(old_blocks);
 +        origin_valid_ = false;
@@ -1061,6 +1173,8 @@ index 0000000..b161080
 +            static_cast<irr::scene::ISceneNode*>(ent.scene_node)->setVisible(false);
 +        for (auto& [id, vehicle] : vehicles_) for (auto& part : vehicle.components)
 +            if (part.scene_node) static_cast<irr::scene::ISceneNode*>(part.scene_node)->setVisible(false);
++        for (auto& [pos, visual] : ground_item_visuals_)
++            for (auto* node : visual.nodes) if (node) node->setVisible(false);
 +    }
 +
 +    void update(float dtime) {
@@ -1131,6 +1245,8 @@ index 0000000..b161080
 +        if (client_ && !smgr_) {
 +            smgr_ = client_->getSceneManager();
 +        }
++
++        update_ground_item_visuals(dtime);
 +
 +        for (auto& [id, veh] : vehicles_) {
 +            v3f diff = veh.target_pos - veh.current_pos;
@@ -2058,10 +2174,10 @@ index 0000000..551f2cc
 +} // namespace cdda_client
 diff --git a/src/cdda/ground_item_projection.h b/src/cdda/ground_item_projection.h
 new file mode 100644
-index 0000000..f93445c
+index 0000000..ecf25ba
 --- /dev/null
 +++ b/src/cdda/ground_item_projection.h
-@@ -0,0 +1,62 @@
+@@ -0,0 +1,63 @@
 +#pragma once
 +
 +#include <cstdint>
@@ -2087,6 +2203,7 @@ index 0000000..f93445c
 +public:
 +	void clear() { tiles_.clear(); }
 +	size_t size() const { return tiles_.size(); }
++	const auto &tiles() const { return tiles_; }
 +
 +	const std::vector<GroundItemView> *get(const v3s16 &pos) const
 +	{
@@ -2122,5 +2239,37 @@ index 0000000..f93445c
 +		}
 +	}
 +};
++
++} // namespace cdda_client
+diff --git a/src/cdda/ground_item_visual.h b/src/cdda/ground_item_visual.h
+new file mode 100644
+index 0000000..a550994
+--- /dev/null
++++ b/src/cdda/ground_item_visual.h
+@@ -0,0 +1,26 @@
++#pragma once
++
++#include <cstdint>
++#include <string>
++
++namespace cdda_client {
++
++inline std::string groundItemRegistration(const std::string &type_id)
++{
++	uint64_t h = 14695981039346656037ULL;
++	for (unsigned char c : type_id) {
++		h ^= c;
++		h *= 1099511628211ULL;
++	}
++
++	static constexpr char hex[] = "0123456789abcdef";
++	std::string suffix(16, '0');
++	for (int i = 15; i >= 0; --i) {
++		suffix[i] = hex[h & 0xf];
++		h >>= 4;
++	}
++
++	return "cdda_items:i_" + suffix;
++}
 +
 +} // namespace cdda_client

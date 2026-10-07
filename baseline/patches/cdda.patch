@@ -520,20 +520,24 @@ index 38b1d71..e5b7a12 100644
      if( get_option<bool>( "ANDROID_NATIVE_UI" ) ) {
          JNIEnv *env = ( JNIEnv * )SDL_AndroidGetJNIEnv();
 diff --git a/tests/CMakeLists.txt b/tests/CMakeLists.txt
-index bfe0773..699b0af 100644
+index bfe0773..66ca653 100644
 --- a/tests/CMakeLists.txt
 +++ b/tests/CMakeLists.txt
-@@ -44,6 +44,14 @@ if (BUILD_TESTING)
+@@ -44,6 +44,18 @@ if (BUILD_TESTING)
  
      if (CURSES)
          add_executable(cata_test ${CATACLYSM_DDA_TEST_SOURCES})
-+        target_sources(cata_test PRIVATE ${CMAKE_SOURCE_DIR}/src/cwm/cwm_map_exporter.cpp)
++        target_sources(cata_test PRIVATE
++            ${CMAKE_SOURCE_DIR}/src/cwm/cwm_map_exporter.cpp
++            ${CMAKE_SOURCE_DIR}/src/cwm/cwm_server.cpp)
 +        find_path(CWM_FLATBUFFERS_INCLUDE_DIR flatbuffers/flatbuffers.h
 +            HINTS "$ENV{HOME}/.local/include" REQUIRED)
 +        set_source_files_properties(
 +            ${CMAKE_SOURCE_DIR}/tests/cwm_projection_test.cpp
 +            ${CMAKE_SOURCE_DIR}/tests/cwm_runtime_test.cpp
++            ${CMAKE_SOURCE_DIR}/tests/cwm_pickup_test.cpp
 +            ${CMAKE_SOURCE_DIR}/src/cwm/cwm_map_exporter.cpp
++            ${CMAKE_SOURCE_DIR}/src/cwm/cwm_server.cpp
 +            PROPERTIES INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/../protocol/include;${CWM_FLATBUFFERS_INCLUDE_DIR}")
          if (LOCALIZE)
              add_dependencies(cata_test test_mo)
@@ -1583,10 +1587,10 @@ index 0000000..72bdfde
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..6092903
+index 0000000..a4ecc9f
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,647 @@
+@@ -0,0 +1,685 @@
 +#include "cwm_motion.h"
 +// CDDA CWM IPC Server Implementation
 +// Licensed under Apache-2.0
@@ -1605,6 +1609,7 @@ index 0000000..6092903
 +#include "creature_tracker.h"
 +#include "game.h"
 +#include "map.h"
++#include "item_location.h"
 +#include "do_turn.h"
 +#include "gates.h"
 +#include "safe_mode_actions.h"
@@ -2018,6 +2023,27 @@ index 0000000..6092903
 +            } else if (command.action == int(CDDA::CWM::InteractAction::CLOSE)) {
 +                doors::close_door(m, u, target);
 +                accepted = u.moves != before_moves;
++            } else if (command.action == int(CDDA::CWM::InteractAction::PICKUP)) {
++                map_stack stack = m.i_at(target);
++                if (command.pickup_stack_index >= stack.size()) {
++                    result_ = Result{command.id, false, "Pickup target stack changed"};
++                    return false;
++                }
++
++                auto it = stack.begin();
++                std::advance(it, command.pickup_stack_index);
++                item &candidate = *it;
++                if (candidate.typeId().str() != command.pickup_type_id ||
++                    candidate.charges != command.pickup_charges ||
++                    candidate.count_by_charges() != command.pickup_count_by_charges) {
++                    result_ = Result{command.id, false, "Pickup target item changed"};
++                    return false;
++                }
++
++                drop_locations selected;
++                selected.emplace_back(item_location(map_cursor(target), &candidate), 0);
++                u.pick_up(selected);
++                accepted = true;
 +            }
 +        }
 +    }
@@ -2041,7 +2067,7 @@ index 0000000..6092903
 +            hello->protocol_version_minor() == cdda::cwm::PROTOCOL_VERSION_MINOR;
 +        cdda::cwm::MessageBuilder reply(sequence_counter_, world_revision_, identity_);
 +        emit(reply.build_hello_response(accepted, "cdda-server-cwm-2",
-+            accepted ? "" : "CWM 2.2 Hello required before state or commands", ledger_.next_id()));
++            accepted ? "" : "Current CWM Hello required before state or commands", ledger_.next_id()));
 +        if (!accepted) { rejecting_ = true; return; }
 +        client_id_ = hello->client_id(); received_sequence_ = 1; negotiated_ = true;
 +        reset_world(u, m, g, 0);
@@ -2094,6 +2120,13 @@ index 0000000..6092903
 +        id = request->command_id(); signature = "interact:" + std::to_string(int(request->action()));
 +        if (const auto* p = request->target_coord()) signature += ":" + std::to_string(p->x()) +
 +            ":" + std::to_string(p->y()) + ":" + std::to_string(p->z());
++        if (request->action() == CDDA::CWM::InteractAction::PICKUP) {
++            const std::string type = request->pickup_type_id() ? request->pickup_type_id()->str() : "";
++            signature += ":" + std::to_string(request->pickup_stack_index()) +
++                ":" + std::to_string(type.size()) + ":" + type +
++                ":" + std::to_string(request->pickup_charges()) +
++                ":" + std::to_string(request->pickup_count_by_charges());
++        }
 +    } else if (const auto* request = msg->payload_as_AcknowledgeThreatRequest()) {
 +        id = request->command_id(); signature = "threat";
 +    } else if (const auto* request = msg->payload_as_MovementIntentRequest()) {
@@ -2223,6 +2256,15 @@ index 0000000..6092903
 +                    if (!m.open_door(u, local, inside, true)) error = "Target cannot be opened";
 +                } else if (command.action == int(CDDA::CWM::InteractAction::CLOSE)) {
 +                    if (!m.close_door(local, inside, true)) error = "Target cannot be closed";
++                } else if (command.action == int(CDDA::CWM::InteractAction::PICKUP)) {
++                    if (!request->pickup_type_id() || request->pickup_type_id()->str().empty()) {
++                        error = "Missing pickup item guard";
++                    } else {
++                        command.pickup_stack_index = request->pickup_stack_index();
++                        command.pickup_type_id = request->pickup_type_id()->str();
++                        command.pickup_charges = request->pickup_charges();
++                        command.pickup_count_by_charges = request->pickup_count_by_charges();
++                    }
 +                } else error = "Interaction not implemented";
 +            }
 +        }
@@ -2236,10 +2278,10 @@ index 0000000..6092903
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.h b/src/cwm/cwm_server.h
 new file mode 100644
-index 0000000..cfd8c9d
+index 0000000..c9f846b
 --- /dev/null
 +++ b/src/cwm/cwm_server.h
-@@ -0,0 +1,111 @@
+@@ -0,0 +1,120 @@
 +// CDDA CWM IPC Server
 +// Licensed under Apache-2.0
 +#pragma once
@@ -2287,6 +2329,7 @@ index 0000000..cfd8c9d
 +    bool has_active_client() const;
 +
 +private:
++    friend struct CwmServerTestAccess;
 +    bool realtime_{false};
 +    bool continuous_{false};
 +    float intent_x_{0}, intent_y_{0};
@@ -2316,10 +2359,18 @@ index 0000000..cfd8c9d
 +    bool negotiated_{false}, ready_{false}, rejecting_{false};
 +    std::chrono::steady_clock::time_point handshake_deadline_;
 +    struct Command {
-+        uint64_t id;
-+        bool move;
-+        int action;
++        uint64_t id{0};
++        bool move{false};
++        int action{0};
 +        int x{0}, y{0}, z{0}; // absolute CDDA coordinates, captured on receipt
++        uint32_t pickup_stack_index{0};
++        std::string pickup_type_id;
++        int32_t pickup_charges{0};
++        bool pickup_count_by_charges{false};
++
++        Command() = default;
++        Command(uint64_t command_id, bool is_move, int command_action)
++            : id(command_id), move(is_move), action(command_action) {}
 +    };
 +    struct Result {
 +        uint64_t id;
@@ -2609,6 +2660,153 @@ index 0000000..f5a7c0a
 +bool acknowledge_current_threat( avatar &player_character );
 +
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
+diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
+new file mode 100644
+index 0000000..b52ace1
+--- /dev/null
++++ b/tests/cwm_pickup_test.cpp
+@@ -0,0 +1,141 @@
++#include "cata_catch.h"
++#include "avatar.h"
++#include "calendar.h"
++#include "game.h"
++#include "item.h"
++#include "map.h"
++#include "map_helpers.h"
++#include "player_helpers.h"
++#include "cwm/cwm_server.h"
++#include "cwm/ipc_transport.hpp"
++
++namespace cwm {
++// Exercise the actual wire admission, queue and native executor. Only the
++// handshake is preinstalled, so these tests do not need a running renderer.
++struct CwmServerTestAccess {
++    static void ready( CwmServer &server ) {
++        server.negotiated_ = server.ready_ = true;
++        server.client_id_ = 31;
++        server.identity_ = { 101, 102, 103 };
++    }
++    static void enqueue( CwmServer &server, const tripoint &target, uint32_t index,
++                         const item &selected, uint64_t id = 1 ) {
++        cdda::cwm::MessageBuilder wire( server.received_sequence_ + 1, 1, server.identity_ );
++        const auto bytes = wire.build_interact_request( id, target.x, target.y, target.z,
++                           CDDA::CWM::InteractAction::PICKUP, index, selected.typeId().str(),
++                           selected.charges, selected.count_by_charges() );
++        server.handle_client_message( bytes.data(), bytes.size(), get_avatar(), get_map(), *g );
++    }
++    static bool execute( CwmServer &server ) {
++        REQUIRE( server.commands_.size() == 1 );
++        const auto command = server.commands_.front();
++        server.commands_.pop_front();
++        return server.execute( command, get_avatar(), get_map(), *g );
++    }
++    static bool accepted( const CwmServer &server ) {
++        REQUIRE( server.result_ );
++        return server.result_->accepted;
++    }
++    static bool accept_peer( CwmServer &server ) { return server.server_->poll_accept(); }
++};
++}
++
++TEST_CASE( "cwm_pickup_revalidates_the_queued_selection", "[cwm][pickup]" )
++{
++    clear_avatar();
++    clear_map();
++    avatar &u = get_avatar();
++    map &m = get_map();
++    u.setpos( tripoint( 60, 60, 0 ) );
++    REQUIRE( u.wear_item( item( itype_id( "backpack_hiking" ) ) ) );
++    u.moves = 1000;
++    const tripoint target = u.pos() + tripoint_east;
++    item &first = m.add_item( target, item( itype_id( "rock" ) ) );
++    item &selected = m.add_item( target, item( itype_id( "matches" ) ) );
++    selected.set_var( "uid", "cwm-selected-pickup" );
++    const int charges = selected.charges;
++    const int before_moves = u.moves;
++    const auto before_time = calendar::turn;
++    const auto absolute_player = m.getabs( u.pos() );
++    cwm::CwmServer server( "/unused-cwm-pickup-fixture" );
++    cwm::CwmServerTestAccess::ready( server );
++    cwm::CwmServerTestAccess::enqueue( server, target, 1, selected );
++    REQUIRE( server.has_queued_action() );
++    CHECK_FALSE( u.activity );
++    CHECK( u.moves == before_moves );
++    CHECK( calendar::turn == before_time );
++
++    bool valid = false;
++    SECTION( "valid selection uses native activity and transfers the entire charge stack" ) {
++        valid = true;
++    }
++    SECTION( "bubble coordinates change before execution" ) {
++        m.shift( point( 1, 0 ) );
++        u.setpos( m.getlocal( absolute_player ) );
++        valid = true;
++    }
++    SECTION( "earlier item removal makes the queued index stale" ) {
++        m.i_rem( target, &first );
++    }
++    SECTION( "different item occupies the same index" ) {
++        m.i_rem( target, &selected );
++        m.add_item( target, item( itype_id( "stick" ) ) );
++    }
++    SECTION( "charge count changes after admission" ) {
++        selected.charges += 1;
++    }
++    SECTION( "player leaves the target's reach before execution" ) {
++        u.setpos( u.pos() + tripoint( 5, 0, 0 ) );
++    }
++
++    CHECK( cwm::CwmServerTestAccess::execute( server ) == valid );
++    CHECK( cwm::CwmServerTestAccess::accepted( server ) == valid );
++    CHECK( u.moves == before_moves ); // Assignment is not a free inventory transfer.
++    CHECK( calendar::turn == before_time );
++    CHECK_FALSE( character_has_item_with_var_val( u, "uid", "cwm-selected-pickup" ) );
++    if( valid ) {
++        REQUIRE( u.activity );
++        process_activity( u );
++        CHECK( character_has_item_with_var_val( u, "uid", "cwm-selected-pickup" ) );
++        CHECK( u.charges_of( itype_id( "matches" ) ) == charges );
++        CHECK( m.i_at( m.getlocal( m.getabs( u.pos() ) + tripoint_east ) ).size() == 1 );
++    } else {
++        CHECK_FALSE( u.activity );
++        CHECK( server.world_revision() == 1 );
++    }
++}
++
++TEST_CASE( "cwm_pickup_deduplication_includes_the_item_selection", "[cwm][pickup]" )
++{
++    clear_avatar();
++    clear_map();
++    avatar &u = get_avatar();
++    u.setpos( tripoint( 60, 60, 0 ) );
++    const std::string socket = "/tmp/cwm-pickup-test-" + std::to_string( getpid() ) + ".sock";
++    cwm::CwmServer server( socket );
++    REQUIRE( server.start() );
++    auto peer = cdda::cwm::IpcClient::connect_unix( socket );
++    REQUIRE( peer );
++    REQUIRE( cwm::CwmServerTestAccess::accept_peer( server ) );
++    cwm::CwmServerTestAccess::ready( server );
++    item selected( itype_id( "matches" ) );
++    cwm::CwmServerTestAccess::enqueue( server, u.pos(), 0, selected );
++    REQUIRE( server.has_active_client() );
++    SECTION( "identical pending command is ignored" ) {
++        cwm::CwmServerTestAccess::enqueue( server, u.pos(), 0, selected );
++        CHECK( server.has_active_client() );
++    }
++    SECTION( "different index under the same command ID closes the connection" ) {
++        cwm::CwmServerTestAccess::enqueue( server, u.pos(), 1, selected );
++        CHECK_FALSE( server.has_active_client() );
++    }
++    SECTION( "different charges under the same command ID closes the connection" ) {
++        ++selected.charges;
++        cwm::CwmServerTestAccess::enqueue( server, u.pos(), 0, selected );
++        CHECK_FALSE( server.has_active_client() );
++    }
++    SECTION( "different type under the same command ID closes the connection" ) {
++        cwm::CwmServerTestAccess::enqueue( server, u.pos(), 0, item( itype_id( "rock" ) ) );
++        CHECK_FALSE( server.has_active_client() );
++    }
++}
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644
 index 0000000..4224ed7
