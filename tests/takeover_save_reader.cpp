@@ -35,10 +35,12 @@ int main(int argc, const char *argv[]) {
     bool create_actors = false;
     bool create_actor_demo = false;
     bool create_realtime = false;
+    bool create_pickup = false;
     bool resave = false;
     for (int i = 1; i < argc; ++i) {
         std::string arg(argv[i]);
         if (arg == "--create") create = true;
+        else if (arg == "--create-pickup") { create = true; create_pickup = true; }
         else if (arg == "--create-ledge") { create = true; create_ledge = true; }
         else if (arg == "--create-exploration") { create = true; create_exploration = true; }
         else if (arg == "--create-vertical") { create = true; create_vertical = true; }
@@ -221,6 +223,20 @@ int main(int argc, const char *argv[]) {
                 hostile->add_effect(efftype_id("tied"),10_days,true);
             }
         }
+        if (create_pickup) {
+            // Native ground inventory, independent of the production CWM code.
+            const tripoint target = u.pos() + tripoint_north;
+            m.i_clear(target);
+            item rock(itype_id("rock"), calendar::turn);
+            rock.set_var("uid", "pickup-untouched");
+            m.add_item(target, rock);
+            item matches(itype_id("matches"), calendar::turn);
+            matches.charges = 7;
+            matches.set_var("uid", "pickup-selected");
+            m.add_item(target, matches);
+            if (!u.wear_item(item(itype_id("backpack_hiking"), calendar::turn))) return 13;
+            g->set_safe_mode(SAFE_MODE_OFF);
+        }
         if (create_exploration) {
             m.ter_set(tripoint(60,59,0), ter_str_id("t_water_dp"));
             m.ter_set(tripoint(60,61,0), ter_str_id("t_water_sh"));
@@ -233,7 +249,7 @@ int main(int argc, const char *argv[]) {
             u.set_skill_level(skill_id("swimming"),10);
             get_weather().update_weather();
             if (!g->save()) return 5;
-        } else if (!create_vertical) {
+        } else if (!create_vertical && !create_pickup) {
         g->place_critter_at(mtype_id("mon_zombie"), tripoint(65,65,0));
         auto guy = make_shared_fast<npc>();
         guy->normalize();
@@ -246,7 +262,7 @@ int main(int argc, const char *argv[]) {
         get_weather().update_weather();
         if (!g->save()) return 5;
         }
-        if (create_vertical) {
+        if (create_vertical || create_pickup) {
             get_weather().update_weather();
             if (!g->save()) return 5;
         }
@@ -279,6 +295,19 @@ int main(int argc, const char *argv[]) {
                 json.write(m.furn(local).id().str());
                 json.end_array();
             }
+        }
+    }
+    json.end_array();
+    json.member("ground_items"); json.start_array();
+    for (int y = center.y-12; y <= center.y+12; ++y) {
+        for (int x = center.x-12; x <= center.x+12; ++x) {
+            const tripoint local = m.getlocal(tripoint(x,y,center.z));
+            if (m.i_at(local).empty()) continue;
+            json.start_object();
+            json.member("pos", std::vector<int>{x,y,center.z});
+            json.member("items"); json.start_array();
+            for (const item &it : m.i_at(local)) it.serialize(json);
+            json.end_array(); json.end_object();
         }
     }
     json.end_array();

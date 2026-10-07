@@ -54,7 +54,7 @@ class AuthorityWire:
         return envelope(b,kind,value,self.sequence,self.revision,self.identity)
     def hello_fields(self,b):
         HelloResponse.HelloResponseAddProtocolVersionMajor(b,2)
-        HelloResponse.HelloResponseAddProtocolVersionMinor(b,2)
+        HelloResponse.HelloResponseAddProtocolVersionMinor(b,4)
         HelloResponse.HelloResponseAddNextCommandId(b,1)
     def reset(self,request=0):
         import flatbuffers

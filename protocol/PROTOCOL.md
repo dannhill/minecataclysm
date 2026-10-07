@@ -6,10 +6,23 @@ captured implementation; it does not approve its gaps. The executable schema
 is [cwm.fbs](cwm.fbs). Audit findings and evidence are in
 [M5.5](../docs/audits/M5.5.md).
 
-The current runtime requires **CWM 2.2**. This breaks the old negotiation
+The current runtime requires **CWM 2.4**. This breaks the old negotiation
 contract; schema fields and union members are appended without changing the
 existing FlatBuffers offsets. Both executables must be rebuilt together.
 The historical coverage table below is retained as audit evidence.
+
+CWM 2.3 appends authoritative ground-item tile lists to `WorldSnapshot`.
+Empty lists in incremental updates remove the previous pile; full state
+replaces the cache. CWM 2.4 appends selection guards to `InteractRequest` for
+`PICKUP`: stack index, type ID, charges and count-by-charges. The server stores
+an absolute target at admission and checks reach and the selected native map
+item again at execution. A stale selection is rejected. A valid selection
+assigns CDDA's native pickup activity for the entire selected stack; its ACK
+means activity assignment, not completed transfer. Native capacity, pocket
+selection, action costs and activity completion remain authoritative.
+Pickup guards participate in command deduplication. The player-facing item
+container interface is a subsequent slice; these fields do not create a
+Luanti-owned inventory.
 
 ## Wire format
 
