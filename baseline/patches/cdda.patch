@@ -519,6 +519,67 @@ index 38b1d71..e5b7a12 100644
  #if defined(__ANDROID__)
      if( get_option<bool>( "ANDROID_NATIVE_UI" ) ) {
          JNIEnv *env = ( JNIEnv * )SDL_AndroidGetJNIEnv();
+diff --git a/src/pickup.cpp b/src/pickup.cpp
+index 183628b..3df055a 100644
+--- a/src/pickup.cpp
++++ b/src/pickup.cpp
+@@ -23,6 +23,7 @@
+ #include "color.h"
+ #include "cursesdef.h"
+ #include "debug.h"
++#include "do_turn.h"
+ #include "enums.h"
+ #include "game.h"
+ #include "input.h"
+@@ -103,6 +104,23 @@ static pickup_answer handle_problematic_pickup( const item &it, const std::strin
+     empty_it.get_contents().clear_items();
+     bool can_pickup = u.can_stash( empty_it ) && u.can_pickWeight( empty_it );
+ 
++    if( external_ui_active() ) {
++        std::vector<std::string> labels{ _( "Cancel" ) };
++        std::vector<pickup_answer> actions{ CANCEL };
++        if( it.is_bucket_nonempty() ) {
++            labels.push_back( string_format( _( "Wield %s" ), it.display_name() ) );
++            actions.push_back( WIELD );
++            if( can_pickup ) {
++                labels.push_back( string_format( _( "Spill contents of %s, then pick up %s" ),
++                                                it.tname(), it.display_name() ) );
++                actions.push_back( SPILL );
++            }
++        }
++        const int selected = external_ui_choice( explain, labels );
++        return selected >= 0 && static_cast<size_t>( selected ) < actions.size() ?
++               actions[selected] : CANCEL;
++    }
++
+     if( it.is_bucket_nonempty() ) {
+         amenu.addentry( WIELD, true, 'w', _( "Wield %s" ), it.display_name() );
+         amenu.addentry( SPILL, can_pickup, 's', _( "Spill contents of %s, then pick up %s" ),
+@@ -125,7 +143,15 @@ bool Pickup::query_thief()
+     const bool force_uc = get_option<bool>( "FORCE_CAPITAL_YN" );
+     const auto &allow_key = force_uc ? input_context::disallow_lower_case_or_non_modified_letters
+                             : input_context::allow_all_keys;
+-    std::string answer = query_popup()
++    std::string answer;
++    if( external_ui_active() ) {
++        const int selected = external_ui_choice(
++            _( "Picking up this item will be considered stealing, continue?" ),
++            { _( "No" ), _( "Yes" ), _( "Always" ), _( "Never" ) );
++        static const std::string actions[] = { "NO", "YES", "ALWAYS", "NEVER" };
++        answer = selected >= 0 && selected < 4 ? actions[selected] : "NO";
++    } else {
++        answer = query_popup()
+                          .preferred_keyboard_mode( keyboard_mode::keycode )
+                          .allow_cancel( false )
+                          .context( "YES_NO_ALWAYS_NEVER" )
+@@ -139,6 +165,7 @@ bool Pickup::query_thief()
+                          .cursor( 1 ) // default to the second option `NO`
+                          .query()
+                          .action; // retrieve the input action
++    }
+     if( answer == "YES" ) {
+         u.set_value( "THIEF_MODE", "THIEF_STEAL" );
+         u.set_value( "THIEF_MODE_KEEP", "NO" );
 diff --git a/tests/CMakeLists.txt b/tests/CMakeLists.txt
 index bfe0773..66ca653 100644
 --- a/tests/CMakeLists.txt
@@ -969,10 +1030,10 @@ index 0000000..1a0308e
 +}
 diff --git a/src/cwm/cwm_map_exporter.cpp b/src/cwm/cwm_map_exporter.cpp
 new file mode 100644
-index 0000000..2896bd7
+index 0000000..6b0a3d6
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.cpp
-@@ -0,0 +1,545 @@
+@@ -0,0 +1,554 @@
 +#include "cwm_motion.h"
 +// CDDA CWM Map & Entity Exporter Implementation
 +// Licensed under Apache-2.0
@@ -1452,6 +1513,15 @@ index 0000000..2896bd7
 +    }
 +    auto fields_vec = fbb.CreateVector(field_offsets);
 +
++    std::vector<flatbuffers::Offset<CDDA::CWM::GroundItemState>> owned_items;
++    u.visit_items([&](item* it, item*) {
++        owned_items.push_back(CDDA::CWM::CreateGroundItemStateDirect(fbb,
++            static_cast<uint32_t>(owned_items.size()), it->typeId().str().c_str(),
++            it->tname().c_str(), it->charges, it->count_by_charges()));
++        return VisitResponse::NEXT;
++    });
++    const auto owned_items_vec = fbb.CreateVector(owned_items);
++
 +    uint64_t sim_seconds = static_cast<uint64_t>(to_turn<int>(calendar::turn));
 +
 +    const auto clock_state = clock ? CDDA::CWM::CreateSimulationState(fbb,
@@ -1469,7 +1539,7 @@ index 0000000..2896bd7
 +        g.safe_mode == SAFE_MODE_STOP || u.has_effect(efftype_id("laserlocked")) ||
 +            (clock && (clock->pause_reasons & 4)),
 +        include_chunks, base_revision, state_id, resync_id, completed_command_id,
-+        spawned_vec, removed_vec, clock_state, ground_items_vec
++        spawned_vec, removed_vec, clock_state, ground_items_vec, owned_items_vec
 +    );
 +
 +    return builder.finish_message(CDDA::CWM::Payload::WorldSnapshot, world_snap.Union());
@@ -2662,10 +2732,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..b159d26
+index 0000000..999c98e
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,141 @@
+@@ -0,0 +1,217 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "calendar.h"
@@ -2674,6 +2744,12 @@ index 0000000..b159d26
 +#include "map.h"
 +#include "map_helpers.h"
 +#include "player_helpers.h"
++#include "do_turn.h"
++#include "pickup.h"
++#include "safe_mode_actions.h"
++#include "weather.h"
++#include "options_helpers.h"
++#include "cwm/cwm_map_exporter.h"
 +#include "cwm/cwm_server.h"
 +#include "cwm/ipc_transport.hpp"
 +
@@ -2806,6 +2882,76 @@ index 0000000..b159d26
 +        cwm::CwmServerTestAccess::enqueue( server, u.pos(), 0, item( itype_id( "rock" ) ) );
 +        CHECK_FALSE( server.has_active_client() );
 +    }
++}
++
++TEST_CASE( "cwm_native_theft_choices_preserve_native_policy", "[cwm][pickup]" )
++{
++    clear_avatar();
++    clear_map();
++    const override_option no_autosave( "AUTOSAVE", "false" );
++    get_avatar().setpos( tripoint( 60, 60, 0 ) );
++    get_avatar().moves = 100;
++    calendar::turn = calendar::turn_zero + 36_hours;
++    g->new_game = false;
++    g->uquit = QUIT_NO;
++    g->set_safe_mode( SAFE_MODE_OFF );
++    get_weather().update_weather();
++    get_avatar().recalc_sight_limits();
++    g->reset_light_level();
++    get_map().build_map_cache( 0 );
++    get_map().invalidate_visibility_cache();
++    get_map().update_visibility_cache( 0 );
++    int choice = 0;
++    SECTION( "decline" ) { choice = 0; }
++    SECTION( "approve once" ) { choice = 1; }
++    SECTION( "approve persistently" ) { choice = 2; }
++    SECTION( "decline persistently" ) { choice = 3; }
++    int prompts = 0;
++    REQUIRE_FALSE( do_turn_with_action( [&]() {
++        CHECK( Pickup::query_thief() == ( choice == 1 || choice == 2 ) );
++        get_avatar().pause();
++        return true;
++    }, [&]( const std::string &text, const std::vector<std::string> &options ) {
++        ++prompts;
++        CHECK( text.find( "stealing" ) != std::string::npos );
++        REQUIRE( ( options == std::vector<std::string>{ "No", "Yes", "Always", "Never" } ) );
++        return choice;
++    } ) );
++    CHECK( prompts == 1 );
++    CHECK( get_avatar().get_value( "THIEF_MODE" ) ==
++           ( choice == 1 || choice == 2 ? "THIEF_STEAL" : "THIEF_HONEST" ) );
++    CHECK( get_avatar().get_value( "THIEF_MODE_KEEP" ) == ( choice >= 2 ? "YES" : "NO" ) );
++}
++
++TEST_CASE( "cwm_owned_items_project_native_nested_possessions", "[cwm][pickup]" )
++{
++    clear_avatar();
++    clear_map();
++    avatar &u = get_avatar();
++    u.setpos( tripoint( 60, 60, 0 ) );
++    REQUIRE( u.wear_item( item( itype_id( "backpack_hiking" ) ) ) );
++    item ammo( itype_id( "9mm" ) );
++    ammo.charges = 7;
++    u.i_add( ammo );
++    const int before_moves = u.moves;
++    const auto before_time = calendar::turn;
++    const auto bytes = cwm::CwmMapExporter::export_world_snapshot( 1, 1, u, get_map(), *g );
++    const auto* owned = CDDA::CWM::GetCwmMessage( bytes.data() )->payload_as_WorldSnapshot()->owned_items();
++    REQUIRE( owned );
++    bool backpack = false, ammunition = false;
++    for( const auto* entry : *owned ) {
++        if( entry->type_id()->str() == "backpack_hiking" ) backpack = true;
++        if( entry->type_id()->str() == "9mm" ) {
++            CHECK( entry->charges() == 7 );
++            CHECK( entry->count_by_charges() );
++            ammunition = true;
++        }
++    }
++    CHECK( backpack );
++    CHECK( ammunition );
++    CHECK( u.moves == before_moves );
++    CHECK( calendar::turn == before_time );
++    CHECK( u.charges_of( itype_id( "9mm" ) ) == 7 );
 +}
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644

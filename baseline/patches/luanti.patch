@@ -24,7 +24,7 @@ index d451d09..eb8db1d 100644
  	PARENT_SCOPE
  )
 diff --git a/src/client/client.cpp b/src/client/client.cpp
-index 6d42e75..3e13910 100644
+index 6d42e75..46b16e3 100644
 --- a/src/client/client.cpp
 +++ b/src/client/client.cpp
 @@ -9,6 +9,7 @@
@@ -53,6 +53,27 @@ index 6d42e75..3e13910 100644
  	//TimeTaker timer1("Client::addNode()");
  
  	std::map<v3s16, MapBlock*> modified_blocks;
+@@ -1563,6 +1568,8 @@ scene::ISceneManager* Client::getSceneManager()
+ 
+ Inventory* Client::getInventory(const InventoryLocation &loc)
+ {
++	if (auto* mirror = cdda_client::CddaBridge::getInstance().getInventoryMirror(loc))
++		return mirror;
+ 	switch(loc.type){
+ 	case InventoryLocation::UNDEFINED:
+ 	{}
+@@ -1607,6 +1614,11 @@ Inventory* Client::getInventory(const InventoryLocation &loc)
+ 
+ void Client::inventoryAction(InventoryAction *a)
+ {
++	if (cdda_client::CddaBridge::getInstance().ownsPlayer(this)) {
++		cdda_client::CddaBridge::getInstance().handleInventoryAction(*a);
++		delete a;
++		return;
++	}
+ 	/*
+ 		Send it to the server
+ 	*/
 diff --git a/src/client/clientenvironment.cpp b/src/client/clientenvironment.cpp
 index b6ae675..9e33201 100644
 --- a/src/client/clientenvironment.cpp
@@ -85,7 +106,7 @@ index b6ae675..9e33201 100644
  		/*
  			Local player handling
 diff --git a/src/client/game.cpp b/src/client/game.cpp
-index 27b5833..b8c5e39 100644
+index 27b5833..559d227 100644
 --- a/src/client/game.cpp
 +++ b/src/client/game.cpp
 @@ -8,6 +8,7 @@
@@ -96,7 +117,23 @@ index 27b5833..b8c5e39 100644
  #include "client.h"
  #include "client/clientevent.h"
  #include "client/gameui.h"
-@@ -932,6 +933,7 @@ class Game {
+@@ -118,6 +119,15 @@ struct TextDestPlayerInventory : public TextDest
+ 	Client *m_client;
+ };
+ 
++struct CwmGroundFormHandler : public TextDest
++{
++	CwmGroundFormHandler() { m_formname = "CWM_GROUND"; }
++	void gotText(const StringMap &fields) override
++	{
++		cdda_client::CddaBridge::getInstance().groundContainerFields(fields);
++	}
++};
++
+ struct LocalFormspecHandler : public TextDest
+ {
+ 	LocalFormspecHandler(const std::string &formname)
+@@ -932,6 +942,7 @@ class Game {
  	bool m_first_loop_after_window_activation = false;
  	bool m_camera_offset_changed = false;
  	bool m_game_focused = false;
@@ -104,7 +141,7 @@ index 27b5833..b8c5e39 100644
  
  	bool m_does_lost_focus_pause_game = false;
  
-@@ -1009,6 +1011,8 @@ Game::Game() :
+@@ -1009,6 +1020,8 @@ Game::Game() :
  
  Game::~Game()
  {
@@ -113,7 +150,7 @@ index 27b5833..b8c5e39 100644
  	delete client;
  	delete soundmaker;
  	sound_manager.reset();
-@@ -1239,6 +1243,8 @@ void Game::shutdown()
+@@ -1239,6 +1252,8 @@ void Game::shutdown()
  		}
  	}
  
@@ -122,7 +159,7 @@ index 27b5833..b8c5e39 100644
  	delete client;
  	client = nullptr;
  	delete soundmaker;
-@@ -2083,7 +2089,8 @@ void Game::processKeyInput()
+@@ -2083,7 +2098,8 @@ void Game::processKeyInput()
  	} else if (wasKeyDown(KeyType::FREEMOVE)) {
  		toggleFreeMove();
  	} else if (wasKeyDown(KeyType::JUMP)) {
@@ -132,7 +169,7 @@ index 27b5833..b8c5e39 100644
  	} else if (wasKeyDown(KeyType::PITCHMOVE)) {
  		togglePitchMove();
  	} else if (wasKeyDown(KeyType::FASTMOVE)) {
-@@ -2154,9 +2161,17 @@ void Game::processKeyInput()
+@@ -2154,9 +2170,17 @@ void Game::processKeyInput()
  	} else if (wasKeyDown(KeyType::ZOOM)) {
  		checkZoomEnabled();
  	} else if (wasKeyDown(KeyType::QUICKTUNE_NEXT)) {
@@ -152,7 +189,7 @@ index 27b5833..b8c5e39 100644
  	} else if (wasKeyDown(KeyType::QUICKTUNE_INC)) {
  		quicktune->inc();
  	} else if (wasKeyDown(KeyType::QUICKTUNE_DEC)) {
-@@ -2178,6 +2193,9 @@ void Game::processItemSelection(u16 *new_playeritem)
+@@ -2178,6 +2202,9 @@ void Game::processItemSelection(u16 *new_playeritem)
  	LocalPlayer *player = client->getEnv().getLocalPlayer();
  
  	*new_playeritem = player->getWieldIndex();
@@ -162,7 +199,7 @@ index 27b5833..b8c5e39 100644
  	u16 max_item = player->getMaxHotbarItemcount();
  	if (max_item == 0)
  		return;
-@@ -2737,8 +2755,83 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
+@@ -2737,8 +2764,83 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
  		control.aux1 = control.aux1 ^ true;
  	}
  
@@ -246,7 +283,7 @@ index 27b5833..b8c5e39 100644
  	//tt.stop();
  }
  
-@@ -2784,6 +2877,25 @@ inline void Game::step(f32 dtime)
+@@ -2784,6 +2886,37 @@ inline void Game::step(f32 dtime)
  
  	if (!m_is_paused)
  		client->step(dtime);
@@ -265,6 +302,18 @@ index 27b5833..b8c5e39 100644
 +			g_settings->getNoEx("cwm_socket_path", socket_path);
 +			bridge.initialize(client, socket_path);
 +		}
++		if (bridge.takeGroundContainerClose()) {
++			auto *formspec = m_game_ui->getFormspecGUI();
++			if (formspec && m_game_ui->getFormspecName() == "CWM_GROUND")
++				formspec->quitMenu();
++		}
++		const auto container_update = bridge.takeGroundContainerUpdate();
++		if (!container_update.empty()) {
++			auto *&formspec = m_game_ui->updateFormspec("CWM_GROUND");
++			GUIFormSpecMenu::create(formspec, client, m_rendering_engine->get_gui_env(),
++				&input->joystick, new FormspecFormSource(container_update),
++				new CwmGroundFormHandler(), "", sound_manager.get());
++		}
 +		bridge.setMenuPause(g_menumgr.menuCount() > 0);
 +		bridge.update(dtime);
 +		bridge.renderDebugOverlay(m_rendering_engine->get_gui_env());
@@ -272,7 +321,7 @@ index 27b5833..b8c5e39 100644
  }
  
  static void pauseNodeAnimation(PausedNodesList &paused, scene::ISceneNode *node) {
-@@ -3246,6 +3358,7 @@ void Game::updateCamera(f32 dtime)
+@@ -3246,6 +3379,7 @@ void Game::updateCamera(f32 dtime)
  	tool_reload_ratio = MYMIN(tool_reload_ratio, 1.0);
  	camera->update(player, dtime, tool_reload_ratio);
  	camera->step(dtime);
@@ -280,7 +329,7 @@ index 27b5833..b8c5e39 100644
  
  	f32 camera_fov = camera->getFovMax();
  	v3s16 camera_offset = camera->getOffset();
-@@ -3262,6 +3375,7 @@ void Game::updateCamera(f32 dtime)
+@@ -3262,6 +3396,7 @@ void Game::updateCamera(f32 dtime)
  		if (m_camera_offset_changed) {
  			client->updateCameraOffset(camera_offset);
  			client->getEnv().updateCameraOffset(camera_offset);
@@ -288,7 +337,7 @@ index 27b5833..b8c5e39 100644
  
  			if (clouds)
  				clouds->updateCameraOffset(camera_offset);
-@@ -3365,6 +3479,21 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
+@@ -3365,6 +3500,34 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
  	// but the halo rendering code is already inefficient so there's no point in optimizing it here
  	hud->updateSelectionMesh(camera_offset);
  
@@ -296,9 +345,22 @@ index 27b5833..b8c5e39 100644
 +	// Luanti digging/placing callbacks against its disposable projection.
 +	if (cdda_client::CddaBridge::getInstance().ownsPlayer(client)) {
 +		auto &bridge = cdda_client::CddaBridge::getInstance();
-+		if (!bridge.getMetrics().pending_decision &&
-+				pointed.type == POINTEDTHING_NODE && wasKeyPressed(KeyType::PLACE))
-+			bridge.handlePointedOpening(pointed.node_undersurface, isKeyDown(KeyType::SNEAK));
++		auto item_ray = shootline;
++		if (pointed.type != POINTEDTHING_NOTHING)
++			item_ray.end = pointed.intersection_point;
++		const bool items_pointed = bridge.pointGroundItems(item_ray);
++		if (!bridge.getMetrics().pending_decision && wasKeyPressed(KeyType::PLACE)) {
++			if (items_pointed && !isKeyDown(KeyType::SNEAK)) {
++				const auto form = bridge.activateGroundItems();
++				if (!form.empty()) {
++					auto *&formspec = m_game_ui->updateFormspec("CWM_GROUND");
++					GUIFormSpecMenu::create(formspec, client, m_rendering_engine->get_gui_env(),
++						&input->joystick, new FormspecFormSource(form),
++						new CwmGroundFormHandler(), "", sound_manager.get());
++				}
++			} else if (pointed.type == POINTEDTHING_NODE)
++				bridge.handlePointedOpening(pointed.node_undersurface, isKeyDown(KeyType::SNEAK));
++		}
 +		runData.pointed_old = pointed;
 +		input->clearWasKeyPressed();
 +		input->clearWasKeyReleased();
@@ -310,7 +372,7 @@ index 27b5833..b8c5e39 100644
  	// Allow digging again if button is not pressed
  	if (runData.digging_blocked && !isKeyDown(KeyType::DIG))
  		runData.digging_blocked = false;
-@@ -4319,7 +4448,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
+@@ -4319,7 +4482,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
  	/*
  		Fog
  	*/
@@ -460,7 +522,7 @@ index 5d6b891..48c0d59 100644
  		g_settings->getFlagStr("anticheat_flags", flagdesc_anticheat, nullptr);
  
 diff --git a/src/unittest/test_mapblock.cpp b/src/unittest/test_mapblock.cpp
-index 7f3f860..0a8d108 100644
+index 7f3f860..8bf1990 100644
 --- a/src/unittest/test_mapblock.cpp
 +++ b/src/unittest/test_mapblock.cpp
 @@ -10,6 +10,12 @@
@@ -490,7 +552,7 @@ index 7f3f860..0a8d108 100644
  };
  
  static TestMapBlock g_test_instance;
-@@ -44,9 +55,82 @@ void TestMapBlock::runTests(IGameDef *gamedef)
+@@ -44,9 +55,83 @@ void TestMapBlock::runTests(IGameDef *gamedef)
  	TEST(testSave29, gamedef);
  	TEST(testLoad29, gamedef);
  	TEST(testLoad20, gamedef);
@@ -550,6 +612,7 @@ index 7f3f860..0a8d108 100644
 +    projection.apply(overlap, std::vector<GroundItemView>{bottle});
 +    projection.clear();
 +    UASSERT(projection.size() == 0);
++
 +}
 +
 +void TestMapBlock::testMeshResultOrder()
@@ -576,16 +639,20 @@ index 7f3f860..0a8d108 100644
  void TestMapBlock::testSaveLoad(IGameDef *gamedef, const u8 version)
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..101a278
+index 0000000..6970aa9
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,1457 @@
+@@ -0,0 +1,1647 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
 +#include "cdda_bridge.h"
 +#include "ground_item_projection.h"
 +#include "ground_item_visual.h"
++#include "ground_item_formspec.h"
++#include "inventorymanager.h"
++#include <optional>
++#include <limits>
 +#include "client/wieldmesh.h"
 +#include "inventory.h"
 +#include "itemdef.h"
@@ -688,6 +755,62 @@ index 0000000..101a278
 +    };
 +    std::map<v3s16, GroundItemVisual> ground_item_visuals_;
 +    float ground_item_rotation_{0.f};
++    std::vector<GroundItemView> owned_items_, ground_selection_;
++    std::unique_ptr<Inventory> ground_mirror_, owned_mirror_;
++    std::optional<v3s16> pointed_ground_;
++    struct QueuedPickup { v3s32 absolute; GroundItemView item; };
++    std::optional<QueuedPickup> queued_pickup_;
++    bool ground_container_open_{false}, ground_form_dirty_{false};
++    bool ground_close_requested_{false};
++    size_t ground_page_{0}, owned_page_{0};
++    v3s16 ground_container_pos_;
++    std::wstring item_hint_;
++    irr::gui::IGUIStaticText* item_hint_text_{nullptr};
++
++    void populate_mirror(std::unique_ptr<Inventory>& mirror,
++                         const std::vector<GroundItemView>& items, size_t page_size) {
++        auto* idef = client_->getItemDefManager();
++        if (!mirror) mirror = std::make_unique<Inventory>(idef);
++        mirror->clear();
++        auto* list = mirror->addList("main", std::max<size_t>(page_size,
++            ((items.size() + page_size - 1) / page_size) * page_size));
++        for (size_t i = 0; i < items.size(); ++i) {
++            ItemStack stack(ground_item_visual_name(items[i].type_id), 1, 0, idef);
++            std::string description = items[i].name;
++            if (items[i].count_by_charges) description += " (" + std::to_string(items[i].charges) + ")";
++            stack.metadata.setString("description", description);
++            list->changeItem(i, stack);
++        }
++    }
++
++    std::string container_form() const {
++        return groundContainerForm(ground_selection_.size(), owned_items_.size(), ground_page_, owned_page_);
++    }
++
++    void queue_pickup(const v3s16& pos, const GroundItemView& item) {
++        const auto native = CddaBridge::luantiToCddaCoord(pos);
++        queued_pickup_ = QueuedPickup{v3s32(native.X + scene_origin_.X,
++            native.Y + scene_origin_.Y, native.Z), item};
++        item_hint_ = L"Raccolta selezionata. Il tempo riprende per eseguire l'azione.";
++    }
++
++    void flush_pickup() {
++        if (!queued_pickup_ || !session_.ready() || !player_ready_ || pending_move_ ||
++            metrics_.pending_decision || metrics_.pause_reasons || ground_container_open_) return;
++        const auto selected = *queued_pickup_;
++        auto builder = session_.builder();
++        const uint64_t id = session_.next_command++;
++        const auto bytes = builder.build_interact_request(id,
++            selected.absolute.X - projection_origin_.X,
++            selected.absolute.Y - projection_origin_.Y, selected.absolute.Z,
++            CDDA::CWM::InteractAction::PICKUP, selected.item.stack_index,
++            selected.item.type_id, selected.item.charges, selected.item.count_by_charges);
++        if (!connection_->send_message(bytes.data(), bytes.size())) return;
++        infostream << "CWM pickup request " << id << " item " << selected.item.type_id << std::endl;
++        pending_move_ = id; move_acked_ = false;
++        sent_move_ = std::chrono::steady_clock::now();
++        queued_pickup_.reset();
++    }
 +
 +    std::map<s16, std::array<float, 4>> terrain_bounds_;
 +    bool terrain_demo_{false};
@@ -770,7 +893,10 @@ index 0000000..101a278
 +            for (size_t i = 0; i < visual.nodes.size(); ++i) {
 +                const v3f off = pile ? pile_offsets[i] : v3f(0.f, 0.f, 0.f);
 +                visual.nodes[i]->setPosition(
-+                    v3f(pos.X + off.X, pos.Y + 0.62f + 0.03f * i, pos.Z + off.Z) * 10.f);
++                    (v3f(pos.X + off.X, pos.Y + 0.62f + 0.03f * i, pos.Z + off.Z) -
++                    v3f(client_->getEnv().getCameraOffset().X,
++                        client_->getEnv().getCameraOffset().Y,
++                        client_->getEnv().getCameraOffset().Z)) * 10.f);
 +            }
 +        }
 +    }
@@ -1091,6 +1217,8 @@ index 0000000..101a278
 +        projected_blocks_.clear(); terrain_tiles_.clear(); terrain_bounds_.clear();
 +        clear_ground_item_visuals();
 +        ground_items_.clear();
++        owned_items_.clear(); pointed_ground_.reset(); queued_pickup_.reset();
++        ground_close_requested_ = ground_container_open_;
 +        commit_projection(old_blocks);
 +        origin_valid_ = false;
 +        pending_move_ = 0; metrics_.pending_decision = 0;
@@ -1206,6 +1334,7 @@ index 0000000..101a278
 +        }
 +
 +        player_ready_ = session_.ready() && entities_.count(1);
++        flush_pickup();
 +        if (player_ready_) sync_timer_ = 0.f;
 +        else {
 +            sync_timer_ += dtime;
@@ -1476,6 +1605,16 @@ index 0000000..101a278
 +                    }
 +                }
 +
++                if (snap->full()) owned_items_.clear();
++                if (snap->owned_items()) {
++                    owned_items_.clear();
++                    for (const auto* item : *snap->owned_items())
++                        owned_items_.push_back({item->stack_index(), item->type_id()->str(),
++                            item->name()->str(), item->charges(), item->count_by_charges()});
++                    if (ground_container_open_)
++                        populate_mirror(owned_mirror_, owned_items_, 36);
++                }
++
 +                // Each atomic state carries the full vehicle roster.
 +                std::set<uint64_t> vehicle_ids;
 +                metrics_.vehicles_count = snap->vehicles()->size();
@@ -1618,6 +1757,8 @@ index 0000000..101a278
 +            case CDDA::CWM::Payload::CommandAck: {
 +                const auto* ack = msg->payload_as_CommandAck();
 +                if (ack) {
++                    if (!ack->accepted() && ack->error_message())
++                        item_hint_ = utf8_to_wide(ack->error_message()->str());
 +                    if (ack->command_id() == pending_move_) { move_acked_ = true; ack_revision_ = ack->result_revision(); }
 +                }
 +                break;
@@ -1732,7 +1873,7 @@ index 0000000..101a278
 +    std::string trace_path;
 +    if (g_settings->getNoEx("cwm_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->trace_.open(trace_path);
-+        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog,ipc_connected,ipc_input,ipc_output,ipc_read_bytes,ipc_write_bytes,ipc_frames,ipc_dispatch_bytes,ipc_read_calls,ipc_write_calls,session_state,input_ready,session_id,player_id,connection_id,sequence,resync_count,entity_cache,vehicle_cache,scene_origin_x,scene_origin_y,simulation_time,realtime,pause_reasons,time_scale,sent_intent,continuous_motion,intent_x,intent_y,ipc_latency_ms,projection_ms\n";
++        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog,ipc_connected,ipc_input,ipc_output,ipc_read_bytes,ipc_write_bytes,ipc_frames,ipc_dispatch_bytes,ipc_read_calls,ipc_write_calls,session_state,input_ready,session_id,player_id,connection_id,sequence,resync_count,entity_cache,vehicle_cache,scene_origin_x,scene_origin_y,simulation_time,realtime,pause_reasons,time_scale,sent_intent,continuous_motion,intent_x,intent_y,ipc_latency_ms,projection_ms,ground_tiles,owned_items,ground_container,ground_hover,queued_pickup,ground_visual_nodes\n";
 +    }
 +    if (g_settings->getNoEx("cwm_entity_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->entity_trace_.open(trace_path);
@@ -1744,6 +1885,7 @@ index 0000000..101a278
 +void CddaBridge::shutdown() {
 +    if (pimpl_) {
 +        if (pimpl_->debug_text_) pimpl_->debug_text_->remove();
++        if (pimpl_->item_hint_text_) pimpl_->item_hint_text_->remove();
 +        if (pimpl_->safety_text_) pimpl_->safety_text_->remove();
 +        if (pimpl_->decision_text_) pimpl_->decision_text_->remove();
 +        if (pimpl_->vertical_text_) pimpl_->vertical_text_->remove();
@@ -1846,7 +1988,10 @@ index 0000000..101a278
 +        << ',' << pimpl_->scene_origin_.X << ',' << pimpl_->scene_origin_.Y << ','
 +        << pimpl_->metrics_.simulation_time << ',' << pimpl_->metrics_.realtime << ','
 +        << pimpl_->metrics_.pause_reasons << ',' << pimpl_->metrics_.time_scale << ',' << pimpl_->sent_intent_ << ','
-+        << pimpl_->metrics_.continuous_motion << ',' << pimpl_->sent_intent_x_ << ',' << pimpl_->sent_intent_y_ << ',' << pimpl_->metrics_.ipc_latency_ms << ',' << pimpl_->metrics_.projection_ms << '\n';
++        << pimpl_->metrics_.continuous_motion << ',' << pimpl_->sent_intent_x_ << ',' << pimpl_->sent_intent_y_ << ',' << pimpl_->metrics_.ipc_latency_ms << ',' << pimpl_->metrics_.projection_ms << ',' << pimpl_->ground_items_.tiles().size()
++        << ',' << pimpl_->owned_items_.size() << ',' << pimpl_->ground_container_open_
++        << ',' << pimpl_->pointed_ground_.has_value() << ',' << pimpl_->queued_pickup_.has_value()
++        << ',' << [&]() { size_t count = 0; for (const auto& [pos, visual] : pimpl_->ground_item_visuals_) count += visual.nodes.size(); return count; }() << '\n';
 +    pimpl_->trace_.flush();
 +}
 +
@@ -1879,6 +2024,105 @@ index 0000000..101a278
 +    const auto tile = luantiToCddaCoord(node);
 +    return handleInteract(tile.X, tile.Y, tile.Z, static_cast<int>(close ?
 +        CDDA::CWM::InteractAction::CLOSE : CDDA::CWM::InteractAction::OPEN));
++}
++
++bool CddaBridge::pointGroundItems(const irr::core::line3d<float>& ray) {
++    if (!pimpl_) return false;
++    auto& impl = *pimpl_;
++    impl.pointed_ground_.reset();
++    if (!impl.session_.ready() || !impl.entities_.count(1) || impl.metrics_.pending_decision)
++        return false;
++    const auto player = impl.entities_.at(1).target_pos;
++    float closest = std::numeric_limits<float>::max();
++    for (const auto& [pos, items] : impl.ground_items_.tiles()) {
++        if (pos.Y != std::round(player.Y) ||
++            std::abs(pos.X - std::round(player.X)) > 1 ||
++            std::abs(pos.Z - std::round(player.Z)) > 1) continue;
++        const v3f center(pos.X * 10.f, (pos.Y + .8f) * 10.f, pos.Z * 10.f);
++        const irr::core::aabbox3df box(center - v3f(4.5f, 3.f, 4.5f),
++                                     center + v3f(4.5f, 3.f, 4.5f));
++        const float distance = center.getDistanceFromSQ(ray.start);
++        if (distance < closest && box.intersectsWithLine(ray)) {
++            closest = distance; impl.pointed_ground_ = pos;
++            impl.item_hint_ = utf8_to_wide(items.size() == 1 ? items.front().name :
++                "Pila a terra (" + std::to_string(items.size()) + " oggetti)") +
++                L" — tasto destro";
++        }
++    }
++    return impl.pointed_ground_.has_value();
++}
++
++std::string CddaBridge::activateGroundItems() {
++    if (!pimpl_ || !pimpl_->pointed_ground_ || pimpl_->pending_move_ || pimpl_->queued_pickup_)
++        return {};
++    auto& impl = *pimpl_;
++    const auto* items = impl.ground_items_.get(*impl.pointed_ground_);
++    if (!items || items->empty()) return {};
++    if (items->size() == 1) {
++        impl.queue_pickup(*impl.pointed_ground_, items->front());
++        return {};
++    }
++    impl.ground_container_pos_ = *impl.pointed_ground_;
++    impl.ground_selection_ = *items;
++    impl.ground_page_ = impl.owned_page_ = 0;
++    impl.populate_mirror(impl.ground_mirror_, impl.ground_selection_, 27);
++    impl.populate_mirror(impl.owned_mirror_, impl.owned_items_, 36);
++    impl.ground_close_requested_ = impl.ground_form_dirty_ = false;
++    impl.ground_container_open_ = true;
++    infostream << "CWM ground container opened: " << items->size() << " ground items, "
++               << impl.owned_items_.size() << " owned items" << std::endl;
++    setMenuPause(true);
++    return impl.container_form();
++}
++
++Inventory* CddaBridge::getInventoryMirror(const InventoryLocation& loc) {
++    if (!pimpl_ || !pimpl_->ground_container_open_ || !pimpl_->session_.ready() ||
++        loc.type != InventoryLocation::DETACHED) return nullptr;
++    if (loc.name == "cwm_ground") return pimpl_->ground_mirror_.get();
++    if (loc.name == "cwm_owned") return pimpl_->owned_mirror_.get();
++    return nullptr;
++}
++
++void CddaBridge::handleInventoryAction(const InventoryAction& action) {
++    if (!pimpl_ || !pimpl_->ground_container_open_ || !pimpl_->session_.ready() ||
++        pimpl_->queued_pickup_ || action.getType() != IAction::Move) return;
++    const auto& move = static_cast<const IMoveAction&>(action);
++    if (move.from_inv.type != InventoryLocation::DETACHED || move.from_inv.name != "cwm_ground" ||
++        move.to_inv.type != InventoryLocation::DETACHED || move.to_inv.name != "cwm_owned" ||
++        move.from_list != "main" || move.to_list != "main" || move.from_i < 0 ||
++        static_cast<size_t>(move.from_i) >= pimpl_->ground_selection_.size()) return;
++    pimpl_->queue_pickup(pimpl_->ground_container_pos_, pimpl_->ground_selection_[move.from_i]);
++    pimpl_->ground_close_requested_ = true;
++}
++
++void CddaBridge::groundContainerFields(const std::unordered_map<std::string, std::string>& fields) {
++    if (!pimpl_) return;
++    auto& impl = *pimpl_;
++    if (fields.count("quit")) {
++        impl.ground_container_open_ = impl.ground_close_requested_ = impl.ground_form_dirty_ = false;
++        return;
++    }
++    const auto page = [&](size_t& current, size_t count, size_t size, const std::string& prefix) {
++        const size_t maximum = count ? (count - 1) / size : 0;
++        if (fields.count(prefix + "_prev") && current) --current;
++        if (fields.count(prefix + "_next") && current < maximum) ++current;
++    };
++    page(impl.ground_page_, impl.ground_selection_.size(), 27, "ground");
++    page(impl.owned_page_, impl.owned_items_.size(), 36, "owned");
++    impl.ground_form_dirty_ = true;
++}
++
++bool CddaBridge::takeGroundContainerClose() {
++    if (!pimpl_ || !pimpl_->ground_container_open_ ||
++        (!pimpl_->ground_close_requested_ && pimpl_->session_.ready())) return false;
++    pimpl_->ground_container_open_ = pimpl_->ground_close_requested_ = false;
++    return true;
++}
++
++std::string CddaBridge::takeGroundContainerUpdate() {
++    if (!pimpl_ || !pimpl_->ground_container_open_ || !pimpl_->ground_form_dirty_) return {};
++    pimpl_->ground_form_dirty_ = false;
++    return pimpl_->container_form();
 +}
 +
 +bool CddaBridge::acknowledgeThreat() {
@@ -1925,6 +2169,15 @@ index 0000000..101a278
 +namespace cdda_client {
 +void CddaBridge::renderDebugOverlay(irr::gui::IGUIEnvironment* guienv) {
 +    if (!guienv || !pimpl_) return;
++
++    if (!pimpl_->item_hint_text_)
++        pimpl_->item_hint_text_ = guienv->addStaticText(L"",
++            irr::core::rect<irr::s32>(10, 245, 1100, 280), false, true);
++    if (pimpl_->item_hint_text_) {
++        pimpl_->item_hint_text_->setText(pimpl_->item_hint_.c_str());
++        pimpl_->item_hint_text_->setVisible(pimpl_->session_.ready() &&
++            !pimpl_->metrics_.pending_decision && !pimpl_->ground_container_open_);
++    }
 +
 +    if (pimpl_->metrics_.realtime) {
 +        if (!pimpl_->clock_text_) {
@@ -2039,10 +2292,10 @@ index 0000000..101a278
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.h b/src/cdda/cdda_bridge.h
 new file mode 100644
-index 0000000..551f2cc
+index 0000000..6856560
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.h
-@@ -0,0 +1,129 @@
+@@ -0,0 +1,140 @@
 +// Luanti C++ CWM Presentation Bridge
 +// Licensed under Apache-2.0
 +#pragma once
@@ -2055,11 +2308,15 @@ index 0000000..551f2cc
 +#include <mutex>
 +#include "irrlichttypes.h"
 +#include "irr_v3d.h"
++#include <line3d.h>
 +
 +namespace irr { namespace gui { class IGUIEnvironment; class IGUIStaticText; } }
 +
 +class Client;
 +class MapBlock;
++class Inventory;
++struct InventoryLocation;
++struct InventoryAction;
 +
 +namespace cdda_client {
 +
@@ -2128,6 +2385,13 @@ index 0000000..551f2cc
 +    bool handleMoveInput(int dir);
 +    bool handleInteract(int x, int y, int z, int action);
 +    bool handlePointedOpening(const v3s16& node, bool close);
++    bool pointGroundItems(const irr::core::line3d<float>& ray);
++    std::string activateGroundItems();
++    Inventory* getInventoryMirror(const InventoryLocation& location);
++    void handleInventoryAction(const InventoryAction& action);
++    void groundContainerFields(const std::unordered_map<std::string, std::string>& fields);
++    bool takeGroundContainerClose();
++    std::string takeGroundContainerUpdate();
 +    bool acknowledgeThreat();
 +    bool answerDecision(uint16_t choice);
 +    void handleMovementIntent(int direction);
@@ -2172,6 +2436,55 @@ index 0000000..551f2cc
 +};
 +
 +} // namespace cdda_client
+diff --git a/src/cdda/ground_item_formspec.h b/src/cdda/ground_item_formspec.h
+new file mode 100644
+index 0000000..aea7764
+--- /dev/null
++++ b/src/cdda/ground_item_formspec.h
+@@ -0,0 +1,43 @@
++#pragma once
++#include <algorithm>
++#include <string>
++
++namespace cdda_client {
++// Mineclonia mcl_chests single-chest layout and mcl_formspec slot spacing.
++// Inventory locations are client-owned projection mirrors; no Lua inventories.
++inline std::string groundContainerForm(size_t ground_count, size_t owned_count,
++        size_t ground_page, size_t owned_page)
++{
++    std::string form = "formspec_version[4]size[11.75,10.425]no_prepend[]"
++        "listcolors[#9990;#FFF7;#FFF0;#000;#FFF]"
++        "style_type[label;textcolor=#323232]"
++        "style_type[button;border=false;bgimg=mcl_inventory_button9.png;"
++        "bgimg_pressed=mcl_inventory_button9_pressed.png;bgimg_middle=2,2]"
++        "bgcolor[#00000000]"
++        "background9[1,1;1,1;mcl_base_textures_background9.png;true;7]";
++    const auto slots = [&](double x, double y, int w, int h) {
++        for (int i = 0; i < w; ++i) for (int j = 0; j < h; ++j)
++            form += "image[" + std::to_string(x + i * 1.25 - .05) + "," +
++                std::to_string(y + j * 1.25 - .05) +
++                ";1.1,1.1;mcl_formspec_itemslot.png]";
++    };
++    form += "label[0.375,0.375;Pila a terra (" + std::to_string(ground_count) + ")]";
++    slots(.375, .75, 9, 3);
++    form += "list[detached:cwm_ground;main;0.375,0.75;9,3;" +
++        std::to_string(ground_page * 27) + "]";
++    form += "label[0.375,4.7;Inventario / equipaggiamento]";
++    slots(.375, 5.1, 9, 3);
++    form += "list[detached:cwm_owned;main;0.375,5.1;9,3;" +
++        std::to_string(owned_page * 36 + 9) + "]";
++    slots(.375, 9.05, 9, 1);
++    form += "list[detached:cwm_owned;main;0.375,9.05;9,1;" +
++        std::to_string(owned_page * 36) + "]"
++        "listring[detached:cwm_ground;main]listring[detached:cwm_owned;main]"
++        "label[0.375,10.1;Trascina una pila intera nell'inventario: raccogli e riprendi.]";
++    if (ground_count > 27)
++        form += "button[9,0.05;1.1,0.5;ground_prev;<]button[10.35,0.05;1.1,0.5;ground_next;>]";
++    if (owned_count > 36)
++        form += "button[9,4.1;1.1,0.5;owned_prev;<]button[10.35,4.1;1.1,0.5;owned_next;>]";
++    return form;
++}
++}
 diff --git a/src/cdda/ground_item_projection.h b/src/cdda/ground_item_projection.h
 new file mode 100644
 index 0000000..ecf25ba

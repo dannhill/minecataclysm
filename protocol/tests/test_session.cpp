@@ -25,7 +25,7 @@ std::vector<uint8_t> reset(uint64_t seq, uint64_t request=0, Identity ids={11,22
     return b.finish_message(Payload::WorldReset, CreateWorldReset(b.builder(),request).Union());
 }
 std::vector<uint8_t> world(uint64_t seq, bool full=true, uint64_t base=0,
-    uint64_t revision=5, uint64_t resync=0, bool malformed=false, Identity ids={11,22,33}, float scale=1.f, uint32_t reasons=0, float motion=.2f, bool realtime=true, bool continuous=false) {
+    uint64_t revision=5, uint64_t resync=0, bool malformed=false, Identity ids={11,22,33}, float scale=1.f, uint32_t reasons=0, float motion=.2f, bool realtime=true, bool continuous=false, int owned_case=0) {
     MessageBuilder b(seq,revision,ids); auto& f=b.builder();
     Vec3f pos(2,3,0); Coord3i origin(0,0,0);
     auto actor=CreateEntityState(f,1,EntityType::PLAYER,0,&pos,0,0,0,0,true,0,motion);
@@ -36,8 +36,13 @@ std::vector<uint8_t> world(uint64_t seq, bool full=true, uint64_t base=0,
     auto vehicles=f.CreateVector(std::vector<flatbuffers::Offset<VehicleState>>{});
     auto fields=f.CreateVector(std::vector<flatbuffers::Offset<FieldState>>{});
     auto clock=CreateSimulationState(f,realtime,reasons,scale,continuous);
+    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<GroundItemState>>> owned;
+    if (owned_case) {
+        auto item=CreateGroundItemStateDirect(f,owned_case==2?1:0,"9mm",owned_case==3?nullptr:"9mm round",7,true);
+        owned=f.CreateVector(std::vector{item});
+    }
     auto body=CreateWorldSnapshot(f,revision,&origin,0,full?chunks:0,actors,vehicles,fields,0,false,
-        full,base,seq,resync,0,0,0,clock);
+        full,base,seq,resync,0,0,0,clock,0,owned);
     return b.finish_message(Payload::WorldSnapshot,body.Union());
 }
 bool accept(ClientSession& s, MemoryChannel& c, const std::vector<uint8_t>& bytes) {
@@ -121,5 +126,12 @@ int main() {
     test("bounded_cache_expiry_never_reexecutes",[]{CommandLedger l(2); for(uint64_t i=1;i<=100;i++){ CHECK(l.begin(7,i,"wait")==CommandLedger::Status::Fresh); l.complete({i,true,"",i}); CHECK(l.size()<=2); } CHECK(l.begin(7,1,"wait")==CommandLedger::Status::Expired); CHECK(l.next_id()==101);});
     test("pending_entries_cannot_be_evicted",[]{CommandLedger l(1); l.begin(7,1,"wait"); CHECK(l.begin(7,2,"wait")==CommandLedger::Status::Expired); CHECK(l.find(1) && l.size()==1);});
     test("invalid_ids_do_not_consume_ledger",[]{CommandLedger l; CHECK(l.begin(0,1,"x")==CommandLedger::Status::Invalid); CHECK(l.begin(1,0,"x")==CommandLedger::Status::Invalid); CHECK(l.next_id()==1);});
+    test("owned_item_projection_rejects_invalid_selection_data",[]{
+        for(int kind : {1,2,3}) {
+            const auto bytes=world(4,false,5,6,0,false,{11,22,33},1.f,0,.2f,true,false,kind);
+            CHECK(MessageVerifier::verify(bytes.data(),bytes.size()));
+            CHECK(valid_world(GetCwmMessage(bytes.data())->payload_as_WorldSnapshot()) == (kind==1));
+        }
+    });
     return failed?1:0;
 }

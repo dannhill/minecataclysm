@@ -1,0 +1,22 @@
+[
+  {
+    "texture": "mcl_formspec_itemslot.png",
+    "source": "mineclonia/mods/HUD/mcl_formspec/textures/mcl_formspec_itemslot.png",
+    "sha256": "707cd34fd7948c6a2d76c4bd12d967457a24a96fc5a984e513f228697a043577"
+  },
+  {
+    "texture": "mcl_base_textures_background9.png",
+    "source": "mineclonia/mods/HUD/mcl_base_textures/textures/mcl_base_textures_background9.png",
+    "sha256": "2567d2d0ccbfe43971820abe49b01df00c50596025c24491b057976f131cb142"
+  },
+  {
+    "texture": "mcl_inventory_button9.png",
+    "source": "mineclonia/mods/HUD/mcl_inventory/textures/mcl_inventory_button9.png",
+    "sha256": "9b39a232ea1d916a4ba0ea45c8fd42737dc82fcac2d16eb6b5ef86290df7ba4e"
+  },
+  {
+    "texture": "mcl_inventory_button9_pressed.png",
+    "source": "mineclonia/mods/HUD/mcl_inventory/textures/mcl_inventory_button9_pressed.png",
+    "sha256": "a2cc29239ce7c838e105d90ee703ac49e68e036d158a4cbc5dc3700656fd5992"
+  }
+]

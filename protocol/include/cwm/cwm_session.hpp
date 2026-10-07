@@ -8,6 +8,7 @@
 #include <limits>
 #include <random>
 #include <set>
+#include <tuple>
 #include <unordered_map>
 
 namespace cdda::cwm {
@@ -24,6 +25,28 @@ inline bool valid_world(const CDDA::CWM::WorldSnapshot* world) {
         world->vehicles()->size() > 8192 || world->fields()->size() > 65536) return false;
     if (world->full() && (!world->chunks() || !world->chunks()->size() || world->chunks()->size() > 1024)) return false;
     if (!world->full() && world->chunks() && world->chunks()->size()) return false;
+    const auto valid_items = [](const auto* items) {
+        if (!items || items->size() > 8192) return false;
+        uint32_t index = 0;
+        for (const auto* item : *items) {
+            if (!item || item->stack_index() != index++ || !item->type_id() ||
+                item->type_id()->str().empty() || item->type_id()->size() > 1024 ||
+                !item->name() || item->name()->size() > 16384) return false;
+        }
+        return true;
+    };
+    if (world->owned_items() && !valid_items(world->owned_items())) return false;
+    if (world->ground_item_tiles()) {
+        if (world->ground_item_tiles()->size() > 65536) return false;
+        std::set<std::tuple<int, int, int>> coords;
+        for (const auto* tile : *world->ground_item_tiles()) {
+            if (!tile || !tile->coord() || !valid_items(tile->items())) return false;
+            const auto* p = tile->coord();
+            if (p->x() < 0 || p->x() >= 132 || p->y() < 0 || p->y() >= 132 ||
+                p->z() < -1024 || p->z() > 1024 ||
+                !coords.emplace(p->x(), p->y(), p->z()).second) return false;
+        }
+    }
     if (const auto* clock = world->clock()) {
         if (!std::isfinite(clock->time_scale()) || clock->time_scale() < .25f || clock->time_scale() > 4.f ||
             (clock->pause_reasons() & ~uint32_t(31)) ||

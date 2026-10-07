@@ -7232,12 +7232,17 @@
   {
     "path": "src/cdda/cdda_bridge.cpp",
     "mode": "100644",
-    "sha256": "1037482210a002632e192b453501fd2e551f028e4f451e7b1f6ca1368a699f30"
+    "sha256": "e4f5212d9218b738dbe4bc15bb63b4fb22edfc793ec397ddca738a12d5f05c47"
   },
   {
     "path": "src/cdda/cdda_bridge.h",
     "mode": "100644",
-    "sha256": "1a1ec1850c0d9282d198c2b12527fe4ff03b40fd1f8548a8f0a7eda5a19892bd"
+    "sha256": "1b67a526fe2696ed6dff2b56acde9a84ceaeb7e51c2715fa745a3800dd38305f"
+  },
+  {
+    "path": "src/cdda/ground_item_formspec.h",
+    "mode": "100644",
+    "sha256": "f5a8538564c7b8c0ef6cffc00d28cf2ccccd8b25975b892803982d440eeafee4"
   },
   {
     "path": "src/cdda/ground_item_projection.h",
@@ -7297,7 +7302,7 @@
   {
     "path": "src/client/client.cpp",
     "mode": "100644",
-    "sha256": "57e0abc566d7bbb1ad67021be4a53c54d3df2708f8ddf9d05b20c7c60ffd19fa"
+    "sha256": "f7f3fc20d57a6d07a084b5cfe9e4239b45f444acc7769189ad2d1d28ff52d225"
   },
   {
     "path": "src/client/client.h",
@@ -7432,7 +7437,7 @@
   {
     "path": "src/client/game.cpp",
     "mode": "100644",
-    "sha256": "ddd4fc8ab0f2f77b0f17a5c81fc6daaad687b3b132db8cc065075bf166e07bce"
+    "sha256": "8c6c10bbba32c09af3e16228e71a8d5968dc8d6760db2369df85ef140b3efec2"
   },
   {
     "path": "src/client/game.h",
@@ -10292,7 +10297,7 @@
   {
     "path": "src/unittest/test_mapblock.cpp",
     "mode": "100644",
-    "sha256": "779217948cb79e6d4ecad35678e970473e95356a529fef7d03bc12be0ab8ad91"
+    "sha256": "192c24f5fcc67b1dddde2bbb2edfeab28421c7f150837c49aed0dcaa7eec4a26"
   },
   {
     "path": "src/unittest/test_mapnode.cpp",

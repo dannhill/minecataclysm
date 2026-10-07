@@ -182,6 +182,9 @@ table WorldSnapshot {
     removed: [EntityRemoved];
     clock: SimulationState;
     ground_item_tiles: [GroundItemTileState];
+    // Complete read-only possession projection (worn, wielded and nested items).
+    // Indices are presentation order, not inventory mutation handles.
+    owned_items: [GroundItemState];
 }
 
 table SimulationState {
