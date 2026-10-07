@@ -43,7 +43,7 @@ def main():
         check('pristine_reader_' + label, result.returncode == 0)
         return json.loads((out / (label + '.json')).read_text())
 
-    native('before', True)
+    before = native('before', True)
     (user / 'config/options.json').write_text(json.dumps([
         {'name': 'SAFEMODE', 'value': 'false'}, {'name': 'AUTOSAFEMODE', 'value': 'false'},
         {'name': 'AUTOSAVE', 'value': 'false'}]))
@@ -155,8 +155,11 @@ def main():
                 wire.hello_fields(b)
                 wire.send(peer, b, Payload.Payload.HelloRequest, HelloRequest.HelloRequestEnd(b))
                 until(lambda: state and not state['pause'] & 8)
-                target, items = next((p, items) for p, items in piles.items()
-                                    if {i['type'] for i in items} == {'rock', 'matches'})
+                x, y, z = before['player_abs']
+                target = (x, y-1, z)
+                items = piles[target]
+                (out / 'initial-selection.json').write_text(json.dumps(
+                    dict(target=target, items=items), indent=2)+'\n')
                 selected = next(i for i in items if i['type'] == 'matches')
                 check('native_projection_contains_guarded_stack', selected['charges'] == 7)
                 control(3)  # MENU_OPEN freezes selection time.
