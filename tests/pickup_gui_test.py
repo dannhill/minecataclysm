@@ -24,6 +24,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ('workspace', 'fixture', 'native-reader', 'artifacts'):
         parser.add_argument('--' + name, type=Path, required=True)
+    parser.add_argument('--action-driven', action='store_true', help='Verify ordinary start.sh mode without the real-time scheduler')
     args = parser.parse_args()
     ws, out = args.workspace.resolve(), args.artifacts.resolve()
     out.mkdir(parents=True, exist_ok=False)
@@ -55,6 +56,9 @@ def main():
                LOG_DIR=str(out / 'logs'), CDDA_BIN=str(ws / 'cdda/build/src/cdda-server'),
                LUANTI_BIN=str(ws / 'luanti/bin/luanti'), CDDA_CONTINUOUS='1')
     env.pop('CDDA_TERRAIN_DEMO', None)
+    if args.action_driven:
+        env.pop('CDDA_CONTINUOUS', None)
+        env.pop('CDDA_REALTIME', None)
     # A byte-transparent local relay lets the real client lose IPC while a
     # selection is queued under manual pause. Gameplay still runs in CDDA.
     scratch = tempfile.TemporaryDirectory(prefix='cwm-pickup-gui-')
@@ -178,7 +182,7 @@ def main():
             wait(lambda r: int(r['ground_hover']) == 1)
             shot('pointed-pile.png')
             xdo('click', '3')
-            wait(lambda r: int(r['ground_container']) == 1 and int(r['pause_reasons']) & 2)
+            wait(lambda r: int(r['ground_container']) == 1 and (args.action_driven or int(r['pause_reasons']) & 2))
             frozen = int(latest()['simulation_time'])
             shot('container-open.png')
             time.sleep(1)
@@ -187,10 +191,11 @@ def main():
             wait(lambda r: int(r['ground_container']) == 0 and int(r['pause_reasons']) == 0)
             check('escape_does_not_transfer_items', int(latest()['owned_items']) == owned and int(latest()['ground_visual_nodes']) == nodes)
             wait(lambda r: int(r['ground_hover']) == 1)
-            tap('F7')
-            wait(lambda r: int(r['pause_reasons']) & 1)
+            if not args.action_driven:
+                tap('F7')
+                wait(lambda r: int(r['pause_reasons']) & 1)
             xdo('click', '3')
-            wait(lambda r: int(r['ground_container']) == 1 and int(r['pause_reasons']) & 2)
+            wait(lambda r: int(r['ground_container']) == 1 and (args.action_driven or int(r['pause_reasons']) & 2))
             shot('container-reopened.png')
             # Locate actual repeated slot interiors in the screenshot. This
             # follows rendered geometry even when the desktop DPI changes.
@@ -226,28 +231,29 @@ def main():
             xdo('mousemove', '--window', window, str(round(x+7*step)), str(round(y+4.35*unit)))
             time.sleep(.2)
             xdo('mouseup', '1')
-            wait(lambda r: int(r['ground_container']) == 0 and int(r['queued_pickup']) == 1)
-            check('manual_pause_keeps_pickup_queued_without_free_transfer', int(latest()['owned_items']) == owned)
-            old_connection = latest()['connection_id']
-            drop.set()
-            wait(lambda r: r['connection_id'] != old_connection and int(r['input_ready']) == 1, timeout=25)
-            check('reconnect_cancels_unsent_selection_and_container', int(latest()['queued_pickup']) == 0 and int(latest()['ground_container']) == 0)
-            if int(latest()['pause_reasons']) & 1:
-                tap('F7')
-            wait(lambda r: int(r['pause_reasons']) == 0)
-            time.sleep(.5)
-            check('reconnect_does_not_replay_stale_selection', int(latest()['owned_items']) == owned and int(latest()['ground_visual_nodes']) == nodes)
-            turn(0, -52)
-            wait(lambda r: int(r['ground_hover']) == 1)
-            xdo('click', '3')
-            wait(lambda r: int(r['ground_container']) == 1 and int(r['pause_reasons']) & 2)
-            xdo('mousemove', '--window', window, str(round(x)), str(round(y)))
-            shot('native-stack-tooltip.png')
-            xdo('mousedown', '1')
-            time.sleep(.2)
-            xdo('mousemove', '--window', window, str(round(x+7*step)), str(round(y+4.35*unit)))
-            time.sleep(.2)
-            xdo('mouseup', '1')
+            if not args.action_driven:
+                wait(lambda r: int(r['ground_container']) == 0 and int(r['queued_pickup']) == 1)
+                check('manual_pause_keeps_pickup_queued_without_free_transfer', int(latest()['owned_items']) == owned)
+                old_connection = latest()['connection_id']
+                drop.set()
+                wait(lambda r: r['connection_id'] != old_connection and int(r['input_ready']) == 1, timeout=25)
+                check('reconnect_cancels_unsent_selection_and_container', int(latest()['queued_pickup']) == 0 and int(latest()['ground_container']) == 0)
+                if int(latest()['pause_reasons']) & 1:
+                    tap('F7')
+                wait(lambda r: int(r['pause_reasons']) == 0)
+                time.sleep(.5)
+                check('reconnect_does_not_replay_stale_selection', int(latest()['owned_items']) == owned and int(latest()['ground_visual_nodes']) == nodes)
+                turn(0, -52)
+                wait(lambda r: int(r['ground_hover']) == 1)
+                xdo('click', '3')
+                wait(lambda r: int(r['ground_container']) == 1 and (args.action_driven or int(r['pause_reasons']) & 2))
+                xdo('mousemove', '--window', window, str(round(x)), str(round(y)))
+                shot('native-stack-tooltip.png')
+                xdo('mousedown', '1')
+                time.sleep(.2)
+                xdo('mousemove', '--window', window, str(round(x+7*step)), str(round(y+4.35*unit)))
+                time.sleep(.2)
+                xdo('mouseup', '1')
             wait(lambda r: int(r['ground_container']) == 0 and int(r['owned_items']) == owned+1 and int(r['pending_move']) == 0)
             check('only_selected_stack_transferred', int(latest()['ground_visual_nodes']) == nodes-1 and int(latest()['ground_tiles']) == tiles)
             shot('single-item-left.png')
@@ -258,8 +264,9 @@ def main():
             check('single_item_uses_direct_pickup_without_container', int(latest()['ground_container']) == 0)
             check('emptied_ground_tile_removes_visual', int(latest()['ground_visual_nodes']) == nodes-2 and int(latest()['ground_tiles']) == tiles-1)
             shot('empty-ground.png')
-            tap('F7')
-            wait(lambda r: int(r['pause_reasons']) & 1)
+            if not args.action_driven:
+                tap('F7')
+                wait(lambda r: int(r['pause_reasons']) & 1)
             check('actual_runtime_survives', proc.poll() is None)
         finally:
             subprocess.run(['xdotool', 'mouseup', '1'], capture_output=True)
