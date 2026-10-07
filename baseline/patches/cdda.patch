@@ -520,7 +520,7 @@ index 38b1d71..e5b7a12 100644
      if( get_option<bool>( "ANDROID_NATIVE_UI" ) ) {
          JNIEnv *env = ( JNIEnv * )SDL_AndroidGetJNIEnv();
 diff --git a/src/pickup.cpp b/src/pickup.cpp
-index 183628b..3df055a 100644
+index 183628b..1d538f9 100644
 --- a/src/pickup.cpp
 +++ b/src/pickup.cpp
 @@ -23,6 +23,7 @@
@@ -564,7 +564,7 @@ index 183628b..3df055a 100644
 +    if( external_ui_active() ) {
 +        const int selected = external_ui_choice(
 +            _( "Picking up this item will be considered stealing, continue?" ),
-+            { _( "No" ), _( "Yes" ), _( "Always" ), _( "Never" ) );
++            { _( "No" ), _( "Yes" ), _( "Always" ), _( "Never" ) } );
 +        static const std::string actions[] = { "NO", "YES", "ALWAYS", "NEVER" };
 +        answer = selected >= 0 && selected < 4 ? actions[selected] : "NO";
 +    } else {
