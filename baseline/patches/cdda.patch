@@ -150,7 +150,7 @@ index a90f830..84949ac 100644
      // Chance to suffer pain if overburden and stamina runs out or has trait BADBACK
      // Starts at 1 in 25, goes down by 5 for every 50% more carried
 diff --git a/src/character_inventory.cpp b/src/character_inventory.cpp
-index 5d80fec..f80b3d2 100644
+index 5d80fec..46a5c2d 100644
 --- a/src/character_inventory.cpp
 +++ b/src/character_inventory.cpp
 @@ -2,6 +2,7 @@
@@ -161,12 +161,12 @@ index 5d80fec..f80b3d2 100644
  #include "flag.h"
  #include "inventory.h"
  #include "iuse_actor.h"
-@@ -740,6 +741,25 @@ bool Character::dispose_item( item_location &&obj, const std::string &prompt )
+@@ -740,6 +741,27 @@ bool Character::dispose_item( item_location &&obj, const std::string &prompt )
  
      worn.holster_opts( opts, obj, *this );
  
 +    if( external_ui_active() ) {
-+        std::vector<std::string> labels{ _( "Cancel" ) };
++        std::vector<std::string> labels;
 +        std::vector<size_t> actions;
 +        for( size_t i = 0; i < opts.size(); ++i ) {
 +            // A full open container needs the unported liquid destination
@@ -177,11 +177,13 @@ index 5d80fec..f80b3d2 100644
 +                actions.push_back( i );
 +            }
 +        }
++        // Keep cancellation last for the CWM disconnect fallback and paging.
++        labels.push_back( _( "Cancel" ) );
 +        const int selected = external_ui_choice( menu.text, labels );
-+        if( selected <= 0 || static_cast<size_t>( selected ) > actions.size() ) {
++        if( selected < 0 || static_cast<size_t>( selected ) >= actions.size() ) {
 +            return false;
 +        }
-+        return opts[actions[selected - 1]].action();
++        return opts[actions[selected]].action();
 +    }
 +
      int w = utf8_width( menu.text, true ) + 4;
@@ -558,7 +560,7 @@ index 38b1d71..e5b7a12 100644
      if( get_option<bool>( "ANDROID_NATIVE_UI" ) ) {
          JNIEnv *env = ( JNIEnv * )SDL_AndroidGetJNIEnv();
 diff --git a/src/pickup.cpp b/src/pickup.cpp
-index 183628b..0bf2b3c 100644
+index 183628b..9a64f94 100644
 --- a/src/pickup.cpp
 +++ b/src/pickup.cpp
 @@ -23,6 +23,7 @@
@@ -569,13 +571,13 @@ index 183628b..0bf2b3c 100644
  #include "enums.h"
  #include "game.h"
  #include "input.h"
-@@ -103,6 +104,21 @@ static pickup_answer handle_problematic_pickup( const item &it, const std::strin
+@@ -103,6 +104,24 @@ static pickup_answer handle_problematic_pickup( const item &it, const std::strin
      empty_it.get_contents().clear_items();
      bool can_pickup = u.can_stash( empty_it ) && u.can_pickWeight( empty_it );
  
 +    if( external_ui_active() ) {
-+        std::vector<std::string> labels{ _( "Cancel" ) };
-+        std::vector<pickup_answer> actions{ CANCEL };
++        std::vector<std::string> labels;
++        std::vector<pickup_answer> actions;
 +        if( it.is_bucket_nonempty() ) {
 +            labels.push_back( string_format( _( "Wield %s" ), it.display_name() ) );
 +            actions.push_back( WIELD );
@@ -583,6 +585,9 @@ index 183628b..0bf2b3c 100644
 +            // no external presentation yet. Keep that operation unavailable
 +            // rather than entering an interactive terminal from headless play.
 +        }
++        // The CWM decision provider uses the last choice after disconnect.
++        labels.push_back( _( "Cancel" ) );
++        actions.push_back( CANCEL );
 +        const int selected = external_ui_choice( explain, labels );
 +        return selected >= 0 && static_cast<size_t>( selected ) < actions.size() ?
 +               actions[selected] : CANCEL;
@@ -591,7 +596,7 @@ index 183628b..0bf2b3c 100644
      if( it.is_bucket_nonempty() ) {
          amenu.addentry( WIELD, true, 'w', _( "Wield %s" ), it.display_name() );
          amenu.addentry( SPILL, can_pickup, 's', _( "Spill contents of %s, then pick up %s" ),
-@@ -125,7 +141,15 @@ bool Pickup::query_thief()
+@@ -125,7 +144,15 @@ bool Pickup::query_thief()
      const bool force_uc = get_option<bool>( "FORCE_CAPITAL_YN" );
      const auto &allow_key = force_uc ? input_context::disallow_lower_case_or_non_modified_letters
                              : input_context::allow_all_keys;
@@ -600,15 +605,15 @@ index 183628b..0bf2b3c 100644
 +    if( external_ui_active() ) {
 +        const int selected = external_ui_choice(
 +            _( "Picking up this item will be considered stealing, continue?" ),
-+            { _( "No" ), _( "Yes" ), _( "Always" ), _( "Never" ) } );
-+        static const std::string actions[] = { "NO", "YES", "ALWAYS", "NEVER" };
++            { _( "Yes" ), _( "Always" ), _( "Never" ), _( "No" ) } );
++        static const std::string actions[] = { "YES", "ALWAYS", "NEVER", "NO" };
 +        answer = selected >= 0 && selected < 4 ? actions[selected] : "NO";
 +    } else {
 +        answer = query_popup()
                           .preferred_keyboard_mode( keyboard_mode::keycode )
                           .allow_cancel( false )
                           .context( "YES_NO_ALWAYS_NEVER" )
-@@ -139,6 +163,7 @@ bool Pickup::query_thief()
+@@ -139,6 +166,7 @@ bool Pickup::query_thief()
                           .cursor( 1 ) // default to the second option `NO`
                           .query()
                           .action; // retrieve the input action
@@ -2768,10 +2773,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..ad3d4ba
+index 0000000..63ae9d0
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,288 @@
+@@ -0,0 +1,299 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "calendar.h"
@@ -2817,6 +2822,10 @@ index 0000000..ad3d4ba
 +    static bool accepted( const CwmServer &server ) {
 +        REQUIRE( server.result_ );
 +        return server.result_->accepted;
++    }
++    static int choice_without_peer( CwmServer &server, const std::string &text,
++                                    const std::vector<std::string> &choices ) {
++        return server.ask_decision( text, choices, get_avatar(), get_map(), *g, []() { return false; } );
 +    }
 +    static bool accept_peer( CwmServer &server ) { return server.server_->poll_accept(); }
 +};
@@ -2939,26 +2948,28 @@ index 0000000..ad3d4ba
 +    get_map().build_map_cache( 0 );
 +    get_map().invalidate_visibility_cache();
 +    get_map().update_visibility_cache( 0 );
-+    int choice = 0;
-+    SECTION( "decline" ) { choice = 0; }
-+    SECTION( "approve once" ) { choice = 1; }
-+    SECTION( "approve persistently" ) { choice = 2; }
-+    SECTION( "decline persistently" ) { choice = 3; }
++    int choice = 3;
++    SECTION( "decline" ) { choice = 3; }
++    SECTION( "approve once" ) { choice = 0; }
++    SECTION( "approve persistently" ) { choice = 1; }
++    SECTION( "decline persistently" ) { choice = 2; }
++    SECTION( "lost peer defaults to decline once" ) { choice = -1; }
++    cwm::CwmServer server( "/unused-theft-choice-fixture" );
 +    int prompts = 0;
 +    REQUIRE_FALSE( do_turn_with_action( [&]() {
-+        CHECK( Pickup::query_thief() == ( choice == 1 || choice == 2 ) );
++        CHECK( Pickup::query_thief() == ( choice == 0 || choice == 1 ) );
 +        get_avatar().pause();
 +        return true;
 +    }, [&]( const std::string &text, const std::vector<std::string> &options ) {
 +        ++prompts;
 +        CHECK( text.find( "stealing" ) != std::string::npos );
-+        REQUIRE( ( options == std::vector<std::string>{ "No", "Yes", "Always", "Never" } ) );
-+        return choice;
++        REQUIRE( ( options == std::vector<std::string>{ "Yes", "Always", "Never", "No" } ) );
++        return choice < 0 ? cwm::CwmServerTestAccess::choice_without_peer( server, text, options ) : choice;
 +    } ) );
 +    CHECK( prompts == 1 );
 +    CHECK( get_avatar().get_value( "THIEF_MODE" ) ==
-+           ( choice == 1 || choice == 2 ? "THIEF_STEAL" : "THIEF_HONEST" ) );
-+    CHECK( get_avatar().get_value( "THIEF_MODE_KEEP" ) == ( choice >= 2 ? "YES" : "NO" ) );
++           ( choice == 0 || choice == 1 ? "THIEF_STEAL" : "THIEF_HONEST" ) );
++    CHECK( get_avatar().get_value( "THIEF_MODE_KEEP" ) == ( choice == 1 || choice == 2 ? "YES" : "NO" ) );
 +}
 +
 +TEST_CASE( "cwm_owned_items_project_native_nested_possessions", "[cwm][pickup]" )
@@ -3023,9 +3034,13 @@ index 0000000..ad3d4ba
 +    item &ground_bucket = m.add_item( u.pos() + tripoint_north, bucket );
 +    std::vector<item_location> targets{ item_location( map_cursor( u.pos() + tripoint_north ), &ground_bucket ) };
 +    std::vector<int> quantities{ 0 };
-+    bool wield = false;
-+    SECTION( "cancel preserves full bucket on ground" ) {}
++    bool wield = false, cancel_disposition = false;
++    SECTION( "lost peer preserves full bucket on ground" ) {}
 +    SECTION( "wield first stows old weapon through native disposition" ) { wield = true; }
++    SECTION( "lost peer during disposition preserves weapon and ground bucket" ) {
++        cancel_disposition = true;
++    }
++    cwm::CwmServer server( "/unused-bucket-choice-fixture" );
 +    int prompts = 0;
 +    bool stash_successful = true;
 +    Pickup::pick_info info;
@@ -3047,18 +3062,19 @@ index 0000000..ad3d4ba
 +        }
 +        u.pause();
 +        return true;
-+    }, [&]( const std::string &, const std::vector<std::string> &choices ) {
++    }, [&]( const std::string &text, const std::vector<std::string> &choices ) {
 +        ++prompts;
-+        REQUIRE( choices.front() == "Cancel" );
++        REQUIRE( choices.back() == "Cancel" );
 +        if( prompts == 1 ) {
 +            REQUIRE( choices.size() == 2 );
-+            CHECK( choices[1].find( "Wield" ) != std::string::npos );
-+            return wield ? 1 : 0;
++            CHECK( choices[0].find( "Wield" ) != std::string::npos );
++            return wield || cancel_disposition ? 0 :
++                   cwm::CwmServerTestAccess::choice_without_peer( server, text, choices );
 +        }
-+        CHECK( choices[1].find( "Store in inventory" ) != std::string::npos );
-+        return 1;
++        CHECK( choices[0].find( "Store in inventory" ) != std::string::npos );
++        return cancel_disposition ? cwm::CwmServerTestAccess::choice_without_peer( server, text, choices ) : 0;
 +    } ) );
-+    CHECK( prompts == ( wield ? 2 : 1 ) );
++    CHECK( prompts == ( wield || cancel_disposition ? 2 : 1 ) );
 +}
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644
