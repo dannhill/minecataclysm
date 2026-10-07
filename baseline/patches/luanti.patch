@@ -2447,10 +2447,10 @@ index 0000000..6856560
 +} // namespace cdda_client
 diff --git a/src/cdda/ground_item_formspec.h b/src/cdda/ground_item_formspec.h
 new file mode 100644
-index 0000000..97a6cfa
+index 0000000..3090d83
 --- /dev/null
 +++ b/src/cdda/ground_item_formspec.h
-@@ -0,0 +1,43 @@
+@@ -0,0 +1,42 @@
 +#pragma once
 +#include <algorithm>
 +#include <string>
@@ -2478,15 +2478,14 @@ index 0000000..97a6cfa
 +    slots(.375, .75, 9, 3);
 +    form += "list[detached:cwm_ground;main;0.375,0.75;9,3;" +
 +        std::to_string(ground_page * 27) + "]";
-+    form += "label[0.375,4.7;Inventario / equipaggiamento]";
++    form += "label[0.375,4.7;Inventario / equipaggiamento - trascina qui una pila]";
 +    slots(.375, 5.1, 9, 3);
 +    form += "list[detached:cwm_owned;main;0.375,5.1;9,3;" +
 +        std::to_string(owned_page * 36 + 9) + "]";
 +    slots(.375, 9.05, 9, 1);
 +    form += "list[detached:cwm_owned;main;0.375,9.05;9,1;" +
 +        std::to_string(owned_page * 36) + "]"
-+        "listring[detached:cwm_ground;main]listring[detached:cwm_owned;main]"
-+        "label[0.375,10.1;Trascina un oggetto qui sotto: raccogli la pila intera e riprendi.]";
++        "listring[detached:cwm_ground;main]listring[detached:cwm_owned;main]";
 +    if (ground_count > 27)
 +        form += "button[9,0.05;1.1,0.5;ground_prev;<]button[10.35,0.05;1.1,0.5;ground_next;>]";
 +    if (owned_count > 36)

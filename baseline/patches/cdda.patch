@@ -149,6 +149,44 @@ index a90f830..84949ac 100644
      add_msg_debug( debugmode::DF_CHARACTER, "Stamina burn: %d", -( ( moves * burn_ratio ) / 100 ) );
      // Chance to suffer pain if overburden and stamina runs out or has trait BADBACK
      // Starts at 1 in 25, goes down by 5 for every 50% more carried
+diff --git a/src/character_inventory.cpp b/src/character_inventory.cpp
+index 5d80fec..f80b3d2 100644
+--- a/src/character_inventory.cpp
++++ b/src/character_inventory.cpp
+@@ -2,6 +2,7 @@
+ #include "activity_handlers.h"
+ #include "catacharset.h"
+ #include "character.h"
++#include "do_turn.h"
+ #include "flag.h"
+ #include "inventory.h"
+ #include "iuse_actor.h"
+@@ -740,6 +741,25 @@ bool Character::dispose_item( item_location &&obj, const std::string &prompt )
+ 
+     worn.holster_opts( opts, obj, *this );
+ 
++    if( external_ui_active() ) {
++        std::vector<std::string> labels{ _( "Cancel" ) };
++        std::vector<size_t> actions;
++        for( size_t i = 0; i < opts.size(); ++i ) {
++            // A full open container needs the unported liquid destination
++            // picker before stashing/wearing/holstering. Dropping is native
++            // and safe to expose, with an explicit player choice.
++            if( opts[i].enabled && ( !bucket || i == 1 ) ) {
++                labels.push_back( string_format( "%s (%d moves)", opts[i].prompt, opts[i].moves ) );
++                actions.push_back( i );
++            }
++        }
++        const int selected = external_ui_choice( menu.text, labels );
++        if( selected <= 0 || static_cast<size_t>( selected ) > actions.size() ) {
++            return false;
++        }
++        return opts[actions[selected - 1]].action();
++    }
++
+     int w = utf8_width( menu.text, true ) + 4;
+     for( const dispose_option &e : opts ) {
+         w = std::max( w, utf8_width( e.prompt, true ) + 4 );
 diff --git a/src/do_turn.cpp b/src/do_turn.cpp
 index 2455a6f..25c923d 100644
 --- a/src/do_turn.cpp
@@ -520,7 +558,7 @@ index 38b1d71..e5b7a12 100644
      if( get_option<bool>( "ANDROID_NATIVE_UI" ) ) {
          JNIEnv *env = ( JNIEnv * )SDL_AndroidGetJNIEnv();
 diff --git a/src/pickup.cpp b/src/pickup.cpp
-index 183628b..1d538f9 100644
+index 183628b..0bf2b3c 100644
 --- a/src/pickup.cpp
 +++ b/src/pickup.cpp
 @@ -23,6 +23,7 @@
@@ -531,7 +569,7 @@ index 183628b..1d538f9 100644
  #include "enums.h"
  #include "game.h"
  #include "input.h"
-@@ -103,6 +104,23 @@ static pickup_answer handle_problematic_pickup( const item &it, const std::strin
+@@ -103,6 +104,21 @@ static pickup_answer handle_problematic_pickup( const item &it, const std::strin
      empty_it.get_contents().clear_items();
      bool can_pickup = u.can_stash( empty_it ) && u.can_pickWeight( empty_it );
  
@@ -541,11 +579,9 @@ index 183628b..1d538f9 100644
 +        if( it.is_bucket_nonempty() ) {
 +            labels.push_back( string_format( _( "Wield %s" ), it.display_name() ) );
 +            actions.push_back( WIELD );
-+            if( can_pickup ) {
-+                labels.push_back( string_format( _( "Spill contents of %s, then pick up %s" ),
-+                                                it.tname(), it.display_name() ) );
-+                actions.push_back( SPILL );
-+            }
++            // Spilling enters the native liquid destination picker, which has
++            // no external presentation yet. Keep that operation unavailable
++            // rather than entering an interactive terminal from headless play.
 +        }
 +        const int selected = external_ui_choice( explain, labels );
 +        return selected >= 0 && static_cast<size_t>( selected ) < actions.size() ?
@@ -555,7 +591,7 @@ index 183628b..1d538f9 100644
      if( it.is_bucket_nonempty() ) {
          amenu.addentry( WIELD, true, 'w', _( "Wield %s" ), it.display_name() );
          amenu.addentry( SPILL, can_pickup, 's', _( "Spill contents of %s, then pick up %s" ),
-@@ -125,7 +143,15 @@ bool Pickup::query_thief()
+@@ -125,7 +141,15 @@ bool Pickup::query_thief()
      const bool force_uc = get_option<bool>( "FORCE_CAPITAL_YN" );
      const auto &allow_key = force_uc ? input_context::disallow_lower_case_or_non_modified_letters
                              : input_context::allow_all_keys;
@@ -572,7 +608,7 @@ index 183628b..1d538f9 100644
                           .preferred_keyboard_mode( keyboard_mode::keycode )
                           .allow_cancel( false )
                           .context( "YES_NO_ALWAYS_NEVER" )
-@@ -139,6 +165,7 @@ bool Pickup::query_thief()
+@@ -139,6 +163,7 @@ bool Pickup::query_thief()
                           .cursor( 1 ) // default to the second option `NO`
                           .query()
                           .action; // retrieve the input action
@@ -2732,10 +2768,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..999c98e
+index 0000000..cbd1f1f
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,217 @@
+@@ -0,0 +1,287 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "calendar.h"
@@ -2746,6 +2782,8 @@ index 0000000..999c98e
 +#include "player_helpers.h"
 +#include "do_turn.h"
 +#include "pickup.h"
++#include "item_pocket.h"
++#include "map_selector.h"
 +#include "safe_mode_actions.h"
 +#include "weather.h"
 +#include "options_helpers.h"
@@ -2952,6 +2990,74 @@ index 0000000..999c98e
 +    CHECK( u.moves == before_moves );
 +    CHECK( calendar::turn == before_time );
 +    CHECK( u.charges_of( itype_id( "9mm" ) ) == 7 );
++}
++
++TEST_CASE( "cwm_bucket_pickup_uses_external_choices_without_terminal_liquid_picker", "[cwm][pickup]" )
++{
++    const override_option no_autosave( "AUTOSAVE", "false" );
++    clear_avatar();
++    clear_map();
++    avatar &u = get_avatar();
++    map &m = get_map();
++    u.setpos( tripoint( 60, 60, 0 ) );
++    u.moves = 100;
++    calendar::turn = calendar::turn_zero + 36_hours;
++    g->new_game = false;
++    g->uquit = QUIT_NO;
++    g->set_safe_mode( SAFE_MODE_OFF );
++    get_weather().update_weather();
++    u.recalc_sight_limits();
++    g->reset_light_level();
++    m.build_map_cache( 0 );
++    m.invalidate_visibility_cache();
++    m.update_visibility_cache( 0 );
++    REQUIRE( u.wear_item( item( itype_id( "backpack_hiking" ) ) ) );
++    item old_weapon( itype_id( "rock" ) );
++    REQUIRE( u.wield( old_weapon ) );
++    item bucket( itype_id( "bucket" ) );
++    item water( itype_id( "water" ) );
++    water.charges = 3;
++    REQUIRE( bucket.put_in( water, pocket_type::CONTAINER ).success() );
++    REQUIRE( bucket.is_bucket_nonempty() );
++    bucket.set_var( "uid", "cwm-full-bucket" );
++    item &ground_bucket = m.add_item( u.pos() + tripoint_north, bucket );
++    std::vector<item_location> targets{ item_location( map_cursor( u.pos() + tripoint_north ), &ground_bucket ) };
++    std::vector<int> quantities{ 0 };
++    bool wield = false;
++    SECTION( "cancel preserves full bucket on ground" ) {}
++    SECTION( "wield first stows old weapon through native disposition" ) { wield = true; }
++    int prompts = 0;
++    bool stash_successful = true;
++    Pickup::pick_info info;
++    REQUIRE_FALSE( do_turn_with_action( [&]() {
++        u.moves = 1000;
++        Pickup::do_pickup( targets, quantities, false, stash_successful, info );
++        if( wield ) {
++            REQUIRE( u.get_wielded_item() );
++            CHECK( u.get_wielded_item()->typeId() == itype_id( "bucket" ) );
++            CHECK( u.get_wielded_item()->is_bucket_nonempty() );
++            CHECK( u.charges_of( itype_id( "water" ) ) == 3 );
++            CHECK( m.i_at( u.pos() + tripoint_north ).empty() );
++            CHECK( character_has_item_with_var_val( u, "uid", "cwm-full-bucket" ) );
++        } else {
++            CHECK( u.get_wielded_item()->typeId() == itype_id( "rock" ) );
++            CHECK( m.i_at( u.pos() + tripoint_north ).size() == 1 );
++            CHECK_FALSE( character_has_item_with_var_val( u, "uid", "cwm-full-bucket" ) );
++        }
++        u.pause();
++        return true;
++    }, [&]( const std::string &, const std::vector<std::string> &choices ) {
++        ++prompts;
++        REQUIRE( choices.front() == "Cancel" );
++        if( prompts == 1 ) {
++            REQUIRE( choices.size() == 2 );
++            CHECK( choices[1].find( "Wield" ) != std::string::npos );
++            return wield ? 1 : 0;
++        }
++        CHECK( choices[1].find( "Store in inventory" ) != std::string::npos );
++        return 1;
++    } ) );
++    CHECK( prompts == ( wield ? 2 : 1 ) );
 +}
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644

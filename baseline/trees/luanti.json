@@ -7242,7 +7242,7 @@
   {
     "path": "src/cdda/ground_item_formspec.h",
     "mode": "100644",
-    "sha256": "75aed13fc49ac8af2efda563f2cc90d456c1707a290009d79a33a67c1258bdbd"
+    "sha256": "159799b61a6db18a8ad182e5bbf36031b3e62f9af114e00782922e223014062f"
   },
   {
     "path": "src/cdda/ground_item_projection.h",
