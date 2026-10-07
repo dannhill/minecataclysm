@@ -2,9 +2,10 @@
 
 Segue il [backend PICKUP](ground-items-pickup.md) e le direttive della
 [continuazione recuperata](../source/continuation-2026-10-07.md).
-Sorgenti della consegna: `2931190c32d3465be735f804843339f458075128`.
+Sorgenti della consegna: `5b8c5b44ae9d6851b8f425152832eed4c944a1b9`.
 Patch complete e inventari dei fork sono in `baseline/manifest.json`.
-La verifica finale e l'installazione sono in corso. M5.5 resta FAILED;
+Verifica automatizzata circoscritta PASS e binari installati il 2026-10-08.
+La validazione visiva dell'utente resta da ottenere. M5.5 resta FAILED;
 questa verifica riguarda soltanto la raccolta e la sua presentazione.
 
 ## Comportamento implementato
@@ -91,6 +92,42 @@ l'ultima prova; `--fresh` ne crea un'altra senza cancellare quelle precedenti.
 La validazione visiva dell'utente è ancora da ottenere. Il prossimo passo
 previsto dal playable core è l'inventario/equipaggiamento interattivo nativo,
 con tasche e contenitori; non serve ripetere la validazione RT-02 già accettata.
+
+## Evidenze della consegna
+
+La [ricevuta completa](ground-items-ui-evidence.json) identifica sorgenti,
+binari, ambiente, checksum dei log/screenshot e limiti della verifica.
+
+- Replay indipendente delle patch e ricostruzione incrementale: PASS.
+- Protocollo: 5/5 PASS, incluse selezioni semanticamente invalide.
+- CDDA: 7.032 asserzioni in 31 casi PASS, filtro `[cwm],[diving],[pickup]`,
+  seed 42. Include raccolta/rivalidazione/dedup, possedimenti annidati,
+  politiche di furto, secchio pieno e annullamento dei menu con peer perso.
+- Luanti: 305 test e 648 asserzioni Catch2 PASS.
+- Avvio grafico reale con i binari installati e `start.sh`: **15/15 PASS**
+  in modalità ordinaria e **18/18 PASS** in modalità continua 4x.
+- Nella casella selezionata: due oggetti prima, solo il sasso dopo il
+  trasferimento delle munizioni, zero dopo la raccolta diretta. Il test
+  controlla sia la proiezione semantica sia i nodi effettivi della scena.
+- Il lettore linkato al core CDDA originale verifica entrambi i save:
+  una pila con tutte e sette le munizioni e il sasso nei possedimenti,
+  senza duplicati a terra.
+- Perdita dell'IPC mentre una selezione aspetta la ripresa dalla pausa
+  manuale: la selezione si annulla, la GUI resta chiusa e non viene
+  eseguita automaticamente dopo la riconnessione.
+
+Il primo tentativo nella modalità ordinaria usava il conteggio globale
+degli oggetti come se la percezione del mondo fosse immutabile. Il primo
+turno aggiorna legittimamente anche altri tile: l'asserzione è stata
+sostituita con controlli sulla casella selezionata, incluso il type ID
+rimasto e i suoi nodi renderizzati. Il tentativo fallito è conservato.
+
+Il client finale aggiunge soltanto telemetria rispetto al primo giro di
+verifica installato. Il server CDDA è il medesimo binario verificato al
+commit `2931190c32d3465be735f804843339f458075128`: gli inventari dei sorgenti
+CDDA e tutti gli input non documentali del protocollo sono identici alla
+consegna finale; l'equivalenza è registrata nella ricevuta d'installazione.
+I due binari precedenti sono conservati nel rollback degli artefatti.
 
 ## Riproduzione della verifica
 

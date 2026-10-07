@@ -2,7 +2,10 @@
 
 The recovered local continuation now has the ground-item PICKUP backend
 and its [Mineclonia container/pointer interface](docs/fixes/ground-items-ui.md)
-implemented. Final delivery verification and runtime installation are in progress.
+implemented. Scoped automated verification PASS; both runtimes are installed. Native CDDA
+checks pass with 7,032 assertions, Luanti with 305 tests, and installed GUI
+runs with 15 ordinary-mode and 18 continuous-mode checks. User visual
+validation of this interface is pending.
 CWM 2.5 adds read-only native possessions to guarded, deduplicated pickup.
 Nine production mapping batches remain an independent lane. The lower panel
 is read-only; full inventory/equipment operations are the next playable-core

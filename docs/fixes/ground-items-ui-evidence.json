@@ -1,0 +1,301 @@
+{
+  "scope": "Ground-item pointer, Mineclonia chest widgets, native possession mirror and explicit whole-stack pickup",
+  "source_commit": "5b8c5b44ae9d6851b8f425152832eed4c944a1b9",
+  "status": "PASS (scoped automated verification); user visual validation pending",
+  "full_M5_5_gate": "FAILED (historical, not recertified)",
+  "artifact_root": "/home/dannhill/Projects/cdda-mineclonia/artifacts/playable-core-item-ui-20261008",
+  "environment": {
+    "platform": "Linux-7.0.11-76070011-generic-x86_64-with-glibc2.35",
+    "compiler": "c++ (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0",
+    "python": "3.10.12",
+    "display": ":1"
+  },
+  "manifest": {
+    "format_version": 1,
+    "repositories": {
+      "cdda": {
+        "url": "https://github.com/CleverRaven/Cataclysm-DDA.git",
+        "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+        "shallow": true,
+        "patch": "baseline/patches/cdda.patch",
+        "patch_sha256": "a1e23ab99272369996b401c1cdd91a7324e1f8640a96b463df8a0f6f04994342",
+        "tree_inventory": "baseline/trees/cdda.json",
+        "tree_sha256": "e97e2c6b66422fbe7d433601c8e8d7a3ab58670eb98f6db1bd0380cac3d62a70",
+        "file_count": 8582,
+        "original_status": " M src/CMakeLists.txt\n M src/avatar_action.cpp\n M src/character.cpp\n M src/character_inventory.cpp\n M src/do_turn.cpp\n M src/do_turn.h\n M src/game.cpp\n M src/game.h\n M src/handle_action.cpp\n M src/iexamine.cpp\n M src/output.cpp\n M src/pickup.cpp\n M tests/CMakeLists.txt\n M tests/test_main.cpp\n?? src/cwm/cwm_main.cpp\n?? src/cwm/cwm_map_exporter.cpp\n?? src/cwm/cwm_map_exporter.h\n?? src/cwm/cwm_server.cpp\n?? src/cwm/cwm_server.h\n?? src/cwm_motion.cpp\n?? src/cwm_motion.h\n?? src/safe_mode_actions.h\n?? tests/cwm_pickup_test.cpp\n?? tests/cwm_projection_test.cpp\n?? tests/cwm_runtime_test.cpp\n"
+      },
+      "luanti": {
+        "url": "https://github.com/luanti-org/luanti.git",
+        "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
+        "shallow": true,
+        "patch": "baseline/patches/luanti.patch",
+        "patch_sha256": "63897945cacbc192d091cbb72cb06afda7233f60ce8890da4e9ee71ef8ddad7a",
+        "tree_inventory": "baseline/trees/luanti.json",
+        "tree_sha256": "1ad3765b8efa222e65fdeac58b8775862e812bf54967300974dbaeea6d926ced",
+        "file_count": 2254,
+        "original_status": " M src/CMakeLists.txt\n M src/client/CMakeLists.txt\n M src/client/client.cpp\n M src/client/clientenvironment.cpp\n M src/client/game.cpp\n M src/client/mesh_generator_thread.cpp\n M src/client/mesh_generator_thread.h\n M src/network/clientpackethandler.cpp\n M src/server/player_sao.cpp\n M src/unittest/test_mapblock.cpp\n?? src/cdda/cdda_bridge.cpp\n?? src/cdda/cdda_bridge.h\n?? src/cdda/ground_item_formspec.h\n?? src/cdda/ground_item_projection.h\n?? src/cdda/ground_item_visual.h\n"
+      },
+      "mineclonia": {
+        "url": "https://github.com/mark-wiemer/mineclonia.git",
+        "commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+        "shallow": true,
+        "patch": "baseline/patches/mineclonia.patch",
+        "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "tree_inventory": "baseline/trees/mineclonia.json",
+        "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36",
+        "file_count": 9359,
+        "original_status": ""
+      }
+    }
+  },
+  "binaries": {
+    "source_commit": "5b8c5b44ae9d6851b8f425152832eed4c944a1b9",
+    "components": {
+      "cdda-server": {
+        "source": "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/cdda/build/src/cdda-server",
+        "installed": "/home/dannhill/Projects/cdda-mineclonia/cdda/build/src/cdda-server",
+        "sha256": "20608c06fb1ef0c4b2935997e5ec90d9a897e67c39c0660ce9dd88a6f013134c",
+        "previous_sha256": "1d297d476e745feea8c5b1ed815224616b526f0cfbf2752ca5cc67acc5e64fbe",
+        "rollback": "/home/dannhill/Projects/cdda-mineclonia/artifacts/playable-core-item-ui-20261008/rollback/cdda-server",
+        "build_source_commit": "2931190c32d3465be735f804843339f458075128",
+        "source_equivalence": "CDDA fork inventory and every non-documentation protocol input unchanged"
+      },
+      "luanti": {
+        "source": "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/luanti/bin/luanti",
+        "installed": "/home/dannhill/Projects/cdda-mineclonia/luanti/bin/luanti",
+        "sha256": "c5b422b3a80191914cb4b576ba68fa019381cfe0a56cdda56c591096cce56ee6",
+        "previous_sha256": "d2c3dbec4fa0c40d3a334989eeaaad5360de3151fa558da0ee561ea5bd00c04d",
+        "rollback": "/home/dannhill/Projects/cdda-mineclonia/artifacts/playable-core-item-ui-20261008/rollback/luanti",
+        "intermediate_sha256": "74249e1e3e2cdb8dec8e97dcb12a9cd8f0f63a41beb85bb65d30af4cf410c61b",
+        "intermediate_rollback": "/home/dannhill/Projects/cdda-mineclonia/artifacts/playable-core-item-ui-20261008/rollback/luanti-before-target-trace",
+        "build_source_commit": "5b8c5b44ae9d6851b8f425152832eed4c944a1b9"
+      }
+    }
+  },
+  "native_reader": {
+    "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/playable-core-pickup-20261007/native-save-reader-v3",
+    "sha256": "19a5b19d4d71f126ef02b3ec876b31f1d04bfd7037ac1978571b088b962c6c35",
+    "build_receipt": "/home/dannhill/Projects/cdda-mineclonia/artifacts/playable-core-pickup-20261007/native-save-reader-v3.build.json",
+    "build_receipt_sha256": "9ba4a5900ba75b2794a6e4fe7823977e95e75fdc7988d73a11fe4cb6c7d020f0",
+    "upstream_pin": "2478ae876eb1439be387d0e117808d33c9d6afa4"
+  },
+  "tests": {
+    "protocol": "5/5 PASS",
+    "cdda": "7032 assertions in 31 cases PASS ([cwm],[diving],[pickup], seed 42)",
+    "luanti": "305 tests and 648 Catch2 assertions PASS",
+    "installed_action_driven_gui": "15/15 PASS",
+    "installed_continuous_gui": "18/18 PASS"
+  },
+  "evidence": {
+    "capture-item-identity.log": {
+      "sha256": "0b7bf6110b1bebdbe81436ea4860e0e1f113f7d13e88d11df259015482011fcc",
+      "bytes": 354
+    },
+    "refresh-item-identity.json": {
+      "sha256": "cb048f6423e03af447f79fa17dc8f771a78a58d2e984f378e3c2ce3a220af0b0",
+      "bytes": 3580
+    },
+    "source-replay-target.json": {
+      "sha256": "4a2ce337c5453d6d4158b380fe9ae067a1746372f53d4e502c89f4424563edb2",
+      "bytes": 946
+    },
+    "baseline-check-final.log": {
+      "sha256": "529c7fa619f994a630b07453ae7d90e3508bce48419e2fd18feb37c8781af5e4",
+      "bytes": 89
+    },
+    "cdda-build-verified.log": {
+      "sha256": "c85fb29fbc0e8f0851ef0fb2c4c7fa30c58d92f657f025bc7d69e0bdc8f299c2",
+      "bytes": 1376
+    },
+    "cdda-tests-verified.log": {
+      "sha256": "9f21e67619659a5c64b9a082a5c65f38d84e23eed41df57ad660ef2c72c72126",
+      "bytes": 706
+    },
+    "luanti-build-target.log": {
+      "sha256": "1078e104f24c1980439ad2b585c3510c0ec00191710557c8990c242482832e7f",
+      "bytes": 652
+    },
+    "luanti-tests-target.log": {
+      "sha256": "fd28d9f96a49199dd32f8a9e83d317545785da96c83063ca8976087154e0fb17",
+      "bytes": 18785
+    },
+    "protocol-build.log": {
+      "sha256": "09b77a296ccecb3cf3b167f4dff06d9359923aec707c31b5233af4d4671d6d03",
+      "bytes": 1414
+    },
+    "protocol-tests-verified.log": {
+      "sha256": "4d74bc5446891045140ef861b9453fe8749807d7ccd4d7c540dc88658d1a601e",
+      "bytes": 796
+    },
+    "fixture/before.json": {
+      "sha256": "2872b3fa45ef6dfd4f4f017c3ab98c851eb0d587270573264af7cb974ec57223",
+      "bytes": 116771
+    },
+    "fixture/create.log": {
+      "sha256": "49c9728f777b68d3d52752c736f5423a97f6f87d3d415e7c16803daeb01eabd8",
+      "bytes": 109
+    },
+    "installed-runtime-final.json": {
+      "sha256": "3c944362ae00f23333a17b6449dbe9df33866062f5754da964ff919da37d6141",
+      "bytes": 1630
+    },
+    "gemini-prompt.txt": {
+      "sha256": "2317f29eb2c1a48b697e6a7febb8f6110fbb718e41025998aef5626f3d401755",
+      "bytes": 667
+    },
+    "gemini-review.log": {
+      "sha256": "a534ee5682fb348186a27ac72d10b7f94bd46f96323a028430c26c8dc956f65a",
+      "bytes": 79
+    },
+    "installed-action-target/checks.json": {
+      "sha256": "2f47089176b5d5de3759542ea1f2ebd4ae22aa164a1c276092e5866b3f29b957",
+      "bytes": 693
+    },
+    "installed-action-target/client.conf": {
+      "sha256": "75a9f9f15df15bb93a81e6bc8c9682cbc7c9bd28451e0cee5035b5c8cc38fa2c",
+      "bytes": 261
+    },
+    "installed-action-target/launcher.log": {
+      "sha256": "a37c147b53a1ea258ad47dc80b1ebe55a072334166c6be6c83bf1ed716fd0e51",
+      "bytes": 219
+    },
+    "installed-action-target/camera.csv": {
+      "sha256": "a7e64d5dc5e8ea3dd3081f7463d5910bbb109b9a6eceda7987aea95d1834b164",
+      "bytes": 137239
+    },
+    "installed-action-target/native.json": {
+      "sha256": "02f25d3e5bd19b1ad8e2a1610c8543dafa44f9cde9bd29865b10e524a4aff893",
+      "bytes": 207288
+    },
+    "installed-action-target/native.log": {
+      "sha256": "3dd7c391221d94944c6d033d99847de156994a312bdb960feda7de7cb3dbb6b4",
+      "bytes": 162
+    },
+    "installed-action-target/container-open.png": {
+      "sha256": "dab1fd530e8cb81279d5b2030dd9223078bee1ed58f595786541f9534d18e47a",
+      "bytes": 260626
+    },
+    "installed-action-target/pointed-pile.png": {
+      "sha256": "6cb6e4a26c2dc0680b3c83b6061d41c165f554fef697f7c79b8963afec6c7f64",
+      "bytes": 348571
+    },
+    "installed-action-target/single-item-left.png": {
+      "sha256": "46ec1f08f976da4aaccc3c4a1a28c50ac12017b097031040c3782ec298d5ca74",
+      "bytes": 350012
+    },
+    "installed-action-target/empty-ground.png": {
+      "sha256": "534dd182ce53da5981176fbe75ae41fbca6c45140847ad7d1d11a1db3f197617",
+      "bytes": 354026
+    },
+    "installed-action-target/slot-geometry.json": {
+      "sha256": "07740fc3003cdf600135479b86322a62025826fed9a446b99e6084a0a3c9bb6a",
+      "bytes": 26
+    },
+    "installed-action-target/logs/cdda.log": {
+      "sha256": "25399445ebb43d50cf56a9f7feef2aa528190502c34458de6e03545a592ba2a8",
+      "bytes": 693
+    },
+    "installed-action-target/logs/luanti-engine.log": {
+      "sha256": "144084defd071bce7416d84fcc6fbd29e91a100ae6d6a149e4fd7d9fe5b08051",
+      "bytes": 1314
+    },
+    "installed-continuous-target/checks.json": {
+      "sha256": "c5ff93021cd915f25680db2260c4c9fc515a530713aec80e556dc16da80109dc",
+      "bytes": 872
+    },
+    "installed-continuous-target/client.conf": {
+      "sha256": "ff423d902e88cd0bb5a47477d47237b01a0fac460ba42551e8e2c686a0d56ff2",
+      "bytes": 265
+    },
+    "installed-continuous-target/launcher.log": {
+      "sha256": "9b3e090ef96e341769592b6f0c5f92fc692df44778895192642ba6a749453227",
+      "bytes": 223
+    },
+    "installed-continuous-target/camera.csv": {
+      "sha256": "aa284262fdd44932c17ff0fc8b859c90e2b29eb29e4f65d40b51d6ae654787c7",
+      "bytes": 209563
+    },
+    "installed-continuous-target/native.json": {
+      "sha256": "66097d7402f8be4a430755d683771ccf9da40fd6068a0630844fc9f77aa92f17",
+      "bytes": 207299
+    },
+    "installed-continuous-target/native.log": {
+      "sha256": "ffdbc69c8b36d57d63d72d671faed67ec8a88e9357d37371ed98deb95e3e0f7a",
+      "bytes": 166
+    },
+    "installed-continuous-target/container-open.png": {
+      "sha256": "04cbf273468eaf66d17e60c1ae1042fe4e58faf1e361dcf41d7993460147303a",
+      "bytes": 260700
+    },
+    "installed-continuous-target/pointed-pile.png": {
+      "sha256": "40da43f91951dd8e6e5d5a8b89f567df30f5b4b48c84082aa4bdc711cf651223",
+      "bytes": 347453
+    },
+    "installed-continuous-target/single-item-left.png": {
+      "sha256": "f64bee77acb6aae4471facac618b396fbcb1419bcb8b160ba3c1274967547d3d",
+      "bytes": 352945
+    },
+    "installed-continuous-target/empty-ground.png": {
+      "sha256": "1fc4f44b200309cb130c0910ff4f9d26da0ef788689130c20dd16c9d94f5c50c",
+      "bytes": 355816
+    },
+    "installed-continuous-target/slot-geometry.json": {
+      "sha256": "07740fc3003cdf600135479b86322a62025826fed9a446b99e6084a0a3c9bb6a",
+      "bytes": 26
+    },
+    "installed-continuous-target/logs/cdda.log": {
+      "sha256": "9d6a22c8d9a6268625a3d4eb60935276434de096950d5d437af38ecb06b6a4fc",
+      "bytes": 737
+    },
+    "installed-continuous-target/logs/luanti-engine.log": {
+      "sha256": "c57a2fa3615d148434d3831c50c2fea54146f411c83551ec3f5132cec8fee712",
+      "bytes": 1318
+    },
+    "installed-continuous-target/native-stack-tooltip.png": {
+      "sha256": "ecc149454f587e040302822dc95b2033ee839f268356755412d74868fb01bcc7",
+      "bytes": 262871
+    }
+  },
+  "performance_observations": {
+    "installed-action-target": {
+      "trace_frames": 745,
+      "projection_metric_ms": {
+        "median": 22.4733,
+        "p95": 22.4733,
+        "max": 22.4733
+      },
+      "note": "Per-frame observations of the latest projection metric, including cached values; small fixture only, not a large-world benchmark"
+    },
+    "installed-continuous-target": {
+      "trace_frames": 1112,
+      "projection_metric_ms": {
+        "median": 0.034099,
+        "p95": 0.069409,
+        "max": 14.0141
+      },
+      "note": "Per-frame observations of the latest projection metric, including cached values; small fixture only, not a large-world benchmark"
+    }
+  },
+  "superseded_attempts": [
+    "cdda-build.log: missing closing brace corrected before successful builds",
+    "cdda-tests-complete.log: fixture setup spent moves before the provider; repaired and verified",
+    "gui-v1 and gui-final: earlier GUI revisions, superseded by installed target-specific tests",
+    "installed-action-driven: invalid global item-count assertion across the first native visibility update; replaced with selected-tile semantic identity and actual scene-node checks"
+  ],
+  "gemini_review": {
+    "model": "gemini-3.8-flash-high",
+    "mode": "read-only review on copied source files via agy plan",
+    "result": "120-second print timeout, no usable report; no conclusions used"
+  },
+  "known_limits": [
+    "Read-only flattened possession panel; equipment/drop/pocket rearrangement not yet exposed",
+    "One whole native stack per operation; partial quantities and batch selection pending",
+    "Native activity assignment ACK is not transfer completion; native failure-message presentation pending",
+    "Guard does not uniquely distinguish same-type/same-charge instances",
+    "Liquid destination selector/Spill not yet exposed",
+    "Pagination implemented but large piles not manually validated",
+    "Full owned vector on each publication; large-inventory performance unmeasured",
+    "Fixture icon mappings remain generic fallbacks",
+    "No full M5.5 or SAVE-001 recertification"
+  ]
+}
