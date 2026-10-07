@@ -40872,7 +40872,7 @@
   {
     "path": "tests/cwm_pickup_test.cpp",
     "mode": "100644",
-    "sha256": "0d6cd48bd5d74e293e83edaf3230f33d3ac6b569a1f16504d343cc464c0e1560"
+    "sha256": "b5704a7409a226001e71bc603b42fcdcceb8e1801ef8c4a69be6aa765ab8abba"
   },
   {
     "path": "tests/cwm_projection_test.cpp",

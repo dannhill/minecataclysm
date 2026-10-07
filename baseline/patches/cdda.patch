@@ -2768,10 +2768,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..cbd1f1f
+index 0000000..ad3d4ba
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,287 @@
+@@ -0,0 +1,288 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "calendar.h"
@@ -3029,6 +3029,7 @@ index 0000000..cbd1f1f
 +    int prompts = 0;
 +    bool stash_successful = true;
 +    Pickup::pick_info info;
++    u.moves = 1000; // Wearing/wielding the setup items already paid native costs.
 +    REQUIRE_FALSE( do_turn_with_action( [&]() {
 +        u.moves = 1000;
 +        Pickup::do_pickup( targets, quantities, false, stash_successful, info );
