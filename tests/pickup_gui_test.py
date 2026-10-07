@@ -15,6 +15,9 @@ import signal
 import socket
 import subprocess
 import time
+import select
+import tempfile
+import threading
 
 
 def main():
@@ -52,6 +55,51 @@ def main():
                LOG_DIR=str(out / 'logs'), CDDA_BIN=str(ws / 'cdda/build/src/cdda-server'),
                LUANTI_BIN=str(ws / 'luanti/bin/luanti'), CDDA_CONTINUOUS='1')
     env.pop('CDDA_TERRAIN_DEMO', None)
+    # A byte-transparent local relay lets the real client lose IPC while a
+    # selection is queued under manual pause. Gameplay still runs in CDDA.
+    scratch = tempfile.TemporaryDirectory(prefix='cwm-pickup-gui-')
+    relay_path = Path(scratch.name) / 'relay.sock'
+    native_path = out / 'native-socket'
+    stop, drop = threading.Event(), threading.Event()
+    relay_errors = []
+    listener = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    listener.bind(str(relay_path)); listener.listen(1); listener.settimeout(.1)
+    def relay():
+        try:
+            while not stop.is_set():
+                try:
+                    client_socket, _ = listener.accept()
+                except socket.timeout:
+                    continue
+                with client_socket, socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as server_socket:
+                    server_socket.connect(native_path.read_text().strip())
+                    while not stop.is_set():
+                        if drop.is_set():
+                            drop.clear()
+                            break
+                        readable, _, _ = select.select([client_socket, server_socket], [], [], .03)
+                        closed = False
+                        for source in readable:
+                            data = source.recv(1 << 20)
+                            if not data:
+                                closed = True
+                                break
+                            (server_socket if source is client_socket else client_socket).sendall(data)
+                        if closed:
+                            break
+        except Exception as error:
+            relay_errors.append(str(error))
+    relay_thread = threading.Thread(target=relay, daemon=True)
+    relay_thread.start()
+    wrapper = out / 'client-relay.py'
+    wrapper.write_text("#!/usr/bin/env python3\nimport os,sys,re\nfrom pathlib import Path\n" +
+        "args=sys.argv[1:]\ni=args.index('--config')+1\np=Path(args[i])\ns=p.read_text()\n" +
+        f"Path({str(native_path)!r}).write_text(re.findall(r'^cwm_socket_path = (.+)$',s,re.M)[-1])\n" +
+        f"p=Path({str(out / 'relay-client.conf')!r})\n" +
+        f"p.write_text(s+'\\ncwm_socket_path = {relay_path}\\n')\nargs[i]=str(p)\n" +
+        f"os.execv({str(ws / 'luanti/bin/luanti')!r},[{str(ws / 'luanti/bin/luanti')!r},*args])\n")
+    wrapper.chmod(0o755)
+    env['LUANTI_BIN'] = str(wrapper)
     def rows():
         if not trace.exists():
             return []
@@ -139,6 +187,8 @@ def main():
             wait(lambda r: int(r['ground_container']) == 0 and int(r['pause_reasons']) == 0)
             check('escape_does_not_transfer_items', int(latest()['owned_items']) == owned and int(latest()['ground_visual_nodes']) == nodes)
             wait(lambda r: int(r['ground_hover']) == 1)
+            tap('F7')
+            wait(lambda r: int(r['pause_reasons']) & 1)
             xdo('click', '3')
             wait(lambda r: int(r['ground_container']) == 1 and int(r['pause_reasons']) & 2)
             shot('container-reopened.png')
@@ -176,6 +226,28 @@ def main():
             xdo('mousemove', '--window', window, str(round(x+7*step)), str(round(y+4.35*unit)))
             time.sleep(.2)
             xdo('mouseup', '1')
+            wait(lambda r: int(r['ground_container']) == 0 and int(r['queued_pickup']) == 1)
+            check('manual_pause_keeps_pickup_queued_without_free_transfer', int(latest()['owned_items']) == owned)
+            old_connection = latest()['connection_id']
+            drop.set()
+            wait(lambda r: r['connection_id'] != old_connection and int(r['input_ready']) == 1, timeout=25)
+            check('reconnect_cancels_unsent_selection_and_container', int(latest()['queued_pickup']) == 0 and int(latest()['ground_container']) == 0)
+            if int(latest()['pause_reasons']) & 1:
+                tap('F7')
+            wait(lambda r: int(r['pause_reasons']) == 0)
+            time.sleep(.5)
+            check('reconnect_does_not_replay_stale_selection', int(latest()['owned_items']) == owned and int(latest()['ground_visual_nodes']) == nodes)
+            turn(0, -52)
+            wait(lambda r: int(r['ground_hover']) == 1)
+            xdo('click', '3')
+            wait(lambda r: int(r['ground_container']) == 1 and int(r['pause_reasons']) & 2)
+            xdo('mousemove', '--window', window, str(round(x)), str(round(y)))
+            shot('native-stack-tooltip.png')
+            xdo('mousedown', '1')
+            time.sleep(.2)
+            xdo('mousemove', '--window', window, str(round(x+7*step)), str(round(y+4.35*unit)))
+            time.sleep(.2)
+            xdo('mouseup', '1')
             wait(lambda r: int(r['ground_container']) == 0 and int(r['owned_items']) == owned+1 and int(r['pending_move']) == 0)
             check('only_selected_stack_transferred', int(latest()['ground_visual_nodes']) == nodes-1 and int(latest()['ground_tiles']) == tiles)
             shot('single-item-left.png')
@@ -198,8 +270,13 @@ def main():
                 except subprocess.TimeoutExpired:
                     os.killpg(proc.pid, signal.SIGKILL)
                     proc.wait()
+            stop.set()
+            relay_thread.join(timeout=3)
+            listener.close()
+            scratch.cleanup()
             if old_window:
                 subprocess.run(['xdotool', 'windowactivate', old_window], capture_output=True)
+    check('byte_relay_completed_without_errors', not relay_errors)
     output = out / 'native.json'
     with (out / 'native.log').open('w') as log:
         result = subprocess.run([str(args.native_reader.resolve()), '--userdir', str(user),

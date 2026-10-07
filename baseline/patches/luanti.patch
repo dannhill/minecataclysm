@@ -639,10 +639,10 @@ index 7f3f860..8bf1990 100644
  void TestMapBlock::testSaveLoad(IGameDef *gamedef, const u8 version)
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..563c190
+index 0000000..514854e
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,1648 @@
+@@ -0,0 +1,1656 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
@@ -1295,6 +1295,8 @@ index 0000000..563c190
 +
 +    void disconnected() {
 +        session_.disconnected();
++        queued_pickup_.reset(); pointed_ground_.reset();
++        ground_close_requested_ = ground_container_open_;
 +        metrics_.connected = false; player_ready_ = false; pending_move_ = 0;
 +        connection_.reset(); metrics_.pending_decision = 0;
 +        for (auto& [id, ent] : entities_) if (ent.scene_node)
@@ -1433,6 +1435,10 @@ index 0000000..563c190
 +
 +        const auto previous_state = session_.state;
 +        if (!session_.accept(*msg, *connection_)) {
++            if (!session_.ready()) {
++                queued_pickup_.reset(); pointed_ground_.reset();
++                ground_close_requested_ = ground_container_open_;
++            }
 +            player_ready_ = false;
 +            if (previous_state != session_.state) sync_timer_ = 0.f;
 +            return;
@@ -1441,6 +1447,8 @@ index 0000000..563c190
 +        metrics_.connected = true;
 +        if (session_.clear_world) { clear_world(); session_.clear_world = false; }
 +        if (msg->payload_type() == CDDA::CWM::Payload::WorldReset) {
++            queued_pickup_.reset(); pointed_ground_.reset();
++            ground_close_requested_ = ground_container_open_;
 +            player_ready_ = false;
 +            metrics_.pending_decision = 0;
 +            pending_move_ = 0;
@@ -2085,7 +2093,7 @@ index 0000000..563c190
 +
 +void CddaBridge::handleInventoryAction(const InventoryAction& action) {
 +    if (!pimpl_ || !pimpl_->ground_container_open_ || !pimpl_->session_.ready() ||
-+        pimpl_->queued_pickup_ || action.getType() != IAction::Move) return;
++        pimpl_->queued_pickup_ || pimpl_->ground_close_requested_ || action.getType() != IAction::Move) return;
 +    const auto& move = static_cast<const IMoveAction&>(action);
 +    if (move.from_inv.type != InventoryLocation::DETACHED || move.from_inv.name != "cwm_ground" ||
 +        move.to_inv.type != InventoryLocation::DETACHED || move.to_inv.name != "cwm_owned" ||
