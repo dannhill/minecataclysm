@@ -2662,7 +2662,7 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..b52ace1
+index 0000000..b159d26
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
 @@ -0,0 +1,141 @@
@@ -2719,7 +2719,7 @@ index 0000000..b52ace1
 +    u.moves = 1000;
 +    const tripoint target = u.pos() + tripoint_east;
 +    item &first = m.add_item( target, item( itype_id( "rock" ) ) );
-+    item &selected = m.add_item( target, item( itype_id( "matches" ) ) );
++    item &selected = m.add_item( target, item( itype_id( "9mm" ) ) );
 +    selected.set_var( "uid", "cwm-selected-pickup" );
 +    const int charges = selected.charges;
 +    const int before_moves = u.moves;
@@ -2765,7 +2765,7 @@ index 0000000..b52ace1
 +        REQUIRE( u.activity );
 +        process_activity( u );
 +        CHECK( character_has_item_with_var_val( u, "uid", "cwm-selected-pickup" ) );
-+        CHECK( u.charges_of( itype_id( "matches" ) ) == charges );
++        CHECK( u.charges_of( itype_id( "9mm" ) ) == charges );
 +        CHECK( m.i_at( m.getlocal( m.getabs( u.pos() ) + tripoint_east ) ).size() == 1 );
 +    } else {
 +        CHECK_FALSE( u.activity );
@@ -2786,7 +2786,7 @@ index 0000000..b52ace1
 +    REQUIRE( peer );
 +    REQUIRE( cwm::CwmServerTestAccess::accept_peer( server ) );
 +    cwm::CwmServerTestAccess::ready( server );
-+    item selected( itype_id( "matches" ) );
++    item selected( itype_id( "9mm" ) );
 +    cwm::CwmServerTestAccess::enqueue( server, u.pos(), 0, selected );
 +    REQUIRE( server.has_active_client() );
 +    SECTION( "identical pending command is ignored" ) {

@@ -160,7 +160,7 @@ def main():
                 items = piles[target]
                 (out / 'initial-selection.json').write_text(json.dumps(
                     dict(target=target, items=items), indent=2)+'\n')
-                selected = next(i for i in items if i['type'] == 'matches')
+                selected = next(i for i in items if i['type'] == '9mm')
                 check('native_projection_contains_guarded_stack', selected['charges'] == 7)
                 control(3)  # MENU_OPEN freezes selection time.
                 frozen = state['time']

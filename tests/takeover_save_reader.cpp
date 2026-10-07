@@ -230,10 +230,10 @@ int main(int argc, const char *argv[]) {
             item rock(itype_id("rock"), calendar::turn);
             rock.set_var("uid", "pickup-untouched");
             m.add_item(target, rock);
-            item matches(itype_id("matches"), calendar::turn);
-            matches.charges = 7;
-            matches.set_var("uid", "pickup-selected");
-            m.add_item(target, matches);
+            item ammunition(itype_id("9mm"), calendar::turn);
+            ammunition.charges = 7;
+            ammunition.set_var("uid", "pickup-selected");
+            m.add_item(target, ammunition);
             if (!u.wear_item(item(itype_id("backpack_hiking"), calendar::turn))) return 13;
             g->set_safe_mode(SAFE_MODE_OFF);
         }
