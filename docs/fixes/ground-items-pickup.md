@@ -1,5 +1,8 @@
 # Ground items: ripresa e backend PICKUP
 
+Documento storico del backend 2.4. La successiva GUI e la consegna 2.5
+sono registrate in [ground-items-ui.md](ground-items-ui.md).
+
 Verifica circoscritta completata il 2026-10-07. Prosegue il passo finale
 della [continuazione recuperata](../source/continuation-2026-10-07.md), senza
 modificare l'ordine del piano. Identità sorgenti verificata:

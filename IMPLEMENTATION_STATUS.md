@@ -1,11 +1,13 @@
 # Implementation status
 
-The recovered local continuation now has scoped ground-item PICKUP backend
-verification PASS; see [the results](docs/fixes/ground-items-pickup.md).
-CWM 2.4 queues and revalidates native selections and deduplicates the complete
-pickup guard. Nine production mapping batches are imported independently.
-The native activity/save checks pass; the ground-item container UI and
-pointing input are the next approved slice, not yet implemented.
+The recovered local continuation now has the ground-item PICKUP backend
+and its [Mineclonia container/pointer interface](docs/fixes/ground-items-ui.md)
+implemented. Final delivery verification and runtime installation are in progress.
+CWM 2.5 adds read-only native possessions to guarded, deduplicated pickup.
+Nine production mapping batches remain an independent lane. The lower panel
+is read-only; full inventory/equipment operations are the next playable-core
+slice after the user's visual validation. Historical backend evidence is
+[retained](docs/fixes/ground-items-pickup.md).
 
 The [complete implementation plan](IMPLEMENTATION_PLAN.md) now incorporates
 all 15 source-grounded feature questionnaires. Detailed accepted decisions

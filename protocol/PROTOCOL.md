@@ -6,7 +6,7 @@ captured implementation; it does not approve its gaps. The executable schema
 is [cwm.fbs](cwm.fbs). Audit findings and evidence are in
 [M5.5](../docs/audits/M5.5.md).
 
-The current runtime requires **CWM 2.4**. This breaks the old negotiation
+The current runtime requires **CWM 2.5**. This breaks the old negotiation
 contract; schema fields and union members are appended without changing the
 existing FlatBuffers offsets. Both executables must be rebuilt together.
 The historical coverage table below is retained as audit evidence.
@@ -20,9 +20,27 @@ item again at execution. A stale selection is rejected. A valid selection
 assigns CDDA's native pickup activity for the entire selected stack; its ACK
 means activity assignment, not completed transfer. Native capacity, pocket
 selection, action costs and activity completion remain authoritative.
-Pickup guards participate in command deduplication. The player-facing item
-container interface is a subsequent slice; these fields do not create a
-Luanti-owned inventory.
+Pickup guards participate in command deduplication.
+
+CWM 2.5 appends `owned_items` to `WorldSnapshot`: a complete read-only
+projection of native possessions, including worn, wielded and nested items.
+Indices describe presentation order and are not inventory mutation handles.
+A present vector replaces the possession projection; an absent vector clears
+it on a full snapshot and preserves it on a delta. Native export currently
+publishes the complete vector with each state. Item lists require contiguous
+indices and bounded, nonempty type/name strings. Ground tiles additionally
+require unique, bounded local coordinates. Both lists are limited to 8,192
+entries; ground-tile vectors are limited to 65,536 entries.
+
+The ground container uses Mineclonia's formspec layout, slot textures and
+Luanti inventory widgets. Its detached lists are client-only immutable
+mirrors. Moving a displayed ground stack into the possession panel queues a
+native PICKUP and closes the menu before executing it. No inventory action is
+sent to the Luanti server or applied optimistically. Each widget represents
+one complete native stack; native charges are shown in its tooltip. Partial
+quantities, dropping and equipment rearrangement are not implemented here.
+Disconnect/reset/resync cancels unsent selections and closes this form.
+These fields and widgets do not create a Luanti-owned gameplay inventory.
 
 ## Wire format
 
