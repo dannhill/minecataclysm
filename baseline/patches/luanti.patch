@@ -639,10 +639,10 @@ index 7f3f860..8bf1990 100644
  void TestMapBlock::testSaveLoad(IGameDef *gamedef, const u8 version)
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..135679f
+index 0000000..a66de90
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,1667 @@
+@@ -0,0 +1,1680 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
@@ -757,7 +757,7 @@ index 0000000..135679f
 +    float ground_item_rotation_{0.f};
 +    std::vector<GroundItemView> owned_items_, ground_selection_;
 +    std::unique_ptr<Inventory> ground_mirror_, owned_mirror_;
-+    std::optional<v3s16> pointed_ground_;
++    std::optional<v3s16> pointed_ground_, last_ground_target_;
 +    struct QueuedPickup { v3s32 absolute; GroundItemView item; };
 +    std::optional<QueuedPickup> queued_pickup_;
 +    bool ground_container_open_{false}, ground_form_dirty_{false};
@@ -1228,7 +1228,7 @@ index 0000000..135679f
 +        projected_blocks_.clear(); terrain_tiles_.clear(); terrain_bounds_.clear();
 +        clear_ground_item_visuals();
 +        ground_items_.clear();
-+        owned_items_.clear(); cancel_pickup_selection();
++        owned_items_.clear(); last_ground_target_.reset(); cancel_pickup_selection();
 +        commit_projection(old_blocks);
 +        origin_valid_ = false;
 +        pending_move_ = 0; metrics_.pending_decision = 0;
@@ -1890,7 +1890,7 @@ index 0000000..135679f
 +    std::string trace_path;
 +    if (g_settings->getNoEx("cwm_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->trace_.open(trace_path);
-+        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog,ipc_connected,ipc_input,ipc_output,ipc_read_bytes,ipc_write_bytes,ipc_frames,ipc_dispatch_bytes,ipc_read_calls,ipc_write_calls,session_state,input_ready,session_id,player_id,connection_id,sequence,resync_count,entity_cache,vehicle_cache,scene_origin_x,scene_origin_y,simulation_time,realtime,pause_reasons,time_scale,sent_intent,continuous_motion,intent_x,intent_y,ipc_latency_ms,projection_ms,ground_tiles,owned_items,ground_container,ground_hover,queued_pickup,ground_visual_nodes\n";
++        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog,ipc_connected,ipc_input,ipc_output,ipc_read_bytes,ipc_write_bytes,ipc_frames,ipc_dispatch_bytes,ipc_read_calls,ipc_write_calls,session_state,input_ready,session_id,player_id,connection_id,sequence,resync_count,entity_cache,vehicle_cache,scene_origin_x,scene_origin_y,simulation_time,realtime,pause_reasons,time_scale,sent_intent,continuous_motion,intent_x,intent_y,ipc_latency_ms,projection_ms,ground_tiles,owned_items,ground_container,ground_hover,queued_pickup,ground_visual_nodes,ground_hover_items,ground_target_items,ground_target_visual_nodes\n";
 +    }
 +    if (g_settings->getNoEx("cwm_entity_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->entity_trace_.open(trace_path);
@@ -1985,6 +1985,16 @@ index 0000000..135679f
 +    }
 +    if (!pimpl_ || !pimpl_->trace_.is_open() || !pimpl_->entities_.count(1)) return;
 +    const auto& entity = pimpl_->entities_.at(1);
++    const auto item_count = [&](const std::optional<v3s16>& pos) -> int {
++        if (!pos) return -1;
++        const auto* items = pimpl_->ground_items_.get(*pos);
++        return items ? static_cast<int>(items->size()) : 0;
++    };
++    size_t target_nodes = 0;
++    if (pimpl_->last_ground_target_) {
++        const auto visual = pimpl_->ground_item_visuals_.find(*pimpl_->last_ground_target_);
++        if (visual != pimpl_->ground_item_visuals_.end()) target_nodes = visual->second.nodes.size();
++    }
 +    pimpl_->trace_ << std::chrono::duration_cast<std::chrono::nanoseconds>(
 +        std::chrono::steady_clock::now().time_since_epoch()).count() << ','
 +        << position.X << ',' << position.Y << ',' << position.Z << ','
@@ -2008,7 +2018,9 @@ index 0000000..135679f
 +        << pimpl_->metrics_.continuous_motion << ',' << pimpl_->sent_intent_x_ << ',' << pimpl_->sent_intent_y_ << ',' << pimpl_->metrics_.ipc_latency_ms << ',' << pimpl_->metrics_.projection_ms << ',' << pimpl_->ground_items_.tiles().size()
 +        << ',' << pimpl_->owned_items_.size() << ',' << pimpl_->ground_container_open_
 +        << ',' << pimpl_->pointed_ground_.has_value() << ',' << pimpl_->queued_pickup_.has_value()
-+        << ',' << [&]() { size_t count = 0; for (const auto& [pos, visual] : pimpl_->ground_item_visuals_) count += visual.nodes.size(); return count; }() << '\n';
++        << ',' << [&]() { size_t count = 0; for (const auto& [pos, visual] : pimpl_->ground_item_visuals_) count += visual.nodes.size(); return count; }()
++        << ',' << item_count(pimpl_->pointed_ground_) << ',' << item_count(pimpl_->last_ground_target_)
++        << ',' << target_nodes << '\n';
 +    pimpl_->trace_.flush();
 +}
 +
@@ -2075,6 +2087,7 @@ index 0000000..135679f
 +    auto& impl = *pimpl_;
 +    const auto* items = impl.ground_items_.get(*impl.pointed_ground_);
 +    if (!items || items->empty()) return {};
++    impl.last_ground_target_ = *impl.pointed_ground_;
 +    if (items->size() == 1) {
 +        impl.queue_pickup(*impl.pointed_ground_, items->front());
 +        return {};
