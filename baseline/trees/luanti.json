@@ -7232,7 +7232,7 @@
   {
     "path": "src/cdda/cdda_bridge.cpp",
     "mode": "100644",
-    "sha256": "d428504758270fc7321f0eb203f8efa8c667827ee35175d69bedebe47cbdb98f"
+    "sha256": "9df04204c921a1335727bdc34b51faeb91784ccbca642cf140ccfa20f0c6ac81"
   },
   {
     "path": "src/cdda/cdda_bridge.h",

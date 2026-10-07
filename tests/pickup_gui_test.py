@@ -255,7 +255,7 @@ def main():
                 time.sleep(.2)
                 xdo('mouseup', '1')
             wait(lambda r: int(r['ground_container']) == 0 and int(r['owned_items']) == owned+1 and int(r['pending_move']) == 0)
-            wait(lambda r: int(r['ground_target_items']) == 1 and int(r['ground_target_visual_nodes']) == 1)
+            wait(lambda r: int(r['ground_target_items']) == 1 and int(r['ground_target_visual_nodes']) == 1 and r['ground_target_first_type'] == 'rock')
             check('only_selected_stack_transferred', True)
             shot('single-item-left.png')
             turn(0, -52)

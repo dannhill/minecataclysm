@@ -639,10 +639,10 @@ index 7f3f860..8bf1990 100644
  void TestMapBlock::testSaveLoad(IGameDef *gamedef, const u8 version)
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..a66de90
+index 0000000..2cfaa9f
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,1680 @@
+@@ -0,0 +1,1691 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
@@ -1890,7 +1890,7 @@ index 0000000..a66de90
 +    std::string trace_path;
 +    if (g_settings->getNoEx("cwm_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->trace_.open(trace_path);
-+        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog,ipc_connected,ipc_input,ipc_output,ipc_read_bytes,ipc_write_bytes,ipc_frames,ipc_dispatch_bytes,ipc_read_calls,ipc_write_calls,session_state,input_ready,session_id,player_id,connection_id,sequence,resync_count,entity_cache,vehicle_cache,scene_origin_x,scene_origin_y,simulation_time,realtime,pause_reasons,time_scale,sent_intent,continuous_motion,intent_x,intent_y,ipc_latency_ms,projection_ms,ground_tiles,owned_items,ground_container,ground_hover,queued_pickup,ground_visual_nodes,ground_hover_items,ground_target_items,ground_target_visual_nodes\n";
++        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog,ipc_connected,ipc_input,ipc_output,ipc_read_bytes,ipc_write_bytes,ipc_frames,ipc_dispatch_bytes,ipc_read_calls,ipc_write_calls,session_state,input_ready,session_id,player_id,connection_id,sequence,resync_count,entity_cache,vehicle_cache,scene_origin_x,scene_origin_y,simulation_time,realtime,pause_reasons,time_scale,sent_intent,continuous_motion,intent_x,intent_y,ipc_latency_ms,projection_ms,ground_tiles,owned_items,ground_container,ground_hover,queued_pickup,ground_visual_nodes,ground_hover_items,ground_target_items,ground_target_visual_nodes,ground_target_first_type\n";
 +    }
 +    if (g_settings->getNoEx("cwm_entity_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->entity_trace_.open(trace_path);
@@ -1995,6 +1995,17 @@ index 0000000..a66de90
 +        const auto visual = pimpl_->ground_item_visuals_.find(*pimpl_->last_ground_target_);
 +        if (visual != pimpl_->ground_item_visuals_.end()) target_nodes = visual->second.nodes.size();
 +    }
++    std::string target_type;
++    if (pimpl_->last_ground_target_) {
++        const auto* items = pimpl_->ground_items_.get(*pimpl_->last_ground_target_);
++        if (items && !items->empty()) target_type = items->front().type_id;
++    }
++    std::string csv_type = "\"";
++    for (const char c : target_type) {
++        if (c == '"') csv_type += '"';
++        csv_type += c;
++    }
++    csv_type += '"';
 +    pimpl_->trace_ << std::chrono::duration_cast<std::chrono::nanoseconds>(
 +        std::chrono::steady_clock::now().time_since_epoch()).count() << ','
 +        << position.X << ',' << position.Y << ',' << position.Z << ','
@@ -2020,7 +2031,7 @@ index 0000000..a66de90
 +        << ',' << pimpl_->pointed_ground_.has_value() << ',' << pimpl_->queued_pickup_.has_value()
 +        << ',' << [&]() { size_t count = 0; for (const auto& [pos, visual] : pimpl_->ground_item_visuals_) count += visual.nodes.size(); return count; }()
 +        << ',' << item_count(pimpl_->pointed_ground_) << ',' << item_count(pimpl_->last_ground_target_)
-+        << ',' << target_nodes << '\n';
++        << ',' << target_nodes << ',' << csv_type << '\n';
 +    pimpl_->trace_.flush();
 +}
 +
