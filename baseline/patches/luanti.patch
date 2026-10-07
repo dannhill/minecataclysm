@@ -817,10 +817,10 @@ index 0000000..e6447d3
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..ec0e87a
+index 0000000..bbae121
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,1766 @@
+@@ -0,0 +1,1767 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
@@ -855,6 +855,7 @@ index 0000000..ec0e87a
 +
 +#include <IGUIEnvironment.h>
 +#include <IGUIStaticText.h>
++#include <IVideoDriver.h>
 +#include <ISceneManager.h>
 +#include <IMeshSceneNode.h>
 +#include <IAnimatedMeshSceneNode.h>
@@ -2447,7 +2448,7 @@ index 0000000..ec0e87a
 +    const auto screen = guienv->getVideoDriver()->getScreenSize();
 +    const int width = std::min<int>(530, screen.Width - 20);
 +    pimpl_->survival_text_->setRelativePosition(irr::core::rect<irr::s32>(10,
-+        std::max<int>(285, screen.Height - 155), 10 + width, screen.Height - 10));
++        std::max<int>(285, screen.Height - 195), 10 + width, screen.Height - 10));
 +    std::string survival = "Corpo [H]  |  ";
 +    if (!pimpl_->session_.ready()) survival += "Stato CDDA non sincronizzato";
 +    else if (!pimpl_->avatar_status_.available) survival += "Stato CDDA non disponibile";

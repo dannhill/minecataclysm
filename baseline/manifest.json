@@ -17,9 +17,9 @@
       "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
       "shallow": true,
       "patch": "baseline/patches/luanti.patch",
-      "patch_sha256": "7888dbd8a937e68c077ff381003718de8b04b5ac6a06dbba31f5e950dc7e00a9",
+      "patch_sha256": "8d5a9e941f1b6212470dd3295f7f49163415d608206b71e42968c0908abb5314",
       "tree_inventory": "baseline/trees/luanti.json",
-      "tree_sha256": "427864de8f240bc3541132db160d3b7a54f1d3bb692d3e843f55492f1fb09a28",
+      "tree_sha256": "c29aa6e364d26730900a30065f53d2b57f0044a064ff68005a0f8bf860ba6814",
       "file_count": 2255,
       "original_status": " M src/CMakeLists.txt\n M src/client/CMakeLists.txt\n M src/client/client.cpp\n M src/client/clientenvironment.cpp\n M src/client/game.cpp\n M src/client/hud.cpp\n M src/client/inputhandler.cpp\n M src/client/keys.h\n M src/client/mesh_generator_thread.cpp\n M src/client/mesh_generator_thread.h\n M src/defaultsettings.cpp\n M src/network/clientpackethandler.cpp\n M src/server/player_sao.cpp\n M src/unittest/test_mapblock.cpp\n?? src/cdda/avatar_status.h\n?? src/cdda/cdda_bridge.cpp\n?? src/cdda/cdda_bridge.h\n?? src/cdda/ground_item_formspec.h\n?? src/cdda/ground_item_projection.h\n?? src/cdda/ground_item_visual.h\n"
     },
