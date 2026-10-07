@@ -639,10 +639,10 @@ index 7f3f860..8bf1990 100644
  void TestMapBlock::testSaveLoad(IGameDef *gamedef, const u8 version)
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..514854e
+index 0000000..135679f
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,1656 @@
+@@ -0,0 +1,1667 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
@@ -764,7 +764,8 @@ index 0000000..514854e
 +    bool ground_close_requested_{false};
 +    size_t ground_page_{0}, owned_page_{0};
 +    v3s16 ground_container_pos_;
-+    std::wstring item_hint_;
++    std::wstring item_hint_, hover_hint_;
++    std::chrono::steady_clock::time_point item_hint_until_;
 +    irr::gui::IGUIStaticText* item_hint_text_{nullptr};
 +
 +    void populate_mirror(std::unique_ptr<Inventory>& mirror,
@@ -787,11 +788,21 @@ index 0000000..514854e
 +        return groundContainerForm(ground_selection_.size(), owned_items_.size(), ground_page_, owned_page_);
 +    }
 +
++    void cancel_pickup_selection() {
++        if (queued_pickup_ || ground_container_open_) {
++            item_hint_ = L"Selezione annullata. Punta di nuovo l'oggetto per raccoglierlo.";
++            item_hint_until_ = std::chrono::steady_clock::now() + std::chrono::seconds(3);
++        }
++        queued_pickup_.reset(); pointed_ground_.reset(); hover_hint_.clear();
++        ground_close_requested_ = ground_container_open_;
++    }
++
 +    void queue_pickup(const v3s16& pos, const GroundItemView& item) {
 +        const auto native = CddaBridge::luantiToCddaCoord(pos);
 +        queued_pickup_ = QueuedPickup{v3s32(native.X + scene_origin_.X,
 +            native.Y + scene_origin_.Y, native.Z), item};
 +        item_hint_ = L"Raccolta selezionata. Il tempo riprende per eseguire l'azione.";
++        item_hint_until_ = std::chrono::steady_clock::now() + std::chrono::seconds(3);
 +    }
 +
 +    void flush_pickup() {
@@ -1217,8 +1228,7 @@ index 0000000..514854e
 +        projected_blocks_.clear(); terrain_tiles_.clear(); terrain_bounds_.clear();
 +        clear_ground_item_visuals();
 +        ground_items_.clear();
-+        owned_items_.clear(); pointed_ground_.reset(); queued_pickup_.reset();
-+        ground_close_requested_ = ground_container_open_;
++        owned_items_.clear(); cancel_pickup_selection();
 +        commit_projection(old_blocks);
 +        origin_valid_ = false;
 +        pending_move_ = 0; metrics_.pending_decision = 0;
@@ -1295,8 +1305,7 @@ index 0000000..514854e
 +
 +    void disconnected() {
 +        session_.disconnected();
-+        queued_pickup_.reset(); pointed_ground_.reset();
-+        ground_close_requested_ = ground_container_open_;
++        cancel_pickup_selection();
 +        metrics_.connected = false; player_ready_ = false; pending_move_ = 0;
 +        connection_.reset(); metrics_.pending_decision = 0;
 +        for (auto& [id, ent] : entities_) if (ent.scene_node)
@@ -1436,8 +1445,7 @@ index 0000000..514854e
 +        const auto previous_state = session_.state;
 +        if (!session_.accept(*msg, *connection_)) {
 +            if (!session_.ready()) {
-+                queued_pickup_.reset(); pointed_ground_.reset();
-+                ground_close_requested_ = ground_container_open_;
++                cancel_pickup_selection();
 +            }
 +            player_ready_ = false;
 +            if (previous_state != session_.state) sync_timer_ = 0.f;
@@ -1447,8 +1455,7 @@ index 0000000..514854e
 +        metrics_.connected = true;
 +        if (session_.clear_world) { clear_world(); session_.clear_world = false; }
 +        if (msg->payload_type() == CDDA::CWM::Payload::WorldReset) {
-+            queued_pickup_.reset(); pointed_ground_.reset();
-+            ground_close_requested_ = ground_container_open_;
++            cancel_pickup_selection();
 +            player_ready_ = false;
 +            metrics_.pending_decision = 0;
 +            pending_move_ = 0;
@@ -1765,8 +1772,10 @@ index 0000000..514854e
 +            case CDDA::CWM::Payload::CommandAck: {
 +                const auto* ack = msg->payload_as_CommandAck();
 +                if (ack) {
-+                    if (!ack->accepted() && ack->error_message())
++                    if (!ack->accepted() && ack->error_message()) {
 +                        item_hint_ = utf8_to_wide(ack->error_message()->str());
++                        item_hint_until_ = std::chrono::steady_clock::now() + std::chrono::seconds(3);
++                    }
 +                    if (ack->command_id() == pending_move_) { move_acked_ = true; ack_revision_ = ack->result_revision(); }
 +                }
 +                break;
@@ -2037,7 +2046,7 @@ index 0000000..514854e
 +bool CddaBridge::pointGroundItems(const irr::core::line3d<float>& ray) {
 +    if (!pimpl_) return false;
 +    auto& impl = *pimpl_;
-+    impl.pointed_ground_.reset();
++    impl.pointed_ground_.reset(); impl.hover_hint_.clear();
 +    if (!impl.session_.ready() || !impl.entities_.count(1) || impl.metrics_.pending_decision)
 +        return false;
 +    const auto player = impl.entities_.at(1).target_pos;
@@ -2052,7 +2061,7 @@ index 0000000..514854e
 +        const float distance = center.getDistanceFromSQ(ray.start);
 +        if (distance < closest && box.intersectsWithLine(ray)) {
 +            closest = distance; impl.pointed_ground_ = pos;
-+            impl.item_hint_ = utf8_to_wide(items.size() == 1 ? items.front().name :
++            impl.hover_hint_ = utf8_to_wide(items.size() == 1 ? items.front().name :
 +                "Pila a terra (" + std::to_string(items.size()) + " oggetti)") +
 +                L" — tasto destro";
 +        }
@@ -2182,7 +2191,9 @@ index 0000000..514854e
 +        pimpl_->item_hint_text_ = guienv->addStaticText(L"",
 +            irr::core::rect<irr::s32>(10, 245, 1100, 280), false, true);
 +    if (pimpl_->item_hint_text_) {
-+        pimpl_->item_hint_text_->setText(pimpl_->item_hint_.c_str());
++        const auto& hint = pimpl_->queued_pickup_ || std::chrono::steady_clock::now() < pimpl_->item_hint_until_ ?
++            pimpl_->item_hint_ : pimpl_->hover_hint_;
++        pimpl_->item_hint_text_->setText(hint.c_str());
 +        pimpl_->item_hint_text_->setVisible(pimpl_->session_.ready() &&
 +            !pimpl_->metrics_.pending_decision && !pimpl_->ground_container_open_);
 +    }
