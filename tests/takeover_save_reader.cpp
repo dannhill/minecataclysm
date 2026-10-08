@@ -244,6 +244,9 @@ int main(int argc, const char *argv[]) {
         }
         if (create_body) {
             // Native-only fixture: no ground items or pickup UI dependency.
+            // Initialize the native hunger descriptor without simulating any
+            // elapsed digestion; a freshly created avatar has no such effect.
+            u.update_stomach(calendar::turn, calendar::turn);
             u.set_thirst(100);
             u.set_fatigue(200);
             u.set_pain(20);
