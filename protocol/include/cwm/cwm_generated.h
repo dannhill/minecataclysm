@@ -2252,7 +2252,8 @@ struct BodyPartStatus FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_ID = 4,
     VT_LABEL = 6,
     VT_HEALTH = 8,
-    VT_TEMPERATURE = 10
+    VT_TEMPERATURE = 10,
+    VT_CONDITIONS = 12
   };
   const ::flatbuffers::String *id() const {
     return GetPointer<const ::flatbuffers::String *>(VT_ID);
@@ -2278,6 +2279,12 @@ struct BodyPartStatus FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   CDDA::CWM::StatusValue *mutable_temperature() {
     return GetPointer<CDDA::CWM::StatusValue *>(VT_TEMPERATURE);
   }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *conditions() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *>(VT_CONDITIONS);
+  }
+  ::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *mutable_conditions() {
+    return GetPointer<::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *>(VT_CONDITIONS);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_ID) &&
@@ -2288,6 +2295,9 @@ struct BodyPartStatus FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyTable(health()) &&
            VerifyOffset(verifier, VT_TEMPERATURE) &&
            verifier.VerifyTable(temperature()) &&
+           VerifyOffset(verifier, VT_CONDITIONS) &&
+           verifier.VerifyVector(conditions()) &&
+           verifier.VerifyVectorOfStrings(conditions()) &&
            verifier.EndTable();
   }
 };
@@ -2308,6 +2318,9 @@ struct BodyPartStatusBuilder {
   void add_temperature(::flatbuffers::Offset<CDDA::CWM::StatusValue> temperature) {
     fbb_.AddOffset(BodyPartStatus::VT_TEMPERATURE, temperature);
   }
+  void add_conditions(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>>> conditions) {
+    fbb_.AddOffset(BodyPartStatus::VT_CONDITIONS, conditions);
+  }
   explicit BodyPartStatusBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -2324,8 +2337,10 @@ inline ::flatbuffers::Offset<BodyPartStatus> CreateBodyPartStatus(
     ::flatbuffers::Offset<::flatbuffers::String> id = 0,
     ::flatbuffers::Offset<::flatbuffers::String> label = 0,
     ::flatbuffers::Offset<CDDA::CWM::StatusValue> health = 0,
-    ::flatbuffers::Offset<CDDA::CWM::StatusValue> temperature = 0) {
+    ::flatbuffers::Offset<CDDA::CWM::StatusValue> temperature = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>>> conditions = 0) {
   BodyPartStatusBuilder builder_(_fbb);
+  builder_.add_conditions(conditions);
   builder_.add_temperature(temperature);
   builder_.add_health(health);
   builder_.add_label(label);
@@ -2338,15 +2353,18 @@ inline ::flatbuffers::Offset<BodyPartStatus> CreateBodyPartStatusDirect(
     const char *id = nullptr,
     const char *label = nullptr,
     ::flatbuffers::Offset<CDDA::CWM::StatusValue> health = 0,
-    ::flatbuffers::Offset<CDDA::CWM::StatusValue> temperature = 0) {
+    ::flatbuffers::Offset<CDDA::CWM::StatusValue> temperature = 0,
+    const std::vector<::flatbuffers::Offset<::flatbuffers::String>> *conditions = nullptr) {
   auto id__ = id ? _fbb.CreateString(id) : 0;
   auto label__ = label ? _fbb.CreateString(label) : 0;
+  auto conditions__ = conditions ? _fbb.CreateVector<::flatbuffers::Offset<::flatbuffers::String>>(*conditions) : 0;
   return CDDA::CWM::CreateBodyPartStatus(
       _fbb,
       id__,
       label__,
       health,
-      temperature);
+      temperature,
+      conditions__);
 }
 
 struct AvatarStatus FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {

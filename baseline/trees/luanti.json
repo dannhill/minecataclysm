@@ -7232,12 +7232,12 @@
   {
     "path": "src/cdda/avatar_status.h",
     "mode": "100644",
-    "sha256": "2074262c337a26d761e7856bcee5d63deff135e06dffd5c462b056ff1ad2b231"
+    "sha256": "79e8b64512f1de6b684340a2a2f50ba1854e259ebc9345427e93d4d38e45c377"
   },
   {
     "path": "src/cdda/cdda_bridge.cpp",
     "mode": "100644",
-    "sha256": "4cc9130209c7a86005f391784d2a28dcbee635bbc08025c99ed50439e5a7f472"
+    "sha256": "10e18a96eba354eccf8f4d7f9df844adf3a17c394d53e785a37b489e4e473d38"
   },
   {
     "path": "src/cdda/cdda_bridge.h",

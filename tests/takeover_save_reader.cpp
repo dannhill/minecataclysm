@@ -304,6 +304,7 @@ int main(int argc, const char *argv[]) {
             wipe.set_var("uid", "medicine-wipe"); u.i_add(wipe);
             item dirty(itype_id("bandages_makeshift"), calendar::turn); dirty.set_flag(flag_id("FILTHY"));
             dirty.set_var("uid", "medicine-dirty"); u.i_add(dirty);
+            item rock(itype_id("rock"), calendar::turn); rock.set_var("uid", "medicine-rock"); u.i_add(rock);
             u.moves = 100; g->set_safe_mode(SAFE_MODE_OFF);
         }
         if (create_equipment) {

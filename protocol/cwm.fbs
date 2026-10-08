@@ -176,6 +176,8 @@ table BodyPartStatus {
     label: string;
     health: StatusValue;
     temperature: StatusValue;
+    // Known wound/treatment names from the native body UI, not all effects.
+    conditions: [string];
 }
 
 table AvatarStatus {

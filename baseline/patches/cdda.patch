@@ -1447,10 +1447,10 @@ index 0000000..1a0308e
 +}
 diff --git a/src/cwm/cwm_map_exporter.cpp b/src/cwm/cwm_map_exporter.cpp
 new file mode 100644
-index 0000000..f9116ea
+index 0000000..2abb83d
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.cpp
-@@ -0,0 +1,612 @@
+@@ -0,0 +1,622 @@
 +#include "cwm_motion.h"
 +// CDDA CWM Map & Entity Exporter Implementation
 +// Licensed under Apache-2.0
@@ -1462,6 +1462,7 @@ index 0000000..f9116ea
 +#include "cwm/cwm_protocol.hpp"
 +
 +#include "avatar.h"
++#include "effect.h"
 +#include "game.h"
 +#include "item.h"
 +#include "map.h"
@@ -1543,8 +1544,17 @@ index 0000000..f9116ea
 +        const auto health = value("health", "Salute",
 +            get_hp_bar(u.get_part_hp_cur(bp), u.get_part_hp_max(bp), false));
 +        const auto temperature = value("temperature", "Temperatura", display::temp_text_color(u, bp.id()));
++        std::vector<std::string> conditions;
++        // Same wound/treatment effects explicitly disclosed by body_window.
++        // Do not export arbitrary hidden diseases, effect IDs or exact timers.
++        for (const char* id : {"bandaged", "disinfected", "bleed", "bite", "infected", "mending"}) {
++            const efftype_id effect_id(id);
++            if (u.has_effect(effect_id, bp))
++                conditions.push_back(remove_color_tags(u.get_effect(effect_id, bp).get_speed_name()));
++        }
++        const auto known = fbb.CreateVectorOfStrings(conditions);
 +        parts.push_back(CDDA::CWM::CreateBodyPartStatusDirect(fbb, bp.id().str().c_str(),
-+            body_part_name_as_heading(bp, 1).c_str(), health, temperature));
++            body_part_name_as_heading(bp, 1).c_str(), health, temperature, known));
 +    }
 +    const auto needs_vec = fbb.CreateVector(needs);
 +    const auto parts_vec = fbb.CreateVector(parts);

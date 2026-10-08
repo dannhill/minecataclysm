@@ -105,6 +105,11 @@ inline bool valid_world(const CDDA::CWM::WorldSnapshot* world) {
             if (!part || !valid_text(part->id(), 128, false) ||
                 !valid_text(part->label(), 256, false) || !valid_value(part->health()) ||
                 !valid_value(part->temperature()) || !parts.insert(part->id()->str()).second) return false;
+        for (const auto* part : *status->body_parts()) if (part->conditions()) {
+            if (part->conditions()->size() > 64) return false;
+            for (const auto* condition : *part->conditions())
+                if (!valid_text(condition, 2048, false)) return false;
+        }
     }
     if (world->ground_item_tiles()) {
         if (world->ground_item_tiles()->size() > 65536) return false;

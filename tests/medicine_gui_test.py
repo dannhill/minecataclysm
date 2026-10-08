@@ -315,6 +315,22 @@ def main():
                 check('reconnect_invalidates_old_medicine_selection',latest()['equipment_sent']==sent)
                 view=open_inventory();check('resync_restores_unused_healing_items',len(bandages(view))==2)
                 tap('Escape');wait(lambda r:int(r['equipment_form'])==0)
+                tap('h');wait(lambda r:int(r['body_form'])==1);shot('treated-body.png')
+                from CDDA.CWM.WorldSnapshot import WorldSnapshot
+                import struct
+                buf=(out/'server-wire.bin').read_bytes();offset=0;status=None
+                while offset+4<=len(buf):
+                    n=struct.unpack('>I',buf[offset:offset+4])[0];offset+=4
+                    if offset+n>len(buf):break
+                    message=CwmMessage.GetRootAs(buf[offset:offset+n]);offset+=n
+                    if message.PayloadType()==Payload.WorldSnapshot:
+                        snapshot=WorldSnapshot();snapshot.Init(message.Payload().Bytes,message.Payload().Pos)
+                        if snapshot.AvatarStatus():status=snapshot.AvatarStatus()
+                conditions={}
+                for i in range(status.BodyPartsLength()):
+                    part=status.BodyParts(i);conditions[part.Id().decode()]=[part.Conditions(j).decode().lower() for j in range(part.ConditionsLength())]
+                check('actual_body_sheet_receives_only_targeted_treatment_names',any('bandaged' in x for x in conditions['arm_l']) and any('disinfected' in x for x in conditions['torso']) and not conditions['head'])
+                tap('Escape');wait(lambda r:int(r['body_form'])==0)
                 check('actual_runtime_survives_firstaid',proc.poll() is None)
                 if args.save_active:
                     view=open_inventory();select_item(bandages(view)[0]);action(5);choose('torso')

@@ -947,10 +947,10 @@ index 7f3f860..7cfa527 100644
  void TestMapBlock::testSaveLoad(IGameDef *gamedef, const u8 version)
 diff --git a/src/cdda/avatar_status.h b/src/cdda/avatar_status.h
 new file mode 100644
-index 0000000..ebc8b75
+index 0000000..2214cd4
 --- /dev/null
 +++ b/src/cdda/avatar_status.h
-@@ -0,0 +1,115 @@
+@@ -0,0 +1,121 @@
 +#pragma once
 +#include <string>
 +#include <array>
@@ -959,7 +959,7 @@ index 0000000..ebc8b75
 +
 +namespace cdda_client {
 +struct StatusView { std::string id, label, text, color; int perceived_level{-1}; };
-+struct BodyPartView { std::string id, label; StatusView health, temperature; };
++struct BodyPartView { std::string id, label; StatusView health, temperature; std::vector<std::string> conditions; };
 +struct AvatarStatusView {
 +    bool available{false};
 +    StatusView stamina;
@@ -1050,7 +1050,9 @@ index 0000000..ebc8b75
 +            statusEscape(value.text.empty() ? "-" : value.text) + "]";
 +        y += .75;
 +    }
-+    form += "scroll_container_end[]style_type[label;textcolor=#eeeeee]scrollbaroptions[min=0;max=" + std::to_string(std::max(0, (int(status.parts.size()) * 110 + 10 - 630 + 9) / 10)) +
++    double parts_height = .1;
++    for (const auto& part : status.parts) parts_height += 1.1 + .4 * part.conditions.size();
++    form += "scroll_container_end[]style_type[label;textcolor=#eeeeee]scrollbaroptions[min=0;max=" + std::to_string(std::max(0, int((parts_height - 6.3) * 10 + .9))) +
 +        ";smallstep=8;largestep=24]scrollbar[11.3,2;0.25,6.3;vertical;parts_scroll;0]"
 +        "scroll_container[6,2;5.1,6.3;parts_scroll;vertical;0.1]";
 +    y = .1;
@@ -1059,6 +1061,10 @@ index 0000000..ebc8b75
 +        form += "label[0.6," + std::to_string(y + .25) + ";" + statusEscape(part.label) + "]";
 +        form += statusIconRow(2.5, y + .05, part.health.text, "heart.png");
 +        form += "label[0.6," + std::to_string(y + .72) + ";" + statusEscape(part.temperature.text) + "]";
++        for (const auto& condition : part.conditions) {
++            form += "label[0.6," + std::to_string(y + 1.1) + ";" + statusEscape(condition) + "]";
++            y += .4;
++        }
 +        y += 1.1;
 +    }
 +    form += "scroll_container_end[]label[0.4,8.8;Cinque icone = cinque segmenti nativi. Condizioni e temperatura separate.]"
@@ -1068,10 +1074,10 @@ index 0000000..ebc8b75
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..9300e18
+index 0000000..5194dfa
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,2200 @@
+@@ -0,0 +1,2202 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
@@ -2186,9 +2192,11 @@ index 0000000..9300e18
 +                    avatar_status_.available = true;
 +                    avatar_status_.stamina = view(status->stamina());
 +                    for (const auto* need : *status->needs()) avatar_status_.needs.push_back(view(need));
-+                    for (const auto* part : *status->body_parts())
-+                        avatar_status_.parts.push_back({part->id()->str(), part->label()->str(),
-+                            view(part->health()), view(part->temperature())});
++                    for (const auto* part : *status->body_parts()) {
++                        BodyPartView body{part->id()->str(), part->label()->str(), view(part->health()), view(part->temperature()), {}};
++                        if (part->conditions()) for (const auto* condition : *part->conditions()) body.conditions.push_back(condition->str());
++                        avatar_status_.parts.push_back(std::move(body));
++                    }
 +                }
 +                if (snap->owned_items()) {
 +                    owned_items_.clear();
