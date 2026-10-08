@@ -185,7 +185,7 @@ def main():
             xdo('windowactivate', '--sync', window)
             time.sleep(1)
             wait(lambda r: int(r['input_ready']) == 1)
-            if int(latest()['pause_reasons']) & 2:
+            if int(latest()['pause_reasons']) & 4:
                 tap('e')
             wait(lambda r:int(r['pause_reasons'])==0)
             sys.path.insert(0, str(ws / 'protocol/python'))

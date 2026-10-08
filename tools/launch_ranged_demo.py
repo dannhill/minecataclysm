@@ -46,6 +46,7 @@ def main():
     print('Punta lo zombie: F tenuto per mirare pagando tempo nativo, rinculo mostrato nel suggerimento.', flush=True)
     print('Rilascia F e clic sinistro per sparare una volta; R per ricaricare con scelta e conferma native.', flush=True)
     print('I durante la ricarica: pausa e Interrompi ricarica. H: scheda; F7: pausa manuale.', flush=True)
+    print('E riconosce la minaccia iniziale e riprende il tempo dopo l\'autopausa.', flush=True)
     print('Movimento e tempo nativo 4x. Rilancia senza --fresh per riprendere il save.', flush=True)
     os.execve(root / 'start.sh', [str(root / 'start.sh'), '--go', '--name', 'ranged_demo', *client_args], env)
 

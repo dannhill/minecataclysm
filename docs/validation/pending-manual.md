@@ -242,6 +242,7 @@ Avvio isolato: `./ranged-demo.sh --fresh`. Pistola già impugnata con tre
 colpi; trenta munizioni 9mm nello zaino, variante FMJ compatibile e munizioni
 incompatibili. Zombie immobilizzato davanti a quattro caselle, cane amico
 sulla destra. Nessuna raccolta/equipaggiamento obbligatorio.
+**E** riconosce la minaccia iniziale e riprende dopo l'autopausa.
 
 1. Punta lo zombie: nome dell'arma, colpi e rinculo. Tieni **F**: il rinculo
    diminuisce pagando tempo nativo; rilascia F e **clic sinistro** per sparare.
