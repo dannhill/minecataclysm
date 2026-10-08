@@ -3561,7 +3561,7 @@ index 0000000..bf6e603
 +} // namespace cdda_client
 diff --git a/src/cdda/crafting_inventory.h b/src/cdda/crafting_inventory.h
 new file mode 100644
-index 0000000..e49b9a4
+index 0000000..a8ab6bd
 --- /dev/null
 +++ b/src/cdda/crafting_inventory.h
 @@ -0,0 +1,55 @@
@@ -3591,7 +3591,7 @@ index 0000000..e49b9a4
 +        "background9[0,0;16,11;mcl_base_textures_background9.png;false;7]"
 +        "style_type[label;textcolor=#323232]"
 +        "style_type[button;border=false;bgimg=mcl_inventory_button9.png;bgimg_pressed=mcl_inventory_button9_pressed.png;bgimg_middle=2,2]"
-+        "label[0.4,0.4;Crafting - ricette disponibili e lavori incompleti]"
++        "label[0.4,0.4;Crafting - ricette note e lavori incompleti]"
 +        "field[0.4,1;5.6,0.65;search;;" + statusEscape(search) + "]field_close_on_enter[search;false]"
 +        "button[6.1,1;1.6,0.65;find;Cerca]label[8,0.7;Lotto]dropdown[8,1;3.3,0.65;batch;";
 +    for (unsigned n=1; n<=20; ++n) f += (n>1 ? "," : "") + std::to_string(n);
@@ -3610,7 +3610,7 @@ index 0000000..e49b9a4
 +    }
 +    f += "button[0.5,9.7;1.5,0.65;prev;<]button[6,9.7;1.5,0.65;next;>]label[2.2,10;"+std::to_string(page+1)+" / "+std::to_string(pages)+"]";
 +    if (const auto* e=view.entry(selected)) {
-+        f += "textarea[8,2.8;7.5,6.1;;;"+statusEscape(e->name+"\n"+e->recipe+"\n"+
++        f += "textarea[8,2.8;7.5,6.1;;;"+statusEscape(e->name+"\n"+
 +            (e->resume ? "Riprendi: "+std::to_string(e->progress/100000)+"%\n" : "Durata stimata: "+std::to_string(e->expected/100)+" secondi CDDA\n")+
 +            e->requirements+"\n"+(e->reason.empty() ? "Disponibile" : e->reason))+"]";
 +        if (e->reason.empty() && !busy) f += "button[8,9;7.5,0.65;start;"+std::string(e->resume ? "Riprendi lavoro" : "Scegli componenti e crea")+"]";

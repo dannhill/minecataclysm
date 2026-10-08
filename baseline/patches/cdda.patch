@@ -1105,10 +1105,10 @@ index 09a7711..9b0c484 100644
          DebugLog( D_INFO, DC_ALL ) <<
 diff --git a/src/cwm/cwm_crafting.h b/src/cwm/cwm_crafting.h
 new file mode 100644
-index 0000000..55817e7
+index 0000000..d8898b7
 --- /dev/null
 +++ b/src/cwm/cwm_crafting.h
-@@ -0,0 +1,166 @@
+@@ -0,0 +1,171 @@
 +#pragma once
 +#include "avatar.h"
 +#include "avatar_action.h"
@@ -1252,7 +1252,12 @@ index 0000000..55817e7
 +                    return "Lavoro incompleto non piu raggiungibile.";
 +            }
 +            if (u.activity || u.is_underwater() || u.is_mounted()) return "Ripresa non disponibile.";
-+            if (!u.has_recipe(choice.rec, u.crafting_inventory(), u.get_crafting_group())) return "Ricetta non disponibile.";
++            const auto error = availability(u, *choice.rec, choice.work->get_making_batch_size());
++            if (!error.empty() && error.find("Componenti") != 0) return error;
++            const auto remaining = choice.work->get_continue_reqs();
++            if (!remaining.can_make_with_inventory(u.crafting_inventory(),
++                choice.rec->get_component_filter(recipe_filter_flags::no_favorite | recipe_filter_flags::no_equipped), 1))
++                return "Componenti di riparazione mancanti per riprendere.";
 +            return "";
 +        }
 +        // A lost/deleted item_location is never converted into a new craft.
@@ -3914,10 +3919,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..988d945
+index 0000000..69f8fc9
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,1235 @@
+@@ -0,0 +1,1254 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "move_mode.h"
@@ -5152,6 +5157,25 @@ index 0000000..988d945
 +    cwm::CwmServerTestAccess::complete(server);
 +    cwm::CwmServerTestAccess::craft(server,view,entry);CHECK_FALSE(server.has_queued_action());
 +    CHECK(u.has_item(sheet));
++}
++
++TEST_CASE("cwm_resume_revalidates_unsupported_recipe_scope_without_native_mutation", "[cwm][crafting]")
++{
++    clear_avatar();clear_map();clear_creatures();
++    avatar& u=get_avatar();u.setpos(tripoint(60,60,0));
++    const recipe& rec=recipe_id("water_clean").obj();u.learn_recipe(&rec);
++    REQUIRE(u.wear_item(item(itype_id("backpack_hiking"))));
++    const auto work=u.i_add(item(&rec,1,item_components{},std::vector<item_comp>{}));REQUIRE(work);
++    cwm::CraftingSelection selection;cdda::cwm::MessageBuilder wire(1,1,{101,102,103});
++    const auto bytes=selection.query(u,1,"water_clean",1,wire);
++    const auto* view=CDDA::CWM::GetCwmMessage(bytes.data())->payload_as_CraftingView();
++    REQUIRE(view->entries()->size()>0);REQUIRE(view->entries()->Get(0)->resume());
++    CHECK_FALSE(view->entries()->Get(0)->reason()->str().empty());
++    CHECK_FALSE(selection.validate(u,view->view_id(),1).empty());
++    const auto time=calendar::turn;const int moves=u.moves;
++    CHECK_FALSE(selection.execute(u,view->view_id(),1));
++    CHECK_FALSE(u.activity);CHECK(work);CHECK(work->item_counter==0);
++    CHECK(calendar::turn==time);CHECK(u.moves==moves);
 +}
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644
