@@ -27,7 +27,10 @@ def main():
         parser.add_argument('--' + name, type=Path, required=True)
     parser.add_argument('--action-driven', action='store_true', help='Verify ordinary start.sh mode without the real-time scheduler')
     parser.add_argument('--resume-only', action='store_true')
+    parser.add_argument('--save-active', action='store_true')
+    parser.add_argument('--resume-active', action='store_true')
     args = parser.parse_args()
+    if args.resume_active: args.resume_only = True
     ws, out = args.workspace.resolve(), args.artifacts.resolve()
     out.mkdir(parents=True, exist_ok=False)
     user = out / 'user'
@@ -240,7 +243,16 @@ def main():
             if args.resume_only:
                 check('reload_keeps_water_in_original_container', item(view,'water_clean').Charges() == 3 and item(view,'water_clean').ParentId() == item(view,'bottle_twoliter').Id())
                 check('reload_keeps_rotten_apple_and_rock', rotten(view) is not None and item(view,'rock') is not None)
+                if args.resume_active:
+                    saved_activity = json.loads((args.fixture.parent/'native.json').read_text())['player']['activity']
+                    check('canonical_inflight_actor_resumes_in_real_renderer', int(latest()['consumption_token']) > 0 and int(latest()['consumption_total']) == saved_activity['moves_total'] and 0 < int(latest()['consumption_remaining']) <= saved_activity['moves_left'])
+                    shot('resumed-consumption.png')
                 tap('Escape');wait(lambda r: int(r['equipment_form']) == 0)
+                if args.resume_active:
+                    wait(lambda r: int(r['consumption_token']) == 0,timeout=30)
+                    view = open_inventory()
+                    check('resumed_actor_consumes_only_saved_fresh_serving', not any(e.TypeId()==b'apple' and not e.ConsumeWarning() for e in entries(view)))
+                    tap('Escape');wait(lambda r: int(r['equipment_form']) == 0)
             else:
                 check('food_and_drink_native_actions_and_duration', food(view).Actions() & 16 and food(view).ConsumeMoves() > 0 and item(view,'water_clean').ConsumeLabel() == b'Bevi')
                 check('liquid_nested_in_native_bottle', item(view,'water_clean').ParentId() == item(view,'bottle_twoliter').Id())
@@ -304,6 +316,13 @@ def main():
                 check('resync_restores_actual_remaining_water', item(view,'water_clean').Charges() == 3)
                 tap('Escape');wait(lambda r: int(r['equipment_form']) == 0)
                 check('actual_runtime_survives_consumption', proc.poll() is None)
+                if args.save_active:
+                    view = open_inventory();select_item(food(view));action(4);finish_action()
+                    wait(lambda r: int(r['consumption_token']) > 0)
+                    view = open_inventory()
+                    shot('save-active-consumption.png')
+                    check('shutdown_fixture_retains_unfinished_native_work', int(latest()['consumption_remaining']) > 0)
+
         finally:
             subprocess.run(['xdotool', 'keyup', 'w'], capture_output=True)
             if proc.poll() is None:
@@ -344,7 +363,9 @@ def main():
     check('canonical_water_has_three_native_charges', next(e for e in saved if e['typeid']=='water_clean')['charges']==3)
     check('canonical_bottle_and_rock_remain_owned', 'consumption-bottle' in uid_counts and 'consumption-rock' in uid_counts)
     check('canonical_rotten_apple_was_not_consumed', 'consumption-rotten' in uid_counts)
-    check('canonical_food_contains_exactly_one_remaining_fresh_serving', sum(max(1,e.get('charges',1)) for e in saved if e['typeid']=='apple' and e['item_vars']['uid'] != 'consumption-rotten')==1)
+    check('canonical_food_contains_exactly_one_remaining_fresh_serving', sum(max(1,e.get('charges',1)) for e in saved if e['typeid']=='apple' and e['item_vars']['uid'] != 'consumption-rotten')==(0 if args.resume_active else 1))
+    if args.save_active:
+        check('pristine_core_reads_native_inflight_consume_actor', native['player']['activity']['type']=='ACT_CONSUME' and native['player']['activity']['moves_left']>0)
     if args.resume_only:
         check('actual_reload_preserves_canonical_position', native['player_abs'] == before['player_abs'])
         if args.action_driven:
