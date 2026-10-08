@@ -12,7 +12,9 @@ std::vector<uint8_t> snapshot(int defect) {
     auto reload=CreateReloadState(f,defect==7?0:13,defect==8?0:1000,defect==9?-1:defect==10?1001:800);
     auto meal=defect==11?CreateConsumptionState(f,14,1000,800):flatbuffers::Offset<ConsumptionState>{};
     Coord3i origin(0,0,0);
-    auto entities=f.CreateVector(std::vector<flatbuffers::Offset<EntityState>>{});
+    Vec3f pos(0,0,0);
+    auto player=CreateEntityState(f,1,EntityType::PLAYER,0,&pos);
+    auto entities=f.CreateVector(std::vector<flatbuffers::Offset<EntityState>>{player});
     auto vehicles=f.CreateVector(std::vector<flatbuffers::Offset<VehicleState>>{});
     auto fields=f.CreateVector(std::vector<flatbuffers::Offset<FieldState>>{});
     WorldSnapshotBuilder world(f);

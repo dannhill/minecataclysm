@@ -136,7 +136,7 @@ index b6ae675..9e33201 100644
  		/*
  			Local player handling
 diff --git a/src/client/game.cpp b/src/client/game.cpp
-index 27b5833..aea784c 100644
+index 27b5833..bb1afdd 100644
 --- a/src/client/game.cpp
 +++ b/src/client/game.cpp
 @@ -8,6 +8,7 @@
@@ -492,7 +492,7 @@ index 27b5833..aea784c 100644
  
  			if (clouds)
  				clouds->updateCameraOffset(camera_offset);
-@@ -3365,6 +3587,39 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
+@@ -3365,6 +3587,41 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
  	// but the halo rendering code is already inefficient so there's no point in optimizing it here
  	hud->updateSelectionMesh(camera_offset);
  
@@ -505,10 +505,12 @@ index 27b5833..aea784c 100644
 +			item_ray.end = pointed.intersection_point;
 +		const bool items_pointed = bridge.pointGroundItems(item_ray);
 +		bridge.pointCombatTarget(item_ray);
-+        if (wasKeyDown(KeyType::CDDA_RELOAD)) bridge.reloadWeapon();
-+        bridge.handleAimInput(isKeyDown(KeyType::CDDA_AIM));
-+		if (!bridge.getMetrics().pending_decision && wasKeyPressed(KeyType::DIG) &&
++        const bool reload_pressed = wasKeyDown(KeyType::CDDA_RELOAD);
++        const bool fire_pressed = wasKeyPressed(KeyType::DIG);
++        if (reload_pressed) bridge.reloadWeapon();
++		if (!bridge.getMetrics().pending_decision && fire_pressed &&
 +				bridge.attackPointedTarget()) camera->setDigging(0);
++        if (!reload_pressed && !fire_pressed) bridge.handleAimInput(isKeyDown(KeyType::CDDA_AIM));
 +		if (!bridge.getMetrics().pending_decision && wasKeyPressed(KeyType::PLACE)) {
 +			if (items_pointed && !isKeyDown(KeyType::SNEAK)) {
 +				const auto form = bridge.activateGroundItems();
@@ -532,7 +534,7 @@ index 27b5833..aea784c 100644
  	// Allow digging again if button is not pressed
  	if (runData.digging_blocked && !isKeyDown(KeyType::DIG))
  		runData.digging_blocked = false;
-@@ -4319,7 +4574,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
+@@ -4319,7 +4576,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
  	/*
  		Fog
  	*/

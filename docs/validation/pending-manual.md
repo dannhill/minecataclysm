@@ -1,8 +1,8 @@
 # Validazioni manuali del playable core
 
-Stato corrente: **16 punti pendenti**, quattro inventario/equipaggiamento,
-quattro cibo/bevande, quattro medicazioni e quattro crafting. Le vecchie checklist VALIDATE
-sotto conservano la cronologia; non attestano queste quattro nuove fette.
+Stato corrente: **20 punti pendenti**, quattro inventario/equipaggiamento,
+quattro cibo/bevande, quattro medicazioni, quattro crafting e quattro tiro/ricarica.
+Le vecchie checklist VALIDATE sotto conservano la cronologia; non attestano queste nuove fette.
 
 L'utente il 2026-10-08 ha eseguito e approvato tutti i quattro punti di
 ciascuna delle quattro checklist. Il [riscontro](../source/playable-core-feedback-2026-10-08.md)
@@ -235,3 +235,30 @@ Accettazione grafica/usabilità dell'utente ancora pendente. Questa prima fetta
 non include ricette liquide, sottoprodotti, pratica, preferiti di ricette,
 collegamenti di sottoricette, selezione della singola istanza fra oggetti
 identici né accelerazione automatica delle attività lunghe: restano nel piano.
+
+## Tiro, mira e ricarica — PENDING, rinviato su richiesta
+
+Avvio isolato: `./ranged-demo.sh --fresh`. Pistola già impugnata con tre
+colpi; trenta munizioni 9mm nello zaino, variante FMJ compatibile e munizioni
+incompatibili. Zombie immobilizzato davanti a quattro caselle, cane amico
+sulla destra. Nessuna raccolta/equipaggiamento obbligatorio.
+
+1. Punta lo zombie: nome dell'arma, colpi e rinculo. Tieni **F**: il rinculo
+   diminuisce pagando tempo nativo; rilascia F e **clic sinistro** per sparare.
+   Tieni il mouse: un solo colpo, nessuna raffica automatica. Clic nel vuoto
+   o sul cane non spara. Il tiro non avvicina il personaggio al bersaglio.
+2. **F7** in pausa, poi F/clic/R: nessuna azione né miglioramento gratuito
+   della mira. Rilascia i tasti e riprendi: nessun comando ritardato. Aprire
+   **H** o **I** mantiene tempo e mira fermi, chiudere conserva la pausa F7.
+3. **R**: scelta nativa di munizioni e conferma. Annulla la scelta e rifiuta
+   una conferma: nessuna munizione trasferita. Conferma poi 9mm; **I** durante
+   il progresso ferma il tempo. **Interrompi ricarica** conserva i colpi;
+   ripeti e lascia completare. Movimento/tiro non devono partire in ritardo.
+4. Esci e rilancia senza --fresh: arma e munizioni persistono senza duplicati.
+   Prova anche a uscire durante una ricarica (I per fermare il tempo prima
+   dell'uscita): al rientro il lavoro nativo residuo completa una sola volta.
+
+Questa prima fetta copre armi da fuoco impugnate e modalità balistica corrente,
+bersagli ostili percepiti e ricarica nativa. Mirino libero, tiro deliberato su
+neutrali, archi/carica-e-spara, armi montate/veicoli e cambio modalità restano
+nel piano. Accettazione manuale non dedotta dai test tecnici.
