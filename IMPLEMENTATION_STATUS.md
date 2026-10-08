@@ -10,7 +10,11 @@ head/torso hearts, stamina and read-only possessions, without the old survival
 background or permanent labels. H keeps detailed native descriptions. Gameplay
 rules and canonical save fields are unchanged. Debug overlay hotkey/settings
 are recorded for production, not implemented in this slice.
-Current source/runtime verification and remaining scope are in the report.
+Current verification PASS: CDDA 7,665 assertions/44 cases, Luanti 307 tests
+and 648 Catch2 assertions, protocol 5/5; reconstructed and installed controls/
+water GUI 32/32 each, ordinary-mode body GUI 19/19 including exact native HP
+and position/time/stamina preservation. Source/runtime identities and scope
+are in the [evidence](docs/fixes/icon-survival-hud-evidence.json).
 [Current plan summary](docs/progress/2026-10-08.md): inventory/equipment, then
 consumption/medical essentials and crafting before vehicles. M5.5 remains
 historical FAILED and full SAVE-001 remains open.

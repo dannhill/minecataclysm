@@ -71,11 +71,13 @@ Artifacts `artifacts/hud-icons-20261008/`; binari installati e rollback in
 con sorgente/build receipt in `artifacts/controls-hud-20261008/`.
 
 Build entrambi componenti, protocollo 5/5 e Luanti 307 test/648 assertions
-PASS. Suite CDDA 7.665 assertions/44 casi sul primo sorgente; il test delle
-categorie viene affinato con attese esplicite prima della consegna finale.
+PASS. Suite CDDA finale **7.665 assertions/44 casi PASS**, con attese esplicite
+sui confini delle categorie e analgesia. Sorgente finale dei test `241330c`.
 GUI comandi/acqua/icone 32/32 sia ricostruita sia installata: X realmente
 premuto, Ctrl/Shift, CLOSE simultaneo/ritardato, H acqua/pickup fermi, S,
 resync, piccola discesa/risalita proni camminando fra acqua/pavimento e save
-letto dal reader nativo. Scheda corporea in modalità ordinaria in verifica.
-Evidenze finali nel registro JSON allegato alla consegna. Nessuna
+letto dal reader nativo. Scheda corporea in modalità ordinaria **19/19 PASS**,
+inclusi scroll, pausa/reconnect, tutti i 12 HP esatti, posizione/tempo/stamina
+nativi invariati. [Registro completo](icon-survival-hud-evidence.json) con
+identità di sorgenti/binari, comandi, risultati e hash degli artefatti. Nessuna
 certificazione completa M5.5/SAVE-001 viene dedotta da queste prove mirate.

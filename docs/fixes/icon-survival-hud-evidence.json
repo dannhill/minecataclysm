@@ -1,0 +1,374 @@
+{
+  "status": "SCOPED_AUTOMATED_PASS",
+  "production_commit": "5c7a838478a659f59df1aa474eef02a7613c5a53",
+  "final_native_test_commit": "241330cfb247b83d1c76ddc8b382d8594a88712f",
+  "difference": "Only explicit pain boundary test expectations and documentation/demo print text; production runtime behavior unchanged since production_commit.",
+  "protocol": "2.9",
+  "artifact_root": "/home/dannhill/Projects/cdda-mineclonia/artifacts/hud-icons-20261008",
+  "environment": {
+    "os": "Linux-7.0.11-76070011-generic-x86_64-with-glibc2.35",
+    "python": "3.10.12",
+    "display": ":1",
+    "compiler": "c++ (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0"
+  },
+  "manual_acceptance": {
+    "previous_four_adaptations": "PASS 1\u20134 explicit user feedback",
+    "current_icon_polish": "No manual PASS inferred; user explicitly requests continuation without another aesthetic gate"
+  },
+  "build_mode": "Incremental reconstruction, build caches retained. No cold build or full M5.5/SAVE-001 claimed.",
+  "runtime_source_manifest": {
+    "format_version": 1,
+    "repositories": {
+      "cdda": {
+        "url": "https://github.com/CleverRaven/Cataclysm-DDA.git",
+        "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+        "shallow": true,
+        "patch": "baseline/patches/cdda.patch",
+        "patch_sha256": "ca56a1129b0fc0a91e379c44baaeb9d0932df5bb1d7b000871e42a4ad399f625",
+        "tree_inventory": "baseline/trees/cdda.json",
+        "tree_sha256": "f1a8c02f28554edbfc69cb629f5894a1738ad1e13a3473426621dfd48998db13",
+        "file_count": 8583,
+        "original_status": " M src/CMakeLists.txt\n M src/avatar_action.cpp\n M src/avatar_action.h\n M src/character.cpp\n M src/character_inventory.cpp\n M src/do_turn.cpp\n M src/do_turn.h\n M src/game.cpp\n M src/game.h\n M src/handle_action.cpp\n M src/iexamine.cpp\n M src/melee.cpp\n M src/output.cpp\n M src/pickup.cpp\n M tests/CMakeLists.txt\n M tests/test_main.cpp\n?? src/cwm/cwm_main.cpp\n?? src/cwm/cwm_map_exporter.cpp\n?? src/cwm/cwm_map_exporter.h\n?? src/cwm/cwm_server.cpp\n?? src/cwm/cwm_server.h\n?? src/cwm/cwm_status_gauges.h\n?? src/cwm_motion.cpp\n?? src/cwm_motion.h\n?? src/safe_mode_actions.h\n?? tests/cwm_pickup_test.cpp\n?? tests/cwm_projection_test.cpp\n?? tests/cwm_runtime_test.cpp\n"
+      },
+      "luanti": {
+        "url": "https://github.com/luanti-org/luanti.git",
+        "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
+        "shallow": true,
+        "patch": "baseline/patches/luanti.patch",
+        "patch_sha256": "59b125ab2fef92bf822e85a473381dbe2b145bbcf468175384ac254ead460406",
+        "tree_inventory": "baseline/trees/luanti.json",
+        "tree_sha256": "b588943019952026a244bceee0d113383a5dc8d8b3bdf9fa9891ca149a462fd3",
+        "file_count": 2256,
+        "original_status": " M builtin/settingtypes.txt\n M src/CMakeLists.txt\n M src/client/CMakeLists.txt\n M src/client/client.cpp\n M src/client/clientenvironment.cpp\n M src/client/game.cpp\n M src/client/hud.cpp\n M src/client/inputhandler.cpp\n M src/client/keys.h\n M src/client/mesh_generator_thread.cpp\n M src/client/mesh_generator_thread.h\n M src/defaultsettings.cpp\n M src/network/clientpackethandler.cpp\n M src/server/player_sao.cpp\n M src/unittest/test_mapblock.cpp\n?? src/cdda/avatar_status.h\n?? src/cdda/cdda_bridge.cpp\n?? src/cdda/cdda_bridge.h\n?? src/cdda/ground_item_formspec.h\n?? src/cdda/ground_item_projection.h\n?? src/cdda/ground_item_visual.h\n?? src/cdda/posture_input.h\n"
+      },
+      "mineclonia": {
+        "url": "https://github.com/mark-wiemer/mineclonia.git",
+        "commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+        "shallow": true,
+        "patch": "baseline/patches/mineclonia.patch",
+        "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "tree_inventory": "baseline/trees/mineclonia.json",
+        "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36",
+        "file_count": 9359,
+        "original_status": ""
+      }
+    }
+  },
+  "final_test_source_manifest": {
+    "format_version": 1,
+    "repositories": {
+      "cdda": {
+        "url": "https://github.com/CleverRaven/Cataclysm-DDA.git",
+        "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+        "shallow": true,
+        "patch": "baseline/patches/cdda.patch",
+        "patch_sha256": "14527242c2a3789252baed11c3595439493d2e21d8f36d0d11f91498aa950495",
+        "tree_inventory": "baseline/trees/cdda.json",
+        "tree_sha256": "155e43321772174709ace0bc0005bbb71004a22e4aaf635d8f51318c2e402cf1",
+        "file_count": 8583,
+        "original_status": " M src/CMakeLists.txt\n M src/avatar_action.cpp\n M src/avatar_action.h\n M src/character.cpp\n M src/character_inventory.cpp\n M src/do_turn.cpp\n M src/do_turn.h\n M src/game.cpp\n M src/game.h\n M src/handle_action.cpp\n M src/iexamine.cpp\n M src/melee.cpp\n M src/output.cpp\n M src/pickup.cpp\n M tests/CMakeLists.txt\n M tests/test_main.cpp\n?? src/cwm/cwm_main.cpp\n?? src/cwm/cwm_map_exporter.cpp\n?? src/cwm/cwm_map_exporter.h\n?? src/cwm/cwm_server.cpp\n?? src/cwm/cwm_server.h\n?? src/cwm/cwm_status_gauges.h\n?? src/cwm_motion.cpp\n?? src/cwm_motion.h\n?? src/safe_mode_actions.h\n?? tests/cwm_pickup_test.cpp\n?? tests/cwm_projection_test.cpp\n?? tests/cwm_runtime_test.cpp\n"
+      },
+      "luanti": {
+        "url": "https://github.com/luanti-org/luanti.git",
+        "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
+        "shallow": true,
+        "patch": "baseline/patches/luanti.patch",
+        "patch_sha256": "59b125ab2fef92bf822e85a473381dbe2b145bbcf468175384ac254ead460406",
+        "tree_inventory": "baseline/trees/luanti.json",
+        "tree_sha256": "b588943019952026a244bceee0d113383a5dc8d8b3bdf9fa9891ca149a462fd3",
+        "file_count": 2256,
+        "original_status": " M builtin/settingtypes.txt\n M src/CMakeLists.txt\n M src/client/CMakeLists.txt\n M src/client/client.cpp\n M src/client/clientenvironment.cpp\n M src/client/game.cpp\n M src/client/hud.cpp\n M src/client/inputhandler.cpp\n M src/client/keys.h\n M src/client/mesh_generator_thread.cpp\n M src/client/mesh_generator_thread.h\n M src/defaultsettings.cpp\n M src/network/clientpackethandler.cpp\n M src/server/player_sao.cpp\n M src/unittest/test_mapblock.cpp\n?? src/cdda/avatar_status.h\n?? src/cdda/cdda_bridge.cpp\n?? src/cdda/cdda_bridge.h\n?? src/cdda/ground_item_formspec.h\n?? src/cdda/ground_item_projection.h\n?? src/cdda/ground_item_visual.h\n?? src/cdda/posture_input.h\n"
+      },
+      "mineclonia": {
+        "url": "https://github.com/mark-wiemer/mineclonia.git",
+        "commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+        "shallow": true,
+        "patch": "baseline/patches/mineclonia.patch",
+        "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "tree_inventory": "baseline/trees/mineclonia.json",
+        "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36",
+        "file_count": 9359,
+        "original_status": ""
+      }
+    }
+  },
+  "installed": {
+    "source_commit": "5c7a838478a659f59df1aa474eef02a7613c5a53",
+    "protocol": "2.9",
+    "binaries": {
+      "cdda": {
+        "source": "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/cdda/build/src/cdda-server",
+        "installed": "/home/dannhill/Projects/cdda-mineclonia/cdda/build/src/cdda-server",
+        "sha256": "a39478da3ecad8d3586e6b4f72ba196252dbd124973908e12635fff6ba095a39",
+        "previous_sha256": "6686d95de986aa27426539903ee08a8b1ca5cabf40c3275251e1091fe1d87458"
+      },
+      "luanti": {
+        "source": "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/luanti/bin/luanti",
+        "installed": "/home/dannhill/Projects/cdda-mineclonia/luanti/bin/luanti",
+        "sha256": "739d27f3e9a55ce25ebdfc5f166e1535c8cd43c2521ba851ef807759be8ddc9a",
+        "previous_sha256": "b502f707fdf02115c52c6d63a583a395aa637bef0cb8e46f718b7491ef8d9484"
+      }
+    }
+  },
+  "native_reader": {
+    "binary": "/home/dannhill/Projects/cdda-mineclonia/artifacts/controls-hud-20261008/native-save-reader-final",
+    "binary_sha256": "a21aca32efd50e43f48426607479b90a0570a031ec2884aa6d2945c1f1e2c26e",
+    "source": "/home/dannhill/Projects/cdda-mineclonia/tests/takeover_save_reader.cpp",
+    "source_sha256": "beaa37cd42f0616ebdd4d70088d333ca5bb9117f269ad7a173c99b2caa9fa4ba",
+    "pristine_core_pin": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+    "reused_build_receipt": "artifacts/controls-hud-20261008/native-reader-build-indoor.json",
+    "build_receipt_sha256": "4592c8fd3e5dad9b86d07f54aae274cf1cc90e1204779adf950108b59286af48"
+  },
+  "native_tests": {
+    "assertions": 7665,
+    "cases": 44,
+    "filter": "[cwm],[diving],[pickup]",
+    "seed": 42,
+    "log": "tests-cdda-final.log"
+  },
+  "luanti_tests": {
+    "individual": 307,
+    "catch2_assertions": 648,
+    "log": "tests-luanti.log"
+  },
+  "protocol_tests": {
+    "passed": 5,
+    "total": 5,
+    "log": "tests-protocol.log"
+  },
+  "gui": {
+    "reconstructed-held": {
+      "passed": 32,
+      "total": 32,
+      "checks": {
+        "actual_start_ready": true,
+        "starts_native_walking_in_shallow_water": true,
+        "native_perceived_gauges_ingested": true,
+        "compact_icon_hud_is_rendered": true,
+        "Control_L_physical_hold_no_autorepeat": true,
+        "Control_L_release_restores_walk": true,
+        "Shift_L_physical_hold_no_autorepeat": true,
+        "Shift_L_release_restores_walk": true,
+        "crouch_priority_and_return_to_held_run": true,
+        "pointed_window_open_native_ack": true,
+        "simultaneous_shift_close_keeps_context_action_priority": true,
+        "delayed_modifier_reply_does_not_swallow_close": true,
+        "prone_wading_eye_above_surface": true,
+        "posture_changes_preserve_native_coordinates": true,
+        "presentation_clock_and_pickups_advance_when_active": true,
+        "H_freezes_native_time_water_and_pickups": true,
+        "S_does_not_change_sheet_selection": true,
+        "visual_clock_resumes_without_catchup": true,
+        "rendered_water_pixels_frozen_in_manual_pause": true,
+        "paused_controls_and_animation_remain_stopped": true,
+        "paused_controls_not_replayed": true,
+        "recovery_preserves_native_prone": true,
+        "prone_water_exit_has_small_visual_step": true,
+        "prone_water_entry_has_small_visual_step": true,
+        "small_water_dip_never_exposes_underside": true,
+        "actual_runtime_survives": true,
+        "byte_relay_completed_without_errors": true,
+        "save_readable_by_pristine_native_core": true,
+        "prone_is_canonical_native_save_field": true,
+        "pointed_window_closed_in_canonical_save": true,
+        "canonical_native_anchor_preserved": true,
+        "visual_sheet_does_not_pickup_or_attack": true
+      },
+      "luanti_sha256": "739d27f3e9a55ce25ebdfc5f166e1535c8cd43c2521ba851ef807759be8ddc9a",
+      "cdda_sha256": "a39478da3ecad8d3586e6b4f72ba196252dbd124973908e12635fff6ba095a39",
+      "command": "DISPLAY=:1 XAUTHORITY=/run/user/1000/gdm/Xauthority python3 tests/controls_presentation_gui_test.py --workspace artifacts/fnd03-session/workspace --fixture artifacts/controls-hud-20261008/fixture-indoor/user --native-reader artifacts/controls-hud-20261008/native-save-reader-final --artifacts artifacts/hud-icons-20261008/reconstructed-held",
+      "actual_camera_above_tile_nodes": {
+        "shallow_water": 0.745,
+        "dry_floor": 0.825
+      }
+    },
+    "installed-held": {
+      "passed": 32,
+      "total": 32,
+      "checks": {
+        "actual_start_ready": true,
+        "starts_native_walking_in_shallow_water": true,
+        "native_perceived_gauges_ingested": true,
+        "compact_icon_hud_is_rendered": true,
+        "Control_L_physical_hold_no_autorepeat": true,
+        "Control_L_release_restores_walk": true,
+        "Shift_L_physical_hold_no_autorepeat": true,
+        "Shift_L_release_restores_walk": true,
+        "crouch_priority_and_return_to_held_run": true,
+        "pointed_window_open_native_ack": true,
+        "simultaneous_shift_close_keeps_context_action_priority": true,
+        "delayed_modifier_reply_does_not_swallow_close": true,
+        "prone_wading_eye_above_surface": true,
+        "posture_changes_preserve_native_coordinates": true,
+        "presentation_clock_and_pickups_advance_when_active": true,
+        "H_freezes_native_time_water_and_pickups": true,
+        "S_does_not_change_sheet_selection": true,
+        "visual_clock_resumes_without_catchup": true,
+        "rendered_water_pixels_frozen_in_manual_pause": true,
+        "paused_controls_and_animation_remain_stopped": true,
+        "paused_controls_not_replayed": true,
+        "recovery_preserves_native_prone": true,
+        "prone_water_exit_has_small_visual_step": true,
+        "prone_water_entry_has_small_visual_step": true,
+        "small_water_dip_never_exposes_underside": true,
+        "actual_runtime_survives": true,
+        "byte_relay_completed_without_errors": true,
+        "save_readable_by_pristine_native_core": true,
+        "prone_is_canonical_native_save_field": true,
+        "pointed_window_closed_in_canonical_save": true,
+        "canonical_native_anchor_preserved": true,
+        "visual_sheet_does_not_pickup_or_attack": true
+      },
+      "luanti_sha256": "739d27f3e9a55ce25ebdfc5f166e1535c8cd43c2521ba851ef807759be8ddc9a",
+      "cdda_sha256": "a39478da3ecad8d3586e6b4f72ba196252dbd124973908e12635fff6ba095a39",
+      "command": "DISPLAY=:1 XAUTHORITY=/run/user/1000/gdm/Xauthority python3 tests/controls_presentation_gui_test.py --workspace . --fixture artifacts/controls-hud-20261008/fixture-indoor/user --native-reader artifacts/controls-hud-20261008/native-save-reader-final --artifacts artifacts/hud-icons-20261008/installed-held",
+      "actual_camera_above_tile_nodes": {
+        "shallow_water": 0.745,
+        "dry_floor": 0.825
+      }
+    },
+    "installed-body-action": {
+      "passed": 19,
+      "total": 19,
+      "checks": {
+        "actual_start_ready": true,
+        "native_status_ingested_and_hud_visible": true,
+        "wounded_head_and_arm_match_pristine_native_ui": true,
+        "native_stamina_matches_without_local_estimate": true,
+        "body_scroll_stops_at_content_bottom": true,
+        "body_scroll_keeps_last_parts_visible": true,
+        "body_sheet_pauses_native_time": true,
+        "read_only_sheet_does_not_move_or_transfer_items": true,
+        "survival_hud_hidden_behind_sheet": true,
+        "escape_returns_to_hud_and_restores_time_mode": true,
+        "real_ipc_reconnect_closes_stale_body_sheet": true,
+        "recovered_full_snapshot_restores_native_health": true,
+        "actual_runtime_survives": true,
+        "byte_relay_completed_without_errors": true,
+        "body_demo_save_readable_by_pristine_native_core": true,
+        "native_health_preserved_without_gui_healing": true,
+        "exact_native_hp_unchanged_for_every_body_part": true,
+        "read_only_gui_preserves_native_position": true,
+        "read_only_gui_preserves_native_time_and_stamina": true
+      },
+      "luanti_sha256": "739d27f3e9a55ce25ebdfc5f166e1535c8cd43c2521ba851ef807759be8ddc9a",
+      "cdda_sha256": "a39478da3ecad8d3586e6b4f72ba196252dbd124973908e12635fff6ba095a39",
+      "command": "DISPLAY=:1 XAUTHORITY=/run/user/1000/gdm/Xauthority python3 tests/body_status_gui_test.py --workspace . --fixture artifacts/playable-core-body-ui-20261008/fixture/user --native-reader artifacts/controls-hud-20261008/native-save-reader-final --artifacts artifacts/hud-icons-20261008/installed-body-action --action-driven"
+    }
+  },
+  "commands": [
+    {
+      "cwd": "artifacts/fnd03-session/workspace",
+      "command": "cmake --build cdda/build --target cdda-server cata_test --parallel 2",
+      "log": "build-cdda.log"
+    },
+    {
+      "cwd": "artifacts/fnd03-session/workspace",
+      "command": "cmake --build luanti/build --target luanti --parallel 2",
+      "log": "build-luanti.log"
+    },
+    {
+      "cwd": "artifacts/fnd03-session/workspace",
+      "command": "cmake --build protocol/build --parallel 2 && ctest --test-dir protocol/build --output-on-failure",
+      "log": "tests-protocol.log"
+    },
+    {
+      "cwd": "artifacts/fnd03-session/workspace/luanti",
+      "command": "bin/luanti --run-unittests --config <root>/artifacts/fnd03-session/unit.conf",
+      "log": "tests-luanti.log"
+    },
+    {
+      "cwd": "artifacts/fnd03-session/workspace/cdda",
+      "command": "cmake --build build --target cata_test --parallel 2 && build/tests/cata_test \"[cwm],[diving],[pickup]\" --rng-seed 42 --user-dir=<artifact_root>/native-tests-final-user",
+      "log": "tests-cdda-final.log"
+    }
+  ],
+  "private_fixture": "artifacts/controls-hud-20261008/fixture-indoor/user",
+  "limitations": [
+    "Ordinal perceived categories, not linear physiological percentages.",
+    "No change to gameplay or canonical save fields.",
+    "Read-only possessions, timed native equipment remains next feature.",
+    "Deep-water visuals and production debug-overlay controls remain planned.",
+    "Historical M5.5 FAILED, full SAVE-001 incomplete."
+  ],
+  "superseded_attempts": {
+    "build-cdda-final-tests.log": "Final native-test build was invoked with cdda/build while already in cdda. No compilation occurred. Corrected build/tests-cdda-final logs are final passing evidence."
+  },
+  "checksums": {
+    "tests-cdda.log": "f0b1f8cabf92328bfe77138f43914590d47f8e638796f1ba898d3dab60a20af5",
+    "build-protocol.log": "5356c5489074578c1a2b6a32d1e44913b92b24ce395cbe080ff007b205958103",
+    "source-replay.json": "19416f5acef2d4d41f8df409482bde2a9b7b40f41138bb25e00497943af07160",
+    "tests-protocol.log": "4d74bc5446891045140ef861b9453fe8749807d7ccd4d7c540dc88658d1a601e",
+    "icon-preview.png": "9c5770671fce27a5ef85c1797215c37309312ec8a3d273efb5d9d964494d12de",
+    "gui-installed-body-action.log": "e450de4df6ebff241f4a761a5edd25aff983a1d650585ca850fb7303db69d2a6",
+    "installed-runtime.json": "ce59f7d91b1bbb0ae20d56140006d309b38f13d61f575603f347fa416e59d2e6",
+    "refresh.json": "2b3f9a0c9a038822930c6b16a4cab98e298c5a281dc3e741129b1395a027bb93",
+    "build-luanti.log": "a94a2ded32a222ba6d048758b0fefeb82aab36e567ee8f73ee1b8241b52d487a",
+    "build-cdda-final-tests-corrected.log": "d823e1b69a3307d3d91084e7c60b755f885337a14876c4ea3c453e1928326240",
+    "source-replay-final.json": "91e42fb2c8e0559290d42aa1f2e20e396c8ed70b14931438d6530b40749f9235",
+    "baseline-check-final.log": "d3a1c764f8024bd5664be26d5115b50566e51276e384284ae7d6e8ba53820b78",
+    "refresh-final-tests.json": "3aa27eac56f1bf80f5002667b1640706e4c43a4d6d91575afe52eef0947f02d0",
+    "tests-cdda-final.log": "9ce0bcefd8fc6b78fe20e26eb202beaffd7e4b54d19f059b0c4901231eb62e04",
+    "build-cdda-final-tests.log": "78d8bee0dc97d757ae37340a3eeb97c408e153edf19d4ccfde747f17a8e58d6f",
+    "gui-installed-held.log": "3bbf187c2e7cf229295a1d6597ba7dfe7240867d25d4511882de444369b9c9c0",
+    "source-replay-final.log": "91c8510e2d84f5eba3bfe4e66a39fac0e16aec7104efc12de7c960aad68bd7dd",
+    "build-cdda.log": "88a31c45a61d7ebf3311ab4f2321cc802b42a72186d8b4e3b917b6332d8043e3",
+    "tests-luanti.log": "da77e77a8ec509681dd19bfcf20a84af42e118a1cd9f00260828dfa70fb26082",
+    "gui-reconstructed-held.log": "3bbf187c2e7cf229295a1d6597ba7dfe7240867d25d4511882de444369b9c9c0",
+    "installed-held/launcher.log": "5bbca3db5fe3e11d5accffd7c8bf1da7f151ff1b7dc533c93a3f634a914a9584",
+    "installed-held/native.log": "204c035a14bb17b3f52f79c1432ca8be876ef820bf5021e14245cc8c6d92dd8b",
+    "installed-held/water-paused-after.png": "939d324fbd4ca0ccdc2c4c58960c793a6179f8fc184fc1f5c41c710e63733856",
+    "installed-held/prone-water-return.png": "4841b0dc0587c54be22c3cffb744ed0e0b2b60a914e5ce4467a3f3ac82988262",
+    "installed-held/relay-errors.json": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "installed-held/checks.json": "63f1b1fcdb6c104a6d84c0f0be7ce629f6906e0e0a109ca263c3f9774fd77802",
+    "installed-held/camera.csv": "cd8a99674916ff65df21879cba2ce6dcb86ad2cc3c2a8cde6f9e6db8b4d447b0",
+    "installed-held/summary.json": "e1a2c0d99e2d07e1ccfea4683831b5f4c7122402545d72eb23fb0e3a4829de66",
+    "installed-held/actors.csv": "45cd39d3c8a20b39e1c80061c74db7573c2ba7fb2b46effc842bf356bad90dce",
+    "installed-held/body-after-s.png": "5355b0ba009c1ffb2cd9a5294ac654b935fc4c11056bf5444bbd3f147887f2bd",
+    "installed-held/compact-hud.png": "98f5ec3d2943ae786676bc609c02ea14ee7fc3f49854eff2f3220b4087278753",
+    "installed-held/held-Shift_L.png": "0e3bef8cd28132f9a88fa927005c8498de36c352d46ec1fec5d34e053c7f0822",
+    "installed-held/water-paused-before.png": "939d324fbd4ca0ccdc2c4c58960c793a6179f8fc184fc1f5c41c710e63733856",
+    "installed-held/server-wire.bin": "ea4b4a11ccdb0021e619b050239a95ec1c132a22bf0fda36cdaad76d85d00ea6",
+    "installed-held/body-before-s.png": "5355b0ba009c1ffb2cd9a5294ac654b935fc4c11056bf5444bbd3f147887f2bd",
+    "installed-held/final-hud.png": "06bfcc9ade3f19dbe49765cb5e9d049f4547e79bbf60e8b2d58783724bf5c378",
+    "installed-held/last-frame.png": "ea729a0a6f1eec02210e054631a0d6c70edf84180c60a58932bd628917f89c15",
+    "installed-held/native.json": "a9d5a2e9aaa174569f7d3f47a43767d8a6e6d802a3d95e629374848a980408b6",
+    "installed-held/client-wire.bin": "ef1ec0f6a32c98bc09f443eebe8e4109a08a64f21b3f0103d096c1d9bb076b72",
+    "installed-held/prone-shallow-water.png": "6544fe4058c76d848e67e3742028a182708b37fcd721aa99c23af42459c701d3",
+    "installed-held/held-Control_L.png": "a8d3f573a4e75a0de408ecda8852ef93eb6dc964acab0b6a777166531a63a30f",
+    "installed-held/prone-floor.png": "fbd623fb50041e319784b90e43c7348cf9b591bac5915a788d6e6158eff9a0c2",
+    "reconstructed-held/launcher.log": "16032b4cf00c6e89648770cada726c9bd0c9eabda6b952fc8d41f013263934a4",
+    "reconstructed-held/native.log": "c75d1b39e886e57ac072873ab2ccf3b34601ee62185893a13b27979c98bc9f56",
+    "reconstructed-held/water-paused-after.png": "226a1b594acd697ef3d37e383bea85c53ee160a47aca974051940edf095fcaff",
+    "reconstructed-held/prone-water-return.png": "e40d38c50f3c9218e14ec4718974195da6cbcc01b15e8277239dc982b022f7c8",
+    "reconstructed-held/relay-errors.json": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "reconstructed-held/checks.json": "63f1b1fcdb6c104a6d84c0f0be7ce629f6906e0e0a109ca263c3f9774fd77802",
+    "reconstructed-held/camera.csv": "28683223c9ed1d652db57add6100e6cadc6abbd251a48b45418d3f48f6757c3c",
+    "reconstructed-held/summary.json": "a9fb478af62989f1e98683d05e2adb70d95f518bf34a8b56d7501cafa1c15e61",
+    "reconstructed-held/actors.csv": "9e3d0804fcb4e8090851823636a072d3d39f723499d64a7b046ccd4f8085846b",
+    "reconstructed-held/body-after-s.png": "030d336115859a1892de084bc8276b01da9d7e689137477de44dc7f9de0a9e60",
+    "reconstructed-held/compact-hud.png": "90b41b873848848dcc1a290540bd5276a1d974da6dfbf569dbbb96101bd4ae8b",
+    "reconstructed-held/held-Shift_L.png": "853adb6f93ac7c1df8b5ec450d391fd42d49da15a3d81bfb15e32ac52ff4aa1a",
+    "reconstructed-held/water-paused-before.png": "226a1b594acd697ef3d37e383bea85c53ee160a47aca974051940edf095fcaff",
+    "reconstructed-held/server-wire.bin": "4107a2d78ecb082427bdfa9caf962b7ba16f4ac0e2039087e99f8c39657f7fe0",
+    "reconstructed-held/body-before-s.png": "030d336115859a1892de084bc8276b01da9d7e689137477de44dc7f9de0a9e60",
+    "reconstructed-held/final-hud.png": "113d6cf7846b3c1c2e078733dd363928ce2269fefa64fbdafe314edfd154cdc7",
+    "reconstructed-held/last-frame.png": "0d4796fec0033966a4726afc7888ae463bbebb9efb98c6753ee1baf5ecfcb10b",
+    "reconstructed-held/native.json": "7c4f0662a74d627df95b63593d5b2194c0330778ca23c2fa2414f27b2f508686",
+    "reconstructed-held/client-wire.bin": "c971e538402e079d1c65b53b7aefc50d4573fa8e51d9034326b9600f8ab9769c",
+    "reconstructed-held/prone-shallow-water.png": "1e0c6163cd12266cbbe1fe9e8dff8808a2f573331360572db3f06a1f8dbadfa5",
+    "reconstructed-held/held-Control_L.png": "bb29ddfb40bb4113f3e3607ce0f2675b904f8ec873327b9e33280f1569f3ca6b",
+    "reconstructed-held/prone-floor.png": "6043aa58c19a6db2ad8b6d7b3d2a9751b3ab1f2f122f8d9ea7c2228d4c606857",
+    "installed-body-action/launcher.log": "00bcb14eb8f251815e7c57efd967eb8e10fb57d12b5be21de1be56ca6f666b60",
+    "installed-body-action/native.log": "918a039f89c26298ee8bff311775220e529ccbf6928428f5c6547f8cc2dbf62d",
+    "installed-body-action/survival-hud.png": "d0af11ea767691025241745fe39da7035f9c8d85c45689d5e21c789eb6c87ac7",
+    "installed-body-action/checks.json": "d209a0a74eb427c7cda838d3ceee16c6c38b14e6c7aa8ff602284a2046ce337e",
+    "installed-body-action/camera.csv": "c2ccfb8da79c1a7b1ddbee3fcaa6f8b36768667d084aef95f5801bc7533ebb32",
+    "installed-body-action/summary.json": "33b0eb93f7cb7e73f9f3c62419f17152e8be0e1bb7abf5c915b7afb222f8cff6",
+    "installed-body-action/native-body-sheet.png": "8fd8555a465aeaa19ac534502ff1f93437d7492ba196bec04788d3e30b8c9c8b",
+    "installed-body-action/body-scroll-bottom.png": "41fbed9eb53f94fc806b1000302dc9e872d20a76e7d146feb2e64c312c2dfa8a",
+    "installed-body-action/native.json": "29183760ace364a38cc6a8aeacfd2cd998249da338c639de0bb2162d8298460d",
+    "installed-body-action/recovered-hud.png": "d6ebfeeb8928edcaf39a693fb7ed56b86dc8ec3eb956bd24197c8f66360fa994",
+    "installed-body-action/body-scroll-bottom-again.png": "41fbed9eb53f94fc806b1000302dc9e872d20a76e7d146feb2e64c312c2dfa8a"
+  }
+}
