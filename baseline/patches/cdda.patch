@@ -2947,10 +2947,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..7b0bdc4
+index 0000000..f1c2d1a
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,567 @@
+@@ -0,0 +1,572 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "avatar_action.h"
@@ -3309,7 +3309,11 @@ index 0000000..7b0bdc4
 +    SECTION( "identity changes on the same creature" ) { mon->set_value( "cwm_monster_id", "188" ); }
 +    SECTION( "target dies before execution" ) { mon->set_hp( 0 ); }
 +    SECTION( "player moves out of reach" ) { u.setpos( u.pos() + tripoint_east * 5 ); }
-+    SECTION( "opaque wall blocks the target" ) {
++    SECTION( "native adjacency still perceives a monster occupying an obstacle tile" ) {
++        // Creature::sees always perceives adjacent monsters, and clear_path
++        // excludes its endpoint. Preserve this native rule; visual ray
++        // occlusion is tested separately with the real Luanti client.
++        valid = true;
 +        m.ter_set( mon->pos(), ter_str_id( "t_wall" ) );
 +        m.build_map_cache( 0 );
 +        m.invalidate_visibility_cache();
@@ -3443,6 +3447,7 @@ index 0000000..7b0bdc4
 +    u.setpos( tripoint( 60, 60, 0 ) );
 +    item anvil( itype_id( "anvil" ) );
 +    REQUIRE( u.wield( anvil ) );
++    u.set_movement_mode( move_mode_id( "prone" ) );
 +    REQUIRE( u.attack_speed( anvil ) > 1000 );
 +    u.moves = 100;
 +    calendar::turn = calendar::turn_zero + 36_hours;
@@ -3496,7 +3501,7 @@ index 0000000..7b0bdc4
 +    person->normalize();
 +    person->randomize();
 +    person->set_fac( faction_id( "no_faction" ) );
-+    person->setID( g->assign_npc_id(), false );
++    REQUIRE( person->getID().is_valid() );
 +    person->spawn_at_precise( tripoint_abs_ms( get_map().getabs( u.pos() + tripoint_north ) ) );
 +    overmap_buffer.insert_npc( person );
 +    g->load_npcs();

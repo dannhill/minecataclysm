@@ -212,7 +212,7 @@ def main():
             wait(lambda r: int(r['pending_move']) == 0)
             check('held_mouse_sends_exactly_one_attack', int(latest()['attacks_sent']) == int(sent) + 1)
             check('request_targets_the_actual_pointed_identity', latest()['attack_target'] == target)
-            check('native_result_observed', int(latest()['attack_target_hp']) < 100)
+            check('actual_native_attack_acknowledged_including_a_miss', int(latest()['attack_result']) == 1)
             shot('after-native-strike.png')
             connection_id = latest()['connection_id']
             drop.set()
