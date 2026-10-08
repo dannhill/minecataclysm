@@ -255,7 +255,14 @@ accodati mentre si consuma. Farmaci/uso speciale, sigilli e travasi restano
 fuori da questa fetta. [Dettagli](docs/fixes/native-consumption.md).
 Quattro nuovi test grafici rinviati si aggiungono ai quattro inventario nel
 [backlog manuale](docs/validation/pending-manual.md); nessun PASS dedotto.
-Prossima fetta essenziale: medicina minima per oggetto/parte, poi crafting.
+Successiva fetta implementata 2026-10-08: **medicazioni esterne native**,
+I con Medica..., scelta di parte tramite le voci native e conferma, ACT_FIRSTAID
+con costo/progresso/stop e rimozione finale dell'oggetto, salvataggio del lavoro
+residuo. H mostra condizioni di ferita/trattamento conoscibili; niente cura
+locale o automatica. [Dettagli](docs/fixes/native-medicine.md). Farmaci orali,
+antisettici liquidi, avvio parte→oggetto da H, NPC/chirurgia sono fette successive.
+Quattro nuovi punti nel backlog, per 12 manuali pendenti, senza gate immediato.
+Prossima fetta essenziale: crafting guidato.
 
 
 ## Fase 3 — M6, veicoli

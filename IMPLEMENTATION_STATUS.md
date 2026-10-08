@@ -1,5 +1,24 @@
 # Implementation status
 
+Current delivery: [native wound treatments](docs/fixes/native-medicine.md),
+CWM 2.12; reconstructed runtimes installed together. I offers Medica... for
+owned external heal items, native body-part selection and explicit confirmation.
+Canonical ACT_FIRSTAID owns time/proficiencies, effects and final item removal;
+I permits pause/interruption and H displays known wound/treatment names.
+Native saved in-flight first aid resumes through the actual renderer and
+completes once, confirmed by the independent pristine core.
+Scoped PASS: CDDA 8,131 assertions/55 cases; Luanti 308 tests and 648 Catch2
+assertions/4 cases; protocol 6/6; installed renderer 35 treatment, 14 native
+in-flight reload, 25 ordinary-mode, 31 consumption and 29 equipment regression
+checks (134 total). [Exact evidence](docs/fixes/native-medicine-evidence.json).
+Four new manual points bring [the backlog](docs/validation/pending-manual.md)
+to 12 PENDING; automatic evidence does not imply user acceptance. Oral/liquid
+medication, other patients/surgery and part-to-item initiation are later slices.
+Next: guided crafting. M5.5 remains historical FAILED; full SAVE-001 is open.
+
+The CWM 2.11 delivery below is historical, superseded by the current 2.12
+runtime; its binary identities and evidence remain preserved.
+
 
 Current delivery: [native food/drink consumption](docs/fixes/native-consumption.md),
 CWM 2.11; reconstructed runtimes installed together. I offers Mangia/Bevi

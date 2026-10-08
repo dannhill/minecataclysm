@@ -1,5 +1,9 @@
 # Validazioni manuali del playable core
 
+Stato corrente: **12 punti pendenti**, quattro inventario/equipaggiamento,
+quattro cibo/bevande e quattro medicazioni. Le vecchie checklist VALIDATE
+sotto conservano la cronologia; non attestano queste tre nuove fette.
+
 L'utente il 2026-10-08 ha eseguito e approvato tutti i quattro punti di
 ciascuna delle quattro checklist. Il [riscontro](../source/playable-core-feedback-2026-10-08.md)
 supera i rinvii precedenti. Le checklist sotto conservano i comandi della

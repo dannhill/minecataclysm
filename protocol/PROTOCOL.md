@@ -6,10 +6,38 @@ captured implementation; it does not approve its gaps. The executable schema
 is [cwm.fbs](cwm.fbs). Audit findings and evidence are in
 [M5.5](../docs/audits/M5.5.md).
 
-The current runtime requires **CWM 2.11**. This breaks the old negotiation
+The current runtime requires **CWM 2.12**. This breaks the old negotiation
 contract; schema fields and union members are appended without changing the
 existing FlatBuffers offsets. Both executables must be rebuilt together.
 The historical coverage table below is retained as audit evidence.
+
+CWM 2.12 adds TREAT=5, six action reasons and `WorldSnapshot.first_aid`.
+TREAT selects an accessible owned non-comestible item with native heal use.
+Filthy, broken, incompatible, underwater/mounted and insufficient-charge
+cases are rejected by CDDA; constraints are checked again when executed.
+The native body_window constructs available parts, health display and treatment
+descriptions. Its external adapter sends enabled choices plus Cancel through
+DecisionPrompt; the native mapping validates the selected index. An explicit
+Yes/No confirmation names the actual item and selected body part before
+heal_actor assigns canonical ACT_FIRSTAID. No CWM body-part healing arithmetic,
+health mutation or patient/inventory authority is introduced in Luanti.
+Native use_item handles access; firstaid_activity_actor owns effects, practice,
+proficiencies and single-use/charge removal at completion. The exact native
+obtained item_location replaces the actor target, as in native consume finish.
+Oral/COMESTIBLE medications, liquid antiseptics and other patients are outside
+this first treatment slice and are explicitly unavailable here.
+
+FirstAidState has the same bounded native work semantics as ConsumptionState;
+the two cannot coexist in a snapshot. CancelFirstAidRequest has its own payload
+and ledger signature and must match both token and ACT_FIRSTAID. Tokens change
+on activity kind/start and are not canonical save fields. A consumption cancel
+cannot stop a treatment with a matching token. All gameplay commands revalidate
+native busy state at admission and execution; queued actions cannot replace a
+newly started activity. Native cancel preserves spent work/backlog rules.
+Canonical first aid saves retain target, patient/body part and remaining work.
+BodyPartStatus.conditions appends bounded known wound/treatment names disclosed
+by the native body UI (bandaged/disinfected/bleed/bite/infected/mending), without
+exporting arbitrary hidden effects or exact timers. H presents those names.
 
 CWM 2.11 appends CONSUME=4 to EquipmentAction, native `consume_moves`,
 `consume_label` and the first read-only `consume_warning` to InventoryEntry.
@@ -72,7 +100,7 @@ wear and takeoff pay native costs and use existing decision prompts.
 TAKEOFF can natively drop a loaded container when no storage is available;
 its contents remain inside. Cancellation is preserved. Sealed/technical
 contents, partial quantities, arbitrary transfers and liquid destination
-selection require later interaction slices. Both executables require 2.11.
+selection require later interaction slices. Both executables require 2.12.
 
 CWM 2.9 appends `StatusValue.perceived_level`: -1 unavailable, otherwise
 an ordinal 0–10 well-being level, higher is better. CDDA quantizes only the
