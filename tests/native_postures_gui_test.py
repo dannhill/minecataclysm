@@ -270,7 +270,9 @@ def main():
     after = json.loads(output.read_text())
     check('prone_is_canonical_native_save_field', after['player']['move_mode'] == 'prone')
     check('canonical_native_anchor_preserved', after['player_abs'] == [round(final_position[0]), -round(final_position[2]), round(final_position[1] / 3)])
-    check('no_items_or_enemies_required_for_this_feature', not after['monsters'] and not after['npcs'])
+    check('no_pickup_body_sheet_or_melee_needed', all(int(r['attacks_sent']) == 0 and
+          int(r['ground_container']) == 0 and int(r['body_form']) == 0 and
+          int(r['queued_pickup']) == 0 for r in rows()))
     (out / 'summary.json').write_text(json.dumps(dict(checks=checks, fixture=str(args.fixture.resolve()), native_save=str(output)), indent=2)+'\n')
 
 
