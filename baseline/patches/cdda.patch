@@ -4357,10 +4357,10 @@ index 0000000..80794b8
 +}
 diff --git a/tests/cwm_runtime_test.cpp b/tests/cwm_runtime_test.cpp
 new file mode 100644
-index 0000000..aaa1a30
+index 0000000..e02b089
 --- /dev/null
 +++ b/tests/cwm_runtime_test.cpp
-@@ -0,0 +1,462 @@
+@@ -0,0 +1,470 @@
 +#include "cwm_motion.h"
 +#include "cata_catch.h"
 +#include "avatar.h"
@@ -4797,11 +4797,19 @@ index 0000000..aaa1a30
 +        sounds[mode] = u.footstep_sound();
 +        cwm_motion::recenter( u, m ); u.remove_value( "cwm_motion_v1" );
 +        u.remove_value( "cwm_stamina_fraction" ); u.set_stamina( stamina ); u.moves = 1000;
-+        for( const point d : { point_east, point_south, point_west, point_north } )
-+            for( int i = 0; i < 25; ++i )
++        int sampled_burn = 0;
++        // Hold the native stamina level constant for this equivalence probe:
++        // real stamina depletion changes run_cost and burn modifiers. Keep
++        // the fractional remainder, so per-sample truncation is still tested.
++        for( const point d : { point_east, point_south, point_west, point_north } ) {
++            for( int i = 0; i < 25; ++i ) {
++                u.set_stamina( stamina );
 +                cwm_motion::advance( u, m, d.x, d.y, .01 * cost / u.get_speed() );
++                sampled_burn += stamina - u.get_stamina();
++            }
++        }
 +        CHECK( 1000 - u.moves == cost );
-+        CHECK( stamina - u.get_stamina() == burns[mode] );
++        CHECK( sampled_burn == burns[mode] );
 +    }
 +    CHECK( distances[1] > distances[0] ); CHECK( distances[0] > distances[2] );
 +    CHECK( distances[2] > distances[3] ); CHECK( burns[1] > burns[0] );
