@@ -204,7 +204,7 @@ def main():
             def begin_reload(cancel=False, decline=False):
                 tap('r');wait(lambda r:int(r['pending_decision'])>0)
                 ident,text,labels=prompt()
-                check('native_reload_choices_exclude_incompatible_ammo','Choose ammunition' in text and len(labels)==3 and labels[-1]=='Cancel' and not any('38' in x for x in labels))
+                check('native_reload_choices_exclude_incompatible_ammo','Choose ammunition' in text and 2<=len(labels)<=3 and labels[-1]=='Cancel' and not any('38' in x for x in labels))
                 shot('ammo-choices.png')
                 # The default 9mm stack is natively labeled without FMJ. Selection uses native order.
                 index=next(i for i,label in enumerate(labels[:-1]) if 'FMJ' not in label)

@@ -297,6 +297,15 @@ int main(int argc, const char *argv[]) {
             u.moves = 100; g->set_safe_mode(SAFE_MODE_OFF);
         }
         if (create_ranged) {
+            // Native daylight, rather than overriding player perception or
+            // client visibility, makes the four-tile target testable.
+            for (int y=48;y<=76;++y) for (int x=48;x<=76;++x) {
+                m.ter_set(tripoint(x,y,0),ter_str_id("t_pavement"));
+                for (int z=1;z<=10;++z) {
+                    m.ter_set(tripoint(x,y,z),ter_str_id("t_open_air_rooved"));
+                    m.furn_set(tripoint(x,y,z),furn_str_id("f_null"));
+                }
+            }
             u.remove_weapon();
             if (!u.wear_item(item(itype_id("backpack_hiking"), calendar::turn))) return 26;
             item gun(itype_id("glock_19"), calendar::turn);

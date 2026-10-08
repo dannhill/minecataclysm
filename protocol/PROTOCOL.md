@@ -6,10 +6,42 @@ captured implementation; it does not approve its gaps. The executable schema
 is [cwm.fbs](cwm.fbs). Audit findings and evidence are in
 [M5.5](../docs/audits/M5.5.md).
 
-The current runtime requires **CWM 2.12**. This breaks the old negotiation
+The current runtime requires **CWM 2.14**. This breaks the old negotiation
 contract; schema fields and union members are appended without changing the
 existing FlatBuffers offsets. Both executables must be rebuilt together.
 The historical coverage table below is retained as audit evidence.
+
+CWM 2.14 appends RangedRequest (union 37), CancelReloadRequest (38),
+WorldSnapshot.ranged_weapon and WorldSnapshot.reload. CancelCraftingRequest
+retains union 36. Weapon tokens identify the actual wielded native item and
+current mode; replacement, mode changes and connection recovery invalidate
+them. AIM/FIRE carry an existing perceived hostile entity ID; RELOAD has no
+target. No client coordinates, hit claims, recoil, damage or ammunition edits
+are accepted. Native checks run at admission and execution. AIM spends native
+move credit through the same aiming function as target_ui; FIRE uses native
+fire_gun, recoil/dispersion/projectiles/damage/charges. The real-time adapter
+holds paid aim between inputs by spending idle credit without improving it;
+movement, other actions, invalid targets/weapons and recovery end that hold.
+Manual/menu pause never gives free aim improvement. The first slice excludes
+free reticle/neutral targets, reload-and-shoot and mounted/vehicle weapons.
+
+RELOAD invokes reload_wielded, native ammo options and explicit confirmation.
+Only accessible unsealed container ancestry is offered by the external
+selector; quantities, reload targets and costs are native. ACT_RELOAD owns
+remaining work and final charge transfer. ReloadState uses ephemeral token
+and native positive total_moves / bounded remaining_moves, exclusive with
+consumption, first aid and crafting. CancelReloadRequest requires the exact
+interruptible ACT_RELOAD token and has its own ledger signature. Native save
+data contains the original reload actor and item_locations, no CWM token.
+Read-only weapon state carries bounded name/reason, nonnegative ammo/range
+and finite native recoil; malformed states require authoritative resync.
+
+CWM 2.13 appends the crafting catalog/query/start/cancel messages and native
+work progress. Queries disclose known recipes and requirements without
+charging time; view-local handles invalidate after refresh/recovery. Native
+component/source choices and confirmation precede ACT_CRAFT; interrupted work
+remains a canonical craft item resumable from owned or accessible nearby
+surfaces. Recipe scope and exact evidence: [crafting](../docs/fixes/native-crafting.md).
 
 CWM 2.12 adds TREAT=5, six action reasons and `WorldSnapshot.first_aid`.
 TREAT selects an accessible owned non-comestible item with native heal use.

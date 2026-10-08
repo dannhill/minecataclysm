@@ -2741,10 +2741,10 @@ index 0000000..c68aca2
 +} // namespace cwm
 diff --git a/src/cwm/cwm_ranged.h b/src/cwm/cwm_ranged.h
 new file mode 100644
-index 0000000..21bf652
+index 0000000..44b1041
 --- /dev/null
 +++ b/src/cwm/cwm_ranged.h
-@@ -0,0 +1,103 @@
+@@ -0,0 +1,102 @@
 +#pragma once
 +#include "avatar.h"
 +#include "avatar_action.h"
@@ -2758,7 +2758,6 @@ index 0000000..21bf652
 +#include "ranged.h"
 +#include "map.h"
 +#include "flag.h"
-+#include "json_flag.h"
 +#include "output.h"
 +#include "enums.h"
 +namespace cwm {
@@ -2833,7 +2832,7 @@ index 0000000..21bf652
 +        u.recoil=target_handler::aim_turning_recoil(u,t->pos());
 +        if (!u.last_target_pos || *u.last_target_pos!=get_map().getabs(t->pos())) u.aim_cache_dirty=true;
 +        u.last_target_pos=get_map().getabs(t->pos());u.last_target=g.shared_from(*t);
-+        if (mode->has_flag(json_flag_ALWAYS_AIMED)) u.recoil=0;
++        if (mode->has_flag(flag_id("ALWAYS_AIMED"))) u.recoil=0;
 +        const int moves=u.moves;
 +        if (action==0) { target_handler::aim_for_moves(u,*mode,t->pos(),100);aimed_target_=target;return u.moves<moves; }
 +        return u.fire_gun(t->pos(),mode.qty,*mode)>0; // Native cost/recoil/dispersion/projectile/damage/charges/skill.
