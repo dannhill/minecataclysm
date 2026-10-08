@@ -795,10 +795,10 @@ index 09a7711..9b0c484 100644
          DebugLog( D_INFO, DC_ALL ) <<
 diff --git a/src/cwm/cwm_inventory.h b/src/cwm/cwm_inventory.h
 new file mode 100644
-index 0000000..65281a3
+index 0000000..9c2c546
 --- /dev/null
 +++ b/src/cwm/cwm_inventory.h
-@@ -0,0 +1,149 @@
+@@ -0,0 +1,150 @@
 +#pragma once
 +#include <algorithm>
 +#include <array>
@@ -810,6 +810,7 @@ index 0000000..65281a3
 +#include "item_category.h"
 +#include "item_location.h"
 +#include "item_pocket.h"
++#include "output.h"
 +#include "units.h"
 +#include "visitable.h"
 +#include "cwm/cwm_protocol.hpp"
@@ -918,7 +919,7 @@ index 0000000..65281a3
 +                }
 +                const int access = access_error(location).empty() ? std::max(0, location.obtain_cost(u)) : 0;
 +                entries.push_back(CDDA::CWM::CreateInventoryEntryDirect(fbb, id, parent_id, pocket_index,
-+                    it->typeId().str().c_str(), it->tname().c_str(), it->get_category_shallow().name().c_str(),
++                    it->typeId().str().c_str(), remove_color_tags(it->tname()).c_str(), it->get_category_shallow().name().c_str(),
 +                    it->charges, it->count_by_charges(), worn, wielded,
 +                    units::to_gram<int64_t>(it->weight()), units::to_milliliter<int64_t>(it->volume()),
 +                    units::to_millimeter<int64_t>(it->length()), access, actions, &reasons));
@@ -930,7 +931,7 @@ index 0000000..65281a3
 +                    if (pockets.size() >= 8192) { truncated = true; return VisitResponse::SKIP; }
 +                    const auto* p = own_pockets[i];
 +                    pockets.push_back(CDDA::CWM::CreateInventoryPocketDirect(fbb, id, i,
-+                        p->get_name().translated().c_str(), units::to_milliliter<int64_t>(p->max_contains_volume()),
++                        remove_color_tags(p->get_name().translated()).c_str(), units::to_milliliter<int64_t>(p->max_contains_volume()),
 +                        units::to_milliliter<int64_t>(p->remaining_volume()),
 +                        units::to_gram<int64_t>(p->get_pocket_data()->max_contains_weight),
 +                        units::to_gram<int64_t>(p->remaining_weight()),
@@ -3266,10 +3267,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..c0e94e8
+index 0000000..18df6e8
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,811 @@
+@@ -0,0 +1,853 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "move_mode.h"
@@ -4080,6 +4081,48 @@ index 0000000..c0e94e8
 +    CHECK_FALSE( cwm::InventorySelection::action_error( u, hat, 4 ).empty() );
 +    u.remove_item( *hat );
 +    CHECK_FALSE( selection.validate( u, view->view_id(), 2, 0 ).empty() );
++}
++
++TEST_CASE( "cwm_equipment_deduplication_binds_the_view_item_and_action", "[cwm][equipment]" )
++{
++    clear_avatar(); clear_map(); avatar &u = get_avatar();
++    REQUIRE( u.wear_item( item( itype_id( "backpack_hiking" ) ) ) );
++    auto hat = u.i_add( item( itype_id( "hat_ball" ) ) ); REQUIRE( hat );
++    const std::string socket = "/tmp/cwm-equipment-test-" + std::to_string( getpid() ) + ".sock";
++    cwm::CwmServer server( socket ); REQUIRE( server.start() );
++    auto peer = cdda::cwm::IpcClient::connect_unix( socket ); REQUIRE( peer );
++    REQUIRE( cwm::CwmServerTestAccess::accept_peer( server ) ); cwm::CwmServerTestAccess::ready( server );
++    const auto view = cwm::CwmServerTestAccess::inventory( server );
++    const auto id = cwm::CwmServerTestAccess::item_id( server, *hat );
++    cwm::CwmServerTestAccess::equipment( server, view, id, 0 ); REQUIRE( server.has_queued_action() );
++    bool identical = false;
++    SECTION( "identical request is inert" ) { identical = true; cwm::CwmServerTestAccess::equipment( server, view, id, 0 ); }
++    SECTION( "different view under same command ID" ) { cwm::CwmServerTestAccess::equipment( server, view + 1, id, 0 ); }
++    SECTION( "different item under same command ID" ) { cwm::CwmServerTestAccess::equipment( server, view, id + 1, 0 ); }
++    SECTION( "different action under same command ID" ) { cwm::CwmServerTestAccess::equipment( server, view, id, 2 ); }
++    CHECK( server.has_active_client() == identical );
++}
++
++TEST_CASE( "cwm_takeoff_without_capacity_preserves_loaded_container_on_ground", "[cwm][equipment]" )
++{
++    clear_avatar(); clear_map(); avatar &u = get_avatar(); u.setpos( tripoint( 60, 60, 0 ) );
++    auto pack = u.wear_item( item( itype_id( "backpack_hiking" ) ) ); REQUIRE( pack );
++    item hat( itype_id( "hat_ball" ) ); hat.set_var( "uid", "equipment-drop-cap" );
++    REQUIRE( u.i_add( hat ) );
++    item rock( itype_id( "rock" ) ); REQUIRE( u.wield( rock ) );
++    cwm::CwmServer server( "/unused-bag-drop" ); cwm::CwmServerTestAccess::ready( server );
++    const auto view = cwm::CwmServerTestAccess::inventory( server );
++    cwm::CwmServerTestAccess::equipment( server, view, cwm::CwmServerTestAccess::item_id( server, **pack ), 3 );
++    REQUIRE( server.has_queued_action() ); REQUIRE( cwm::CwmServerTestAccess::execute( server ) );
++    CHECK_FALSE( character_has_item_with_var_val( u, "uid", "equipment-drop-cap" ) );
++    int copies = 0;
++    for( const auto &it : get_map().i_at( u.pos() ) ) {
++        it.visit_items( [&]( const item *child, const item * ) {
++            if( child->get_var( "uid" ) == "equipment-drop-cap" ) ++copies;
++            return VisitResponse::NEXT;
++        } );
++    }
++    CHECK( copies == 1 );
 +}
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644

@@ -37322,7 +37322,7 @@
   {
     "path": "src/cwm/cwm_inventory.h",
     "mode": "100644",
-    "sha256": "101d307fe25d540e60e5eb30bf80225b54ecb3e2a5b655178cf7f63e159144aa"
+    "sha256": "f5d5d4fc70b6960e95a9ee9999f55c03bc852418bbe559955e04356b618bc253"
   },
   {
     "path": "src/cwm/cwm_main.cpp",
@@ -40882,7 +40882,7 @@
   {
     "path": "tests/cwm_pickup_test.cpp",
     "mode": "100644",
-    "sha256": "bc9980002abd769a5412c538ff18514d9fa51f2bc9534413c32d2283179be07f"
+    "sha256": "1f50f3825e87cd9f12d77e1b5f09420dc82817715c7ced3eea22136c7457ac79"
   },
   {
     "path": "tests/cwm_projection_test.cpp",

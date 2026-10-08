@@ -114,3 +114,33 @@ precedente conserva P e il vecchio HUD come descrizione della versione
 validata. L’utente richiede di proseguire dopo questo ritocco senza attendere
 un’ulteriore validazione estetica. Non si deduce un PASS manuale del nuovo HUD.
 Eventuali osservazioni potranno essere raccolte durante le prossime feature.
+
+## Inventario ed equipaggiamento — DA PROVARE, rinviato su richiesta
+
+L'utente non puo testare ora (2026-10-08); queste prove restano pendenti.
+Non costituiscono un blocco tecnico per la consegna di questa fetta.
+Avvio dalla directory del progetto: `./equipment-demo.sh --fresh`.
+Copia isolata: mazza impugnata, zaino indossato; cappello, bandana e due
+sassi nelle tasche. `I` apre l'inventario anche nel gioco normale.
+
+1. **I**: griglia, nomi al passaggio del mouse, filtri e ricerca, dettaglio
+   dell'oggetto selezionato con provenienza/tasche/capacita. Tempo fermo,
+   WASD non muove; Esc chiude senza equipaggiare. Le icone generiche sono
+   fallback di presentazione, non oggetti diversi da quelli CDDA.
+2. Seleziona cappello: **Indossa**, poi riapri I e **Togli**. Seleziona
+   mazza: **Riponi** e scegli la destinazione nativa con il numero mostrato;
+   prova anche **Annulla**. Poi **Impugna** un sasso: solo quello diventa
+   impugnato. I vincoli e i tempi restano nativi; nessuno switch rapido gratis.
+3. Con F7 in pausa, prova un'azione: non deve partire ne venire eseguita
+   quando riprendi. Chiudere I non deve togliere la pausa F7. Per togliere
+   lo zaino senza lasciarlo a terra, riponi prima l'oggetto impugnato:
+   CDDA puo impugnare lo zaino completo; **Indossa** lo rimette con i contenuti.
+   Se manca spazio e hai gia qualcosa in mano, CDDA puo lasciare lo zaino
+   a terra con i contenuti: e comportamento nativo, non una cancellazione.
+4. Lascia cappello indossato e un sasso impugnato; esci e rilancia
+   `./equipment-demo.sh` senza `--fresh`. Controlla equipaggiamento e
+   contenuti: nessuna perdita, duplicazione o ricomparsa delle vecchie copie.
+
+Quantita parziali, trasferimenti mirati tra tasche/contenitori, apertura di
+tasche sigillate e hotbar interattiva vengono dopo: non sono implementati
+in questa prima fetta. [Dettagli e verifica tecnica](../fixes/native-equipment.md).

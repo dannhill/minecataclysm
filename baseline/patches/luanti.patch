@@ -728,10 +728,10 @@ index 5d6b891..48c0d59 100644
  		g_settings->getFlagStr("anticheat_flags", flagdesc_anticheat, nullptr);
  
 diff --git a/src/unittest/test_mapblock.cpp b/src/unittest/test_mapblock.cpp
-index 7f3f860..40d5b1f 100644
+index 7f3f860..6820299 100644
 --- a/src/unittest/test_mapblock.cpp
 +++ b/src/unittest/test_mapblock.cpp
-@@ -10,6 +10,14 @@
+@@ -10,6 +10,15 @@
  #include "serialization.h"
  #include "noise.h"
  #include "inventory.h"
@@ -742,11 +742,12 @@ index 7f3f860..40d5b1f 100644
 +#include "cdda/ground_item_visual.h"
 +#include "cdda/avatar_status.h"
 +#include "cdda/posture_input.h"
++#include "cdda/equipment_inventory.h"
 +#endif
  
  class TestMapBlock : public TestBase
  {
-@@ -32,7 +40,14 @@ class TestMapBlock : public TestBase
+@@ -32,7 +41,15 @@ class TestMapBlock : public TestBase
  	void testLoad20(IGameDef *gamedef);
  
  	// Tests loading a non-standard MapBlock
@@ -758,11 +759,12 @@ index 7f3f860..40d5b1f 100644
 +    void testCddaGroundItemProjection();
 +    void testCddaBodyStatusEscaping();
 +    void testCddaPostureInput();
++    void testCddaEquipmentView();
 +#endif
  };
  
  static TestMapBlock g_test_instance;
-@@ -44,9 +59,150 @@ void TestMapBlock::runTests(IGameDef *gamedef)
+@@ -44,9 +61,177 @@ void TestMapBlock::runTests(IGameDef *gamedef)
  	TEST(testSave29, gamedef);
  	TEST(testLoad29, gamedef);
  	TEST(testLoad20, gamedef);
@@ -774,10 +776,37 @@ index 7f3f860..40d5b1f 100644
 +    TEST(testCddaGroundItemProjection);
 +    TEST(testCddaBodyStatusEscaping);
 +    TEST(testCddaPostureInput);
++    TEST(testCddaEquipmentView);
 +#endif
  }
  
 +#if CHECK_CLIENT_BUILD()
++void TestMapBlock::testCddaEquipmentView()
++{
++    using namespace cdda_client;
++    EquipmentView view; view.view = 1;
++    EquipmentEntry pack; pack.id = 1; pack.name = "Pack"; pack.worn = true;
++    view.entries.push_back(pack);
++    for (uint32_t id = 2; id <= 40; ++id) {
++        EquipmentEntry child; child.id = id; child.parent = 1; child.pocket = 0;
++        child.name = "rock];button[0,0;1,1;inject;click"; child.type = "rock"; child.actions = 1;
++        child.reasons = {{"", "not wielded", "not wearable", "not worn"}};
++        view.entries.push_back(child);
++    }
++    EquipmentPocket pocket; pocket.owner = 1; pocket.name = "Main"; view.pockets.push_back(pocket);
++    UASSERTEQ(size_t, equipmentFilter(view,"pack / main",3).size(), 39);
++    UASSERTEQ(size_t, equipmentFilter(view,"",2).size(), 1);
++    UASSERTEQ(std::string, view.source(2), "Pack / Main");
++    const auto form = equipmentForm(view,1,39,"",0,"",[](const auto&) { return "known:rock"; });
++    UASSERT(form.find(";item_37;") != std::string::npos);
++    UASSERT(form.find(";item_36;") == std::string::npos);
++    UASSERT(form.find(";action_0;") != std::string::npos);
++    UASSERT(form.find(";action_2;") == std::string::npos);
++    UASSERT(form.find("rock\\]\\;button\\[") != std::string::npos);
++    UASSERT(form.find("list[") == std::string::npos);
++    UASSERT(form.find(";inject;click") == std::string::npos);
++}
++
 +void TestMapBlock::testCddaBodyStatusEscaping()
 +{
 +    using namespace cdda_client;
@@ -1037,10 +1066,10 @@ index 0000000..ebc8b75
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..392ef19
+index 0000000..7c77a78
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,2165 @@
+@@ -0,0 +1,2166 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
@@ -2704,7 +2733,7 @@ index 0000000..392ef19
 +        flags & cdda::cwm::CROUCHING ? 2 : flags & cdda::cwm::RUNNING ? 1 : 0;
 +    const bool allowed = impl.connection_ && impl.connection_->is_valid() && impl.session_.ready() &&
 +        impl.player_ready_ && !impl.metrics_.pending_decision && !impl.metrics_.pause_reasons &&
-+        impl.sent_menu_pause_ != 1 && !impl.body_form_open_ && !impl.ground_container_open_;
++        impl.sent_menu_pause_ != 1 && !impl.body_form_open_ && !impl.ground_container_open_ && !impl.equipment_open_;
 +    const int desired = impl.posture_input_.sample({run, crouch, prone},
 +        g_settings->getBool("cwm_run_toggle"), g_settings->getBool("cwm_crouch_toggle"), allowed, confirmed);
 +    if (desired < 0 || desired == confirmed || impl.pending_move_) return;
@@ -3091,7 +3120,7 @@ index 0000000..392ef19
 +            pimpl_->item_hint_ : pimpl_->hover_hint_;
 +        pimpl_->item_hint_text_->setText(hint.c_str());
 +        pimpl_->item_hint_text_->setVisible(pimpl_->session_.ready() &&
-+            !pimpl_->metrics_.pending_decision && !pimpl_->ground_container_open_);
++            !pimpl_->metrics_.pending_decision && !pimpl_->ground_container_open_ && !pimpl_->equipment_open_);
 +    }
 +
 +    if (pimpl_->metrics_.realtime) {
@@ -3105,7 +3134,7 @@ index 0000000..392ef19
 +            pimpl_->metrics_.time_scale, pimpl_->metrics_.pause_reasons ? L"IN PAUSA" : L"ATTIVO",
 +            pimpl_->metrics_.continuous_motion ? L"MOVIMENTO CONTINUO" : L"GRIGLIA");
 +        pimpl_->clock_text_->setText(text);
-+        pimpl_->clock_text_->setVisible(!pimpl_->ground_container_open_ && !pimpl_->body_form_open_);
++        pimpl_->clock_text_->setVisible(!pimpl_->ground_container_open_ && !pimpl_->body_form_open_ && !pimpl_->equipment_open_);
 +    } else if (pimpl_->clock_text_) pimpl_->clock_text_->setVisible(false);
 +
 +    if (pimpl_->terrain_demo_) {
@@ -3201,7 +3230,8 @@ index 0000000..392ef19
 +                 pimpl_->metrics_.vehicles_count);
 +        
 +        pimpl_->debug_text_->setText(text);
-+        pimpl_->debug_text_->setVisible(!pimpl_->ground_container_open_ && !pimpl_->body_form_open_);
++        pimpl_->debug_text_->setVisible(!pimpl_->equipment_open_);
++        pimpl_->debug_text_->setVisible(!pimpl_->ground_container_open_ && !pimpl_->body_form_open_ && !pimpl_->equipment_open_);
 +    }
 +}
 +
@@ -3366,10 +3396,10 @@ index 0000000..4c7d5d8
 +} // namespace cdda_client
 diff --git a/src/cdda/equipment_inventory.h b/src/cdda/equipment_inventory.h
 new file mode 100644
-index 0000000..434d668
+index 0000000..b29dff5
 --- /dev/null
 +++ b/src/cdda/equipment_inventory.h
-@@ -0,0 +1,132 @@
+@@ -0,0 +1,139 @@
 +#pragma once
 +#include "avatar_status.h"
 +#include "cwm/cwm_generated.h"
@@ -3377,6 +3407,8 @@ index 0000000..434d668
 +#include <algorithm>
 +#include <cctype>
 +#include <functional>
++#include <iomanip>
++#include <sstream>
 +#include <string>
 +#include <vector>
 +
@@ -3447,6 +3479,10 @@ index 0000000..434d668
 +    }
 +    return ids;
 +}
++inline std::string equipmentAmount(int64_t milliunits) {
++    std::ostringstream out; out << std::fixed << std::setprecision(2) << milliunits / 1000.0;
++    return out.str();
++}
 +inline std::string equipmentForm(const EquipmentView& view, size_t page, uint32_t selected,
 +        const std::string& search, int filter, const std::string& notice,
 +        const std::function<std::string(const std::string&)>& icon) {
@@ -3459,8 +3495,8 @@ index 0000000..434d668
 +        "button[6.1,1;1.6,0.65;find;Cerca]dropdown[8,1;3.3,0.65;filter;Tutti,Impugnati,Indossati,Nelle tasche;" + std::to_string(filter + 1) + "]"
 +        "button[11.6,1;1.8,0.65;refresh;Aggiorna]button_exit[13.7,1;1.8,0.65;close;Chiudi]";
 +    if (!view.view) return f + "label[0.5,2.2;" + statusEscape(view.error.empty() ? "Lettura inventario nativo..." : view.error) + "]";
-+    f += "label[0.5,2;Peso " + std::to_string(view.weight / 1000.0) + " / " + std::to_string(view.weight_capacity / 1000.0) +
-+        " kg - Volume " + std::to_string(view.volume / 1000.0) + " / " + std::to_string(view.volume_capacity / 1000.0) + " L]";
++    f += "label[0.5,2;Peso " + equipmentAmount(view.weight) + " / " + equipmentAmount(view.weight_capacity) +
++        " kg - Volume " + equipmentAmount(view.volume) + " / " + equipmentAmount(view.volume_capacity) + " L]";
 +    const auto ids = equipmentFilter(view, search, filter);
 +    const size_t pages = std::max<size_t>(1, (ids.size() + 35) / 36);
 +    page = std::min(page, pages - 1);
@@ -3478,13 +3514,13 @@ index 0000000..434d668
 +        "]button[5.65,9.65;1.4,0.6;next;>]";
 +    if (const auto* e = view.entry(selected)) {
 +        std::string detail = e->name + "\n" + e->category + "\n" + view.source(e->id) + "\n" +
-+            std::to_string(e->weight / 1000.0) + " kg / " + std::to_string(e->volume / 1000.0) + " L / " +
++            equipmentAmount(e->weight) + " kg / " + equipmentAmount(e->volume) + " L / " +
 +            std::to_string(e->length) + " mm\nAccesso nativo: " + std::to_string(e->access) + " mosse";
 +        if (e->counted) detail += "\nQuantita: " + std::to_string(e->charges);
 +        for (const auto& p : view.pockets) if (p.owner == selected) {
 +            detail += "\n" + (p.name.empty() ? "Tasca " + std::to_string(p.index + 1) : p.name) +
-+                ": " + std::to_string(p.remaining / 1000.0) + " / " + std::to_string(p.capacity / 1000.0) + " L liberi; " +
-+                std::to_string(p.weight_remaining / 1000.0) + " / " + std::to_string(p.weight_capacity / 1000.0) + " kg liberi" +
++                ": " + equipmentAmount(p.remaining) + " / " + equipmentAmount(p.capacity) + " L liberi; " +
++                equipmentAmount(p.weight_remaining) + " / " + equipmentAmount(p.weight_capacity) + " kg liberi" +
 +                "; lunghezza max " + std::to_string(p.length) + " mm; accesso " + std::to_string(p.access) + " mosse" +
 +                (p.sealed ? "; sigillata" : "") + (p.rigid ? "; rigida" : "") + (p.watertight ? "; stagna" : "");
 +        }
@@ -3493,6 +3529,7 @@ index 0000000..434d668
 +        for (unsigned i = 0; i < 4; ++i) {
 +            const auto x = std::to_string(8 + (i % 2) * 3.8), y = std::to_string(7.95 + (i / 2) * .85);
 +            const auto key = "action_" + std::to_string(i);
++            if (i == 3) f += "tooltip[" + key + ";CDDA ripone l'oggetto tolto: se manca spazio puo impugnarlo o lasciarlo a terra con i suoi contenuti.]";
 +            // Unavailable actions have no clickable field. Their native reason remains inspectable.
 +            if (e->actions & (1 << i)) f += "button[" + x + "," + y + ";3.4,0.65;" + key + ";" + names[i] + "]";
 +            else f += "label[" + x + "," + y + ";" + names[i] + " (non disponibile)]tooltip[" + x + "," + y + ";3.4,0.65;" + statusEscape(e->reasons[i]) + "]";

@@ -18,6 +18,7 @@ import time
 import select
 import tempfile
 import threading
+import sys
 
 
 def main():
@@ -175,17 +176,117 @@ def main():
             xdo('windowactivate', '--sync', window)
             time.sleep(1)
             wait(lambda r: int(r['input_ready']) == 1 and int(r['pause_reasons']) == 0)
-            tap('i')
-            wait(lambda r: int(r['equipment_form']) == 1 and int(r['inventory_view']) > 0)
+            sys.path.insert(0, str(ws / 'protocol/python'))
+            from CDDA.CWM.CwmMessage import CwmMessage
+            from CDDA.CWM.Payload import Payload
+            from CDDA.CWM.InventoryView import InventoryView
+            def views():
+                import struct
+                buf = (out / 'server-wire.bin').read_bytes(); offset = 0; found = []
+                while offset + 4 <= len(buf):
+                    n = struct.unpack('>I', buf[offset:offset+4])[0]; offset += 4
+                    if offset+n > len(buf): break
+                    msg = CwmMessage.GetRootAs(buf[offset:offset+n]); offset += n
+                    if msg.PayloadType() == Payload.InventoryView:
+                        v = InventoryView(); v.Init(msg.Payload().Bytes,msg.Payload().Pos)
+                        if v.ViewId(): found.append(v)
+                return found
+            def open_inventory():
+                tap('i')
+                wait(lambda r: int(r['equipment_form']) == 1 and int(r['inventory_view']) > 0)
+                return views()[-1]
+            view = open_inventory()
             check('native_inventory_opened', True)
             shot('inventory.png')
+            from PIL import Image
+            width, height = Image.open(out / 'inventory.png').size
+            unit = height * .075
+            origin_x, origin_y = (width - 16 * unit) / 2, (height - 11 * unit) / 2
+            def click(x, y):
+                xdo('mousemove','--window',window,str(round(origin_x+x*unit)),str(round(origin_y+y*unit)))
+                xdo('click','1'); time.sleep(.3)
+            def entries(v):
+                return [v.Entries(n) for n in range(v.EntriesLength())]
+            def select_item(e):
+                index = e.Id() - 1
+                click(1.025 + (index % 6)*1.18, 3.225 + (index // 6)*1.12)
+                wait(lambda r: int(r['equipment_selected']) == e.Id())
+            def action(number):
+                sent = int(latest()['equipment_sent'])
+                click(9.7 + (number % 2)*3.8, 8.275 + (number // 2)*.85)
+                wait(lambda r: int(r['equipment_form']) == 0 and int(r['equipment_sent']) == sent+1)
+            def finish_action():
+                wait(lambda r: int(r['pending_move']) == 0 and int(r['pause_reasons']) == 0)
+            def item(v, name):
+                return next(e for e in entries(v) if e.TypeId().decode() == name)
             opened = latest()
-            time.sleep(2)
+            check('nested_objects_and_pockets_are_native', view.PocketsLength() > 0 and item(view,'hat_ball').ParentId() > 0)
+            check('two_identical_items_have_distinct_selection_ids', len({e.Id() for e in entries(view) if e.TypeId() == b'rock'}) == 2)
+            time.sleep(1)
+            xdo('keydown','w');time.sleep(.4);xdo('keyup','w');time.sleep(.3)
             check('inventory_reading_freezes_native_time', latest()['simulation_time'] == opened['simulation_time'])
+            check('inventory_reading_does_not_move_player', latest()['target_x'] == opened['target_x'] and latest()['target_z'] == opened['target_z'])
             check('survival_hud_hidden_behind_inventory', int(latest()['survival_visible']) == 0)
-            tap('Escape')
-            wait(lambda r: int(r['equipment_form']) == 0)
+            check('inventory_freezes_presentation_animation', latest()['visual_animation_time'] == opened['visual_animation_time'] and float(latest()['visual_animation_delta']) == 0)
+            click(2.2,1.3); xdo('type','cap'); click(6.9,1.325)
+            cap = item(view,'hat_ball'); click(1.025,3.225)
+            wait(lambda r: int(r['equipment_selected']) == cap.Id())
+            check('search_preserves_native_item_selection', True)
+            click(2.2,1.3);xdo('key','ctrl+a');xdo('key','BackSpace');click(6.9,1.325)
+            select_item(item(view,'hat_ball'));shot('hat-details.png')
+            action(2);finish_action()
+            view = open_inventory()
+            check('wear_cap_native_result_visible', item(view,'hat_ball').Worn() and not item(view,'hat_ball').ParentId())
+            select_item(item(view,'hat_ball'));action(3);finish_action()
+            view = open_inventory()
+            check('takeoff_cap_returns_to_native_pocket', not item(view,'hat_ball').Worn() and item(view,'hat_ball').ParentId() > 0)
+            select_item(item(view,'bat'));action(1)
+            wait(lambda r: int(r['pending_decision']) > 0)
+            shot('native-stow-choice.png')
+            tap('3');finish_action()
+            view = open_inventory()
+            check('native_stow_cancel_keeps_weapon_wielded', item(view,'bat').Wielded())
+            select_item(item(view,'bat'));action(1)
+            wait(lambda r: int(r['pending_decision']) > 0)
+            tap('1');finish_action()
+            view = open_inventory()
+            check('native_stow_keeps_bat_owned_without_wielding', not item(view,'bat').Wielded())
+            select_item(item(view,'rock'));action(0);finish_action()
+            view = open_inventory()
+            check('wield_uses_selected_native_item', item(view,'rock').Wielded())
+            select_item(item(view,'rock'));action(1)
+            wait(lambda r: int(r['pending_decision']) > 0);tap('1');finish_action()
+            view = open_inventory()
+            select_item(item(view,'backpack_hiking'));action(3);finish_action()
+            view = open_inventory()
+            check('taking_off_loaded_backpack_retains_all_contents', item(view,'backpack_hiking').Wielded() and not item(view,'backpack_hiking').Worn() and view.EntriesLength() == 6 and item(view,'hat_ball').ParentId() > 0)
+            select_item(item(view,'backpack_hiking'));action(2);finish_action()
+            view = open_inventory()
+            check('wearing_loaded_backpack_retains_all_contents', item(view,'backpack_hiking').Worn() and view.EntriesLength() == 6)
+            select_item(item(view,'rock'));action(0);finish_action()
+            view = open_inventory()
+            tap('Escape');wait(lambda r: int(r['equipment_form']) == 0)
             check('escape_closes_inventory', True)
+            if not args.action_driven:
+                tap('F7');wait(lambda r: int(r['pause_reasons']) == 1)
+                view = open_inventory();select_item(item(view,'hat_ball'))
+                sent = latest()['equipment_sent'];stopped = latest()['simulation_time']
+                click(9.7,9.125);time.sleep(.5)
+                check('manual_pause_blocks_equipment_without_queuing', latest()['equipment_sent'] == sent and int(latest()['equipment_form']) == 1)
+                tap('Escape');wait(lambda r: int(r['equipment_form']) == 0 and int(r['pause_reasons']) == 1)
+                check('closing_inventory_preserves_manual_pause', latest()['simulation_time'] == stopped)
+                tap('F7');wait(lambda r: int(r['pause_reasons']) == 0)
+                check('unpause_does_not_execute_rejected_click', latest()['equipment_sent'] == sent)
+            view = open_inventory()
+            connection_id = latest()['connection_id'];sent = latest()['equipment_sent']
+            drop.set()
+            wait(lambda r: r['connection_id'] != connection_id and int(r['input_ready']) == 1 and int(r['equipment_form']) == 0, timeout=20)
+            check('real_reconnect_closes_stale_inventory', True)
+            check('reconnect_never_replays_unsent_equipment', latest()['equipment_sent'] == sent)
+            view = open_inventory()
+            check('resync_restores_native_equipment', item(view,'rock').Wielded() and item(view,'backpack_hiking').Worn())
+            tap('Escape');wait(lambda r: int(r['equipment_form']) == 0)
+            check('actual_runtime_survives', proc.poll() is None)
         finally:
             subprocess.run(['xdotool', 'keyup', 'w'], capture_output=True)
             if proc.poll() is None:
@@ -198,6 +299,7 @@ def main():
             stop.set()
             relay_thread.join(timeout=3)
             listener.close()
+            (out / 'relay-errors.json').write_text(json.dumps(relay_errors))
             scratch.cleanup()
             if old_window:
                 subprocess.run(['xdotool', 'windowactivate', old_window], capture_output=True)
@@ -207,6 +309,20 @@ def main():
         result = subprocess.run([str(args.native_reader.resolve()), '--userdir', str(user),
             '--datadir', str(ws / 'cdda/data'), '--output', str(output)], stdout=log, stderr=subprocess.STDOUT, timeout=180)
     check('equipment_save_readable_by_pristine_native_core', result.returncode == 0)
+    native = json.loads(output.read_text())
+    before = json.loads((args.fixture.parent / 'before.json').read_text())
+    def uid_counts(value, counts=None):
+        counts = {} if counts is None else counts
+        if isinstance(value, dict):
+            uid = value.get('item_vars', {}).get('uid')
+            if uid and uid.startswith('equipment-'): counts[uid] = counts.get(uid,0)+1
+            for child in value.values(): uid_counts(child,counts)
+        elif isinstance(value,list):
+            for child in value: uid_counts(child,counts)
+        return counts
+    check('canonical_save_has_each_fixture_item_once', uid_counts(native['player']) == uid_counts(before['player']) and len(uid_counts(native['player'])) == 5)
+    check('canonical_save_records_selected_rock_as_weapon', native['player']['weapon']['typeid'] == 'rock')
+    check('canonical_save_records_backpack_worn', any(i['typeid'] == 'backpack_hiking' for i in native['player']['worn']['worn']))
     (out / 'summary.json').write_text(json.dumps(dict(checks=checks, native_save=str(output)), indent=2)+'\n')
 
 

@@ -6,10 +6,39 @@ captured implementation; it does not approve its gaps. The executable schema
 is [cwm.fbs](cwm.fbs). Audit findings and evidence are in
 [M5.5](../docs/audits/M5.5.md).
 
-The current runtime requires **CWM 2.9**. This breaks the old negotiation
+The current runtime requires **CWM 2.10**. This breaks the old negotiation
 contract; schema fields and union members are appended without changing the
 existing FlatBuffers offsets. Both executables must be rebuilt together.
 The historical coverage table below is retained as audit evidence.
+
+CWM 2.10 appends `InventoryQueryRequest(query_id)`, `InventoryView` and
+`EquipmentRequest(command_id, view_id, item_id, action)`. Query IDs correlate
+read-only replies separately from the action ledger. A query does not consume
+moves, advance the native calendar or invent a gameplay activity. Queries are
+rate-limited to one per 100 ms; successful queries replace one bounded server
+selection cache. Error replies have view_id 0, empty lists and a reason.
+
+Views contain at most 2,048 entries, 8,192 pockets and 32 ancestry levels, with
+an explicit truncation flag. Entry IDs are contiguous view-local handles, not
+persistent item IDs. Parent precedes child; parent/pocket links, action bits
+and four reasons are validated before rendering. Technical contents use
+pocket_index -1 and cannot bypass their native interaction. Pockets report
+native volume/weight capacities, remaining space, length/access constraints,
+sealed/rigid/watertight flags. Negative remaining capacity is permitted for
+native overstuffing. None of these fields changes canonical saves.
+
+WIELD/STOW/WEAR/TAKEOFF revalidate native safe item_locations, ownership,
+ancestor chain, type, charges, equipment role and native availability at both
+admission and execution. Refresh/resync/disconnect invalidate old handles;
+execution invalidates sibling handles before mutation or player choice.
+Command dedup binds view, item and action. Completion uses CommandAck and the
+existing authoritative state completion flow; the renderer never changes
+local inventories optimistically. Native wield/obtain, unwield/disposal,
+wear and takeoff pay native costs and use existing decision prompts.
+TAKEOFF can natively drop a loaded container when no storage is available;
+its contents remain inside. Cancellation is preserved. Sealed/technical
+contents, partial quantities, arbitrary transfers and liquid destination
+selection require later interaction slices. Both executables require 2.10.
 
 CWM 2.9 appends `StatusValue.perceived_level`: -1 unavailable, otherwise
 an ordinal 0–10 well-being level, higher is better. CDDA quantizes only the

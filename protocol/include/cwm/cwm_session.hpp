@@ -25,7 +25,8 @@ inline bool valid_inventory(const CDDA::CWM::InventoryView* view) {
     if (!view || !view->query_id() || !view->entries() || !view->pockets() ||
         view->entries()->size() > 2048 || view->pockets()->size() > 8192 || !text(view->error(), 2048)) return false;
     if (view->error()->size()) return !view->view_id() && !view->entries()->size() && !view->pockets()->size();
-    if (!view->view_id()) return false;
+    if (!view->view_id() || view->weight_grams() < 0 || view->weight_capacity_grams() < 0 ||
+        view->volume_ml() < 0 || view->volume_capacity_ml() < 0) return false;
     std::vector<unsigned> depths(1, 0);
     uint32_t id = 0;
     for (const auto* entry : *view->entries()) {
