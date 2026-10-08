@@ -36,3 +36,7 @@ class Payload(object):
     EquipmentRequest = 30
     CancelConsumptionRequest = 31
     CancelFirstAidRequest = 32
+    CraftingQueryRequest = 33
+    CraftingView = 34
+    CraftingRequest = 35
+    CancelCraftingRequest = 36

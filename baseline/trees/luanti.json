@@ -7237,17 +7237,22 @@
   {
     "path": "src/cdda/cdda_bridge.cpp",
     "mode": "100644",
-    "sha256": "a3b858ab63d3f969313ba6f62c7e15fe8a6088d3aa88b558989fa6f1cca0c278"
+    "sha256": "72e66983b068e9d74d8ad3d97daaa5ea0a488bd0065de03c952aad07eef6882a"
   },
   {
     "path": "src/cdda/cdda_bridge.h",
     "mode": "100644",
-    "sha256": "a5b137a8bc2765180e26e736c7047cfbfc03e97e7e1686f29ea0c2382cdd033f"
+    "sha256": "fa983fb8f8697bdda645e8cd52ebd890e8e87ba321ebc3338c43658720b925c5"
+  },
+  {
+    "path": "src/cdda/crafting_inventory.h",
+    "mode": "100644",
+    "sha256": "978c4f760b675e6f061b4000d59ad5db9a70f88b2314e3925152f752016d93b4"
   },
   {
     "path": "src/cdda/equipment_inventory.h",
     "mode": "100644",
-    "sha256": "e81979112291fac13299526d29de405849b7166d5b0e84fb810532df4d458667"
+    "sha256": "a9cb7919654bd94621b4ca1a66560d3ee2daa5b502f3c33c30a1d56aa4b714e9"
   },
   {
     "path": "src/cdda/ground_item_formspec.h",
@@ -7452,7 +7457,7 @@
   {
     "path": "src/client/game.cpp",
     "mode": "100644",
-    "sha256": "ceb85818e4e1500ca1379049a12c247dab8d64dbedabfc090eda487e3268309b"
+    "sha256": "47b0ef56ad97c88a9706026c731f33919a4274e652a230c4c7ac5da165012190"
   },
   {
     "path": "src/client/game.h",
@@ -7512,7 +7517,7 @@
   {
     "path": "src/client/inputhandler.cpp",
     "mode": "100644",
-    "sha256": "4c2b6aa9b08a14d8cbf832ab1cb378354c5b101f16b1aa9a5cc975a750c7a1a0"
+    "sha256": "39d27a763c7533f793b43469c785f32e37e3a6802e9d92f14b22de2960101c8c"
   },
   {
     "path": "src/client/inputhandler.h",
@@ -7542,7 +7547,7 @@
   {
     "path": "src/client/keys.h",
     "mode": "100644",
-    "sha256": "dd69760e68a0bfaad44510276f9ecad6f546ca14c2d29233a97f338e72947052"
+    "sha256": "6eb759d04c095f36da1249ed14c7ab7d5a8198f668cdfed7c348e51a84fa6d85"
   },
   {
     "path": "src/client/localplayer.cpp",
@@ -8147,7 +8152,7 @@
   {
     "path": "src/defaultsettings.cpp",
     "mode": "100644",
-    "sha256": "ba4132d2608b7c306823fe9ca1814c478ed9baeb859ef43ebb3bf2607389be60"
+    "sha256": "7def8ca7fda28bd2d7f117e6dccdd8fdc073d039e416f210915056e2a8b5f7c1"
   },
   {
     "path": "src/defaultsettings.h",

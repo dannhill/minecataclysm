@@ -299,6 +299,170 @@ index 5d80fec..46a5c2d 100644
      int w = utf8_width( menu.text, true ) + 4;
      for( const dispose_option &e : opts ) {
          w = std::max( w, utf8_width( e.prompt, true ) + 4 );
+diff --git a/src/craft_command.cpp b/src/craft_command.cpp
+index 57edee0..b081a8a 100644
+--- a/src/craft_command.cpp
++++ b/src/craft_command.cpp
+@@ -10,6 +10,7 @@
+ 
+ #include "activity_actor_definitions.h"
+ #include "character.h"
++#include "do_turn.h"
+ #include "crafting.h"
+ #include "debug.h"
+ #include "enum_conversions.h"
+@@ -145,18 +146,21 @@ void craft_command::execute( bool only_cache_comps )
+             }
+         }
+ 
+-        flags = recipe_filter_flags::no_rotten;
++        const auto protection = protected_components ?
++            recipe_filter_flags::no_favorite | recipe_filter_flags::no_equipped : recipe_filter_flags::none;
++        flags = recipe_filter_flags::no_rotten | protection;
+ 
+         if( !crafter->can_start_craft( rec, flags, batch_size ) ) {
+             if( !query_yn( _( "This craft will use rotten components.\n"
+                               "Start crafting anyway?" ) ) ) {
+                 return;
+             }
+-            flags = recipe_filter_flags::none;
++            flags = protection;
+         }
+ 
+         flags |= recipe_filter_flags::no_favorite;
+         if( !crafter->can_start_craft( rec, flags, batch_size ) ) {
++            if( protected_components ) { return; }
+             if( !query_yn( _( "This craft will use favorited components.\n"
+                               "Start crafting anyway?" ) ) ) {
+                 return;
+@@ -199,6 +203,15 @@ void craft_command::execute( bool only_cache_comps )
+         return;
+     }
+ 
++    if( protected_components && external_ui_active() ) {
++        std::string summary = rec->result_name() + " x" + std::to_string( batch_size ) + "\n";
++        for( const auto &selection : item_selections ) {
++            summary += selection.nname() + " x" + std::to_string( std::abs( selection.comp.count ) *
++                       ( selection.comp.count > 0 ? batch_size : 1 ) ) + "\n";
++        }
++        for( const auto &selection : tool_selections ) { summary += "Tool: " + selection.nname() + "\n"; }
++        if( !query_yn( "Consume these components and start crafting?\n%s", summary ) ) { return; }
++    }
+     crafter->start_craft( *this, loc );
+     crafter->last_batch = batch_size;
+     crafter->lastrecipe = rec->ident();
+diff --git a/src/craft_command.h b/src/craft_command.h
+index 4a508eb..3647b56 100644
+--- a/src/craft_command.h
++++ b/src/craft_command.h
+@@ -63,8 +63,8 @@ class craft_command
+         /** Instantiates an empty craft_command, which can't be executed. */
+         craft_command() = default;
+         craft_command( const recipe *to_make, int batch_size, bool is_long, Character *crafter,
+-                       const std::optional<tripoint> &loc ) :
+-            rec( to_make ), batch_size( batch_size ), longcraft( is_long ), crafter( crafter ), loc( loc ) {}
++                       const std::optional<tripoint> &loc, bool protect = false ) :
++            rec( to_make ), batch_size( batch_size ), longcraft( is_long ), crafter( crafter ), loc( loc ), protected_components( protect ) {}
+ 
+         /**
+          * Selects components to use for the craft, then assigns the crafting activity to 'crafter'.
+@@ -105,6 +105,7 @@ class craft_command
+         * long as possible.
+         */
+         bool longcraft = false;
++        bool protected_components = false;
+         // This is mainly here for maintainability reasons.
+         Character *crafter;
+ 
+diff --git a/src/crafting.cpp b/src/crafting.cpp
+index ae12520..6874f9c 100644
+--- a/src/crafting.cpp
++++ b/src/crafting.cpp
+@@ -1,4 +1,5 @@
+ #include "crafting.h"
++#include "do_turn.h"
+ 
+ #include <algorithm>
+ #include <climits>
+@@ -112,11 +113,28 @@ static const trait_id trait_INT_ALPHA( "INT_ALPHA" );
+ static const std::string flag_BLIND_EASY( "BLIND_EASY" );
+ static const std::string flag_BLIND_HARD( "BLIND_HARD" );
+ static const std::string flag_FULL_MAGAZINE( "FULL_MAGAZINE" );
++static void crafting_menu_query( uilist &menu )
++{
++    if( !external_ui_active() ) { menu.query(); return; }
++    std::vector<std::string> labels;
++    std::vector<int> indices;
++    for( size_t i = 0; i < menu.entries.size(); ++i ) {
++        const auto &entry = menu.entries[i];
++        if( !entry.enabled ) { continue; }
++        labels.push_back( remove_color_tags( entry.txt + "\n" + entry.desc ) );
++        indices.push_back( i );
++    }
++    labels.push_back( "Cancel" );
++    const int choice = external_ui_choice( remove_color_tags( menu.title + "\n" + menu.text ), labels );
++    menu.ret = choice >= 0 && size_t( choice ) < indices.size() ?
++               menu.entries[indices[choice]].retval : UILIST_CANCEL;
++}
++
+ static const std::string flag_NO_RESIZE( "NO_RESIZE" );
+ 
+ class basecamp;
+ 
+-static bool crafting_allowed( const Character &p, const recipe &rec )
++bool crafting_allowed( const Character &p, const recipe &rec )
+ {
+     if( p.morale_crafting_speed_multiplier( rec ) <= 0.0f ) {
+         if( p.is_avatar() ) {
+@@ -842,7 +860,7 @@ static item_location place_craft_or_disassembly(
+             amenu.addentry( STASH, can_stash, '3', _( "Store it in your inventory." ) );
+             amenu.addentry( DROP, true, '4', _( "Drop it on the ground." ) );
+ 
+-            amenu.query();
++            crafting_menu_query( amenu );
+             const option choice = amenu.ret == UILIST_CANCEL ? DROP : static_cast<option>( amenu.ret );
+             switch( choice ) {
+                 case WIELD_CRAFT: {
+@@ -1693,7 +1711,7 @@ const requirement_data *Character::select_requirements(
+     menu.allow_cancel = true;
+     menu.desc_enabled = true;
+     menu.title = _( "Use which selection of components?" );
+-    menu.query();
++    crafting_menu_query( menu );
+ 
+     if( menu.ret < 0 || static_cast<size_t>( menu.ret ) >= alternatives.size() ) {
+         return nullptr;
+@@ -1938,7 +1956,7 @@ comp_selection<item_comp> Character::select_item_component( const std::vector<it
+ 
+         // Get the selection via a menu popup
+         cmenu.title = _( "Use which component?" );
+-        cmenu.query();
++        crafting_menu_query( cmenu );
+ 
+         if( cmenu.ret < 0 ||
+             static_cast<size_t>( cmenu.ret ) >= map_has.size() + player_has.size() + mixed.size() ) {
+@@ -2196,7 +2214,7 @@ Character::select_tool_component( const std::vector<tool_comp> &tools, int batch
+ 
+         // Get selection via a popup menu
+         tmenu.title = _( "Use which tool?" );
+-        tmenu.query();
++        crafting_menu_query( tmenu );
+ 
+         if( tmenu.ret < 0 || static_cast<size_t>( tmenu.ret ) >= map_has.size()
+             + player_has.size() + both_has.size() ) {
+diff --git a/src/crafting.h b/src/crafting.h
+index 52b63dc..ad5585d 100644
+--- a/src/crafting.h
++++ b/src/crafting.h
+@@ -6,6 +6,8 @@
+ 
+ class Character;
+ class item;
++class recipe;
++bool crafting_allowed( const Character &p, const recipe &rec );
+ template <typename E> struct enum_traits;
+ 
+ enum class craft_flags : int {
 diff --git a/src/do_turn.cpp b/src/do_turn.cpp
 index 2455a6f..25c923d 100644
 --- a/src/do_turn.cpp
@@ -813,6 +977,51 @@ index 183628b..9a64f94 100644
      if( answer == "YES" ) {
          u.set_value( "THIEF_MODE", "THIEF_STEAL" );
          u.set_value( "THIEF_MODE_KEEP", "NO" );
+diff --git a/src/recipe.cpp b/src/recipe.cpp
+index 9d29dd0..ace2eeb 100644
+--- a/src/recipe.cpp
++++ b/src/recipe.cpp
+@@ -14,6 +14,7 @@
+ #include "cartesian_product.h"
+ #include "cata_utility.h"
+ #include "character.h"
++#include "avatar.h"
+ #include "color.h"
+ #include "debug.h"
+ #include "enum_traits.h"
+@@ -1299,9 +1300,18 @@ std::function<bool( const item & )> recipe::get_component_filter(
+         };
+     }
+ 
+-    return [ rotten_filter, favorite_filter, frozen_filter,
++    std::set<itype_id> protected_types;
++    if( static_cast<bool>( flags & recipe_filter_flags::no_equipped ) ) {
++        Character &p = get_player_character();
++        for( const item_location &loc : p.all_items_loc() ) {
++            if( p.is_worn( *loc ) || p.get_wielded_item() == loc ) {
++                protected_types.insert( loc->typeId() );
++            }
++        }
++    }
++    return [ rotten_filter, favorite_filter, frozen_filter, protected_types,
+                    magazine_filter ]( const item & component ) {
+-        return is_crafting_component( component ) &&
++        return !protected_types.count( component.typeId() ) && is_crafting_component( component ) &&
+                rotten_filter( component ) &&
+                favorite_filter( component ) &&
+                frozen_filter( component ) &&
+diff --git a/src/recipe.h b/src/recipe.h
+index 6e66b47..1d12175 100644
+--- a/src/recipe.h
++++ b/src/recipe.h
+@@ -30,6 +30,7 @@ enum class recipe_filter_flags : int {
+     none = 0,
+     no_rotten = 1,
+     no_favorite = 2,
++    no_equipped = 4, // Integrated crafting protects worn/wielded types.
+ };
+ 
+ enum class recipe_time_flag : int {
 diff --git a/tests/CMakeLists.txt b/tests/CMakeLists.txt
 index bfe0773..66ca653 100644
 --- a/tests/CMakeLists.txt
@@ -857,6 +1066,139 @@ index 09a7711..9b0c484 100644
      } catch( const std::exception &err ) {
          DebugLog( D_ERROR, DC_ALL ) << "Terminated:\n" << err.what();
          DebugLog( D_INFO, DC_ALL ) <<
+diff --git a/src/cwm/cwm_crafting.h b/src/cwm/cwm_crafting.h
+new file mode 100644
+index 0000000..eb6b011
+--- /dev/null
++++ b/src/cwm/cwm_crafting.h
+@@ -0,0 +1,127 @@
++#pragma once
++#include "avatar.h"
++#include "avatar_action.h"
++#include "activity_actor_definitions.h"
++#include "craft_command.h"
++#include "crafting.h"
++#include "item.h"
++#include "item_location.h"
++#include "inventory.h"
++#include "recipe_dictionary.h"
++#include "output.h"
++#include "cwm/cwm_protocol.hpp"
++#include <algorithm>
++#include <cctype>
++
++namespace cwm {
++inline item_location active_craft(const avatar& u) {
++    if (u.activity.id() == activity_id("ACT_CRAFT") && !u.activity.targets.empty()) {
++        auto target = u.activity.targets.front();
++        if (target && target->is_craft()) return target;
++    }
++    return item_location{};
++}
++// Session/view handles, not canonical item IDs or client coordinates.
++class CraftingSelection {
++    struct Selection { const recipe* rec; item_location work; bool resume; };
++    uint64_t next_view_{1}, view_{0};
++    int batch_{1};
++    std::vector<Selection> entries_;
++    static std::string lower(std::string s) {
++        for (char& c : s) c = std::tolower(static_cast<unsigned char>(c));
++        return s;
++    }
++    static std::string availability(avatar& u, const recipe& rec, int batch) {
++        if (u.activity) return "Interrompi o concludi l'attivita prima di creare.";
++        if (u.is_mounted() || u.is_underwater()) return "Crafting non disponibile in questa posizione.";
++        if (rec.category == "CC_BUILDING" || rec.is_practice()) return "Lavorazione dedicata prevista in seguito.";
++        for (const auto& output : rec.create_results(batch))
++            if (output.made_of(phase_id::LIQUID)) return "Risultati liquidi: gestione contenitori prevista in seguito.";
++        for (const auto& output : rec.create_byproducts(batch))
++            if (output.made_of(phase_id::LIQUID)) return "Sottoprodotti liquidi: gestione contenitori prevista in seguito.";
++        if (u.morale_crafting_speed_multiplier(rec) <= 0) return "Morale insufficiente.";
++        if (u.lighting_craft_speed_multiplier(rec) <= 0) return "Luce insufficiente.";
++        if (!u.has_recipe(&rec, u.crafting_inventory(), u.get_crafting_group())) return "Ricetta non disponibile.";
++        if (!rec.character_has_required_proficiencies(u)) return "Competenze obbligatorie mancanti.";
++        if (!u.can_start_craft(&rec, recipe_filter_flags::no_favorite | recipe_filter_flags::no_equipped, batch))
++            return "Componenti o utensili insufficienti; preferiti e tipi equipaggiati sono protetti.";
++        return "";
++    }
++public:
++    void clear() { view_ = 0; entries_.clear(); }
++    uint64_t view() const { return view_; }
++    std::vector<uint8_t> query(avatar& u, uint64_t query, const std::string& search, int batch,
++                              cdda::cwm::MessageBuilder& reply, const std::string& error = "") {
++        clear(); batch_ = batch;
++        auto& fbb = reply.builder();
++        std::vector<flatbuffers::Offset<CDDA::CWM::CraftingEntry>> rows;
++        bool truncated = false;
++        if (error.empty()) {
++            view_ = next_view_++;
++            u.invalidate_crafting_inventory();
++            const auto& inv = u.crafting_inventory();
++            const auto helpers = u.get_crafting_group();
++            auto available = u.get_available_recipes(inv, &helpers);
++            std::vector<const recipe*> recipes(available.begin(), available.end());
++            std::sort(recipes.begin(), recipes.end(), [](const auto* a, const auto* b) {
++                return std::make_pair(a->result_name(), a->ident().str()) < std::make_pair(b->result_name(), b->ident().str());
++            });
++            const auto needle = lower(search);
++            auto add = [&](const recipe& rec, item_location work) {
++                const std::string name = work ? work->tname() : rec.result_name();
++                if (!needle.empty() && lower(name + " " + rec.ident().str()).find(needle) == std::string::npos) return;
++                if (rows.size() >= 256) { truncated = true; return; }
++                std::string reason = availability(u, rec, work ? work->get_making_batch_size() : batch);
++                if (work && reason.find("Componenti") == 0) reason.clear(); // Native continuation validates only remaining requirements.
++                auto lines = rec.simple_requirements().get_folded_components_list(70, c_light_gray, inv,
++                    rec.get_component_filter(recipe_filter_flags::no_favorite | recipe_filter_flags::no_equipped), batch);
++                auto tools = rec.simple_requirements().get_folded_tools_list(70, c_light_gray, inv, batch);
++                lines.insert(lines.end(), tools.begin(), tools.end());
++                std::string requirements;
++                for (const auto& line : lines) requirements += remove_color_tags(line) + "\n";
++                const auto books = u.get_books_for_recipe(inv, &rec);
++                for (const auto& book : books) requirements += "Book: " + item::nname(book) + "\n";
++                requirements += "Helpers: " + std::to_string(u.available_assistant_count(rec));
++                entries_.push_back({&rec, work, bool(work)});
++                const auto rid = fbb.CreateString(rec.ident().str()), type = fbb.CreateString(rec.result().is_null() ? "in_progress_craft" : rec.result().str());
++                const auto title = fbb.CreateString(name.substr(0, 16384)), req = fbb.CreateString(requirements.substr(0, 16384));
++                const auto why = fbb.CreateString(reason);
++                const int64_t time = u.crafting_speed_multiplier(rec) > 0 ? std::max<int64_t>(0, u.expected_time_to_craft(rec, batch)) : 0;
++                rows.push_back(CDDA::CWM::CreateCraftingEntry(fbb, rows.size()+1, rid, type, title, req, why,
++                    time, bool(work), work ? std::clamp(work->item_counter, 0, 10000000) : 0));
++            };
++            for (auto loc : u.all_items_loc()) if (loc->is_craft()) add(loc->get_making(), loc);
++            for (auto rec : recipes) add(*rec, {});
++        }
++        const auto list = fbb.CreateVector(rows); const auto why = fbb.CreateString(error);
++        const auto view = CDDA::CWM::CreateCraftingView(fbb, query, view_, batch, list, truncated, why);
++        return reply.finish_message(CDDA::CWM::Payload::CraftingView, view.Union());
++    }
++    std::string validate(avatar& u, uint64_t view, uint32_t entry) const {
++        if (!view || view != view_ || !entry || entry > entries_.size()) return "Catalogo scaduto: riapri C.";
++        u.invalidate_crafting_inventory();
++        const auto& choice = entries_[entry-1];
++        if (choice.resume) {
++            if (!choice.work || !choice.work->is_craft() || &choice.work->get_making() != choice.rec || !u.has_item(*choice.work))
++                return "Lavoro incompleto non piu disponibile.";
++            if (u.activity || u.is_underwater() || u.is_mounted()) return "Ripresa non disponibile.";
++            if (!u.has_recipe(choice.rec, u.crafting_inventory(), u.get_crafting_group())) return "Ricetta non disponibile.";
++            return "";
++        }
++        // A lost/deleted item_location is never converted into a new craft.
++        if (choice.work.where() != item_location::type::invalid) return "Lavoro incompleto non piu disponibile.";
++        return availability(u, *choice.rec, batch_);
++    }
++    bool execute(avatar& u, uint64_t view, uint32_t entry) {
++        if (!validate(u, view, entry).empty()) return false;
++        auto choice = entries_[entry-1]; const int batch = batch_; clear();
++        if (choice.work) {
++            avatar_action::use_item(u, choice.work, "craft");
++        } else if (crafting_allowed(u, *choice.rec)) {
++            craft_command command(choice.rec, batch, false, &u, std::nullopt, true);
++            command.execute();
++        }
++        return u.activity.id() == activity_id("ACT_CRAFT");
++    }
++};
++} // namespace cwm
 diff --git a/src/cwm/cwm_inventory.h b/src/cwm/cwm_inventory.h
 new file mode 100644
 index 0000000..32789a0
@@ -1447,15 +1789,16 @@ index 0000000..1a0308e
 +}
 diff --git a/src/cwm/cwm_map_exporter.cpp b/src/cwm/cwm_map_exporter.cpp
 new file mode 100644
-index 0000000..cdfbbb1
+index 0000000..478cf6e
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.cpp
-@@ -0,0 +1,622 @@
+@@ -0,0 +1,627 @@
 +#include "cwm_motion.h"
 +// CDDA CWM Map & Entity Exporter Implementation
 +// Licensed under Apache-2.0
 +
 +#include "cwm_map_exporter.h"
++#include "cwm_crafting.h"
 +#include "cwm_status_gauges.h"
 +#include "cwm/tile_semantics.hpp"
 +#include "mapdata.h"
@@ -2011,6 +2354,10 @@ index 0000000..cdfbbb1
 +        u.activity.moves_total > 0 && u.activity.moves_left > 0 ?
 +        CDDA::CWM::CreateFirstAidState(fbb, activity_token, u.activity.moves_total, u.activity.moves_left) :
 +        flatbuffers::Offset<CDDA::CWM::FirstAidState>{};
++    const auto work = active_craft(u);
++    const auto crafting = activity_token && work ?
++        CDDA::CWM::CreateCraftingState(fbb, activity_token, std::clamp(work->item_counter, 0, 10000000)) :
++        flatbuffers::Offset<CDDA::CWM::CraftingState>{};
 +    auto world_snap = CDDA::CWM::CreateWorldSnapshot(
 +        fbb,
 +        world_rev,
@@ -2024,7 +2371,7 @@ index 0000000..cdfbbb1
 +        g.safe_mode == SAFE_MODE_STOP || u.has_effect(efftype_id("laserlocked")) ||
 +            (clock && (clock->pause_reasons & 4)),
 +        include_chunks, base_revision, state_id, resync_id, completed_command_id,
-+        spawned_vec, removed_vec, clock_state, ground_items_vec, owned_items_vec, avatar_status, consumption, first_aid
++        spawned_vec, removed_vec, clock_state, ground_items_vec, owned_items_vec, avatar_status, consumption, first_aid, crafting
 +    );
 +
 +    return builder.finish_message(CDDA::CWM::Payload::WorldSnapshot, world_snap.Union());
@@ -2146,10 +2493,10 @@ index 0000000..b707595
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..c4ac71f
+index 0000000..61a8b0a
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,843 @@
+@@ -0,0 +1,885 @@
 +#include "cwm_motion.h"
 +// CDDA CWM IPC Server Implementation
 +// Licensed under Apache-2.0
@@ -2242,6 +2589,7 @@ index 0000000..c4ac71f
 +    for (const auto& command : commands_)
 +        ledger_.complete({command.id, false, "Connection closed before execution", world_revision_});
 +    commands_.clear();
++    crafting_selection_.clear();
 +    if (result_) ledger_.complete({result_->id, result_->accepted, result_->error, world_revision_});
 +    result_.reset();
 +    snapshot_sent_ = negotiated_ = ready_ = rejecting_ = false;
@@ -2249,6 +2597,13 @@ index 0000000..c4ac71f
 +}
 +
 +void CwmServer::refresh_activity(const avatar& u) {
++    if (auto work = active_craft(u)) {
++        const int remaining = 10000000 - std::clamp(work->item_counter, 0, 10000000);
++        if (!activity_token_ || activity_kind_ != "ACT_CRAFT" || remaining > activity_remaining_)
++            activity_token_ = next_activity_token_++;
++        activity_kind_ = "ACT_CRAFT"; activity_total_ = 10000000; activity_remaining_ = remaining;
++        return;
++    }
 +    if ((u.activity.id() != activity_id("ACT_CONSUME") && u.activity.id() != activity_id("ACT_FIRSTAID")) ||
 +            u.activity.moves_total <= 0 || u.activity.moves_left <= 0) {
 +        activity_token_ = 0; activity_total_ = activity_remaining_ = 0;
@@ -2391,6 +2746,7 @@ index 0000000..c4ac71f
 +    motion_sample_ = clock_.elapsed();
 +    const auto cancelled = std::move(commands_);
 +    commands_.clear();
++    crafting_selection_.clear();
 +    for (const auto& command : cancelled)
 +        send_result({command.id, false, "Paused or recovering before execution"}, u, m, g);
 +}
@@ -2590,7 +2946,18 @@ index 0000000..c4ac71f
 +        result_ = Result{command.id, false, "Interrompi o concludi l'attivita prima di agire."};
 +        return false;
 +    }
-+    if (command.equipment_action >= 0) {
++    if (command.crafting_view) {
++        auto error = crafting_selection_.validate(u, command.crafting_view, command.crafting_entry);
++        if (realtime_ && pause_reasons(g)) error = "Simulation is paused";
++        if (!error.empty()) { result_ = Result{command.id, false, error}; return false; }
++        inventory_selection_.clear(); activity_token_ = 0;
++        accepted = crafting_selection_.execute(u, command.crafting_view, command.crafting_entry);
++        refresh_activity(u);
++        const bool acted = accepted || u.moves != before_moves;
++        if (acted) ++world_revision_;
++        result_ = Result{command.id, accepted, accepted ? "" : "Crafting annullato o requisiti non piu validi."};
++        return acted;
++    } else if (command.equipment_action >= 0) {
 +        auto error = inventory_selection_.validate(u, command.inventory_view,
 +            command.inventory_item, command.equipment_action);
 +        if (realtime_ && pause_reasons(g)) error = "Simulation is paused";
@@ -2773,6 +3140,19 @@ index 0000000..c4ac71f
 +    if (pending_decision_ && msg->payload_type() != Payload::SimulationControlRequest &&
 +        msg->payload_type() != Payload::MovementIntentRequest &&
 +        msg->payload_type() != Payload::ContinuousIntentRequest) return;
++    if (const auto* request = msg->payload_as_CraftingQueryRequest()) {
++        if (!request->query_id() || !request->search() || request->search()->size() > 256 ||
++            request->search()->str().find('\0') != std::string::npos || !request->batch() || request->batch() > 20) {
++            server_->client()->close(); return;
++        }
++        const auto now = std::chrono::steady_clock::now();
++        cdda::cwm::MessageBuilder reply(sequence_counter_, world_revision_, identity_);
++        const bool throttled = now < next_crafting_query_;
++        if (!throttled) next_crafting_query_ = now + std::chrono::milliseconds(100);
++        emit(crafting_selection_.query(u, request->query_id(), request->search()->str(), request->batch(), reply,
++            throttled ? "Attendi un istante prima di aggiornare il catalogo." : ""));
++        return;
++    }
 +    if (const auto* request = msg->payload_as_InventoryQueryRequest()) {
 +        if (!request->query_id()) { server_->client()->close(); return; }
 +        const auto now = std::chrono::steady_clock::now();
@@ -2798,6 +3178,10 @@ index 0000000..c4ac71f
 +                ":" + std::to_string(request->pickup_charges()) +
 +                ":" + std::to_string(request->pickup_count_by_charges());
 +        }
++    } else if (const auto* request = msg->payload_as_CraftingRequest()) {
++        id = request->command_id(); signature = "craft:" + std::to_string(request->view_id()) + ":" + std::to_string(request->entry_id());
++    } else if (const auto* request = msg->payload_as_CancelCraftingRequest()) {
++        id = request->command_id(); signature = "cancel-craft:" + std::to_string(request->activity_token());
 +    } else if (const auto* request = msg->payload_as_CancelFirstAidRequest()) {
 +        id = request->command_id(); signature = "cancel-first-aid:" + std::to_string(request->activity_token());
 +    } else if (const auto* request = msg->payload_as_CancelConsumptionRequest()) {
@@ -2834,17 +3218,18 @@ index 0000000..c4ac71f
 +    }
 +    if (status == Status::Expired) { send_result({id, false, "Command identity expired"}, u, m, g); return; }
 +    if (status != Status::Fresh) { server_->client()->close(); return; }
-+    if (msg->payload_as_CancelConsumptionRequest() || msg->payload_as_CancelFirstAidRequest()) {
++    if (msg->payload_as_CancelConsumptionRequest() || msg->payload_as_CancelFirstAidRequest() || msg->payload_as_CancelCraftingRequest()) {
 +        const auto* meal = msg->payload_as_CancelConsumptionRequest();
 +        const auto* aid = msg->payload_as_CancelFirstAidRequest();
-+        const auto token = meal ? meal->activity_token() : aid->activity_token();
++        const auto* craft = msg->payload_as_CancelCraftingRequest();
++        const auto token = meal ? meal->activity_token() : aid ? aid->activity_token() : craft->activity_token();
 +        refresh_activity(u);
 +        const bool valid = activity_token_ && token == activity_token_ &&
-+            u.activity.id() == activity_id(meal ? "ACT_CONSUME" : "ACT_FIRSTAID") &&
++            u.activity.id() == activity_id(meal ? "ACT_CONSUME" : aid ? "ACT_FIRSTAID" : "ACT_CRAFT") &&
 +            u.activity.is_interruptible() && (!realtime_ || !pause_reasons(g));
 +        if (valid) {
 +            u.cancel_activity(); // Native interruption/backlog rules, no refund.
-+            activity_token_ = 0; inventory_selection_.clear(); ++world_revision_;
++            activity_token_ = 0; inventory_selection_.clear(); crafting_selection_.clear(); ++world_revision_;
 +        }
 +        send_result({id, valid, valid ? "" : "Attivita conclusa, cambiata o gioco in pausa."}, u, m, g);
 +        return; // Never enqueue cancellation behind the busy native activity.
@@ -2935,6 +3320,10 @@ index 0000000..c4ac71f
 +            else if (m.impassable(target) && !get_creature_tracker().creature_at(target, true) &&
 +                     !m.open_door(u, target, !m.is_outside(u.pos()), true)) error = "Movement blocked";
 +        }
++    } else if (const auto* request = msg->payload_as_CraftingRequest()) {
++        command.id = request->command_id(); command.crafting_view = request->view_id();
++        command.crafting_entry = request->entry_id();
++        error = crafting_selection_.validate(u, command.crafting_view, command.crafting_entry);
 +    } else if (const auto* request = msg->payload_as_EquipmentRequest()) {
 +        command.id = request->command_id();
 +        command.inventory_view = request->view_id(); command.inventory_item = request->item_id();
@@ -2995,10 +3384,10 @@ index 0000000..c4ac71f
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.h b/src/cwm/cwm_server.h
 new file mode 100644
-index 0000000..ab607f3
+index 0000000..3f40d74
 --- /dev/null
 +++ b/src/cwm/cwm_server.h
-@@ -0,0 +1,133 @@
+@@ -0,0 +1,138 @@
 +// CDDA CWM IPC Server
 +// Licensed under Apache-2.0
 +#pragma once
@@ -3011,6 +3400,7 @@ index 0000000..ab607f3
 +#include <optional>
 +#include "cwm_map_exporter.h"
 +#include "cwm_inventory.h"
++#include "cwm_crafting.h"
 +#include "cwm/cwm_session.hpp"
 +#include "cwm/cwm_clock.hpp"
 +
@@ -3081,6 +3471,8 @@ index 0000000..ab607f3
 +    std::string activity_kind_;
 +    void refresh_activity(const avatar& u);
 +
++    CraftingSelection crafting_selection_;
++    std::chrono::steady_clock::time_point next_crafting_query_{};
 +    std::chrono::steady_clock::time_point next_inventory_query_{};
 +    std::chrono::steady_clock::time_point handshake_deadline_;
 +    struct Command {
@@ -3091,6 +3483,8 @@ index 0000000..ab607f3
 +        uint64_t inventory_view{0};
 +        uint32_t inventory_item{0};
 +        int equipment_action{-1};
++        uint64_t crafting_view{0};
++        uint32_t crafting_entry{0};
 +        int action{0};
 +        int x{0}, y{0}, z{0}; // absolute CDDA coordinates, captured on receipt
 +        uint32_t pickup_stack_index{0};

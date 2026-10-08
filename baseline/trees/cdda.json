@@ -37237,22 +37237,22 @@
   {
     "path": "src/craft_command.cpp",
     "mode": "100644",
-    "sha256": "5bf645967c2a7cb775f1f19881c48492c457685e78f1ff491391048ed3b29b32"
+    "sha256": "2e38afc77d10af2754b0beb47b133b443f7f2955bfc7e4f3dca8259060f49386"
   },
   {
     "path": "src/craft_command.h",
     "mode": "100644",
-    "sha256": "baf7a1f5bf950dbdc77cb59959de13d66ef2079d5cf918b4aea29156be9304b4"
+    "sha256": "e838de25f0d1726feb7391349b62065ba323053d9b294fe48391154283df95d7"
   },
   {
     "path": "src/crafting.cpp",
     "mode": "100644",
-    "sha256": "a0532ec229f45460162cc5bb67e3c48ee028ee6ecbb1e923d1a287f8bd10cc5c"
+    "sha256": "c519a6dffc98e8b8477c74f8de61a7450773e1db401dd51ee7ab85084f2e045b"
   },
   {
     "path": "src/crafting.h",
     "mode": "100644",
-    "sha256": "a0d5d2757a7a5193be8637f73bd5cbebf581ba53ef77eae3d2d83e224292086e"
+    "sha256": "0b6aad7fdd2c47837c222b642da1c56476f9c5930aed3d138018ea32c884b180"
   },
   {
     "path": "src/crafting_gui.cpp",
@@ -37320,6 +37320,11 @@
     "sha256": "621fbc7640046cfd64abc8d0af953704f31b86c6971e81a51ca8ad06fcc0b111"
   },
   {
+    "path": "src/cwm/cwm_crafting.h",
+    "mode": "100644",
+    "sha256": "170c4af07e80bf675bee077eeb31a697265d47ea82d92a0f5fb21a2ef7cd7f8a"
+  },
+  {
     "path": "src/cwm/cwm_inventory.h",
     "mode": "100644",
     "sha256": "3b44afa0d339b0986aca6c0da5a143b1cfb4230abc99faf2dcd1bbe093ba67c8"
@@ -37332,7 +37337,7 @@
   {
     "path": "src/cwm/cwm_map_exporter.cpp",
     "mode": "100644",
-    "sha256": "72a6634d71dbbe0b50c8dc214b6f05692fae5063f5b5b05bb5c4ffb1a1930f88"
+    "sha256": "d81b1adcc4e29130a6956e8a3f491e061277c3039778365e324aa1a1247ca31b"
   },
   {
     "path": "src/cwm/cwm_map_exporter.h",
@@ -37342,12 +37347,12 @@
   {
     "path": "src/cwm/cwm_server.cpp",
     "mode": "100644",
-    "sha256": "a783a99af714740715e40d84ab2194b337175d5a44611d0bb25225ce16b2d5bb"
+    "sha256": "677d0f37abf7c1fdac53ec4d5af4c49dd214787779a2a99f1c3d1d49c3e40aa3"
   },
   {
     "path": "src/cwm/cwm_server.h",
     "mode": "100644",
-    "sha256": "c1dd20a9b766e72ad2d146692401cf76a44053f0b1045b3fc9017f99dd96cead"
+    "sha256": "2783a6d12f545409291d87a7dfd31328b5a79918ca93f0bdd4c21376cd5af1c6"
   },
   {
     "path": "src/cwm/cwm_status_gauges.h",
@@ -39417,12 +39422,12 @@
   {
     "path": "src/recipe.cpp",
     "mode": "100644",
-    "sha256": "f7d62a20e76a28dc0806f406f04af9705020b903e641b45ddd65462c16a9c30f"
+    "sha256": "566177bbc5cf171a24eb47b1b3adc4dd68c68bc89ed968800809809250720ba5"
   },
   {
     "path": "src/recipe.h",
     "mode": "100644",
-    "sha256": "85e500eb3d80dc58a20caac84e9ea08e7becf615a48daedb172969567bf1c197"
+    "sha256": "4d281e45cb564b15cd707859c55d1dd00a2438a9cc0220bcb042fe7d65a37949"
   },
   {
     "path": "src/recipe_dictionary.cpp",

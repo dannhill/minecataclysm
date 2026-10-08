@@ -11,7 +11,7 @@
 namespace cdda::cwm {
 
 constexpr uint16_t PROTOCOL_VERSION_MAJOR = 2;
-constexpr uint16_t PROTOCOL_VERSION_MINOR = 12;
+constexpr uint16_t PROTOCOL_VERSION_MINOR = 13;
 
 struct Identity { uint64_t session{0}, player{0}, connection{0}; };
 
@@ -87,6 +87,19 @@ public:
         return finish_message(CDDA::CWM::Payload::AttackRequest, req.Union());
     }
 
+    std::vector<uint8_t> build_crafting_query(uint64_t query_id, const std::string& search, uint32_t batch) {
+        const auto text = fbb_.CreateString(search);
+        const auto request = CDDA::CWM::CreateCraftingQueryRequest(fbb_, query_id, text, batch);
+        return finish_message(CDDA::CWM::Payload::CraftingQueryRequest, request.Union());
+    }
+    std::vector<uint8_t> build_crafting_request(uint64_t id, uint64_t view, uint32_t entry) {
+        const auto request = CDDA::CWM::CreateCraftingRequest(fbb_, id, view, entry);
+        return finish_message(CDDA::CWM::Payload::CraftingRequest, request.Union());
+    }
+    std::vector<uint8_t> build_cancel_crafting(uint64_t id, uint64_t token) {
+        const auto request = CDDA::CWM::CreateCancelCraftingRequest(fbb_, id, token);
+        return finish_message(CDDA::CWM::Payload::CancelCraftingRequest, request.Union());
+    }
     std::vector<uint8_t> build_inventory_query(uint64_t query_id) {
         const auto request = CDDA::CWM::CreateInventoryQueryRequest(fbb_, query_id);
         return finish_message(CDDA::CWM::Payload::InventoryQueryRequest, request.Union());

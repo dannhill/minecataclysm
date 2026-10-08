@@ -56,6 +56,21 @@ inline bool valid_inventory(const CDDA::CWM::InventoryView* view) {
         if (entry->pocket_index() >= 0 && !pockets.count({entry->parent_id(), uint32_t(entry->pocket_index())})) return false;
     return true;
 }
+inline bool valid_crafting(const CDDA::CWM::CraftingView* view) {
+    const auto text = [](const auto* s, size_t bound, bool empty = true) {
+        return s && s->size() <= bound && (empty || s->size()) && s->str().find('\0') == std::string::npos;
+    };
+    if (!view || !view->query_id() || !view->batch() || view->batch() > 20 || !view->entries() ||
+        view->entries()->size() > 256 || !text(view->error(), 2048)) return false;
+    if (view->error()->size()) return !view->view_id() && !view->entries()->size();
+    if (!view->view_id()) return false;
+    uint32_t id = 0;
+    for (const auto* e : *view->entries())
+        if (!e || e->id() != ++id || !text(e->recipe_id(), 1024, false) || !text(e->result_type(), 1024, false) ||
+            !text(e->name(), 16384, false) || !text(e->requirements(), 16384) || !text(e->reason(), 2048) ||
+            e->expected_moves() < 0 || e->progress() < 0 || e->progress() > 10000000 || (!e->resume() && e->progress())) return false;
+    return true;
+}
 enum class SessionState { Disconnected, HelloSent, Accepted, Syncing, Running, Resyncing, Rejected };
 
 inline bool valid_world(const CDDA::CWM::WorldSnapshot* world) {
@@ -78,7 +93,10 @@ inline bool valid_world(const CDDA::CWM::WorldSnapshot* world) {
         if (!consumption->token() || consumption->total_moves() <= 0 ||
             consumption->remaining_moves() < 0 || consumption->remaining_moves() > consumption->total_moves()) return false;
     }
-    if (world->consumption() && world->first_aid()) return false;
+    if (int(bool(world->consumption())) + int(bool(world->first_aid())) + int(bool(world->crafting())) > 1) return false;
+    if (const auto* craft = world->crafting()) {
+        if (!craft->token() || craft->progress() < 0 || craft->progress() > 10000000) return false;
+    }
     if (const auto* aid = world->first_aid()) {
         if (!aid->token() || aid->total_moves() <= 0 || aid->remaining_moves() < 0 ||
             aid->remaining_moves() > aid->total_moves()) return false;
@@ -264,6 +282,10 @@ public:
                     request_resync(channel); return false;
                 }
             }
+            return true;
+        }
+        if (ready() && msg.payload_type() == Payload::CraftingView) {
+            if (!valid_crafting(msg.payload_as_CraftingView())) { request_resync(channel); return false; }
             return true;
         }
         if (ready() && msg.payload_type() == Payload::InventoryView) {

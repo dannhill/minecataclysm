@@ -109,6 +109,24 @@ struct FirstAidStateBuilder;
 struct CancelFirstAidRequest;
 struct CancelFirstAidRequestBuilder;
 
+struct CraftingState;
+struct CraftingStateBuilder;
+
+struct CancelCraftingRequest;
+struct CancelCraftingRequestBuilder;
+
+struct CraftingQueryRequest;
+struct CraftingQueryRequestBuilder;
+
+struct CraftingEntry;
+struct CraftingEntryBuilder;
+
+struct CraftingView;
+struct CraftingViewBuilder;
+
+struct CraftingRequest;
+struct CraftingRequestBuilder;
+
 struct InventoryQueryRequest;
 struct InventoryQueryRequestBuilder;
 
@@ -452,11 +470,15 @@ enum class Payload : uint8_t {
   EquipmentRequest = 30,
   CancelConsumptionRequest = 31,
   CancelFirstAidRequest = 32,
+  CraftingQueryRequest = 33,
+  CraftingView = 34,
+  CraftingRequest = 35,
+  CancelCraftingRequest = 36,
   MIN = NONE,
-  MAX = CancelFirstAidRequest
+  MAX = CancelCraftingRequest
 };
 
-inline const Payload (&EnumValuesPayload())[33] {
+inline const Payload (&EnumValuesPayload())[37] {
   static const Payload values[] = {
     Payload::NONE,
     Payload::HelloRequest,
@@ -490,13 +512,17 @@ inline const Payload (&EnumValuesPayload())[33] {
     Payload::InventoryView,
     Payload::EquipmentRequest,
     Payload::CancelConsumptionRequest,
-    Payload::CancelFirstAidRequest
+    Payload::CancelFirstAidRequest,
+    Payload::CraftingQueryRequest,
+    Payload::CraftingView,
+    Payload::CraftingRequest,
+    Payload::CancelCraftingRequest
   };
   return values;
 }
 
 inline const char * const *EnumNamesPayload() {
-  static const char * const names[34] = {
+  static const char * const names[38] = {
     "NONE",
     "HelloRequest",
     "HelloResponse",
@@ -530,13 +556,17 @@ inline const char * const *EnumNamesPayload() {
     "EquipmentRequest",
     "CancelConsumptionRequest",
     "CancelFirstAidRequest",
+    "CraftingQueryRequest",
+    "CraftingView",
+    "CraftingRequest",
+    "CancelCraftingRequest",
     nullptr
   };
   return names;
 }
 
 inline const char *EnumNamePayload(Payload e) {
-  if (::flatbuffers::IsOutRange(e, Payload::NONE, Payload::CancelFirstAidRequest)) return "";
+  if (::flatbuffers::IsOutRange(e, Payload::NONE, Payload::CancelCraftingRequest)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesPayload()[index];
 }
@@ -671,6 +701,22 @@ template<> struct PayloadTraits<CDDA::CWM::CancelConsumptionRequest> {
 
 template<> struct PayloadTraits<CDDA::CWM::CancelFirstAidRequest> {
   static const Payload enum_value = Payload::CancelFirstAidRequest;
+};
+
+template<> struct PayloadTraits<CDDA::CWM::CraftingQueryRequest> {
+  static const Payload enum_value = Payload::CraftingQueryRequest;
+};
+
+template<> struct PayloadTraits<CDDA::CWM::CraftingView> {
+  static const Payload enum_value = Payload::CraftingView;
+};
+
+template<> struct PayloadTraits<CDDA::CWM::CraftingRequest> {
+  static const Payload enum_value = Payload::CraftingRequest;
+};
+
+template<> struct PayloadTraits<CDDA::CWM::CancelCraftingRequest> {
+  static const Payload enum_value = Payload::CancelCraftingRequest;
 };
 
 bool VerifyPayload(::flatbuffers::Verifier &verifier, const void *obj, Payload type);
@@ -2480,7 +2526,8 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_OWNED_ITEMS = 40,
     VT_AVATAR_STATUS = 42,
     VT_CONSUMPTION = 44,
-    VT_FIRST_AID = 46
+    VT_FIRST_AID = 46,
+    VT_CRAFTING = 48
   };
   uint64_t world_revision() const {
     return GetField<uint64_t>(VT_WORLD_REVISION, 0);
@@ -2614,6 +2661,12 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   CDDA::CWM::FirstAidState *mutable_first_aid() {
     return GetPointer<CDDA::CWM::FirstAidState *>(VT_FIRST_AID);
   }
+  const CDDA::CWM::CraftingState *crafting() const {
+    return GetPointer<const CDDA::CWM::CraftingState *>(VT_CRAFTING);
+  }
+  CDDA::CWM::CraftingState *mutable_crafting() {
+    return GetPointer<CDDA::CWM::CraftingState *>(VT_CRAFTING);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint64_t>(verifier, VT_WORLD_REVISION, 8) &&
@@ -2660,6 +2713,8 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyTable(consumption()) &&
            VerifyOffset(verifier, VT_FIRST_AID) &&
            verifier.VerifyTable(first_aid()) &&
+           VerifyOffset(verifier, VT_CRAFTING) &&
+           verifier.VerifyTable(crafting()) &&
            verifier.EndTable();
   }
 };
@@ -2734,6 +2789,9 @@ struct WorldSnapshotBuilder {
   void add_first_aid(::flatbuffers::Offset<CDDA::CWM::FirstAidState> first_aid) {
     fbb_.AddOffset(WorldSnapshot::VT_FIRST_AID, first_aid);
   }
+  void add_crafting(::flatbuffers::Offset<CDDA::CWM::CraftingState> crafting) {
+    fbb_.AddOffset(WorldSnapshot::VT_CRAFTING, crafting);
+  }
   explicit WorldSnapshotBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -2768,7 +2826,8 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshot(
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::GroundItemState>>> owned_items = 0,
     ::flatbuffers::Offset<CDDA::CWM::AvatarStatus> avatar_status = 0,
     ::flatbuffers::Offset<CDDA::CWM::ConsumptionState> consumption = 0,
-    ::flatbuffers::Offset<CDDA::CWM::FirstAidState> first_aid = 0) {
+    ::flatbuffers::Offset<CDDA::CWM::FirstAidState> first_aid = 0,
+    ::flatbuffers::Offset<CDDA::CWM::CraftingState> crafting = 0) {
   WorldSnapshotBuilder builder_(_fbb);
   builder_.add_completed_command_id(completed_command_id);
   builder_.add_resync_id(resync_id);
@@ -2776,6 +2835,7 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshot(
   builder_.add_base_revision(base_revision);
   builder_.add_simulation_time_seconds(simulation_time_seconds);
   builder_.add_world_revision(world_revision);
+  builder_.add_crafting(crafting);
   builder_.add_first_aid(first_aid);
   builder_.add_consumption(consumption);
   builder_.add_avatar_status(avatar_status);
@@ -2818,7 +2878,8 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshotDirect(
     const std::vector<::flatbuffers::Offset<CDDA::CWM::GroundItemState>> *owned_items = nullptr,
     ::flatbuffers::Offset<CDDA::CWM::AvatarStatus> avatar_status = 0,
     ::flatbuffers::Offset<CDDA::CWM::ConsumptionState> consumption = 0,
-    ::flatbuffers::Offset<CDDA::CWM::FirstAidState> first_aid = 0) {
+    ::flatbuffers::Offset<CDDA::CWM::FirstAidState> first_aid = 0,
+    ::flatbuffers::Offset<CDDA::CWM::CraftingState> crafting = 0) {
   auto chunks__ = chunks ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::ChunkSnapshot>>(*chunks) : 0;
   auto entities__ = entities ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::EntityState>>(*entities) : 0;
   auto vehicles__ = vehicles ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::VehicleState>>(*vehicles) : 0;
@@ -2851,7 +2912,8 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshotDirect(
       owned_items__,
       avatar_status,
       consumption,
-      first_aid);
+      first_aid,
+      crafting);
 }
 
 struct SimulationState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -3643,6 +3705,588 @@ inline ::flatbuffers::Offset<CancelFirstAidRequest> CreateCancelFirstAidRequest(
   CancelFirstAidRequestBuilder builder_(_fbb);
   builder_.add_activity_token(activity_token);
   builder_.add_command_id(command_id);
+  return builder_.Finish();
+}
+
+struct CraftingState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef CraftingStateBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_TOKEN = 4,
+    VT_PROGRESS = 6
+  };
+  uint64_t token() const {
+    return GetField<uint64_t>(VT_TOKEN, 0);
+  }
+  bool mutate_token(uint64_t _token = 0) {
+    return SetField<uint64_t>(VT_TOKEN, _token, 0);
+  }
+  int32_t progress() const {
+    return GetField<int32_t>(VT_PROGRESS, 0);
+  }
+  bool mutate_progress(int32_t _progress = 0) {
+    return SetField<int32_t>(VT_PROGRESS, _progress, 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_TOKEN, 8) &&
+           VerifyField<int32_t>(verifier, VT_PROGRESS, 4) &&
+           verifier.EndTable();
+  }
+};
+
+struct CraftingStateBuilder {
+  typedef CraftingState Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_token(uint64_t token) {
+    fbb_.AddElement<uint64_t>(CraftingState::VT_TOKEN, token, 0);
+  }
+  void add_progress(int32_t progress) {
+    fbb_.AddElement<int32_t>(CraftingState::VT_PROGRESS, progress, 0);
+  }
+  explicit CraftingStateBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<CraftingState> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<CraftingState>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<CraftingState> CreateCraftingState(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t token = 0,
+    int32_t progress = 0) {
+  CraftingStateBuilder builder_(_fbb);
+  builder_.add_token(token);
+  builder_.add_progress(progress);
+  return builder_.Finish();
+}
+
+struct CancelCraftingRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef CancelCraftingRequestBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_COMMAND_ID = 4,
+    VT_ACTIVITY_TOKEN = 6
+  };
+  uint64_t command_id() const {
+    return GetField<uint64_t>(VT_COMMAND_ID, 0);
+  }
+  bool mutate_command_id(uint64_t _command_id = 0) {
+    return SetField<uint64_t>(VT_COMMAND_ID, _command_id, 0);
+  }
+  uint64_t activity_token() const {
+    return GetField<uint64_t>(VT_ACTIVITY_TOKEN, 0);
+  }
+  bool mutate_activity_token(uint64_t _activity_token = 0) {
+    return SetField<uint64_t>(VT_ACTIVITY_TOKEN, _activity_token, 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_COMMAND_ID, 8) &&
+           VerifyField<uint64_t>(verifier, VT_ACTIVITY_TOKEN, 8) &&
+           verifier.EndTable();
+  }
+};
+
+struct CancelCraftingRequestBuilder {
+  typedef CancelCraftingRequest Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_command_id(uint64_t command_id) {
+    fbb_.AddElement<uint64_t>(CancelCraftingRequest::VT_COMMAND_ID, command_id, 0);
+  }
+  void add_activity_token(uint64_t activity_token) {
+    fbb_.AddElement<uint64_t>(CancelCraftingRequest::VT_ACTIVITY_TOKEN, activity_token, 0);
+  }
+  explicit CancelCraftingRequestBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<CancelCraftingRequest> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<CancelCraftingRequest>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<CancelCraftingRequest> CreateCancelCraftingRequest(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t command_id = 0,
+    uint64_t activity_token = 0) {
+  CancelCraftingRequestBuilder builder_(_fbb);
+  builder_.add_activity_token(activity_token);
+  builder_.add_command_id(command_id);
+  return builder_.Finish();
+}
+
+struct CraftingQueryRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef CraftingQueryRequestBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_QUERY_ID = 4,
+    VT_SEARCH = 6,
+    VT_BATCH = 8
+  };
+  uint64_t query_id() const {
+    return GetField<uint64_t>(VT_QUERY_ID, 0);
+  }
+  bool mutate_query_id(uint64_t _query_id = 0) {
+    return SetField<uint64_t>(VT_QUERY_ID, _query_id, 0);
+  }
+  const ::flatbuffers::String *search() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_SEARCH);
+  }
+  ::flatbuffers::String *mutable_search() {
+    return GetPointer<::flatbuffers::String *>(VT_SEARCH);
+  }
+  uint32_t batch() const {
+    return GetField<uint32_t>(VT_BATCH, 1);
+  }
+  bool mutate_batch(uint32_t _batch = 1) {
+    return SetField<uint32_t>(VT_BATCH, _batch, 1);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_QUERY_ID, 8) &&
+           VerifyOffset(verifier, VT_SEARCH) &&
+           verifier.VerifyString(search()) &&
+           VerifyField<uint32_t>(verifier, VT_BATCH, 4) &&
+           verifier.EndTable();
+  }
+};
+
+struct CraftingQueryRequestBuilder {
+  typedef CraftingQueryRequest Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_query_id(uint64_t query_id) {
+    fbb_.AddElement<uint64_t>(CraftingQueryRequest::VT_QUERY_ID, query_id, 0);
+  }
+  void add_search(::flatbuffers::Offset<::flatbuffers::String> search) {
+    fbb_.AddOffset(CraftingQueryRequest::VT_SEARCH, search);
+  }
+  void add_batch(uint32_t batch) {
+    fbb_.AddElement<uint32_t>(CraftingQueryRequest::VT_BATCH, batch, 1);
+  }
+  explicit CraftingQueryRequestBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<CraftingQueryRequest> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<CraftingQueryRequest>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<CraftingQueryRequest> CreateCraftingQueryRequest(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t query_id = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> search = 0,
+    uint32_t batch = 1) {
+  CraftingQueryRequestBuilder builder_(_fbb);
+  builder_.add_query_id(query_id);
+  builder_.add_batch(batch);
+  builder_.add_search(search);
+  return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<CraftingQueryRequest> CreateCraftingQueryRequestDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t query_id = 0,
+    const char *search = nullptr,
+    uint32_t batch = 1) {
+  auto search__ = search ? _fbb.CreateString(search) : 0;
+  return CDDA::CWM::CreateCraftingQueryRequest(
+      _fbb,
+      query_id,
+      search__,
+      batch);
+}
+
+struct CraftingEntry FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef CraftingEntryBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_ID = 4,
+    VT_RECIPE_ID = 6,
+    VT_RESULT_TYPE = 8,
+    VT_NAME = 10,
+    VT_REQUIREMENTS = 12,
+    VT_REASON = 14,
+    VT_EXPECTED_MOVES = 16,
+    VT_RESUME = 18,
+    VT_PROGRESS = 20
+  };
+  uint32_t id() const {
+    return GetField<uint32_t>(VT_ID, 0);
+  }
+  bool mutate_id(uint32_t _id = 0) {
+    return SetField<uint32_t>(VT_ID, _id, 0);
+  }
+  const ::flatbuffers::String *recipe_id() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_RECIPE_ID);
+  }
+  ::flatbuffers::String *mutable_recipe_id() {
+    return GetPointer<::flatbuffers::String *>(VT_RECIPE_ID);
+  }
+  const ::flatbuffers::String *result_type() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_RESULT_TYPE);
+  }
+  ::flatbuffers::String *mutable_result_type() {
+    return GetPointer<::flatbuffers::String *>(VT_RESULT_TYPE);
+  }
+  const ::flatbuffers::String *name() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_NAME);
+  }
+  ::flatbuffers::String *mutable_name() {
+    return GetPointer<::flatbuffers::String *>(VT_NAME);
+  }
+  const ::flatbuffers::String *requirements() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_REQUIREMENTS);
+  }
+  ::flatbuffers::String *mutable_requirements() {
+    return GetPointer<::flatbuffers::String *>(VT_REQUIREMENTS);
+  }
+  const ::flatbuffers::String *reason() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_REASON);
+  }
+  ::flatbuffers::String *mutable_reason() {
+    return GetPointer<::flatbuffers::String *>(VT_REASON);
+  }
+  int64_t expected_moves() const {
+    return GetField<int64_t>(VT_EXPECTED_MOVES, 0);
+  }
+  bool mutate_expected_moves(int64_t _expected_moves = 0) {
+    return SetField<int64_t>(VT_EXPECTED_MOVES, _expected_moves, 0);
+  }
+  bool resume() const {
+    return GetField<uint8_t>(VT_RESUME, 0) != 0;
+  }
+  bool mutate_resume(bool _resume = 0) {
+    return SetField<uint8_t>(VT_RESUME, static_cast<uint8_t>(_resume), 0);
+  }
+  int32_t progress() const {
+    return GetField<int32_t>(VT_PROGRESS, 0);
+  }
+  bool mutate_progress(int32_t _progress = 0) {
+    return SetField<int32_t>(VT_PROGRESS, _progress, 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_ID, 4) &&
+           VerifyOffset(verifier, VT_RECIPE_ID) &&
+           verifier.VerifyString(recipe_id()) &&
+           VerifyOffset(verifier, VT_RESULT_TYPE) &&
+           verifier.VerifyString(result_type()) &&
+           VerifyOffset(verifier, VT_NAME) &&
+           verifier.VerifyString(name()) &&
+           VerifyOffset(verifier, VT_REQUIREMENTS) &&
+           verifier.VerifyString(requirements()) &&
+           VerifyOffset(verifier, VT_REASON) &&
+           verifier.VerifyString(reason()) &&
+           VerifyField<int64_t>(verifier, VT_EXPECTED_MOVES, 8) &&
+           VerifyField<uint8_t>(verifier, VT_RESUME, 1) &&
+           VerifyField<int32_t>(verifier, VT_PROGRESS, 4) &&
+           verifier.EndTable();
+  }
+};
+
+struct CraftingEntryBuilder {
+  typedef CraftingEntry Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_id(uint32_t id) {
+    fbb_.AddElement<uint32_t>(CraftingEntry::VT_ID, id, 0);
+  }
+  void add_recipe_id(::flatbuffers::Offset<::flatbuffers::String> recipe_id) {
+    fbb_.AddOffset(CraftingEntry::VT_RECIPE_ID, recipe_id);
+  }
+  void add_result_type(::flatbuffers::Offset<::flatbuffers::String> result_type) {
+    fbb_.AddOffset(CraftingEntry::VT_RESULT_TYPE, result_type);
+  }
+  void add_name(::flatbuffers::Offset<::flatbuffers::String> name) {
+    fbb_.AddOffset(CraftingEntry::VT_NAME, name);
+  }
+  void add_requirements(::flatbuffers::Offset<::flatbuffers::String> requirements) {
+    fbb_.AddOffset(CraftingEntry::VT_REQUIREMENTS, requirements);
+  }
+  void add_reason(::flatbuffers::Offset<::flatbuffers::String> reason) {
+    fbb_.AddOffset(CraftingEntry::VT_REASON, reason);
+  }
+  void add_expected_moves(int64_t expected_moves) {
+    fbb_.AddElement<int64_t>(CraftingEntry::VT_EXPECTED_MOVES, expected_moves, 0);
+  }
+  void add_resume(bool resume) {
+    fbb_.AddElement<uint8_t>(CraftingEntry::VT_RESUME, static_cast<uint8_t>(resume), 0);
+  }
+  void add_progress(int32_t progress) {
+    fbb_.AddElement<int32_t>(CraftingEntry::VT_PROGRESS, progress, 0);
+  }
+  explicit CraftingEntryBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<CraftingEntry> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<CraftingEntry>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<CraftingEntry> CreateCraftingEntry(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t id = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> recipe_id = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> result_type = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> name = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> requirements = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> reason = 0,
+    int64_t expected_moves = 0,
+    bool resume = false,
+    int32_t progress = 0) {
+  CraftingEntryBuilder builder_(_fbb);
+  builder_.add_expected_moves(expected_moves);
+  builder_.add_progress(progress);
+  builder_.add_reason(reason);
+  builder_.add_requirements(requirements);
+  builder_.add_name(name);
+  builder_.add_result_type(result_type);
+  builder_.add_recipe_id(recipe_id);
+  builder_.add_id(id);
+  builder_.add_resume(resume);
+  return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<CraftingEntry> CreateCraftingEntryDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t id = 0,
+    const char *recipe_id = nullptr,
+    const char *result_type = nullptr,
+    const char *name = nullptr,
+    const char *requirements = nullptr,
+    const char *reason = nullptr,
+    int64_t expected_moves = 0,
+    bool resume = false,
+    int32_t progress = 0) {
+  auto recipe_id__ = recipe_id ? _fbb.CreateString(recipe_id) : 0;
+  auto result_type__ = result_type ? _fbb.CreateString(result_type) : 0;
+  auto name__ = name ? _fbb.CreateString(name) : 0;
+  auto requirements__ = requirements ? _fbb.CreateString(requirements) : 0;
+  auto reason__ = reason ? _fbb.CreateString(reason) : 0;
+  return CDDA::CWM::CreateCraftingEntry(
+      _fbb,
+      id,
+      recipe_id__,
+      result_type__,
+      name__,
+      requirements__,
+      reason__,
+      expected_moves,
+      resume,
+      progress);
+}
+
+struct CraftingView FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef CraftingViewBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_QUERY_ID = 4,
+    VT_VIEW_ID = 6,
+    VT_BATCH = 8,
+    VT_ENTRIES = 10,
+    VT_TRUNCATED = 12,
+    VT_ERROR = 14
+  };
+  uint64_t query_id() const {
+    return GetField<uint64_t>(VT_QUERY_ID, 0);
+  }
+  bool mutate_query_id(uint64_t _query_id = 0) {
+    return SetField<uint64_t>(VT_QUERY_ID, _query_id, 0);
+  }
+  uint64_t view_id() const {
+    return GetField<uint64_t>(VT_VIEW_ID, 0);
+  }
+  bool mutate_view_id(uint64_t _view_id = 0) {
+    return SetField<uint64_t>(VT_VIEW_ID, _view_id, 0);
+  }
+  uint32_t batch() const {
+    return GetField<uint32_t>(VT_BATCH, 1);
+  }
+  bool mutate_batch(uint32_t _batch = 1) {
+    return SetField<uint32_t>(VT_BATCH, _batch, 1);
+  }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::CraftingEntry>> *entries() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::CraftingEntry>> *>(VT_ENTRIES);
+  }
+  ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::CraftingEntry>> *mutable_entries() {
+    return GetPointer<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::CraftingEntry>> *>(VT_ENTRIES);
+  }
+  bool truncated() const {
+    return GetField<uint8_t>(VT_TRUNCATED, 0) != 0;
+  }
+  bool mutate_truncated(bool _truncated = 0) {
+    return SetField<uint8_t>(VT_TRUNCATED, static_cast<uint8_t>(_truncated), 0);
+  }
+  const ::flatbuffers::String *error() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_ERROR);
+  }
+  ::flatbuffers::String *mutable_error() {
+    return GetPointer<::flatbuffers::String *>(VT_ERROR);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_QUERY_ID, 8) &&
+           VerifyField<uint64_t>(verifier, VT_VIEW_ID, 8) &&
+           VerifyField<uint32_t>(verifier, VT_BATCH, 4) &&
+           VerifyOffset(verifier, VT_ENTRIES) &&
+           verifier.VerifyVector(entries()) &&
+           verifier.VerifyVectorOfTables(entries()) &&
+           VerifyField<uint8_t>(verifier, VT_TRUNCATED, 1) &&
+           VerifyOffset(verifier, VT_ERROR) &&
+           verifier.VerifyString(error()) &&
+           verifier.EndTable();
+  }
+};
+
+struct CraftingViewBuilder {
+  typedef CraftingView Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_query_id(uint64_t query_id) {
+    fbb_.AddElement<uint64_t>(CraftingView::VT_QUERY_ID, query_id, 0);
+  }
+  void add_view_id(uint64_t view_id) {
+    fbb_.AddElement<uint64_t>(CraftingView::VT_VIEW_ID, view_id, 0);
+  }
+  void add_batch(uint32_t batch) {
+    fbb_.AddElement<uint32_t>(CraftingView::VT_BATCH, batch, 1);
+  }
+  void add_entries(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::CraftingEntry>>> entries) {
+    fbb_.AddOffset(CraftingView::VT_ENTRIES, entries);
+  }
+  void add_truncated(bool truncated) {
+    fbb_.AddElement<uint8_t>(CraftingView::VT_TRUNCATED, static_cast<uint8_t>(truncated), 0);
+  }
+  void add_error(::flatbuffers::Offset<::flatbuffers::String> error) {
+    fbb_.AddOffset(CraftingView::VT_ERROR, error);
+  }
+  explicit CraftingViewBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<CraftingView> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<CraftingView>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<CraftingView> CreateCraftingView(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t query_id = 0,
+    uint64_t view_id = 0,
+    uint32_t batch = 1,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::CraftingEntry>>> entries = 0,
+    bool truncated = false,
+    ::flatbuffers::Offset<::flatbuffers::String> error = 0) {
+  CraftingViewBuilder builder_(_fbb);
+  builder_.add_view_id(view_id);
+  builder_.add_query_id(query_id);
+  builder_.add_error(error);
+  builder_.add_entries(entries);
+  builder_.add_batch(batch);
+  builder_.add_truncated(truncated);
+  return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<CraftingView> CreateCraftingViewDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t query_id = 0,
+    uint64_t view_id = 0,
+    uint32_t batch = 1,
+    const std::vector<::flatbuffers::Offset<CDDA::CWM::CraftingEntry>> *entries = nullptr,
+    bool truncated = false,
+    const char *error = nullptr) {
+  auto entries__ = entries ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::CraftingEntry>>(*entries) : 0;
+  auto error__ = error ? _fbb.CreateString(error) : 0;
+  return CDDA::CWM::CreateCraftingView(
+      _fbb,
+      query_id,
+      view_id,
+      batch,
+      entries__,
+      truncated,
+      error__);
+}
+
+struct CraftingRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef CraftingRequestBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_COMMAND_ID = 4,
+    VT_VIEW_ID = 6,
+    VT_ENTRY_ID = 8
+  };
+  uint64_t command_id() const {
+    return GetField<uint64_t>(VT_COMMAND_ID, 0);
+  }
+  bool mutate_command_id(uint64_t _command_id = 0) {
+    return SetField<uint64_t>(VT_COMMAND_ID, _command_id, 0);
+  }
+  uint64_t view_id() const {
+    return GetField<uint64_t>(VT_VIEW_ID, 0);
+  }
+  bool mutate_view_id(uint64_t _view_id = 0) {
+    return SetField<uint64_t>(VT_VIEW_ID, _view_id, 0);
+  }
+  uint32_t entry_id() const {
+    return GetField<uint32_t>(VT_ENTRY_ID, 0);
+  }
+  bool mutate_entry_id(uint32_t _entry_id = 0) {
+    return SetField<uint32_t>(VT_ENTRY_ID, _entry_id, 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_COMMAND_ID, 8) &&
+           VerifyField<uint64_t>(verifier, VT_VIEW_ID, 8) &&
+           VerifyField<uint32_t>(verifier, VT_ENTRY_ID, 4) &&
+           verifier.EndTable();
+  }
+};
+
+struct CraftingRequestBuilder {
+  typedef CraftingRequest Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_command_id(uint64_t command_id) {
+    fbb_.AddElement<uint64_t>(CraftingRequest::VT_COMMAND_ID, command_id, 0);
+  }
+  void add_view_id(uint64_t view_id) {
+    fbb_.AddElement<uint64_t>(CraftingRequest::VT_VIEW_ID, view_id, 0);
+  }
+  void add_entry_id(uint32_t entry_id) {
+    fbb_.AddElement<uint32_t>(CraftingRequest::VT_ENTRY_ID, entry_id, 0);
+  }
+  explicit CraftingRequestBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<CraftingRequest> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<CraftingRequest>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<CraftingRequest> CreateCraftingRequest(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t command_id = 0,
+    uint64_t view_id = 0,
+    uint32_t entry_id = 0) {
+  CraftingRequestBuilder builder_(_fbb);
+  builder_.add_view_id(view_id);
+  builder_.add_command_id(command_id);
+  builder_.add_entry_id(entry_id);
   return builder_.Finish();
 }
 
@@ -5214,6 +5858,18 @@ struct CwmMessage FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const CDDA::CWM::CancelFirstAidRequest *payload_as_CancelFirstAidRequest() const {
     return payload_type() == CDDA::CWM::Payload::CancelFirstAidRequest ? static_cast<const CDDA::CWM::CancelFirstAidRequest *>(payload()) : nullptr;
   }
+  const CDDA::CWM::CraftingQueryRequest *payload_as_CraftingQueryRequest() const {
+    return payload_type() == CDDA::CWM::Payload::CraftingQueryRequest ? static_cast<const CDDA::CWM::CraftingQueryRequest *>(payload()) : nullptr;
+  }
+  const CDDA::CWM::CraftingView *payload_as_CraftingView() const {
+    return payload_type() == CDDA::CWM::Payload::CraftingView ? static_cast<const CDDA::CWM::CraftingView *>(payload()) : nullptr;
+  }
+  const CDDA::CWM::CraftingRequest *payload_as_CraftingRequest() const {
+    return payload_type() == CDDA::CWM::Payload::CraftingRequest ? static_cast<const CDDA::CWM::CraftingRequest *>(payload()) : nullptr;
+  }
+  const CDDA::CWM::CancelCraftingRequest *payload_as_CancelCraftingRequest() const {
+    return payload_type() == CDDA::CWM::Payload::CancelCraftingRequest ? static_cast<const CDDA::CWM::CancelCraftingRequest *>(payload()) : nullptr;
+  }
   void *mutable_payload() {
     return GetPointer<void *>(VT_PAYLOAD);
   }
@@ -5376,6 +6032,22 @@ template<> inline const CDDA::CWM::CancelConsumptionRequest *CwmMessage::payload
 
 template<> inline const CDDA::CWM::CancelFirstAidRequest *CwmMessage::payload_as<CDDA::CWM::CancelFirstAidRequest>() const {
   return payload_as_CancelFirstAidRequest();
+}
+
+template<> inline const CDDA::CWM::CraftingQueryRequest *CwmMessage::payload_as<CDDA::CWM::CraftingQueryRequest>() const {
+  return payload_as_CraftingQueryRequest();
+}
+
+template<> inline const CDDA::CWM::CraftingView *CwmMessage::payload_as<CDDA::CWM::CraftingView>() const {
+  return payload_as_CraftingView();
+}
+
+template<> inline const CDDA::CWM::CraftingRequest *CwmMessage::payload_as<CDDA::CWM::CraftingRequest>() const {
+  return payload_as_CraftingRequest();
+}
+
+template<> inline const CDDA::CWM::CancelCraftingRequest *CwmMessage::payload_as<CDDA::CWM::CancelCraftingRequest>() const {
+  return payload_as_CancelCraftingRequest();
 }
 
 struct CwmMessageBuilder {
@@ -5570,6 +6242,22 @@ inline bool VerifyPayload(::flatbuffers::Verifier &verifier, const void *obj, Pa
     }
     case Payload::CancelFirstAidRequest: {
       auto ptr = reinterpret_cast<const CDDA::CWM::CancelFirstAidRequest *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::CraftingQueryRequest: {
+      auto ptr = reinterpret_cast<const CDDA::CWM::CraftingQueryRequest *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::CraftingView: {
+      auto ptr = reinterpret_cast<const CDDA::CWM::CraftingView *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::CraftingRequest: {
+      auto ptr = reinterpret_cast<const CDDA::CWM::CraftingRequest *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::CancelCraftingRequest: {
+      auto ptr = reinterpret_cast<const CDDA::CWM::CancelCraftingRequest *>(obj);
       return verifier.VerifyTable(ptr);
     }
     default: return true;
