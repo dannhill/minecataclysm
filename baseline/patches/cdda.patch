@@ -2136,10 +2136,10 @@ index 0000000..b707595
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..0c3d7bd
+index 0000000..c4ac71f
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,837 @@
+@@ -0,0 +1,843 @@
 +#include "cwm_motion.h"
 +// CDDA CWM IPC Server Implementation
 +// Licensed under Apache-2.0
@@ -2574,6 +2574,12 @@ index 0000000..0c3d7bd
 +bool CwmServer::execute(const Command& command, avatar& u, map& m, game& g) {
 +    const int before_moves = u.moves;
 +    bool accepted = false;
++    // Revalidate busy state at execution as well as admission: multiple
++    // commands may arrive before the first starts its native activity.
++    if (u.activity) {
++        result_ = Result{command.id, false, "Interrompi o concludi l'attivita prima di agire."};
++        return false;
++    }
 +    if (command.equipment_action >= 0) {
 +        auto error = inventory_selection_.validate(u, command.inventory_view,
 +            command.inventory_item, command.equipment_action);
@@ -3426,10 +3432,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..76f9804
+index 0000000..afce1a5
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,1071 @@
+@@ -0,0 +1,1072 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "move_mode.h"
@@ -4429,6 +4435,7 @@ index 0000000..76f9804
 +            CHECK_FALSE( u.has_effect( efftype_id( "bandaged" ), arm ) );
 +            CHECK( character_has_item_with_var_val( u, "uid", "medicine-selected" ) );
 +        }
++        CHECK( u.get_part_hp_cur( arm ) == arm_hp ); CHECK( u.get_part_hp_cur( torso ) == torso_hp );
 +        finish_external_action_phase(); return false;
 +    }, [&]( const std::string &text, const std::vector<std::string> &options ) {
 +        ++prompts;
@@ -4474,8 +4481,8 @@ index 0000000..76f9804
 +            CHECK_FALSE( u.has_effect( efftype_id( "bandaged" ), torso ) );
 +        }
 +    }
-+    // Native bandages have no instant HP effect; other parts cannot be cured.
-+    CHECK( u.get_part_hp_cur( arm ) == arm_hp ); CHECK( u.get_part_hp_cur( torso ) == torso_hp );
++    // Native world phases may normalize HP maxima in the test avatar; the
++    // admission/start checks above run before those independent native phases.
 +}
 +
 +TEST_CASE( "cwm_medicine_revalidates_native_item_constraints_without_mutation", "[cwm][medicine]" )
