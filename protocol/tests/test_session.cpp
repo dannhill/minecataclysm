@@ -25,7 +25,7 @@ std::vector<uint8_t> reset(uint64_t seq, uint64_t request=0, Identity ids={11,22
     return b.finish_message(Payload::WorldReset, CreateWorldReset(b.builder(),request).Union());
 }
 std::vector<uint8_t> world(uint64_t seq, bool full=true, uint64_t base=0,
-    uint64_t revision=5, uint64_t resync=0, bool malformed=false, Identity ids={11,22,33}, float scale=1.f, uint32_t reasons=0, float motion=.2f, bool realtime=true, bool continuous=false, int owned_case=0, int body_case=0, uint32_t posture=0, int consumption_case=0) {
+    uint64_t revision=5, uint64_t resync=0, bool malformed=false, Identity ids={11,22,33}, float scale=1.f, uint32_t reasons=0, float motion=.2f, bool realtime=true, bool continuous=false, int owned_case=0, int body_case=0, uint32_t posture=0, int consumption_case=0, int aid_case=0) {
     MessageBuilder b(seq,revision,ids); auto& f=b.builder();
     Vec3f pos(2,3,0); Coord3i origin(0,0,0);
     auto actor=CreateEntityState(f,1,EntityType::PLAYER,0,&pos,0,0,0,0,true,posture,motion);
@@ -54,8 +54,10 @@ std::vector<uint8_t> world(uint64_t seq, bool full=true, uint64_t base=0,
     }
     const auto consumption = consumption_case ? CreateConsumptionState(f,consumption_case==2?0:42,
         consumption_case==3?0:100,consumption_case==4?-1:consumption_case==5?101:50) : flatbuffers::Offset<ConsumptionState>{};
+    const auto aid = aid_case ? CreateFirstAidState(f,aid_case==2?0:43,
+        aid_case==3?0:100,aid_case==4?-1:aid_case==5?101:50) : flatbuffers::Offset<FirstAidState>{};
     auto body=CreateWorldSnapshot(f,revision,&origin,0,full?chunks:0,actors,vehicles,fields,0,false,
-        full,base,seq,resync,0,0,0,clock,0,owned,status,consumption);
+        full,base,seq,resync,0,0,0,clock,0,owned,status,consumption,aid);
     return b.finish_message(Payload::WorldSnapshot,body.Union());
 }
 bool accept(ClientSession& s, MemoryChannel& c, const std::vector<uint8_t>& bytes) {
@@ -141,6 +143,14 @@ int main() {
             CHECK(accept(s,c,bytes)==(defect==1));
             if(defect!=1) CHECK(!s.ready() && s.revision==5);
         }
+    });
+    test("firstaid_progress_invalidity_requires_resync",[]{
+        for(int defect=0;defect<6;++defect) {
+            const auto bytes=world(2,true,0,5,0,false,{11,22,33},1,0,.2,true,false,0,0,0,0,defect);
+            CHECK(valid_world(GetCwmMessage(bytes.data())->payload_as_WorldSnapshot())==(defect<2));
+        }
+        const auto bytes=world(2,true,0,5,0,false,{11,22,33},1,0,.2,true,false,0,0,0,1,1);
+        CHECK(!valid_world(GetCwmMessage(bytes.data())->payload_as_WorldSnapshot()));
     });
     test("deduplicate_pending_and_complete",[]{CommandLedger l; CHECK(l.begin(7,1,"move")==CommandLedger::Status::Fresh); CHECK(l.begin(7,1,"move")==CommandLedger::Status::Pending); l.complete({1,true,"",20}); CHECK(l.begin(7,1,"move")==CommandLedger::Status::Complete); l.complete({1,false,"late",30}); CHECK(l.find(1)->outcome.accepted && l.find(1)->outcome.revision==20);});
     test("conflicting_semantics_or_author_rejected",[]{CommandLedger l; l.begin(7,1,"move"); CHECK(l.begin(7,1,"interact")==CommandLedger::Status::Conflict); CHECK(l.begin(8,1,"move")==CommandLedger::Status::Conflict);});

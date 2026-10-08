@@ -176,3 +176,33 @@ d'acqua pulita e un sasso. La stessa funzione e disponibile con I nel gioco.
 Farmaci/medicazioni, bere da fontane, aprire tasche sigillate, scegliere
 quantita e travasare richiedono le prossime fette. Le icone mancanti restano
 fallback con nomi CDDA. [Dettagli tecnici](../fixes/native-consumption.md).
+
+
+## Medicazioni native — DA PROVARE, aggiunte al backlog
+
+Gli otto punti inventario/consumo restano pendenti. Avvio isolato:
+`./medicine-demo.sh --fresh`. Braccio sinistro e torso feriti; nello zaino
+ci sono tre bende, una salvietta disinfettante e una benda sporca. Non serve
+raccogliere o mangiare nulla. La funzione e disponibile anche con **I** nel gioco.
+
+1. **I**, scegli una benda e **Medica...**: CDDA propone le parti trattabili
+   con salute ed effetti conoscibili. Scegli usando il numero mostrato, poi
+   conferma. Annulla una volta la scelta e una volta la conferma: nessuna
+   benda consumata. La benda sporca e il sasso non offrono Medica.
+2. Avvia la benda sul braccio sinistro. Il trattamento mostra progresso;
+   **I** lo ferma e **Interrompi trattamento** conserva la benda inutilizzata.
+   Una nuova richiesta segue la ripresa nativa, senza rimborso del tempo.
+   Movimento o altre azioni non devono partire in ritardo dopo la cura.
+3. Lascia terminare la benda; usa la salvietta sul torso. **H** mostra
+   bendaggio e disinfezione sulle parti scelte. Una benda/salvietta viene
+   consumata al completamento. Non aspettarti cuori recuperati subito:
+   questi oggetti favoriscono la guarigione nel tempo. In pausa **F7** il
+   clic Medica non deve diventare un comando differito alla ripresa.
+4. Esci e riavvia `./medicine-demo.sh` senza --fresh: oggetti e condizioni
+   restano coerenti. Prova anche a uscire durante una medicazione: al
+   rientro riprende il lavoro residuo e consuma il trattamento una sola volta.
+
+Questa fetta copre gli oggetti esterni non commestibili con attore heal:
+bende, salviette e analoghi. Farmaci ingeribili, antisettici liquidi, cura di
+NPC, chirurgia e avvio parte→oggetto dalla scheda H restano successivi.
+[Dettagli tecnici](../fixes/native-medicine.md). Accettazione manuale non dedotta.
