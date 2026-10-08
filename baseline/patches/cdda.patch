@@ -3909,7 +3909,7 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..7495591
+index 0000000..4c88a28
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
 @@ -0,0 +1,1231 @@
@@ -5023,7 +5023,7 @@ index 0000000..7495591
 +    avatar &u = get_avatar(); u.setpos( tripoint(60,60,0) );
 +    REQUIRE( u.wear_item(item(itype_id("backpack_hiking"))) );
 +    const recipe &rec = recipe_id("bandages_makeshift").obj(); u.learn_recipe(&rec);
-+    item &sheet = u.i_add(item(itype_id("sheet_cotton")));
++    item &sheet = *u.i_add(item(itype_id("sheet_cotton")));
 +    item filled=item(itype_id("water")).in_container(itype_id("bottle_plastic"));
 +    CHECK_FALSE(rec.get_component_filter(recipe_filter_flags::no_equipped)(filled));
 +    cwm::CraftingSelection selection;
@@ -5054,10 +5054,10 @@ index 0000000..7495591
 +    avatar &u = get_avatar(); u.setpos(tripoint(60,60,0));
 +    REQUIRE(u.wear_item(item(itype_id("backpack_hiking"))));
 +    const recipe &rec=recipe_id("bandages_makeshift").obj(); u.learn_recipe(&rec);
-+    item &sheet=u.i_add(item(itype_id("sheet_cotton")));
++    item &sheet=*u.i_add(item(itype_id("sheet_cotton")));
 +    sheet.set_var("uid","crafting-unit-sheet");
 +    get_map().add_item(u.pos()+tripoint_west,item(itype_id("sheet_cotton_patchwork")));
-+    g->new_game=false; uquit=QUIT_NO; g->set_safe_mode(SAFE_MODE_OFF);
++    g->new_game=false; g->uquit=QUIT_NO; g->set_safe_mode(SAFE_MODE_OFF);
 +    const override_option autosave("AUTOSAVE","false");
 +    bool decline=false;
 +    SECTION("declining consumes no components") { decline=true; }
@@ -5127,7 +5127,7 @@ index 0000000..7495591
 +    avatar& u=get_avatar();u.setpos(tripoint(60,60,0));
 +    REQUIRE(u.wear_item(item(itype_id("backpack_hiking"))));
 +    u.learn_recipe(&recipe_id("bandages_makeshift").obj());
-+    item& sheet=u.i_add(item(itype_id("sheet_cotton")));
++    item& sheet=*u.i_add(item(itype_id("sheet_cotton")));
 +    cwm::CwmServer server("/unused-cwm-craft-admission");cwm::CwmServerTestAccess::ready(server);
 +    const auto [view,entry]=cwm::CwmServerTestAccess::crafting(server);
 +    cwm::CwmServerTestAccess::craft(server,view,entry);
@@ -5135,7 +5135,7 @@ index 0000000..7495591
 +    cwm::CwmServerTestAccess::craft(server,view,entry); // Pending command is admitted once.
 +    REQUIRE(server.has_queued_action());
 +    SECTION("selected component becomes favorite after admission") { sheet.is_favorite=true; }
-+    SECTION("another native activity starts before execution") { u.assign_activity(ACT_WAIT,1000); }
++    SECTION("another native activity starts before execution") { u.assign_activity(activity_id("ACT_WAIT"),1000); }
 +    const int moves=u.moves;const auto time=calendar::turn;
 +    CHECK_FALSE(cwm::CwmServerTestAccess::execute(server)); // Exactly one queued command.
 +    CHECK_FALSE(cwm::CwmServerTestAccess::accepted(server));
