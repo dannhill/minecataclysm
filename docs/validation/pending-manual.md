@@ -1,7 +1,8 @@
 # Validazioni manuali del playable core
 
-Stato corrente: **20 punti pendenti**, quattro inventario/equipaggiamento,
-quattro cibo/bevande, quattro medicazioni, quattro crafting e quattro tiro/ricarica.
+Stato corrente: **24 punti pendenti**, quattro inventario/equipaggiamento,
+quattro cibo/bevande, quattro medicazioni, quattro crafting, quattro tiro/ricarica
+e quattro quantita/deposito/trasferimenti.
 Le vecchie checklist VALIDATE sotto conservano la cronologia; non attestano queste nuove fette.
 
 L'utente il 2026-10-08 ha eseguito e approvato tutti i quattro punti di
@@ -263,3 +264,35 @@ Questa prima fetta copre armi da fuoco impugnate e modalità balistica corrente,
 bersagli ostili percepiti e ricarica nativa. Mirino libero, tiro deliberato su
 neutrali, archi/carica-e-spara, armi montate/veicoli e cambio modalità restano
 nel piano. Accettazione manuale non dedotta dai test tecnici.
+
+
+## Quantita, deposito e contenitori posseduti — PENDING, rinviato su richiesta
+
+Avvio isolato: `./transfer-demo.sh --fresh`. Trenta munizioni 9mm, sacchetto
+vuoto, bottiglia vuota, mazza e sasso gia nello zaino. Non serve raccogliere,
+combattere o completare altre checklist. Nel gioco normale: **I → Quantita e
+trasferimenti**. Questa fetta permette destinazioni possedute e terra sotto
+il personaggio; contenitori esterni e scelta della singola tasca vengono dopo.
+
+1. Apri I e **Quantita e trasferimenti**: pannello sinistro degli oggetti,
+   destro dei contenitori. Scegli munizioni, sacchetto, quantita 7. Attendi o
+   premi WASD: tempo/posizione restano fermi. Prova 31, zero o testo non numerico:
+   niente trasferimento. Esc chiude senza spostare oggetti.
+2. Conferma 7 nel sacchetto: menu chiuso, lavoro nativo e tempo pagato.
+   **I** durante il lavoro ferma il progresso; **Interrompi trasferimento**
+   conserva le munizioni non ancora spostate. Ripeti e lascia completare:
+   7 nel sacchetto e 23 nella tasca precedente. Riapri I per la provenienza.
+   Prova mazza → bottiglia: rifiuto nativo, nessun oggetto perso.
+3. Seleziona le munizioni dentro il sacchetto, quantita 3, **Deposita a terra**:
+   3 sotto il personaggio, 4 nel sacchetto, 23 altrove nello zaino. Deposita poi
+   il sacchetto intero: rimane a terra con le 4 munizioni dentro. Gli oggetti
+   indossati richiedono prima Togli; liquidi/sigilli richiedono altre interazioni.
+   Con **F7** in pausa un clic di trasferimento non deve partire alla ripresa.
+4. Esci e rilancia senza --fresh: quantita e contenuti persistono senza copie
+   aggiuntive. Prova anche a uscire durante l'inserimento di 7 munizioni
+   (I per fermare il tempo prima di uscire): il lavoro nativo salvato riprende
+   e sposta le 7 una sola volta. Per rifare la scena usa --fresh, che crea
+   una nuova copia isolata e conserva le sessioni demo precedenti.
+
+Accettazione grafica/usabilita ancora pendente; i test automatici non la
+sostituiscono. [Dettagli tecnici](../fixes/native-transfer.md).

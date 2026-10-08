@@ -176,7 +176,7 @@ def main():
                 time.sleep(.2)
             check('actual_start_ready', bool(window) and len(rows()) > 20)
             xdo('windowactivate', '--sync', window)
-            time.sleep(1)
+            time.sleep(.1 if args.resume_only else 1)
             wait(lambda r: int(r['input_ready']) == 1 and int(r['pause_reasons']) == 0)
             sys.path.insert(0, str(ws / 'protocol/python'))
             from CDDA.CWM.CwmMessage import CwmMessage

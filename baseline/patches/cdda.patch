@@ -2927,10 +2927,10 @@ index 0000000..43d3a08
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..0136e2e
+index 0000000..1a010e9
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,949 @@
+@@ -0,0 +1,950 @@
 +#include "cwm_motion.h"
 +// CDDA CWM IPC Server Implementation
 +// Licensed under Apache-2.0
@@ -3416,8 +3416,9 @@ index 0000000..0136e2e
 +        result_ = Result{command.id, accepted, accepted ? "" : "Nessun lavoro avviato; controlla gli eventuali incompleti in K."};
 +        return acted;
 +    } else if (command.transfer_action >= 0) {
-+        const auto error = inventory_selection_.validate_transfer(u, command.inventory_view,
++        auto error = inventory_selection_.validate_transfer(u, command.inventory_view,
 +            command.inventory_item, command.transfer_quantity, command.transfer_destination, command.transfer_action);
++        if (realtime_ && pause_reasons(g)) error = "Simulation is paused";
 +        if (!error.empty()) { result_ = Result{command.id, false, error}; return false; }
 +        auto source = inventory_selection_.target(command.inventory_item);
 +        auto destination = command.transfer_destination ? inventory_selection_.target(command.transfer_destination) : item_location::nowhere;
@@ -4340,10 +4341,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..577d638
+index 0000000..a9dcf21
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,1420 @@
+@@ -0,0 +1,1422 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "move_mode.h"
@@ -5752,6 +5753,7 @@ index 0000000..577d638
 +    SECTION("quantity changed after admission"){queued=true;mutation=1;}
 +    SECTION("destination gone after admission"){queued=true;mutation=2;}
 +    SECTION("moved after admission"){queued=true;mutation=3;}
++    SECTION("pause after admission"){queued=true;mutation=4;}
 +    SECTION("source container cycle"){id=dest;dest=cwm::CwmServerTestAccess::item_id(server,*ammo.parent_item());quantity=1;}
 +    SECTION("non-counted quantity"){id=dest;quantity=2;dest=cwm::CwmServerTestAccess::item_id(server,*ammo.parent_item());}
 +    SECTION("no space"){REQUIRE(pouch->fill_with(item(itype_id("9mm"),calendar::turn,1),100000)>0);quantity=30;}
@@ -5760,6 +5762,7 @@ index 0000000..577d638
 +        if(mutation==1)ammo->charges=29;
 +        if(mutation==2)pouch.remove_item();
 +        if(mutation==3)u.setpos(u.pos()+tripoint_east);
++        if(mutation==4){server.enable_continuous();cwm::CwmServerTestAccess::pause(server);}
 +        CHECK_FALSE(cwm::CwmServerTestAccess::execute(server));CHECK_FALSE(cwm::CwmServerTestAccess::accepted(server));
 +    }
 +    CHECK_FALSE(u.activity);CHECK(u.moves==1000);

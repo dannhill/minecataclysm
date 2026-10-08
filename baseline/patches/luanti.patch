@@ -1120,7 +1120,7 @@ index 0000000..2214cd4
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..bf3b6a8
+index 0000000..1dec830
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
 @@ -0,0 +1,2400 @@
@@ -1360,7 +1360,7 @@ index 0000000..bf3b6a8
 +        queued_equipment_.reset(); queued_cancel_activity_.reset(); queued_crafting_.reset(); queued_transfer_.reset();
 +        if (cancel) ++cancel_activity_sent_; else if (craft) ++crafting_sent_; else if (transfer) ++transfers_sent_; else ++equipment_sent_;
 +        pending_move_ = id; move_acked_ = false; sent_move_ = std::chrono::steady_clock::now();
-+        item_hint_ = craft ? L"Scelta componenti e avvio lavoro." : L"Azione equipaggiamento inviata a CDDA.";
++        item_hint_ = craft ? L"Scelta componenti e avvio lavoro." : transfer ? L"Trasferimento richiesto a CDDA." : L"Azione equipaggiamento inviata a CDDA.";
 +        item_hint_until_ = std::chrono::steady_clock::now() + std::chrono::seconds(3);
 +    }
 +
@@ -3753,10 +3753,10 @@ index 0000000..a5935f0
 +} // namespace cdda_client
 diff --git a/src/cdda/equipment_inventory.h b/src/cdda/equipment_inventory.h
 new file mode 100644
-index 0000000..d0addc7
+index 0000000..b4e6d3e
 --- /dev/null
 +++ b/src/cdda/equipment_inventory.h
-@@ -0,0 +1,192 @@
+@@ -0,0 +1,199 @@
 +#pragma once
 +#include "avatar_status.h"
 +#include "cwm/cwm_generated.h"
@@ -3933,7 +3933,14 @@ index 0000000..d0addc7
 +        const auto y = std::to_string(2.6 + (n % 12) * .42);
 +        f += "button[8," + y + ";7.5,0.4;destination_" + std::to_string(e.id) + ";" +
 +            statusEscape((destination == e.id ? "> " : "") + e.name) + "]";
-+        f += "tooltip[destination_" + std::to_string(e.id) + ";" + statusEscape(view.source(e.id)) + "]";
++        std::string detail = view.source(e.id);
++        for (const auto& pocket : view.pockets) if (pocket.owner == e.id) {
++            detail += "\n" + (pocket.name.empty() ? "Tasca " + std::to_string(pocket.index + 1) : pocket.name) +
++                ": " + equipmentAmount(pocket.remaining) + " / " + equipmentAmount(pocket.capacity) + " L liberi; " +
++                equipmentAmount(pocket.weight_remaining) + " / " + equipmentAmount(pocket.weight_capacity) + " kg liberi; " +
++                "lunghezza max " + std::to_string(pocket.length) + " mm" + (pocket.sealed ? "; sigillata" : "");
++        }
++        f += "tooltip[destination_" + std::to_string(e.id) + ";" + statusEscape(detail) + "]";
 +    }
 +    f += "button[0.5,8.8;1.2,0.6;prev;<]label[2,9.1;" + std::to_string(page + 1) + " / " + std::to_string(pages) + "]button[5.8,8.8;1.2,0.6;next;>]";
 +    f += "button[8,8.8;1.2,0.6;dest_prev;<]label[9.5,9.1;" + std::to_string(destination_page + 1) + " / " + std::to_string(destination_pages) + "]button[14.3,8.8;1.2,0.6;dest_next;>]";
