@@ -4340,7 +4340,7 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..2a260a3
+index 0000000..577d638
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
 @@ -0,0 +1,1420 @@
@@ -5754,7 +5754,7 @@ index 0000000..2a260a3
 +    SECTION("moved after admission"){queued=true;mutation=3;}
 +    SECTION("source container cycle"){id=dest;dest=cwm::CwmServerTestAccess::item_id(server,*ammo.parent_item());quantity=1;}
 +    SECTION("non-counted quantity"){id=dest;quantity=2;dest=cwm::CwmServerTestAccess::item_id(server,*ammo.parent_item());}
-+    SECTION("no space"){REQUIRE(pouch->put_in(item(itype_id("water_clean"),calendar::turn,100),pocket_type::CONTAINER).success());quantity=30;}
++    SECTION("no space"){REQUIRE(pouch->fill_with(item(itype_id("9mm"),calendar::turn,1),100000)>0);quantity=30;}
 +    cwm::CwmServerTestAccess::transfer(server,view,id,quantity,dest,action);REQUIRE(server.has_queued_action()==queued);
 +    if(queued){
 +        if(mutation==1)ammo->charges=29;
