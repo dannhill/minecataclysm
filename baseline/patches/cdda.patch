@@ -2947,10 +2947,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..f1c2d1a
+index 0000000..089b8ba
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,572 @@
+@@ -0,0 +1,574 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "avatar_action.h"
@@ -3372,6 +3372,7 @@ index 0000000..f1c2d1a
 +        cwm::CwmServerTestAccess::attack( server, id );
 +        REQUIRE( cwm::CwmServerTestAccess::execute( server ) );
 +        cwm::CwmServerTestAccess::complete( server );
++        cwm::CwmServerTestAccess::ready( server ); // emulate installing the sent full state
 +        const int moves = u.moves;
 +        const int hp = mon->get_hp();
 +        cwm::CwmServerTestAccess::attack( server, id );
@@ -3450,7 +3451,8 @@ index 0000000..f1c2d1a
 +    u.set_movement_mode( move_mode_id( "prone" ) );
 +    REQUIRE( u.attack_speed( anvil ) > 1000 );
 +    u.moves = 100;
-+    calendar::turn = calendar::turn_zero + 36_hours;
++    // clear_avatar does not reset the native Ignore warning window.
++    calendar::turn = std::max( calendar::turn, calendar::turn_zero + 36_hours ) + 1_hours;
 +    g->new_game = false;
 +    g->uquit = QUIT_NO;
 +    g->set_safe_mode( SAFE_MODE_OFF );

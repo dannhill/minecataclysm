@@ -259,7 +259,10 @@ def main():
     check('combat_save_readable_by_pristine_native_core', result.returncode == 0)
     after = json.loads(output.read_text())
     check('native_monster_death_persisted', not any(m['typeid'] == 'mon_zombie' for m in after['monsters']))
-    check('canonical_corpse_created', 'corpse' in str(after['ground_items']))
+    check('specific_native_corpse_created_at_target', any(
+        tile['pos'] == [60,59,0] and any(it.get('typeid') == 'corpse' and
+            it.get('corpse') == 'mon_zombie' and it.get('name') == 'Bersaglio melee'
+            for it in tile['items']) for tile in after['ground_items']))
     check('attacks_did_not_move_player', after['player_abs'] == before['player_abs'])
     check('native_time_paid_for_combat', after['time'] > before['time'])
     check('weapon_remains_native_and_equipped', 'bat' in str(after['player']['weapon']))
