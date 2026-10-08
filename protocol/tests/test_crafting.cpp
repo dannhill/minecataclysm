@@ -22,6 +22,12 @@ int main() {
     CHECK(view->mutable_entries()->GetMutableObject(0)->mutate_id(2)); CHECK(!valid_crafting(view));
     bytes=catalog(0);view=static_cast<CraftingView*>(GetMutableCwmMessage(bytes.data())->mutable_payload());
     view->mutable_entries()->GetMutableObject(0)->mutable_recipe_id()->Mutate(0,'\0');CHECK(!valid_crafting(view));
+    MessageBuilder nulls(1,7,{11,22,33}); auto& nf=nulls.builder();
+    std::vector<flatbuffers::Offset<CraftingEntry>> empty;
+    auto omitted=CreateCraftingView(nf,1,2,1,nf.CreateVector(empty));
+    auto omitted_bytes=nulls.finish_message(Payload::CraftingView,omitted.Union());
+    CHECK(MessageVerifier::verify(omitted_bytes.data(),omitted_bytes.size()));
+    CHECK(!valid_crafting(GetCwmMessage(omitted_bytes.data())->payload_as_CraftingView())); // Required semantic empty strings must be present.
     MessageBuilder wire(10,7,{11,22,33});
     auto query=wire.build_crafting_query(42,"bandage",2);
     const auto* q=GetCwmMessage(query.data())->payload_as_CraftingQueryRequest();CHECK(q->query_id()==42&&q->batch()==2&&q->search()->str()=="bandage");

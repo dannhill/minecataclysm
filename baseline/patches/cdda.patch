@@ -1068,13 +1068,17 @@ index 09a7711..9b0c484 100644
          DebugLog( D_INFO, DC_ALL ) <<
 diff --git a/src/cwm/cwm_crafting.h b/src/cwm/cwm_crafting.h
 new file mode 100644
-index 0000000..dee2811
+index 0000000..b25ac51
 --- /dev/null
 +++ b/src/cwm/cwm_crafting.h
-@@ -0,0 +1,134 @@
+@@ -0,0 +1,161 @@
 +#pragma once
 +#include "avatar.h"
 +#include "avatar_action.h"
++#include "map.h"
++#include "map_iterator.h"
++#include "map_selector.h"
++#include "cwm_inventory.h"
 +#include "activity_actor_definitions.h"
 +#include "craft_command.h"
 +#include "crafting.h"
@@ -1147,7 +1151,11 @@ index 0000000..dee2811
 +                if (!needle.empty() && lower(name + " " + rec.ident().str()).find(needle) == std::string::npos) return;
 +                if (rows.size() >= 256) { truncated = true; return; }
 +                std::string reason = availability(u, rec, work ? work->get_making_batch_size() : batch);
-+                if (work && reason.find("Componenti") == 0) reason.clear(); // Native continuation validates only remaining requirements.
++                if (work && reason.find("Componenti") == 0) reason.clear();
++                if (work) {
++                    const auto error = InventorySelection::access_error(work);
++                    if (!error.empty()) reason = error;
++                } // Native continuation validates only remaining requirements.
 +                auto lines = rec.simple_requirements().get_folded_components_list(70, c_light_gray, inv,
 +                    rec.get_component_filter(recipe_filter_flags::no_favorite | recipe_filter_flags::no_equipped), batch);
 +                auto tools = rec.simple_requirements().get_folded_tools_list(70, c_light_gray, inv, batch);
@@ -1172,6 +1180,12 @@ index 0000000..dee2811
 +                    time, bool(work), work ? std::clamp(work->item_counter, 0, 10000000) : 0));
 +            };
 +            for (auto loc : u.all_items_loc()) if (loc->is_craft()) add(loc->get_making(), loc);
++            map& m = get_map();
++            for (const auto& tile : m.points_in_radius(u.pos(), 1)) {
++                if (!u.sees(tile) || !m.accessible_items(tile) ||
++                    (tile != u.pos() && !m.clear_path(u.pos(), tile, 1, 1, 100))) continue;
++                for (auto& it : m.i_at(tile)) if (it.is_craft()) add(it.get_making(), item_location(map_cursor(tile), &it));
++            }
 +            for (auto rec : recipes) add(*rec, {});
 +        }
 +        const auto list = fbb.CreateVector(rows); const auto why = fbb.CreateString(error);
@@ -1183,8 +1197,18 @@ index 0000000..dee2811
 +        u.invalidate_crafting_inventory();
 +        const auto& choice = entries_[entry-1];
 +        if (choice.resume) {
-+            if (!choice.work || !choice.work->is_craft() || &choice.work->get_making() != choice.rec || !u.has_item(*choice.work))
++            if (!choice.work || !choice.work->is_craft() || &choice.work->get_making() != choice.rec)
 +                return "Lavoro incompleto non piu disponibile.";
++            if (choice.work.held_by(u)) {
++                const auto error = InventorySelection::access_error(choice.work);
++                if (!error.empty()) return error;
++            } else {
++                map& m = get_map(); const auto tile = choice.work.pos_bub().raw();
++                if (choice.work.where() != item_location::type::map || square_dist(tile, u.pos()) > 1 ||
++                    !u.sees(tile) || !m.accessible_items(tile) ||
++                    (tile != u.pos() && !m.clear_path(u.pos(), tile, 1, 1, 100)))
++                    return "Lavoro incompleto non piu raggiungibile.";
++            }
 +            if (u.activity || u.is_underwater() || u.is_mounted()) return "Ripresa non disponibile.";
 +            if (!u.has_recipe(choice.rec, u.crafting_inventory(), u.get_crafting_group())) return "Ricetta non disponibile.";
 +            return "";
@@ -1197,7 +1221,10 @@ index 0000000..dee2811
 +        if (!validate(u, view, entry).empty()) return false;
 +        auto choice = entries_[entry-1]; const int batch = batch_; clear();
 +        if (choice.work) {
-+            avatar_action::use_item(u, choice.work, "craft");
++            if (choice.work.held_by(u)) avatar_action::use_item(u, choice.work, "craft");
++            else if (u.can_continue_craft(*choice.work))
++                u.assign_activity(craft_activity_actor(choice.work, false)); // Same native workbench path as iexamine.
++
 +        } else if (crafting_allowed(u, *choice.rec)) {
 +            craft_command command(choice.rec, batch, false, &u, std::nullopt, true);
 +            command.execute();
@@ -2500,10 +2527,10 @@ index 0000000..b707595
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..61a8b0a
+index 0000000..12c1c01
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,885 @@
+@@ -0,0 +1,887 @@
 +#include "cwm_motion.h"
 +// CDDA CWM IPC Server Implementation
 +// Licensed under Apache-2.0
@@ -2961,8 +2988,10 @@ index 0000000..61a8b0a
 +        accepted = crafting_selection_.execute(u, command.crafting_view, command.crafting_entry);
 +        refresh_activity(u);
 +        const bool acted = accepted || u.moves != before_moves;
-+        if (acted) ++world_revision_;
-+        result_ = Result{command.id, accepted, accepted ? "" : "Crafting annullato o requisiti non piu validi."};
++        // Native placement may store/drop an already-created craft without
++        // starting ACT_CRAFT. Publish that canonical mutation even with zero work.
++        ++world_revision_;
++        result_ = Result{command.id, accepted, accepted ? "" : "Nessun lavoro avviato; controlla gli eventuali incompleti in K."};
 +        return acted;
 +    } else if (command.equipment_action >= 0) {
 +        auto error = inventory_selection_.validate(u, command.inventory_view,
@@ -3843,10 +3872,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..d6090c2
+index 0000000..c8ede16
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,1182 @@
+@@ -0,0 +1,1226 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "move_mode.h"
@@ -3931,6 +3960,18 @@ index 0000000..d6090c2
 +        cdda::cwm::MessageBuilder wire( server.received_sequence_ + 1, 1, server.identity_ );
 +        const auto bytes = wire.build_cancel_first_aid( id, token );
 +        server.handle_client_message( bytes.data(), bytes.size(), get_avatar(), get_map(), *g );
++    }
++    static std::pair<uint64_t,uint32_t> crafting( CwmServer &server ) {
++        cdda::cwm::MessageBuilder wire(1,1,server.identity_);
++        const auto bytes=server.crafting_selection_.query(get_avatar(),1,"bandages_makeshift",1,wire);
++        const auto* view=CDDA::CWM::GetCwmMessage(bytes.data())->payload_as_CraftingView();
++        REQUIRE(view->entries()->size()>0);
++        return {view->view_id(),view->entries()->Get(0)->id()};
++    }
++    static void craft( CwmServer &server, uint64_t view, uint32_t entry, uint64_t id=1 ) {
++        cdda::cwm::MessageBuilder wire(server.received_sequence_+1,1,server.identity_);
++        const auto bytes=wire.build_crafting_request(id,view,entry);
++        server.handle_client_message(bytes.data(),bytes.size(),get_avatar(),get_map(),*g);
 +    }
 +    static void interrupt_crafting( CwmServer &server, uint64_t token, uint64_t id ) {
 +        cdda::cwm::MessageBuilder wire(server.received_sequence_+1,1,server.identity_);
@@ -5014,6 +5055,12 @@ index 0000000..d6090c2
 +    CHECK_FALSE(u.activity); REQUIRE(work); CHECK(work->item_counter==progress);
 +    cwm::CwmServerTestAccess::interrupt_crafting(server,token,2); // Deduplication cannot remove/refund work.
 +    REQUIRE(work); CHECK(work->item_counter==progress);
++    SECTION("resume the carried native work") {}
++    SECTION("resume the same native work on a nearby surface") {
++        REQUIRE(u.get_wielded_item()==work);
++        item moved=u.remove_weapon(); get_map().add_item(u.pos(),moved);
++        u.invalidate_crafting_inventory();
++    }
 +    cdda::cwm::MessageBuilder resumed(2,1,{101,102,103});
 +    auto resumed_bytes=selection.query(u,2,"bandages_makeshift",1,resumed);
 +    auto resumed_view=CDDA::CWM::GetCwmMessage(resumed_bytes.data())->payload_as_CraftingView();
@@ -5027,7 +5074,33 @@ index 0000000..d6090c2
 +    for(int turn=0; turn<100 && u.activity; ++turn) {u.moves=100;u.activity.do_turn(u);}
 +    CHECK_FALSE(u.activity);
 +    CHECK_FALSE(character_has_item_with_var_val(u,"uid","crafting-unit-sheet"));
-+    CHECK(u.amount_of(itype_id("bandages_makeshift"))==2);
++    int results=u.amount_of(itype_id("bandages_makeshift"));
++    for(const auto& it : get_map().i_at(u.pos())) if(it.typeId()==itype_id("bandages_makeshift")) results+=it.count();
++    CHECK(results==2);
++}
++
++TEST_CASE("cwm_craft_wire_deduplicates_and_revalidates_before_native_mutation", "[cwm][crafting]")
++{
++    clear_avatar();clear_map();clear_creatures();
++    avatar& u=get_avatar();u.setpos(tripoint(60,60,0));
++    REQUIRE(u.wear_item(item(itype_id("backpack_hiking"))));
++    u.learn_recipe(&recipe_id("bandages_makeshift").obj());
++    item& sheet=u.i_add(item(itype_id("sheet_cotton")));
++    cwm::CwmServer server("/unused-cwm-craft-admission");cwm::CwmServerTestAccess::ready(server);
++    const auto [view,entry]=cwm::CwmServerTestAccess::crafting(server);
++    cwm::CwmServerTestAccess::craft(server,view,entry);
++    REQUIRE(server.has_queued_action());
++    cwm::CwmServerTestAccess::craft(server,view,entry); // Pending command is admitted once.
++    REQUIRE(server.has_queued_action());
++    SECTION("selected component becomes favorite after admission") { sheet.is_favorite=true; }
++    SECTION("another native activity starts before execution") { u.assign_activity(ACT_WAIT,1000); }
++    const int moves=u.moves;const auto time=calendar::turn;
++    CHECK_FALSE(cwm::CwmServerTestAccess::execute(server)); // Exactly one queued command.
++    CHECK_FALSE(cwm::CwmServerTestAccess::accepted(server));
++    CHECK_FALSE(server.has_queued_action());CHECK(u.has_item(sheet));CHECK(u.moves==moves);CHECK(calendar::turn==time);
++    cwm::CwmServerTestAccess::complete(server);
++    cwm::CwmServerTestAccess::craft(server,view,entry);CHECK_FALSE(server.has_queued_action());
++    CHECK(u.has_item(sheet));
 +}
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644

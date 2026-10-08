@@ -305,7 +305,7 @@ int main(int argc, const char *argv[]) {
             item favorite(itype_id("sheet_cotton"), calendar::turn); favorite.is_favorite = true;
             favorite.set_var("uid", "crafting-favorite"); u.i_add(favorite);
             item nearby(itype_id("sheet_cotton_patchwork"), calendar::turn);
-            nearby.set_var("uid", "crafting-nearby"); get_map().add_item(u.pos()+tripoint_east, nearby);
+            nearby.set_var("uid", "crafting-nearby"); get_map().add_item(u.pos()+tripoint_west, nearby);
             u.moves = 100; g->set_safe_mode(SAFE_MODE_OFF);
         }
         if (create_medicine) {

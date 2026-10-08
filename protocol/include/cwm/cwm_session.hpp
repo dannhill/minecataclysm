@@ -9,6 +9,7 @@
 #include <limits>
 #include <random>
 #include <set>
+#include <string_view>
 #include <tuple>
 #include <unordered_map>
 
@@ -58,7 +59,7 @@ inline bool valid_inventory(const CDDA::CWM::InventoryView* view) {
 }
 inline bool valid_crafting(const CDDA::CWM::CraftingView* view) {
     const auto text = [](const auto* s, size_t bound, bool empty = true) {
-        return s && s->size() <= bound && (empty || s->size()) && s->str().find('\0') == std::string::npos;
+        return s && s->size() <= bound && (empty || s->size()) && std::string_view(s->c_str(), s->size()).find('\0') == std::string::npos;
     };
     if (!view || !view->query_id() || !view->batch() || view->batch() > 20 || !view->entries() ||
         view->entries()->size() > 256 || !text(view->error(), 2048)) return false;
