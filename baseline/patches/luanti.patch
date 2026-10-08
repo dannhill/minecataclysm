@@ -1109,10 +1109,10 @@ index 0000000..2214cd4
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..99f20f0
+index 0000000..af8d5fd
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,2333 @@
+@@ -0,0 +1,2338 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
@@ -2855,6 +2855,11 @@ index 0000000..99f20f0
 +            ((ent.state_flags & cdda::cwm::HOSTILE_TO_PLAYER) ?
 +             (impl.metrics_.pause_reasons ? L" — riprendi per attaccare" : impl.weapon_token_ ? L" — F mantenuto: mira; clic sinistro: spara; R: ricarica" : L" — clic sinistro: attacco ravvicinato") :
 +             L" — creatura non ostile");
++        if (impl.weapon_token_ && (ent.state_flags & cdda::cwm::HOSTILE_TO_PLAYER)) {
++            // Actual native recoil, not a locally predicted hit probability.
++            impl.hover_hint_ += L" — rinculo " + std::to_wstring(int(impl.weapon_recoil_));
++            if (!impl.weapon_reason_.empty()) impl.hover_hint_ += L" — " + utf8_to_wide(impl.weapon_reason_);
++        }
 +    }
 +    return impl.pointed_actor_ != 0;
 +}

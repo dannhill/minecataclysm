@@ -2741,10 +2741,10 @@ index 0000000..c68aca2
 +} // namespace cwm
 diff --git a/src/cwm/cwm_ranged.h b/src/cwm/cwm_ranged.h
 new file mode 100644
-index 0000000..54ad346
+index 0000000..eaf7b95
 --- /dev/null
 +++ b/src/cwm/cwm_ranged.h
-@@ -0,0 +1,91 @@
+@@ -0,0 +1,95 @@
 +#pragma once
 +#include "avatar.h"
 +#include "avatar_action.h"
@@ -2780,8 +2780,10 @@ index 0000000..54ad346
 +    if (u.activity) return "Interrompi o concludi l'attivita prima di agire.";
 +    if (u.is_mounted() || u.in_vehicle) return "Armi montate/veicoli: interfaccia successiva.";
 +    const auto mode=w->gun_current_mode();
-+    if (!mode || mode->has_flag(flag_RELOAD_AND_SHOOT)) return "Archi e armi carica-e-spara: interfaccia successiva.";
++    if (!mode || mode.melee() || !mode->is_gun() || mode.qty <= 0) return "Modalita non balistica: interfaccia successiva.";
++    if (mode->has_flag(flag_RELOAD_AND_SHOOT)) return "Archi e armi carica-e-spara: interfaccia successiva.";
 +    if (action==2) return w->is_reloadable() && u.rate_action_reload(*w)==hint_rating::good ? "" : "Arma non ricaricabile o gia piena.";
++    if (w->ammo_data() && !w->ammo_types().count(w->loaded_ammo().ammo_type())) return "Munizioni caricate incompatibili.";
 +    std::vector<std::string> messages;
 +    const bool common=gunmode_checks_common(u,get_map(),messages,mode);
 +    const bool weapon=gunmode_checks_weapon(u,get_map(),messages,mode);
@@ -2816,8 +2818,10 @@ index 0000000..54ad346
 +    bool execute(avatar& u, game& g, uint64_t weapon, uint64_t target, int action) {
 +        if (!validate(u,g,weapon,target,action).empty()) return false;
 +        if (action==2) { g.reload_wielded(true);return u.activity.id()==activity_id("ACT_RELOAD"); }
-+        auto* t=perceived_hostile(target,u,g);const auto w=u.get_wielded_item();const auto mode=w->gun_current_mode();
++        auto* t=perceived_hostile(target,u,g);const auto w=u.get_wielded_item();auto mode=w->gun_current_mode();
 +        if (!t || !avatar_action::can_fire_weapon(u,get_map(),*w)) return false;
++        if (action==1 && t->is_npc() && !static_cast<npc*>(t)->guaranteed_hostile() &&
++            !query_yn("Really attack %s?", t->disp_name())) return false;
 +        u.recoil=target_handler::aim_turning_recoil(u,t->pos());
 +        if (!u.last_target_pos || *u.last_target_pos!=get_map().getabs(t->pos())) u.aim_cache_dirty=true;
 +        u.last_target_pos=get_map().getabs(t->pos());u.last_target=g.shared_from(*t);
@@ -2838,7 +2842,7 @@ index 0000000..54ad346
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..5a30a40
+index 0000000..5e3a255
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
 @@ -0,0 +1,905 @@
@@ -2934,7 +2938,7 @@ index 0000000..5a30a40
 +    for (const auto& command : commands_)
 +        ledger_.complete({command.id, false, "Connection closed before execution", world_revision_});
 +    commands_.clear();
-+    crafting_selection_.clear();
++    crafting_selection_.clear(); ranged_selection_.clear();
 +    if (result_) ledger_.complete({result_->id, result_->accepted, result_->error, world_revision_});
 +    result_.reset();
 +    snapshot_sent_ = negotiated_ = ready_ = rejecting_ = false;
@@ -2981,7 +2985,7 @@ index 0000000..5a30a40
 +}
 +
 +void CwmServer::reset_world(avatar& u, map& m, game& g, uint64_t request_id) {
-+    inventory_selection_.clear();
++    inventory_selection_.clear(); ranged_selection_.clear();
 +    if (realtime_) drop_realtime_input(u, m, g);
 +    resync_id_ = request_id;
 +    ready_ = false;
@@ -4205,10 +4209,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..69f8fc9
+index 0000000..9e8faf9
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,1254 @@
+@@ -0,0 +1,1329 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "move_mode.h"
@@ -4260,6 +4264,17 @@ index 0000000..69f8fc9
 +        cdda::cwm::MessageBuilder wire( server.received_sequence_ + 1, 1, server.identity_ );
 +        const auto bytes = wire.build_attack_request( id, target );
 +        server.handle_client_message( bytes.data(), bytes.size(), get_avatar(), get_map(), *g );
++    }
++    static uint64_t weapon( CwmServer &server ) { return server.ranged_selection_.refresh(get_avatar()); }
++    static void ranged(CwmServer& server,uint64_t weapon,uint64_t target,int action,uint64_t id=1) {
++        cdda::cwm::MessageBuilder wire(server.received_sequence_+1,1,server.identity_);
++        const auto bytes=wire.build_ranged_request(id,weapon,target,static_cast<CDDA::CWM::RangedAction>(action));
++        server.handle_client_message(bytes.data(),bytes.size(),get_avatar(),get_map(),*g);
++    }
++    static void interrupt_reload(CwmServer& server,uint64_t token,uint64_t id) {
++        cdda::cwm::MessageBuilder wire(server.received_sequence_+1,1,server.identity_);
++        const auto bytes=wire.build_cancel_reload(id,token);
++        server.handle_client_message(bytes.data(),bytes.size(),get_avatar(),get_map(),*g);
 +    }
 +    static void mode( CwmServer &server, int mode, uint64_t id = 1 ) {
 +        cdda::cwm::MessageBuilder wire( server.received_sequence_ + 1, 1, server.identity_ );
@@ -5462,6 +5477,70 @@ index 0000000..69f8fc9
 +    CHECK_FALSE(selection.execute(u,view->view_id(),1));
 +    CHECK_FALSE(u.activity);CHECK(work);CHECK(work->item_counter==0);
 +    CHECK(calendar::turn==time);CHECK(u.moves==moves);
++}
++
++TEST_CASE("cwm_ranged_native_aim_cost_fire_and_readonly_weapon_state", "[cwm][ranged]")
++{
++    clear_avatar();clear_map();clear_creatures();
++    auto& u=get_avatar();auto& m=get_map();u.setpos(tripoint(60,60,0));
++    item gun(itype_id("glock_19"));gun.ammo_set(itype_id("9mm"),5);REQUIRE(u.wield(gun));
++    u.set_skill_level(skill_id("gun"),8);u.set_skill_level(skill_id("pistol"),8);u.recoil=MAX_RECOIL;u.moves=100;
++    calendar::turn=calendar::turn_zero+36_hours;get_weather().update_weather();u.recalc_sight_limits();m.reset_light_level();m.build_map_cache(0,true);m.invalidate_visibility_cache();m.update_visibility_cache(0);
++    auto* target=g->place_critter_at(mtype_id("mon_zombie"),u.pos()+tripoint(0,-4,0));REQUIRE(target);REQUIRE(u.sees(*target));
++    const auto id=cwm::CwmMapExporter::monster_entity_id(*target);cwm::RangedSelection selection;const auto token=selection.refresh(u);REQUIRE(token);
++    auto w=u.get_wielded_item();const int ammo=w->ammo_remaining();const auto time=calendar::turn;
++    flatbuffers::FlatBufferBuilder f;const auto state=cwm::export_ranged_weapon(f,u,token);f.Finish(state);
++    CHECK(calendar::turn==time);CHECK(u.moves==100);CHECK(u.recoil==MAX_RECOIL);CHECK(w->ammo_remaining()==ammo);
++    REQUIRE(selection.validate(u,*g,token,id,0).empty());REQUIRE(selection.execute(u,*g,token,id,0));
++    CHECK(u.moves<=0);CHECK(u.recoil<MAX_RECOIL);CHECK(w->ammo_remaining()==ammo);CHECK(calendar::turn==time);
++    u.moves=100;u.recoil=0;const auto before=u.moves;
++    REQUIRE(selection.execute(u,*g,token,id,1));CHECK(w->ammo_remaining()==ammo-1);CHECK(u.moves<before);CHECK(u.recoil>0);
++    CHECK(target->get_hp()<target->get_hp_max());
++    item other(itype_id("glock_19"));other.ammo_set(itype_id("9mm"),5);u.remove_weapon();REQUIRE(u.wield(other));
++    CHECK_FALSE(selection.validate(u,*g,token,id,1).empty());
++}
++
++TEST_CASE("cwm_ranged_commands_revalidate_and_deduplicate_without_phantom_shots", "[cwm][ranged]")
++{
++    clear_avatar();clear_map();clear_creatures();auto& u=get_avatar();auto& m=get_map();u.setpos(tripoint(60,60,0));
++    item gun(itype_id("glock_19"));gun.ammo_set(itype_id("9mm"),5);REQUIRE(u.wield(gun));
++    calendar::turn=calendar::turn_zero+36_hours;get_weather().update_weather();u.recalc_sight_limits();m.reset_light_level();m.build_map_cache(0,true);m.invalidate_visibility_cache();m.update_visibility_cache(0);
++    auto* target=g->place_critter_at(mtype_id("mon_zombie"),u.pos()+tripoint(0,-4,0));REQUIRE(target);REQUIRE(u.sees(*target));
++    g->set_safe_mode(SAFE_MODE_OFF);cwm::CwmServer server("/unused-ranged");cwm::CwmServerTestAccess::ready(server);
++    const auto token=cwm::CwmServerTestAccess::weapon(server);const auto id=cwm::CwmMapExporter::monster_entity_id(*target);
++    cwm::CwmServerTestAccess::ranged(server,token,id,1);REQUIRE(server.has_queued_action());
++    cwm::CwmServerTestAccess::ranged(server,token,id,1);REQUIRE(server.has_queued_action());
++    SECTION("target becomes friendly") {target->friendly=-1;}
++    SECTION("weapon unloaded before execution") {u.get_wielded_item()->ammo_unset();}
++    SECTION("other activity starts") {u.assign_activity(activity_id("ACT_WAIT"),1000);}
++    const auto ammo=u.get_wielded_item()->ammo_remaining();const int moves=u.moves;const auto time=calendar::turn;
++    CHECK_FALSE(cwm::CwmServerTestAccess::execute(server));CHECK_FALSE(cwm::CwmServerTestAccess::accepted(server));CHECK_FALSE(server.has_queued_action());
++    CHECK(u.get_wielded_item()->ammo_remaining()==ammo);CHECK(u.moves==moves);CHECK(calendar::turn==time);
++    cwm::CwmServerTestAccess::complete(server);cwm::CwmServerTestAccess::ranged(server,token,id,1);CHECK_FALSE(server.has_queued_action());
++}
++
++TEST_CASE("cwm_reload_native_ammo_choice_confirmation_and_interruption", "[cwm][reload]")
++{
++    clear_avatar();clear_map();clear_creatures();auto& u=get_avatar();u.setpos(tripoint(60,60,0));
++    REQUIRE(u.wear_item(item(itype_id("backpack_hiking"))));item gun(itype_id("glock_19"));gun.ammo_set(itype_id("9mm"),3);REQUIRE(u.wield(gun));
++    auto ammo=u.i_add(item(itype_id("9mm"),calendar::turn,30));REQUIRE(ammo);u.i_add(item(itype_id("38_special"),calendar::turn,10));
++    u.moves=100;g->new_game=false;g->uquit=QUIT_NO;g->set_safe_mode(SAFE_MODE_OFF);
++    cwm::CwmServer server("/unused-reload");cwm::CwmServerTestAccess::ready(server);const auto weapon=cwm::CwmServerTestAccess::weapon(server);
++    cwm::CwmServerTestAccess::ranged(server,weapon,0,2);REQUIRE(server.has_queued_action());
++    bool decline=false,interrupt=false;SECTION("complete once") {} SECTION("decline") {decline=true;} SECTION("cancel") {interrupt=true;}
++    int prompts=0;REQUIRE_FALSE(do_turn_with_action([&](){
++        cwm::CwmServerTestAccess::execute(server);CHECK(cwm::CwmServerTestAccess::accepted(server)==!decline);
++        CHECK(ammo->charges==30);CHECK(u.get_wielded_item()->ammo_remaining()==3);finish_external_action_phase();return false;
++    },[&](const std::string& text,const std::vector<std::string>& labels){
++        ++prompts;if(prompts==1) {CHECK(text.find("Choose ammunition")!=std::string::npos);REQUIRE(labels.size()==2);CHECK(labels.back()=="Cancel");return 0;}
++        CHECK(text.find("Reload")!=std::string::npos);return decline ? 1 : 0;
++    }));CHECK(prompts==2);
++    if(decline) {CHECK_FALSE(u.activity);return;}
++    REQUIRE(u.activity.id()==activity_id("ACT_RELOAD"));cwm::CwmServerTestAccess::complete(server);
++    const auto token=cwm::CwmServerTestAccess::consumption(server);REQUIRE(token);
++    if(interrupt) {cwm::CwmServerTestAccess::interrupt_reload(server,token,2);CHECK_FALSE(u.activity);CHECK(ammo->charges==30);CHECK(u.get_wielded_item()->ammo_remaining()==3);return;}
++    for(int i=0;i<200&&u.activity;++i) {u.moves=100;REQUIRE_FALSE(do_turn_with_action([&](){u.pause();return false;},{}));}
++    CHECK_FALSE(u.activity);CHECK(u.get_wielded_item()->ammo_remaining()==15);CHECK(ammo->charges==18);
 +}
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644

@@ -45,6 +45,7 @@ int main(int argc, const char *argv[]) {
     bool create_consumption = false;
     bool create_medicine = false;
     bool create_crafting = false;
+    bool create_ranged = false;
     bool create_body = false;
     bool create_combat = false;
     bool create_posture = false;
@@ -53,6 +54,7 @@ int main(int argc, const char *argv[]) {
     for (int i = 1; i < argc; ++i) {
         std::string arg(argv[i]);
         if (arg == "--create") create = true;
+        else if (arg == "--create-ranged") { create = true; create_ranged = true; create_posture = true; }
         else if (arg == "--create-crafting") { create = true; create_crafting = true; create_posture = true; }
         else if (arg == "--create-medicine") { create = true; create_medicine = true; create_posture = true; }
         else if (arg == "--create-consumption") { create = true; create_consumption = true; create_posture = true; }
@@ -293,6 +295,25 @@ int main(int argc, const char *argv[]) {
             item rock(itype_id("rock"), calendar::turn); rock.set_var("uid", "consumption-rock"); u.i_add(rock);
             u.set_thirst(200); u.update_stomach(calendar::turn, calendar::turn);
             u.moves = 100; g->set_safe_mode(SAFE_MODE_OFF);
+        }
+        if (create_ranged) {
+            u.remove_weapon();
+            if (!u.wear_item(item(itype_id("backpack_hiking"), calendar::turn))) return 26;
+            item gun(itype_id("glock_19"), calendar::turn);
+            gun.ammo_set(itype_id("9mm"),3);gun.set_var("uid","ranged-gun");
+            if (!u.wield(gun)) return 27;
+            u.set_skill_level(skill_id("gun"),8);u.set_skill_level(skill_id("pistol"),8);
+            item ammo(itype_id("9mm"),calendar::turn,30);ammo.set_var("uid","ranged-ammo");u.i_add(ammo);
+            item other(itype_id("9mmfmj"),calendar::turn,20);other.set_var("uid","ranged-other");u.i_add(other);
+            item wrong(itype_id("38_special"),calendar::turn,10);wrong.set_var("uid","ranged-wrong");u.i_add(wrong);
+            // A visible stationary hostile supports aiming/damage without equipment/pickup prerequisites.
+            auto* zombie=g->place_critter_at(mtype_id("mon_zombie"),tripoint(60,56,0));
+            if (!zombie) return 28;
+            zombie->unique_name="Bersaglio tiro";zombie->add_effect(efftype_id("tied"),10_days,true);zombie->moves=-10000;
+            auto* neutral=g->place_critter_at(mtype_id("mon_dog"),tripoint(62,56,0));
+            if (!neutral) return 29;
+            neutral->friendly=-1;neutral->unique_name="Amico (non bersaglio)";neutral->add_effect(efftype_id("tied"),10_days,true);
+            u.moves=100;u.recoil=MAX_RECOIL;g->set_safe_mode(SAFE_MODE_OFF);
         }
         if (create_crafting) {
             u.remove_weapon();
