@@ -1074,7 +1074,7 @@ index 0000000..2214cd4
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..5194dfa
+index 0000000..2784868
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
 @@ -0,0 +1,2202 @@
@@ -3203,7 +3203,7 @@ index 0000000..5194dfa
 +    if (pimpl_->decision_text_) {
 +        const auto screen = guienv->getVideoDriver()->getScreenSize();
 +        pimpl_->decision_text_->setRelativePosition(irr::core::rect<irr::s32>(
-+            50, 90, std::max(200, int(screen.Width) - 50), std::max(200, int(screen.Height) - 50)));
++            50, 170, std::max(200, int(screen.Width) - 50), std::max(250, int(screen.Height) - 40)));
 +        pimpl_->decision_text_->setText(pimpl_->decision_body_.c_str());
 +        pimpl_->decision_text_->setVisible(pimpl_->metrics_.pending_decision != 0);
 +    }
