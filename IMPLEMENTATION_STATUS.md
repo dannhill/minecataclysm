@@ -1,5 +1,30 @@
 # Implementation status
 
+Current delivery: [native aiming, shooting and reload](docs/fixes/native-ranged.md),
+CWM 2.14; both reconstructed runtimes installed together. F held aims using
+native move credit, LMB fires once with native ballistics, R uses native ammo
+choices/confirmation and canonical ACT_RELOAD. I pauses/interrupts reload;
+manual/menu pause grants no free aim and busy inputs do not replay later.
+Paid aim remains steady between real-time inputs without automatic improvement;
+movement/other actions/recovery end it. Native aim-cache perception recursion
+and absolute/local target confusion are repaired; the presentation ray uses
+native weapon range rather than Luanti hand reach. Only perceived hostile
+identities and the actual wielded ballistic mode are admitted and revalidated.
+Scoped native PASS: 86,045 assertions / 107 cases including native reload,
+coverage and shooter-accuracy checks; Luanti 308 tests plus 648 assertions /
+4 cases; protocol 8/8. Actual-renderer and pristine canonical-save evidence:
+[exact receipts](docs/fixes/native-ranged-evidence.json). Native saved reload
+resumes and transfers ammunition once, including actual installed runtimes.
+Four new ranged points bring [the usual manual backlog](docs/validation/pending-manual.md)
+to **20 PENDING**; automatic checks never imply user acceptance. Free reticle,
+neutral targets, bows/RAS, mounted/vehicle weapons, mode selection, arbitrary
+reload quantities/items and complete weapon animation/feedback remain later
+slices. Next essential slice: deep inventory quantities/drop/transfers and
+external containers. M5.5 remains historical FAILED; full SAVE-001 is open.
+
+The CWM 2.13 delivery below is historical, superseded by current 2.14;
+its original scoped identities and evidence remain preserved.
+
 Current delivery: [guided native crafting](docs/fixes/native-crafting.md),
 CWM 2.13; both reconstructed runtimes installed together. K opens known recipes,
 native book/helper knowledge, requirements, search and manual batches 1–20.

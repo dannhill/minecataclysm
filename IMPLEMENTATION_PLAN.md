@@ -274,8 +274,21 @@ ricostruiti installati; quattro nuovi test nel backlog, **16 PENDING**.
 Ricette liquide/gassose, sottoprodotti/pratica/costruzioni, preferiti ricette,
 sottoricette, selezione singola istanza, lavori nei veicoli, lettura/smontaggio
 e accelerazione generale restano fette successive: il punto 4 non e completo.
-Prossima fetta essenziale: combattimento a distanza con mira/ricarica native;
-inventario profondo e attivita estese rimangono in schedule.
+Successiva fetta implementata 2026-10-08: **tiro, mira e ricarica nativi**.
+F tenuto paga la mira CDDA, clic sinistro esegue un tiro/raffica della modalità
+corrente, R propone munizioni e conferma native prima di ACT_RELOAD. I ferma
+il tempo e interrompe; save in corso riprende il lavoro canonico e trasferisce
+le munizioni una sola volta. Conservazione della mira pagata fra input real time,
+nessun miglioramento durante pausa/menu, input occupati non accodati, token
+rinnovati al reconnect. Corrette ricorsione della cache visiva nativa e portata
+di puntamento limitata alla mano Luanti. CWM 2.14, verifica mirata e due runtime
+installati; [limiti/evidenze](docs/fixes/native-ranged.md). Quattro nuovi test
+manuali rinviati nel backlog, **20 PENDING**. Il punto combattimento non è
+completo: mirino libero configurabile, neutrali, archi/RAS, armi montate/veicoli,
+cambio modalità, munizioni parziali e presentazione delle armi restano previsti.
+Prossima fetta essenziale: inventario profondo, quantità/drop e trasferimenti
+fra tasche e contenitori esterni. Attività estese restano nella sequenza;
+nessuna validazione grafica pendente è promossa a PASS.
 
 
 ## Fase 3 — M6, veicoli

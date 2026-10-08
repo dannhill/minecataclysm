@@ -1,0 +1,733 @@
+{
+  "status": "SCOPED_AUTOMATED_PASS",
+  "protocol": "2.14",
+  "production_commit": "4bd4dd832d50bbeda8f9c5b5421a5941b29a5cba",
+  "verification_driver_commit": "8a89e6a79b372cde80248e2c3224fe86f12b2efe",
+  "artifact_root": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008",
+  "build_mode": "Incremental reconstructed pinned sources and complete committed patches; build caches retained. No cold build, full M5.5 or full SAVE-001 claimed.",
+  "environment": {
+    "os": "Linux-7.0.11-76070011-generic-x86_64-with-glibc2.35",
+    "python": "3.10.12",
+    "compiler": "c++ (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0",
+    "display": ":1",
+    "xauthority": "/run/user/1000/gdm/Xauthority"
+  },
+  "source_manifest": {
+    "format_version": 1,
+    "repositories": {
+      "cdda": {
+        "url": "https://github.com/CleverRaven/Cataclysm-DDA.git",
+        "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+        "shallow": true,
+        "patch": "baseline/patches/cdda.patch",
+        "patch_sha256": "0e9489ea74357c9c04fed9847ec588ecb8493f658750763153f415db95e510cf",
+        "tree_inventory": "baseline/trees/cdda.json",
+        "tree_sha256": "20990ed29448609d31aada9f1ebcc6fd5aa46e2bba52aa5ce594622bf1536f16",
+        "file_count": 8586,
+        "original_status": " M src/CMakeLists.txt\n M src/avatar.cpp\n M src/avatar_action.cpp\n M src/avatar_action.h\n M src/character.cpp\n M src/character_body.cpp\n M src/character_inventory.cpp\n M src/craft_command.cpp\n M src/craft_command.h\n M src/crafting.cpp\n M src/crafting.h\n M src/do_turn.cpp\n M src/do_turn.h\n M src/game.cpp\n M src/game.h\n M src/handle_action.cpp\n M src/iexamine.cpp\n M src/iuse_actor.cpp\n M src/melee.cpp\n M src/output.cpp\n M src/pickup.cpp\n M src/ranged.cpp\n M src/ranged.h\n M src/recipe.cpp\n M src/recipe.h\n M src/ui.cpp\n M tests/CMakeLists.txt\n M tests/test_main.cpp\n?? src/cwm/cwm_crafting.h\n?? src/cwm/cwm_inventory.h\n?? src/cwm/cwm_main.cpp\n?? src/cwm/cwm_map_exporter.cpp\n?? src/cwm/cwm_map_exporter.h\n?? src/cwm/cwm_ranged.h\n?? src/cwm/cwm_server.cpp\n?? src/cwm/cwm_server.h\n?? src/cwm/cwm_status_gauges.h\n?? src/cwm_motion.cpp\n?? src/cwm_motion.h\n?? src/safe_mode_actions.h\n?? tests/cwm_pickup_test.cpp\n?? tests/cwm_projection_test.cpp\n?? tests/cwm_runtime_test.cpp\n"
+      },
+      "luanti": {
+        "url": "https://github.com/luanti-org/luanti.git",
+        "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
+        "shallow": true,
+        "patch": "baseline/patches/luanti.patch",
+        "patch_sha256": "f3bce406dbf88dc41e4ce0833a62bc2b0fa3c8d04e4cc78181ed31d7bea28c64",
+        "tree_inventory": "baseline/trees/luanti.json",
+        "tree_sha256": "e0103c37c2a2b5653fa27d5a3a49f77c598f4125f8e409543eb4eb18d052608a",
+        "file_count": 2258,
+        "original_status": " M builtin/settingtypes.txt\n M src/CMakeLists.txt\n M src/client/CMakeLists.txt\n M src/client/client.cpp\n M src/client/clientenvironment.cpp\n M src/client/game.cpp\n M src/client/hud.cpp\n M src/client/inputhandler.cpp\n M src/client/keys.h\n M src/client/mesh_generator_thread.cpp\n M src/client/mesh_generator_thread.h\n M src/defaultsettings.cpp\n M src/network/clientpackethandler.cpp\n M src/server/player_sao.cpp\n M src/unittest/test_mapblock.cpp\n?? src/cdda/avatar_status.h\n?? src/cdda/cdda_bridge.cpp\n?? src/cdda/cdda_bridge.h\n?? src/cdda/crafting_inventory.h\n?? src/cdda/equipment_inventory.h\n?? src/cdda/ground_item_formspec.h\n?? src/cdda/ground_item_projection.h\n?? src/cdda/ground_item_visual.h\n?? src/cdda/posture_input.h\n"
+      },
+      "mineclonia": {
+        "url": "https://github.com/mark-wiemer/mineclonia.git",
+        "commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+        "shallow": true,
+        "patch": "baseline/patches/mineclonia.patch",
+        "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "tree_inventory": "baseline/trees/mineclonia.json",
+        "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36",
+        "file_count": 9359,
+        "original_status": ""
+      }
+    }
+  },
+  "protocol_schema": {
+    "path": "/home/dannhill/Projects/cdda-mineclonia/protocol/cwm.fbs",
+    "sha256": "659cfab54e28389639378e399013d5543b7ff396222f29ed68d551a7601e1cf7"
+  },
+  "source_refresh": {
+    "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/refresh-ray-range.json",
+    "sha256": "e03c21c2ad0e2d90185a11417909acff9f79eeff8bf51d169322f9ac17355153"
+  },
+  "source_replay": {
+    "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/source-replay-final.json",
+    "sha256": "cbd694e5bd035d715992fc017ddf9eb74217d072b5281937b53415b1284ab551"
+  },
+  "baseline_check": {
+    "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/baseline-check-final.log",
+    "sha256": "392df6a62d45fa4e34f9f7637ea467e5509182c611daf76e6bd9a9a0a909a3f8"
+  },
+  "runtime": {
+    "cdda": {
+      "source": "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/cdda/build/src/cdda-server",
+      "installed": "/home/dannhill/Projects/cdda-mineclonia/cdda/build/src/cdda-server",
+      "sha256": "cebbe31894ccb9b23137c8e12bf5a85c516cc48eae68b9663cd19f913e6fc5c6",
+      "rollback": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/cdda-previous-runtime",
+      "previous_sha256": "3569b76a9dcac8ad2535a246d9e15bda0e83db35da6756139c5aae3a775ccb13"
+    },
+    "luanti": {
+      "source": "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/luanti/bin/luanti",
+      "installed": "/home/dannhill/Projects/cdda-mineclonia/luanti/bin/luanti",
+      "sha256": "41bd5d59c2e4fe83a44997009813e9ee66600a2b1997ea322817dfb3c716799d",
+      "rollback": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/luanti-previous-runtime",
+      "previous_sha256": "0863ad5a9edf81fc3bf5aeabb65b20f9f5d61cf3bd9ddd6af8829f195f9de240"
+    }
+  },
+  "install_receipt": {
+    "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/install.json",
+    "sha256": "d2ef0da5afd1f532388595d64179bc0d197c72f24a5de162be44c5225d8ec2a4"
+  },
+  "verification": {
+    "native": {
+      "assertions": 86045,
+      "cases": 107,
+      "log": {
+        "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/test-native-final.log",
+        "sha256": "02c49b4c2406b5f2c6264c55663c4f5458494c0cc437829231531821970e08f7"
+      },
+      "build_log": {
+        "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/build-native-identity.log",
+        "sha256": "635a91d913ee9d8524975279ea34d463af011454199ed8dbba9d1fda677ec4b7"
+      },
+      "command": [
+        "build/tests/cata_test",
+        "[cwm],[diving],[pickup],[crafting],[reload],Ranged_coverage_vs_bullet,competent_shooter_accuracy,expert_shooter_accuracy",
+        "--rng-seed",
+        "42",
+        "--user-dir=/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/native-unit-final"
+      ],
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/cdda"
+    },
+    "luanti": {
+      "individual_tests": 308,
+      "modules": 47,
+      "catch_assertions": 648,
+      "catch_cases": 4,
+      "log": {
+        "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/test-luanti-final.log",
+        "sha256": "72ad5adb6e5c573de4c1ba99d36853b1c59e591e8b007c511f0fbdc6c886ce28"
+      },
+      "build_log": {
+        "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/build-luanti-range.log",
+        "sha256": "0038ad695d7bca69332469760ad2972a358ea915b03f60c3545172d4f7823b7e"
+      }
+    },
+    "protocol": {
+      "passed": 8,
+      "total": 8,
+      "log": {
+        "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/test-protocol-final.log",
+        "sha256": "219d6922d41919277b637c97761fb591f26d260302816b15d12e159ab5a1094f"
+      }
+    },
+    "renderer": {
+      "runs": [
+        {
+          "name": "gui-range",
+          "checks": 31,
+          "command": [
+            "python3",
+            "/home/dannhill/Projects/cdda-mineclonia/tests/ranged_gui_test.py",
+            "--workspace",
+            "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace",
+            "--fixture",
+            "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/fixture/user",
+            "--native-reader",
+            "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/native-save-reader",
+            "--artifacts",
+            "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/gui-range",
+            "--save-active"
+          ],
+          "log": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/gui-range.log",
+            "sha256": "361e3442bba9f7c61a433c97e526b4ddd646ccd77236192b43d08415473900ba"
+          },
+          "checks_receipt": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/gui-range/checks.json",
+            "sha256": "9bcb97e51c8207e4efb9e875d43dce42a94a4e4388794e48cc629633d274b5aa"
+          },
+          "native_save": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/gui-range/native.json",
+            "sha256": "29bfdb59b04e04ab9342de7f396796a4bf514dc56e8d32bde49a7c747185a5f2"
+          },
+          "screenshots": {
+            "aimed.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/gui-range/aimed.png",
+              "sha256": "6e34f224cbfe8e7af02799b24ec262b1539bf4e9fbef8939cd6d171144e8a048"
+            },
+            "ammo-choices.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/gui-range/ammo-choices.png",
+              "sha256": "ae47c83e4e0aebb807ed19bca7ae68b8ad086a208e2cf3e4065dfe17e3998e56"
+            },
+            "pointed-target.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/gui-range/pointed-target.png",
+              "sha256": "4399bc43260d881de8e7f8abb695dfc193363e645fc30d46dcc8965d4d12bbc1"
+            },
+            "reload-confirmation.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/gui-range/reload-confirmation.png",
+              "sha256": "f8ac80a2eb36a9bc26db131f3a22d16056f1e855f5f045120d921de73014938f"
+            },
+            "reload-paused.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/gui-range/reload-paused.png",
+              "sha256": "95c664a920759a31c0789b6d4c0302aa1ec44abf24d70368049a24b3d692cd70"
+            },
+            "save-active-reload.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/gui-range/save-active-reload.png",
+              "sha256": "49e39c8184d6252e4a821cd1fbaa70d6a9ef4ed62c3a93c1d0d119c2e8784d34"
+            }
+          },
+          "checks_by_name": {
+            "actual_start_ready": true,
+            "native_loaded_weapon_visible": true,
+            "manual_pause_blocks_aim_fire_reload_and_time": true,
+            "paused_keys_not_replayed": true,
+            "reading_does_not_aim_for_free": true,
+            "held_aim_uses_native_paid_steps": true,
+            "held_mouse_fires_exactly_once": true,
+            "native_shot_acknowledged": true,
+            "shot_does_not_move_player": true,
+            "native_target_takes_damage": true,
+            "empty_reticle_sends_no_shot": true,
+            "friendly_creature_not_accepted_as_ranged_target": true,
+            "native_reload_choices_exclude_incompatible_ammo": true,
+            "cancel_ammo_choice_keeps_rounds": true,
+            "native_reload_confirmation": true,
+            "decline_reload_keeps_rounds": true,
+            "reload_blocks_movement_aim_and_fire": true,
+            "inventory_freezes_native_reload": true,
+            "cancel_native_reload_preserves_rounds": true,
+            "reconnect_discards_old_weapon_handle_without_replaying_fire": true,
+            "new_reload_has_fresh_activity_token": true,
+            "shutdown_keeps_native_reload_activity": true,
+            "actual_runtime_survives_native_ranged_combat": true,
+            "byte_relay_completed_without_errors": true,
+            "ranged_save_readable_by_pristine_native_core": true,
+            "native_gun_instance_persists_once": true,
+            "canonical_ammunition_conserved_except_one_fired_round": true,
+            "ranged-other_untouched": true,
+            "ranged-wrong_untouched": true,
+            "canonical_save_contains_native_reload_actor": true,
+            "canonical_ranged_save_has_no_luanti_inventory": true
+          }
+        },
+        {
+          "name": "gui-installed",
+          "checks": 31,
+          "command": [
+            "python3",
+            "/home/dannhill/Projects/cdda-mineclonia/tests/ranged_gui_test.py",
+            "--workspace",
+            "/home/dannhill/Projects/cdda-mineclonia",
+            "--fixture",
+            "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/fixture/user",
+            "--native-reader",
+            "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/native-save-reader",
+            "--artifacts",
+            "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/gui-installed",
+            "--save-active"
+          ],
+          "log": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/gui-installed.log",
+            "sha256": "361e3442bba9f7c61a433c97e526b4ddd646ccd77236192b43d08415473900ba"
+          },
+          "checks_receipt": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/gui-installed/checks.json",
+            "sha256": "9bcb97e51c8207e4efb9e875d43dce42a94a4e4388794e48cc629633d274b5aa"
+          },
+          "native_save": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/gui-installed/native.json",
+            "sha256": "abe6cfae2e09943f619747b54b25800ff1e1e5174f6c61e4550e6aac39822631"
+          },
+          "screenshots": {
+            "aimed.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/gui-installed/aimed.png",
+              "sha256": "25bf7dd8c704d2184ba0421bfc5dcc31f42c59a7ba6b144a5642d847d1bc2072"
+            },
+            "ammo-choices.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/gui-installed/ammo-choices.png",
+              "sha256": "c58a89e52392a1f4bbc8e36cfb945068158b7f9e6762a20ab447b5407ef3ecf6"
+            },
+            "pointed-target.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/gui-installed/pointed-target.png",
+              "sha256": "3baaa7ffe3f9305a27b058f9c8494c3adce3fc33c14c4c439c693eec918be1cf"
+            },
+            "reload-confirmation.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/gui-installed/reload-confirmation.png",
+              "sha256": "d342cbff45f5d5ad7511690fa34fa2792e1d24058efc2dd4511251f40b2735be"
+            },
+            "reload-paused.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/gui-installed/reload-paused.png",
+              "sha256": "b14718ba1e256892732b13c48b77f30036e33c9a9626766968fc5d292fcf998b"
+            },
+            "save-active-reload.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/gui-installed/save-active-reload.png",
+              "sha256": "42f75e287b32973a0b46295e75eb52fc494dfedb130a1393ec4a46abcaa1e157"
+            }
+          },
+          "checks_by_name": {
+            "actual_start_ready": true,
+            "native_loaded_weapon_visible": true,
+            "manual_pause_blocks_aim_fire_reload_and_time": true,
+            "paused_keys_not_replayed": true,
+            "reading_does_not_aim_for_free": true,
+            "held_aim_uses_native_paid_steps": true,
+            "held_mouse_fires_exactly_once": true,
+            "native_shot_acknowledged": true,
+            "shot_does_not_move_player": true,
+            "native_target_takes_damage": true,
+            "empty_reticle_sends_no_shot": true,
+            "friendly_creature_not_accepted_as_ranged_target": true,
+            "native_reload_choices_exclude_incompatible_ammo": true,
+            "cancel_ammo_choice_keeps_rounds": true,
+            "native_reload_confirmation": true,
+            "decline_reload_keeps_rounds": true,
+            "reload_blocks_movement_aim_and_fire": true,
+            "inventory_freezes_native_reload": true,
+            "cancel_native_reload_preserves_rounds": true,
+            "reconnect_discards_old_weapon_handle_without_replaying_fire": true,
+            "new_reload_has_fresh_activity_token": true,
+            "shutdown_keeps_native_reload_activity": true,
+            "actual_runtime_survives_native_ranged_combat": true,
+            "byte_relay_completed_without_errors": true,
+            "ranged_save_readable_by_pristine_native_core": true,
+            "native_gun_instance_persists_once": true,
+            "canonical_ammunition_conserved_except_one_fired_round": true,
+            "ranged-other_untouched": true,
+            "ranged-wrong_untouched": true,
+            "canonical_save_contains_native_reload_actor": true,
+            "canonical_ranged_save_has_no_luanti_inventory": true
+          }
+        },
+        {
+          "name": "gui-installed-resume",
+          "checks": 11,
+          "command": [
+            "python3",
+            "/home/dannhill/Projects/cdda-mineclonia/tests/ranged_gui_test.py",
+            "--workspace",
+            "/home/dannhill/Projects/cdda-mineclonia",
+            "--fixture",
+            "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/gui-range/user",
+            "--native-reader",
+            "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/native-save-reader",
+            "--artifacts",
+            "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/gui-installed-resume",
+            "--resume-active"
+          ],
+          "log": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/gui-installed-resume.log",
+            "sha256": "ab3e3288991144baadf8ced5c1f43b2801019772682e3f39b98ca9ef47369b04"
+          },
+          "checks_receipt": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/gui-installed-resume/checks.json",
+            "sha256": "9067529199978359566fac031c9a2a5b51cb6d0eb81c04c28adf3421417961c2"
+          },
+          "native_save": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/gui-installed-resume/native.json",
+            "sha256": "b50611edd52e9988a8d58db70d34c6e9b6c62fd5996cdab02f53fdff435eb7dd"
+          },
+          "screenshots": {
+            "reloaded.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/gui-installed-resume/reloaded.png",
+              "sha256": "bb34fc6e42d24ae30563b414bd076ca60f70005e38d2b171fc5ed0f00d2e79c8"
+            }
+          },
+          "checks_by_name": {
+            "actual_start_ready": true,
+            "canonical_reload_resumes_saved_progress": true,
+            "saved_reload_completes_without_new_command": true,
+            "byte_relay_completed_without_errors": true,
+            "ranged_save_readable_by_pristine_native_core": true,
+            "native_gun_instance_persists_once": true,
+            "canonical_ammunition_conserved_except_one_fired_round": true,
+            "ranged-other_untouched": true,
+            "ranged-wrong_untouched": true,
+            "completed_reload_has_no_pending_activity": true,
+            "canonical_ranged_save_has_no_luanti_inventory": true
+          }
+        },
+        {
+          "name": "gui-ordinary",
+          "checks": 24,
+          "command": [
+            "python3",
+            "/home/dannhill/Projects/cdda-mineclonia/tests/ranged_gui_test.py",
+            "--workspace",
+            "/home/dannhill/Projects/cdda-mineclonia",
+            "--fixture",
+            "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/fixture/user",
+            "--native-reader",
+            "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/native-save-reader",
+            "--artifacts",
+            "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/gui-ordinary",
+            "--action-driven"
+          ],
+          "log": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/gui-ordinary.log",
+            "sha256": "d0545d6975e9bed1096904b7e207005627fc01edd01fabf238f54ffb60032bef"
+          },
+          "checks_receipt": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/gui-ordinary/checks.json",
+            "sha256": "c25b3a9bd439839d668323ff086d1a571d0513f090ff398c6127e5b847282bd8"
+          },
+          "native_save": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/gui-ordinary/native.json",
+            "sha256": "f89745b5b36498602c03683ad6a774f7938d375ca3c0bc7c8c739e95d8525c5b"
+          },
+          "screenshots": {
+            "aimed.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/gui-ordinary/aimed.png",
+              "sha256": "d3a06cd466e7542665371afba7e73638b470078181f73c24c38451ed83389cec"
+            },
+            "ammo-choices.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/gui-ordinary/ammo-choices.png",
+              "sha256": "5554b4ca175912f829d676ddecbac089e7e3458fd9cebd24cacf488e40453502"
+            },
+            "pointed-target.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/gui-ordinary/pointed-target.png",
+              "sha256": "3c8328eb069137bf61096e83ec5d508a496fd940bdd42f36192994021db9768d"
+            },
+            "reload-complete.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/gui-ordinary/reload-complete.png",
+              "sha256": "ff1703525c24ee72869c20ef0ef01fc53376351aa4fb3443ed59610c3ce50e03"
+            },
+            "reload-confirmation.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/gui-ordinary/reload-confirmation.png",
+              "sha256": "98eb9ea4ac68b557afc4dbb55161b4a1c9629312cae752c6d88130d05c9424a9"
+            }
+          },
+          "checks_by_name": {
+            "actual_start_ready": true,
+            "native_loaded_weapon_visible": true,
+            "reading_does_not_aim_for_free": true,
+            "held_aim_uses_native_paid_steps": true,
+            "held_mouse_fires_exactly_once": true,
+            "native_shot_acknowledged": true,
+            "shot_does_not_move_player": true,
+            "native_target_takes_damage": true,
+            "empty_reticle_sends_no_shot": true,
+            "friendly_creature_not_accepted_as_ranged_target": true,
+            "native_reload_choices_exclude_incompatible_ammo": true,
+            "cancel_ammo_choice_keeps_rounds": true,
+            "native_reload_confirmation": true,
+            "decline_reload_keeps_rounds": true,
+            "native_reload_transfers_ammo_once": true,
+            "actual_runtime_survives_native_ranged_combat": true,
+            "byte_relay_completed_without_errors": true,
+            "ranged_save_readable_by_pristine_native_core": true,
+            "native_gun_instance_persists_once": true,
+            "canonical_ammunition_conserved_except_one_fired_round": true,
+            "ranged-other_untouched": true,
+            "ranged-wrong_untouched": true,
+            "completed_reload_has_no_pending_activity": true,
+            "canonical_ranged_save_has_no_luanti_inventory": true
+          }
+        },
+        {
+          "name": "crafting-regression",
+          "checks": 25,
+          "command": [
+            "python3",
+            "/home/dannhill/Projects/cdda-mineclonia/tests/crafting_gui_test.py",
+            "--workspace",
+            "/home/dannhill/Projects/cdda-mineclonia",
+            "--fixture",
+            "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/fixture/user",
+            "--native-reader",
+            "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/native-save-reader",
+            "--artifacts",
+            "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/crafting-regression"
+          ],
+          "log": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/crafting-regression.log",
+            "sha256": "58726b7b687c2523d1124e22f2a477fd148666efbbac9d08445ccbb6e191f9c9"
+          },
+          "checks_receipt": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/crafting-regression/checks.json",
+            "sha256": "8d5314647c5024f61b3c91b3c0c2f859d1f47b81020ff26405ccbd52a8e8231f"
+          },
+          "native_save": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/crafting-regression/native.json",
+            "sha256": "f99e714d22deb1b8348e4d077731ddb4d30d808a33fabfe8a15310040a93d2ce"
+          },
+          "screenshots": {
+            "catalog.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/crafting-regression/catalog.png",
+              "sha256": "6b25255761a2fddbbcce83d0f318fd5e72c9aa520afede3bab909c7bedfe134e"
+            },
+            "component-confirmation.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/crafting-regression/component-confirmation.png",
+              "sha256": "a170d4ffc50737b8c2cd74ef794496a9eca02488e0de2bfe214130d1dc8e4408"
+            },
+            "component-sources.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/crafting-regression/component-sources.png",
+              "sha256": "0958fb02231e582e21cb572c1dcb6987b2f910ca91f80899a523a0605e04eb33"
+            },
+            "crafting-paused.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/crafting-regression/crafting-paused.png",
+              "sha256": "4e5e4a64e5206ca134329c243d232ed16a225a6c85ace00bad822009fa07c4e6"
+            },
+            "incomplete-work.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/crafting-regression/incomplete-work.png",
+              "sha256": "6f9d179b755af78be7a8e974bb0fed12d072a5c5a452ccf41f37604ee65f7448"
+            },
+            "recipe-details.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/crafting-regression/recipe-details.png",
+              "sha256": "7bfab4108fe788e4b086fb99530e3ac673beb4129898e279c7cc9454640c202c"
+            }
+          },
+          "checks_by_name": {
+            "actual_start_ready": true,
+            "native_crafting_catalog_opened": true,
+            "catalog_pauses_native_time": true,
+            "native_requirements_duration_and_available_recipe": true,
+            "native_component_sources_exposed": true,
+            "native_confirmation_names_recipe_components_and_quantity": true,
+            "declined_confirm_has_no_craft_activity": true,
+            "first_native_craft_completes": true,
+            "batch_query_updates_native_duration": true,
+            "native_craft_counter_is_not_meal_or_firstaid_timer": true,
+            "crafting_does_not_queue_held_movement": true,
+            "menu_freezes_native_craft_counter": true,
+            "interrupted_work_is_native_resumable_item": true,
+            "resumed_work_has_fresh_token": true,
+            "batch_native_craft_completes": true,
+            "manually_paused_start_is_not_queued": true,
+            "recovery_discards_old_recipe_selection": true,
+            "recovery_restores_available_recipe": true,
+            "actual_runtime_survives_native_crafting": true,
+            "byte_relay_completed_without_errors": true,
+            "crafting_save_readable_by_pristine_native_core": true,
+            "favorite_component_preserved_by_native_save": true,
+            "native_results_created_exactly_once": true,
+            "completed_work_removes_native_craft_item": true,
+            "canonical_crafting_save_has_no_luanti_inventory": true
+          }
+        },
+        {
+          "name": "medicine-regression",
+          "checks": 33,
+          "command": [
+            "python3",
+            "/home/dannhill/Projects/cdda-mineclonia/tests/medicine_gui_test.py",
+            "--workspace",
+            "/home/dannhill/Projects/cdda-mineclonia",
+            "--fixture",
+            "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-medicine-20261008/fixture/user",
+            "--native-reader",
+            "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/native-save-reader",
+            "--artifacts",
+            "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/medicine-regression"
+          ],
+          "log": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/medicine-regression.log",
+            "sha256": "c321bad6a3e633971c1452667e4ed8728446da21d1d6ff399f4c40ab1a3d1246"
+          },
+          "checks_receipt": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/medicine-regression/checks.json",
+            "sha256": "7b0cef1633cf32aa562aa5007ed02a70333fd91c88cdd94ef056dfb32a08fbbf"
+          },
+          "native_save": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/medicine-regression/native.json",
+            "sha256": "ca55a3b9e0184ed3a4fcc8cca9a36c07f913e8726967fd9d533bdedb8d2d9c83"
+          },
+          "screenshots": {
+            "body-choice.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/medicine-regression/body-choice.png",
+              "sha256": "a81e46316a259eea370552dd40c660a65b21c10ada6a9d7bb44d599dffff7135"
+            },
+            "confirmation.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/medicine-regression/confirmation.png",
+              "sha256": "25d77321f0026ac5057c8c0cc8d3a57e9590a544a2bd2aa2dd3402614c693fc6"
+            },
+            "firstaid-pause.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/medicine-regression/firstaid-pause.png",
+              "sha256": "07ac387e54f734bcb809cb0c11adcd421a05b6bc2cce612e83d9891f1960ebcb"
+            },
+            "inventory.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/medicine-regression/inventory.png",
+              "sha256": "bd5b79d8e1438031a43c54512d2529611890c3fdc31a9ea2ff9abc79df53f625"
+            },
+            "medicine-detail.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/medicine-regression/medicine-detail.png",
+              "sha256": "6c48131adf499d0d6ae421d5b5ce4675d02a90f339f19ec519ce74c2fbc2e8e4"
+            },
+            "treated-body.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/medicine-regression/treated-body.png",
+              "sha256": "c4520366479da3dc6f269d143a9a14c86ad737143044b4a2a88a4ca1a4b06549"
+            }
+          },
+          "checks_by_name": {
+            "actual_start_ready": true,
+            "native_inventory_opened": true,
+            "native_healing_action_available_for_bandage_and_wipe": true,
+            "filthy_bandage_denied_with_explanation": true,
+            "rock_has_no_healing_action": true,
+            "medicine_inventory_is_readonly_and_paused": true,
+            "native_body_chooser_has_known_treatment_descriptions": true,
+            "body_cancel_consumes_no_bandage": true,
+            "explicit_treatment_confirmation_names_part": true,
+            "confirmation_decline_consumes_no_bandage": true,
+            "firstaid_native_duration_progress_and_no_meal_token": true,
+            "movement_cannot_interrupt_or_queue_during_firstaid": true,
+            "bandage_is_consumed_at_finish_not_start": true,
+            "menu_freezes_native_firstaid": true,
+            "explicit_cancel_preserves_bandage": true,
+            "fresh_firstaid_has_distinct_token": true,
+            "completion_consumes_exactly_one_bandage": true,
+            "disinfection_consumes_only_the_selected_wipe": true,
+            "manually_paused_healing_click_never_queued": true,
+            "unpausing_does_not_start_rejected_healing": true,
+            "reconnect_invalidates_old_medicine_selection": true,
+            "resync_restores_unused_healing_items": true,
+            "actual_body_sheet_receives_only_targeted_treatment_names": true,
+            "actual_runtime_survives_firstaid": true,
+            "byte_relay_completed_without_errors": true,
+            "medicine_save_readable_by_pristine_native_core": true,
+            "canonical_medicine_items_never_duplicated": true,
+            "canonical_consumed_bandage_count": true,
+            "canonical_dirty_bandage_never_used": true,
+            "canonical_disinfectant_wipe_consumed": true,
+            "canonical_position_unchanged_by_treatment": true,
+            "native_saved_effects_are_bandaged_and_disinfected": true,
+            "canonical_effects_apply_only_to_chosen_body_parts": true
+          }
+        },
+        {
+          "name": "equipment-regression",
+          "checks": 29,
+          "command": [
+            "python3",
+            "/home/dannhill/Projects/cdda-mineclonia/tests/equipment_gui_test.py",
+            "--workspace",
+            "/home/dannhill/Projects/cdda-mineclonia",
+            "--fixture",
+            "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-equipment-20261008/fixture/user",
+            "--native-reader",
+            "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/native-save-reader",
+            "--artifacts",
+            "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/equipment-regression"
+          ],
+          "log": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/equipment-regression.log",
+            "sha256": "a106bd9b932c4ee90303b85dc147ccb05c80c704f317322d33d2dd0f06593abd"
+          },
+          "checks_receipt": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/equipment-regression/checks.json",
+            "sha256": "3fab8c68a415cc758d6f6bcf132c3ec73b686100040b1fe4201492b81035de37"
+          },
+          "native_save": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/equipment-regression/native.json",
+            "sha256": "be42a077cab7bff42a533a498e58ff3facf5110002d5cc205933ab174eed752f"
+          },
+          "screenshots": {
+            "hat-details.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/equipment-regression/hat-details.png",
+              "sha256": "0c042695f2685b8533f5b64c6f124105e429ecb017d8ceacfeb6fa5fd781cd32"
+            },
+            "inventory.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/equipment-regression/inventory.png",
+              "sha256": "b3c8ef93dccf103da2e051486b19cc48859207ab90d9bd6b956abe24f487befa"
+            },
+            "native-stow-choice.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/equipment-regression/native-stow-choice.png",
+              "sha256": "7bca9ef1330f3fd0fed1f08a4bc1322a32c8fccf3bdda1d2eab2c520ae7c691c"
+            },
+            "search-filter.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/equipment-regression/search-filter.png",
+              "sha256": "aeb636748a924536ffc53f61c0068b57671c5cbf9864272ef628a0456f3b4008"
+            }
+          },
+          "checks_by_name": {
+            "actual_start_ready": true,
+            "native_inventory_opened": true,
+            "nested_objects_and_pockets_are_native": true,
+            "two_identical_items_have_distinct_selection_ids": true,
+            "inventory_reading_freezes_native_time": true,
+            "inventory_reading_does_not_move_player": true,
+            "survival_hud_hidden_behind_inventory": true,
+            "inventory_freezes_presentation_animation": true,
+            "search_preserves_native_item_selection": true,
+            "wear_cap_native_result_visible": true,
+            "takeoff_cap_returns_to_native_pocket": true,
+            "native_stow_cancel_keeps_weapon_wielded": true,
+            "native_stow_keeps_bat_owned_without_wielding": true,
+            "wield_uses_selected_native_item": true,
+            "taking_off_loaded_backpack_retains_all_contents": true,
+            "wearing_loaded_backpack_retains_all_contents": true,
+            "escape_closes_inventory": true,
+            "manual_pause_blocks_equipment_without_queuing": true,
+            "closing_inventory_preserves_manual_pause": true,
+            "unpause_does_not_execute_rejected_click": true,
+            "real_reconnect_closes_stale_inventory": true,
+            "reconnect_never_replays_unsent_equipment": true,
+            "resync_restores_native_equipment": true,
+            "actual_runtime_survives": true,
+            "byte_relay_completed_without_errors": true,
+            "equipment_save_readable_by_pristine_native_core": true,
+            "canonical_save_has_each_fixture_item_once": true,
+            "canonical_save_records_selected_rock_as_weapon": true,
+            "canonical_save_records_backpack_worn": true
+          }
+        }
+      ],
+      "total_check_occurrences": 184,
+      "canonical_ranged_positions_unchanged": {
+        "gui-range": true,
+        "gui-installed": true,
+        "gui-installed-resume": true,
+        "gui-ordinary": true
+      }
+    }
+  },
+  "native_oracle": {
+    "reader": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/native-save-reader",
+    "sha256": "65b259c025f3a144737242f09dbac0fbbd53e0628ffeb2295847cfc2ea21fd03",
+    "build_receipt": {
+      "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/reader-build.json",
+      "sha256": "cfe3551d7b03dabf6141b92c98ca9db0466090a4be54d063630ed82fddd81e38"
+    },
+    "helper_source": {
+      "path": "/home/dannhill/Projects/cdda-mineclonia/tests/takeover_save_reader.cpp",
+      "sha256": "520849850cc22d0ca69f1ecc75a007926c9f47fcb8091f5dc54e8f3a19335118"
+    },
+    "pristine_pin": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+    "pristine_changes": " M src/CMakeLists.txt\n",
+    "fixture_receipt": {
+      "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/fixture/before.json",
+      "sha256": "b18e2331dbb710720215c8157da8ce8a2ed2de170e66036b5cf65d687a29b548"
+    }
+  },
+  "manual_validation": {
+    "status": "PENDING",
+    "new_checks": 4,
+    "total_pending": 20,
+    "file": "docs/validation/pending-manual.md"
+  },
+  "fixed_failures": {
+    "native_aim_recursion": "Actual renderer plus original-pin stack trace: rebuild_aim_cache -> calc_steadiness -> sees -> cant_see. Cache rebuilt nonrecursively and absolute target converted to local; native regression verifies target visibility and far rear cone restriction.",
+    "pointing_range": "Actual neutral actor beyond Luanti hand reach was not pointable; ray now uses bounded native gun range and retains voxel clipping.",
+    "diagnostic_stack": {
+      "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/debug-aim.log",
+      "sha256": "6cf22a5751b8f760a4b3dbcb76242137f0d475e32c90e843eb2e88b3bf528bbc"
+    }
+  },
+  "remaining_scope": [
+    "Free reticle/neutral targets and mode chooser",
+    "Bows/RAS and mounted/vehicle weapons",
+    "Reload arbitrary items/partial quantities",
+    "Weapon rig, projectile/sound/animation presentation",
+    "Full SAVE-001 and new complete conformance audit"
+  ],
+  "m5_5": "Historical FAILED preserved",
+  "save_001": "Full suite remains OPEN"
+}
