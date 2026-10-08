@@ -25,10 +25,10 @@ std::vector<uint8_t> reset(uint64_t seq, uint64_t request=0, Identity ids={11,22
     return b.finish_message(Payload::WorldReset, CreateWorldReset(b.builder(),request).Union());
 }
 std::vector<uint8_t> world(uint64_t seq, bool full=true, uint64_t base=0,
-    uint64_t revision=5, uint64_t resync=0, bool malformed=false, Identity ids={11,22,33}, float scale=1.f, uint32_t reasons=0, float motion=.2f, bool realtime=true, bool continuous=false, int owned_case=0, int body_case=0) {
+    uint64_t revision=5, uint64_t resync=0, bool malformed=false, Identity ids={11,22,33}, float scale=1.f, uint32_t reasons=0, float motion=.2f, bool realtime=true, bool continuous=false, int owned_case=0, int body_case=0, uint32_t posture=0) {
     MessageBuilder b(seq,revision,ids); auto& f=b.builder();
     Vec3f pos(2,3,0); Coord3i origin(0,0,0);
-    auto actor=CreateEntityState(f,1,EntityType::PLAYER,0,&pos,0,0,0,0,true,0,motion);
+    auto actor=CreateEntityState(f,1,EntityType::PLAYER,0,&pos,0,0,0,0,true,posture,motion);
     auto actors=f.CreateVector(std::vector{actor});
     std::vector<CwmBlock> blocks(malformed ? 2 : 256,CwmBlock(0,1,15,0));
     auto chunk=CreateChunkSnapshot(f,0,0,0,16,16,1,f.CreateVectorOfStructs(blocks));
@@ -151,6 +151,16 @@ int main() {
             CHECK(MessageVerifier::verify(bytes.data(),bytes.size()));
             CHECK(accept(s,c,bytes) == (kind==1));
             if(kind!=1) CHECK(!s.ready() && s.revision==5 && s.resync_count==1);
+        }
+    });
+    test("conflicting_native_posture_requires_resync_before_committing",[]{
+        for(uint32_t flags : {uint32_t(RUNNING), uint32_t(CROUCHING), uint32_t(PRONE), uint32_t(RUNNING | PRONE)}) {
+            ClientSession s; MemoryChannel c; handshake(s,c);
+            auto bytes=world(4,false,5,6,0,false,{11,22,33},1.f,0,.2f,true,false,0,0,flags);
+            CHECK(MessageVerifier::verify(bytes.data(),bytes.size()));
+            const bool valid = flags != uint32_t(RUNNING | PRONE);
+            CHECK(accept(s,c,bytes) == valid);
+            if(!valid) CHECK(!s.ready() && s.revision==5 && s.resync_count==1);
         }
     });
     return failed?1:0;
