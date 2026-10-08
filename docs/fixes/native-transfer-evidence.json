@@ -1,0 +1,677 @@
+{
+  "status": "SCOPED_AUTOMATED_PASS",
+  "protocol": "2.15",
+  "production_commit": "1502ba0146f469a0e5e705b0a9d61ff2fd8a9926",
+  "verification_driver_commit": "32810df102d7142e60b18b1e7df4f20b11a73894",
+  "artifact_root": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009",
+  "build_mode": "Incremental reconstructed sources with build caches retained. No cold build, full SAVE-001 or M5.5 certification.",
+  "environment": {
+    "os": "Linux-7.0.11-76070011-generic-x86_64-with-glibc2.35",
+    "python": "3.10.12",
+    "compiler": "c++ (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0",
+    "display": ":1",
+    "xauthority": "/run/user/1000/gdm/Xauthority"
+  },
+  "source_manifest": {
+    "format_version": 1,
+    "repositories": {
+      "cdda": {
+        "url": "https://github.com/CleverRaven/Cataclysm-DDA.git",
+        "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+        "shallow": true,
+        "patch": "baseline/patches/cdda.patch",
+        "patch_sha256": "ece5d3ec9c7768e2520b2d77a4d6924dea373f42328b46e8f29733968a76483a",
+        "tree_inventory": "baseline/trees/cdda.json",
+        "tree_sha256": "91a075363d487d7b9b3c612126d0867000cda9fc8f665000ca0087c7b4a8a18c",
+        "file_count": 8586,
+        "original_status": " M src/CMakeLists.txt\n M src/avatar.cpp\n M src/avatar_action.cpp\n M src/avatar_action.h\n M src/character.cpp\n M src/character_body.cpp\n M src/character_inventory.cpp\n M src/craft_command.cpp\n M src/craft_command.h\n M src/crafting.cpp\n M src/crafting.h\n M src/do_turn.cpp\n M src/do_turn.h\n M src/game.cpp\n M src/game.h\n M src/handle_action.cpp\n M src/iexamine.cpp\n M src/iuse_actor.cpp\n M src/melee.cpp\n M src/output.cpp\n M src/pickup.cpp\n M src/ranged.cpp\n M src/ranged.h\n M src/recipe.cpp\n M src/recipe.h\n M src/ui.cpp\n M tests/CMakeLists.txt\n M tests/test_main.cpp\n?? src/cwm/cwm_crafting.h\n?? src/cwm/cwm_inventory.h\n?? src/cwm/cwm_main.cpp\n?? src/cwm/cwm_map_exporter.cpp\n?? src/cwm/cwm_map_exporter.h\n?? src/cwm/cwm_ranged.h\n?? src/cwm/cwm_server.cpp\n?? src/cwm/cwm_server.h\n?? src/cwm/cwm_status_gauges.h\n?? src/cwm_motion.cpp\n?? src/cwm_motion.h\n?? src/safe_mode_actions.h\n?? tests/cwm_pickup_test.cpp\n?? tests/cwm_projection_test.cpp\n?? tests/cwm_runtime_test.cpp\n"
+      },
+      "luanti": {
+        "url": "https://github.com/luanti-org/luanti.git",
+        "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
+        "shallow": true,
+        "patch": "baseline/patches/luanti.patch",
+        "patch_sha256": "1eda63a2c662388b188a567170f559e39b00372fffafaea2c7640e74f9abf169",
+        "tree_inventory": "baseline/trees/luanti.json",
+        "tree_sha256": "21de7239b1671bfdb15ba00ea26265b99393300447fb23d08adbebef3bcdaa11",
+        "file_count": 2258,
+        "original_status": " M builtin/settingtypes.txt\n M src/CMakeLists.txt\n M src/client/CMakeLists.txt\n M src/client/client.cpp\n M src/client/clientenvironment.cpp\n M src/client/game.cpp\n M src/client/hud.cpp\n M src/client/inputhandler.cpp\n M src/client/keys.h\n M src/client/mesh_generator_thread.cpp\n M src/client/mesh_generator_thread.h\n M src/defaultsettings.cpp\n M src/network/clientpackethandler.cpp\n M src/server/player_sao.cpp\n M src/unittest/test_mapblock.cpp\n?? src/cdda/avatar_status.h\n?? src/cdda/cdda_bridge.cpp\n?? src/cdda/cdda_bridge.h\n?? src/cdda/crafting_inventory.h\n?? src/cdda/equipment_inventory.h\n?? src/cdda/ground_item_formspec.h\n?? src/cdda/ground_item_projection.h\n?? src/cdda/ground_item_visual.h\n?? src/cdda/posture_input.h\n"
+      },
+      "mineclonia": {
+        "url": "https://github.com/mark-wiemer/mineclonia.git",
+        "commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+        "shallow": true,
+        "patch": "baseline/patches/mineclonia.patch",
+        "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "tree_inventory": "baseline/trees/mineclonia.json",
+        "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36",
+        "file_count": 9359,
+        "original_status": ""
+      }
+    }
+  },
+  "protocol_schema": {
+    "path": "/home/dannhill/Projects/cdda-mineclonia/protocol/cwm.fbs",
+    "sha256": "b22aca95a5f981b315b63852278a922f71581ee4cec8987c82bfb034ae81744a"
+  },
+  "source_refresh": {
+    "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/refresh-final-source.json",
+    "sha256": "7d5cecae7e588624f5bb41382658b6ed1d88490904550f33bd92de01748a8785"
+  },
+  "source_replay": {
+    "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/source-replay.json",
+    "sha256": "565b82673e03644b2f6d05db333bdb2453dc2be952539574d7272840106c996e"
+  },
+  "baseline_check": {
+    "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/baseline-check.log",
+    "sha256": "392df6a62d45fa4e34f9f7637ea467e5509182c611daf76e6bd9a9a0a909a3f8"
+  },
+  "workspace_baseline_check": {
+    "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/workspace-baseline-check.log",
+    "sha256": "392df6a62d45fa4e34f9f7637ea467e5509182c611daf76e6bd9a9a0a909a3f8"
+  },
+  "install_receipt": {
+    "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/install.json",
+    "sha256": "708215b83932b8295eecfbf571474e494a3e92282e0ba481f3426de8e98d0801"
+  },
+  "runtime": {
+    "cdda": {
+      "source": "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/cdda/build/src/cdda-server",
+      "installed": "/home/dannhill/Projects/cdda-mineclonia/cdda/build/src/cdda-server",
+      "sha256": "cb11fee9f665fb7199622de05cdecef1867e0a95936a61aba2a8227b6daf5796",
+      "rollback": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/cdda-previous-runtime",
+      "previous_sha256": "cebbe31894ccb9b23137c8e12bf5a85c516cc48eae68b9663cd19f913e6fc5c6"
+    },
+    "luanti": {
+      "source": "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/luanti/bin/luanti",
+      "installed": "/home/dannhill/Projects/cdda-mineclonia/luanti/bin/luanti",
+      "sha256": "99f22ce99c7efdac0311533f93bbfe6921a91bbaa373a26047aea58f58971256",
+      "rollback": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/luanti-previous-runtime",
+      "previous_sha256": "41bd5d59c2e4fe83a44997009813e9ee66600a2b1997ea322817dfb3c716799d"
+    }
+  },
+  "native_oracle": {
+    "reader": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/native-save-reader",
+    "sha256": "d5181d51cb6a9a0dcb548e9d0c27e355d81f800fa161e8980f029e2e806b51da",
+    "build_receipt": {
+      "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/reader-build.json",
+      "sha256": "e025a2a0ac376bfc43ff65d8ac03e28845cdf41a30eaeea58c4bdaba5ff5e5f1"
+    },
+    "helper_source": {
+      "path": "/home/dannhill/Projects/cdda-mineclonia/tests/takeover_save_reader.cpp",
+      "sha256": "ea1276d89c2ea1701a22d7b1838d556e381cd50c6bf78897526d5d0a321deb7f"
+    },
+    "pristine_pin": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+    "pristine_changes": " M src/CMakeLists.txt\n",
+    "fixture_receipt": {
+      "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/fixture/before.json",
+      "sha256": "87d55d80d5c45c52921a00aa68d1b4cae616a0f0568d9777396019e71e6ef3c5"
+    },
+    "create_command": [
+      "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/native-save-reader",
+      "--create-transfer",
+      "--userdir",
+      "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/fixture/user",
+      "--datadir",
+      "/home/dannhill/Projects/cdda-mineclonia/cdda/data",
+      "--output",
+      "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/fixture/before.json"
+    ]
+  },
+  "verification": {
+    "native": {
+      "assertions": 16659,
+      "cases": 113,
+      "build_log": {
+        "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/build-native-final.log",
+        "sha256": "b2987bd5e8eb9ea92f4f37163f12b1e110402666c4281f06e5156ffcff1d8c56"
+      },
+      "log": {
+        "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/test-native-pockets.log",
+        "sha256": "6c244a7a7d60e86a3c6dc46f09123b9e74cbfc9baeee0a6cb8710686de1091ab"
+      },
+      "build_command": [
+        "cmake",
+        "--build",
+        "cdda/build",
+        "--target",
+        "cdda-server",
+        "cata_test",
+        "-j",
+        "3"
+      ],
+      "build_cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace",
+      "test_command": [
+        "build/tests/cata_test",
+        "[cwm],[pickup],[pocket],[reload],[diving]",
+        "--rng-seed",
+        "42",
+        "--user-dir=/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/native-unit-pockets"
+      ],
+      "test_cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/cdda"
+    },
+    "luanti": {
+      "individual_tests": 308,
+      "catch2_assertions": 648,
+      "catch2_cases": 4,
+      "build_log": {
+        "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/build-luanti-final.log",
+        "sha256": "874485dbf4aacde6b26fa002fb63084ebad09986c69aba5a3e1c9c65e4b3c2c5"
+      },
+      "log": {
+        "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/test-luanti-final.log",
+        "sha256": "a4dd344ba3be98ede00b6ae3ec7b021412932ebee0ef739c645c0dae5cc3c7e3"
+      },
+      "build_command": [
+        "cmake",
+        "--build",
+        "luanti/build",
+        "-j",
+        "3"
+      ],
+      "build_cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace",
+      "test_command": [
+        "bin/luanti",
+        "--run-unittests"
+      ],
+      "test_cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/luanti"
+    },
+    "protocol": {
+      "tests": 9,
+      "build_log": {
+        "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/build-protocol.log",
+        "sha256": "2b9e8fd8854a41591ff12c23a195c284d490d6151f94f3f29443ca43e43c0291"
+      },
+      "log": {
+        "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/test-protocol-final.log",
+        "sha256": "186a363c0ea1f66b1311ca5d58e66569af4148b494c86361c06680f8e31395db"
+      },
+      "configure_command": [
+        "cmake",
+        "-S",
+        "protocol",
+        "-B",
+        "build/protocol"
+      ],
+      "build_command": [
+        "cmake",
+        "--build",
+        "build/protocol",
+        "-j",
+        "3"
+      ],
+      "test_command": [
+        "ctest",
+        "--test-dir",
+        "build/protocol",
+        "--output-on-failure"
+      ],
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace"
+    },
+    "actual_renderer": [
+      {
+        "driver_commit": "1502ba0146f469a0e5e705b0a9d61ff2fd8a9926",
+        "executed_driver_sha256": "11e32ac8daf0b9359393950cc23cbf6889a3f9a6a8bef31fb179fd9644915fca",
+        "name": "gui-save-active",
+        "checks": 16,
+        "command": [
+          "python3",
+          "/home/dannhill/Projects/cdda-mineclonia/tests/transfer_gui_test.py",
+          "--workspace",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace",
+          "--fixture",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/fixture/user",
+          "--native-reader",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/native-save-reader",
+          "--artifacts",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/gui-save-active",
+          "--save-active"
+        ],
+        "current_driver": {
+          "path": "/home/dannhill/Projects/cdda-mineclonia/tests/transfer_gui_test.py",
+          "sha256": "9c22810be4ed6f3042964ae77b8eade4fd4b9cf52ea71e18a035b0758ae4a7de"
+        },
+        "log": {
+          "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/gui-save-active.log",
+          "sha256": "7a1f986a7c59ada0b78cab7e4c46a0b6a1922db8a761305dfbd65d533051e78b"
+        },
+        "checks_receipt": {
+          "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/gui-save-active/checks.json",
+          "sha256": "a1436f2190545dad49efe014e9b72159d5737fb459d46fcc099ec01758dc8d5b"
+        },
+        "native_save": {
+          "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/gui-save-active/native.json",
+          "sha256": "5363e6afa31567158604bdcb8727314b6c62e6fa6105cf64b4e281975990ba86"
+        },
+        "screenshots": {
+          "inventory.png": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/gui-save-active/inventory.png",
+            "sha256": "c7cf3dd5880f884e9874ca8910d01e4291735e59ecc3a4e85f1e8f323d22843c"
+          },
+          "transfer-paused.png": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/gui-save-active/transfer-paused.png",
+            "sha256": "17f65ae038a08d91534a0b8fbb6cbbc452cded2ce84cf0b71d53a50826f2be9d"
+          },
+          "transfer-selected.png": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/gui-save-active/transfer-selected.png",
+            "sha256": "fedc48346729e4ea31b76f790e3c5454db96fdd7678c4a9839c1361a004e28ef"
+          }
+        },
+        "checks_by_name": {
+          "actual_start_ready": true,
+          "fixture_supplies_native_ammo_and_container": true,
+          "reading_and_movement_in_menu_change_no_time_or_position": true,
+          "excess_quantity_remains_in_menu_without_command": true,
+          "insert_uses_paid_native_activity": true,
+          "menu_freezes_native_work_and_time": true,
+          "saved_work_has_not_moved_ammo_early": true,
+          "actual_runtime_survives": true,
+          "byte_relay_completed_without_errors": true,
+          "transfer_save_readable_by_pristine_native_core": true,
+          "canonical_total_ammo_conserved": true,
+          "canonical_bag_exists_once": true,
+          "canonical_bat_and_bottle_survive": true,
+          "canonical_activity_is_native_insert": true,
+          "canonical_saved_insert_contains_native_item_locations": true,
+          "canonical_position_unchanged": true
+        }
+      },
+      {
+        "driver_commit": "1502ba0146f469a0e5e705b0a9d61ff2fd8a9926",
+        "executed_driver_sha256": "11e32ac8daf0b9359393950cc23cbf6889a3f9a6a8bef31fb179fd9644915fca",
+        "name": "gui-resume",
+        "checks": 13,
+        "command": [
+          "python3",
+          "/home/dannhill/Projects/cdda-mineclonia/tests/transfer_gui_test.py",
+          "--workspace",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace",
+          "--fixture",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/gui-save-active/user",
+          "--native-reader",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/native-save-reader",
+          "--artifacts",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/gui-resume",
+          "--resume-only"
+        ],
+        "current_driver": {
+          "path": "/home/dannhill/Projects/cdda-mineclonia/tests/transfer_gui_test.py",
+          "sha256": "9c22810be4ed6f3042964ae77b8eade4fd4b9cf52ea71e18a035b0758ae4a7de"
+        },
+        "log": {
+          "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/gui-resume.log",
+          "sha256": "bd41f83170d412670ef3712a6e074e54d4e514878d1d4fc3b63e3c87648c8b9e"
+        },
+        "checks_receipt": {
+          "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/gui-resume/checks.json",
+          "sha256": "c4b5715622687c92c67471bf881e6df82a6a8ba0251198e46eb39593dcac138d"
+        },
+        "native_save": {
+          "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/gui-resume/native.json",
+          "sha256": "0c9efe89e013aa6bca88860b3be979e0009473db76ee59d56463b18e15791201"
+        },
+        "screenshots": {
+          "inventory.png": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/gui-resume/inventory.png",
+            "sha256": "82d7d484161545fca54490f4f90b4ffefe9e40cddd13e9afceec961897225600"
+          }
+        },
+        "checks_by_name": {
+          "actual_start_ready": true,
+          "saved_native_insert_resumes_without_new_request": true,
+          "resumed_transfer_pauses_in_inventory": true,
+          "saved_insert_completes_once_in_actual_renderer": true,
+          "saved_insert_leaves_exact_remainder": true,
+          "byte_relay_completed_without_errors": true,
+          "transfer_save_readable_by_pristine_native_core": true,
+          "canonical_total_ammo_conserved": true,
+          "canonical_bag_exists_once": true,
+          "canonical_bat_and_bottle_survive": true,
+          "canonical_resumed_insert_is_complete": true,
+          "canonical_saved_container_has_seven_rounds": true,
+          "canonical_position_unchanged": true
+        }
+      },
+      {
+        "driver_commit": "45c04983cf917a389cf11932ae145e638c3d1f2f",
+        "executed_driver_sha256": "0817b05a7504b26a8c41723c7b5c2c9455da3e94f9d4ad2f28dfccc78b77a077",
+        "name": "gui-installed-final",
+        "checks": 30,
+        "command": [
+          "python3",
+          "/home/dannhill/Projects/cdda-mineclonia/tests/transfer_gui_test.py",
+          "--workspace",
+          "/home/dannhill/Projects/cdda-mineclonia",
+          "--fixture",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/fixture/user",
+          "--native-reader",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/native-save-reader",
+          "--artifacts",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/gui-installed-final"
+        ],
+        "current_driver": {
+          "path": "/home/dannhill/Projects/cdda-mineclonia/tests/transfer_gui_test.py",
+          "sha256": "9c22810be4ed6f3042964ae77b8eade4fd4b9cf52ea71e18a035b0758ae4a7de"
+        },
+        "log": {
+          "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/gui-installed-final.log",
+          "sha256": "7362561adf199f58facb41d3021cc88cba2a65ff006c80abcb0b09ab68cbeb29"
+        },
+        "checks_receipt": {
+          "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/gui-installed-final/checks.json",
+          "sha256": "53cd0d98e35c08ae09667f64288c025a4dc50fc6f49b216256c97510d8d9cfd2"
+        },
+        "native_save": {
+          "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/gui-installed-final/native.json",
+          "sha256": "7b3aeac3737eff308c7512ce063dd9ff7e5b4171d369760e75b61d7e31e1fa2c"
+        },
+        "screenshots": {
+          "inventory.png": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/gui-installed-final/inventory.png",
+            "sha256": "08bf38ba719e5f9976204db28abd31d2876a66e4e6a2ea141c089ff7289389ec"
+          },
+          "transfer-paused.png": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/gui-installed-final/transfer-paused.png",
+            "sha256": "2bd5beb74fdcfe8b8e0952ae9202d9fcd602d5a2686c00bce9b497c27aa8999f"
+          },
+          "transfer-selected.png": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/gui-installed-final/transfer-selected.png",
+            "sha256": "9b5179fb12ddad38b1a33f2047c27a05a4b550a25344211ced56121dee67d5da"
+          }
+        },
+        "checks_by_name": {
+          "actual_start_ready": true,
+          "fixture_supplies_native_ammo_and_container": true,
+          "reading_and_movement_in_menu_change_no_time_or_position": true,
+          "excess_quantity_remains_in_menu_without_command": true,
+          "insert_uses_paid_native_activity": true,
+          "menu_freezes_native_work_and_time": true,
+          "native_cancel_keeps_all_thirty_rounds": true,
+          "native_transfer_splits_exact_seven": true,
+          "native_transfer_leaves_twenty_three": true,
+          "native_provenance_identifies_destination": true,
+          "partial_drop_preserves_four_in_nested_container": true,
+          "loaded_container_dropped_as_one_native_object": true,
+          "only_twenty_three_rounds_remain_owned": true,
+          "native_size_rejection_preserves_bat": true,
+          "manual_pause_blocks_transfer_without_queuing": true,
+          "closing_transfer_menu_preserves_manual_pause": true,
+          "resume_does_not_replay_rejected_transfer": true,
+          "reconnect_closes_stale_item_handles": true,
+          "reconnect_replays_no_transfer": true,
+          "resync_restores_native_twenty_three_rounds": true,
+          "actual_runtime_survives": true,
+          "byte_relay_completed_without_errors": true,
+          "transfer_save_readable_by_pristine_native_core": true,
+          "canonical_total_ammo_conserved": true,
+          "canonical_bag_exists_once": true,
+          "canonical_bat_and_bottle_survive": true,
+          "canonical_owned_ammo_is_twenty_three": true,
+          "canonical_dropped_container_keeps_four_rounds": true,
+          "canonical_ground_receives_three_loose_rounds": true,
+          "canonical_position_unchanged": true
+        }
+      },
+      {
+        "driver_commit": "32810df102d7142e60b18b1e7df4f20b11a73894",
+        "executed_driver_sha256": "9c22810be4ed6f3042964ae77b8eade4fd4b9cf52ea71e18a035b0758ae4a7de",
+        "name": "gui-ordinary-final",
+        "checks": 26,
+        "command": [
+          "python3",
+          "/home/dannhill/Projects/cdda-mineclonia/tests/transfer_gui_test.py",
+          "--workspace",
+          "/home/dannhill/Projects/cdda-mineclonia",
+          "--fixture",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/fixture/user",
+          "--native-reader",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/native-save-reader",
+          "--artifacts",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/gui-ordinary-final",
+          "--action-driven"
+        ],
+        "current_driver": {
+          "path": "/home/dannhill/Projects/cdda-mineclonia/tests/transfer_gui_test.py",
+          "sha256": "9c22810be4ed6f3042964ae77b8eade4fd4b9cf52ea71e18a035b0758ae4a7de"
+        },
+        "log": {
+          "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/gui-ordinary-final.log",
+          "sha256": "f586c85c33bdeba26f2530ab48a7e0717e2e47e14f246c0c6790ddd2d9bc6747"
+        },
+        "checks_receipt": {
+          "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/gui-ordinary-final/checks.json",
+          "sha256": "1499ea73ee02769f8f5048a53011010bbe101560a6449d78d8c0bf931a56873d"
+        },
+        "native_save": {
+          "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/gui-ordinary-final/native.json",
+          "sha256": "240b307171926ecd4355a939e4584d4f821139eab48a8f7592a189dbe51ae234"
+        },
+        "screenshots": {
+          "inventory.png": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/gui-ordinary-final/inventory.png",
+            "sha256": "f8e133e728ea2d4ad5d2f4a6a1f5e982b8c899ac202c90db43e5a9e47cb30ae6"
+          },
+          "transfer-selected.png": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/gui-ordinary-final/transfer-selected.png",
+            "sha256": "3df63c4b76c6630a160e2e3a4e9377abbf6b66b910806733314f280848e9136e"
+          }
+        },
+        "checks_by_name": {
+          "actual_start_ready": true,
+          "fixture_supplies_native_ammo_and_container": true,
+          "reading_and_movement_in_menu_change_no_time_or_position": true,
+          "excess_quantity_remains_in_menu_without_command": true,
+          "ordinary_escape_changes_no_ammunition": true,
+          "native_transfer_splits_exact_seven": true,
+          "native_transfer_leaves_twenty_three": true,
+          "native_provenance_identifies_destination": true,
+          "partial_drop_preserves_four_in_nested_container": true,
+          "loaded_container_dropped_as_one_native_object": true,
+          "only_twenty_three_rounds_remain_owned": true,
+          "native_size_rejection_preserves_bat": true,
+          "reconnect_closes_stale_item_handles": true,
+          "reconnect_replays_no_transfer": true,
+          "resync_restores_native_twenty_three_rounds": true,
+          "actual_runtime_survives": true,
+          "byte_relay_completed_without_errors": true,
+          "transfer_save_readable_by_pristine_native_core": true,
+          "canonical_total_ammo_conserved": true,
+          "canonical_bag_exists_once": true,
+          "canonical_bat_and_bottle_survive": true,
+          "canonical_owned_ammo_is_twenty_three": true,
+          "canonical_dropped_container_keeps_four_rounds": true,
+          "canonical_ground_receives_three_loose_rounds": true,
+          "canonical_position_unchanged": true,
+          "ordinary_transfers_pay_native_simulation_time": true
+        }
+      },
+      {
+        "driver_commit": "32810df102d7142e60b18b1e7df4f20b11a73894",
+        "executed_driver_sha256": "d3c17b41c113470e445664d5e8113e46f850e0ca77937b4e4dd9b03dd5d83e4a",
+        "name": "equipment-regression",
+        "checks": 29,
+        "command": [
+          "python3",
+          "/home/dannhill/Projects/cdda-mineclonia/tests/equipment_gui_test.py",
+          "--workspace",
+          "/home/dannhill/Projects/cdda-mineclonia",
+          "--fixture",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-equipment-20261008/fixture/user",
+          "--native-reader",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/native-save-reader",
+          "--artifacts",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/equipment-regression"
+        ],
+        "current_driver": {
+          "path": "/home/dannhill/Projects/cdda-mineclonia/tests/equipment_gui_test.py",
+          "sha256": "d3c17b41c113470e445664d5e8113e46f850e0ca77937b4e4dd9b03dd5d83e4a"
+        },
+        "log": {
+          "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/equipment-regression.log",
+          "sha256": "a106bd9b932c4ee90303b85dc147ccb05c80c704f317322d33d2dd0f06593abd"
+        },
+        "checks_receipt": {
+          "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/equipment-regression/checks.json",
+          "sha256": "3fab8c68a415cc758d6f6bcf132c3ec73b686100040b1fe4201492b81035de37"
+        },
+        "native_save": {
+          "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/equipment-regression/native.json",
+          "sha256": "25d6f7fc577bb7d67dfc6a6068d1d992ff59b4dace962142a67825a172cebca0"
+        },
+        "screenshots": {
+          "hat-details.png": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/equipment-regression/hat-details.png",
+            "sha256": "6eae3f3f5d010fa8ee362f19f7840ab98956f9c3ce91d03ad2e10293e1bb4c03"
+          },
+          "inventory.png": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/equipment-regression/inventory.png",
+            "sha256": "dee9b4ba30c3a35d1899c7de77b7e49e632e7da3a7234f828478a9e84f248729"
+          },
+          "native-stow-choice.png": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/equipment-regression/native-stow-choice.png",
+            "sha256": "4e9e52b76c1bf5d63fcf5b9fad9deec54e314edc00d915cbdf214082532cbca1"
+          },
+          "search-filter.png": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/equipment-regression/search-filter.png",
+            "sha256": "cc5b33290505508c7a79da5553386c9adcd9b9e011d76a61e360321d29168b58"
+          }
+        },
+        "checks_by_name": {
+          "actual_start_ready": true,
+          "native_inventory_opened": true,
+          "nested_objects_and_pockets_are_native": true,
+          "two_identical_items_have_distinct_selection_ids": true,
+          "inventory_reading_freezes_native_time": true,
+          "inventory_reading_does_not_move_player": true,
+          "survival_hud_hidden_behind_inventory": true,
+          "inventory_freezes_presentation_animation": true,
+          "search_preserves_native_item_selection": true,
+          "wear_cap_native_result_visible": true,
+          "takeoff_cap_returns_to_native_pocket": true,
+          "native_stow_cancel_keeps_weapon_wielded": true,
+          "native_stow_keeps_bat_owned_without_wielding": true,
+          "wield_uses_selected_native_item": true,
+          "taking_off_loaded_backpack_retains_all_contents": true,
+          "wearing_loaded_backpack_retains_all_contents": true,
+          "escape_closes_inventory": true,
+          "manual_pause_blocks_equipment_without_queuing": true,
+          "closing_inventory_preserves_manual_pause": true,
+          "unpause_does_not_execute_rejected_click": true,
+          "real_reconnect_closes_stale_inventory": true,
+          "reconnect_never_replays_unsent_equipment": true,
+          "resync_restores_native_equipment": true,
+          "actual_runtime_survives": true,
+          "byte_relay_completed_without_errors": true,
+          "equipment_save_readable_by_pristine_native_core": true,
+          "canonical_save_has_each_fixture_item_once": true,
+          "canonical_save_records_selected_rock_as_weapon": true,
+          "canonical_save_records_backpack_worn": true
+        }
+      },
+      {
+        "driver_commit": "32810df102d7142e60b18b1e7df4f20b11a73894",
+        "executed_driver_sha256": "ef2514ccc8d289f5c63dd8b411f0a175336f851d2d79465b6b187a81f38ceeaf",
+        "name": "ranged-regression",
+        "checks": 31,
+        "command": [
+          "python3",
+          "/home/dannhill/Projects/cdda-mineclonia/tests/ranged_gui_test.py",
+          "--workspace",
+          "/home/dannhill/Projects/cdda-mineclonia",
+          "--fixture",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-ranged-20261008/fixture/user",
+          "--native-reader",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/native-save-reader",
+          "--artifacts",
+          "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/ranged-regression"
+        ],
+        "current_driver": {
+          "path": "/home/dannhill/Projects/cdda-mineclonia/tests/ranged_gui_test.py",
+          "sha256": "ef2514ccc8d289f5c63dd8b411f0a175336f851d2d79465b6b187a81f38ceeaf"
+        },
+        "log": {
+          "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/ranged-regression.log",
+          "sha256": "cdee11563de7aca69fa28cb41ed15ea551c352a79ba2f734c1b5099723a103c7"
+        },
+        "checks_receipt": {
+          "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/ranged-regression/checks.json",
+          "sha256": "000850fce4a5a214a730e2b7c3da9dc59998108a06d02dd011bbe79fbd64a0cc"
+        },
+        "native_save": {
+          "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/ranged-regression/native.json",
+          "sha256": "75d49b23dbd41ba5ef28fa3e29f298e75b3b2ee1ac1474cd694a5e74dbc082a0"
+        },
+        "screenshots": {
+          "aimed.png": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/ranged-regression/aimed.png",
+            "sha256": "7afa9cb231cb59a1cd0f8e86cbe337602f8b9708d3db5efa54f29765292d202d"
+          },
+          "ammo-choices.png": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/ranged-regression/ammo-choices.png",
+            "sha256": "ea22c7708554494e0b6e8eaa429e73594049a65c6cd896b3547329cc162f439e"
+          },
+          "pointed-target.png": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/ranged-regression/pointed-target.png",
+            "sha256": "fbd094fd786645d06713a7d10db48227fbbbd1cb9e993f43390b504f2a43a900"
+          },
+          "reload-complete.png": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/ranged-regression/reload-complete.png",
+            "sha256": "59b11c530772a655c61cd60446f64b29cd93c46ac91d1772fee044c4756b0011"
+          },
+          "reload-confirmation.png": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/ranged-regression/reload-confirmation.png",
+            "sha256": "d1beb18f053d718bc0edb0431c92921644fee3c91d844349f14b3d1117bc5a0b"
+          },
+          "reload-paused.png": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-transfer-20261009/ranged-regression/reload-paused.png",
+            "sha256": "42b60f450116a485180f85a8acd5f551809c6948ee830287f7bbf6fcd0c839ea"
+          }
+        },
+        "checks_by_name": {
+          "actual_start_ready": true,
+          "native_loaded_weapon_visible": true,
+          "manual_pause_blocks_aim_fire_reload_and_time": true,
+          "paused_keys_not_replayed": true,
+          "reading_does_not_aim_for_free": true,
+          "held_aim_uses_native_paid_steps": true,
+          "held_mouse_fires_exactly_once": true,
+          "native_shot_acknowledged": true,
+          "shot_does_not_move_player": true,
+          "native_target_takes_damage": true,
+          "empty_reticle_sends_no_shot": true,
+          "friendly_creature_not_accepted_as_ranged_target": true,
+          "native_reload_choices_exclude_incompatible_ammo": true,
+          "cancel_ammo_choice_keeps_rounds": true,
+          "native_reload_confirmation": true,
+          "decline_reload_keeps_rounds": true,
+          "reload_blocks_movement_aim_and_fire": true,
+          "inventory_freezes_native_reload": true,
+          "cancel_native_reload_preserves_rounds": true,
+          "reconnect_discards_old_weapon_handle_without_replaying_fire": true,
+          "new_reload_has_fresh_activity_token": true,
+          "native_reload_transfers_ammo_once": true,
+          "actual_runtime_survives_native_ranged_combat": true,
+          "byte_relay_completed_without_errors": true,
+          "ranged_save_readable_by_pristine_native_core": true,
+          "native_gun_instance_persists_once": true,
+          "canonical_ammunition_conserved_except_one_fired_round": true,
+          "ranged-other_untouched": true,
+          "ranged-wrong_untouched": true,
+          "completed_reload_has_no_pending_activity": true,
+          "canonical_ranged_save_has_no_luanti_inventory": true
+        }
+      }
+    ],
+    "successful_check_occurrences": 145
+  },
+  "manual_acceptance": "PENDING: four new transfer checks; total manual backlog 24.",
+  "limits": [
+    "Owned container destinations and current avatar tile ground only; external/cargo follow later.",
+    "Native automatic pocket choice inside the selected container; no manual per-pocket placement.",
+    "Sealed/technical ancestry, liquids/gases, worn sources and spillable full containers excluded.",
+    "Partial INSERT follows native whole-source handling cost; no invented faster cost.",
+    "DROP has no native total duration; unknown progress is not represented as a percentage.",
+    "Ordinary action-driven native work may complete between GUI frames; timed pause/interruption verified in RT.",
+    "Initial failed experiments and harness failures are retained, excluded from PASS totals. M5.5 historical FAILED; full SAVE-001 OPEN."
+  ]
+}

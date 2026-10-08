@@ -12,8 +12,8 @@ a dropped loaded bag retains its contents, confirmed by pristine core reader.
 Scoped native PASS: 16,659 assertions / 113 cases (CWM, pickup, pocket, reload,
 diving); Luanti 308 tests plus 648 assertions / 4 cases; protocol 9/9.
 Both reconstructed runtimes installed with the previous 2.14 pair retained.
-[Exact receipts](docs/fixes/native-transfer-evidence.json) record renderer and
-save checks; manual acceptance is deferred, four new points bring the usual
+[Exact receipts](docs/fixes/native-transfer-evidence.json) record 145 checks
+in six renderer sessions and independent save checks; manual acceptance is deferred, four new points bring the usual
 backlog to **24 PENDING**. External containers/cargo, manual per-pocket placement,
 fluid transfers/seals and batch moves remain later slices. Next essential slice:
 nearby external containers and selected-quantity collection using these interfaces.
