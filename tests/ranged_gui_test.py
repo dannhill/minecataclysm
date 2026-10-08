@@ -55,7 +55,7 @@ def main():
     config = out / 'client.conf'
     config.write_text('screen_w = 1280\nscreen_h = 800\nfullscreen = false\nfps_max = 60\n'
                       'vsync = false\nenable_clouds = false\ngui_scaling = 1\n'
-                      f'port = {port}\ncwm_trace_file = {trace}\n')
+                      f'port = {port}\ncwm_trace_file = {trace}\ncwm_entity_trace_file = {out / "actors.csv"}\n')
     env = dict(os.environ, CDDA_USERDIR=str(user), CDDA_WORLD='audit_fixture',
                LUANTI_WORLD=str(out / 'luanti'), LUANTI_CONFIG=str(config),
                LOG_DIR=str(out / 'logs'), CDDA_BIN=str(ws / 'cdda/build/src/cdda-server'),
@@ -265,7 +265,7 @@ def main():
                 check('native_target_takes_damage',int(latest()['attack_target_hp'])<100)
                 turn(180,0);wait(lambda r:int(r['combat_hover'])==0);sent=latest()['fire_sent'];xdo('click','1');time.sleep(.3)
                 check('empty_reticle_sends_no_shot',latest()['fire_sent']==sent)
-                turn(-27,-8);wait(lambda r:int(r['combat_hover'])>0);neutral=latest()['combat_hover'];sent=latest()['fire_sent'];xdo('click','1');time.sleep(.3)
+                turn(-27,-18);wait(lambda r:int(r['combat_hover'])>0);neutral=latest()['combat_hover'];sent=latest()['fire_sent'];xdo('click','1');time.sleep(.3)
                 check('friendly_creature_not_accepted_as_ranged_target',neutral!=target and latest()['fire_sent']==sent)
                 turn(0,-8);wait(lambda r:r['combat_hover']==target)
                 begin_reload(cancel=True);check('cancel_ammo_choice_keeps_rounds',int(latest()['weapon_ammo'])==2 and int(latest()['reload_token'])==0)

@@ -4244,7 +4244,7 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..8fc6442
+index 0000000..f2b9779
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
 @@ -0,0 +1,1335 @@
@@ -5520,8 +5520,8 @@ index 0000000..8fc6442
 +    auto& u=get_avatar();auto& m=get_map();u.setpos(tripoint(60,60,0));
 +    item gun(itype_id("glock_19"));gun.ammo_set(itype_id("9mm"),5);REQUIRE(u.wield(gun));
 +    u.set_skill_level(skill_id("gun"),8);u.set_skill_level(skill_id("pistol"),8);u.recoil=MAX_RECOIL;u.moves=100;
-+    calendar::turn=calendar::turn_zero+36_hours;get_weather().update_weather();u.recalc_sight_limits();g->reset_light_level();m.build_map_cache(0,true);m.invalidate_visibility_cache();m.update_visibility_cache(0);
-+    auto* target=g->place_critter_at(mtype_id("mon_zombie"),u.pos()+tripoint(0,-4,0));REQUIRE(target);REQUIRE(u.sees(*target));
++    set_time_to_day();m.build_map_cache(0,true);m.invalidate_visibility_cache();m.update_visibility_cache(0);
++    auto* target=g->place_critter_at(mtype_id("mon_zombie"),u.pos()+tripoint(0,-4,0));REQUIRE(target);INFO("Native light " << m.ambient_light_at(u.pos()) << " target " << m.ambient_light_at(target->pos()));REQUIRE(u.sees(*target));
 +    const auto id=cwm::CwmMapExporter::monster_entity_id(*target);cwm::RangedSelection selection;const auto token=selection.refresh(u);REQUIRE(token);
 +    auto w=u.get_wielded_item();const int ammo=w->ammo_remaining();const auto time=calendar::turn;
 +    flatbuffers::FlatBufferBuilder f;const auto state=cwm::export_ranged_weapon(f,u,token);f.Finish(state);
@@ -5545,8 +5545,8 @@ index 0000000..8fc6442
 +{
 +    clear_avatar();clear_map();clear_creatures();auto& u=get_avatar();auto& m=get_map();u.setpos(tripoint(60,60,0));
 +    item gun(itype_id("glock_19"));gun.ammo_set(itype_id("9mm"),5);REQUIRE(u.wield(gun));
-+    calendar::turn=calendar::turn_zero+36_hours;get_weather().update_weather();u.recalc_sight_limits();g->reset_light_level();m.build_map_cache(0,true);m.invalidate_visibility_cache();m.update_visibility_cache(0);
-+    auto* target=g->place_critter_at(mtype_id("mon_zombie"),u.pos()+tripoint(0,-4,0));REQUIRE(target);REQUIRE(u.sees(*target));
++    set_time_to_day();m.build_map_cache(0,true);m.invalidate_visibility_cache();m.update_visibility_cache(0);
++    auto* target=g->place_critter_at(mtype_id("mon_zombie"),u.pos()+tripoint(0,-4,0));REQUIRE(target);INFO("Native light " << m.ambient_light_at(u.pos()) << " target " << m.ambient_light_at(target->pos()));REQUIRE(u.sees(*target));
 +    g->set_safe_mode(SAFE_MODE_OFF);cwm::CwmServer server("/unused-ranged");cwm::CwmServerTestAccess::ready(server);
 +    const auto token=cwm::CwmServerTestAccess::weapon(server);const auto id=cwm::CwmMapExporter::monster_entity_id(*target);
 +    cwm::CwmServerTestAccess::ranged(server,token,id,1);REQUIRE(server.has_queued_action());
