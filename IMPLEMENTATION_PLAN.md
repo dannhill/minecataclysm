@@ -261,8 +261,21 @@ con costo/progresso/stop e rimozione finale dell'oggetto, salvataggio del lavoro
 residuo. H mostra condizioni di ferita/trattamento conoscibili; niente cura
 locale o automatica. [Dettagli](docs/fixes/native-medicine.md). Farmaci orali,
 antisettici liquidi, avvio parte→oggetto da H, NPC/chirurgia sono fette successive.
-Quattro nuovi punti nel backlog, per 12 manuali pendenti, senza gate immediato.
-Prossima fetta essenziale: crafting guidato.
+Quattro nuovi punti nel backlog, allora 12 manuali pendenti, senza gate immediato.
+Successiva fetta implementata 2026-10-08: **crafting guidato nativo**, K con
+ricette note/libri/aiutanti, ricerca e lotto manuale 1–20, requisiti e durata,
+scelte native di componenti/fonti e conferma. ACT_CRAFT e oggetto incompleto
+canonico possiedono progresso, costi, fallimenti, pratica e risultati; K/I
+permettono pausa/interruzione e K riprende lavori propri o su superficie
+vicina accessibile. Protezione di preferiti/tipi equipaggiati/contenitori
+liquidi pieni, handle effimeri invalidati al reconnect e dedup dei comandi.
+[Dettagli e limiti](docs/fixes/native-crafting.md). CWM 2.13, due runtime
+ricostruiti installati; quattro nuovi test nel backlog, **16 PENDING**.
+Ricette liquide/gassose, sottoprodotti/pratica/costruzioni, preferiti ricette,
+sottoricette, selezione singola istanza, lavori nei veicoli, lettura/smontaggio
+e accelerazione generale restano fette successive: il punto 4 non e completo.
+Prossima fetta essenziale: combattimento a distanza con mira/ricarica native;
+inventario profondo e attivita estese rimangono in schedule.
 
 
 ## Fase 3 — M6, veicoli

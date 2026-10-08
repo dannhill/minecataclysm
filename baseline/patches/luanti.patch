@@ -3561,10 +3561,10 @@ index 0000000..bf6e603
 +} // namespace cdda_client
 diff --git a/src/cdda/crafting_inventory.h b/src/cdda/crafting_inventory.h
 new file mode 100644
-index 0000000..a8ab6bd
+index 0000000..a5935f0
 --- /dev/null
 +++ b/src/cdda/crafting_inventory.h
-@@ -0,0 +1,55 @@
+@@ -0,0 +1,56 @@
 +#pragma once
 +#include "equipment_inventory.h"
 +namespace cdda_client {
@@ -3590,6 +3590,7 @@ index 0000000..a8ab6bd
 +    std::string f = "formspec_version[4]size[16,11]no_prepend[]bgcolor[#00000000]"
 +        "background9[0,0;16,11;mcl_base_textures_background9.png;false;7]"
 +        "style_type[label;textcolor=#323232]"
++        "style_type[textarea;textcolor=#323232]"
 +        "style_type[button;border=false;bgimg=mcl_inventory_button9.png;bgimg_pressed=mcl_inventory_button9_pressed.png;bgimg_middle=2,2]"
 +        "label[0.4,0.4;Crafting - ricette note e lavori incompleti]"
 +        "field[0.4,1;5.6,0.65;search;;" + statusEscape(search) + "]field_close_on_enter[search;false]"

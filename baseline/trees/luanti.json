@@ -7247,7 +7247,7 @@
   {
     "path": "src/cdda/crafting_inventory.h",
     "mode": "100644",
-    "sha256": "070b1751750dcfffd5699aad86babfb8149259320899d14a5bc9f757564a6e82"
+    "sha256": "04efa1dddc7f325a937f557490d5abc777a2a9ff186cbb7f3f2e99c042755cfb"
   },
   {
     "path": "src/cdda/equipment_inventory.h",
