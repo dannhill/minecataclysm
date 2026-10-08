@@ -142,6 +142,15 @@ struct InventoryViewBuilder;
 struct EquipmentRequest;
 struct EquipmentRequestBuilder;
 
+struct ItemTransferRequest;
+struct ItemTransferRequestBuilder;
+
+struct ItemTransferState;
+struct ItemTransferStateBuilder;
+
+struct CancelItemTransferRequest;
+struct CancelItemTransferRequestBuilder;
+
 struct RangedRequest;
 struct RangedRequestBuilder;
 
@@ -448,6 +457,36 @@ inline const char *EnumNameEquipmentAction(EquipmentAction e) {
   return EnumNamesEquipmentAction()[index];
 }
 
+enum class ItemTransferAction : int8_t {
+  DROP = 0,
+  INSERT = 1,
+  MIN = DROP,
+  MAX = INSERT
+};
+
+inline const ItemTransferAction (&EnumValuesItemTransferAction())[2] {
+  static const ItemTransferAction values[] = {
+    ItemTransferAction::DROP,
+    ItemTransferAction::INSERT
+  };
+  return values;
+}
+
+inline const char * const *EnumNamesItemTransferAction() {
+  static const char * const names[3] = {
+    "DROP",
+    "INSERT",
+    nullptr
+  };
+  return names;
+}
+
+inline const char *EnumNameItemTransferAction(ItemTransferAction e) {
+  if (::flatbuffers::IsOutRange(e, ItemTransferAction::DROP, ItemTransferAction::INSERT)) return "";
+  const size_t index = static_cast<size_t>(e);
+  return EnumNamesItemTransferAction()[index];
+}
+
 enum class RangedAction : int8_t {
   AIM = 0,
   FIRE = 1,
@@ -521,11 +560,13 @@ enum class Payload : uint8_t {
   CancelCraftingRequest = 36,
   RangedRequest = 37,
   CancelReloadRequest = 38,
+  ItemTransferRequest = 39,
+  CancelItemTransferRequest = 40,
   MIN = NONE,
-  MAX = CancelReloadRequest
+  MAX = CancelItemTransferRequest
 };
 
-inline const Payload (&EnumValuesPayload())[39] {
+inline const Payload (&EnumValuesPayload())[41] {
   static const Payload values[] = {
     Payload::NONE,
     Payload::HelloRequest,
@@ -565,13 +606,15 @@ inline const Payload (&EnumValuesPayload())[39] {
     Payload::CraftingRequest,
     Payload::CancelCraftingRequest,
     Payload::RangedRequest,
-    Payload::CancelReloadRequest
+    Payload::CancelReloadRequest,
+    Payload::ItemTransferRequest,
+    Payload::CancelItemTransferRequest
   };
   return values;
 }
 
 inline const char * const *EnumNamesPayload() {
-  static const char * const names[40] = {
+  static const char * const names[42] = {
     "NONE",
     "HelloRequest",
     "HelloResponse",
@@ -611,13 +654,15 @@ inline const char * const *EnumNamesPayload() {
     "CancelCraftingRequest",
     "RangedRequest",
     "CancelReloadRequest",
+    "ItemTransferRequest",
+    "CancelItemTransferRequest",
     nullptr
   };
   return names;
 }
 
 inline const char *EnumNamePayload(Payload e) {
-  if (::flatbuffers::IsOutRange(e, Payload::NONE, Payload::CancelReloadRequest)) return "";
+  if (::flatbuffers::IsOutRange(e, Payload::NONE, Payload::CancelItemTransferRequest)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesPayload()[index];
 }
@@ -776,6 +821,14 @@ template<> struct PayloadTraits<CDDA::CWM::RangedRequest> {
 
 template<> struct PayloadTraits<CDDA::CWM::CancelReloadRequest> {
   static const Payload enum_value = Payload::CancelReloadRequest;
+};
+
+template<> struct PayloadTraits<CDDA::CWM::ItemTransferRequest> {
+  static const Payload enum_value = Payload::ItemTransferRequest;
+};
+
+template<> struct PayloadTraits<CDDA::CWM::CancelItemTransferRequest> {
+  static const Payload enum_value = Payload::CancelItemTransferRequest;
 };
 
 bool VerifyPayload(::flatbuffers::Verifier &verifier, const void *obj, Payload type);
@@ -2588,7 +2641,8 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_FIRST_AID = 46,
     VT_CRAFTING = 48,
     VT_RANGED_WEAPON = 50,
-    VT_RELOAD = 52
+    VT_RELOAD = 52,
+    VT_ITEM_TRANSFER = 54
   };
   uint64_t world_revision() const {
     return GetField<uint64_t>(VT_WORLD_REVISION, 0);
@@ -2740,6 +2794,12 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   CDDA::CWM::ReloadState *mutable_reload() {
     return GetPointer<CDDA::CWM::ReloadState *>(VT_RELOAD);
   }
+  const CDDA::CWM::ItemTransferState *item_transfer() const {
+    return GetPointer<const CDDA::CWM::ItemTransferState *>(VT_ITEM_TRANSFER);
+  }
+  CDDA::CWM::ItemTransferState *mutable_item_transfer() {
+    return GetPointer<CDDA::CWM::ItemTransferState *>(VT_ITEM_TRANSFER);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint64_t>(verifier, VT_WORLD_REVISION, 8) &&
@@ -2792,6 +2852,8 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyTable(ranged_weapon()) &&
            VerifyOffset(verifier, VT_RELOAD) &&
            verifier.VerifyTable(reload()) &&
+           VerifyOffset(verifier, VT_ITEM_TRANSFER) &&
+           verifier.VerifyTable(item_transfer()) &&
            verifier.EndTable();
   }
 };
@@ -2875,6 +2937,9 @@ struct WorldSnapshotBuilder {
   void add_reload(::flatbuffers::Offset<CDDA::CWM::ReloadState> reload) {
     fbb_.AddOffset(WorldSnapshot::VT_RELOAD, reload);
   }
+  void add_item_transfer(::flatbuffers::Offset<CDDA::CWM::ItemTransferState> item_transfer) {
+    fbb_.AddOffset(WorldSnapshot::VT_ITEM_TRANSFER, item_transfer);
+  }
   explicit WorldSnapshotBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -2912,7 +2977,8 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshot(
     ::flatbuffers::Offset<CDDA::CWM::FirstAidState> first_aid = 0,
     ::flatbuffers::Offset<CDDA::CWM::CraftingState> crafting = 0,
     ::flatbuffers::Offset<CDDA::CWM::RangedWeaponState> ranged_weapon = 0,
-    ::flatbuffers::Offset<CDDA::CWM::ReloadState> reload = 0) {
+    ::flatbuffers::Offset<CDDA::CWM::ReloadState> reload = 0,
+    ::flatbuffers::Offset<CDDA::CWM::ItemTransferState> item_transfer = 0) {
   WorldSnapshotBuilder builder_(_fbb);
   builder_.add_completed_command_id(completed_command_id);
   builder_.add_resync_id(resync_id);
@@ -2920,6 +2986,7 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshot(
   builder_.add_base_revision(base_revision);
   builder_.add_simulation_time_seconds(simulation_time_seconds);
   builder_.add_world_revision(world_revision);
+  builder_.add_item_transfer(item_transfer);
   builder_.add_reload(reload);
   builder_.add_ranged_weapon(ranged_weapon);
   builder_.add_crafting(crafting);
@@ -2968,7 +3035,8 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshotDirect(
     ::flatbuffers::Offset<CDDA::CWM::FirstAidState> first_aid = 0,
     ::flatbuffers::Offset<CDDA::CWM::CraftingState> crafting = 0,
     ::flatbuffers::Offset<CDDA::CWM::RangedWeaponState> ranged_weapon = 0,
-    ::flatbuffers::Offset<CDDA::CWM::ReloadState> reload = 0) {
+    ::flatbuffers::Offset<CDDA::CWM::ReloadState> reload = 0,
+    ::flatbuffers::Offset<CDDA::CWM::ItemTransferState> item_transfer = 0) {
   auto chunks__ = chunks ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::ChunkSnapshot>>(*chunks) : 0;
   auto entities__ = entities ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::EntityState>>(*entities) : 0;
   auto vehicles__ = vehicles ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::VehicleState>>(*vehicles) : 0;
@@ -3004,7 +3072,8 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshotDirect(
       first_aid,
       crafting,
       ranged_weapon,
-      reload);
+      reload,
+      item_transfer);
 }
 
 struct SimulationState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -4446,7 +4515,9 @@ struct InventoryEntry FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_REASONS = 34,
     VT_CONSUME_MOVES = 36,
     VT_CONSUME_LABEL = 38,
-    VT_CONSUME_WARNING = 40
+    VT_CONSUME_WARNING = 40,
+    VT_TRANSFER_REASON = 42,
+    VT_CONTAINER = 44
   };
   uint32_t id() const {
     return GetField<uint32_t>(VT_ID, 0);
@@ -4562,6 +4633,18 @@ struct InventoryEntry FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   ::flatbuffers::String *mutable_consume_warning() {
     return GetPointer<::flatbuffers::String *>(VT_CONSUME_WARNING);
   }
+  const ::flatbuffers::String *transfer_reason() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_TRANSFER_REASON);
+  }
+  ::flatbuffers::String *mutable_transfer_reason() {
+    return GetPointer<::flatbuffers::String *>(VT_TRANSFER_REASON);
+  }
+  bool container() const {
+    return GetField<uint8_t>(VT_CONTAINER, 0) != 0;
+  }
+  bool mutate_container(bool _container = 0) {
+    return SetField<uint8_t>(VT_CONTAINER, static_cast<uint8_t>(_container), 0);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_ID, 4) &&
@@ -4590,6 +4673,9 @@ struct InventoryEntry FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyString(consume_label()) &&
            VerifyOffset(verifier, VT_CONSUME_WARNING) &&
            verifier.VerifyString(consume_warning()) &&
+           VerifyOffset(verifier, VT_TRANSFER_REASON) &&
+           verifier.VerifyString(transfer_reason()) &&
+           VerifyField<uint8_t>(verifier, VT_CONTAINER, 1) &&
            verifier.EndTable();
   }
 };
@@ -4655,6 +4741,12 @@ struct InventoryEntryBuilder {
   void add_consume_warning(::flatbuffers::Offset<::flatbuffers::String> consume_warning) {
     fbb_.AddOffset(InventoryEntry::VT_CONSUME_WARNING, consume_warning);
   }
+  void add_transfer_reason(::flatbuffers::Offset<::flatbuffers::String> transfer_reason) {
+    fbb_.AddOffset(InventoryEntry::VT_TRANSFER_REASON, transfer_reason);
+  }
+  void add_container(bool container) {
+    fbb_.AddElement<uint8_t>(InventoryEntry::VT_CONTAINER, static_cast<uint8_t>(container), 0);
+  }
   explicit InventoryEntryBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -4686,11 +4778,14 @@ inline ::flatbuffers::Offset<InventoryEntry> CreateInventoryEntry(
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>>> reasons = 0,
     int32_t consume_moves = 0,
     ::flatbuffers::Offset<::flatbuffers::String> consume_label = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> consume_warning = 0) {
+    ::flatbuffers::Offset<::flatbuffers::String> consume_warning = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> transfer_reason = 0,
+    bool container = false) {
   InventoryEntryBuilder builder_(_fbb);
   builder_.add_length_mm(length_mm);
   builder_.add_volume_ml(volume_ml);
   builder_.add_weight_grams(weight_grams);
+  builder_.add_transfer_reason(transfer_reason);
   builder_.add_consume_warning(consume_warning);
   builder_.add_consume_label(consume_label);
   builder_.add_consume_moves(consume_moves);
@@ -4703,6 +4798,7 @@ inline ::flatbuffers::Offset<InventoryEntry> CreateInventoryEntry(
   builder_.add_pocket_index(pocket_index);
   builder_.add_parent_id(parent_id);
   builder_.add_id(id);
+  builder_.add_container(container);
   builder_.add_actions(actions);
   builder_.add_wielded(wielded);
   builder_.add_worn(worn);
@@ -4730,13 +4826,16 @@ inline ::flatbuffers::Offset<InventoryEntry> CreateInventoryEntryDirect(
     const std::vector<::flatbuffers::Offset<::flatbuffers::String>> *reasons = nullptr,
     int32_t consume_moves = 0,
     const char *consume_label = nullptr,
-    const char *consume_warning = nullptr) {
+    const char *consume_warning = nullptr,
+    const char *transfer_reason = nullptr,
+    bool container = false) {
   auto type_id__ = type_id ? _fbb.CreateString(type_id) : 0;
   auto name__ = name ? _fbb.CreateString(name) : 0;
   auto category__ = category ? _fbb.CreateString(category) : 0;
   auto reasons__ = reasons ? _fbb.CreateVector<::flatbuffers::Offset<::flatbuffers::String>>(*reasons) : 0;
   auto consume_label__ = consume_label ? _fbb.CreateString(consume_label) : 0;
   auto consume_warning__ = consume_warning ? _fbb.CreateString(consume_warning) : 0;
+  auto transfer_reason__ = transfer_reason ? _fbb.CreateString(transfer_reason) : 0;
   return CDDA::CWM::CreateInventoryEntry(
       _fbb,
       id,
@@ -4757,7 +4856,9 @@ inline ::flatbuffers::Offset<InventoryEntry> CreateInventoryEntryDirect(
       reasons__,
       consume_moves,
       consume_label__,
-      consume_warning__);
+      consume_warning__,
+      transfer_reason__,
+      container);
 }
 
 struct InventoryPocket FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -5254,6 +5355,255 @@ inline ::flatbuffers::Offset<EquipmentRequest> CreateEquipmentRequest(
   builder_.add_command_id(command_id);
   builder_.add_item_id(item_id);
   builder_.add_action(action);
+  return builder_.Finish();
+}
+
+struct ItemTransferRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef ItemTransferRequestBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_COMMAND_ID = 4,
+    VT_VIEW_ID = 6,
+    VT_ITEM_ID = 8,
+    VT_QUANTITY = 10,
+    VT_DESTINATION_ID = 12,
+    VT_ACTION = 14
+  };
+  uint64_t command_id() const {
+    return GetField<uint64_t>(VT_COMMAND_ID, 0);
+  }
+  bool mutate_command_id(uint64_t _command_id = 0) {
+    return SetField<uint64_t>(VT_COMMAND_ID, _command_id, 0);
+  }
+  uint64_t view_id() const {
+    return GetField<uint64_t>(VT_VIEW_ID, 0);
+  }
+  bool mutate_view_id(uint64_t _view_id = 0) {
+    return SetField<uint64_t>(VT_VIEW_ID, _view_id, 0);
+  }
+  uint32_t item_id() const {
+    return GetField<uint32_t>(VT_ITEM_ID, 0);
+  }
+  bool mutate_item_id(uint32_t _item_id = 0) {
+    return SetField<uint32_t>(VT_ITEM_ID, _item_id, 0);
+  }
+  int32_t quantity() const {
+    return GetField<int32_t>(VT_QUANTITY, 0);
+  }
+  bool mutate_quantity(int32_t _quantity = 0) {
+    return SetField<int32_t>(VT_QUANTITY, _quantity, 0);
+  }
+  uint32_t destination_id() const {
+    return GetField<uint32_t>(VT_DESTINATION_ID, 0);
+  }
+  bool mutate_destination_id(uint32_t _destination_id = 0) {
+    return SetField<uint32_t>(VT_DESTINATION_ID, _destination_id, 0);
+  }
+  CDDA::CWM::ItemTransferAction action() const {
+    return static_cast<CDDA::CWM::ItemTransferAction>(GetField<int8_t>(VT_ACTION, 0));
+  }
+  bool mutate_action(CDDA::CWM::ItemTransferAction _action = static_cast<CDDA::CWM::ItemTransferAction>(0)) {
+    return SetField<int8_t>(VT_ACTION, static_cast<int8_t>(_action), 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_COMMAND_ID, 8) &&
+           VerifyField<uint64_t>(verifier, VT_VIEW_ID, 8) &&
+           VerifyField<uint32_t>(verifier, VT_ITEM_ID, 4) &&
+           VerifyField<int32_t>(verifier, VT_QUANTITY, 4) &&
+           VerifyField<uint32_t>(verifier, VT_DESTINATION_ID, 4) &&
+           VerifyField<int8_t>(verifier, VT_ACTION, 1) &&
+           verifier.EndTable();
+  }
+};
+
+struct ItemTransferRequestBuilder {
+  typedef ItemTransferRequest Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_command_id(uint64_t command_id) {
+    fbb_.AddElement<uint64_t>(ItemTransferRequest::VT_COMMAND_ID, command_id, 0);
+  }
+  void add_view_id(uint64_t view_id) {
+    fbb_.AddElement<uint64_t>(ItemTransferRequest::VT_VIEW_ID, view_id, 0);
+  }
+  void add_item_id(uint32_t item_id) {
+    fbb_.AddElement<uint32_t>(ItemTransferRequest::VT_ITEM_ID, item_id, 0);
+  }
+  void add_quantity(int32_t quantity) {
+    fbb_.AddElement<int32_t>(ItemTransferRequest::VT_QUANTITY, quantity, 0);
+  }
+  void add_destination_id(uint32_t destination_id) {
+    fbb_.AddElement<uint32_t>(ItemTransferRequest::VT_DESTINATION_ID, destination_id, 0);
+  }
+  void add_action(CDDA::CWM::ItemTransferAction action) {
+    fbb_.AddElement<int8_t>(ItemTransferRequest::VT_ACTION, static_cast<int8_t>(action), 0);
+  }
+  explicit ItemTransferRequestBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<ItemTransferRequest> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<ItemTransferRequest>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<ItemTransferRequest> CreateItemTransferRequest(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t command_id = 0,
+    uint64_t view_id = 0,
+    uint32_t item_id = 0,
+    int32_t quantity = 0,
+    uint32_t destination_id = 0,
+    CDDA::CWM::ItemTransferAction action = CDDA::CWM::ItemTransferAction::DROP) {
+  ItemTransferRequestBuilder builder_(_fbb);
+  builder_.add_view_id(view_id);
+  builder_.add_command_id(command_id);
+  builder_.add_destination_id(destination_id);
+  builder_.add_quantity(quantity);
+  builder_.add_item_id(item_id);
+  builder_.add_action(action);
+  return builder_.Finish();
+}
+
+struct ItemTransferState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef ItemTransferStateBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_TOKEN = 4,
+    VT_TOTAL_MOVES = 6,
+    VT_REMAINING_MOVES = 8,
+    VT_INSERTING = 10
+  };
+  uint64_t token() const {
+    return GetField<uint64_t>(VT_TOKEN, 0);
+  }
+  bool mutate_token(uint64_t _token = 0) {
+    return SetField<uint64_t>(VT_TOKEN, _token, 0);
+  }
+  int32_t total_moves() const {
+    return GetField<int32_t>(VT_TOTAL_MOVES, 0);
+  }
+  bool mutate_total_moves(int32_t _total_moves = 0) {
+    return SetField<int32_t>(VT_TOTAL_MOVES, _total_moves, 0);
+  }
+  int32_t remaining_moves() const {
+    return GetField<int32_t>(VT_REMAINING_MOVES, 0);
+  }
+  bool mutate_remaining_moves(int32_t _remaining_moves = 0) {
+    return SetField<int32_t>(VT_REMAINING_MOVES, _remaining_moves, 0);
+  }
+  bool inserting() const {
+    return GetField<uint8_t>(VT_INSERTING, 0) != 0;
+  }
+  bool mutate_inserting(bool _inserting = 0) {
+    return SetField<uint8_t>(VT_INSERTING, static_cast<uint8_t>(_inserting), 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_TOKEN, 8) &&
+           VerifyField<int32_t>(verifier, VT_TOTAL_MOVES, 4) &&
+           VerifyField<int32_t>(verifier, VT_REMAINING_MOVES, 4) &&
+           VerifyField<uint8_t>(verifier, VT_INSERTING, 1) &&
+           verifier.EndTable();
+  }
+};
+
+struct ItemTransferStateBuilder {
+  typedef ItemTransferState Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_token(uint64_t token) {
+    fbb_.AddElement<uint64_t>(ItemTransferState::VT_TOKEN, token, 0);
+  }
+  void add_total_moves(int32_t total_moves) {
+    fbb_.AddElement<int32_t>(ItemTransferState::VT_TOTAL_MOVES, total_moves, 0);
+  }
+  void add_remaining_moves(int32_t remaining_moves) {
+    fbb_.AddElement<int32_t>(ItemTransferState::VT_REMAINING_MOVES, remaining_moves, 0);
+  }
+  void add_inserting(bool inserting) {
+    fbb_.AddElement<uint8_t>(ItemTransferState::VT_INSERTING, static_cast<uint8_t>(inserting), 0);
+  }
+  explicit ItemTransferStateBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<ItemTransferState> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<ItemTransferState>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<ItemTransferState> CreateItemTransferState(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t token = 0,
+    int32_t total_moves = 0,
+    int32_t remaining_moves = 0,
+    bool inserting = false) {
+  ItemTransferStateBuilder builder_(_fbb);
+  builder_.add_token(token);
+  builder_.add_remaining_moves(remaining_moves);
+  builder_.add_total_moves(total_moves);
+  builder_.add_inserting(inserting);
+  return builder_.Finish();
+}
+
+struct CancelItemTransferRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef CancelItemTransferRequestBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_COMMAND_ID = 4,
+    VT_ACTIVITY_TOKEN = 6
+  };
+  uint64_t command_id() const {
+    return GetField<uint64_t>(VT_COMMAND_ID, 0);
+  }
+  bool mutate_command_id(uint64_t _command_id = 0) {
+    return SetField<uint64_t>(VT_COMMAND_ID, _command_id, 0);
+  }
+  uint64_t activity_token() const {
+    return GetField<uint64_t>(VT_ACTIVITY_TOKEN, 0);
+  }
+  bool mutate_activity_token(uint64_t _activity_token = 0) {
+    return SetField<uint64_t>(VT_ACTIVITY_TOKEN, _activity_token, 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_COMMAND_ID, 8) &&
+           VerifyField<uint64_t>(verifier, VT_ACTIVITY_TOKEN, 8) &&
+           verifier.EndTable();
+  }
+};
+
+struct CancelItemTransferRequestBuilder {
+  typedef CancelItemTransferRequest Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_command_id(uint64_t command_id) {
+    fbb_.AddElement<uint64_t>(CancelItemTransferRequest::VT_COMMAND_ID, command_id, 0);
+  }
+  void add_activity_token(uint64_t activity_token) {
+    fbb_.AddElement<uint64_t>(CancelItemTransferRequest::VT_ACTIVITY_TOKEN, activity_token, 0);
+  }
+  explicit CancelItemTransferRequestBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<CancelItemTransferRequest> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<CancelItemTransferRequest>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<CancelItemTransferRequest> CreateCancelItemTransferRequest(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t command_id = 0,
+    uint64_t activity_token = 0) {
+  CancelItemTransferRequestBuilder builder_(_fbb);
+  builder_.add_activity_token(activity_token);
+  builder_.add_command_id(command_id);
   return builder_.Finish();
 }
 
@@ -6323,6 +6673,12 @@ struct CwmMessage FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const CDDA::CWM::CancelReloadRequest *payload_as_CancelReloadRequest() const {
     return payload_type() == CDDA::CWM::Payload::CancelReloadRequest ? static_cast<const CDDA::CWM::CancelReloadRequest *>(payload()) : nullptr;
   }
+  const CDDA::CWM::ItemTransferRequest *payload_as_ItemTransferRequest() const {
+    return payload_type() == CDDA::CWM::Payload::ItemTransferRequest ? static_cast<const CDDA::CWM::ItemTransferRequest *>(payload()) : nullptr;
+  }
+  const CDDA::CWM::CancelItemTransferRequest *payload_as_CancelItemTransferRequest() const {
+    return payload_type() == CDDA::CWM::Payload::CancelItemTransferRequest ? static_cast<const CDDA::CWM::CancelItemTransferRequest *>(payload()) : nullptr;
+  }
   void *mutable_payload() {
     return GetPointer<void *>(VT_PAYLOAD);
   }
@@ -6509,6 +6865,14 @@ template<> inline const CDDA::CWM::RangedRequest *CwmMessage::payload_as<CDDA::C
 
 template<> inline const CDDA::CWM::CancelReloadRequest *CwmMessage::payload_as<CDDA::CWM::CancelReloadRequest>() const {
   return payload_as_CancelReloadRequest();
+}
+
+template<> inline const CDDA::CWM::ItemTransferRequest *CwmMessage::payload_as<CDDA::CWM::ItemTransferRequest>() const {
+  return payload_as_ItemTransferRequest();
+}
+
+template<> inline const CDDA::CWM::CancelItemTransferRequest *CwmMessage::payload_as<CDDA::CWM::CancelItemTransferRequest>() const {
+  return payload_as_CancelItemTransferRequest();
 }
 
 struct CwmMessageBuilder {
@@ -6727,6 +7091,14 @@ inline bool VerifyPayload(::flatbuffers::Verifier &verifier, const void *obj, Pa
     }
     case Payload::CancelReloadRequest: {
       auto ptr = reinterpret_cast<const CDDA::CWM::CancelReloadRequest *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::ItemTransferRequest: {
+      auto ptr = reinterpret_cast<const CDDA::CWM::ItemTransferRequest *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::CancelItemTransferRequest: {
+      auto ptr = reinterpret_cast<const CDDA::CWM::CancelItemTransferRequest *>(obj);
       return verifier.VerifyTable(ptr);
     }
     default: return true;

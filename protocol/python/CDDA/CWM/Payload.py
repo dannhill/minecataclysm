@@ -42,3 +42,5 @@ class Payload(object):
     CancelCraftingRequest = 36
     RangedRequest = 37
     CancelReloadRequest = 38
+    ItemTransferRequest = 39
+    CancelItemTransferRequest = 40

@@ -170,8 +170,22 @@ class InventoryEntry(object):
             return self._tab.String(o + self._tab.Pos)
         return None
 
+    # InventoryEntry
+    def TransferReason(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(42))
+        if o != 0:
+            return self._tab.String(o + self._tab.Pos)
+        return None
+
+    # InventoryEntry
+    def Container(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(44))
+        if o != 0:
+            return bool(self._tab.Get(flatbuffers.number_types.BoolFlags, o + self._tab.Pos))
+        return False
+
 def InventoryEntryStart(builder):
-    builder.StartObject(19)
+    builder.StartObject(21)
 
 def Start(builder):
     InventoryEntryStart(builder)
@@ -295,6 +309,18 @@ def InventoryEntryAddConsumeWarning(builder, consumeWarning):
 
 def AddConsumeWarning(builder, consumeWarning):
     InventoryEntryAddConsumeWarning(builder, consumeWarning)
+
+def InventoryEntryAddTransferReason(builder, transferReason):
+    builder.PrependUOffsetTRelativeSlot(19, flatbuffers.number_types.UOffsetTFlags.py_type(transferReason), 0)
+
+def AddTransferReason(builder, transferReason):
+    InventoryEntryAddTransferReason(builder, transferReason)
+
+def InventoryEntryAddContainer(builder, container):
+    builder.PrependBoolSlot(20, container, 0)
+
+def AddContainer(builder, container):
+    InventoryEntryAddContainer(builder, container)
 
 def InventoryEntryEnd(builder):
     return builder.EndObject()

@@ -38,7 +38,7 @@ inline bool valid_inventory(const CDDA::CWM::InventoryView* view) {
             entry->weight_grams() < 0 || entry->volume_ml() < 0 || entry->length_mm() < 0 || entry->access_moves() < 0 ||
             !text(entry->type_id(), 1024, false) || !text(entry->name(), 16384, false) || !text(entry->category(), 1024) ||
             !entry->reasons() || entry->reasons()->size() != 6 || entry->consume_moves() < 0 ||
-            !text(entry->consume_label(), 128) || !text(entry->consume_warning(), 2048)) return false;
+            !text(entry->consume_label(), 128) || !text(entry->consume_warning(), 2048) || !text(entry->transfer_reason(), 2048)) return false;
         for (unsigned i = 0; i < 6; ++i)
             if (!text(entry->reasons()->Get(i), 2048) ||
                 bool(entry->actions() & (1 << i)) == bool(entry->reasons()->Get(i)->size())) return false;
@@ -94,7 +94,11 @@ inline bool valid_world(const CDDA::CWM::WorldSnapshot* world) {
         if (!consumption->token() || consumption->total_moves() <= 0 ||
             consumption->remaining_moves() < 0 || consumption->remaining_moves() > consumption->total_moves()) return false;
     }
-    if (int(bool(world->consumption())) + int(bool(world->first_aid())) + int(bool(world->crafting())) + int(bool(world->reload())) > 1) return false;
+    if (int(bool(world->consumption())) + int(bool(world->first_aid())) + int(bool(world->crafting())) + int(bool(world->reload())) + int(bool(world->item_transfer())) > 1) return false;
+    if (const auto* transfer = world->item_transfer()) {
+        if (!transfer->token() || transfer->total_moves() < 0 || transfer->remaining_moves() < 0 ||
+            transfer->remaining_moves() > transfer->total_moves() || (transfer->inserting() && !transfer->total_moves())) return false;
+    }
     if (const auto* reload = world->reload()) {
         if (!reload->token() || reload->total_moves() <= 0 || reload->remaining_moves() < 0 ||
             reload->remaining_moves() > reload->total_moves()) return false;

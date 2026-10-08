@@ -393,8 +393,19 @@ class WorldSnapshot(object):
             return obj
         return None
 
+    # WorldSnapshot
+    def ItemTransfer(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(54))
+        if o != 0:
+            x = self._tab.Indirect(o + self._tab.Pos)
+            from CDDA.CWM.ItemTransferState import ItemTransferState
+            obj = ItemTransferState()
+            obj.Init(self._tab.Bytes, x)
+            return obj
+        return None
+
 def WorldSnapshotStart(builder):
-    builder.StartObject(25)
+    builder.StartObject(26)
 
 def Start(builder):
     WorldSnapshotStart(builder)
@@ -602,6 +613,12 @@ def WorldSnapshotAddReload(builder, reload):
 
 def AddReload(builder, reload):
     WorldSnapshotAddReload(builder, reload)
+
+def WorldSnapshotAddItemTransfer(builder, itemTransfer):
+    builder.PrependUOffsetTRelativeSlot(25, flatbuffers.number_types.UOffsetTFlags.py_type(itemTransfer), 0)
+
+def AddItemTransfer(builder, itemTransfer):
+    WorldSnapshotAddItemTransfer(builder, itemTransfer)
 
 def WorldSnapshotEnd(builder):
     return builder.EndObject()

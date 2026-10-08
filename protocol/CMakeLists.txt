@@ -66,3 +66,7 @@ add_test(NAME test_crafting COMMAND test_crafting)
 add_executable(test_ranged tests/test_ranged.cpp)
 target_link_libraries(test_ranged PRIVATE cwm_protocol)
 add_test(NAME test_ranged COMMAND test_ranged)
+
+add_executable(test_transfer tests/test_transfer.cpp)
+target_link_libraries(test_transfer PRIVATE cwm_protocol)
+add_test(NAME test_transfer COMMAND test_transfer)

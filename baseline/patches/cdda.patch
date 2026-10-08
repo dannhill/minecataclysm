@@ -1466,10 +1466,10 @@ index 0000000..d8898b7
 +} // namespace cwm
 diff --git a/src/cwm/cwm_inventory.h b/src/cwm/cwm_inventory.h
 new file mode 100644
-index 0000000..32789a0
+index 0000000..28cccdd
 --- /dev/null
 +++ b/src/cwm/cwm_inventory.h
-@@ -0,0 +1,178 @@
+@@ -0,0 +1,230 @@
 +#pragma once
 +#include <algorithm>
 +#include <array>
@@ -1484,6 +1484,7 @@ index 0000000..32789a0
 +#include "item_category.h"
 +#include "item_location.h"
 +#include "item_pocket.h"
++#include "map.h"
 +#include "output.h"
 +#include "units.h"
 +#include "visitable.h"
@@ -1501,6 +1502,7 @@ index 0000000..32789a0
 +        bool counted, worn, wielded;
 +    };
 +    uint64_t next_view_{1}, view_{0};
++    tripoint origin_{};
 +    std::vector<Binding> bindings_;
 +public:
 +    void clear() { view_ = 0; bindings_.clear(); }
@@ -1568,7 +1570,7 @@ index 0000000..32789a0
 +            return "Contenitore aperto pieno: gestione dei liquidi richiesta.";
 +        return {};
 +    }
-+    std::string validate(avatar& u, uint64_t view, uint32_t id, int action) const {
++    std::string validate_binding(avatar& u, uint64_t view, uint32_t id) const {
 +        if (!view || view != view_ || !id || id > bindings_.size()) return "Selezione inventario scaduta: riapri l'inventario.";
 +        const auto& selected = bindings_[id - 1];
 +        const auto& location = selected.location;
@@ -1577,7 +1579,54 @@ index 0000000..32789a0
 +            location->charges != selected.charges || location->count_by_charges() != selected.counted ||
 +            u.is_worn(*location) != selected.worn || u.is_wielding(*location) != selected.wielded)
 +            return "Oggetto o tasca cambiati: riapri l'inventario.";
-+        return action_error(u, location, action);
++        return {};
++    }
++    std::string validate(avatar& u, uint64_t view, uint32_t id, int action) const {
++        auto error = validate_binding(u, view, id);
++        return error.empty() ? action_error(u, target(id), action) : error;
++    }
++    static std::string transfer_source_error(avatar& u, item_location location) {
++        if (!location || !location.held_by(u) || !u.has_item(*location)) return "Oggetto non piu posseduto.";
++        if (u.activity) return "Interrompi prima l'attivita in corso.";
++        const auto access = access_error(location); if (!access.empty()) return access;
++        if (u.is_worn(*location)) return "Togli prima l'oggetto indossato.";
++        if (!location->made_of_from_type(phase_id::SOLID) || location->is_bucket_nonempty())
++            return "Liquidi e contenitori aperti pieni richiedono il travaso dedicato.";
++        const auto drop = u.can_drop(*location); if (!drop.success()) return remove_color_tags(drop.str());
++        if (u.is_wielding(*location)) { const auto result = u.can_unwield(*location); if (!result.success()) return remove_color_tags(result.str()); }
++        return {};
++    }
++    std::string validate_transfer(avatar& u, uint64_t view, uint32_t id, int quantity,
++                                 uint32_t destination, int action) const {
++        auto error = validate_binding(u, view, id); if (!error.empty()) return error;
++        auto source = target(id);
++        error = transfer_source_error(u, source); if (!error.empty()) return error;
++        const int available = source->count_by_charges() ? source->charges : 1;
++        if (quantity <= 0 || quantity > available) return "Quantita non valida o non piu disponibile.";
++        if (get_map().getabs(u.pos()) != origin_) return "Posizione cambiata: riapri l'inventario.";
++        if (action == 0) {
++            if (destination) return "Il deposito a terra non richiede un contenitore.";
++            if (!get_map().can_put_items(u.pos())) return "Non puoi depositare oggetti qui.";
++            return {};
++        }
++        if (action != 1) return "Trasferimento non supportato.";
++        error = validate_binding(u, view, destination); if (!error.empty()) return error;
++        auto container = target(destination);
++        error = access_error(container); if (!error.empty()) return error;
++        if (source == container || source->has_item(*container)) return "Un contenitore non puo contenere se stesso o un suo antenato.";
++        if (source.has_parent() && source.parent_item() == container) return "Oggetto gia in questo contenitore.";
++        bool usable = false;
++        for (const auto* pocket : container->get_all_contained_pockets()) if (pocket->is_type(pocket_type::CONTAINER)) {
++            if (pocket->sealed()) return "Apri prima la tasca sigillata con l'interazione dedicata.";
++            usable = true;
++        }
++        if (!usable) return "La destinazione non ha tasche per oggetti.";
++        item portion(*source); if (portion.count_by_charges()) portion.charges = quantity;
++        const auto fit = container->can_contain_directly(portion);
++        if (!fit.success()) return remove_color_tags(fit.str());
++        const auto parents = container.parents_can_contain_recursive(&portion);
++        if (!parents.success()) return remove_color_tags(parents.str());
++        return {};
 +    }
 +    item_location target(uint32_t id) const { return bindings_.at(id - 1).location; }
 +    std::vector<uint8_t> query(avatar& u, uint64_t query_id, cdda::cwm::MessageBuilder& wire,
@@ -1587,7 +1636,7 @@ index 0000000..32789a0
 +        std::vector<flatbuffers::Offset<CDDA::CWM::InventoryPocket>> pockets;
 +        bool truncated = false;
 +        if (error.empty()) {
-+            clear(); view_ = next_view_++;
++            clear(); view_ = next_view_++; origin_ = get_map().getabs(u.pos());
 +            std::map<item*, uint32_t> ids;
 +            u.visit_items([&](item* it, item* parent) {
 +                if (entries.size() >= 2048) { truncated = true; return VisitResponse::ABORT; }
@@ -1617,11 +1666,14 @@ index 0000000..32789a0
 +                    it->get_comestible()->comesttype == "FOOD" || it->has_flag(flag_USE_EAT_VERB) ? "Mangia" : "Bevi";
 +                const int consume_moves = food ? std::max(0, to_moves<int>(u.get_consume_time(*it))) : 0;
 +                const auto warning = food && u.can_eat(*it).success() ? u.will_eat(*it, false).str() : "";
++                const auto container_pockets = it->get_all_contained_pockets();
 +                entries.push_back(CDDA::CWM::CreateInventoryEntryDirect(fbb, id, parent_id, pocket_index,
 +                    it->typeId().str().c_str(), remove_color_tags(it->tname()).c_str(), it->get_category_shallow().name().c_str(),
 +                    it->charges, it->count_by_charges(), worn, wielded,
 +                    units::to_gram<int64_t>(it->weight()), units::to_milliliter<int64_t>(it->volume()),
-+                    units::to_millimeter<int64_t>(it->length()), access, actions, &reasons, consume_moves, consume_label, remove_color_tags(warning).c_str()));
++                    units::to_millimeter<int64_t>(it->length()), access, actions, &reasons, consume_moves, consume_label, remove_color_tags(warning).c_str(), transfer_source_error(u, location).c_str(),
++                    std::any_of(container_pockets.begin(), container_pockets.end(),
++                        [](const auto* p) { return p->is_type(pocket_type::CONTAINER); })));
 +                bindings_.push_back({location, ancestors, it->typeId().str(), it->charges,
 +                                     it->count_by_charges(), worn, wielded});
 +                ids[it] = id;
@@ -2054,10 +2106,10 @@ index 0000000..1a0308e
 +}
 diff --git a/src/cwm/cwm_map_exporter.cpp b/src/cwm/cwm_map_exporter.cpp
 new file mode 100644
-index 0000000..e0f4875
+index 0000000..d582732
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.cpp
-@@ -0,0 +1,631 @@
+@@ -0,0 +1,635 @@
 +#include "cwm_motion.h"
 +// CDDA CWM Map & Entity Exporter Implementation
 +// Licensed under Apache-2.0
@@ -2627,6 +2679,10 @@ index 0000000..e0f4875
 +    const auto ranged = export_ranged_weapon(fbb, const_cast<avatar&>(u), weapon_token);
 +    const auto reload = activity_token && u.activity.id() == activity_id("ACT_RELOAD") && u.activity.moves_total>0 ?
 +        CDDA::CWM::CreateReloadState(fbb,activity_token,u.activity.moves_total,std::clamp(u.activity.moves_left,0,u.activity.moves_total)) : flatbuffers::Offset<CDDA::CWM::ReloadState>{};
++    const auto transfer = activity_token && (u.activity.id() == activity_id("ACT_DROP") || u.activity.id() == activity_id("ACT_INSERT_ITEM")) ?
++        CDDA::CWM::CreateItemTransferState(fbb, activity_token, std::max(0, u.activity.moves_total),
++            std::clamp(u.activity.moves_left, 0, std::max(0, u.activity.moves_total)), u.activity.id() == activity_id("ACT_INSERT_ITEM")) :
++        flatbuffers::Offset<CDDA::CWM::ItemTransferState>{};
 +    auto world_snap = CDDA::CWM::CreateWorldSnapshot(
 +        fbb,
 +        world_rev,
@@ -2640,7 +2696,7 @@ index 0000000..e0f4875
 +        g.safe_mode == SAFE_MODE_STOP || u.has_effect(efftype_id("laserlocked")) ||
 +            (clock && (clock->pause_reasons & 4)),
 +        include_chunks, base_revision, state_id, resync_id, completed_command_id,
-+        spawned_vec, removed_vec, clock_state, ground_items_vec, owned_items_vec, avatar_status, consumption, first_aid, crafting, ranged, reload
++        spawned_vec, removed_vec, clock_state, ground_items_vec, owned_items_vec, avatar_status, consumption, first_aid, crafting, ranged, reload, transfer
 +    );
 +
 +    return builder.finish_message(CDDA::CWM::Payload::WorldSnapshot, world_snap.Union());
@@ -2871,10 +2927,10 @@ index 0000000..43d3a08
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..8cf0b8c
+index 0000000..721791f
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,911 @@
+@@ -0,0 +1,949 @@
 +#include "cwm_motion.h"
 +// CDDA CWM IPC Server Implementation
 +// Licensed under Apache-2.0
@@ -2980,6 +3036,13 @@ index 0000000..8cf0b8c
 +        if (!activity_token_ || activity_kind_ != "ACT_CRAFT" || remaining > activity_remaining_)
 +            activity_token_ = next_activity_token_++;
 +        activity_kind_ = "ACT_CRAFT"; activity_total_ = 10000000; activity_remaining_ = remaining;
++        return;
++    }
++    if (u.activity.id() == activity_id("ACT_DROP") || u.activity.id() == activity_id("ACT_INSERT_ITEM")) {
++        if (!activity_token_ || activity_kind_ != u.activity.id().str()) activity_token_ = next_activity_token_++;
++        activity_kind_ = u.activity.id().str();
++        activity_total_ = std::max(0, u.activity.moves_total);
++        activity_remaining_ = std::clamp(u.activity.moves_left, 0, activity_total_);
 +        return;
 +    }
 +    if ((u.activity.id() != activity_id("ACT_CONSUME") && u.activity.id() != activity_id("ACT_FIRSTAID") && u.activity.id() != activity_id("ACT_RELOAD")) ||
@@ -3352,6 +3415,24 @@ index 0000000..8cf0b8c
 +        ++world_revision_;
 +        result_ = Result{command.id, accepted, accepted ? "" : "Nessun lavoro avviato; controlla gli eventuali incompleti in K."};
 +        return acted;
++    } else if (command.transfer_action >= 0) {
++        const auto error = inventory_selection_.validate_transfer(u, command.inventory_view,
++            command.inventory_item, command.transfer_quantity, command.transfer_destination, command.transfer_action);
++        if (!error.empty()) { result_ = Result{command.id, false, error}; return false; }
++        auto source = inventory_selection_.target(command.inventory_item);
++        auto destination = command.transfer_destination ? inventory_selection_.target(command.transfer_destination) : item_location::nowhere;
++        inventory_selection_.clear(); ranged_selection_.clear(); activity_token_ = 0;
++        if (command.transfer_action == 0) {
++            // The selected destination is explicitly ground at the avatar tile,
++            // never implicit vehicle cargo; same actor as native advanced inventory.
++            u.assign_activity(drop_activity_actor({drop_or_stash_item_info(source, command.transfer_quantity)}, tripoint_zero, true));
++        } else {
++            u.assign_activity(insert_item_activity_actor(destination, {{source, command.transfer_quantity}}, false));
++        }
++        const bool accepted = bool(u.activity);
++        result_ = Result{command.id, accepted, accepted ? "" : "Trasferimento nativo non avviato."};
++        if (accepted) ++world_revision_;
++        return accepted;
 +    } else if (command.equipment_action >= 0) {
 +        auto error = inventory_selection_.validate(u, command.inventory_view,
 +            command.inventory_item, command.equipment_action);
@@ -3575,7 +3656,7 @@ index 0000000..8cf0b8c
 +        }
 +    } else if (const auto* request = msg->payload_as_RangedRequest()) {
 +        id=request->command_id();signature="ranged:"+std::to_string(request->weapon_token())+":"+std::to_string(request->target_entity_id())+":"+std::to_string(int(request->action()));
-+    } else if (const auto* request = msg->payload_as_CancelReloadRequest()) {
++    } else if (const auto* request = msg->payload_as_CancelReloadRequest() || msg->payload_as_CancelItemTransferRequest()) {
 +        id=request->command_id();signature="cancel-reload:"+std::to_string(request->activity_token());
 +    } else if (const auto* request = msg->payload_as_CraftingRequest()) {
 +        id = request->command_id(); signature = "craft:" + std::to_string(request->view_id()) + ":" + std::to_string(request->entry_id());
@@ -3585,6 +3666,12 @@ index 0000000..8cf0b8c
 +        id = request->command_id(); signature = "cancel-first-aid:" + std::to_string(request->activity_token());
 +    } else if (const auto* request = msg->payload_as_CancelConsumptionRequest()) {
 +        id = request->command_id(); signature = "cancel-consumption:" + std::to_string(request->activity_token());
++    } else if (const auto* request = msg->payload_as_ItemTransferRequest()) {
++        id = request->command_id(); signature = "item-transfer:" + std::to_string(request->view_id()) + ":" +
++            std::to_string(request->item_id()) + ":" + std::to_string(request->quantity()) + ":" +
++            std::to_string(request->destination_id()) + ":" + std::to_string(int(request->action()));
++    } else if (const auto* request = msg->payload_as_CancelItemTransferRequest()) {
++        id = request->command_id(); signature = "cancel-item-transfer:" + std::to_string(request->activity_token());
 +    } else if (const auto* request = msg->payload_as_EquipmentRequest()) {
 +        id = request->command_id(); signature = "equipment:" + std::to_string(request->view_id()) +
 +            ":" + std::to_string(request->item_id()) + ":" + std::to_string(int(request->action()));
@@ -3617,15 +3704,17 @@ index 0000000..8cf0b8c
 +    }
 +    if (status == Status::Expired) { send_result({id, false, "Command identity expired"}, u, m, g); return; }
 +    if (status != Status::Fresh) { server_->client()->close(); return; }
-+    if (msg->payload_as_CancelConsumptionRequest() || msg->payload_as_CancelFirstAidRequest() || msg->payload_as_CancelCraftingRequest() || msg->payload_as_CancelReloadRequest()) {
++    if (msg->payload_as_CancelConsumptionRequest() || msg->payload_as_CancelFirstAidRequest() || msg->payload_as_CancelCraftingRequest() || msg->payload_as_CancelReloadRequest() || msg->payload_as_CancelItemTransferRequest()) {
 +        const auto* meal = msg->payload_as_CancelConsumptionRequest();
 +        const auto* aid = msg->payload_as_CancelFirstAidRequest();
 +        const auto* craft = msg->payload_as_CancelCraftingRequest();
 +        const auto* reload = msg->payload_as_CancelReloadRequest();
-+        const auto token = meal ? meal->activity_token() : aid ? aid->activity_token() : craft ? craft->activity_token() : reload->activity_token();
++        const auto* transfer = msg->payload_as_CancelItemTransferRequest();
++        const auto token = transfer ? transfer->activity_token() : meal ? meal->activity_token() : aid ? aid->activity_token() : craft ? craft->activity_token() : reload->activity_token();
 +        refresh_activity(u);
 +        const bool valid = activity_token_ && token == activity_token_ &&
-+            u.activity.id() == activity_id(meal ? "ACT_CONSUME" : aid ? "ACT_FIRSTAID" : craft ? "ACT_CRAFT" : "ACT_RELOAD") &&
++            (transfer ? (u.activity.id() == activity_id("ACT_DROP") || u.activity.id() == activity_id("ACT_INSERT_ITEM")) :
++             u.activity.id() == activity_id(meal ? "ACT_CONSUME" : aid ? "ACT_FIRSTAID" : craft ? "ACT_CRAFT" : "ACT_RELOAD")) &&
 +            u.activity.is_interruptible() && (!realtime_ || !pause_reasons(g));
 +        if (valid) {
 +            u.cancel_activity(); // Native interruption/backlog rules, no refund.
@@ -3728,6 +3817,11 @@ index 0000000..8cf0b8c
 +        command.id = request->command_id(); command.crafting_view = request->view_id();
 +        command.crafting_entry = request->entry_id();
 +        error = crafting_selection_.validate(u, command.crafting_view, command.crafting_entry);
++    } else if (const auto* request = msg->payload_as_ItemTransferRequest()) {
++        command.id = request->command_id(); command.inventory_view = request->view_id(); command.inventory_item = request->item_id();
++        command.transfer_quantity = request->quantity(); command.transfer_destination = request->destination_id(); command.transfer_action = int(request->action());
++        error = inventory_selection_.validate_transfer(u, command.inventory_view, command.inventory_item,
++            command.transfer_quantity, command.transfer_destination, command.transfer_action);
 +    } else if (const auto* request = msg->payload_as_EquipmentRequest()) {
 +        command.id = request->command_id();
 +        command.inventory_view = request->view_id(); command.inventory_item = request->item_id();
@@ -3788,10 +3882,10 @@ index 0000000..8cf0b8c
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.h b/src/cwm/cwm_server.h
 new file mode 100644
-index 0000000..b407122
+index 0000000..872ead8
 --- /dev/null
 +++ b/src/cwm/cwm_server.h
-@@ -0,0 +1,142 @@
+@@ -0,0 +1,144 @@
 +// CDDA CWM IPC Server
 +// Licensed under Apache-2.0
 +#pragma once
@@ -3891,6 +3985,8 @@ index 0000000..b407122
 +        uint64_t inventory_view{0};
 +        uint32_t inventory_item{0};
 +        int equipment_action{-1};
++        int transfer_action{-1}, transfer_quantity{0};
++        uint32_t transfer_destination{0};
 +        uint64_t crafting_view{0};
 +        uint32_t crafting_entry{0};
 +        int action{0};
@@ -4244,10 +4340,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..5391ddb
+index 0000000..dbcca0a
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,1337 @@
+@@ -0,0 +1,1420 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "move_mode.h"
@@ -4332,6 +4428,16 @@ index 0000000..5391ddb
 +        cdda::cwm::MessageBuilder wire( server.received_sequence_ + 1, 1, server.identity_ );
 +        const auto bytes = wire.build_equipment_request( id, view, item_id, static_cast<CDDA::CWM::EquipmentAction>( action ) );
 +        server.handle_client_message( bytes.data(), bytes.size(), get_avatar(), get_map(), *g );
++    }
++    static void transfer(CwmServer& server, uint64_t view, uint32_t item, int quantity, uint32_t destination, int action, uint64_t id = 1) {
++        cdda::cwm::MessageBuilder wire(server.received_sequence_+1,1,server.identity_);
++        auto bytes=wire.build_item_transfer(id,view,item,quantity,destination,static_cast<CDDA::CWM::ItemTransferAction>(action));
++        server.handle_client_message(bytes.data(),bytes.size(),get_avatar(),get_map(),*g);
++    }
++    static void interrupt_transfer(CwmServer& server, uint64_t token, uint64_t id) {
++        cdda::cwm::MessageBuilder wire(server.received_sequence_+1,1,server.identity_);
++        auto bytes=wire.build_cancel_item_transfer(id,token);
++        server.handle_client_message(bytes.data(),bytes.size(),get_avatar(),get_map(),*g);
 +    }
 +    static uint64_t consumption( CwmServer &server ) { server.refresh_activity( get_avatar() ); return server.activity_token_; }
 +    static void interrupt( CwmServer &server, uint64_t token, uint64_t id ) {
@@ -5584,6 +5690,79 @@ index 0000000..5391ddb
 +    if(interrupt) {cwm::CwmServerTestAccess::interrupt_reload(server,token,2);CHECK_FALSE(u.activity);CHECK(ammo->charges==30);CHECK(u.get_wielded_item()->ammo_remaining()==3);return;}
 +    for(int i=0;i<200&&u.activity;++i) {u.moves=100;REQUIRE_FALSE(do_turn_with_action([&](){u.pause();return false;},{}));}
 +    CHECK_FALSE(u.activity);CHECK(u.get_wielded_item()->ammo_remaining()==15);CHECK(ammo->charges==18);
++}
++
++TEST_CASE("cwm_native_partial_drop_conserves_charges_and_pays_access_once", "[cwm][transfer]") {
++    clear_avatar();clear_map();auto& u=get_avatar();u.setpos(tripoint(60,60,0));
++    REQUIRE(u.wear_item(item(itype_id("backpack_hiking"))));
++    auto ammo=u.i_add(item(itype_id("9mm"),calendar::turn,30));REQUIRE(ammo);
++    cwm::CwmServer server("/unused-transfer");cwm::CwmServerTestAccess::ready(server);u.moves=1000;
++    auto view=cwm::CwmServerTestAccess::inventory(server);auto id=cwm::CwmServerTestAccess::item_id(server,*ammo);
++    const auto time=calendar::turn;CHECK(u.moves==1000);CHECK_FALSE(u.activity);
++    const int cost=ammo.obtain_cost(u,7);REQUIRE(cost>0);
++    cwm::CwmServerTestAccess::transfer(server,view,id,7,0,0);REQUIRE(server.has_queued_action());
++    cwm::CwmServerTestAccess::transfer(server,view,id,7,0,0);REQUIRE(server.has_queued_action());
++    REQUIRE(cwm::CwmServerTestAccess::execute(server));REQUIRE(u.activity.id()==activity_id("ACT_DROP"));
++    CHECK(ammo->charges==30);CHECK(u.moves==1000);CHECK(calendar::turn==time);
++    cwm::CwmServerTestAccess::complete(server);
++    SECTION("cancellation before native work changes no inventory and replay cannot restart") {
++        auto token=cwm::CwmServerTestAccess::consumption(server);REQUIRE(token);
++        cwm::CwmServerTestAccess::interrupt_transfer(server,token,2);CHECK_FALSE(u.activity);CHECK(ammo->charges==30);
++        cwm::CwmServerTestAccess::transfer(server,view,id,7,0,0);CHECK_FALSE(server.has_queued_action());return;
++    }
++    u.activity.do_turn(u);CHECK_FALSE(u.activity);CHECK(ammo->charges==23);CHECK(u.moves==1000-cost);
++    int ground=0;for(const auto& it:get_map().i_at(u.pos()))if(it.typeId()==itype_id("9mm"))ground+=it.charges;
++    CHECK(ground==7);
++    cwm::CwmServerTestAccess::transfer(server,view,id,7,0,0);CHECK_FALSE(server.has_queued_action());CHECK(ammo->charges==23);
++}
++TEST_CASE("cwm_native_insert_has_canonical_work_and_conserves_partial_quantities", "[cwm][transfer]") {
++    clear_avatar();clear_map();auto& u=get_avatar();u.setpos(tripoint(60,60,0));
++    REQUIRE(u.wear_item(item(itype_id("backpack_hiking"))));
++    auto ammo=u.i_add(item(itype_id("9mm"),calendar::turn,30));REQUIRE(ammo);
++    auto pouch=u.i_add(item(itype_id("plastic_bag")));REQUIRE(pouch);
++    cwm::CwmServer server("/unused-insert");cwm::CwmServerTestAccess::ready(server);u.moves=1000;
++    auto view=cwm::CwmServerTestAccess::inventory(server);auto id=cwm::CwmServerTestAccess::item_id(server,*ammo);
++    auto dest=cwm::CwmServerTestAccess::item_id(server,*pouch);
++    cwm::CwmServerTestAccess::transfer(server,view,id,7,dest,1);REQUIRE(server.has_queued_action());
++    REQUIRE(cwm::CwmServerTestAccess::execute(server));CHECK(u.moves==1000);CHECK(ammo->charges==30);
++    REQUIRE(u.activity.id()==activity_id("ACT_INSERT_ITEM"));REQUIRE(u.activity.moves_total>0);
++    auto token=cwm::CwmServerTestAccess::consumption(server);REQUIRE(token);cwm::CwmServerTestAccess::complete(server);
++    SECTION("native cancel preserves quantity and stale token cannot cancel a new job") {
++        cwm::CwmServerTestAccess::interrupt_transfer(server,token,2);CHECK_FALSE(u.activity);CHECK(ammo->charges==30);CHECK(pouch->is_container_empty());
++        auto next=cwm::CwmServerTestAccess::inventory(server);
++        cwm::CwmServerTestAccess::transfer(server,next,cwm::CwmServerTestAccess::item_id(server,*ammo),7,cwm::CwmServerTestAccess::item_id(server,*pouch),1,3);
++        REQUIRE(cwm::CwmServerTestAccess::execute(server));cwm::CwmServerTestAccess::complete(server);
++        auto renewed=cwm::CwmServerTestAccess::consumption(server);REQUIRE(renewed!=token);
++        cwm::CwmServerTestAccess::interrupt_transfer(server,token,4);CHECK(u.activity);return;
++    }
++    process_activity(u);CHECK_FALSE(u.activity);CHECK(ammo->charges==23);
++    int in_bag=0;for(const auto* it:pouch->all_items_top())if(it->typeId()==itype_id("9mm"))in_bag+=it->charges;
++    CHECK(in_bag==7);
++}
++TEST_CASE("cwm_transfer_rejects_bad_quantity_cycles_capacity_and_mutated_selection", "[cwm][transfer]") {
++    clear_avatar();clear_map();auto& u=get_avatar();u.setpos(tripoint(60,60,0));
++    REQUIRE(u.wear_item(item(itype_id("backpack_hiking"))));
++    auto ammo=u.i_add(item(itype_id("9mm"),calendar::turn,30));REQUIRE(ammo);
++    auto pouch=u.i_add(item(itype_id("plastic_bag")));REQUIRE(pouch);
++    cwm::CwmServer server("/unused-transfer-invalid");cwm::CwmServerTestAccess::ready(server);u.moves=1000;
++    auto view=cwm::CwmServerTestAccess::inventory(server);auto id=cwm::CwmServerTestAccess::item_id(server,*ammo);auto dest=cwm::CwmServerTestAccess::item_id(server,*pouch);
++    int quantity=7, action=1, mutation=0;bool queued=false;
++    SECTION("zero"){quantity=0;} SECTION("negative"){quantity=-1;} SECTION("too many"){quantity=31;}
++    SECTION("noncontainer"){dest=id;} SECTION("invalid action"){action=99;}
++    SECTION("quantity changed after admission"){queued=true;mutation=1;}
++    SECTION("destination gone after admission"){queued=true;mutation=2;}
++    SECTION("moved after admission"){queued=true;mutation=3;}
++    SECTION("source container cycle"){id=dest;dest=cwm::CwmServerTestAccess::item_id(server,*ammo.parent_item());quantity=1;}
++    SECTION("non-counted quantity"){id=dest;quantity=2;dest=cwm::CwmServerTestAccess::item_id(server,*ammo.parent_item());}
++    SECTION("no space"){REQUIRE(pouch->put_in(item(itype_id("rock")),pocket_type::CONTAINER).success());REQUIRE(pouch->put_in(item(itype_id("rock")),pocket_type::CONTAINER).success());quantity=30;}
++    cwm::CwmServerTestAccess::transfer(server,view,id,quantity,dest,action);REQUIRE(server.has_queued_action()==queued);
++    if(queued){
++        if(mutation==1)ammo->charges=29;
++        if(mutation==2)pouch.remove_item();
++        if(mutation==3)u.setpos(u.pos()+tripoint_east);
++        CHECK_FALSE(cwm::CwmServerTestAccess::execute(server));CHECK_FALSE(cwm::CwmServerTestAccess::accepted(server));
++    }
++    CHECK_FALSE(u.activity);CHECK(u.moves==1000);
 +}
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644

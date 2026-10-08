@@ -11,7 +11,7 @@
 namespace cdda::cwm {
 
 constexpr uint16_t PROTOCOL_VERSION_MAJOR = 2;
-constexpr uint16_t PROTOCOL_VERSION_MINOR = 14;
+constexpr uint16_t PROTOCOL_VERSION_MINOR = 15;
 
 struct Identity { uint64_t session{0}, player{0}, connection{0}; };
 
@@ -107,6 +107,15 @@ public:
     std::vector<uint8_t> build_cancel_crafting(uint64_t id, uint64_t token) {
         const auto request = CDDA::CWM::CreateCancelCraftingRequest(fbb_, id, token);
         return finish_message(CDDA::CWM::Payload::CancelCraftingRequest, request.Union());
+    }
+    std::vector<uint8_t> build_item_transfer(uint64_t command, uint64_t view, uint32_t item,
+            int quantity, uint32_t destination, CDDA::CWM::ItemTransferAction action) {
+        auto request = CDDA::CWM::CreateItemTransferRequest(fbb_, command, view, item, quantity, destination, action);
+        return finish_message(CDDA::CWM::Payload::ItemTransferRequest, request.Union());
+    }
+    std::vector<uint8_t> build_cancel_item_transfer(uint64_t command, uint64_t token) {
+        auto request = CDDA::CWM::CreateCancelItemTransferRequest(fbb_, command, token);
+        return finish_message(CDDA::CWM::Payload::CancelItemTransferRequest, request.Union());
     }
     std::vector<uint8_t> build_inventory_query(uint64_t query_id) {
         const auto request = CDDA::CWM::CreateInventoryQueryRequest(fbb_, query_id);

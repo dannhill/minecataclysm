@@ -8,9 +8,9 @@ std::vector<uint8_t> inventory(int defect) {
     MessageBuilder wire(1,7,{11,22,33}); auto& f = wire.builder(); f.ForceDefaults(true);
     std::vector<flatbuffers::Offset<flatbuffers::String>> reasons;
     for (int i=0;i<6;++i) reasons.push_back(f.CreateString(i==0?"":"not available"));
-    auto owner = CreateInventoryEntryDirect(f,1,0,-1,"backpack_hiking","pack","containers",0,false,true,false,500,3000,600,250,1,&reasons,0,"","");
+    auto owner = CreateInventoryEntryDirect(f,1,0,-1,"backpack_hiking","pack","containers",0,false,true,false,500,3000,600,250,1,&reasons,0,"","","",false);
     auto child = CreateInventoryEntryDirect(f,defect==1?1:2,defect==2?2:1,defect==3?9:0,
-        "rock","stone","misc",0,false,false,false,100,100,10,100,defect==4?0:1,&reasons,0,"","");
+        "rock","stone","misc",0,false,false,false,100,100,10,100,defect==4?0:1,&reasons,0,"","","",false);
     auto pocket = CreateInventoryPocketDirect(f,1,0,"main",4000,defect==5?-100:3800,5000,4800,1000,100,false,false,false);
     std::vector<flatbuffers::Offset<InventoryEntry>> entries{owner,child};
     std::vector<flatbuffers::Offset<InventoryPocket>> pockets{pocket};

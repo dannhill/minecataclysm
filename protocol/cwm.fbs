@@ -218,6 +218,7 @@ table WorldSnapshot {
     crafting: CraftingState;
     ranged_weapon: RangedWeaponState;
     reload: ReloadState;
+    item_transfer: ItemTransferState;
 }
 
 table SimulationState {
@@ -316,6 +317,8 @@ table InventoryEntry {
     consume_moves: int32;
     consume_label: string;
     consume_warning: string;
+    transfer_reason: string;
+    container: bool;
 }
 table InventoryPocket {
     owner_id: uint32;
@@ -350,6 +353,12 @@ table EquipmentRequest {
     item_id: uint32;
     action: EquipmentAction;
 }
+
+// Ephemeral owned-item identities, native quantities and destination container.
+enum ItemTransferAction : byte { DROP = 0, INSERT = 1 }
+table ItemTransferRequest { command_id: uint64; view_id: uint64; item_id: uint32; quantity: int32; destination_id: uint32; action: ItemTransferAction; }
+table ItemTransferState { token: uint64; total_moves: int32; remaining_moves: int32; inserting: bool; }
+table CancelItemTransferRequest { command_id: uint64; activity_token: uint64; }
 
 enum RangedAction : byte { AIM = 0, FIRE = 1, RELOAD = 2 }
 // Weapon generation and entity identity, never client ammunition/damage/coordinates.
@@ -435,6 +444,8 @@ union Payload {
     ,CancelCraftingRequest
     ,RangedRequest
     ,CancelReloadRequest
+    ,ItemTransferRequest
+    ,CancelItemTransferRequest
 }
 
 table CwmMessage {
