@@ -70,6 +70,7 @@ def main():
     relay_path = Path(scratch.name) / 'relay.sock'
     native_path = out / 'native-socket'
     stop, drop = threading.Event(), threading.Event()
+    slow_posture_reply = threading.Event()
     relay_errors = []
     listener = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     listener.bind(str(relay_path)); listener.listen(1); listener.settimeout(.1)
@@ -95,6 +96,9 @@ def main():
                                 break
                             with (out / ('client-wire.bin' if source is client_socket else 'server-wire.bin')).open('ab') as wire_log:
                                 wire_log.write(data)
+                            if source is server_socket and slow_posture_reply.is_set():
+                                slow_posture_reply.clear()
+                                time.sleep(.35)
                             (server_socket if source is client_socket else client_socket).sendall(data)
                         if closed:
                             break
@@ -246,11 +250,25 @@ def main():
                 wait(lambda r: accepted_action(1) and int(r['pending_move']) == 0)
                 check('pointed_window_open_native_ack',True)
                 # One physical chord, with no waiting for a posture roundtrip.
-                xdo('keydown','Shift_L','mousedown','3')
+                xdo('keydown','--delay','0','Shift_L','mousedown','3')
                 time.sleep(.15)
                 xdo('mouseup','3','keyup','Shift_L')
                 wait(lambda r: accepted_action(2) and int(r['pending_move']) == 0)
                 check('simultaneous_shift_close_keeps_context_action_priority',True)
+                if not args.toggle_controls:
+                    wait(lambda r: int(r['player_state_flags']) & mask == 0 and int(r['pending_move']) == 0)
+                    xdo('click','3')
+                    time.sleep(.4)
+                    wait(lambda r: int(r['pending_move']) == 0)
+                    slow_posture_reply.set()
+                    xdo('keydown','Shift_L')
+                    time.sleep(.1)
+                    xdo('click','3')
+                    time.sleep(.5)
+                    xdo('keyup','Shift_L')
+                    wait(lambda r: int(r['pending_move']) == 0 and int(r['player_state_flags']) & mask == 0)
+                    check('delayed_modifier_reply_does_not_swallow_close', sum(1 for msg in wire_messages('client-wire.bin') if msg.PayloadType() == Payload.Payload.InteractRequest) == 4)
+
                 if args.toggle_controls:
                     # The modifier press also latched crouch in toggle mode.
                     if mode() == 256: choose_mode('Shift_L',0)

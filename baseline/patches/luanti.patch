@@ -973,10 +973,10 @@ index 0000000..fdcf808
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..d3a2f75
+index 0000000..726ff3f
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,1999 @@
+@@ -0,0 +1,2021 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
@@ -1082,6 +1082,8 @@ index 0000000..d3a2f75
 +    PostureInput posture_input_;
 +    uint64_t posture_command_{0};
 +    int requested_posture_{0};
++    struct DeferredOpening { int x, y, z, action; std::chrono::steady_clock::time_point expires; };
++    std::optional<DeferredOpening> deferred_opening_;
 +
 +    std::unordered_map<uint64_t, VisualEntity> entities_;
 +    std::unordered_map<uint64_t, VisualVehicle> vehicles_;
@@ -1588,7 +1590,7 @@ index 0000000..d3a2f75
 +        origin_valid_ = false;
 +        pending_move_ = 0; metrics_.pending_decision = 0;
 +        player_feet_offset_ = player_eye_offset_ = 0.f;
-+        posture_input_ = {}; posture_command_ = 0;
++        posture_input_ = {}; posture_command_ = 0; deferred_opening_.reset();
 +    }
 +
 +    bool send_clock_control(CDDA::CWM::SimulationControl action, float scale = 1.f) {
@@ -1703,6 +1705,16 @@ index 0000000..d3a2f75
 +        }
 +
 +        player_ready_ = session_.ready() && entities_.count(1);
++        if (deferred_opening_) {
++            if (!session_.ready() || !player_ready_ || metrics_.pause_reasons || metrics_.pending_decision ||
++                sent_menu_pause_ == 1 || body_form_open_ || ground_container_open_ ||
++                std::chrono::steady_clock::now() >= deferred_opening_->expires) deferred_opening_.reset();
++            else if (!pending_move_) {
++                const auto opening = *deferred_opening_;
++                deferred_opening_.reset();
++                send_interact_request(opening.x, opening.y, opening.z, opening.action);
++            }
++        }
 +        flush_pickup();
 +        if (player_ready_) sync_timer_ = 0.f;
 +        else {
@@ -2210,8 +2222,18 @@ index 0000000..d3a2f75
 +
 +    bool send_interact_request(int x, int y, int z, int action) {
 +        const auto now = std::chrono::steady_clock::now();
-+        if (!connection_ || !connection_->is_valid() || !session_.ready() || !player_ready_ || pending_move_ ||
-+            metrics_.pending_decision || now < next_move_) return false;
++        if (!connection_ || !connection_->is_valid() || !session_.ready() || !player_ready_ ||
++            metrics_.pending_decision || metrics_.pause_reasons || sent_menu_pause_ == 1 ||
++            body_form_open_ || ground_container_open_ || now < next_move_) return false;
++        if (pending_move_) {
++            // A modifier's free posture roundtrip must not eat its OPEN/CLOSE
++            // click. Keep at most one, with native range/state revalidation;
++            // menus, recovery and timeout cancel it. Never defer other actions.
++            if (pending_move_ != posture_command_ || deferred_opening_ ||
++                (action != int(CDDA::CWM::InteractAction::OPEN) && action != int(CDDA::CWM::InteractAction::CLOSE))) return false;
++            deferred_opening_ = DeferredOpening{x,y,z,action,now + std::chrono::seconds(1)};
++            return true;
++        }
 +        const uint64_t command = session_.next_command++;
 +        auto builder = session_.builder();
 +        auto req = builder.build_interact_request(
