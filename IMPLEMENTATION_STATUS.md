@@ -1,5 +1,16 @@
 # Implementation status
 
+The independent [pointed melee slice](docs/fixes/pointed-melee.md) is implemented
+and both CWM 2.7 runtimes installed. Left click targets perceived adjacent
+hostiles; CDDA owns weapon rules, passive defenses, damage, practice, stamina
+and cost. Native tests: 7,297 assertions/38 cases; protocol: 5/5; Luanti:
+306 tests/648 assertions. Installed melee GUI: 21 ordinary-mode and 23 continuous
+4x checks, including native knockback, range rejection, recovery and pristine
+canonical corpse reading. Body GUI regression: 19 checks; pickup: 18 checks. The user explicitly deferred both
+previous manual validations again and authorized this essential independent
+feature autonomously. All three [manual checklists](docs/validation/pending-manual.md)
+remain pending. No full combat, M5.5 or SAVE-001 certification is claimed.
+
 The recovered local continuation now has the ground-item PICKUP backend
 and its [Mineclonia container/pointer interface](docs/fixes/ground-items-ui.md)
 implemented. Scoped automated verification PASS; both runtimes are installed. Native CDDA
@@ -10,8 +21,8 @@ on 2026-10-08. The [saved manual checklist](docs/validation/pending-manual.md)
 must be delivered together with the next independent feature.
 CWM 2.5 adds read-only native possessions to guarded, deduplicated pickup.
 Nine production mapping batches remain an independent lane. The lower panel
-is read-only. The authorized independent next slice is native survival HUD
-and read-only body status; interactive inventory/equipment follows later.
+is read-only. The independent survival HUD/read-only body status is implemented below;
+interactive inventory/equipment follows later.
 The independent [survival HUD/body sheet](docs/fixes/body-status-ui.md) is now
 implemented with scoped automated verification PASS and installed CWM 2.6 runtimes.
 H opens a read-only native sheet with menu pause; local Luanti HP/breath/hotbar

@@ -203,6 +203,16 @@ azioni CDDA e mai applicati a un inventario Luanti autonomo. La simulazione rest
 in pausa mentre la GUI è aperta. La presentazione passa automaticamente fra
 nessun item, item singolo e pila in base allo stato autorevole corrente.
 
+Avanzamento locale 2026-10-08: raccolta/pila con GUI Mineclonia e HUD/scheda
+corporea implementati; entrambe le prove manuali nuovamente rinviate per
+richiesta dell'utente. La successiva fetta ortogonale è
+[melee puntato](docs/fixes/pointed-melee.md): bersagli ostili adiacenti, arma
+corrente e difese/costi nativi, senza dipendenza dalle due interfacce da
+validare. Primo combattimento, non chiusura dell'intero punto 5: ranged,
+reach, animazioni/feedback avanzati e attacco deliberato a neutrali restano
+successivi. Tutte e tre le [checklist](docs/validation/pending-manual.md) restano
+IN ATTESA; verifiche automatiche e accettazione visiva sono distinte.
+
 ## Fase 3 — M6, veicoli
 
 Conformance prima del rilascio delle nuove feature. IDs semantici stabili di

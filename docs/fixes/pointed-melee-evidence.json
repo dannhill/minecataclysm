@@ -1,0 +1,313 @@
+{
+  "status": "Scoped automated verification PASS; manual validations deferred, not approved",
+  "runtime_source_commit": "d0b180718b8b1867e0427296ca2c35c2c374bc54",
+  "melee_gui_harness_commit": "ebc57880f158fdad44e248a14484577b5888a9a9",
+  "artifact_root": "artifacts/playable-core-melee-20261008",
+  "protocol": "2.7",
+  "build_mode": "Incremental build of reconstructed captured sources, caches retained. Not a cold build.",
+  "environment": {
+    "platform": "Linux-7.0.11-76070011-generic-x86_64-with-glibc2.35",
+    "display": ":1",
+    "compiler": "g++ (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0"
+  },
+  "source_replay": {
+    "cdda": {
+      "pin": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+      "patch_sha256": "bb7c7e46a5386a26397fefbe7f06ed1e9408b23c01e97bbbee66e830888f5d57",
+      "tree_sha256": "010562465e56d9bd9969852ca30fd0db7bd2a81d59594207f0a2397f2af61d68",
+      "files": 8582,
+      "patched_files": 27,
+      "status": "PASS"
+    },
+    "luanti": {
+      "pin": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
+      "patch_sha256": "6f7c93c001a2f81d15c49928a25de79251ffbceffbc655fd7b786e6a83259429",
+      "tree_sha256": "f142b42ab8167129ee0e9be86be99862d7806556670ceceafce80b50477967f5",
+      "files": 2255,
+      "patched_files": 20,
+      "status": "PASS"
+    },
+    "mineclonia": {
+      "pin": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36",
+      "files": 9359,
+      "patched_files": 0,
+      "status": "PASS"
+    }
+  },
+  "native": {
+    "filter": "[cwm],[diving],[pickup]",
+    "seed": 42,
+    "assertions": 7297,
+    "test_cases": 38,
+    "status": "PASS"
+  },
+  "protocol_tests": {
+    "passed": 5,
+    "total": 5
+  },
+  "luanti_tests": {
+    "tests": 306,
+    "catch2_assertions": 648,
+    "status": "PASS"
+  },
+  "artifact_sha256": {
+    "refresh-final-tests.json": "3acaf4376d2a1e5de9315ec03e7776c2b7688aec5c373559eea279e4b4a5b9fb",
+    "source-replay-delivery.json": "020a2eab3281cefaee536925128031704651701eb2939ef2df007eac7b75a21e",
+    "baseline-check-final.log": "a26c16229375df8210a45664a3f0d0f13b52afdd8134c0e35d80d7bd0fb1fdc8",
+    "build-cdda-delivery.log": "2f2089bea772df17c8f8dac97fa9786582e47cca4854adcc56a58cd8c4cf61f0",
+    "build-luanti-delivery.log": "1078e104f24c1980439ad2b585c3510c0ec00191710557c8990c242482832e7f",
+    "tests-cdda-delivery.log": "66e0c31a3e01111d2a6631137d3ff807a497f6624f506b720e4e3c10349d8d4b",
+    "tests-protocol.log": "70408b2ab380910f7338c9855c28160f71bcc5bb0bbae42c8885efbb207b57c7",
+    "tests-luanti-delivery.log": "53b9ab904916a9e7dcb807f0d001f0a9d2d71d79a8f4cfb9b268ef120a491ba1",
+    "installed-runtime.json": "72adfed6940b4dee09ffdfbf054095c13928faccdc329bf3d32288ffdd6a4019",
+    "native-reader-build.json": "8848c9e446930c85c75233cf0287642f3f6ff5d33449a9c7426764787a549122",
+    "fixture-create.log": "0e8c967ea21c400ec7f2abda116143e6f13d197dc02068c053d4d73c9196f086",
+    "fixture/before.json": "3f9b1d7f6606520b8b57c56672cdc74d76d57b80b58c916a35a88f62e1b800f7"
+  },
+  "gui": {
+    "installed-action": {
+      "passed": 21,
+      "total": 21,
+      "status": "PASS",
+      "sha256": {
+        "checks.json": "396e40598d5f619724a941f87bfe62d4623cf6181257d1e334c52a36cc4fab63",
+        "camera.csv": "fc4e138238cbf5c165fe13a8406a3427c62fa15b10129ca2423d35f60906e5cb",
+        "native.json": "05fb384a46770528aa7e0f50e94fd98804c10a0af42b60493482adb31cde63a3",
+        "summary.json": "82d4710f8c4153a736c8cf0e7286a410958199da9dd829bc43c4888bb3723a33",
+        "after-native-strike.png": "f2bbd267c6516a834f72a5dc9e15f9e92db06dce7375b41e351338fb5af0dcb3",
+        "pointed-target.png": "5023f12d14b4462b66bd84e7254c18eb180ccc3e87e4c83adcf398e59089935e",
+        "native-corpse.png": "cbc14b45fde0e88cec9b57adeb2fb8a88034c08bfc03a07fe5392196c19542dc"
+      },
+      "checks": {
+        "actual_start_ready": true,
+        "actual_native_target_pointed": true,
+        "demo_weapon_pre_equipped_without_pickup": true,
+        "empty_pointing_sends_no_attack": true,
+        "held_mouse_sends_exactly_one_attack": true,
+        "request_targets_the_actual_pointed_identity": true,
+        "actual_native_attack_acknowledged_including_a_miss": true,
+        "full_recovery_does_not_repeat_attack": true,
+        "native_knockback_target_cannot_be_hit_at_range": true,
+        "native_movement_reaches_knocked_back_target": true,
+        "pointed_attacks_do_not_move_player": true,
+        "native_death_removes_target": true,
+        "dead_target_cannot_be_attacked_again": true,
+        "actual_runtime_survives": true,
+        "byte_relay_completed_without_errors": true,
+        "combat_save_readable_by_pristine_native_core": true,
+        "native_monster_death_persisted": true,
+        "specific_native_corpse_created_at_target": true,
+        "native_save_preserves_final_authoritative_anchor": true,
+        "native_time_paid_for_combat": true,
+        "weapon_remains_native_and_equipped": true
+      }
+    },
+    "installed-continuous-knockback": {
+      "passed": 23,
+      "total": 23,
+      "status": "PASS",
+      "sha256": {
+        "checks.json": "7e20357e3bc633e25a4742a6407ae01e517a11adb93465975f5c90d54d01adeb",
+        "camera.csv": "5c6ab3670b53c6fa2abc7a217c4cda458f9e1dd0d64f9258aff7e8d6f52be296",
+        "native.json": "b8fb787b3447550a7ba60e93f924330bf5a2d8025d8ad1595a91ed603a6f0b52",
+        "summary.json": "9e2e2ba353cf2e03bb47f10ee43bb0c2011d671f318e3c7648ff8f1835deaea7",
+        "after-native-strike.png": "228a252f421f3240f00ea68578eb0e0d79314e3d8b008e93ad32e9370d63231d",
+        "pointed-target.png": "40b53d70ab2d84ec381fd907495f7cd18410a0196ff252bc9b10ff3e3b9ea593",
+        "native-corpse.png": "00a52bc324d308f32ee3fd24e4734a7158a86d08481628eac57f4a0ccc12eac0"
+      },
+      "checks": {
+        "actual_start_ready": true,
+        "actual_native_target_pointed": true,
+        "demo_weapon_pre_equipped_without_pickup": true,
+        "pause_blocks_attack_and_native_time": true,
+        "paused_click_not_replayed_on_resume": true,
+        "empty_pointing_sends_no_attack": true,
+        "held_mouse_sends_exactly_one_attack": true,
+        "request_targets_the_actual_pointed_identity": true,
+        "actual_native_attack_acknowledged_including_a_miss": true,
+        "full_recovery_does_not_repeat_attack": true,
+        "native_knockback_target_cannot_be_hit_at_range": true,
+        "native_movement_reaches_knocked_back_target": true,
+        "pointed_attacks_do_not_move_player": true,
+        "native_death_removes_target": true,
+        "dead_target_cannot_be_attacked_again": true,
+        "actual_runtime_survives": true,
+        "byte_relay_completed_without_errors": true,
+        "combat_save_readable_by_pristine_native_core": true,
+        "native_monster_death_persisted": true,
+        "specific_native_corpse_created_at_target": true,
+        "native_save_preserves_final_authoritative_anchor": true,
+        "native_time_paid_for_combat": true,
+        "weapon_remains_native_and_equipped": true
+      }
+    },
+    "body-regression": {
+      "passed": 19,
+      "total": 19,
+      "status": "PASS",
+      "sha256": {
+        "checks.json": "e8c176a1aff93a33828ccdf236526f2be3dc60d0d8d3632fc3d2ace259ffd51f",
+        "camera.csv": "4e53f596b741c49a9ef23e338c25441e85e78c3a2e5d93594156962657435d3a",
+        "native.json": "22562116ebef88017e0b9de48de190f1b668750476175ec987e4043e4d0cfa32",
+        "summary.json": "8e15aff91dc61e2183830608ded9f9f61797b1c735ebf8b6065973dc02f3e3be",
+        "survival-hud.png": "cabb2c005198e4105c3f15d9545b28e5b2a1a8839335afacc8faeec5a9abbb52",
+        "native-body-sheet.png": "5c09dbf744d51b821ce61d5e95c600e4d6b7053b149eaca35fb3b00295a91340",
+        "recovered-hud.png": "9ddebcecf6298596d67556445c8eff1ab06cc6d134ba18b58c0562c20c1b90e1"
+      },
+      "checks": {
+        "actual_start_ready": true,
+        "native_status_ingested_and_hud_visible": true,
+        "wounded_head_and_arm_match_pristine_native_ui": true,
+        "idle_native_time_advances": true,
+        "body_sheet_pauses_native_time": true,
+        "read_only_sheet_does_not_move_or_transfer_items": true,
+        "survival_hud_hidden_behind_sheet": true,
+        "escape_returns_to_hud_and_restores_time_mode": true,
+        "native_clock_resumes_after_sheet": true,
+        "closing_sheet_preserves_manual_pause": true,
+        "real_ipc_reconnect_closes_stale_body_sheet": true,
+        "recovered_full_snapshot_restores_native_health": true,
+        "manual_pause_survives_body_sheet_reconnect": true,
+        "actual_runtime_survives": true,
+        "byte_relay_completed_without_errors": true,
+        "body_demo_save_readable_by_pristine_native_core": true,
+        "native_health_preserved_without_gui_healing": true,
+        "exact_native_hp_unchanged_for_every_body_part": true,
+        "read_only_gui_preserves_native_position": true
+      }
+    },
+    "pickup-regression": {
+      "passed": 18,
+      "total": 18,
+      "status": "PASS",
+      "sha256": {
+        "checks.json": "c5ff93021cd915f25680db2260c4c9fc515a530713aec80e556dc16da80109dc",
+        "camera.csv": "20da009553ff76a5cfaf79bbaac74ca8c2ffcff5c12de27de0dffe0c5bbefcfd",
+        "native.json": "589b2b9da07750cbf5d60c2d8096bd861465f5c360607c5fa16b0988a634606e",
+        "empty-ground.png": "e3ebae05d7c46d81f047c23264452bb7248ebe14fe72344d619d65dd5c2d071e",
+        "container-open.png": "8258f2a368f661cafe867eeb7499560ad9982f3d8c614eb1d9ac982e78c5cbec",
+        "pointed-pile.png": "7f17d7e734ab0cee8b38f2930b0b2e247250fd1b58a09e0c1a270c6433961174",
+        "native-stack-tooltip.png": "20bc0914320e02dc7419793a98d006d71dd3149f7fc985a402630bbdd304e029",
+        "single-item-left.png": "91f0d761f68566f6c0e4bb81b30cc530ce28917f82a0aa728aa1f93467892fc0",
+        "container-reopened.png": "8258f2a368f661cafe867eeb7499560ad9982f3d8c614eb1d9ac982e78c5cbec"
+      },
+      "checks": {
+        "actual_start_ready": true,
+        "idle_does_not_auto_pickup": true,
+        "selected_ground_pile_is_rendered": true,
+        "container_freezes_native_time": true,
+        "escape_does_not_transfer_items": true,
+        "actual_chest_slots_detected": true,
+        "manual_pause_keeps_pickup_queued_without_free_transfer": true,
+        "reconnect_cancels_unsent_selection_and_container": true,
+        "reconnect_does_not_replay_stale_selection": true,
+        "only_selected_stack_transferred": true,
+        "single_item_uses_direct_pickup_without_container": true,
+        "emptied_ground_tile_removes_visual": true,
+        "actual_runtime_survives": true,
+        "byte_relay_completed_without_errors": true,
+        "gui_save_readable_by_independent_native_core": true,
+        "native_inventory_preserves_selected_seven_charge_stack": true,
+        "native_inventory_contains_directly_picked_single_item": true,
+        "no_native_ground_duplicates": true
+      }
+    }
+  },
+  "root_harness_sha256": {
+    "tests/pointed_melee_gui_test.py": "839e04346a80b4f1f9d9e94af78240f457254f933ec1e50bf2b114c09bc5e4a0",
+    "tests/body_status_gui_test.py": "7a9d3486aa1ff11072fe7e056c0cb4ed387d92c0f59462bb6b59002adb445a67",
+    "tests/pickup_gui_test.py": "9846c3be6bbb41a9cb3f40a2c6dc3a36a653b0a5c014feedc164acb969ce735a",
+    "tests/takeover_save_reader.cpp": "e0d09e97c29bbdb4e08eb686965618c3c70727e88214c39214908b01f074a31c",
+    "tools/launch_combat_demo.py": "fbce5032172341c13d2e1cc45773595bdb6fd3fc6b009da3a688527782ef884a",
+    "combat-demo.sh": "de219c1c87288b53a97e2c44c08ca7ee5485db1ef58b14b747c19e942b1f7440"
+  },
+  "native_reader": {
+    "pin": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+    "binary_sha256": "7fc69a8dc0e41bd298f98aa05455ce194b9f875661655716c7415ba9579a135a",
+    "core_difference": "Only a CMake target for the external reader; original gameplay sources unchanged."
+  },
+  "limits": [
+    "Manual acceptance pending for pickup, body/HUD and melee.",
+    "M5.5 remains FAILED; full SAVE-001 remains open.",
+    "Adjacent hostile melee only; no deliberate neutral/friendly attack, reach or ranged in this slice.",
+    "Mob animations, exact weapon presentation and richer impact feedback remain future work.",
+    "Native adjacent monster perception and bat knockback are preserved."
+  ],
+  "installed_runtime": {
+    "commit": "d0b180718b8b1867e0427296ca2c35c2c374bc54",
+    "protocol": "2.7",
+    "refresh": "/home/dannhill/Projects/cdda-mineclonia/artifacts/playable-core-melee-20261008/refresh-final-tests.json",
+    "build_mode": "Incremental build of reconstructed captured sources; caches retained",
+    "files": {
+      "cdda-server": {
+        "built": "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/cdda/build/src/cdda-server",
+        "installed": "/home/dannhill/Projects/cdda-mineclonia/cdda/build/src/cdda-server",
+        "sha256": "00a65eefdca3286f18e80013c50c0fd3d30da901477eb0fce160e3b494881d47",
+        "rollback": "/home/dannhill/Projects/cdda-mineclonia/artifacts/playable-core-melee-20261008/rollback/cdda-server",
+        "rollback_sha256": "5041fb59d94504beba36412165fcd02224c426a91450d14fe428d527077396db"
+      },
+      "luanti": {
+        "built": "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/luanti/bin/luanti",
+        "installed": "/home/dannhill/Projects/cdda-mineclonia/luanti/bin/luanti",
+        "sha256": "d5cb966f24000c53d7bd1156b1f20312165e3d3ec14f9ec029170894ca82dc71",
+        "rollback": "/home/dannhill/Projects/cdda-mineclonia/artifacts/playable-core-melee-20261008/rollback/luanti",
+        "rollback_sha256": "a78c871b8599335afe1b7caf4541cb0ec6b236d6c7bb28247587bf96e8dedc8a"
+      }
+    }
+  },
+  "commands": [
+    {
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia",
+      "command": "python3 tools/takeover_baseline.py capture",
+      "note": "Captured inputs were committed before refreshing the reconstruction."
+    },
+    {
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia",
+      "command": "python3 tools/refresh_verification_workspace.py --workspace artifacts/fnd03-session/workspace --receipt artifacts/playable-core-melee-20261008/refresh-final-tests.json",
+      "source_commit": "d0b180718b8b1867e0427296ca2c35c2c374bc54"
+    },
+    {
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace",
+      "command": "cmake --build cdda/build --target cdda-server cata_test --parallel 2"
+    },
+    {
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace",
+      "command": "cmake --build luanti/build --target luanti --parallel 2"
+    },
+    {
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/cdda",
+      "command": "build/tests/cata_test \"[cwm],[diving],[pickup]\" --rng-seed 42 --user-dir=/home/dannhill/Projects/cdda-mineclonia/artifacts/playable-core-melee-20261008/native-tests-delivery-user",
+      "note": "Choose a fresh isolated directory for a rerun."
+    },
+    {
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace",
+      "command": "cmake -S protocol -B protocol/build && cmake --build protocol/build --parallel 2 && ctest --test-dir protocol/build --output-on-failure"
+    },
+    {
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/luanti",
+      "command": "bin/luanti --run-unittests --config /home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/unit.conf"
+    },
+    {
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia",
+      "command": "DISPLAY=:1 XAUTHORITY=/run/user/1000/gdm/Xauthority python3 tests/pointed_melee_gui_test.py --workspace . --fixture artifacts/playable-core-melee-20261008/fixture/user --native-reader artifacts/playable-core-melee-20261008/native-save-reader --artifacts artifacts/playable-core-melee-20261008/installed-action --action-driven",
+      "note": "For a rerun choose a new output directory; tests never reuse user worlds."
+    },
+    {
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia",
+      "command": "DISPLAY=:1 XAUTHORITY=/run/user/1000/gdm/Xauthority python3 tests/pointed_melee_gui_test.py --workspace . --fixture artifacts/playable-core-melee-20261008/fixture/user --native-reader artifacts/playable-core-melee-20261008/native-save-reader --artifacts artifacts/playable-core-melee-20261008/installed-continuous-knockback",
+      "note": "For a rerun choose a new output directory; tests never reuse user worlds."
+    },
+    {
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia",
+      "command": "DISPLAY=:1 XAUTHORITY=/run/user/1000/gdm/Xauthority python3 tests/body_status_gui_test.py --workspace . --fixture artifacts/playable-core-body-ui-20261008/fixture/user --native-reader artifacts/playable-core-melee-20261008/native-save-reader --artifacts artifacts/playable-core-melee-20261008/body-regression",
+      "note": "For a rerun choose a new output directory; tests never reuse user worlds."
+    },
+    {
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia",
+      "command": "DISPLAY=:1 XAUTHORITY=/run/user/1000/gdm/Xauthority python3 tests/pickup_gui_test.py --workspace . --fixture artifacts/playable-core-item-ui-20261008/fixture/user --native-reader artifacts/playable-core-melee-20261008/native-save-reader --artifacts artifacts/playable-core-melee-20261008/pickup-regression",
+      "note": "For a rerun choose a new output directory; tests never reuse user worlds."
+    }
+  ]
+}
