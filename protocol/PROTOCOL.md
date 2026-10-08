@@ -6,10 +6,36 @@ captured implementation; it does not approve its gaps. The executable schema
 is [cwm.fbs](cwm.fbs). Audit findings and evidence are in
 [M5.5](../docs/audits/M5.5.md).
 
-The current runtime requires **CWM 2.14**. This breaks the old negotiation
+The current runtime requires **CWM 2.15**. This breaks the old negotiation
 contract; schema fields and union members are appended without changing the
 existing FlatBuffers offsets. Both executables must be rebuilt together.
 The historical coverage table below is retained as audit evidence.
+
+CWM 2.15 appends ItemTransferRequest (39), CancelItemTransferRequest (40),
+InventoryEntry.transfer_reason/container and WorldSnapshot.item_transfer;
+CancelReloadRequest retains union 38. Transfers bind a current owned-item
+view, source/destination native safe item_locations and a positive exact
+quantity (one instance for non-charge items). DROP selects ground at the
+query's canonical avatar tile, explicitly excluding automatic vehicle cargo;
+INSERT selects an owned real container, with native pocket selection.
+Admission/execution revalidate identities, ancestry, quantities, canonical
+position, activity/pause and native direct/ancestor capacities. Worn sources,
+liquids/gases, technical/sealed ancestry and spillable full containers need
+dedicated interactions. A destination with sealed CONTAINER pockets is rejected;
+this UI never authorizes implicit unsealing. Cycles and no-op insertion into
+an immediate parent are rejected. The ledger signature includes all request
+fields; refresh/recovery invalidates ephemeral selections.
+
+ACT_DROP / ACT_INSERT_ITEM remain canonical native actors with their original
+access/transfer costs and save data. ItemTransferState is exclusive with the
+other exported activities: nonzero token, nonnegative total/remaining bounded
+by total; INSERT needs positive total, DROP may export zero total/remaining
+because native dropping has no fixed-duration progress. No invented percentage
+is shown for such work. CancelItemTransferRequest requires the exact active
+interruptible native transfer token, and cannot queue behind another activity.
+I freezes work and lets the player cancel through native cancel_activity.
+The first slice covers owned container destinations and current-tile ground;
+external containers, manual per-pocket placement, seals and fluids are later.
 
 CWM 2.14 appends RangedRequest (union 37), CancelReloadRequest (38),
 WorldSnapshot.ranged_weapon and WorldSnapshot.reload. CancelCraftingRequest

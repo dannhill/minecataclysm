@@ -1,5 +1,27 @@
 # Implementation status
 
+Current delivery: [native quantities, drop and owned-container transfers](docs/fixes/native-transfer.md),
+CWM 2.15. I → Quantita e trasferimenti offers a read-only pair of panels,
+positive partial charge quantities, current-tile ground deposit and an explicitly
+selected owned native container. ACT_DROP/ACT_INSERT_ITEM own access, costs,
+removal and work; I pauses/cancels. Native identities/ancestry, quantities,
+position, capacities and pause/busy state are revalidated at admission/execution.
+No optimistic inventory edits, implicit unsealing or delayed paused inputs.
+Canonical saved insert work resumes and transfers once in the actual renderer;
+a dropped loaded bag retains its contents, confirmed by pristine core reader.
+Scoped native PASS: 16,659 assertions / 113 cases (CWM, pickup, pocket, reload,
+diving); Luanti 308 tests plus 648 assertions / 4 cases; protocol 9/9.
+Both reconstructed runtimes installed with the previous 2.14 pair retained.
+[Exact receipts](docs/fixes/native-transfer-evidence.json) record renderer and
+save checks; manual acceptance is deferred, four new points bring the usual
+backlog to **24 PENDING**. External containers/cargo, manual per-pocket placement,
+fluid transfers/seals and batch moves remain later slices. Next essential slice:
+nearby external containers and selected-quantity collection using these interfaces.
+M5.5 remains historical FAILED; full SAVE-001 remains OPEN.
+
+The CWM 2.14 delivery below is historical, superseded by the current 2.15;
+its original scoped identities and evidence remain preserved.
+
 Current delivery: [native aiming, shooting and reload](docs/fixes/native-ranged.md),
 CWM 2.14; both reconstructed runtimes installed together. F held aims using
 native move credit, LMB fires once with native ballistics, R uses native ammo

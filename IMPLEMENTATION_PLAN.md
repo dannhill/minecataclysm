@@ -286,9 +286,19 @@ installati; [limiti/evidenze](docs/fixes/native-ranged.md). Quattro nuovi test
 manuali rinviati nel backlog, **20 PENDING**. Il punto combattimento non è
 completo: mirino libero configurabile, neutrali, archi/RAS, armi montate/veicoli,
 cambio modalità, munizioni parziali e presentazione delle armi restano previsti.
-Prossima fetta essenziale: inventario profondo, quantità/drop e trasferimenti
-fra tasche e contenitori esterni. Attività estese restano nella sequenza;
-nessuna validazione grafica pendente è promossa a PASS.
+Successiva fetta implementata 2026-10-09: **quantita, deposito e contenitori
+posseduti**, I → Quantita e trasferimenti con sorgente/contenitore, quantità
+parziali e terra alla casella corrente. ACT_DROP/ACT_INSERT_ITEM originali
+pagano costi/accesso, conservano contenuti e progresso; I interrompe e un lavoro
+canonico salvato riprende una sola volta. Handles/quantita/ancestry/posizione/
+capienza e pausa rivalidati; nessun sigillo aperto implicitamente o inventario
+Luanti autorevole. CWM 2.15, [limiti e prove](docs/fixes/native-transfer.md);
+quattro nuovi manuali nel backlog, **24 PENDING**, senza dedurre PASS.
+Questa fetta non completa l'inventario profondo: contenitori esterni/cargo,
+quantita di raccolta, scelta della singola tasca, liquidi/sigilli e trasferimenti
+multipli restano successivi. Prossima fetta essenziale: accesso ai contenitori
+esterni vicini e raccolta con quantita selezionate. Attivita estese restano
+nella sequenza; nessuna validazione grafica pendente e promossa a PASS.
 
 
 ## Fase 3 — M6, veicoli

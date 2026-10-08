@@ -97,7 +97,7 @@ def main():
                         if closed:
                             break
         except Exception as error:
-            relay_errors.append(str(error))
+            if not stop.is_set(): relay_errors.append(str(error))
     relay_thread = threading.Thread(target=relay, daemon=True)
     relay_thread.start()
     wrapper = out / 'client-relay.py'
@@ -299,6 +299,7 @@ def main():
                     view=open_inventory();check('resync_restores_native_twenty_three_rounds',item(view,'9mm').Charges()==23)
                     tap('Escape');check('actual_runtime_survives',proc.poll() is None)
         finally:
+            stop.set()  # Declared shutdown: native peers may reset while closing.
             subprocess.run(['xdotool', 'keyup', 'w'], capture_output=True)
             if proc.poll() is None:
                 os.killpg(proc.pid, signal.SIGTERM)
