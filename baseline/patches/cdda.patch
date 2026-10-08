@@ -2058,10 +2058,10 @@ index 0000000..49c9167
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..47fab2b
+index 0000000..90f66a3
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,816 @@
+@@ -0,0 +1,818 @@
 +#include "cwm_motion.h"
 +// CDDA CWM IPC Server Implementation
 +// Licensed under Apache-2.0
@@ -2272,7 +2272,7 @@ index 0000000..47fab2b
 +}
 +
 +bool CwmServer::sample_motion(avatar& u, map& m, game& g, bool flush) {
-+    if (!continuous_ || pause_reasons(g) || !clock_.action_due() || (!intent_x_ && !intent_y_)) return false;
++    if (!continuous_ || u.activity || pause_reasons(g) || !clock_.action_due() || (!intent_x_ && !intent_y_)) return false;
 +    const double dt = clock_.elapsed() - motion_sample_;
 +    // 25 wall samples/s. A delayed frame is capped, never caught up in bursts.
 +    if (dt <= 1e-8 || (!flush && dt < .04 * clock_.scale())) return false;
@@ -2751,6 +2751,7 @@ index 0000000..47fab2b
 +            length <= 1.415 &&
 +            (length < 1e-6 ||
 +             (input_available &&
++              !u.activity &&
 +              !u.in_vehicle &&
 +              !u.is_mounted() &&
 +              u.get_grab_type() == object_type::NONE));
@@ -2768,7 +2769,7 @@ index 0000000..47fab2b
 +    if (const auto* request = msg->payload_as_MovementIntentRequest()) {
 +        const int direction = int(request->direction());
 +        const bool valid = realtime_ && !continuous_ && direction >= 0 && direction <= 8 &&
-+            (direction == 0 || !pause_reasons(g));
++            (direction == 0 || (!u.activity && !pause_reasons(g)));
 +        if (valid) { held_direction_ = direction; ++world_revision_; }
 +        send_result({id, valid, valid ? "" : "Movement intent unavailable or invalid"}, u, m, g);
 +        return;
@@ -2871,6 +2872,7 @@ index 0000000..47fab2b
 +            }
 +        }
 +    } else return;
++    if (u.activity.id() == activity_id("ACT_CONSUME")) error = "Interrompi il consumo prima di agire.";
 +    if (commands_.size() >= 32) error = "Command queue full";
 +    if (realtime_ && pause_reasons(g)) error = "Simulation is paused";
 +    if (!error.empty()) send_result(Result{command.id, false, error}, u, m, g);
@@ -3326,10 +3328,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..543055e
+index 0000000..f70e7d6
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,952 @@
+@@ -0,0 +1,957 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "move_mode.h"
@@ -4238,6 +4240,11 @@ index 0000000..543055e
 +        REQUIRE( cwm::CwmServerTestAccess::consumption( server ) != token );
 +        cwm::CwmServerTestAccess::interrupt( server, token, 4 );
 +        CHECK_FALSE( cwm::CwmServerTestAccess::completed_accepted( server, 4 ) ); CHECK( u.activity );
++    }
++    SECTION( "other gameplay commands are rejected during active consumption" ) {
++        cwm::CwmServerTestAccess::mode( server, 2, 2 );
++        CHECK_FALSE( server.has_queued_action() ); CHECK( u.activity );
++        CHECK_FALSE( cwm::CwmServerTestAccess::completed_accepted( server, 2 ) );
 +    }
 +    SECTION( "stale cancellation cannot stop an active meal" ) {
 +        cwm::CwmServerTestAccess::interrupt( server, token + 1, 2 );

@@ -1068,7 +1068,7 @@ index 0000000..ebc8b75
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..6fc2998
+index 0000000..9f7156c
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
 @@ -0,0 +1,2193 @@
@@ -1756,7 +1756,7 @@ index 0000000..6fc2998
 +    void movement_intent(int direction) {
 +        if (metrics_.continuous_motion) { continuous_intent(0, 0); return; }
 +        if (!metrics_.realtime) return;
-+        if (!player_ready_ || !session_.ready() || metrics_.pause_reasons || metrics_.pending_decision) {
++        if (!player_ready_ || !session_.ready() || consumption_token_ || metrics_.pause_reasons || metrics_.pending_decision) {
 +            sent_intent_ = 0; intent_needs_release_ = direction != 0; return;
 +        }
 +        if (!direction) intent_needs_release_ = false;
@@ -1779,7 +1779,7 @@ index 0000000..6fc2998
 +        constexpr uint32_t recovery_pause = 1u << 3;
 +        const bool recovery_only = metrics_.pause_reasons == recovery_pause;
 +        if (!player_ready_ || !session_.ready() ||
-+                (metrics_.pause_reasons && !recovery_only) || metrics_.pending_decision) {
++                (metrics_.pause_reasons && !recovery_only) || consumption_token_ || metrics_.pending_decision) {
 +            sent_intent_x_ = sent_intent_y_ = 0; intent_needs_release_ = pressed; return;
 +        }
 +        if (!pressed) intent_needs_release_ = false;
@@ -2750,7 +2750,7 @@ index 0000000..6fc2998
 +    const int confirmed = flags & cdda::cwm::PRONE ? 3 :
 +        flags & cdda::cwm::CROUCHING ? 2 : flags & cdda::cwm::RUNNING ? 1 : 0;
 +    const bool allowed = impl.connection_ && impl.connection_->is_valid() && impl.session_.ready() &&
-+        impl.player_ready_ && !impl.metrics_.pending_decision && !impl.metrics_.pause_reasons &&
++        impl.player_ready_ && !impl.consumption_token_ && !impl.metrics_.pending_decision && !impl.metrics_.pause_reasons &&
 +        impl.sent_menu_pause_ != 1 && !impl.body_form_open_ && !impl.ground_container_open_ && !impl.equipment_open_;
 +    const int desired = impl.posture_input_.sample({run, crouch, prone},
 +        g_settings->getBool("cwm_run_toggle"), g_settings->getBool("cwm_crouch_toggle"), allowed, confirmed);

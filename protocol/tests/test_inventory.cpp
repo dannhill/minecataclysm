@@ -5,7 +5,7 @@ using namespace cdda::cwm;
 using namespace CDDA::CWM;
 #define CHECK(...) do { if (!(__VA_ARGS__)) throw std::runtime_error(#__VA_ARGS__); } while(false)
 std::vector<uint8_t> inventory(int defect) {
-    MessageBuilder wire(1,7,{11,22,33}); auto& f = wire.builder();
+    MessageBuilder wire(1,7,{11,22,33}); auto& f = wire.builder(); f.ForceDefaults(true);
     std::vector<flatbuffers::Offset<flatbuffers::String>> reasons;
     for (int i=0;i<5;++i) reasons.push_back(f.CreateString(i==0?"":"not available"));
     auto owner = CreateInventoryEntryDirect(f,1,0,-1,"backpack_hiking","pack","containers",0,false,true,false,500,3000,600,250,1,&reasons,0,"","");

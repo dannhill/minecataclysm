@@ -271,13 +271,16 @@ int main(int argc, const char *argv[]) {
             if (!u.wear_item(item(itype_id("backpack_hiking"), calendar::turn))) return 22;
             for (int i = 0; i < 2; ++i) {
                 item apple(itype_id("apple"), calendar::turn);
+                apple.set_item_temperature(units::from_celsius(20));
                 apple.set_var("uid", "consumption-apple-" + std::to_string(i)); u.i_add(apple);
             }
             item rotten(itype_id("apple"), calendar::turn);
+            rotten.set_item_temperature(units::from_celsius(20));
             rotten.set_relative_rot(2.0); rotten.set_var("uid", "consumption-rotten"); u.i_add(rotten);
             item bottle(itype_id("bottle_twoliter"), calendar::turn);
             bottle.set_var("uid", "consumption-bottle");
             item water(itype_id("water_clean"), calendar::turn); water.charges = 4;
+            water.set_item_temperature(units::from_celsius(20));
             water.set_var("uid", "consumption-water");
             if (bottle.fill_with(water, 4) != 4) return 23;
             u.i_add(bottle);

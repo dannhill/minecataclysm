@@ -256,7 +256,9 @@ def main():
                     wait(lambda r: int(r['consumption_token']) > 0)
                     progress = latest();token = progress['consumption_token']
                     check('native_progress_announced_before_serving_removed', int(progress['consumption_total']) == first.ConsumeMoves() and int(progress['consumption_remaining']) > 0)
-                    time.sleep(.5);wait(lambda r: int(r['consumption_remaining']) < int(progress['consumption_remaining']))
+                    xdo('keydown','w');time.sleep(.5);xdo('keyup','w');time.sleep(.3)
+                    check('movement_during_meal_is_not_deferred', latest()['target_x'] == progress['target_x'] and latest()['target_z'] == progress['target_z'])
+                    wait(lambda r: int(r['consumption_remaining']) < int(progress['consumption_remaining']))
                     view = open_inventory();selected = view.Entries(fresh_id-1)
                     check('started_meal_keeps_item_until_native_finish', selected.TypeId() == b'apple' and selected.Charges() == fresh_charges)
                     frozen = latest()['consumption_remaining'];time.sleep(.7)
