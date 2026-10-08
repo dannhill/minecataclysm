@@ -2741,10 +2741,10 @@ index 0000000..c68aca2
 +} // namespace cwm
 diff --git a/src/cwm/cwm_ranged.h b/src/cwm/cwm_ranged.h
 new file mode 100644
-index 0000000..eaf7b95
+index 0000000..21bf652
 --- /dev/null
 +++ b/src/cwm/cwm_ranged.h
-@@ -0,0 +1,95 @@
+@@ -0,0 +1,103 @@
 +#pragma once
 +#include "avatar.h"
 +#include "avatar_action.h"
@@ -2796,14 +2796,16 @@ index 0000000..eaf7b95
 +    item_location weapon_;
 +    std::string mode_;
 +    uint64_t token_{0}, next_{1};
++    uint64_t aimed_target_{0};
 +public:
-+    void clear() { weapon_={};mode_.clear();token_=0; }
++    void clear() { weapon_={};mode_.clear();token_=0;aimed_target_=0; }
++    void end_aim() { aimed_target_=0; }
 +    uint64_t refresh(avatar& u) {
 +        const auto w=u.get_wielded_item();
 +        if (!w || !w->is_gun()) { clear();return 0; }
 +        const auto mode=w->gun_current_mode();
 +        const std::string id=mode ? w->gun_get_mode_id().str() : "";
-+        if (!token_ || weapon_!=w || mode_!=id) { weapon_=w;mode_=id;token_=next_++; }
++        if (!token_ || weapon_!=w || mode_!=id) { weapon_=w;mode_=id;token_=next_++;aimed_target_=0; }
 +        return token_;
 +    }
 +    std::string validate(avatar& u, game& g, uint64_t weapon, uint64_t target, int action) {
@@ -2815,9 +2817,15 @@ index 0000000..eaf7b95
 +        if (!t || rl_dist(u.pos(),t->pos())>gun->gun_range(&u)) return "Bersaglio non percepito, non ostile o fuori portata.";
 +        return "";
 +    }
++    bool maintaining_aim(avatar& u, game& g) {
++        if (!aimed_target_ || u.recoil >= MAX_RECOIL || !validate(u,g,token_,aimed_target_,0).empty()) {
++            end_aim();return false;
++        }
++        return true;
++    }
 +    bool execute(avatar& u, game& g, uint64_t weapon, uint64_t target, int action) {
 +        if (!validate(u,g,weapon,target,action).empty()) return false;
-+        if (action==2) { g.reload_wielded(true);return u.activity.id()==activity_id("ACT_RELOAD"); }
++        if (action==2) { end_aim();g.reload_wielded(true);return u.activity.id()==activity_id("ACT_RELOAD"); }
 +        auto* t=perceived_hostile(target,u,g);const auto w=u.get_wielded_item();auto mode=w->gun_current_mode();
 +        if (!t || !avatar_action::can_fire_weapon(u,get_map(),*w)) return false;
 +        if (action==1 && t->is_npc() && !static_cast<npc*>(t)->guaranteed_hostile() &&
@@ -2827,7 +2835,7 @@ index 0000000..eaf7b95
 +        u.last_target_pos=get_map().getabs(t->pos());u.last_target=g.shared_from(*t);
 +        if (mode->has_flag(json_flag_ALWAYS_AIMED)) u.recoil=0;
 +        const int moves=u.moves;
-+        if (action==0) { target_handler::aim_for_moves(u,*mode,t->pos(),100);return u.moves<moves; }
++        if (action==0) { target_handler::aim_for_moves(u,*mode,t->pos(),100);aimed_target_=target;return u.moves<moves; }
 +        return u.fire_gun(t->pos(),mode.qty,*mode)>0; // Native cost/recoil/dispersion/projectile/damage/charges/skill.
 +    }
 +};
@@ -2842,10 +2850,10 @@ index 0000000..eaf7b95
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..5e3a255
+index 0000000..8cf0b8c
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,905 @@
+@@ -0,0 +1,911 @@
 +#include "cwm_motion.h"
 +// CDDA CWM IPC Server Implementation
 +// Licensed under Apache-2.0
@@ -3143,7 +3151,12 @@ index 0000000..5e3a255
 +                finish_external_action_phase();
 +                return false;
 +            }
-+            u.pause();
++            // An explicitly aimed, still-valid firearm keeps its paid recoil
++            // between inputs. Native AIM waits by exhausting move credit;
++            // the generic WAIT action instead resets recoil to MAX_RECOIL.
++            // No aim improvement occurs here. World ticks still cost time.
++            if (ranged_selection_.maintaining_aim(u,g)) u.set_moves(0);
++            else u.pause();
 +            return true;
 +        }
 +        if (continuous_ && commands_.empty() && (intent_x_ || intent_y_)) {
@@ -3289,6 +3302,7 @@ index 0000000..5e3a255
 +bool CwmServer::execute(const Command& command, avatar& u, map& m, game& g) {
 +    const int before_moves = u.moves;
 +    bool accepted = false;
++    if (command.ranged_action < 0) ranged_selection_.end_aim();
 +    // Revalidate busy state at execution as well as admission: multiple
 +    // commands may arrive before the first starts its native activity.
 +    if (u.activity) {
@@ -4209,10 +4223,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..9e8faf9
+index 0000000..68b4454
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,1329 @@
+@@ -0,0 +1,1332 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "move_mode.h"
@@ -5493,11 +5507,14 @@ index 0000000..9e8faf9
 +    CHECK(calendar::turn==time);CHECK(u.moves==100);CHECK(u.recoil==MAX_RECOIL);CHECK(w->ammo_remaining()==ammo);
 +    REQUIRE(selection.validate(u,*g,token,id,0).empty());REQUIRE(selection.execute(u,*g,token,id,0));
 +    CHECK(u.moves<=0);CHECK(u.recoil<MAX_RECOIL);CHECK(w->ammo_remaining()==ammo);CHECK(calendar::turn==time);
++    const double aimed=u.recoil;u.moves=100;
++    CHECK(selection.maintaining_aim(u,*g));CHECK(u.recoil==aimed);CHECK(u.moves==100); // Holding is read-only, never extra aim.
 +    u.moves=100;u.recoil=0;const auto before=u.moves;
 +    REQUIRE(selection.execute(u,*g,token,id,1));CHECK(w->ammo_remaining()==ammo-1);CHECK(u.moves<before);CHECK(u.recoil>0);
 +    CHECK(target->get_hp()<target->get_hp_max());
 +    item other(itype_id("glock_19"));other.ammo_set(itype_id("9mm"),5);u.remove_weapon();REQUIRE(u.wield(other));
 +    CHECK_FALSE(selection.validate(u,*g,token,id,1).empty());
++    CHECK_FALSE(selection.maintaining_aim(u,*g));
 +}
 +
 +TEST_CASE("cwm_ranged_commands_revalidate_and_deduplicate_without_phantom_shots", "[cwm][ranged]")
