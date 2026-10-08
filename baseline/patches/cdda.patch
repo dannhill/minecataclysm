@@ -3266,10 +3266,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..f214c19
+index 0000000..c0e94e8
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,748 @@
+@@ -0,0 +1,811 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "move_mode.h"
@@ -4017,6 +4017,69 @@ index 0000000..f214c19
 +        REQUIRE( server.has_queued_action() ); cwm::CwmServerTestAccess::cancel( server );
 +        CHECK_FALSE( server.has_queued_action() ); CHECK( u.moves == 1000 );
 +    }
++}
++
++TEST_CASE( "cwm_stow_and_weapon_switch_preserve_native_choices", "[cwm][equipment]" )
++{
++    clear_avatar(); clear_map(); clear_creatures();
++    const override_option no_autosave( "AUTOSAVE", "false" );
++    avatar &u = get_avatar(); u.setpos( tripoint( 60, 60, 0 ) );
++    REQUIRE( u.wear_item( item( itype_id( "backpack_hiking" ) ) ) );
++    item rock( itype_id( "rock" ) ); rock.set_var( "uid", "equipment-stow" );
++    REQUIRE( u.wield( rock ) );
++    const auto weapon = u.get_wielded_item(); REQUIRE( weapon );
++    const int cost = u.item_handling_cost( *weapon );
++    u.moves = 1000;
++    g->new_game = false; g->uquit = QUIT_NO; g->set_safe_mode( SAFE_MODE_OFF );
++    calendar::turn = std::max( calendar::turn, calendar::turn_zero + 36_hours );
++    get_weather().update_weather(); u.recalc_sight_limits(); g->reset_light_level(); get_map().build_map_cache( 0 );
++    cwm::CwmServer server( "/unused-stow" ); cwm::CwmServerTestAccess::ready( server );
++    const auto view = cwm::CwmServerTestAccess::inventory( server );
++    const auto id = cwm::CwmServerTestAccess::item_id( server, *weapon );
++    bool cancel = false;
++    SECTION( "store choice" ) {}
++    SECTION( "cancel choice" ) { cancel = true; }
++    cwm::CwmServerTestAccess::equipment( server, view, id, 1 ); REQUIRE( server.has_queued_action() );
++    int prompts = 0;
++    REQUIRE_FALSE( do_turn_with_action( [&]() {
++        const int before = u.moves;
++        CHECK( cwm::CwmServerTestAccess::execute( server ) == !cancel );
++        CHECK( cwm::CwmServerTestAccess::accepted( server ) == !cancel );
++        CHECK( u.moves == before - ( cancel ? 0 : cost ) );
++        finish_external_action_phase(); return false;
++    }, [&]( const std::string &, const std::vector<std::string> &options ) {
++        ++prompts; REQUIRE_FALSE( options.empty() ); CHECK( options.back() == "Cancel" );
++        if( cancel ) return int( options.size() ) - 1;
++        for( size_t i = 0; i < options.size(); ++i ) if( options[i].find( "Store in inventory" ) != std::string::npos ) return int( i );
++        FAIL( "native store option missing" ); return -1;
++    } ) );
++    CHECK( prompts == 1 ); CHECK( u.is_armed() == cancel );
++    CHECK( character_has_item_with_var_val( u, "uid", "equipment-stow" ) );
++}
++
++TEST_CASE( "cwm_inventory_exports_nested_pocket_provenance_and_guards_native_actions", "[cwm][equipment]" )
++{
++    clear_avatar(); clear_map(); avatar &u = get_avatar();
++    REQUIRE( u.wear_item( item( itype_id( "backpack_hiking" ) ) ) );
++    auto hat = u.i_add( item( itype_id( "hat_ball" ) ) ); REQUIRE( hat );
++    cwm::InventorySelection selection;
++    cdda::cwm::MessageBuilder wire( 1, 1, { 101, 102, 103 } );
++    const auto bytes = selection.query( u, 11, wire );
++    REQUIRE( cdda::cwm::MessageVerifier::verify( bytes.data(), bytes.size() ) );
++    const auto *view = CDDA::CWM::GetCwmMessage( bytes.data() )->payload_as_InventoryView();
++    REQUIRE( cdda::cwm::valid_inventory( view ) );
++    REQUIRE( view->pockets()->size() > 0 );
++    bool found = false;
++    for( const auto *entry : *view->entries() ) if( entry->type_id()->str() == "hat_ball" ) {
++        found = true; CHECK( entry->parent_id() > 0 ); CHECK( entry->pocket_index() >= 0 );
++        CHECK( entry->actions() & 1 ); CHECK( entry->actions() & 4 ); CHECK_FALSE( entry->actions() & 8 );
++        CHECK( entry->access_moves() > 0 );
++    }
++    CHECK( found );
++    CHECK_FALSE( cwm::InventorySelection::action_error( u, hat, 3 ).empty() );
++    CHECK_FALSE( cwm::InventorySelection::action_error( u, hat, 4 ).empty() );
++    u.remove_item( *hat );
++    CHECK_FALSE( selection.validate( u, view->view_id(), 2, 0 ).empty() );
 +}
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644
