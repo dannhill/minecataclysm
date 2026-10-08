@@ -2028,7 +2028,8 @@ struct StatusValue FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_ID = 4,
     VT_LABEL = 6,
     VT_TEXT = 8,
-    VT_COLOR = 10
+    VT_COLOR = 10,
+    VT_PERCEIVED_LEVEL = 12
   };
   const ::flatbuffers::String *id() const {
     return GetPointer<const ::flatbuffers::String *>(VT_ID);
@@ -2054,6 +2055,12 @@ struct StatusValue FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   ::flatbuffers::String *mutable_color() {
     return GetPointer<::flatbuffers::String *>(VT_COLOR);
   }
+  int8_t perceived_level() const {
+    return GetField<int8_t>(VT_PERCEIVED_LEVEL, -1);
+  }
+  bool mutate_perceived_level(int8_t _perceived_level = -1) {
+    return SetField<int8_t>(VT_PERCEIVED_LEVEL, _perceived_level, -1);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_ID) &&
@@ -2064,6 +2071,7 @@ struct StatusValue FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyString(text()) &&
            VerifyOffset(verifier, VT_COLOR) &&
            verifier.VerifyString(color()) &&
+           VerifyField<int8_t>(verifier, VT_PERCEIVED_LEVEL, 1) &&
            verifier.EndTable();
   }
 };
@@ -2084,6 +2092,9 @@ struct StatusValueBuilder {
   void add_color(::flatbuffers::Offset<::flatbuffers::String> color) {
     fbb_.AddOffset(StatusValue::VT_COLOR, color);
   }
+  void add_perceived_level(int8_t perceived_level) {
+    fbb_.AddElement<int8_t>(StatusValue::VT_PERCEIVED_LEVEL, perceived_level, -1);
+  }
   explicit StatusValueBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -2100,12 +2111,14 @@ inline ::flatbuffers::Offset<StatusValue> CreateStatusValue(
     ::flatbuffers::Offset<::flatbuffers::String> id = 0,
     ::flatbuffers::Offset<::flatbuffers::String> label = 0,
     ::flatbuffers::Offset<::flatbuffers::String> text = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> color = 0) {
+    ::flatbuffers::Offset<::flatbuffers::String> color = 0,
+    int8_t perceived_level = -1) {
   StatusValueBuilder builder_(_fbb);
   builder_.add_color(color);
   builder_.add_text(text);
   builder_.add_label(label);
   builder_.add_id(id);
+  builder_.add_perceived_level(perceived_level);
   return builder_.Finish();
 }
 
@@ -2114,7 +2127,8 @@ inline ::flatbuffers::Offset<StatusValue> CreateStatusValueDirect(
     const char *id = nullptr,
     const char *label = nullptr,
     const char *text = nullptr,
-    const char *color = nullptr) {
+    const char *color = nullptr,
+    int8_t perceived_level = -1) {
   auto id__ = id ? _fbb.CreateString(id) : 0;
   auto label__ = label ? _fbb.CreateString(label) : 0;
   auto text__ = text ? _fbb.CreateString(text) : 0;
@@ -2124,7 +2138,8 @@ inline ::flatbuffers::Offset<StatusValue> CreateStatusValueDirect(
       id__,
       label__,
       text__,
-      color__);
+      color__,
+      perceived_level);
 }
 
 struct BodyPartStatus FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {

@@ -190,8 +190,8 @@ def main():
             else:
                 check('starts_native_walking',mode() == 0)
                 distances = {}
-                for name,key,flag in [('walk',None,0),('run','Control_L',128),('crouch','Shift_L',256),('prone','p',512)]:
-                    if key == 'p': choose_mode(key,flag)
+                for name,key,flag in [('walk',None,0),('run','Control_L',128),('crouch','Shift_L',256),('prone','x',512)]:
+                    if key == 'x': choose_mode(key,flag)
                     elif key:
                         xdo('keydown',key)
                         wait(lambda r: int(r['player_state_flags']) & mask == flag and int(r['pending_move']) == 0)
@@ -202,7 +202,7 @@ def main():
                     after_move = latest()
                     distances[name] = math.hypot(float(after_move['target_x'])-float(before_move['target_x']),float(after_move['target_z'])-float(before_move['target_z']))
                     check(name + '_actual_WASD_moves_native_character', distances[name] > .05)
-                    if key and key != 'p':
+                    if key and key != 'x':
                         xdo('keyup',key)
                         wait(lambda r: int(r['player_state_flags']) & mask == 0 and int(r['pending_move']) == 0)
                 (out/'distances.json').write_text(json.dumps(distances,indent=2)+'\n')
@@ -216,7 +216,7 @@ def main():
             check('actual_runtime_survives', proc.poll() is None)
         finally:
             subprocess.run(['xdotool', 'mouseup', '1'], capture_output=True)
-            subprocess.run(['xdotool', 'keyup', 'w', 'Control_L', 'Shift_L', 'p'], capture_output=True)
+            subprocess.run(['xdotool', 'keyup', 'w', 'Control_L', 'Shift_L', 'x'], capture_output=True)
             if proc.poll() is None:
                 os.killpg(proc.pid, signal.SIGTERM)
                 try:

@@ -45,7 +45,8 @@ inline bool valid_world(const CDDA::CWM::WorldSnapshot* world) {
         const auto valid_value = [&](const auto* value) {
             return value && valid_text(value->id(), 128, false) &&
                 valid_text(value->label(), 256, false) && valid_text(value->text(), 2048) &&
-                valid_text(value->color(), 64, false);
+                valid_text(value->color(), 64, false) &&
+                value->perceived_level() >= -1 && value->perceived_level() <= 10;
         };
         if (!valid_value(status->stamina()) || status->stamina()->id()->str() != "stamina" ||
             !status->needs() || status->needs()->size() > 32 ||

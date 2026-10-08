@@ -52,8 +52,15 @@ class StatusValue(object):
             return self._tab.String(o + self._tab.Pos)
         return None
 
+    # StatusValue
+    def PerceivedLevel(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(12))
+        if o != 0:
+            return self._tab.Get(flatbuffers.number_types.Int8Flags, o + self._tab.Pos)
+        return -1
+
 def StatusValueStart(builder):
-    builder.StartObject(4)
+    builder.StartObject(5)
 
 def Start(builder):
     StatusValueStart(builder)
@@ -81,6 +88,12 @@ def StatusValueAddColor(builder, color):
 
 def AddColor(builder, color):
     StatusValueAddColor(builder, color)
+
+def StatusValueAddPerceivedLevel(builder, perceivedLevel):
+    builder.PrependInt8Slot(4, perceivedLevel, -1)
+
+def AddPerceivedLevel(builder, perceivedLevel):
+    StatusValueAddPerceivedLevel(builder, perceivedLevel)
 
 def StatusValueEnd(builder):
     return builder.EndObject()

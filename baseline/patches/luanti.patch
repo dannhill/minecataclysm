@@ -1,5 +1,5 @@
 diff --git a/builtin/settingtypes.txt b/builtin/settingtypes.txt
-index 728eaf4..62c15aa 100644
+index 728eaf4..9b14870 100644
 --- a/builtin/settingtypes.txt
 +++ b/builtin/settingtypes.txt
 @@ -2557,3 +2557,13 @@ keymap_increase_viewing_range_min (View range increase key) key +
@@ -14,7 +14,7 @@ index 728eaf4..62c15aa 100644
 +cwm_crouch_toggle (CDDA: toggle crouching) bool false
 +keymap_cdda_run (CDDA: run key) string KEY_LCONTROL
 +keymap_cdda_crouch (CDDA: crouch key) string KEY_LSHIFT
-+keymap_cdda_prone (CDDA: prone key) string KEY_KEY_P
++keymap_cdda_prone (CDDA: prone key) string KEY_KEY_X
 +keymap_cdda_body (CDDA: body sheet key) string KEY_KEY_H
 diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
 index 65e5ab6..a8494d2 100644
@@ -595,7 +595,7 @@ index d6e2863..239953a 100644
  	std::vector<std::unique_ptr<MeshUpdateWorkerThread>> m_workers;
  };
 diff --git a/src/defaultsettings.cpp b/src/defaultsettings.cpp
-index 7758c96..488884b 100644
+index 7758c96..d95b8ec 100644
 --- a/src/defaultsettings.cpp
 +++ b/src/defaultsettings.cpp
 @@ -166,6 +166,13 @@ void set_default_settings()
@@ -605,7 +605,7 @@ index 7758c96..488884b 100644
 +	settings->setDefault("keymap_cdda_body", "KEY_KEY_H");
 +	settings->setDefault("keymap_cdda_run", "KEY_LCONTROL");
 +	settings->setDefault("keymap_cdda_crouch", "KEY_LSHIFT");
-+	settings->setDefault("keymap_cdda_prone", "KEY_KEY_P");
++	settings->setDefault("keymap_cdda_prone", "KEY_KEY_X");
 +	settings->setDefault("cwm_run_toggle", "false");
 +	settings->setDefault("cwm_crouch_toggle", "false");
 +
@@ -689,7 +689,7 @@ index 5d6b891..48c0d59 100644
  		g_settings->getFlagStr("anticheat_flags", flagdesc_anticheat, nullptr);
  
 diff --git a/src/unittest/test_mapblock.cpp b/src/unittest/test_mapblock.cpp
-index 7f3f860..237632c 100644
+index 7f3f860..40d5b1f 100644
 --- a/src/unittest/test_mapblock.cpp
 +++ b/src/unittest/test_mapblock.cpp
 @@ -10,6 +10,14 @@
@@ -723,7 +723,7 @@ index 7f3f860..237632c 100644
  };
  
  static TestMapBlock g_test_instance;
-@@ -44,9 +59,140 @@ void TestMapBlock::runTests(IGameDef *gamedef)
+@@ -44,9 +59,150 @@ void TestMapBlock::runTests(IGameDef *gamedef)
  	TEST(testSave29, gamedef);
  	TEST(testLoad29, gamedef);
  	TEST(testLoad20, gamedef);
@@ -792,6 +792,16 @@ index 7f3f860..237632c 100644
 +    UASSERT(segments[0] == 1.f && segments[2] == .5f && segments[3] == 0.f);
 +    UASSERT(cdda_client::statusSegments("-----")[0] == 0.f);
 +    UASSERT(cdda_client::statusSegments(":")[0] == .25f);
++    const auto hearts = cdda_client::statusHeartSegments("|\\:");
++    UASSERT(hearts[0] == 1.f && hearts[1] == 1.f);
++    UASSERT(hearts[2] == 1.f && hearts[3] == 0.f);
++    UASSERT(hearts[4] == .5f && hearts[5] == 0.f);
++    for (int level = 0; level <= 10; ++level) {
++        const auto icons = cdda_client::statusNeedSegments(level);
++        UASSERTEQ(int, std::count(icons.begin(), icons.end(), 1.f), level);
++    }
++    const auto unknown = cdda_client::statusNeedSegments(-1);
++    UASSERTEQ(int, std::count(unknown.begin(), unknown.end(), 1.f), 0);
 +}
 +
 +void TestMapBlock::testCddaOpeningCoordinates()
@@ -867,10 +877,10 @@ index 7f3f860..237632c 100644
  void TestMapBlock::testSaveLoad(IGameDef *gamedef, const u8 version)
 diff --git a/src/cdda/avatar_status.h b/src/cdda/avatar_status.h
 new file mode 100644
-index 0000000..c619496
+index 0000000..ebc8b75
 --- /dev/null
 +++ b/src/cdda/avatar_status.h
-@@ -0,0 +1,102 @@
+@@ -0,0 +1,115 @@
 +#pragma once
 +#include <string>
 +#include <array>
@@ -878,7 +888,7 @@ index 0000000..c619496
 +#include <vector>
 +
 +namespace cdda_client {
-+struct StatusView { std::string id, label, text, color; };
++struct StatusView { std::string id, label, text, color; int perceived_level{-1}; };
 +struct BodyPartView { std::string id, label; StatusView health, temperature; };
 +struct AvatarStatusView {
 +    bool available{false};
@@ -918,6 +928,19 @@ index 0000000..c619496
 +        if (i == result.size()) break;
 +        result[i++] = c == '|' ? 1.f : c == '\\' ? .5f : c == ':' ? .25f : 0.f;
 +    }
++    return result;
++}
++// Ten icons retain exactly the native five-segment health/stamina resolution.
++inline std::array<float, 10> statusHeartSegments(const std::string& text) {
++    std::array<float, 10> result{};
++    const auto native = statusSegments(text);
++    for (size_t i = 0; i < result.size(); ++i)
++        result[i] = std::clamp(native[i / 2] * 2.f - float(i % 2), 0.f, 1.f);
++    return result;
++}
++inline std::array<float, 10> statusNeedSegments(int perceived_level) {
++    std::array<float, 10> result{};
++    for (int i = 0; i < 10; ++i) result[i] = i < perceived_level ? 1.f : 0.f;
 +    return result;
 +}
 +inline std::string bodyPartIcon(const std::string& id) {
@@ -975,10 +998,10 @@ index 0000000..c619496
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..b039e29
+index 0000000..ad705e1
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,2023 @@
+@@ -0,0 +1,2041 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
@@ -1754,8 +1777,8 @@ index 0000000..b039e29
 +                    else if (ent.state_flags & WADING) {
 +                        feet = -.3f;
 +                        // Keep a prone eye above the shallow-water/floor surface.
-+                        // Wading and prone offsets must not lower it twice.
-+                        if (ent.state_flags & PRONE) eye += .3f;
++                        // Compensate most of the wading offset, retaining a small 0.08-node dip.
++                        if (ent.state_flags & PRONE) eye += .22f;
 +                    }
 +                    const float blend = 1.f - std::exp(-20.f * (frozen ? 0.f : dtime));
 +                    player_feet_offset_ += (feet - player_feet_offset_) * blend;
@@ -2013,7 +2036,7 @@ index 0000000..b039e29
 +                if (const auto* status = snap->avatar_status()) {
 +                    const auto view = [](const auto* value) {
 +                        return StatusView{value->id()->str(), value->label()->str(),
-+                            value->text()->str(), value->color()->str()};
++                            value->text()->str(), value->color()->str(), value->perceived_level()};
 +                    };
 +                    avatar_status_ = {};
 +                    avatar_status_.available = true;
@@ -2328,7 +2351,7 @@ index 0000000..b039e29
 +    std::string trace_path;
 +    if (g_settings->getNoEx("cwm_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->trace_.open(trace_path);
-+        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog,ipc_connected,ipc_input,ipc_output,ipc_read_bytes,ipc_write_bytes,ipc_frames,ipc_dispatch_bytes,ipc_read_calls,ipc_write_calls,session_state,input_ready,session_id,player_id,connection_id,sequence,resync_count,entity_cache,vehicle_cache,scene_origin_x,scene_origin_y,simulation_time,realtime,pause_reasons,time_scale,sent_intent,continuous_motion,intent_x,intent_y,ipc_latency_ms,projection_ms,ground_tiles,owned_items,ground_container,ground_hover,queued_pickup,ground_visual_nodes,ground_hover_items,ground_target_items,ground_target_visual_nodes,ground_target_first_type,status_available,body_form,survival_visible,status_stamina,status_head,status_arm_l,combat_hover,attacks_sent,attack_target,attack_target_hp,attack_result,player_state_flags,player_eye_offset,visual_animation_time,visual_animation_delta,ground_item_rotation\n";
++        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog,ipc_connected,ipc_input,ipc_output,ipc_read_bytes,ipc_write_bytes,ipc_frames,ipc_dispatch_bytes,ipc_read_calls,ipc_write_calls,session_state,input_ready,session_id,player_id,connection_id,sequence,resync_count,entity_cache,vehicle_cache,scene_origin_x,scene_origin_y,simulation_time,realtime,pause_reasons,time_scale,sent_intent,continuous_motion,intent_x,intent_y,ipc_latency_ms,projection_ms,ground_tiles,owned_items,ground_container,ground_hover,queued_pickup,ground_visual_nodes,ground_hover_items,ground_target_items,ground_target_visual_nodes,ground_target_first_type,status_available,body_form,survival_visible,status_stamina,status_head,status_arm_l,combat_hover,attacks_sent,attack_target,attack_target_hp,attack_result,player_state_flags,player_eye_offset,visual_animation_time,visual_animation_delta,ground_item_rotation,status_hunger_level,status_thirst_level,status_fatigue_level,status_pain_level,hud_images_active\n";
 +    }
 +    if (g_settings->getNoEx("cwm_entity_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->entity_trace_.open(trace_path);
@@ -2481,7 +2504,15 @@ index 0000000..b039e29
 +        << ',' << [&]() { for (const auto& part : pimpl_->avatar_status_.parts) if (part.id == "head") return part.health.text; return std::string{}; }()
 +        << ',' << [&]() { for (const auto& part : pimpl_->avatar_status_.parts) if (part.id == "arm_l") return part.health.text; return std::string{}; }()
 +        << ',' << pimpl_->pointed_actor_ << ',' << pimpl_->attacks_sent_ << ',' << pimpl_->last_attack_target_
-+        << ',' << [&]() { const auto it = pimpl_->entities_.find(pimpl_->last_attack_target_); return it == pimpl_->entities_.end() ? -1 : int(it->second.hp_percent); }() << ',' << pimpl_->last_attack_result_ << ',' << entity.state_flags << ',' << pimpl_->player_eye_offset_ << ',' << pimpl_->visual_animation_time_ << ',' << pimpl_->visual_animation_delta_ << ',' << pimpl_->ground_item_rotation_ << '\n';
++        << ',' << [&]() { const auto it = pimpl_->entities_.find(pimpl_->last_attack_target_); return it == pimpl_->entities_.end() ? -1 : int(it->second.hp_percent); }() << ',' << pimpl_->last_attack_result_ << ',' << entity.state_flags << ',' << pimpl_->player_eye_offset_ << ',' << pimpl_->visual_animation_time_ << ',' << pimpl_->visual_animation_delta_ << ',' << pimpl_->ground_item_rotation_;
++    for (const auto* id : {"hunger", "thirst", "fatigue", "pain"}) {
++        int level = -1;
++        for (const auto& value : pimpl_->avatar_status_.needs)
++            if (value.id == id) level = value.perceived_level;
++        pimpl_->trace_ << ',' << level;
++    }
++    pimpl_->trace_ << ',' << std::count_if(pimpl_->hud_images_.begin(), pimpl_->hud_images_.end(),
++        [](const auto* image) { return image->isVisible(); }) << '\n';
 +    pimpl_->trace_.flush();
 +}
 +
@@ -2795,31 +2826,25 @@ index 0000000..b039e29
 +    pimpl_->posture_text_->setVisible(pimpl_->session_.ready() && player != pimpl_->entities_.end() &&
 +        !pimpl_->ground_container_open_ && !pimpl_->body_form_open_ && !pimpl_->metrics_.pending_decision);
 +
-+    if (!pimpl_->survival_text_) {
-+        pimpl_->survival_text_ = guienv->addStaticText(L"", irr::core::rect<irr::s32>(), true, true, nullptr, -1, true);
-+        pimpl_->survival_text_->setOverrideColor(irr::video::SColor(255, 240, 245, 238));
-+        pimpl_->survival_text_->setBackgroundColor(irr::video::SColor(220, 24, 35, 34));
-+    }
-+    const int width = std::min<int>(365, screen.Width - 20);
-+    const int panel_top = std::max<int>(285, screen.Height - 240);
-+    const int line = guienv->getSkin()->getFont()->getDimension(L"A").Height;
-+    pimpl_->survival_text_->setRelativePosition(irr::core::rect<irr::s32>(10,
-+        panel_top, 10 + width, screen.Height - 10));
-+    std::string survival = "Corpo [H]";
-+    if (!pimpl_->session_.ready()) survival += "\nStato CDDA non sincronizzato";
-+    else if (!pimpl_->avatar_status_.available) survival += "\nStato CDDA non disponibile";
-+    else {
-+        survival += "\nStamina\nTesta\nTorso";
-+        for (const auto& value : pimpl_->avatar_status_.needs)
-+            if (value.id == "hunger" || value.id == "thirst" || value.id == "fatigue" || value.id == "pain")
-+                survival += "\n" + value.label + ": " + (value.text.empty() ? "-" : value.text);
-+    }
-+    pimpl_->survival_text_->setText(utf8_to_wide(survival).c_str());
++    // Compact Minecraft-style rows above the possessions strip. All fills
++    // come from native display segments or native perceived categories.
 +    const bool hud_visible = !pimpl_->ground_container_open_ && !pimpl_->body_form_open_ &&
 +        !pimpl_->metrics_.pending_decision;
++    const float scale = std::min(1.f, float(screen.Width - 20) / 396.f);
++    const auto px = [&](float value) { return int(std::round(value * scale)); };
++    const int slots = 9;
++    const int left = (int(screen.Width) - px(396)) / 2;
++    const int bottom = int(screen.Height) - px(54);
++    if (!pimpl_->survival_text_) {
++        pimpl_->survival_text_ = guienv->addStaticText(L"", irr::core::rect<irr::s32>(), false, false);
++        pimpl_->survival_text_->setOverrideColor(irr::video::SColor(255, 240, 245, 238));
++    }
++    pimpl_->survival_text_->setRelativePosition(irr::core::rect<irr::s32>(left,
++        bottom - px(104), left + px(396), bottom - px(76)));
++    pimpl_->survival_text_->setText(!pimpl_->session_.ready() ? L"Stato CDDA non sincronizzato" :
++        !pimpl_->avatar_status_.available ? L"Stato CDDA non disponibile" : L"");
 +    pimpl_->survival_text_->setVisible(hud_visible);
 +
-+    // GUI images are reused across frames; no local HP/food inventory authority.
 +    size_t image_index = 0;
 +    for (auto* image : pimpl_->hud_images_) image->setVisible(false);
 +    auto image = [&](const std::string& texture, int x, int y, int w, int h, const std::wstring& tooltip = L"") {
@@ -2832,51 +2857,67 @@ index 0000000..b039e29
 +        widget->setToolTipText(tooltip.c_str());
 +        widget->setVisible(hud_visible && pimpl_->session_.ready());
 +    };
-+    auto bar = [&](const std::string& text, const std::string& icon, int y) {
-+        const auto segments = statusSegments(text);
++    auto bar = [&](const std::array<float, 10>& segments, const std::string& icon,
++            int column, int row, const std::string& marker, const std::wstring& tooltip,
++            const std::string& color, bool known = true) {
++        const int x = left + px(column * 210), y = bottom - px(96 - row * 23);
++        image(marker, x, y, px(19), px(19), tooltip);
 +        for (size_t i = 0; i < segments.size(); ++i) {
-+            const int x = 160 + i * 27;
-+            image(icon + "^[opacity:45", x, y, 23, 23);
-+            if (segments[i] > 0)
-+                image(icon + "^[opacity:0^[lowpart:" + std::to_string(int(segments[i] * 100)) + ":" + icon,
-+                    x, y, 23, 23);
++            const int ix = x + px(24 + i * 16);
++            image(icon + "^[colorize:#101018:180", ix, y, px(18), px(18), tooltip);
++            if (known && segments[i] > 0) {
++                const std::string fill = icon + "^[colorize:" + statusColor(color) + ":35";
++                image(fill + "^[opacity:0^[lowpart:" + std::to_string(int(segments[i] * 100)) + ":" + fill,
++                    ix, y, px(18), px(18), tooltip);
++            }
 +        }
++        if (!known)
++            image("cdda_status_unknown.png", x + px(24), y, px(18), px(18), tooltip);
 +    };
 +    if (pimpl_->avatar_status_.available && pimpl_->session_.ready()) {
-+        bar(pimpl_->avatar_status_.stamina.text, "mcl_hunger_icon_exhaustion.png", panel_top + line);
-+        // Hunger is a native perceived description, not a synthetic calorie gauge.
-+        image("hbhunger_icon.png", 10 + width - 25, panel_top + line * 4, 20, 20);
 +        for (const auto& part : pimpl_->avatar_status_.parts)
-+            if (part.id == "head" || part.id == "torso") {
-+                const int y = panel_top + line * (part.id == "head" ? 2 : 3);
-+                image(bodyPartIcon(part.id), 120, y, 23, 23);
-+                bar(part.health.text, "heart.png", y);
-+            }
++            if (part.id == "head" || part.id == "torso")
++                bar(statusHeartSegments(part.health.text), "heart.png", 0,
++                    part.id == "head" ? 1 : 2, bodyPartIcon(part.id), utf8_to_wide(part.label), part.health.color);
++        for (const auto& value : pimpl_->avatar_status_.needs) {
++            const char* icon = value.id == "hunger" ? "hbhunger_icon.png" :
++                value.id == "thirst" ? "cdda_status_water.png" :
++                value.id == "fatigue" ? "cdda_status_sleep.png" :
++                value.id == "pain" ? "cdda_status_comfort.png" : nullptr;
++            if (!icon) continue;
++            const int column = value.id == "pain" ? 0 : 1;
++            const int row = value.id == "pain" || value.id == "fatigue" ? 0 : value.id == "thirst" ? 1 : 2;
++            const auto tooltip = utf8_to_wide(value.label + ": " +
++                (value.text.empty() ? "-" : value.text) + " (piu icone = meglio)");
++            bar(statusNeedSegments(value.perceived_level), icon, column, row, icon,
++                tooltip, value.color, value.perceived_level >= 0);
++        }
++        const auto stamina = statusHeartSegments(pimpl_->avatar_status_.stamina.text);
++        for (size_t i = 0; i < stamina.size(); ++i) {
++            const int x = left + px(88 + i * 22), y = bottom - px(23);
++            const std::string icon = "mcl_hunger_icon_exhaustion.png";
++            image(icon + "^[colorize:#101018:180", x, y, px(19), px(19), L"Stamina");
++            if (stamina[i] > 0)
++                image(icon + "^[opacity:0^[lowpart:" + std::to_string(int(stamina[i] * 100)) + ":" + icon,
++                    x, y, px(19), px(19), L"Stamina");
++        }
 +    }
-+    if (!pimpl_->possessions_text_) {
-+        pimpl_->possessions_text_ = guienv->addStaticText(L"", irr::core::rect<irr::s32>(), false, true);
-+        pimpl_->possessions_text_->setOverrideColor(irr::video::SColor(255, 240, 245, 238));
-+    }
-+    const int slots = std::min<int>(9, (screen.Width - width - 40) / 44);
-+    const int left = std::max<int>(width + 30, (screen.Width - slots * 44) / 2);
-+    pimpl_->possessions_text_->setRelativePosition(irr::core::rect<irr::s32>(left, screen.Height - 80,
-+        std::min<int>(screen.Width - 10, left + slots * 44), screen.Height - 52));
++    // Read-only possessions: no Luanti selected-item or free wield operation.
++    if (pimpl_->possessions_text_) pimpl_->possessions_text_->setVisible(false);
 +    const auto count = pimpl_->owned_items_.size();
-+    const auto summary = "Oggetti posseduti (vista)" +
-+        (count > size_t(slots) ? " +" + std::to_string(count - slots) : std::string{});
-+    pimpl_->possessions_text_->setText(utf8_to_wide(summary).c_str());
-+    pimpl_->possessions_text_->setVisible(hud_visible && pimpl_->session_.ready() && slots > 0);
 +    for (int i = 0; i < slots; ++i) {
-+        const int x = left + i * 44;
-+        image("mcl_formspec_itemslot.png", x, screen.Height - 50, 42, 42);
++        const int x = left + px(i * 44);
++        std::string tooltip = "Oggetti posseduti (vista)";
++        if (i == slots - 1 && count > size_t(slots)) tooltip += " +" + std::to_string(count - slots);
++        image("mcl_formspec_itemslot.png", x, bottom, px(42), px(42), utf8_to_wide(tooltip));
 +        if (size_t(i) >= count) continue;
 +        const auto& owned = pimpl_->owned_items_[i];
 +        const auto name = pimpl_->ground_item_visual_name(owned.type_id);
 +        const auto& def = pimpl_->client_->getItemDefManager()->get(name);
-+        std::string tooltip = owned.name;
++        tooltip += "\n" + owned.name;
 +        if (owned.count_by_charges) tooltip += " x" + std::to_string(owned.charges);
 +        image(def.inventory_image.empty() ? "cdda_items_fallback.png" : def.inventory_image,
-+            x + 4, screen.Height - 46, 34, 34, utf8_to_wide(tooltip));
++            x + px(4), bottom + px(4), px(34), px(34), utf8_to_wide(tooltip));
 +    }
 +
 +    if (!pimpl_->item_hint_text_)

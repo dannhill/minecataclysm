@@ -217,11 +217,15 @@ def main():
                 wait(lambda r: (int(r['player_state_flags']) & mask) == expected and int(r['pending_move']) == 0)
             if args.resume_only:
                 check('saved_prone_restored_on_actual_reload', mode() == 512)
-                wait(lambda r: abs(float(r['player_eye_offset']) + (1. if int(r['player_state_flags']) & 2 else 1.3)) < .025)
+                wait(lambda r: abs(float(r['player_eye_offset']) + (1.08 if int(r['player_state_flags']) & 2 else 1.3)) < .025)
                 shot('prone-reloaded.png')
             else:
                 check('starts_native_walking_in_shallow_water', mode() == 0 and int(latest()['player_state_flags']) & 2)
                 position = [latest()[k] for k in ('target_x','target_y','target_z')]
+                check('native_perceived_gauges_ingested', [int(latest()[k]) for k in
+                    ('status_hunger_level','status_thirst_level','status_fatigue_level','status_pain_level')] == [8,3,6,8])
+                check('compact_icon_hud_is_rendered', int(latest()['hud_images_active']) > 90)
+                shot('compact-hud.png')
                 if args.toggle_controls:
                     for key, expected in [('Control_L',128),('Control_L',0),('Shift_L',256),('Shift_L',0)]:
                         choose_mode(key,expected)
@@ -277,10 +281,10 @@ def main():
                     if mode() == 256: choose_mode('Shift_L',0)
                 else:
                     wait(lambda r: int(r['player_state_flags']) & mask == 0)
-                choose_mode('p',512)
-                wait(lambda r: abs(float(r['player_eye_offset']) + 1.) < .025)
-                wait(lambda r: float(r['camera_y']) - float(r['target_y']) * 10 > 8.)
-                check('prone_wading_eye_above_surface', float(latest()['camera_y']) - float(latest()['target_y']) * 10 > 8.)
+                choose_mode('x',512)
+                wait(lambda r: abs(float(r['player_eye_offset']) + 1.08) < .025)
+                wait(lambda r: float(r['camera_y']) - float(r['target_y']) * 10 > 7.)
+                check('prone_wading_eye_above_surface', float(latest()['camera_y']) - float(latest()['target_y']) * 10 > 7.)
                 turn(0,-15)
                 shot('prone-shallow-water.png')
                 check('posture_changes_preserve_native_coordinates', position == [latest()[k] for k in ('target_x','target_y','target_z')])
@@ -315,7 +319,7 @@ def main():
                     water_after = Image.open(out / 'water-paused-after.png').convert('RGB')
                     water_box = (880,350,1100,580)
                     check('rendered_water_pixels_frozen_in_manual_pause', ImageChops.difference(water_before.crop(water_box),water_after.crop(water_box)).getbbox() is None)
-                    for key in ('Control_L','Shift_L','p'): tap(key)
+                    for key in ('Control_L','Shift_L','x'): tap(key)
                     check('paused_controls_and_animation_remain_stopped', mode() == 512 and latest()['visual_animation_time'] == frozen['visual_animation_time'])
                     tap('F7'); wait(lambda r: int(r['pause_reasons']) == 0)
                     time.sleep(.3)
@@ -325,6 +329,38 @@ def main():
                 wait(lambda r: r['connection_id'] != connection_id and int(r['input_ready']) == 1,timeout=20)
                 wait(lambda r: int(r['pause_reasons']) == 0)
                 check('recovery_preserves_native_prone',mode() == 512)
+                if not args.action_driven and not args.toggle_controls:
+                    # The independent native fixture has floor immediately west.
+                    # Exercise the actual transition in both directions, not just
+                    # compare two preset heights or assert a camera formula.
+                    water = latest()
+                    water_height = float(water['camera_y']) - float(water['target_y']) * 10
+                    water_x = float(water['target_x'])
+                    turn(90,0)
+                    xdo('keydown','w')
+                    try:
+                        wait(lambda r: not int(r['player_state_flags']) & 2 and float(r['target_x']) < water_x - .5)
+                    finally:
+                        xdo('keyup','w')
+                    wait(lambda r: abs(float(r['player_eye_offset']) + 1.3) < .01)
+                    time.sleep(.4)
+                    land = latest()
+                    land_height = float(land['camera_y']) - float(land['target_y']) * 10
+                    check('prone_water_exit_has_small_visual_step', .65 < land_height - water_height < .95)
+                    shot('prone-floor.png')
+                    turn(-90,0)
+                    xdo('keydown','w')
+                    try:
+                        wait(lambda r: int(r['player_state_flags']) & 2 and float(r['target_x']) > water_x - .4)
+                    finally:
+                        xdo('keyup','w')
+                    wait(lambda r: abs(float(r['player_eye_offset']) + 1.08) < .01)
+                    time.sleep(.4)
+                    entered = latest()
+                    water_again = float(entered['camera_y']) - float(entered['target_y']) * 10
+                    check('prone_water_entry_has_small_visual_step', .65 < land_height - water_again < .95)
+                    check('small_water_dip_never_exposes_underside', 7.2 < water_again < 7.7)
+                    shot('prone-water-return.png')
                 shot('final-hud.png')
             final_row = latest()
             final_position = [float(final_row[k]) for k in ('target_x','target_y','target_z')]
@@ -334,7 +370,7 @@ def main():
             if window and proc.poll() is None:
                 shot('last-frame.png')
             subprocess.run(['xdotool', 'mouseup', '1'], capture_output=True)
-            subprocess.run(['xdotool', 'keyup', 'w', 'Control_L', 'Shift_L', 'p'], capture_output=True)
+            subprocess.run(['xdotool', 'keyup', 'w', 'Control_L', 'Shift_L', 'x'], capture_output=True)
             if proc.poll() is None:
                 os.killpg(proc.pid, signal.SIGTERM)
                 try:

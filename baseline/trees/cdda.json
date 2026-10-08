@@ -37327,7 +37327,7 @@
   {
     "path": "src/cwm/cwm_map_exporter.cpp",
     "mode": "100644",
-    "sha256": "ee9ee1414e31c3ee4fabe3afe999cef304508f1acb322e2a240f21e2bc221f60"
+    "sha256": "f05de013ee239ff60cb36e5c4b0b1b5adfcc2a6a95016b83bb47962c16f2894c"
   },
   {
     "path": "src/cwm/cwm_map_exporter.h",
@@ -37343,6 +37343,11 @@
     "path": "src/cwm/cwm_server.h",
     "mode": "100644",
     "sha256": "54b13314968a135f9ca27121f98cfa34ec27f7c66b1971761706aae1458b51fc"
+  },
+  {
+    "path": "src/cwm/cwm_status_gauges.h",
+    "mode": "100644",
+    "sha256": "4f2ac91ecdaa1d70e1bea8b2b7e1a80904bf4317c1b4760e120e8e9dbb1d1d98"
   },
   {
     "path": "src/cwm_motion.cpp",
@@ -40877,7 +40882,7 @@
   {
     "path": "tests/cwm_projection_test.cpp",
     "mode": "100644",
-    "sha256": "5171ebc4e80a3bd0fb2c0bd4d53e22a9068a907b6c998f3615b951dc84694d9d"
+    "sha256": "6d9872632317177d390f8b81dabca6a1d42ad548396aa684eccc5006c515facd"
   },
   {
     "path": "tests/cwm_runtime_test.cpp",

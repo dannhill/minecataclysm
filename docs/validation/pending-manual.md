@@ -83,10 +83,10 @@ Altezze di visuale sono un primo adattamento 3D; le animazioni del corpo/rig
 in terza persona verranno completate separatamente. Tutte e quattro le prove hanno accettazione manuale esplicita.
 
 
-## Adattamenti comandi e presentazione — NUOVA PROVA
+## Adattamenti comandi e presentazione — VALIDATA: 1–4 PASS
 
-Le quattro checklist sopra sono già accettate. Solo queste modifiche
-successive richiedono un nuovo riscontro: `./controls-demo.sh --fresh`
+Le quattro checklist sopra sono già accettate. Anche le quattro modifiche
+successive sono state approvate esplicitamente dall’utente: `./controls-demo.sh --fresh`
 (copia isolata con acqua bassa alla partenza e sasso davanti).
 
 1. **Ctrl sinistro** tenuto: corsa; rilascio: cammino. **Shift** tenuto:
@@ -104,3 +104,13 @@ successive richiedono un nuovo riscontro: `./controls-demo.sh --fresh`
    oggetti posseduti visibili nella barra. La barra è ancora una vista:
    numeri/rotella non equipaggiano quegli oggetti. Il toggle sdraio persiste
    nel save. Il rifiuto della corsa deve avere una spiegazione comprensibile.
+
+
+## Ultimo ritocco HUD/acqua — nessun nuovo gate manuale
+
+Su richiesta successiva: X predefinito per sdraiarsi, lieve discesa della
+visuale proni in acqua bassa, HUD di icone senza pannello nero. La checklist
+precedente conserva P e il vecchio HUD come descrizione della versione
+validata. L’utente richiede di proseguire dopo questo ritocco senza attendere
+un’ulteriore validazione estetica. Non si deduce un PASS manuale del nuovo HUD.
+Eventuali osservazioni potranno essere raccolte durante le prossime feature.

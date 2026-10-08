@@ -1199,15 +1199,16 @@ index 0000000..1a0308e
 +}
 diff --git a/src/cwm/cwm_map_exporter.cpp b/src/cwm/cwm_map_exporter.cpp
 new file mode 100644
-index 0000000..7bb48a2
+index 0000000..8358c7a
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.cpp
-@@ -0,0 +1,603 @@
+@@ -0,0 +1,604 @@
 +#include "cwm_motion.h"
 +// CDDA CWM Map & Entity Exporter Implementation
 +// Licensed under Apache-2.0
 +
 +#include "cwm_map_exporter.h"
++#include "cwm_status_gauges.h"
 +#include "cwm/tile_semantics.hpp"
 +#include "mapdata.h"
 +#include "cwm/cwm_protocol.hpp"
@@ -1276,16 +1277,16 @@ index 0000000..7bb48a2
 +    // Use the native UI's knowledge-filtered descriptions; do not publish
 +    // hidden nutrition, diagnoses or raw pain/HP for a client to reinterpret.
 +    const auto value = [&](const char* id, const char* label,
-+                           const std::pair<std::string, nc_color>& display) {
++                           const std::pair<std::string, nc_color>& display, int level = -1) {
 +        return CDDA::CWM::CreateStatusValueDirect(fbb, id, label,
-+            display.first.c_str(), get_all_colors().get_name(display.second).c_str());
++            display.first.c_str(), get_all_colors().get_name(display.second).c_str(), level);
 +    };
 +    const auto stamina = value("stamina", "Stamina", get_stamina_bar(u.get_stamina(), u.get_stamina_max()));
 +    std::vector<flatbuffers::Offset<CDDA::CWM::StatusValue>> needs;
-+    needs.push_back(value("hunger", "Fame", display::hunger_text_color(u)));
-+    needs.push_back(value("thirst", "Sete", display::thirst_text_color(u)));
-+    needs.push_back(value("fatigue", "Sonno", display::fatigue_text_color(u)));
-+    needs.push_back(value("pain", "Dolore", display::pain_text_color(u)));
++    needs.push_back(value("hunger", "Fame", display::hunger_text_color(u), hunger_perceived_level(u)));
++    needs.push_back(value("thirst", "Sete", display::thirst_text_color(u), thirst_perceived_level(u)));
++    needs.push_back(value("fatigue", "Sonno", display::fatigue_text_color(u), fatigue_perceived_level(u)));
++    needs.push_back(value("pain", "Dolore", display::pain_text_color(u), pain_perceived_level(u)));
 +    needs.push_back(value("weariness", "Affaticamento", display::weariness_text_color(u)));
 +    needs.push_back(value("temperature", "Temperatura", display::temp_text_color(u)));
 +    needs.push_back(value("morale", "Morale", display::morale_face_color(u)));
@@ -2757,6 +2758,55 @@ index 0000000..71bff50
 +};
 +
 +} // namespace cwm
+diff --git a/src/cwm/cwm_status_gauges.h b/src/cwm/cwm_status_gauges.h
+new file mode 100644
+index 0000000..527a652
+--- /dev/null
++++ b/src/cwm/cwm_status_gauges.h
+@@ -0,0 +1,43 @@
++#pragma once
++
++#include <array>
++#include <utility>
++#include "character.h"
++#include "effect.h"
++
++namespace cwm {
++// Ordinal presentation levels of the *same categories* as display.cpp. No
++// raw nutrition, unperceived pain, diagnosis, or new gameplay thresholds.
++inline int hunger_perceived_level(const Character& u)
++{
++    if (!u.needs_food()) return 10;
++    static const std::array<std::pair<efftype_id, int>, 9> states{{
++        {efftype_id("hunger_engorged"), 10}, {efftype_id("hunger_full"), 10},
++        {efftype_id("hunger_satisfied"), 10}, {efftype_id("hunger_blank"), 8},
++        {efftype_id("hunger_hungry"), 6}, {efftype_id("hunger_very_hungry"), 4},
++        {efftype_id("hunger_near_starving"), 1}, {efftype_id("hunger_starving"), 0},
++        {efftype_id("hunger_famished"), 2}
++    }};
++    for (const auto& state : states)
++        if (u.has_effect(state.first)) return state.second;
++    return -1; // The native UI says ERROR, so do not invent a healthy value.
++}
++inline int thirst_perceived_level(const Character& u)
++{
++    const int thirst = u.get_instant_thirst(); // Includes immediate stomach water.
++    return thirst > 520 ? 0 : thirst > 240 ? 1 : thirst > 80 ? 3 :
++        thirst > 40 ? 5 : thirst < -60 ? 10 : thirst < -20 ? 9 : thirst < 0 ? 8 : 7;
++}
++inline int fatigue_perceived_level(const Character& u)
++{
++    const int fatigue = u.get_fatigue();
++    return fatigue >= fatigue_levels::EXHAUSTED ? 0 :
++        fatigue >= fatigue_levels::DEAD_TIRED ? 3 :
++        fatigue >= fatigue_levels::TIRED ? 6 : 10;
++}
++inline int pain_perceived_level(const Character& u)
++{
++    const int pain = u.get_perceived_pain(); // Analgesia, never get_pain().
++    return pain <= 0 ? 10 : pain > 70 ? 0 : 10 - (pain + 9) / 10;
++}
++} // namespace cwm
 diff --git a/src/cwm_motion.cpp b/src/cwm_motion.cpp
 new file mode 100644
 index 0000000..41bd437
@@ -3686,10 +3736,10 @@ index 0000000..cd65849
 +}
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644
-index 0000000..80794b8
+index 0000000..935bbdf
 --- /dev/null
 +++ b/tests/cwm_projection_test.cpp
-@@ -0,0 +1,671 @@
+@@ -0,0 +1,726 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "move_mode.h"
@@ -3713,6 +3763,7 @@ index 0000000..80794b8
 +#include "bodypart.h"
 +#include <sstream>
 +#include "cwm/cwm_map_exporter.h"
++#include "cwm/cwm_status_gauges.h"
 +#include "cwm/tile_semantics.hpp"
 +
 +TEST_CASE("cwm_avatar_status_uses_native_visible_descriptions_without_mutation", "[cwm][body]")
@@ -3760,6 +3811,60 @@ index 0000000..80794b8
 +    CHECK(after->needs()->Get(3)->text()->str() == display::pain_text_color(u).first);
 +    CHECK(after->needs()->Get(3)->text()->str().empty());
 +    CHECK(u.get_pain() == 50);
++    CHECK(after->needs()->Get(3)->perceived_level() == 10);
++    CHECK(state->needs()->Get(3)->perceived_level() == 5);
++}
++
++TEST_CASE("cwm_survival_levels_match_native_descriptor_boundaries", "[cwm][body]")
++{
++    clear_avatar();
++    avatar& u = get_avatar();
++    const auto exported = [&](int index) {
++        const auto moves = u.moves;
++        const auto turn = calendar::turn;
++        const auto rng = rng_get_engine();
++        flatbuffers::FlatBufferBuilder fbb;
++        fbb.Finish(cwm::CwmMapExporter::export_avatar_status(fbb, u));
++        const auto* status = flatbuffers::GetRoot<CDDA::CWM::AvatarStatus>(fbb.GetBufferPointer());
++        CHECK(u.moves == moves);
++        CHECK(calendar::turn == turn);
++        CHECK(rng_get_engine() == rng);
++        return int(status->needs()->Get(index)->perceived_level());
++    };
++    // One level for each native descriptive category, on both sides of every
++    // native threshold. Normal (blank description) is known, not unavailable.
++    for (const auto& entry : std::vector<std::pair<int, int>>{
++            {-61,10},{-60,9},{-21,9},{-20,8},{-1,8},{0,7},{40,7},
++            {41,5},{80,5},{81,3},{240,3},{241,1},{520,1},{521,0}}) {
++        u.set_thirst(entry.first);
++        REQUIRE(u.get_instant_thirst() == entry.first);
++        CHECK(exported(1) == entry.second);
++    }
++    for (const auto& entry : std::vector<std::pair<int, int>>{
++            {0,10},{int(fatigue_levels::TIRED)-1,10},{int(fatigue_levels::TIRED),6},
++            {int(fatigue_levels::DEAD_TIRED)-1,6},{int(fatigue_levels::DEAD_TIRED),3},
++            {int(fatigue_levels::EXHAUSTED)-1,3},{int(fatigue_levels::EXHAUSTED),0}}) {
++        u.set_fatigue(entry.first);
++        CHECK(exported(2) == entry.second);
++    }
++    for (int pain : {0,1,10,11,20,21,30,31,40,41,50,51,60,61,70,71,100}) {
++        u.set_pain(pain);
++        const int perceived = u.get_perceived_pain();
++        CHECK(exported(3) == (perceived <= 0 ? 10 : perceived > 70 ? 0 : 10 - (perceived + 9)/10));
++    }
++    const std::vector<std::pair<std::string,int>> hunger{
++        {"hunger_engorged",10},{"hunger_full",10},{"hunger_satisfied",10},
++        {"hunger_blank",8},{"hunger_hungry",6},{"hunger_very_hungry",4},
++        {"hunger_famished",2},{"hunger_near_starving",1},{"hunger_starving",0}};
++    for (const auto& entry : hunger) u.remove_effect(efftype_id(entry.first));
++    CHECK(exported(0) == -1); // No native hunger descriptor: never guess full.
++    for (const auto& entry : hunger) {
++        const efftype_id effect(entry.first);
++        u.add_effect(effect, 1_hours);
++        CHECK(exported(0) == entry.second);
++        CHECK(display::hunger_text_color(u).first != "ERROR!");
++        u.remove_effect(effect);
++    }
 +}
 +
 +TEST_CASE("cwm_actor_identity_survives_native_serialization_and_projection_lifecycle", "[cwm][actors]")

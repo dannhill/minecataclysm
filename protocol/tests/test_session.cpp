@@ -46,7 +46,7 @@ std::vector<uint8_t> world(uint64_t seq, bool full=true, uint64_t base=0,
         const auto text = body_case == 4 ? f.CreateString(std::string("a\0b",3)) : f.CreateString("|||||");
         auto stamina=CreateStatusValue(f,f.CreateString("stamina"),
             body_case==2?0:f.CreateString("Stamina"),text,f.CreateString("c_cyan"));
-        auto thirst=CreateStatusValueDirect(f,"thirst","Sete","","c_white");
+        auto thirst=CreateStatusValueDirect(f,"thirst","Sete","","c_white",body_case==7?11:body_case==8?-2:body_case==9?0:body_case==10?10:-1);
         auto needs=f.CreateVector(body_case==3?std::vector{thirst,thirst}:std::vector{thirst});
         auto part=CreateBodyPartStatusDirect(f,"torso","Torso",body_case==5?0:stamina,stamina);
         auto parts=f.CreateVector(std::vector<flatbuffers::Offset<BodyPartStatus>>(body_case==6?65:1,part));
@@ -145,12 +145,12 @@ int main() {
         }
     });
     test("native_body_status_is_bounded_and_malformed_state_requests_resync",[]{
-        for(int kind : {1,2,3,4,5,6}) {
+        for(int kind : {1,2,3,4,5,6,7,8,9,10}) {
             ClientSession s; MemoryChannel c; handshake(s,c);
             auto bytes=world(4,false,5,6,0,false,{11,22,33},1.f,0,.2f,true,false,0,kind);
             CHECK(MessageVerifier::verify(bytes.data(),bytes.size()));
-            CHECK(accept(s,c,bytes) == (kind==1));
-            if(kind!=1) CHECK(!s.ready() && s.revision==5 && s.resync_count==1);
+            CHECK(accept(s,c,bytes) == (kind==1 || kind==9 || kind==10));
+            if(kind!=1 && kind!=9 && kind!=10) CHECK(!s.ready() && s.revision==5 && s.resync_count==1);
         }
     });
     test("conflicting_native_posture_requires_resync_before_committing",[]{

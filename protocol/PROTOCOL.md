@@ -6,10 +6,24 @@ captured implementation; it does not approve its gaps. The executable schema
 is [cwm.fbs](cwm.fbs). Audit findings and evidence are in
 [M5.5](../docs/audits/M5.5.md).
 
-The current runtime requires **CWM 2.8**. This breaks the old negotiation
+The current runtime requires **CWM 2.9**. This breaks the old negotiation
 contract; schema fields and union members are appended without changing the
 existing FlatBuffers offsets. Both executables must be rebuilt together.
 The historical coverage table below is retained as audit evidence.
+
+CWM 2.9 appends `StatusValue.perceived_level`: -1 unavailable, otherwise
+an ordinal 0–10 well-being level, higher is better. CDDA quantizes only the
+same native player-facing hunger effects, instant-thirst descriptor ranges,
+fatigue categories and perceived-pain categories used by its native UI.
+No raw calories, vitamins, hidden pain or diagnoses are exported. It is not
+a linear biological percentage, a Minecraft hunger rule or a death threshold.
+Hunger full/engorged/satisfied share a full bar; native color/description still
+warn about overeating. Missing native hunger category is unavailable, never
+assumed full. Empty known neutral descriptions remain known. Health/stamina
+retain their five-segment text resolution; this field is -1 for other values.
+Out-of-range levels invalidate state and cause resynchronization. Both
+executables require matching 2.9; language/localized text is not parsed by the
+renderer to determine fill. No gameplay command or save field is added.
 
 CWM 2.8 appends `MovementModeRequest(command_id, mode)` for WALK/RUN/CROUCH/PRONE.
 The native coordinator checks bounds, readiness/pause and native availability,

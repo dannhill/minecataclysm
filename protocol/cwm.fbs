@@ -166,6 +166,9 @@ table StatusValue {
     label: string;
     text: string;
     color: string;
+    // Ordinal perceived well-being: -1 unavailable, 0 worst, 10 best.
+    // Native descriptor categories, not raw calories/pain or a Minecraft rule.
+    perceived_level: int8 = -1;
 }
 
 table BodyPartStatus {

@@ -38,5 +38,37 @@
     "texture": "mcl_armor_inv_boots_iron.png",
     "source": "mineclonia/mods/ITEMS/mcl_armor/textures/mcl_armor_inv_boots_iron.png",
     "sha256": "e78b3ba399dc67f73a08450ad304c114c1e2414e33d6a1ef938c5d00f3bd8260"
+  },
+  {
+    "texture": "cdda_status_water.png",
+    "source": "game/mods/cdda_items/status-icons/cdda_status_water.svg",
+    "sha256": "8a5eca11194b29897e8e1a1bb2ad59ab18c766bb1a1493b637c95a0f6cfd3f80",
+    "license": "CC0-1.0",
+    "author": "CDDA\u2013Luanti integration contributors",
+    "raster_command": "convert -background none game/mods/cdda_items/status-icons/cdda_status_water.svg game/mods/cdda_items/textures/cdda_status_water.png"
+  },
+  {
+    "texture": "cdda_status_sleep.png",
+    "source": "game/mods/cdda_items/status-icons/cdda_status_sleep.svg",
+    "sha256": "cca011f6c384ed6d054abde300500a5f1a08b981efe4ffbe9e1be98e660e4096",
+    "license": "CC0-1.0",
+    "author": "CDDA\u2013Luanti integration contributors",
+    "raster_command": "convert -background none game/mods/cdda_items/status-icons/cdda_status_sleep.svg game/mods/cdda_items/textures/cdda_status_sleep.png"
+  },
+  {
+    "texture": "cdda_status_comfort.png",
+    "source": "game/mods/cdda_items/status-icons/cdda_status_comfort.svg",
+    "sha256": "0dde9729f81cf01f07d3952953ec31eb24ada0d5a68a1a8dbcfc71588ddd3c15",
+    "license": "CC0-1.0",
+    "author": "CDDA\u2013Luanti integration contributors",
+    "raster_command": "convert -background none game/mods/cdda_items/status-icons/cdda_status_comfort.svg game/mods/cdda_items/textures/cdda_status_comfort.png"
+  },
+  {
+    "texture": "cdda_status_unknown.png",
+    "source": "game/mods/cdda_items/status-icons/cdda_status_unknown.svg",
+    "sha256": "47e22f6defcc75f6df25bd57913e54aa3a78b6c22251fb26b222be2173490670",
+    "license": "CC0-1.0",
+    "author": "CDDA\u2013Luanti integration contributors",
+    "raster_command": "convert -background none game/mods/cdda_items/status-icons/cdda_status_unknown.svg game/mods/cdda_items/textures/cdda_status_unknown.png"
   }
 ]

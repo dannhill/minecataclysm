@@ -19,6 +19,14 @@ camera sicura in acqua bassa e HUD con asset Mineclonia. Barra oggetti visibile
 di sola lettura; equipaggiamento rapido richiede una fetta nativa dedicata.
 Salute vitale e malattie restano distinte; media HP non finalizzata.
 
+Il [secondo riscontro](docs/source/hud-icon-feedback-2026-10-08.md) valida
+anche i quattro adattamenti e richiede l’ultimo ritocco: X predefinito per
+sdraiarsi; lieve discesa proni nell’acqua; HUD centrale a icone (più = meglio),
+senza sfondo nero. Barre dei bisogni sono categorie percepite native, non
+nuove regole biologiche. H conserva i dettagli. Dopo questo ritocco proseguire
+senza nuovo gate estetico. Il [resoconto corrente](docs/progress/2026-10-08.md)
+separa le fetta giocabili dalle parti ancora pianificate.
+
 ## Prodotto e autorità
 
 Profondità CDDA completa, interfacce guidate e dettagli manuali progressivi.
@@ -121,8 +129,9 @@ tick nativi temporizzati, idle, velocità globale, pause/menu/minacce e input
 mantenuto senza coda di passi. `realtime-demo.sh` offre la prova isolata.
 L'utente [accetta la checklist manuale dello scheduler](docs/source/rt01-validation-2026-10-04.md),
 ma giudica il ritmo base 1× troppo lento e chiede il controller continuo già
-previsto. Il baseline tecnico a griglia è implementato; offset continuo,
-arresto dentro una casella e direzione arbitraria restano da confrontare.
+previsto. Il baseline tecnico a griglia è storico; RT-02 con offset continuo autorevole,
+arresto dentro una casella e direzione arbitraria è implementato e accettato
+nella [continuazione recuperata](docs/source/continuation-2026-10-07.md).
 Fra le velocità provate, l'utente preferisce 4×: usarlo come ritmo globale
 di riferimento del prossimo prototipo continuo. Controller e bilanciamento
 finali restano da confrontare; la fase 2 non è chiusa.
@@ -135,7 +144,7 @@ Dipende da FND-01–03 e dalla proiezione sufficiente alla scena di confronto.
 - Scheduler unico CDDA: default 1:1 e velocità globale regolabile, pausa
   esplicita/menu, attività lunghe accelerate, interruzioni native rilevanti.
   Il rapporto 1:1 è il baseline RT-01 verificato; l'utente preferisce 4×
-  fra i ritmi provati. Il prossimo prototipo continuo usa 4× globale come
+  fra i ritmi provati. Il prototipo continuo RT-02, ora implementato e accettato, usa 4× globale come
   riferimento, mantenendo la regolazione. Il bilanciamento finale richiede
   anche il confronto di combattimento, posture e attività.
 - Autopausa su nuova minaccia percepita; ripresa in tempo reale. Verificare
@@ -219,14 +228,14 @@ nel [riscontro corrente](docs/source/playable-core-feedback-2026-10-08.md).
 La quarta fetta essenziale ortogonale sono le
 [corsa/posture native](docs/fixes/native-postures.md), già previste nelle
 fondazioni/comandi: inizialmente R/X/P toggle, ora Ctrl/Shift mantenuti e
-P toggle secondo la direttiva successiva;
+sdraio toggle (ora X predefinito) secondo le direttive successive;
 velocità/stamina/rumore CDDA, visuale 3D corrispondente e save canonico.
 Non richiede nessuna delle tre interfacce da validare. Rig/animazioni in terza
 persona restano successivi. Melee resta il primo combattimento, non chiusura
 dell'intero punto 5: ranged, reach, feedback avanzati e attacco deliberato a
 neutrali restano nel piano. Tutte e quattro le
 [checklist](docs/validation/pending-manual.md) originali sono PASS;
-solo gli adattamenti successivi hanno una nuova prova;
+anche i quattro adattamenti successivi sono PASS; il ritocco estetico non aggiunge un gate;
 verifiche automatiche e accettazione visiva sono distinte. Il calendario
 approvato e i nove batch di mapping restano invariati.
 
@@ -274,6 +283,17 @@ Bestiario base ampio con modelli per famiglie e varianti distinguibili;
 vestiti/equipaggiamento riconoscibili per categoria inizialmente. Coltivazione,
 animali, pesca, cibo, cadaveri, scasso, trappole, campi, liquidi e terminali
 usano le interfacce comuni mantenendo regole, requisiti e tempi nativi.
+
+## Presentazione di produzione — promemoria esplicito
+
+Gli overlay «cammino», «tempo reale», «CDDA–Mineclonia / F3», metriche e
+istruzioni di debug diventano opzionali con una hotkey riconfigurabile e
+impostazione nel menu. Default prodotto senza pannelli diagnostici persistenti;
+le demo tecniche possono abilitarli. Distinguere questa diagnostica dagli
+indicatori minimi di pausa, perdita di connessione, minaccia e decisioni native:
+questi devono restare comprensibili anche con debug disattivato. Pianificato,
+non incluso nell’ultimo ritocco HUD. Non riaprire altre iterazioni estetiche
+prima della prossima feature essenziale del playable core.
 
 ## Fase 5 — M8/M9 e contenuti successivi
 

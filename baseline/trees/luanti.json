@@ -1232,7 +1232,7 @@
   {
     "path": "builtin/settingtypes.txt",
     "mode": "100644",
-    "sha256": "c9ba4f06f5076b35f57897a9aa71e0a1790a88e2f275cef8000065593df59f66"
+    "sha256": "666f17e8894e5793db45d12a02eb00f6454750a1ca6bc67bc3848be98a0384d2"
   },
   {
     "path": "client/serverlist/.gitignore",
@@ -7232,12 +7232,12 @@
   {
     "path": "src/cdda/avatar_status.h",
     "mode": "100644",
-    "sha256": "48b041d23709b6c04c4947a862448a2e03d89495ad130a7a16645d01d089e4bc"
+    "sha256": "2074262c337a26d761e7856bcee5d63deff135e06dffd5c462b056ff1ad2b231"
   },
   {
     "path": "src/cdda/cdda_bridge.cpp",
     "mode": "100644",
-    "sha256": "476f110cea23023d0bee383ec1786ea0f916c9b2378e6f9f5c42973381bea5dd"
+    "sha256": "dc179c518555997bf22480f9857a540f63ba2da578195392b97050c224e729ea"
   },
   {
     "path": "src/cdda/cdda_bridge.h",
@@ -8142,7 +8142,7 @@
   {
     "path": "src/defaultsettings.cpp",
     "mode": "100644",
-    "sha256": "fb9d4c134630a6c624accd400db6da52038eb3a13d778872c4b87e3a222911fb"
+    "sha256": "ba4132d2608b7c306823fe9ca1814c478ed9baeb859ef43ebb3bf2607389be60"
   },
   {
     "path": "src/defaultsettings.h",
@@ -10307,7 +10307,7 @@
   {
     "path": "src/unittest/test_mapblock.cpp",
     "mode": "100644",
-    "sha256": "2f77eea4100d780e2ad10aa3b06639e73c069c6716f31559cb032827f2989232"
+    "sha256": "e6b81f3e3a6d9547c90e8e19469cb8d488ce378c5fab24fec58fd80107fc70d5"
   },
   {
     "path": "src/unittest/test_mapnode.cpp",
