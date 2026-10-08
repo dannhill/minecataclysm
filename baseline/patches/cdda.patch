@@ -3736,10 +3736,10 @@ index 0000000..cd65849
 +}
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644
-index 0000000..935bbdf
+index 0000000..d45e687
 --- /dev/null
 +++ b/tests/cwm_projection_test.cpp
-@@ -0,0 +1,726 @@
+@@ -0,0 +1,727 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "move_mode.h"
@@ -3847,10 +3847,11 @@ index 0000000..935bbdf
 +        u.set_fatigue(entry.first);
 +        CHECK(exported(2) == entry.second);
 +    }
-+    for (int pain : {0,1,10,11,20,21,30,31,40,41,50,51,60,61,70,71,100}) {
-+        u.set_pain(pain);
-+        const int perceived = u.get_perceived_pain();
-+        CHECK(exported(3) == (perceived <= 0 ? 10 : perceived > 70 ? 0 : 10 - (perceived + 9)/10));
++    for (const auto& entry : std::vector<std::pair<int, int>>{
++            {0,10},{1,9},{10,9},{11,8},{20,8},{21,7},{30,7},{31,6},
++            {40,6},{41,5},{50,5},{51,4},{60,4},{61,3},{70,3},{71,0},{100,0}}) {
++        u.set_pain(entry.first);
++        CHECK(exported(3) == entry.second);
 +    }
 +    const std::vector<std::pair<std::string,int>> hunger{
 +        {"hunger_engorged",10},{"hunger_full",10},{"hunger_satisfied",10},

@@ -1,5 +1,23 @@
 # Implementation status
 
+Current delivery: [compact icon HUD / shallow prone dip / X](docs/fixes/icon-survival-hud.md),
+CWM 2.9. All four familiar-control/pause/camera adaptations have explicit user
+PASS (in addition to the original four feature checklists). The last requested
+HUD polish must not add another manual gate. X is the configurable default
+prone toggle; the shallow prone camera dips 0.08 nodes. Centered ten-icon rows
+show native perceived hunger, hydration, rest and comfort, separate vital
+head/torso hearts, stamina and read-only possessions, without the old survival
+background or permanent labels. H keeps detailed native descriptions. Gameplay
+rules and canonical save fields are unchanged. Debug overlay hotkey/settings
+are recorded for production, not implemented in this slice.
+Current source/runtime verification and remaining scope are in the report.
+[Current plan summary](docs/progress/2026-10-08.md): inventory/equipment, then
+consumption/medical essentials and crafting before vehicles. M5.5 remains
+historical FAILED and full SAVE-001 remains open.
+
+The following CWM 2.8 delivery paragraphs are historical, superseded by the
+2.9 presentation slice above; their runtime hashes belong to their own evidence.
+
 User validation on 2026-10-08: pickup, body HUD/sheet, pointed melee and
 native run/postures all four checklist items PASS each. [Feedback](docs/source/playable-core-feedback-2026-10-08.md)
 authorizes familiar hold controls and visual pause/camera fixes. Earlier
@@ -24,8 +42,8 @@ speed hierarchy. A subsequent body scroll-only polish has 21 reconstructed
 and installed GUI checks and unchanged 307/648 engine results; its binary identity is
 recorded separately from the preceding control runs.
 Source identities, remaining scope and results are in the [evidence](docs/fixes/controls-and-survival-presentation-evidence.json).
-Only the [new four-point checklist](docs/validation/pending-manual.md) awaits
-manual feedback. Full diseases/medical UI, quantitative hunger redesign and
+The [four-point adaptation checklist](docs/validation/pending-manual.md) was
+subsequently manually accepted in full. Full diseases/medical UI, quantitative hunger redesign and
 native timed quick equipment switching remain future work. No full M5.5 or
 SAVE-001 certification is claimed.
 
