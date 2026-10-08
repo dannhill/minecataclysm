@@ -177,12 +177,13 @@ def main():
                 request = InteractRequest.InteractRequest()
                 request.Init(msg.Payload().Bytes,msg.Payload().Pos)
                 if request.Action() == action: commands.add(request.CommandId())
+        accepted = set()
         for msg in wire_messages('server-wire.bin'):
             if msg.PayloadType() == Payload.Payload.CommandAck:
                 ack = CommandAck.CommandAck()
                 ack.Init(msg.Payload().Bytes,msg.Payload().Pos)
-                if ack.CommandId() in commands and ack.Accepted(): return True
-        return False
+                if ack.CommandId() in commands and ack.Accepted(): accepted.add(ack.CommandId())
+        return len(accepted)
     window = None
     with (out / 'launcher.log').open('w') as log:
         proc = subprocess.Popen([str(ws / 'start.sh'), '--go', '--name', 'posture_tester', '--info'],
@@ -258,8 +259,7 @@ def main():
                 if not args.toggle_controls:
                     wait(lambda r: int(r['player_state_flags']) & mask == 0 and int(r['pending_move']) == 0)
                     xdo('click','3')
-                    time.sleep(.4)
-                    wait(lambda r: int(r['pending_move']) == 0)
+                    wait(lambda r: accepted_action(1) == 2 and int(r['pending_move']) == 0)
                     slow_posture_reply.set()
                     xdo('keydown','Shift_L')
                     time.sleep(.1)
@@ -267,7 +267,8 @@ def main():
                     time.sleep(.5)
                     xdo('keyup','Shift_L')
                     wait(lambda r: int(r['pending_move']) == 0 and int(r['player_state_flags']) & mask == 0)
-                    check('delayed_modifier_reply_does_not_swallow_close', sum(1 for msg in wire_messages('client-wire.bin') if msg.PayloadType() == Payload.Payload.InteractRequest) == 4)
+                    wait(lambda r: accepted_action(2) == 2)
+                    check('delayed_modifier_reply_does_not_swallow_close', accepted_action(1) == 2 and accepted_action(2) == 2)
 
                 if args.toggle_controls:
                     # The modifier press also latched crouch in toggle mode.

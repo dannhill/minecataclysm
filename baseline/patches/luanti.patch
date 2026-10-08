@@ -973,10 +973,10 @@ index 0000000..fdcf808
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..726ff3f
+index 0000000..b039e29
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,2021 @@
+@@ -0,0 +1,2023 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
@@ -1655,6 +1655,7 @@ index 0000000..726ff3f
 +    bool connect() {
 +        connection_ = cdda::cwm::IpcClient::connect_unix(socket_path_, 0);
 +        metrics_.connected = false; player_ready_ = false; pending_move_ = 0;
++        deferred_opening_.reset();
 +        sync_timer_ = 0.f;
 +        sent_intent_ = 0; sent_intent_x_ = sent_intent_y_ = 0; intent_needs_release_ = true; sent_menu_pause_ = -1;
 +        if (connection_ && connection_->is_valid() && session_.begin(*connection_)) return true;
@@ -1666,6 +1667,7 @@ index 0000000..726ff3f
 +        body_close_requested_ = true;
 +        cancel_pickup_selection();
 +        metrics_.connected = false; player_ready_ = false; pending_move_ = 0;
++        deferred_opening_.reset();
 +        connection_.reset(); metrics_.pending_decision = 0;
 +        for (auto& [id, ent] : entities_) if (ent.scene_node)
 +            static_cast<irr::scene::ISceneNode*>(ent.scene_node)->setVisible(false);
