@@ -43,7 +43,7 @@ def main():
     print('Prova crafting isolata:', session, flush=True)
     print('K: catalogo nativo, ricerca e lotto 1-20; clic su ricetta per requisiti e dettagli.', flush=True)
     print('Otto fogli di cotone nello zaino, un preferito protetto e un materiale alternativo sul pavimento vicino.', flush=True)
-    print('Cerca bandages_makeshift: scegli la ricetta senza utensile, componenti/fonti e conferma.', flush=True)
+    print('Cerca bandage: scegli la ricetta senza utensile, componenti/fonti e conferma.', flush=True)
     print('K o I durante il lavoro: pausa e interruzione. K: riprendi il lavoro incompleto marcato R.', flush=True)
     print('F7: pausa manuale. Ricette liquide, pratiche e con sottoprodotti sono successive.', flush=True)
     print('Movimento e tempo nativo 4x. Rilancia senza --fresh per riprendere il save.', flush=True)

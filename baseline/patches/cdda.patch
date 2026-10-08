@@ -3914,10 +3914,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..4c88a28
+index 0000000..e7e287a
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,1231 @@
+@@ -0,0 +1,1232 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "move_mode.h"
@@ -5072,7 +5072,7 @@ index 0000000..4c88a28
 +    auto bytes=selection.query(u,1,"bandages_makeshift",1,wire);
 +    auto view=CDDA::CWM::GetCwmMessage(bytes.data())->payload_as_CraftingView();
 +    REQUIRE(view->entries()->Get(0)->reason()->str().empty());
-+    bool acted=false, confirmed=false;
++    bool acted=false, confirmed=false; u.moves=100;
 +    do_turn_with_action([&]() {
 +        u.moves=100;
 +        acted=selection.execute(u,view->view_id(),1);
@@ -5113,6 +5113,7 @@ index 0000000..4c88a28
 +    auto resumed_view=CDDA::CWM::GetCwmMessage(resumed_bytes.data())->payload_as_CraftingView();
 +    REQUIRE(resumed_view->entries()->Get(0)->resume());
 +    REQUIRE(resumed_view->entries()->Get(0)->progress()==progress);
++    u.moves=100;
 +    do_turn_with_action([&]() {
 +        u.moves=100; CHECK(selection.execute(u,resumed_view->view_id(),1));
 +        finish_external_action_phase();return false;

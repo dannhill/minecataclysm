@@ -217,7 +217,7 @@ NPC, chirurgia e avvio parte→oggetto dalla scheda H restano successivi.
 Dalla directory del progetto: `./crafting-demo.sh --fresh`. Scena e salvataggio
 isolati; K apre il catalogo CDDA. Non serve completare le altre checklist.
 
-1. K: ricerca `bandages_makeshift`, seleziona la ricetta senza utensile e leggi
+1. K: ricerca `bandage`, seleziona la ricetta senza utensile e leggi
    materiali, luce/competenze, fonti e durata. Lotto 1–20 aggiorna i requisiti.
    Il tempo resta fermo nella GUI; Esc esce senza creare né consumare materiali.
 2. Avvia lotto 1: scegli materiale/fonte con i numeri della decisione nativa.

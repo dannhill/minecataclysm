@@ -215,7 +215,7 @@ def main():
             def click(x,y):
                 xdo('mousemove','--window',window,str(round(origin_x+x*unit)),str(round(origin_y+y*unit)))
                 xdo('click','1');time.sleep(.3)
-            def search(text='bandages_makeshift'):
+            def search(text='bandage'):
                 old=latest()['crafting_view'];click(2,1.3)
                 xdo('key','ctrl+a');xdo('key','BackSpace');xdo('type','--clearmodifiers',text);click(6.9,1.325)
                 wait(lambda r:int(r['crafting_view'])>0 and r['crafting_view']!=old)
