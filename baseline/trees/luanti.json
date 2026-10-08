@@ -7237,12 +7237,17 @@
   {
     "path": "src/cdda/cdda_bridge.cpp",
     "mode": "100644",
-    "sha256": "dc179c518555997bf22480f9857a540f63ba2da578195392b97050c224e729ea"
+    "sha256": "c31a76dd955a3da95562c35b368d99b99e324dd05226f95bb38a089834621bb1"
   },
   {
     "path": "src/cdda/cdda_bridge.h",
     "mode": "100644",
-    "sha256": "dbc4f9b5d14502869e87ba5ca08d6bc81f4368047e8d40710d12899ff40d15fe"
+    "sha256": "a5b137a8bc2765180e26e736c7047cfbfc03e97e7e1686f29ea0c2382cdd033f"
+  },
+  {
+    "path": "src/cdda/equipment_inventory.h",
+    "mode": "100644",
+    "sha256": "620ebdae55c6f74798b18767b4ce7ae4f45e3e4a898e51424d58abd2f08698f7"
   },
   {
     "path": "src/cdda/ground_item_formspec.h",
@@ -7447,7 +7452,7 @@
   {
     "path": "src/client/game.cpp",
     "mode": "100644",
-    "sha256": "6ab2833837d11c5dd43b8d3dfdf789f29b3ab4a33eb8cbe3eb6071a90e8b6f82"
+    "sha256": "ceb85818e4e1500ca1379049a12c247dab8d64dbedabfc090eda487e3268309b"
   },
   {
     "path": "src/client/game.h",

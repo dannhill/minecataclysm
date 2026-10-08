@@ -18,6 +18,41 @@ inline uint64_t fresh_identity() {
     const uint64_t value = (uint64_t(random()) << 32) ^ random();
     return value ? value : 1;
 }
+inline bool valid_inventory(const CDDA::CWM::InventoryView* view) {
+    const auto text = [](const auto* s, size_t limit, bool empty = true) {
+        return s && s->size() <= limit && (empty || s->size()) && s->str().find('\0') == std::string::npos;
+    };
+    if (!view || !view->query_id() || !view->entries() || !view->pockets() ||
+        view->entries()->size() > 2048 || view->pockets()->size() > 8192 || !text(view->error(), 2048)) return false;
+    if (view->error()->size()) return !view->view_id() && !view->entries()->size() && !view->pockets()->size();
+    if (!view->view_id()) return false;
+    std::vector<unsigned> depths(1, 0);
+    uint32_t id = 0;
+    for (const auto* entry : *view->entries()) {
+        if (!entry || entry->id() != ++id || entry->parent_id() >= id || entry->pocket_index() < -1 ||
+            (!entry->parent_id() && entry->pocket_index() != -1) ||
+            (entry->parent_id() && (entry->worn() || entry->wielded())) ||
+            (entry->worn() && entry->wielded()) || (entry->actions() & ~15) ||
+            entry->weight_grams() < 0 || entry->volume_ml() < 0 || entry->length_mm() < 0 || entry->access_moves() < 0 ||
+            !text(entry->type_id(), 1024, false) || !text(entry->name(), 16384, false) || !text(entry->category(), 1024) ||
+            !entry->reasons() || entry->reasons()->size() != 4) return false;
+        for (unsigned i = 0; i < 4; ++i)
+            if (!text(entry->reasons()->Get(i), 2048) ||
+                bool(entry->actions() & (1 << i)) == bool(entry->reasons()->Get(i)->size())) return false;
+        depths.push_back(entry->parent_id() ? depths[entry->parent_id()] + 1 : 0);
+        if (depths.back() > 32) return false;
+    }
+    std::set<std::pair<uint32_t,uint32_t>> pockets;
+    for (const auto* pocket : *view->pockets()) {
+        if (!pocket || !pocket->owner_id() || pocket->owner_id() > id || pocket->index() >= 8192 ||
+            !text(pocket->name(), 2048) || pocket->capacity_ml() < 0 || pocket->capacity_grams() < 0 ||
+            pocket->max_length_mm() < 0 || pocket->access_moves() < 0 ||
+            !pockets.emplace(pocket->owner_id(), pocket->index()).second) return false;
+    }
+    for (const auto* entry : *view->entries())
+        if (entry->pocket_index() >= 0 && !pockets.count({entry->parent_id(), uint32_t(entry->pocket_index())})) return false;
+    return true;
+}
 enum class SessionState { Disconnected, HelloSent, Accepted, Syncing, Running, Resyncing, Rejected };
 
 inline bool valid_world(const CDDA::CWM::WorldSnapshot* world) {
@@ -212,6 +247,10 @@ public:
                     request_resync(channel); return false;
                 }
             }
+            return true;
+        }
+        if (ready() && msg.payload_type() == Payload::InventoryView) {
+            if (!valid_inventory(msg.payload_as_InventoryView())) { request_resync(channel); return false; }
             return true;
         }
         if (msg.payload_type() == Payload::HeartbeatAck) return true;

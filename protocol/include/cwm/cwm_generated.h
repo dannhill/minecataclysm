@@ -97,6 +97,21 @@ struct InteractRequestBuilder;
 struct MovementModeRequest;
 struct MovementModeRequestBuilder;
 
+struct InventoryQueryRequest;
+struct InventoryQueryRequestBuilder;
+
+struct InventoryEntry;
+struct InventoryEntryBuilder;
+
+struct InventoryPocket;
+struct InventoryPocketBuilder;
+
+struct InventoryView;
+struct InventoryViewBuilder;
+
+struct EquipmentRequest;
+struct EquipmentRequestBuilder;
+
 struct AttackRequest;
 struct AttackRequestBuilder;
 
@@ -349,6 +364,42 @@ inline const char *EnumNameMovementMode(MovementMode e) {
   return EnumNamesMovementMode()[index];
 }
 
+enum class EquipmentAction : int8_t {
+  WIELD = 0,
+  STOW = 1,
+  WEAR = 2,
+  TAKEOFF = 3,
+  MIN = WIELD,
+  MAX = TAKEOFF
+};
+
+inline const EquipmentAction (&EnumValuesEquipmentAction())[4] {
+  static const EquipmentAction values[] = {
+    EquipmentAction::WIELD,
+    EquipmentAction::STOW,
+    EquipmentAction::WEAR,
+    EquipmentAction::TAKEOFF
+  };
+  return values;
+}
+
+inline const char * const *EnumNamesEquipmentAction() {
+  static const char * const names[5] = {
+    "WIELD",
+    "STOW",
+    "WEAR",
+    "TAKEOFF",
+    nullptr
+  };
+  return names;
+}
+
+inline const char *EnumNameEquipmentAction(EquipmentAction e) {
+  if (::flatbuffers::IsOutRange(e, EquipmentAction::WIELD, EquipmentAction::TAKEOFF)) return "";
+  const size_t index = static_cast<size_t>(e);
+  return EnumNamesEquipmentAction()[index];
+}
+
 enum class Payload : uint8_t {
   NONE = 0,
   HelloRequest = 1,
@@ -378,11 +429,14 @@ enum class Payload : uint8_t {
   MovementIntentRequest = 25,
   ContinuousIntentRequest = 26,
   MovementModeRequest = 27,
+  InventoryQueryRequest = 28,
+  InventoryView = 29,
+  EquipmentRequest = 30,
   MIN = NONE,
-  MAX = MovementModeRequest
+  MAX = EquipmentRequest
 };
 
-inline const Payload (&EnumValuesPayload())[28] {
+inline const Payload (&EnumValuesPayload())[31] {
   static const Payload values[] = {
     Payload::NONE,
     Payload::HelloRequest,
@@ -411,13 +465,16 @@ inline const Payload (&EnumValuesPayload())[28] {
     Payload::SimulationControlRequest,
     Payload::MovementIntentRequest,
     Payload::ContinuousIntentRequest,
-    Payload::MovementModeRequest
+    Payload::MovementModeRequest,
+    Payload::InventoryQueryRequest,
+    Payload::InventoryView,
+    Payload::EquipmentRequest
   };
   return values;
 }
 
 inline const char * const *EnumNamesPayload() {
-  static const char * const names[29] = {
+  static const char * const names[32] = {
     "NONE",
     "HelloRequest",
     "HelloResponse",
@@ -446,13 +503,16 @@ inline const char * const *EnumNamesPayload() {
     "MovementIntentRequest",
     "ContinuousIntentRequest",
     "MovementModeRequest",
+    "InventoryQueryRequest",
+    "InventoryView",
+    "EquipmentRequest",
     nullptr
   };
   return names;
 }
 
 inline const char *EnumNamePayload(Payload e) {
-  if (::flatbuffers::IsOutRange(e, Payload::NONE, Payload::MovementModeRequest)) return "";
+  if (::flatbuffers::IsOutRange(e, Payload::NONE, Payload::EquipmentRequest)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesPayload()[index];
 }
@@ -567,6 +627,18 @@ template<> struct PayloadTraits<CDDA::CWM::ContinuousIntentRequest> {
 
 template<> struct PayloadTraits<CDDA::CWM::MovementModeRequest> {
   static const Payload enum_value = Payload::MovementModeRequest;
+};
+
+template<> struct PayloadTraits<CDDA::CWM::InventoryQueryRequest> {
+  static const Payload enum_value = Payload::InventoryQueryRequest;
+};
+
+template<> struct PayloadTraits<CDDA::CWM::InventoryView> {
+  static const Payload enum_value = Payload::InventoryView;
+};
+
+template<> struct PayloadTraits<CDDA::CWM::EquipmentRequest> {
+  static const Payload enum_value = Payload::EquipmentRequest;
 };
 
 bool VerifyPayload(::flatbuffers::Verifier &verifier, const void *obj, Payload type);
@@ -3238,6 +3310,833 @@ inline ::flatbuffers::Offset<MovementModeRequest> CreateMovementModeRequest(
   return builder_.Finish();
 }
 
+struct InventoryQueryRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef InventoryQueryRequestBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_QUERY_ID = 4
+  };
+  uint64_t query_id() const {
+    return GetField<uint64_t>(VT_QUERY_ID, 0);
+  }
+  bool mutate_query_id(uint64_t _query_id = 0) {
+    return SetField<uint64_t>(VT_QUERY_ID, _query_id, 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_QUERY_ID, 8) &&
+           verifier.EndTable();
+  }
+};
+
+struct InventoryQueryRequestBuilder {
+  typedef InventoryQueryRequest Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_query_id(uint64_t query_id) {
+    fbb_.AddElement<uint64_t>(InventoryQueryRequest::VT_QUERY_ID, query_id, 0);
+  }
+  explicit InventoryQueryRequestBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<InventoryQueryRequest> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<InventoryQueryRequest>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<InventoryQueryRequest> CreateInventoryQueryRequest(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t query_id = 0) {
+  InventoryQueryRequestBuilder builder_(_fbb);
+  builder_.add_query_id(query_id);
+  return builder_.Finish();
+}
+
+struct InventoryEntry FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef InventoryEntryBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_ID = 4,
+    VT_PARENT_ID = 6,
+    VT_POCKET_INDEX = 8,
+    VT_TYPE_ID = 10,
+    VT_NAME = 12,
+    VT_CATEGORY = 14,
+    VT_CHARGES = 16,
+    VT_COUNT_BY_CHARGES = 18,
+    VT_WORN = 20,
+    VT_WIELDED = 22,
+    VT_WEIGHT_GRAMS = 24,
+    VT_VOLUME_ML = 26,
+    VT_LENGTH_MM = 28,
+    VT_ACCESS_MOVES = 30,
+    VT_ACTIONS = 32,
+    VT_REASONS = 34
+  };
+  uint32_t id() const {
+    return GetField<uint32_t>(VT_ID, 0);
+  }
+  bool mutate_id(uint32_t _id = 0) {
+    return SetField<uint32_t>(VT_ID, _id, 0);
+  }
+  uint32_t parent_id() const {
+    return GetField<uint32_t>(VT_PARENT_ID, 0);
+  }
+  bool mutate_parent_id(uint32_t _parent_id = 0) {
+    return SetField<uint32_t>(VT_PARENT_ID, _parent_id, 0);
+  }
+  int32_t pocket_index() const {
+    return GetField<int32_t>(VT_POCKET_INDEX, -1);
+  }
+  bool mutate_pocket_index(int32_t _pocket_index = -1) {
+    return SetField<int32_t>(VT_POCKET_INDEX, _pocket_index, -1);
+  }
+  const ::flatbuffers::String *type_id() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_TYPE_ID);
+  }
+  ::flatbuffers::String *mutable_type_id() {
+    return GetPointer<::flatbuffers::String *>(VT_TYPE_ID);
+  }
+  const ::flatbuffers::String *name() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_NAME);
+  }
+  ::flatbuffers::String *mutable_name() {
+    return GetPointer<::flatbuffers::String *>(VT_NAME);
+  }
+  const ::flatbuffers::String *category() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_CATEGORY);
+  }
+  ::flatbuffers::String *mutable_category() {
+    return GetPointer<::flatbuffers::String *>(VT_CATEGORY);
+  }
+  int32_t charges() const {
+    return GetField<int32_t>(VT_CHARGES, 0);
+  }
+  bool mutate_charges(int32_t _charges = 0) {
+    return SetField<int32_t>(VT_CHARGES, _charges, 0);
+  }
+  bool count_by_charges() const {
+    return GetField<uint8_t>(VT_COUNT_BY_CHARGES, 0) != 0;
+  }
+  bool mutate_count_by_charges(bool _count_by_charges = 0) {
+    return SetField<uint8_t>(VT_COUNT_BY_CHARGES, static_cast<uint8_t>(_count_by_charges), 0);
+  }
+  bool worn() const {
+    return GetField<uint8_t>(VT_WORN, 0) != 0;
+  }
+  bool mutate_worn(bool _worn = 0) {
+    return SetField<uint8_t>(VT_WORN, static_cast<uint8_t>(_worn), 0);
+  }
+  bool wielded() const {
+    return GetField<uint8_t>(VT_WIELDED, 0) != 0;
+  }
+  bool mutate_wielded(bool _wielded = 0) {
+    return SetField<uint8_t>(VT_WIELDED, static_cast<uint8_t>(_wielded), 0);
+  }
+  int64_t weight_grams() const {
+    return GetField<int64_t>(VT_WEIGHT_GRAMS, 0);
+  }
+  bool mutate_weight_grams(int64_t _weight_grams = 0) {
+    return SetField<int64_t>(VT_WEIGHT_GRAMS, _weight_grams, 0);
+  }
+  int64_t volume_ml() const {
+    return GetField<int64_t>(VT_VOLUME_ML, 0);
+  }
+  bool mutate_volume_ml(int64_t _volume_ml = 0) {
+    return SetField<int64_t>(VT_VOLUME_ML, _volume_ml, 0);
+  }
+  int64_t length_mm() const {
+    return GetField<int64_t>(VT_LENGTH_MM, 0);
+  }
+  bool mutate_length_mm(int64_t _length_mm = 0) {
+    return SetField<int64_t>(VT_LENGTH_MM, _length_mm, 0);
+  }
+  int32_t access_moves() const {
+    return GetField<int32_t>(VT_ACCESS_MOVES, 0);
+  }
+  bool mutate_access_moves(int32_t _access_moves = 0) {
+    return SetField<int32_t>(VT_ACCESS_MOVES, _access_moves, 0);
+  }
+  uint8_t actions() const {
+    return GetField<uint8_t>(VT_ACTIONS, 0);
+  }
+  bool mutate_actions(uint8_t _actions = 0) {
+    return SetField<uint8_t>(VT_ACTIONS, _actions, 0);
+  }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *reasons() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *>(VT_REASONS);
+  }
+  ::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *mutable_reasons() {
+    return GetPointer<::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *>(VT_REASONS);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_ID, 4) &&
+           VerifyField<uint32_t>(verifier, VT_PARENT_ID, 4) &&
+           VerifyField<int32_t>(verifier, VT_POCKET_INDEX, 4) &&
+           VerifyOffset(verifier, VT_TYPE_ID) &&
+           verifier.VerifyString(type_id()) &&
+           VerifyOffset(verifier, VT_NAME) &&
+           verifier.VerifyString(name()) &&
+           VerifyOffset(verifier, VT_CATEGORY) &&
+           verifier.VerifyString(category()) &&
+           VerifyField<int32_t>(verifier, VT_CHARGES, 4) &&
+           VerifyField<uint8_t>(verifier, VT_COUNT_BY_CHARGES, 1) &&
+           VerifyField<uint8_t>(verifier, VT_WORN, 1) &&
+           VerifyField<uint8_t>(verifier, VT_WIELDED, 1) &&
+           VerifyField<int64_t>(verifier, VT_WEIGHT_GRAMS, 8) &&
+           VerifyField<int64_t>(verifier, VT_VOLUME_ML, 8) &&
+           VerifyField<int64_t>(verifier, VT_LENGTH_MM, 8) &&
+           VerifyField<int32_t>(verifier, VT_ACCESS_MOVES, 4) &&
+           VerifyField<uint8_t>(verifier, VT_ACTIONS, 1) &&
+           VerifyOffset(verifier, VT_REASONS) &&
+           verifier.VerifyVector(reasons()) &&
+           verifier.VerifyVectorOfStrings(reasons()) &&
+           verifier.EndTable();
+  }
+};
+
+struct InventoryEntryBuilder {
+  typedef InventoryEntry Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_id(uint32_t id) {
+    fbb_.AddElement<uint32_t>(InventoryEntry::VT_ID, id, 0);
+  }
+  void add_parent_id(uint32_t parent_id) {
+    fbb_.AddElement<uint32_t>(InventoryEntry::VT_PARENT_ID, parent_id, 0);
+  }
+  void add_pocket_index(int32_t pocket_index) {
+    fbb_.AddElement<int32_t>(InventoryEntry::VT_POCKET_INDEX, pocket_index, -1);
+  }
+  void add_type_id(::flatbuffers::Offset<::flatbuffers::String> type_id) {
+    fbb_.AddOffset(InventoryEntry::VT_TYPE_ID, type_id);
+  }
+  void add_name(::flatbuffers::Offset<::flatbuffers::String> name) {
+    fbb_.AddOffset(InventoryEntry::VT_NAME, name);
+  }
+  void add_category(::flatbuffers::Offset<::flatbuffers::String> category) {
+    fbb_.AddOffset(InventoryEntry::VT_CATEGORY, category);
+  }
+  void add_charges(int32_t charges) {
+    fbb_.AddElement<int32_t>(InventoryEntry::VT_CHARGES, charges, 0);
+  }
+  void add_count_by_charges(bool count_by_charges) {
+    fbb_.AddElement<uint8_t>(InventoryEntry::VT_COUNT_BY_CHARGES, static_cast<uint8_t>(count_by_charges), 0);
+  }
+  void add_worn(bool worn) {
+    fbb_.AddElement<uint8_t>(InventoryEntry::VT_WORN, static_cast<uint8_t>(worn), 0);
+  }
+  void add_wielded(bool wielded) {
+    fbb_.AddElement<uint8_t>(InventoryEntry::VT_WIELDED, static_cast<uint8_t>(wielded), 0);
+  }
+  void add_weight_grams(int64_t weight_grams) {
+    fbb_.AddElement<int64_t>(InventoryEntry::VT_WEIGHT_GRAMS, weight_grams, 0);
+  }
+  void add_volume_ml(int64_t volume_ml) {
+    fbb_.AddElement<int64_t>(InventoryEntry::VT_VOLUME_ML, volume_ml, 0);
+  }
+  void add_length_mm(int64_t length_mm) {
+    fbb_.AddElement<int64_t>(InventoryEntry::VT_LENGTH_MM, length_mm, 0);
+  }
+  void add_access_moves(int32_t access_moves) {
+    fbb_.AddElement<int32_t>(InventoryEntry::VT_ACCESS_MOVES, access_moves, 0);
+  }
+  void add_actions(uint8_t actions) {
+    fbb_.AddElement<uint8_t>(InventoryEntry::VT_ACTIONS, actions, 0);
+  }
+  void add_reasons(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>>> reasons) {
+    fbb_.AddOffset(InventoryEntry::VT_REASONS, reasons);
+  }
+  explicit InventoryEntryBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<InventoryEntry> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<InventoryEntry>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<InventoryEntry> CreateInventoryEntry(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t id = 0,
+    uint32_t parent_id = 0,
+    int32_t pocket_index = -1,
+    ::flatbuffers::Offset<::flatbuffers::String> type_id = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> name = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> category = 0,
+    int32_t charges = 0,
+    bool count_by_charges = false,
+    bool worn = false,
+    bool wielded = false,
+    int64_t weight_grams = 0,
+    int64_t volume_ml = 0,
+    int64_t length_mm = 0,
+    int32_t access_moves = 0,
+    uint8_t actions = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>>> reasons = 0) {
+  InventoryEntryBuilder builder_(_fbb);
+  builder_.add_length_mm(length_mm);
+  builder_.add_volume_ml(volume_ml);
+  builder_.add_weight_grams(weight_grams);
+  builder_.add_reasons(reasons);
+  builder_.add_access_moves(access_moves);
+  builder_.add_charges(charges);
+  builder_.add_category(category);
+  builder_.add_name(name);
+  builder_.add_type_id(type_id);
+  builder_.add_pocket_index(pocket_index);
+  builder_.add_parent_id(parent_id);
+  builder_.add_id(id);
+  builder_.add_actions(actions);
+  builder_.add_wielded(wielded);
+  builder_.add_worn(worn);
+  builder_.add_count_by_charges(count_by_charges);
+  return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<InventoryEntry> CreateInventoryEntryDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t id = 0,
+    uint32_t parent_id = 0,
+    int32_t pocket_index = -1,
+    const char *type_id = nullptr,
+    const char *name = nullptr,
+    const char *category = nullptr,
+    int32_t charges = 0,
+    bool count_by_charges = false,
+    bool worn = false,
+    bool wielded = false,
+    int64_t weight_grams = 0,
+    int64_t volume_ml = 0,
+    int64_t length_mm = 0,
+    int32_t access_moves = 0,
+    uint8_t actions = 0,
+    const std::vector<::flatbuffers::Offset<::flatbuffers::String>> *reasons = nullptr) {
+  auto type_id__ = type_id ? _fbb.CreateString(type_id) : 0;
+  auto name__ = name ? _fbb.CreateString(name) : 0;
+  auto category__ = category ? _fbb.CreateString(category) : 0;
+  auto reasons__ = reasons ? _fbb.CreateVector<::flatbuffers::Offset<::flatbuffers::String>>(*reasons) : 0;
+  return CDDA::CWM::CreateInventoryEntry(
+      _fbb,
+      id,
+      parent_id,
+      pocket_index,
+      type_id__,
+      name__,
+      category__,
+      charges,
+      count_by_charges,
+      worn,
+      wielded,
+      weight_grams,
+      volume_ml,
+      length_mm,
+      access_moves,
+      actions,
+      reasons__);
+}
+
+struct InventoryPocket FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef InventoryPocketBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_OWNER_ID = 4,
+    VT_INDEX = 6,
+    VT_NAME = 8,
+    VT_CAPACITY_ML = 10,
+    VT_REMAINING_ML = 12,
+    VT_CAPACITY_GRAMS = 14,
+    VT_REMAINING_GRAMS = 16,
+    VT_MAX_LENGTH_MM = 18,
+    VT_ACCESS_MOVES = 20,
+    VT_SEALED = 22,
+    VT_RIGID = 24,
+    VT_WATERTIGHT = 26
+  };
+  uint32_t owner_id() const {
+    return GetField<uint32_t>(VT_OWNER_ID, 0);
+  }
+  bool mutate_owner_id(uint32_t _owner_id = 0) {
+    return SetField<uint32_t>(VT_OWNER_ID, _owner_id, 0);
+  }
+  uint32_t index() const {
+    return GetField<uint32_t>(VT_INDEX, 0);
+  }
+  bool mutate_index(uint32_t _index = 0) {
+    return SetField<uint32_t>(VT_INDEX, _index, 0);
+  }
+  const ::flatbuffers::String *name() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_NAME);
+  }
+  ::flatbuffers::String *mutable_name() {
+    return GetPointer<::flatbuffers::String *>(VT_NAME);
+  }
+  int64_t capacity_ml() const {
+    return GetField<int64_t>(VT_CAPACITY_ML, 0);
+  }
+  bool mutate_capacity_ml(int64_t _capacity_ml = 0) {
+    return SetField<int64_t>(VT_CAPACITY_ML, _capacity_ml, 0);
+  }
+  int64_t remaining_ml() const {
+    return GetField<int64_t>(VT_REMAINING_ML, 0);
+  }
+  bool mutate_remaining_ml(int64_t _remaining_ml = 0) {
+    return SetField<int64_t>(VT_REMAINING_ML, _remaining_ml, 0);
+  }
+  int64_t capacity_grams() const {
+    return GetField<int64_t>(VT_CAPACITY_GRAMS, 0);
+  }
+  bool mutate_capacity_grams(int64_t _capacity_grams = 0) {
+    return SetField<int64_t>(VT_CAPACITY_GRAMS, _capacity_grams, 0);
+  }
+  int64_t remaining_grams() const {
+    return GetField<int64_t>(VT_REMAINING_GRAMS, 0);
+  }
+  bool mutate_remaining_grams(int64_t _remaining_grams = 0) {
+    return SetField<int64_t>(VT_REMAINING_GRAMS, _remaining_grams, 0);
+  }
+  int64_t max_length_mm() const {
+    return GetField<int64_t>(VT_MAX_LENGTH_MM, 0);
+  }
+  bool mutate_max_length_mm(int64_t _max_length_mm = 0) {
+    return SetField<int64_t>(VT_MAX_LENGTH_MM, _max_length_mm, 0);
+  }
+  int32_t access_moves() const {
+    return GetField<int32_t>(VT_ACCESS_MOVES, 0);
+  }
+  bool mutate_access_moves(int32_t _access_moves = 0) {
+    return SetField<int32_t>(VT_ACCESS_MOVES, _access_moves, 0);
+  }
+  bool sealed() const {
+    return GetField<uint8_t>(VT_SEALED, 0) != 0;
+  }
+  bool mutate_sealed(bool _sealed = 0) {
+    return SetField<uint8_t>(VT_SEALED, static_cast<uint8_t>(_sealed), 0);
+  }
+  bool rigid() const {
+    return GetField<uint8_t>(VT_RIGID, 0) != 0;
+  }
+  bool mutate_rigid(bool _rigid = 0) {
+    return SetField<uint8_t>(VT_RIGID, static_cast<uint8_t>(_rigid), 0);
+  }
+  bool watertight() const {
+    return GetField<uint8_t>(VT_WATERTIGHT, 0) != 0;
+  }
+  bool mutate_watertight(bool _watertight = 0) {
+    return SetField<uint8_t>(VT_WATERTIGHT, static_cast<uint8_t>(_watertight), 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_OWNER_ID, 4) &&
+           VerifyField<uint32_t>(verifier, VT_INDEX, 4) &&
+           VerifyOffset(verifier, VT_NAME) &&
+           verifier.VerifyString(name()) &&
+           VerifyField<int64_t>(verifier, VT_CAPACITY_ML, 8) &&
+           VerifyField<int64_t>(verifier, VT_REMAINING_ML, 8) &&
+           VerifyField<int64_t>(verifier, VT_CAPACITY_GRAMS, 8) &&
+           VerifyField<int64_t>(verifier, VT_REMAINING_GRAMS, 8) &&
+           VerifyField<int64_t>(verifier, VT_MAX_LENGTH_MM, 8) &&
+           VerifyField<int32_t>(verifier, VT_ACCESS_MOVES, 4) &&
+           VerifyField<uint8_t>(verifier, VT_SEALED, 1) &&
+           VerifyField<uint8_t>(verifier, VT_RIGID, 1) &&
+           VerifyField<uint8_t>(verifier, VT_WATERTIGHT, 1) &&
+           verifier.EndTable();
+  }
+};
+
+struct InventoryPocketBuilder {
+  typedef InventoryPocket Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_owner_id(uint32_t owner_id) {
+    fbb_.AddElement<uint32_t>(InventoryPocket::VT_OWNER_ID, owner_id, 0);
+  }
+  void add_index(uint32_t index) {
+    fbb_.AddElement<uint32_t>(InventoryPocket::VT_INDEX, index, 0);
+  }
+  void add_name(::flatbuffers::Offset<::flatbuffers::String> name) {
+    fbb_.AddOffset(InventoryPocket::VT_NAME, name);
+  }
+  void add_capacity_ml(int64_t capacity_ml) {
+    fbb_.AddElement<int64_t>(InventoryPocket::VT_CAPACITY_ML, capacity_ml, 0);
+  }
+  void add_remaining_ml(int64_t remaining_ml) {
+    fbb_.AddElement<int64_t>(InventoryPocket::VT_REMAINING_ML, remaining_ml, 0);
+  }
+  void add_capacity_grams(int64_t capacity_grams) {
+    fbb_.AddElement<int64_t>(InventoryPocket::VT_CAPACITY_GRAMS, capacity_grams, 0);
+  }
+  void add_remaining_grams(int64_t remaining_grams) {
+    fbb_.AddElement<int64_t>(InventoryPocket::VT_REMAINING_GRAMS, remaining_grams, 0);
+  }
+  void add_max_length_mm(int64_t max_length_mm) {
+    fbb_.AddElement<int64_t>(InventoryPocket::VT_MAX_LENGTH_MM, max_length_mm, 0);
+  }
+  void add_access_moves(int32_t access_moves) {
+    fbb_.AddElement<int32_t>(InventoryPocket::VT_ACCESS_MOVES, access_moves, 0);
+  }
+  void add_sealed(bool sealed) {
+    fbb_.AddElement<uint8_t>(InventoryPocket::VT_SEALED, static_cast<uint8_t>(sealed), 0);
+  }
+  void add_rigid(bool rigid) {
+    fbb_.AddElement<uint8_t>(InventoryPocket::VT_RIGID, static_cast<uint8_t>(rigid), 0);
+  }
+  void add_watertight(bool watertight) {
+    fbb_.AddElement<uint8_t>(InventoryPocket::VT_WATERTIGHT, static_cast<uint8_t>(watertight), 0);
+  }
+  explicit InventoryPocketBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<InventoryPocket> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<InventoryPocket>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<InventoryPocket> CreateInventoryPocket(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t owner_id = 0,
+    uint32_t index = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> name = 0,
+    int64_t capacity_ml = 0,
+    int64_t remaining_ml = 0,
+    int64_t capacity_grams = 0,
+    int64_t remaining_grams = 0,
+    int64_t max_length_mm = 0,
+    int32_t access_moves = 0,
+    bool sealed = false,
+    bool rigid = false,
+    bool watertight = false) {
+  InventoryPocketBuilder builder_(_fbb);
+  builder_.add_max_length_mm(max_length_mm);
+  builder_.add_remaining_grams(remaining_grams);
+  builder_.add_capacity_grams(capacity_grams);
+  builder_.add_remaining_ml(remaining_ml);
+  builder_.add_capacity_ml(capacity_ml);
+  builder_.add_access_moves(access_moves);
+  builder_.add_name(name);
+  builder_.add_index(index);
+  builder_.add_owner_id(owner_id);
+  builder_.add_watertight(watertight);
+  builder_.add_rigid(rigid);
+  builder_.add_sealed(sealed);
+  return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<InventoryPocket> CreateInventoryPocketDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t owner_id = 0,
+    uint32_t index = 0,
+    const char *name = nullptr,
+    int64_t capacity_ml = 0,
+    int64_t remaining_ml = 0,
+    int64_t capacity_grams = 0,
+    int64_t remaining_grams = 0,
+    int64_t max_length_mm = 0,
+    int32_t access_moves = 0,
+    bool sealed = false,
+    bool rigid = false,
+    bool watertight = false) {
+  auto name__ = name ? _fbb.CreateString(name) : 0;
+  return CDDA::CWM::CreateInventoryPocket(
+      _fbb,
+      owner_id,
+      index,
+      name__,
+      capacity_ml,
+      remaining_ml,
+      capacity_grams,
+      remaining_grams,
+      max_length_mm,
+      access_moves,
+      sealed,
+      rigid,
+      watertight);
+}
+
+struct InventoryView FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef InventoryViewBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_QUERY_ID = 4,
+    VT_VIEW_ID = 6,
+    VT_ENTRIES = 8,
+    VT_POCKETS = 10,
+    VT_TRUNCATED = 12,
+    VT_ERROR = 14,
+    VT_WEIGHT_GRAMS = 16,
+    VT_WEIGHT_CAPACITY_GRAMS = 18,
+    VT_VOLUME_ML = 20,
+    VT_VOLUME_CAPACITY_ML = 22
+  };
+  uint64_t query_id() const {
+    return GetField<uint64_t>(VT_QUERY_ID, 0);
+  }
+  bool mutate_query_id(uint64_t _query_id = 0) {
+    return SetField<uint64_t>(VT_QUERY_ID, _query_id, 0);
+  }
+  uint64_t view_id() const {
+    return GetField<uint64_t>(VT_VIEW_ID, 0);
+  }
+  bool mutate_view_id(uint64_t _view_id = 0) {
+    return SetField<uint64_t>(VT_VIEW_ID, _view_id, 0);
+  }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::InventoryEntry>> *entries() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::InventoryEntry>> *>(VT_ENTRIES);
+  }
+  ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::InventoryEntry>> *mutable_entries() {
+    return GetPointer<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::InventoryEntry>> *>(VT_ENTRIES);
+  }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::InventoryPocket>> *pockets() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::InventoryPocket>> *>(VT_POCKETS);
+  }
+  ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::InventoryPocket>> *mutable_pockets() {
+    return GetPointer<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::InventoryPocket>> *>(VT_POCKETS);
+  }
+  bool truncated() const {
+    return GetField<uint8_t>(VT_TRUNCATED, 0) != 0;
+  }
+  bool mutate_truncated(bool _truncated = 0) {
+    return SetField<uint8_t>(VT_TRUNCATED, static_cast<uint8_t>(_truncated), 0);
+  }
+  const ::flatbuffers::String *error() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_ERROR);
+  }
+  ::flatbuffers::String *mutable_error() {
+    return GetPointer<::flatbuffers::String *>(VT_ERROR);
+  }
+  int64_t weight_grams() const {
+    return GetField<int64_t>(VT_WEIGHT_GRAMS, 0);
+  }
+  bool mutate_weight_grams(int64_t _weight_grams = 0) {
+    return SetField<int64_t>(VT_WEIGHT_GRAMS, _weight_grams, 0);
+  }
+  int64_t weight_capacity_grams() const {
+    return GetField<int64_t>(VT_WEIGHT_CAPACITY_GRAMS, 0);
+  }
+  bool mutate_weight_capacity_grams(int64_t _weight_capacity_grams = 0) {
+    return SetField<int64_t>(VT_WEIGHT_CAPACITY_GRAMS, _weight_capacity_grams, 0);
+  }
+  int64_t volume_ml() const {
+    return GetField<int64_t>(VT_VOLUME_ML, 0);
+  }
+  bool mutate_volume_ml(int64_t _volume_ml = 0) {
+    return SetField<int64_t>(VT_VOLUME_ML, _volume_ml, 0);
+  }
+  int64_t volume_capacity_ml() const {
+    return GetField<int64_t>(VT_VOLUME_CAPACITY_ML, 0);
+  }
+  bool mutate_volume_capacity_ml(int64_t _volume_capacity_ml = 0) {
+    return SetField<int64_t>(VT_VOLUME_CAPACITY_ML, _volume_capacity_ml, 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_QUERY_ID, 8) &&
+           VerifyField<uint64_t>(verifier, VT_VIEW_ID, 8) &&
+           VerifyOffset(verifier, VT_ENTRIES) &&
+           verifier.VerifyVector(entries()) &&
+           verifier.VerifyVectorOfTables(entries()) &&
+           VerifyOffset(verifier, VT_POCKETS) &&
+           verifier.VerifyVector(pockets()) &&
+           verifier.VerifyVectorOfTables(pockets()) &&
+           VerifyField<uint8_t>(verifier, VT_TRUNCATED, 1) &&
+           VerifyOffset(verifier, VT_ERROR) &&
+           verifier.VerifyString(error()) &&
+           VerifyField<int64_t>(verifier, VT_WEIGHT_GRAMS, 8) &&
+           VerifyField<int64_t>(verifier, VT_WEIGHT_CAPACITY_GRAMS, 8) &&
+           VerifyField<int64_t>(verifier, VT_VOLUME_ML, 8) &&
+           VerifyField<int64_t>(verifier, VT_VOLUME_CAPACITY_ML, 8) &&
+           verifier.EndTable();
+  }
+};
+
+struct InventoryViewBuilder {
+  typedef InventoryView Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_query_id(uint64_t query_id) {
+    fbb_.AddElement<uint64_t>(InventoryView::VT_QUERY_ID, query_id, 0);
+  }
+  void add_view_id(uint64_t view_id) {
+    fbb_.AddElement<uint64_t>(InventoryView::VT_VIEW_ID, view_id, 0);
+  }
+  void add_entries(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::InventoryEntry>>> entries) {
+    fbb_.AddOffset(InventoryView::VT_ENTRIES, entries);
+  }
+  void add_pockets(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::InventoryPocket>>> pockets) {
+    fbb_.AddOffset(InventoryView::VT_POCKETS, pockets);
+  }
+  void add_truncated(bool truncated) {
+    fbb_.AddElement<uint8_t>(InventoryView::VT_TRUNCATED, static_cast<uint8_t>(truncated), 0);
+  }
+  void add_error(::flatbuffers::Offset<::flatbuffers::String> error) {
+    fbb_.AddOffset(InventoryView::VT_ERROR, error);
+  }
+  void add_weight_grams(int64_t weight_grams) {
+    fbb_.AddElement<int64_t>(InventoryView::VT_WEIGHT_GRAMS, weight_grams, 0);
+  }
+  void add_weight_capacity_grams(int64_t weight_capacity_grams) {
+    fbb_.AddElement<int64_t>(InventoryView::VT_WEIGHT_CAPACITY_GRAMS, weight_capacity_grams, 0);
+  }
+  void add_volume_ml(int64_t volume_ml) {
+    fbb_.AddElement<int64_t>(InventoryView::VT_VOLUME_ML, volume_ml, 0);
+  }
+  void add_volume_capacity_ml(int64_t volume_capacity_ml) {
+    fbb_.AddElement<int64_t>(InventoryView::VT_VOLUME_CAPACITY_ML, volume_capacity_ml, 0);
+  }
+  explicit InventoryViewBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<InventoryView> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<InventoryView>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<InventoryView> CreateInventoryView(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t query_id = 0,
+    uint64_t view_id = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::InventoryEntry>>> entries = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::InventoryPocket>>> pockets = 0,
+    bool truncated = false,
+    ::flatbuffers::Offset<::flatbuffers::String> error = 0,
+    int64_t weight_grams = 0,
+    int64_t weight_capacity_grams = 0,
+    int64_t volume_ml = 0,
+    int64_t volume_capacity_ml = 0) {
+  InventoryViewBuilder builder_(_fbb);
+  builder_.add_volume_capacity_ml(volume_capacity_ml);
+  builder_.add_volume_ml(volume_ml);
+  builder_.add_weight_capacity_grams(weight_capacity_grams);
+  builder_.add_weight_grams(weight_grams);
+  builder_.add_view_id(view_id);
+  builder_.add_query_id(query_id);
+  builder_.add_error(error);
+  builder_.add_pockets(pockets);
+  builder_.add_entries(entries);
+  builder_.add_truncated(truncated);
+  return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<InventoryView> CreateInventoryViewDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t query_id = 0,
+    uint64_t view_id = 0,
+    const std::vector<::flatbuffers::Offset<CDDA::CWM::InventoryEntry>> *entries = nullptr,
+    const std::vector<::flatbuffers::Offset<CDDA::CWM::InventoryPocket>> *pockets = nullptr,
+    bool truncated = false,
+    const char *error = nullptr,
+    int64_t weight_grams = 0,
+    int64_t weight_capacity_grams = 0,
+    int64_t volume_ml = 0,
+    int64_t volume_capacity_ml = 0) {
+  auto entries__ = entries ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::InventoryEntry>>(*entries) : 0;
+  auto pockets__ = pockets ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::InventoryPocket>>(*pockets) : 0;
+  auto error__ = error ? _fbb.CreateString(error) : 0;
+  return CDDA::CWM::CreateInventoryView(
+      _fbb,
+      query_id,
+      view_id,
+      entries__,
+      pockets__,
+      truncated,
+      error__,
+      weight_grams,
+      weight_capacity_grams,
+      volume_ml,
+      volume_capacity_ml);
+}
+
+struct EquipmentRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef EquipmentRequestBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_COMMAND_ID = 4,
+    VT_VIEW_ID = 6,
+    VT_ITEM_ID = 8,
+    VT_ACTION = 10
+  };
+  uint64_t command_id() const {
+    return GetField<uint64_t>(VT_COMMAND_ID, 0);
+  }
+  bool mutate_command_id(uint64_t _command_id = 0) {
+    return SetField<uint64_t>(VT_COMMAND_ID, _command_id, 0);
+  }
+  uint64_t view_id() const {
+    return GetField<uint64_t>(VT_VIEW_ID, 0);
+  }
+  bool mutate_view_id(uint64_t _view_id = 0) {
+    return SetField<uint64_t>(VT_VIEW_ID, _view_id, 0);
+  }
+  uint32_t item_id() const {
+    return GetField<uint32_t>(VT_ITEM_ID, 0);
+  }
+  bool mutate_item_id(uint32_t _item_id = 0) {
+    return SetField<uint32_t>(VT_ITEM_ID, _item_id, 0);
+  }
+  CDDA::CWM::EquipmentAction action() const {
+    return static_cast<CDDA::CWM::EquipmentAction>(GetField<int8_t>(VT_ACTION, 0));
+  }
+  bool mutate_action(CDDA::CWM::EquipmentAction _action = static_cast<CDDA::CWM::EquipmentAction>(0)) {
+    return SetField<int8_t>(VT_ACTION, static_cast<int8_t>(_action), 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_COMMAND_ID, 8) &&
+           VerifyField<uint64_t>(verifier, VT_VIEW_ID, 8) &&
+           VerifyField<uint32_t>(verifier, VT_ITEM_ID, 4) &&
+           VerifyField<int8_t>(verifier, VT_ACTION, 1) &&
+           verifier.EndTable();
+  }
+};
+
+struct EquipmentRequestBuilder {
+  typedef EquipmentRequest Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_command_id(uint64_t command_id) {
+    fbb_.AddElement<uint64_t>(EquipmentRequest::VT_COMMAND_ID, command_id, 0);
+  }
+  void add_view_id(uint64_t view_id) {
+    fbb_.AddElement<uint64_t>(EquipmentRequest::VT_VIEW_ID, view_id, 0);
+  }
+  void add_item_id(uint32_t item_id) {
+    fbb_.AddElement<uint32_t>(EquipmentRequest::VT_ITEM_ID, item_id, 0);
+  }
+  void add_action(CDDA::CWM::EquipmentAction action) {
+    fbb_.AddElement<int8_t>(EquipmentRequest::VT_ACTION, static_cast<int8_t>(action), 0);
+  }
+  explicit EquipmentRequestBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<EquipmentRequest> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<EquipmentRequest>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<EquipmentRequest> CreateEquipmentRequest(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t command_id = 0,
+    uint64_t view_id = 0,
+    uint32_t item_id = 0,
+    CDDA::CWM::EquipmentAction action = CDDA::CWM::EquipmentAction::WIELD) {
+  EquipmentRequestBuilder builder_(_fbb);
+  builder_.add_view_id(view_id);
+  builder_.add_command_id(command_id);
+  builder_.add_item_id(item_id);
+  builder_.add_action(action);
+  return builder_.Finish();
+}
+
 struct AttackRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef AttackRequestBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
@@ -3915,6 +4814,15 @@ struct CwmMessage FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const CDDA::CWM::MovementModeRequest *payload_as_MovementModeRequest() const {
     return payload_type() == CDDA::CWM::Payload::MovementModeRequest ? static_cast<const CDDA::CWM::MovementModeRequest *>(payload()) : nullptr;
   }
+  const CDDA::CWM::InventoryQueryRequest *payload_as_InventoryQueryRequest() const {
+    return payload_type() == CDDA::CWM::Payload::InventoryQueryRequest ? static_cast<const CDDA::CWM::InventoryQueryRequest *>(payload()) : nullptr;
+  }
+  const CDDA::CWM::InventoryView *payload_as_InventoryView() const {
+    return payload_type() == CDDA::CWM::Payload::InventoryView ? static_cast<const CDDA::CWM::InventoryView *>(payload()) : nullptr;
+  }
+  const CDDA::CWM::EquipmentRequest *payload_as_EquipmentRequest() const {
+    return payload_type() == CDDA::CWM::Payload::EquipmentRequest ? static_cast<const CDDA::CWM::EquipmentRequest *>(payload()) : nullptr;
+  }
   void *mutable_payload() {
     return GetPointer<void *>(VT_PAYLOAD);
   }
@@ -4057,6 +4965,18 @@ template<> inline const CDDA::CWM::ContinuousIntentRequest *CwmMessage::payload_
 
 template<> inline const CDDA::CWM::MovementModeRequest *CwmMessage::payload_as<CDDA::CWM::MovementModeRequest>() const {
   return payload_as_MovementModeRequest();
+}
+
+template<> inline const CDDA::CWM::InventoryQueryRequest *CwmMessage::payload_as<CDDA::CWM::InventoryQueryRequest>() const {
+  return payload_as_InventoryQueryRequest();
+}
+
+template<> inline const CDDA::CWM::InventoryView *CwmMessage::payload_as<CDDA::CWM::InventoryView>() const {
+  return payload_as_InventoryView();
+}
+
+template<> inline const CDDA::CWM::EquipmentRequest *CwmMessage::payload_as<CDDA::CWM::EquipmentRequest>() const {
+  return payload_as_EquipmentRequest();
 }
 
 struct CwmMessageBuilder {
@@ -4231,6 +5151,18 @@ inline bool VerifyPayload(::flatbuffers::Verifier &verifier, const void *obj, Pa
     }
     case Payload::MovementModeRequest: {
       auto ptr = reinterpret_cast<const CDDA::CWM::MovementModeRequest *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::InventoryQueryRequest: {
+      auto ptr = reinterpret_cast<const CDDA::CWM::InventoryQueryRequest *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::InventoryView: {
+      auto ptr = reinterpret_cast<const CDDA::CWM::InventoryView *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::EquipmentRequest: {
+      auto ptr = reinterpret_cast<const CDDA::CWM::EquipmentRequest *>(obj);
       return verifier.VerifyTable(ptr);
     }
     default: return true;

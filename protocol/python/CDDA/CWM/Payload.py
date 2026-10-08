@@ -31,3 +31,6 @@ class Payload(object):
     MovementIntentRequest = 25
     ContinuousIntentRequest = 26
     MovementModeRequest = 27
+    InventoryQueryRequest = 28
+    InventoryView = 29
+    EquipmentRequest = 30

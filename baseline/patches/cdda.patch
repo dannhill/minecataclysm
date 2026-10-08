@@ -793,6 +793,161 @@ index 09a7711..9b0c484 100644
      } catch( const std::exception &err ) {
          DebugLog( D_ERROR, DC_ALL ) << "Terminated:\n" << err.what();
          DebugLog( D_INFO, DC_ALL ) <<
+diff --git a/src/cwm/cwm_inventory.h b/src/cwm/cwm_inventory.h
+new file mode 100644
+index 0000000..65281a3
+--- /dev/null
++++ b/src/cwm/cwm_inventory.h
+@@ -0,0 +1,149 @@
++#pragma once
++#include <algorithm>
++#include <array>
++#include <map>
++#include <vector>
++#include <string>
++#include "avatar.h"
++#include "item.h"
++#include "item_category.h"
++#include "item_location.h"
++#include "item_pocket.h"
++#include "units.h"
++#include "visitable.h"
++#include "cwm/cwm_protocol.hpp"
++
++namespace cwm {
++// Bounded, ephemeral selection view. Native safe item_locations retain identity;
++// no item UUID, inventory authority or persistence field is invented for the UI.
++class InventorySelection {
++    struct Binding {
++        item_location location;
++        std::vector<item*> parents;
++        std::string type;
++        int charges;
++        bool counted, worn, wielded;
++    };
++    uint64_t next_view_{1}, view_{0};
++    std::vector<Binding> bindings_;
++public:
++    void clear() { view_ = 0; bindings_.clear(); }
++    uint64_t view_id() const { return view_; }
++    size_t size() const { return bindings_.size(); }
++    static std::string access_error(item_location location) {
++        for (int depth = 0; location.has_parent(); ++depth) {
++            if (depth >= 32) return "Contenitore troppo annidato per questa interfaccia.";
++            const auto* pocket = location.parent_pocket();
++            if (!pocket || !pocket->is_type(pocket_type::CONTAINER))
++                return "Contenuto tecnico: serve l'interazione nativa dedicata.";
++            if (pocket->sealed()) return "Tasca sigillata: apertura non ancora disponibile qui.";
++            location = location.parent_item();
++        }
++        return {};
++    }
++    static std::string action_error(avatar& u, item_location location, int action) {
++        if (!location || !location.held_by(u) || !u.has_item(*location))
++            return "Oggetto non piu posseduto.";
++        if (action < 0 || action > 3) return "Azione equipaggiamento non supportata.";
++        if (u.activity) return "Attendi la conclusione dell'attivita nativa.";
++        const auto access = access_error(location);
++        if (!access.empty()) return access;
++        const bool worn = u.is_worn(*location), wielded = u.is_wielding(*location);
++        if (action == 0) {
++            if (wielded) return "Oggetto gia impugnato.";
++            if (worn) { const auto result = u.can_takeoff(*location); if (!result.success()) return result.str(); }
++            const auto weapon = u.get_wielded_item();
++            if (weapon && weapon->has_item(*location)) return "Riponi prima il contenitore impugnato.";
++            const auto result = u.can_wield(*location);
++            if (!result.success()) return result.str();
++        } else if (action == 1) {
++            if (!wielded) return "Seleziona l'oggetto impugnato.";
++            const auto result = u.can_unwield(*location);
++            if (!result.success()) return result.str();
++        } else if (action == 2) {
++            if (worn) return "Oggetto gia indossato.";
++            const auto result = u.can_wear(*location);
++            if (!result.success()) return result.str();
++        } else {
++            const auto result = u.can_takeoff(*location);
++            if (!result.success()) return result.str();
++        }
++        if ((action == 0 || action == 2) && location->will_spill() && !location->is_container_empty())
++            return "Contenitore aperto pieno: gestione dei liquidi richiesta.";
++        return {};
++    }
++    std::string validate(avatar& u, uint64_t view, uint32_t id, int action) const {
++        if (!view || view != view_ || !id || id > bindings_.size()) return "Selezione inventario scaduta: riapri l'inventario.";
++        const auto& selected = bindings_[id - 1];
++        const auto& location = selected.location;
++        if (!location || !location.held_by(u) || !u.has_item(*location) ||
++            u.parents(*location) != selected.parents || location->typeId().str() != selected.type ||
++            location->charges != selected.charges || location->count_by_charges() != selected.counted ||
++            u.is_worn(*location) != selected.worn || u.is_wielding(*location) != selected.wielded)
++            return "Oggetto o tasca cambiati: riapri l'inventario.";
++        return action_error(u, location, action);
++    }
++    item_location target(uint32_t id) const { return bindings_.at(id - 1).location; }
++    std::vector<uint8_t> query(avatar& u, uint64_t query_id, cdda::cwm::MessageBuilder& wire,
++                              const std::string& error = {}) {
++        auto& fbb = wire.builder();
++        std::vector<flatbuffers::Offset<CDDA::CWM::InventoryEntry>> entries;
++        std::vector<flatbuffers::Offset<CDDA::CWM::InventoryPocket>> pockets;
++        bool truncated = false;
++        if (error.empty()) {
++            clear(); view_ = next_view_++;
++            std::map<item*, uint32_t> ids;
++            u.visit_items([&](item* it, item* parent) {
++                if (entries.size() >= 2048) { truncated = true; return VisitResponse::ABORT; }
++                const auto ancestors = u.parents(*it);
++                if (ancestors.size() > 32 || (parent && !ids.count(parent))) {
++                    truncated = true; return VisitResponse::SKIP;
++                }
++                const uint32_t id = entries.size() + 1, parent_id = parent ? ids.at(parent) : 0;
++                item_location location = parent ? item_location(bindings_[parent_id - 1].location, it) : item_location(u, it);
++                const bool worn = u.is_worn(*it), wielded = u.is_wielding(*it);
++                int pocket_index = -1;
++                if (parent) {
++                    const auto parent_pockets = parent->get_all_contained_pockets();
++                    for (size_t i = 0; i < parent_pockets.size(); ++i)
++                        if (parent_pockets[i] == location.parent_pocket()) pocket_index = i;
++                }
++                uint8_t actions = 0;
++                std::vector<flatbuffers::Offset<flatbuffers::String>> reasons;
++                for (int action = 0; action < 4; ++action) {
++                    const auto reason = action_error(u, location, action);
++                    if (reason.empty()) actions |= 1 << action;
++                    reasons.push_back(fbb.CreateString(reason));
++                }
++                const int access = access_error(location).empty() ? std::max(0, location.obtain_cost(u)) : 0;
++                entries.push_back(CDDA::CWM::CreateInventoryEntryDirect(fbb, id, parent_id, pocket_index,
++                    it->typeId().str().c_str(), it->tname().c_str(), it->get_category_shallow().name().c_str(),
++                    it->charges, it->count_by_charges(), worn, wielded,
++                    units::to_gram<int64_t>(it->weight()), units::to_milliliter<int64_t>(it->volume()),
++                    units::to_millimeter<int64_t>(it->length()), access, actions, &reasons));
++                bindings_.push_back({location, ancestors, it->typeId().str(), it->charges,
++                                     it->count_by_charges(), worn, wielded});
++                ids[it] = id;
++                const auto own_pockets = it->get_all_contained_pockets();
++                for (size_t i = 0; i < own_pockets.size(); ++i) {
++                    if (pockets.size() >= 8192) { truncated = true; return VisitResponse::SKIP; }
++                    const auto* p = own_pockets[i];
++                    pockets.push_back(CDDA::CWM::CreateInventoryPocketDirect(fbb, id, i,
++                        p->get_name().translated().c_str(), units::to_milliliter<int64_t>(p->max_contains_volume()),
++                        units::to_milliliter<int64_t>(p->remaining_volume()),
++                        units::to_gram<int64_t>(p->get_pocket_data()->max_contains_weight),
++                        units::to_gram<int64_t>(p->remaining_weight()),
++                        units::to_millimeter<int64_t>(p->max_containable_length()),
++                        std::max(0, p->moves()), p->sealed(), p->rigid(), p->watertight()));
++                }
++                return VisitResponse::NEXT;
++            });
++        }
++        const auto result = CDDA::CWM::CreateInventoryViewDirect(fbb, query_id, error.empty() ? view_ : 0,
++            &entries, &pockets, truncated, error.c_str(), units::to_gram<int64_t>(u.weight_carried()),
++            units::to_gram<int64_t>(u.weight_capacity()), units::to_milliliter<int64_t>(u.volume_carried()),
++            units::to_milliliter<int64_t>(u.volume_capacity()));
++        return wire.finish_message(CDDA::CWM::Payload::InventoryView, result.Union());
++    }
++};
++} // namespace cwm
 diff --git a/src/cwm/cwm_main.cpp b/src/cwm/cwm_main.cpp
 new file mode 100644
 index 0000000..1a0308e
@@ -1880,10 +2035,10 @@ index 0000000..6463f0e
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..d8633c7
+index 0000000..869d852
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,746 @@
+@@ -0,0 +1,783 @@
 +#include "cwm_motion.h"
 +// CDDA CWM IPC Server Implementation
 +// Licensed under Apache-2.0
@@ -1970,6 +2125,7 @@ index 0000000..d8633c7
 +}
 +
 +void CwmServer::cancel_connection() {
++    inventory_selection_.clear();
 +    held_direction_ = 0; intent_x_ = intent_y_ = 0; menu_pause_ = false;
 +    motion_sample_ = clock_.elapsed();
 +    for (const auto& command : commands_)
@@ -2001,6 +2157,7 @@ index 0000000..d8633c7
 +}
 +
 +void CwmServer::reset_world(avatar& u, map& m, game& g, uint64_t request_id) {
++    inventory_selection_.clear();
 +    if (realtime_) drop_realtime_input(u, m, g);
 +    resync_id_ = request_id;
 +    ready_ = false;
@@ -2303,7 +2460,24 @@ index 0000000..d8633c7
 +bool CwmServer::execute(const Command& command, avatar& u, map& m, game& g) {
 +    const int before_moves = u.moves;
 +    bool accepted = false;
-+    if (command.movement_mode >= 0) {
++    if (command.equipment_action >= 0) {
++        auto error = inventory_selection_.validate(u, command.inventory_view,
++            command.inventory_item, command.equipment_action);
++        if (realtime_ && pause_reasons(g)) error = "Simulation is paused";
++        if (!error.empty()) { result_ = Result{command.id, false, error}; return false; }
++        auto location = inventory_selection_.target(command.inventory_item);
++        inventory_selection_.clear(); // Invalidate every sibling handle before native mutation/choice.
++        switch (command.equipment_action) {
++            case 0: accepted = u.wield(location); break;
++            case 1: accepted = u.unwield(); break;
++            case 2: accepted = bool(u.wear(location)); break;
++            case 3: accepted = u.takeoff(location.obtain(u)); break;
++        }
++        const bool acted = accepted || u.moves != before_moves;
++        if (acted) ++world_revision_;
++        result_ = Result{command.id, accepted, accepted ? "" : "Azione nativa annullata o non riuscita."};
++        return acted; // Native action debt/turns, never a Luanti inventory mutation.
++    } else if (command.movement_mode >= 0) {
 +        if (!valid_mode(command.movement_mode) || (realtime_ && pause_reasons(g))) {
 +            result_ = Result{command.id, false, "Movement mode unavailable"};
 +            return false;
@@ -2449,6 +2623,16 @@ index 0000000..d8633c7
 +    if (pending_decision_ && msg->payload_type() != Payload::SimulationControlRequest &&
 +        msg->payload_type() != Payload::MovementIntentRequest &&
 +        msg->payload_type() != Payload::ContinuousIntentRequest) return;
++    if (const auto* request = msg->payload_as_InventoryQueryRequest()) {
++        if (!request->query_id()) { server_->client()->close(); return; }
++        const auto now = std::chrono::steady_clock::now();
++        cdda::cwm::MessageBuilder reply(sequence_counter_, world_revision_, identity_);
++        const bool throttled = now < next_inventory_query_;
++        if (!throttled) next_inventory_query_ = now + std::chrono::milliseconds(100);
++        emit(inventory_selection_.query(u, request->query_id(), reply,
++            throttled ? "Attendi un istante prima di aggiornare l'inventario." : ""));
++        return; // No command ledger, move cost, calendar change or input action.
++    }
 +    uint64_t id = 0;
 +    std::string signature;
 +    if (const auto* request = msg->payload_as_MoveRequest()) {
@@ -2464,6 +2648,9 @@ index 0000000..d8633c7
 +                ":" + std::to_string(request->pickup_charges()) +
 +                ":" + std::to_string(request->pickup_count_by_charges());
 +        }
++    } else if (const auto* request = msg->payload_as_EquipmentRequest()) {
++        id = request->command_id(); signature = "equipment:" + std::to_string(request->view_id()) +
++            ":" + std::to_string(request->item_id()) + ":" + std::to_string(int(request->action()));
 +    } else if (const auto* request = msg->payload_as_MovementModeRequest()) {
 +        id = request->command_id(); signature = "mode:" + std::to_string(int(request->mode()));
 +    } else if (const auto* request = msg->payload_as_AttackRequest()) {
@@ -2578,6 +2765,11 @@ index 0000000..d8633c7
 +            else if (m.impassable(target) && !get_creature_tracker().creature_at(target, true) &&
 +                     !m.open_door(u, target, !m.is_outside(u.pos()), true)) error = "Movement blocked";
 +        }
++    } else if (const auto* request = msg->payload_as_EquipmentRequest()) {
++        command.id = request->command_id();
++        command.inventory_view = request->view_id(); command.inventory_item = request->item_id();
++        command.equipment_action = int(request->action());
++        error = inventory_selection_.validate(u, command.inventory_view, command.inventory_item, command.equipment_action);
 +    } else if (msg->payload_type() == CDDA::CWM::Payload::MovementModeRequest) {
 +        const auto* request = msg->payload_as_MovementModeRequest();
 +        command.id = request->command_id();
@@ -2632,10 +2824,10 @@ index 0000000..d8633c7
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.h b/src/cwm/cwm_server.h
 new file mode 100644
-index 0000000..71bff50
+index 0000000..44a8ec7
 --- /dev/null
 +++ b/src/cwm/cwm_server.h
-@@ -0,0 +1,122 @@
+@@ -0,0 +1,128 @@
 +// CDDA CWM IPC Server
 +// Licensed under Apache-2.0
 +#pragma once
@@ -2647,6 +2839,7 @@ index 0000000..71bff50
 +#include <functional>
 +#include <optional>
 +#include "cwm_map_exporter.h"
++#include "cwm_inventory.h"
 +#include "cwm/cwm_session.hpp"
 +#include "cwm/cwm_clock.hpp"
 +
@@ -2711,12 +2904,17 @@ index 0000000..71bff50
 +    uint64_t client_id_{0}, received_sequence_{0}, sent_revision_{0};
 +    uint64_t next_state_{1}, awaiting_state_{0}, resync_id_{0};
 +    bool negotiated_{false}, ready_{false}, rejecting_{false};
++    InventorySelection inventory_selection_;
++    std::chrono::steady_clock::time_point next_inventory_query_{};
 +    std::chrono::steady_clock::time_point handshake_deadline_;
 +    struct Command {
 +        uint64_t id{0};
 +        bool move{false};
 +        uint64_t attack_target{0};
 +        int movement_mode{-1};
++        uint64_t inventory_view{0};
++        uint32_t inventory_item{0};
++        int equipment_action{-1};
 +        int action{0};
 +        int x{0}, y{0}, z{0}; // absolute CDDA coordinates, captured on receipt
 +        uint32_t pickup_stack_index{0};
@@ -3068,10 +3266,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..cd65849
+index 0000000..e03571b
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,662 @@
+@@ -0,0 +1,747 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "move_mode.h"
@@ -3125,6 +3323,23 @@ index 0000000..cd65849
 +    static void mode( CwmServer &server, int mode, uint64_t id = 1 ) {
 +        cdda::cwm::MessageBuilder wire( server.received_sequence_ + 1, 1, server.identity_ );
 +        const auto bytes = wire.build_movement_mode_request( id, static_cast<CDDA::CWM::MovementMode>( mode ) );
++        server.handle_client_message( bytes.data(), bytes.size(), get_avatar(), get_map(), *g );
++    }
++    static uint64_t inventory( CwmServer &server ) {
++        cdda::cwm::MessageBuilder wire( server.received_sequence_ + 1, 1, server.identity_ );
++        server.next_inventory_query_ = {};
++        const auto bytes = wire.build_inventory_query( 1 );
++        server.handle_client_message( bytes.data(), bytes.size(), get_avatar(), get_map(), *g );
++        return server.inventory_selection_.view_id();
++    }
++    static uint32_t item_id( CwmServer &server, const item &it ) {
++        for( uint32_t i = 1; i <= server.inventory_selection_.size(); ++i )
++            if( server.inventory_selection_.target( i ).get_item() == &it ) return i;
++        return 0;
++    }
++    static void equipment( CwmServer &server, uint64_t view, uint32_t item_id, int action, uint64_t id = 1 ) {
++        cdda::cwm::MessageBuilder wire( server.received_sequence_ + 1, 1, server.identity_ );
++        const auto bytes = wire.build_equipment_request( id, view, item_id, static_cast<CDDA::CWM::EquipmentAction>( action ) );
 +        server.handle_client_message( bytes.data(), bytes.size(), get_avatar(), get_map(), *g );
 +    }
 +    static void cancel( CwmServer &server ) { server.cancel_connection(); }
@@ -3733,6 +3948,74 @@ index 0000000..cd65849
 +    else CHECK_FALSE( cwm::CwmServerTestAccess::completed_accepted( server, 1 ) );
 +    CHECK( u.is_walking() );
 +    CHECK( u.moves == 100 );
++}
++
++TEST_CASE( "cwm_inventory_query_and_equipment_preserve_native_identity_and_costs", "[cwm][equipment]" )
++{
++    clear_avatar(); clear_map();
++    avatar &u = get_avatar();
++    u.setpos( tripoint( 60, 60, 0 ) );
++    REQUIRE( u.wear_item( item( itype_id( "backpack_hiking" ) ) ) );
++    item hat( itype_id( "hat_ball" ) ); hat.set_var( "uid", "equipment-hat" );
++    item &owned = u.i_add( hat );
++    item_location location( u, &owned );
++    const auto parents = u.parents( owned );
++    REQUIRE_FALSE( parents.empty() );
++    cwm::CwmServer server( "/unused-equipment" );
++    cwm::CwmServerTestAccess::ready( server );
++    u.moves = 1000;
++    const auto time = calendar::turn;
++    const auto view = cwm::CwmServerTestAccess::inventory( server );
++    const auto id = cwm::CwmServerTestAccess::item_id( server, owned );
++    REQUIRE( view ); REQUIRE( id );
++    CHECK( u.moves == 1000 ); CHECK( calendar::turn == time ); CHECK_FALSE( server.has_queued_action() );
++    SECTION( "nested wield pays native obtain cost once and replay is inert" ) {
++        item_location nested( item_location( u, parents.front() ), &owned );
++        const int cost = nested.obtain_cost( u );
++        REQUIRE( cost > 0 );
++        cwm::CwmServerTestAccess::equipment( server, view, id, 0 );
++        REQUIRE( server.has_queued_action() ); CHECK( u.moves == 1000 );
++        CHECK( cwm::CwmServerTestAccess::execute( server ) );
++        CHECK( cwm::CwmServerTestAccess::accepted( server ) );
++        CHECK( u.moves == 1000 - cost );
++        REQUIRE( u.get_wielded_item() ); CHECK( u.get_wielded_item()->get_var( "uid" ) == "equipment-hat" );
++        cwm::CwmServerTestAccess::complete( server );
++        cwm::CwmServerTestAccess::equipment( server, view, id, 0 );
++        CHECK_FALSE( server.has_queued_action() ); CHECK( u.moves == 1000 - cost );
++    }
++    SECTION( "wear and takeoff use native costs and preserve identity" ) {
++        const int cost = u.item_wear_cost( owned );
++        cwm::CwmServerTestAccess::equipment( server, view, id, 2 );
++        REQUIRE( server.has_queued_action() ); REQUIRE( cwm::CwmServerTestAccess::execute( server ) );
++        CHECK( u.moves == 1000 - cost );
++        cwm::CwmServerTestAccess::complete( server );
++        item *worn = nullptr;
++        u.visit_items( [&]( item *it, item * ) { if( it->get_var( "uid" ) == "equipment-hat" ) worn = it; return VisitResponse::NEXT; } );
++        REQUIRE( worn ); REQUIRE( u.is_worn( *worn ) );
++        const int before = u.moves;
++        const int takeoff_cost = item_location( u, worn ).obtain_cost( u );
++        const auto refreshed = cwm::CwmServerTestAccess::inventory( server );
++        cwm::CwmServerTestAccess::equipment( server, refreshed, cwm::CwmServerTestAccess::item_id( server, *worn ), 3, 2 );
++        REQUIRE( server.has_queued_action() ); REQUIRE( cwm::CwmServerTestAccess::execute( server ) );
++        CHECK( u.moves == before - takeoff_cost );
++        CHECK( character_has_item_with_var_val( u, "uid", "equipment-hat" ) );
++    }
++    SECTION( "a mutation after admission rejects instead of selecting another item" ) {
++        cwm::CwmServerTestAccess::equipment( server, view, id, 0 );
++        REQUIRE( server.has_queued_action() ); ++owned.charges;
++        CHECK_FALSE( cwm::CwmServerTestAccess::execute( server ) );
++        CHECK_FALSE( cwm::CwmServerTestAccess::accepted( server ) ); CHECK( u.moves == 1000 );
++    }
++    SECTION( "a refreshed view invalidates the pending handle" ) {
++        cwm::CwmServerTestAccess::equipment( server, view, id, 0 );
++        REQUIRE( server.has_queued_action() ); cwm::CwmServerTestAccess::inventory( server );
++        CHECK_FALSE( cwm::CwmServerTestAccess::execute( server ) ); CHECK( u.moves == 1000 );
++    }
++    SECTION( "disconnect cancels cached selections and queued actions" ) {
++        cwm::CwmServerTestAccess::equipment( server, view, id, 0 );
++        REQUIRE( server.has_queued_action() ); cwm::CwmServerTestAccess::cancel( server );
++        CHECK_FALSE( server.has_queued_action() ); CHECK( u.moves == 1000 );
++    }
 +}
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644

@@ -133,7 +133,7 @@ index b6ae675..9e33201 100644
  		/*
  			Local player handling
 diff --git a/src/client/game.cpp b/src/client/game.cpp
-index 27b5833..f10ecaf 100644
+index 27b5833..7e9196f 100644
 --- a/src/client/game.cpp
 +++ b/src/client/game.cpp
 @@ -8,6 +8,7 @@
@@ -144,7 +144,7 @@ index 27b5833..f10ecaf 100644
  #include "client.h"
  #include "client/clientevent.h"
  #include "client/gameui.h"
-@@ -118,6 +119,25 @@ struct TextDestPlayerInventory : public TextDest
+@@ -118,6 +119,34 @@ struct TextDestPlayerInventory : public TextDest
  	Client *m_client;
  };
  
@@ -155,6 +155,15 @@ index 27b5833..f10ecaf 100644
 +	{
 +		cdda_client::CddaBridge::getInstance().groundContainerFields(fields);
 +	}
++};
++
++struct CwmEquipmentFormHandler : public TextDest
++{
++    CwmEquipmentFormHandler() { m_formname = "CWM_EQUIPMENT"; }
++    void gotText(const StringMap &fields) override
++    {
++        cdda_client::CddaBridge::getInstance().equipmentInventoryFields(fields);
++    }
 +};
 +
 +struct CwmBodyFormHandler : public TextDest
@@ -170,7 +179,7 @@ index 27b5833..f10ecaf 100644
  struct LocalFormspecHandler : public TextDest
  {
  	LocalFormspecHandler(const std::string &formname)
-@@ -443,12 +463,15 @@ class GameGlobalShaderConstantSetter : public IShaderConstantSetter
+@@ -443,12 +472,15 @@ class GameGlobalShaderConstantSetter : public IShaderConstantSetter
  		get_sunlight_color(&sunlight, daynight_ratio);
  		m_day_light.set(sunlight, services);
  
@@ -188,7 +197,7 @@ index 27b5833..f10ecaf 100644
  		m_animation_timer_delta_vertex.set(&animation_timer_delta_f, services);
  		m_animation_timer_delta_pixel.set(&animation_timer_delta_f, services);
  
-@@ -932,6 +955,7 @@ class Game {
+@@ -932,6 +964,7 @@ class Game {
  	bool m_first_loop_after_window_activation = false;
  	bool m_camera_offset_changed = false;
  	bool m_game_focused = false;
@@ -196,7 +205,7 @@ index 27b5833..f10ecaf 100644
  
  	bool m_does_lost_focus_pause_game = false;
  
-@@ -1009,6 +1033,8 @@ Game::Game() :
+@@ -1009,6 +1042,8 @@ Game::Game() :
  
  Game::~Game()
  {
@@ -205,7 +214,7 @@ index 27b5833..f10ecaf 100644
  	delete client;
  	delete soundmaker;
  	sound_manager.reset();
-@@ -1181,6 +1207,13 @@ void Game::run()
+@@ -1181,6 +1216,13 @@ void Game::run()
  		updateCamera(dtime);
  		updateSound(dtime);
  		processPlayerInteraction(dtime, m_game_ui->m_flags.show_hud);
@@ -219,7 +228,7 @@ index 27b5833..f10ecaf 100644
  		updateFrame(&graph, &stats, dtime, cam_view);
  		updateProfilerGraphs(&graph);
  
-@@ -1239,6 +1272,8 @@ void Game::shutdown()
+@@ -1239,6 +1281,8 @@ void Game::shutdown()
  		}
  	}
  
@@ -228,7 +237,7 @@ index 27b5833..f10ecaf 100644
  	delete client;
  	client = nullptr;
  	delete soundmaker;
-@@ -2053,7 +2088,16 @@ void Game::processUserInput(f32 dtime)
+@@ -2053,7 +2097,16 @@ void Game::processUserInput(f32 dtime)
  
  void Game::processKeyInput()
  {
@@ -246,7 +255,7 @@ index 27b5833..f10ecaf 100644
  		dropSelectedItem(isKeyDown(KeyType::SNEAK));
  	} else if (wasKeyDown(KeyType::AUTOFORWARD)) {
  		toggleAutoforward();
-@@ -2083,7 +2127,8 @@ void Game::processKeyInput()
+@@ -2083,7 +2136,8 @@ void Game::processKeyInput()
  	} else if (wasKeyDown(KeyType::FREEMOVE)) {
  		toggleFreeMove();
  	} else if (wasKeyDown(KeyType::JUMP)) {
@@ -256,7 +265,7 @@ index 27b5833..f10ecaf 100644
  	} else if (wasKeyDown(KeyType::PITCHMOVE)) {
  		togglePitchMove();
  	} else if (wasKeyDown(KeyType::FASTMOVE)) {
-@@ -2154,9 +2199,17 @@ void Game::processKeyInput()
+@@ -2154,9 +2208,17 @@ void Game::processKeyInput()
  	} else if (wasKeyDown(KeyType::ZOOM)) {
  		checkZoomEnabled();
  	} else if (wasKeyDown(KeyType::QUICKTUNE_NEXT)) {
@@ -276,7 +285,7 @@ index 27b5833..f10ecaf 100644
  	} else if (wasKeyDown(KeyType::QUICKTUNE_INC)) {
  		quicktune->inc();
  	} else if (wasKeyDown(KeyType::QUICKTUNE_DEC)) {
-@@ -2178,6 +2231,9 @@ void Game::processItemSelection(u16 *new_playeritem)
+@@ -2178,6 +2240,9 @@ void Game::processItemSelection(u16 *new_playeritem)
  	LocalPlayer *player = client->getEnv().getLocalPlayer();
  
  	*new_playeritem = player->getWieldIndex();
@@ -286,7 +295,26 @@ index 27b5833..f10ecaf 100644
  	u16 max_item = player->getMaxHotbarItemcount();
  	if (max_item == 0)
  		return;
-@@ -2737,8 +2793,83 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
+@@ -2238,6 +2303,18 @@ void Game::dropSelectedItem(bool single_item)
+ 
+ void Game::openInventory()
+ {
++    auto &bridge = cdda_client::CddaBridge::getInstance();
++    if (bridge.ownsPlayer(client)) {
++        const auto form = bridge.openEquipmentInventory();
++        if (!form.empty()) {
++            auto *&formspec = m_game_ui->updateFormspec("CWM_EQUIPMENT");
++            GUIFormSpecMenu::create(formspec, client, m_rendering_engine->get_gui_env(),
++                &input->joystick, new FormspecFormSource(form), new CwmEquipmentFormHandler(),
++                "", sound_manager.get());
++        }
++        return;
++    }
++
+ 	/*
+ 	 * Don't permit to open inventory is CAO or player doesn't exists.
+ 	 * This prevent showing an empty inventory at player load
+@@ -2737,8 +2814,83 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
  		control.aux1 = control.aux1 ^ true;
  	}
  
@@ -370,7 +398,7 @@ index 27b5833..f10ecaf 100644
  	//tt.stop();
  }
  
-@@ -2784,6 +2915,42 @@ inline void Game::step(f32 dtime)
+@@ -2784,6 +2936,53 @@ inline void Game::step(f32 dtime)
  
  	if (!m_is_paused)
  		client->step(dtime);
@@ -406,6 +434,17 @@ index 27b5833..f10ecaf 100644
 +				&input->joystick, new FormspecFormSource(container_update),
 +				new CwmGroundFormHandler(), "", sound_manager.get());
 +		}
++		if (bridge.takeEquipmentInventoryClose()) {
++            auto *formspec = m_game_ui->getFormspecGUI();
++            if (formspec && m_game_ui->getFormspecName() == "CWM_EQUIPMENT") formspec->quitMenu();
++        }
++        const auto equipment_update = bridge.takeEquipmentInventoryUpdate();
++        if (!equipment_update.empty()) {
++            auto *&formspec = m_game_ui->updateFormspec("CWM_EQUIPMENT");
++            GUIFormSpecMenu::create(formspec, client, m_rendering_engine->get_gui_env(),
++                &input->joystick, new FormspecFormSource(equipment_update), new CwmEquipmentFormHandler(),
++                "", sound_manager.get());
++        }
 +		bridge.setMenuPause(g_menumgr.menuCount() > 0);
 +		bridge.update(dtime);
 +		bridge.renderDebugOverlay(m_rendering_engine->get_gui_env());
@@ -413,7 +452,7 @@ index 27b5833..f10ecaf 100644
  }
  
  static void pauseNodeAnimation(PausedNodesList &paused, scene::ISceneNode *node) {
-@@ -3246,6 +3413,7 @@ void Game::updateCamera(f32 dtime)
+@@ -3246,6 +3445,7 @@ void Game::updateCamera(f32 dtime)
  	tool_reload_ratio = MYMIN(tool_reload_ratio, 1.0);
  	camera->update(player, dtime, tool_reload_ratio);
  	camera->step(dtime);
@@ -421,7 +460,7 @@ index 27b5833..f10ecaf 100644
  
  	f32 camera_fov = camera->getFovMax();
  	v3s16 camera_offset = camera->getOffset();
-@@ -3262,6 +3430,7 @@ void Game::updateCamera(f32 dtime)
+@@ -3262,6 +3462,7 @@ void Game::updateCamera(f32 dtime)
  		if (m_camera_offset_changed) {
  			client->updateCameraOffset(camera_offset);
  			client->getEnv().updateCameraOffset(camera_offset);
@@ -429,7 +468,7 @@ index 27b5833..f10ecaf 100644
  
  			if (clouds)
  				clouds->updateCameraOffset(camera_offset);
-@@ -3365,6 +3534,37 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
+@@ -3365,6 +3566,37 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
  	// but the halo rendering code is already inefficient so there's no point in optimizing it here
  	hud->updateSelectionMesh(camera_offset);
  
@@ -467,7 +506,7 @@ index 27b5833..f10ecaf 100644
  	// Allow digging again if button is not pressed
  	if (runData.digging_blocked && !isKeyDown(KeyType::DIG))
  		runData.digging_blocked = false;
-@@ -4319,7 +4519,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
+@@ -4319,7 +4551,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
  	/*
  		Fog
  	*/
@@ -998,10 +1037,10 @@ index 0000000..ebc8b75
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..ad705e1
+index 0000000..52c1a17
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,2041 @@
+@@ -0,0 +1,2162 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
@@ -1009,6 +1048,7 @@ index 0000000..ad705e1
 +#include "ground_item_projection.h"
 +#include "ground_item_visual.h"
 +#include "ground_item_formspec.h"
++#include "equipment_inventory.h"
 +#include "avatar_status.h"
 +#include "posture_input.h"
 +#include <IGUIImage.h>
@@ -1147,6 +1187,54 @@ index 0000000..ad705e1
 +    std::wstring item_hint_, hover_hint_;
 +    std::chrono::steady_clock::time_point item_hint_until_;
 +    irr::gui::IGUIStaticText* item_hint_text_{nullptr};
++
++    EquipmentView equipment_view_;
++    bool equipment_open_{false}, equipment_close_{false}, equipment_dirty_{false};
++    uint64_t next_inventory_query_{1}, inventory_query_{0}, equipment_sent_{0};
++    uint32_t equipment_selected_{0};
++    size_t equipment_page_{0};
++    int equipment_filter_{0};
++    std::string equipment_search_, equipment_notice_;
++    struct QueuedEquipment { uint64_t view; uint32_t item; int action; };
++    std::optional<QueuedEquipment> queued_equipment_;
++
++    std::string equipment_form() const {
++        return equipmentForm(equipment_view_, equipment_page_, equipment_selected_, equipment_search_,
++            equipment_filter_, equipment_notice_, [&](const auto& type) { return ground_item_visual_name(type); });
++    }
++    void cancel_equipment() {
++        queued_equipment_.reset(); inventory_query_ = 0; equipment_view_ = {};
++        equipment_close_ = equipment_open_;
++    }
++    bool query_inventory() {
++        if (!session_.ready() || !player_ready_ || metrics_.pending_decision || pending_move_) return false;
++        auto wire = session_.builder();
++        inventory_query_ = next_inventory_query_++;
++        const auto bytes = wire.build_inventory_query(inventory_query_);
++        equipment_view_ = {}; equipment_selected_ = 0; equipment_page_ = 0;
++        equipment_notice_.clear(); equipment_dirty_ = true;
++        return connection_->send_message(bytes.data(), bytes.size());
++    }
++    void flush_equipment() {
++        if (!queued_equipment_) return;
++        if (!session_.ready() || !player_ready_ || metrics_.pending_decision || (metrics_.pause_reasons & ~uint32_t(2))) {
++            queued_equipment_.reset();
++            item_hint_ = L"Equipaggiamento annullato: gioco in pausa o selezione scaduta.";
++            item_hint_until_ = std::chrono::steady_clock::now() + std::chrono::seconds(4);
++            return;
++        }
++        if (pending_move_ || equipment_open_ || sent_menu_pause_ == 1 || metrics_.pause_reasons) return;
++        const auto request = *queued_equipment_;
++        auto wire = session_.builder();
++        const uint64_t id = session_.next_command++;
++        const auto bytes = wire.build_equipment_request(id, request.view, request.item,
++            static_cast<CDDA::CWM::EquipmentAction>(request.action));
++        if (!connection_->send_message(bytes.data(), bytes.size())) { cancel_equipment(); return; }
++        queued_equipment_.reset(); ++equipment_sent_;
++        pending_move_ = id; move_acked_ = false; sent_move_ = std::chrono::steady_clock::now();
++        item_hint_ = L"Azione equipaggiamento inviata a CDDA.";
++        item_hint_until_ = std::chrono::steady_clock::now() + std::chrono::seconds(3);
++    }
 +
 +    void populate_mirror(std::unique_ptr<Inventory>& mirror,
 +                         const std::vector<GroundItemView>& items, size_t page_size) {
@@ -1609,7 +1697,7 @@ index 0000000..ad705e1
 +        projected_blocks_.clear(); terrain_tiles_.clear(); terrain_bounds_.clear();
 +        clear_ground_item_visuals();
 +        ground_items_.clear();
-+        owned_items_.clear(); last_ground_target_.reset(); cancel_pickup_selection();
++        owned_items_.clear(); last_ground_target_.reset(); cancel_pickup_selection(); cancel_equipment();
 +        avatar_status_ = {}; body_close_requested_ = true;
 +        commit_projection(old_blocks);
 +        origin_valid_ = false;
@@ -1690,7 +1778,7 @@ index 0000000..ad705e1
 +    void disconnected() {
 +        session_.disconnected();
 +        body_close_requested_ = true;
-+        cancel_pickup_selection();
++        cancel_pickup_selection(); cancel_equipment();
 +        metrics_.connected = false; player_ready_ = false; pending_move_ = 0;
 +        deferred_opening_.reset();
 +        connection_.reset(); metrics_.pending_decision = 0;
@@ -1734,7 +1822,7 @@ index 0000000..ad705e1
 +        player_ready_ = session_.ready() && entities_.count(1);
 +        if (deferred_opening_) {
 +            if (!session_.ready() || !player_ready_ || metrics_.pause_reasons || metrics_.pending_decision ||
-+                sent_menu_pause_ == 1 || body_form_open_ || ground_container_open_ ||
++                sent_menu_pause_ == 1 || body_form_open_ || ground_container_open_ || equipment_open_ ||
 +                std::chrono::steady_clock::now() >= deferred_opening_->expires) deferred_opening_.reset();
 +            else if (!pending_move_) {
 +                const auto opening = *deferred_opening_;
@@ -1743,6 +1831,7 @@ index 0000000..ad705e1
 +            }
 +        }
 +        flush_pickup();
++        flush_equipment();
 +        if (player_ready_) sync_timer_ = 0.f;
 +        else {
 +            sync_timer_ += dtime;
@@ -1750,7 +1839,7 @@ index 0000000..ad705e1
 +        }
 +
 +        const bool frozen = !player_ready_ || !session_.ready() || metrics_.pause_reasons ||
-+            metrics_.pending_decision || sent_menu_pause_ == 1 || body_form_open_ || ground_container_open_;
++            metrics_.pending_decision || sent_menu_pause_ == 1 || body_form_open_ || ground_container_open_ || equipment_open_;
 +        visual_animation_delta_ = frozen ? 0.f : dtime * (metrics_.realtime ? metrics_.time_scale : 1.f);
 +        visual_animation_time_ += visual_animation_delta_;
 +
@@ -1854,7 +1943,7 @@ index 0000000..ad705e1
 +        const auto previous_state = session_.state;
 +        if (!session_.accept(*msg, *connection_)) {
 +            if (!session_.ready()) {
-+                cancel_pickup_selection();
++                cancel_pickup_selection(); cancel_equipment();
 +                body_close_requested_ = true;
 +            }
 +            player_ready_ = false;
@@ -1865,7 +1954,7 @@ index 0000000..ad705e1
 +        metrics_.connected = true;
 +        if (session_.clear_world) { clear_world(); session_.clear_world = false; }
 +        if (msg->payload_type() == CDDA::CWM::Payload::WorldReset) {
-+            cancel_pickup_selection();
++            cancel_pickup_selection(); cancel_equipment();
 +            body_close_requested_ = true;
 +            player_ready_ = false;
 +            metrics_.pending_decision = 0;
@@ -1873,6 +1962,13 @@ index 0000000..ad705e1
 +        }
 +
 +        switch (msg->payload_type()) {
++            case CDDA::CWM::Payload::InventoryView: {
++                const auto* view = msg->payload_as_InventoryView();
++                if (equipment_open_ && view->query_id() == inventory_query_) {
++                    equipment_view_.read(*view); equipment_dirty_ = true;
++                }
++                break;
++            }
 +            case CDDA::CWM::Payload::HelloResponse: {
 +                const auto* resp = msg->payload_as_HelloResponse();
 +                if (resp && resp->accepted()) {
@@ -2251,7 +2347,7 @@ index 0000000..ad705e1
 +        const auto now = std::chrono::steady_clock::now();
 +        if (!connection_ || !connection_->is_valid() || !session_.ready() || !player_ready_ ||
 +            metrics_.pending_decision || metrics_.pause_reasons || sent_menu_pause_ == 1 ||
-+            body_form_open_ || ground_container_open_ || now < next_move_) return false;
++            body_form_open_ || ground_container_open_ || equipment_open_ || now < next_move_) return false;
 +        if (pending_move_) {
 +            // A modifier's free posture roundtrip must not eat its OPEN/CLOSE
 +            // click. Keep at most one, with native range/state revalidation;
@@ -2765,9 +2861,73 @@ index 0000000..ad705e1
 +    return pimpl_ && pimpl_->answer_decision(choice);
 +}
 +
++std::string CddaBridge::openEquipmentInventory() {
++    if (!pimpl_ || !pimpl_->session_.ready() || !pimpl_->player_ready_ || pimpl_->pending_move_ ||
++        pimpl_->body_form_open_ || pimpl_->ground_container_open_ || pimpl_->metrics_.pending_decision) return {};
++    auto& i = *pimpl_;
++    i.equipment_open_ = true; i.equipment_close_ = false;
++    i.equipment_search_.clear(); i.equipment_filter_ = 0;
++    setMenuPause(true);
++    if (!i.query_inventory()) i.equipment_view_.error = "Inventario non disponibile: riprova.";
++    return i.equipment_form();
++}
++
++void CddaBridge::equipmentInventoryFields(const std::unordered_map<std::string, std::string>& fields) {
++    if (!pimpl_ || !pimpl_->equipment_open_) return;
++    auto& i = *pimpl_;
++    if (fields.count("quit")) {
++        i.equipment_open_ = i.equipment_close_ = i.equipment_dirty_ = false;
++        i.inventory_query_ = 0; i.equipment_view_ = {};
++        return;
++    }
++    if (fields.count("refresh")) { i.query_inventory(); return; }
++    if (fields.count("find") || fields.count("key_enter_field")) {
++        const auto search = fields.find("search");
++        if (search != fields.end()) i.equipment_search_ = search->second.substr(0, 256);
++        i.equipment_page_ = 0;
++    }
++    const auto filter = fields.find("filter");
++    if (filter != fields.end()) {
++        const std::array<std::string,4> names{{"Tutti", "Impugnati", "Indossati", "Nelle tasche"}};
++        const auto found = std::find(names.begin(), names.end(), filter->second);
++        if (found != names.end()) {
++            const int value = found - names.begin();
++            if (value != i.equipment_filter_) i.equipment_page_ = 0;
++            i.equipment_filter_ = value;
++        }
++    }
++    const auto ids = equipmentFilter(i.equipment_view_, i.equipment_search_, i.equipment_filter_);
++    if (fields.count("prev") && i.equipment_page_) --i.equipment_page_;
++    if (fields.count("next") && (i.equipment_page_ + 1) * 36 < ids.size()) ++i.equipment_page_;
++    for (const auto id : ids) if (fields.count("item_" + std::to_string(id))) i.equipment_selected_ = id;
++    if (const auto* selected = i.equipment_view_.entry(i.equipment_selected_)) {
++        for (int action = 0; action < 4; ++action) if (fields.count("action_" + std::to_string(action))) {
++            if (!(selected->actions & (1 << action))) i.equipment_notice_ = selected->reasons[action];
++            else if (i.metrics_.pause_reasons & ~uint32_t(2)) i.equipment_notice_ = "Riprendi il gioco prima di equipaggiare.";
++            else if (!i.session_.ready() || i.pending_move_) i.equipment_notice_ = "Attendi lo stato aggiornato e riapri l'inventario.";
++            else {
++                i.queued_equipment_ = Impl::QueuedEquipment{i.equipment_view_.view, selected->id, action};
++                i.equipment_close_ = true;
++                return;
++            }
++        }
++    }
++    i.equipment_dirty_ = true;
++}
++bool CddaBridge::takeEquipmentInventoryClose() {
++    if (!pimpl_ || !pimpl_->equipment_open_ || !pimpl_->equipment_close_) return false;
++    pimpl_->equipment_open_ = pimpl_->equipment_close_ = pimpl_->equipment_dirty_ = false;
++    return true;
++}
++std::string CddaBridge::takeEquipmentInventoryUpdate() {
++    if (!pimpl_ || !pimpl_->equipment_open_ || !pimpl_->equipment_dirty_) return {};
++    pimpl_->equipment_dirty_ = false;
++    return pimpl_->equipment_form();
++}
++
 +std::string CddaBridge::openBodyStatus() {
 +    if (!pimpl_ || !pimpl_->session_.ready() || !pimpl_->player_ready_ ||
-+        !pimpl_->avatar_status_.available || pimpl_->ground_container_open_ ||
++        !pimpl_->avatar_status_.available || pimpl_->ground_container_open_ || pimpl_->equipment_open_ ||
 +        pimpl_->metrics_.pending_decision) return {};
 +    pimpl_->body_form_open_ = true;
 +    pimpl_->body_close_requested_ = false;
@@ -2824,11 +2984,11 @@ index 0000000..ad705e1
 +        L") | " + key_label("keymap_cdda_crouch") + L": accovacciati (" + std::wstring(g_settings->getBool("cwm_crouch_toggle") ? L"toggle" : L"tieni") + L") | " + key_label("keymap_cdda_prone") + L": a terra";
 +    pimpl_->posture_text_->setText(mode_text.c_str());
 +    pimpl_->posture_text_->setVisible(pimpl_->session_.ready() && player != pimpl_->entities_.end() &&
-+        !pimpl_->ground_container_open_ && !pimpl_->body_form_open_ && !pimpl_->metrics_.pending_decision);
++        !pimpl_->ground_container_open_ && !pimpl_->body_form_open_ && !pimpl_->equipment_open_ && !pimpl_->metrics_.pending_decision);
 +
 +    // Compact Minecraft-style rows above the possessions strip. All fills
 +    // come from native display segments or native perceived categories.
-+    const bool hud_visible = !pimpl_->ground_container_open_ && !pimpl_->body_form_open_ &&
++    const bool hud_visible = !pimpl_->ground_container_open_ && !pimpl_->body_form_open_ && !pimpl_->equipment_open_ &&
 +        !pimpl_->metrics_.pending_decision;
 +    const float scale = std::min(1.f, float(screen.Width - 20) / 396.f);
 +    const auto px = [&](float value) { return int(std::round(value * scale)); };
@@ -3045,10 +3205,10 @@ index 0000000..ad705e1
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.h b/src/cdda/cdda_bridge.h
 new file mode 100644
-index 0000000..561afaf
+index 0000000..4c7d5d8
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.h
-@@ -0,0 +1,148 @@
+@@ -0,0 +1,152 @@
 +// Luanti C++ CWM Presentation Bridge
 +// Licensed under Apache-2.0
 +#pragma once
@@ -3157,6 +3317,10 @@ index 0000000..561afaf
 +    void setMenuPause(bool paused);
 +    void toggleSimulationPause();
 +    void cycleSimulationSpeed();
++    std::string openEquipmentInventory();
++    void equipmentInventoryFields(const std::unordered_map<std::string, std::string>& fields);
++    bool takeEquipmentInventoryClose();
++    std::string takeEquipmentInventoryUpdate();
 +    std::string openBodyStatus();
 +    void closeBodyStatus();
 +    bool takeBodyStatusClose();
@@ -3196,6 +3360,144 @@ index 0000000..561afaf
 +    std::unique_ptr<Impl> pimpl_;
 +};
 +
++} // namespace cdda_client
+diff --git a/src/cdda/equipment_inventory.h b/src/cdda/equipment_inventory.h
+new file mode 100644
+index 0000000..2fae19b
+--- /dev/null
++++ b/src/cdda/equipment_inventory.h
+@@ -0,0 +1,132 @@
++#pragma once
++#include "avatar_status.h"
++#include "cwm/cwm_generated.h"
++#include <array>
++#include <algorithm>
++#include <cctype>
++#include <functional>
++#include <string>
++#include <vector>
++
++namespace cdda_client {
++struct EquipmentEntry {
++    uint32_t id{}, parent{}; int pocket{-1};
++    std::string type, name, category;
++    int charges{}, access{}; bool counted{}, worn{}, wielded{};
++    int64_t weight{}, volume{}, length{};
++    uint8_t actions{};
++    std::array<std::string, 4> reasons;
++};
++struct EquipmentPocket {
++    uint32_t owner{}, index{}; std::string name;
++    int64_t capacity{}, remaining{}, weight_capacity{}, weight_remaining{}, length{};
++    int access{}; bool sealed{}, rigid{}, watertight{};
++};
++struct EquipmentView {
++    uint64_t query{}, view{}; bool truncated{};
++    std::string error;
++    int64_t weight{}, weight_capacity{}, volume{}, volume_capacity{};
++    std::vector<EquipmentEntry> entries;
++    std::vector<EquipmentPocket> pockets;
++    void read(const CDDA::CWM::InventoryView& source) {
++        *this = {};
++        query = source.query_id(); view = source.view_id(); truncated = source.truncated();
++        error = source.error()->str(); weight = source.weight_grams(); weight_capacity = source.weight_capacity_grams();
++        volume = source.volume_ml(); volume_capacity = source.volume_capacity_ml();
++        for (const auto* e : *source.entries()) {
++            EquipmentEntry entry{e->id(), e->parent_id(), e->pocket_index(),
++                e->type_id()->str(), e->name()->str(), e->category()->str(), e->charges(), e->access_moves(),
++                e->count_by_charges(), e->worn(), e->wielded(), e->weight_grams(), e->volume_ml(), e->length_mm(), e->actions(), {}};
++            for (unsigned i = 0; i < 4; ++i) entry.reasons[i] = e->reasons()->Get(i)->str();
++            entries.push_back(std::move(entry));
++        }
++        for (const auto* p : *source.pockets()) pockets.push_back({p->owner_id(), p->index(), p->name()->str(),
++            p->capacity_ml(), p->remaining_ml(), p->capacity_grams(), p->remaining_grams(), p->max_length_mm(),
++            p->access_moves(), p->sealed(), p->rigid(), p->watertight()});
++    }
++    const EquipmentEntry* entry(uint32_t id) const {
++        return id && id <= entries.size() ? &entries[id - 1] : nullptr;
++    }
++    std::string source(uint32_t id) const {
++        const auto* e = entry(id); if (!e) return {};
++        if (!e->parent) return e->worn ? "Indossato" : e->wielded ? "Impugnato" : "Inventario";
++        std::string out;
++        for (unsigned depth = 0; e && e->parent && depth < 32; ++depth) {
++            const auto* parent = entry(e->parent); if (!parent) break;
++            std::string name = parent->name;
++            for (const auto& p : pockets) if (p.owner == parent->id && int(p.index) == e->pocket)
++                name += " / " + (p.name.empty() ? "tasca " + std::to_string(p.index + 1) : p.name);
++            out = name + (out.empty() ? "" : " > " + out); e = parent;
++        }
++        return out;
++    }
++};
++inline std::string equipmentLower(std::string text) {
++    for (auto& c : text) c = char(std::tolower(static_cast<unsigned char>(c)));
++    return text;
++}
++inline std::vector<uint32_t> equipmentFilter(const EquipmentView& view, const std::string& search, int filter) {
++    std::vector<uint32_t> ids;
++    const auto needle = equipmentLower(search);
++    for (const auto& e : view.entries) {
++        if ((filter == 1 && !e.wielded) || (filter == 2 && !e.worn) || (filter == 3 && !e.parent)) continue;
++        if (!needle.empty() && equipmentLower(e.name + " " + e.category + " " + view.source(e.id)).find(needle) == std::string::npos) continue;
++        ids.push_back(e.id);
++    }
++    return ids;
++}
++inline std::string equipmentForm(const EquipmentView& view, size_t page, uint32_t selected,
++        const std::string& search, int filter, const std::string& notice,
++        const std::function<std::string(const std::string&)>& icon) {
++    std::string f = "formspec_version[4]size[16,11]no_prepend[]bgcolor[#00000000]"
++        "background9[0,0;16,11;mcl_base_textures_background9.png;false;7]"
++        "style_type[label;textcolor=#323232]"
++        "style_type[button;border=false;bgimg=mcl_inventory_button9.png;bgimg_pressed=mcl_inventory_button9_pressed.png;bgimg_middle=2,2]"
++        "label[0.4,0.4;Inventario ed equipaggiamento]"
++        "field[0.4,1;5.6,0.65;search;;" + statusEscape(search) + "]field_close_on_enter[search;false]"
++        "button[6.1,1;1.6,0.65;find;Cerca]dropdown[8,1;3.3,0.65;filter;Tutti,Impugnati,Indossati,Nelle tasche;" + std::to_string(filter + 1) + "]"
++        "button[11.6,1;1.8,0.65;refresh;Aggiorna]button_exit[13.7,1;1.8,0.65;close;Chiudi]";
++    if (!view.view) return f + "label[0.5,2.2;" + statusEscape(view.error.empty() ? "Lettura inventario nativo..." : view.error) + "]";
++    f += "label[0.5,2;Peso " + std::to_string(view.weight / 1000.0) + " / " + std::to_string(view.weight_capacity / 1000.0) +
++        " kg - Volume " + std::to_string(view.volume / 1000.0) + " / " + std::to_string(view.volume_capacity / 1000.0) + " L]";
++    const auto ids = equipmentFilter(view, search, filter);
++    const size_t pages = std::max<size_t>(1, (ids.size() + 35) / 36);
++    page = std::min(page, pages - 1);
++    for (size_t i = page * 36; i < std::min(ids.size(), (page + 1) * 36); ++i) {
++        const auto& e = *view.entry(ids[i]);
++        const auto offset = i % 36;
++        const auto x = std::to_string(.5 + (offset % 6) * 1.18), y = std::to_string(2.7 + (offset / 6) * 1.12);
++        const std::string button = "item_" + std::to_string(e.id);
++        f += "image[" + x + "," + y + ";1.05,1.05;mcl_formspec_itemslot.png]";
++        if (selected == e.id) f += "box[" + x + "," + y + ";1.05,1.05;#E8CF5790]";
++        f += "item_image_button[" + x + "," + y + ";1.05,1.05;" + statusEscape(icon(e.type)) + ";" + button + ";]";
++        f += "tooltip[" + button + ";" + statusEscape(e.name + (e.counted ? " (" + std::to_string(e.charges) + ")" : "") + "\n" + view.source(e.id)) + "]";
++    }
++    f += "button[0.5,9.65;1.4,0.6;prev;<]label[2.15,9.95;" + std::to_string(page + 1) + " / " + std::to_string(pages) +
++        "]button[5.65,9.65;1.4,0.6;next;>]";
++    if (const auto* e = view.entry(selected)) {
++        std::string detail = e->name + "\n" + e->category + "\n" + view.source(e->id) + "\n" +
++            std::to_string(e->weight / 1000.0) + " kg / " + std::to_string(e->volume / 1000.0) + " L / " +
++            std::to_string(e->length) + " mm\nAccesso nativo: " + std::to_string(e->access) + " mosse";
++        if (e->counted) detail += "\nQuantita: " + std::to_string(e->charges);
++        for (const auto& p : view.pockets) if (p.owner == selected) {
++            detail += "\n" + (p.name.empty() ? "Tasca " + std::to_string(p.index + 1) : p.name) +
++                ": " + std::to_string(p.remaining / 1000.0) + " / " + std::to_string(p.capacity / 1000.0) + " L liberi; " +
++                std::to_string(p.weight_remaining / 1000.0) + " / " + std::to_string(p.weight_capacity / 1000.0) + " kg liberi" +
++                "; lunghezza max " + std::to_string(p.length) + " mm; accesso " + std::to_string(p.access) + " mosse" +
++                (p.sealed ? "; sigillata" : "") + (p.rigid ? "; rigida" : "") + (p.watertight ? "; stagna" : "");
++        }
++        f += "textarea[8,2.6;7.5,5.1;detail;;" + statusEscape(detail) + "]";
++        const std::array<std::string,4> names{{"Impugna", "Riponi", "Indossa", "Togli"}};
++        for (unsigned i = 0; i < 4; ++i) {
++            const auto x = std::to_string(8 + (i % 2) * 3.8), y = std::to_string(7.95 + (i / 2) * .85);
++            const auto key = "action_" + std::to_string(i);
++            // Unavailable actions have no clickable field. Their native reason remains inspectable.
++            if (e->actions & (1 << i)) f += "button[" + x + "," + y + ";3.4,0.65;" + key + ";" + names[i] + "]";
++            else f += "label[" + x + "," + y + ";" + names[i] + " (non disponibile)]tooltip[" + x + "," + y + ";3.4,0.65;" + statusEscape(e->reasons[i]) + "]";
++        }
++    } else f += "label[8,3;Seleziona un oggetto per i dettagli e le azioni.]";
++    f += "label[0.5,10.65;" + statusEscape(notice.empty() ? (view.truncated ? "Vista limitata: parte dei contenuti non mostrata." : "Le azioni usano tempi e vincoli CDDA. Nessun equipaggiamento istantaneo.") : notice) + "]";
++    return f;
++}
 +} // namespace cdda_client
 diff --git a/src/cdda/ground_item_formspec.h b/src/cdda/ground_item_formspec.h
 new file mode 100644

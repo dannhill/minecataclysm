@@ -262,6 +262,62 @@ table MovementModeRequest {
     mode: MovementMode;
 }
 
+// Read-only correlated query. Handles live only in this session/view and
+// reference native item_locations; never interpret a display stack index.
+table InventoryQueryRequest { query_id: uint64; }
+table InventoryEntry {
+    id: uint32;
+    parent_id: uint32;
+    pocket_index: int32 = -1;
+    type_id: string;
+    name: string;
+    category: string;
+    charges: int32;
+    count_by_charges: bool;
+    worn: bool;
+    wielded: bool;
+    weight_grams: int64;
+    volume_ml: int64;
+    length_mm: int64;
+    access_moves: int32;
+    // Bits 0..3 correspond to EquipmentAction, validated by CDDA again.
+    actions: uint8;
+    reasons: [string];
+}
+table InventoryPocket {
+    owner_id: uint32;
+    index: uint32;
+    name: string;
+    capacity_ml: int64;
+    remaining_ml: int64;
+    capacity_grams: int64;
+    remaining_grams: int64;
+    max_length_mm: int64;
+    access_moves: int32;
+    sealed: bool;
+    rigid: bool;
+    watertight: bool;
+}
+table InventoryView {
+    query_id: uint64;
+    view_id: uint64;
+    entries: [InventoryEntry];
+    pockets: [InventoryPocket];
+    truncated: bool;
+    error: string;
+    weight_grams: int64;
+    weight_capacity_grams: int64;
+    volume_ml: int64;
+    volume_capacity_ml: int64;
+}
+enum EquipmentAction : byte { WIELD = 0, STOW = 1, WEAR = 2, TAKEOFF = 3 }
+table EquipmentRequest {
+    command_id: uint64;
+    view_id: uint64;
+    item_id: uint32;
+    action: EquipmentAction;
+}
+
 table AttackRequest {
     command_id: uint64;
     target_entity_id: uint64;
@@ -328,6 +384,9 @@ union Payload {
     ,MovementIntentRequest
     ,ContinuousIntentRequest
     ,MovementModeRequest
+    ,InventoryQueryRequest
+    ,InventoryView
+    ,EquipmentRequest
 }
 
 table CwmMessage {
