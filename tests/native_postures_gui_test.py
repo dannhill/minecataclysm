@@ -245,7 +245,9 @@ def main():
                 wait(lambda r: int(r['pause_reasons']) == 0)
                 check('actual_full_recovery_preserves_native_posture', mode() == 512)
                 shot('after-recovery.png')
-            final_position = [float(latest()[k]) for k in ('target_x','target_y','target_z')]
+            final_row = latest()
+            final_position = [float(final_row[k]) for k in ('target_x','target_y','target_z')]
+            scene_origin = [int(final_row[k]) for k in ('scene_origin_x', 'scene_origin_y')]
             check('actual_runtime_survives', proc.poll() is None)
         finally:
             subprocess.run(['xdotool', 'mouseup', '1'], capture_output=True)
@@ -272,7 +274,7 @@ def main():
     check('save_readable_by_pristine_native_core', result.returncode == 0)
     after = json.loads(output.read_text())
     check('prone_is_canonical_native_save_field', after['player']['move_mode'] == 'prone')
-    check('canonical_native_anchor_preserved', after['player_abs'] == [round(final_position[0]), -round(final_position[2]), round(final_position[1] / 3)])
+    check('canonical_native_anchor_preserved', after['player_abs'] == [scene_origin[0] + round(final_position[0]), scene_origin[1] - round(final_position[2]), round(final_position[1] / 3)])
     check('no_pickup_body_sheet_or_melee_needed', all(int(r['attacks_sent']) == 0 and
           int(r['ground_container']) == 0 and int(r['body_form']) == 0 and
           int(r['queued_pickup']) == 0 for r in rows()))
