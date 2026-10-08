@@ -55,7 +55,7 @@ occorre riprendere fiato o controllare le condizioni delle gambe.
 ## HUD e oggetti
 
 Asset Mineclonia originali: cuori, icone armatura per le parti, icone exhaustion
-per stamina e cibo per fame. H mostra tutte le parti e temperature; HUD mostra
+per stamina e cibo per fame. H mostra tutte le parti principali e temperature; HUD mostra
 separatamente testa/torso vitali, stamina e bisogni. Cinque icone sono i cinque
 segmenti del display CDDA: pipe piena, slash metà, colon frazione minima,
 dashes vuoti. Non si ricostruiscono gli HP esatti da questa quantizzazione.
@@ -106,3 +106,14 @@ pozza e usa t_window_no_curtains; il driver rispetta il debounce, controlla
 ACK nativi e il terreno nel save. Non sono bypass di produzione. Il primo
 avvio della regressione corpo aveva un path fixture errato e non avviava
 il gioco; `body-regression-final` è il risultato valido.
+
+
+Rifinitura successiva `edec4b2`: limita lo scroll di H alla parte che eccede
+il viewport (zero per i bisogni che già entrano, quattro passi per le sei
+parti principali). Test GUI dello scroll: limite raggiunto, niente pannello
+vuoto; regressione corpo **21/21** sia sul build ricostruito sia sul binario installato. Nessuna modifica a
+input, protocollo, clock, camera o backend CDDA rispetto al runtime delle
+prove sopra. Le identità dei due binari sono separate nelle evidenze.
+Movimento fisico aggiuntivo: **15/15** su area nativa piana con Ctrl+W e
+Shift+W, 0.45 secondi di input: cammino 1.6754, corsa 3.4081,
+accovacciato 0.8325, prono 0.2887 blocchi. Posizione/prone nel save canonico.

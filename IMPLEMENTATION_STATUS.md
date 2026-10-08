@@ -19,6 +19,10 @@ CDDA 7,448 assertions/43 cases; Luanti 307 tests/648 Catch2 assertions; protocol
 5/5 PASS. Installed controls GUI: 27 held, 22 toggle, 24 ordinary-mode checks;
 actual reload 8; body regression 19 (all 12 native HP unchanged), pickup 18, vertical 17 and
 melee 23 (including native knockback) PASS.
+An additional 15-check actual Ctrl+W/Shift+W movement test confirms native
+speed hierarchy. A subsequent body scroll-only polish has 21 reconstructed
+and installed GUI checks and unchanged 307/648 engine results; its binary identity is
+recorded separately from the preceding control runs.
 Source identities, remaining scope and results are in the [evidence](docs/fixes/controls-and-survival-presentation-evidence.json).
 Only the [new four-point checklist](docs/validation/pending-manual.md) awaits
 manual feedback. Full diseases/medical UI, quantitative hunger redesign and

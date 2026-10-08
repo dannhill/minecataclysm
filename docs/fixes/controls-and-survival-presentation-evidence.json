@@ -1,6 +1,6 @@
 {
-  "source_commit": "5639a67",
-  "driver_commit": "1b78491",
+  "source_commit": "edec4b27b9f69539aa2a60e4fd1878ce33310854",
+  "driver_commit": "1b78491297b47a98cc48cf2538681cd6447ff969",
   "protocol": "CWM 2.8 (unchanged)",
   "environment": {
     "os": "Pop!_OS Linux",
@@ -17,8 +17,8 @@
     },
     "luanti": {
       "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
-      "patch_sha256": "1a67e4501a3e1aef5eba4cef4543537b6befa28780b6bd58e107b5ceceaa134b",
-      "tree_sha256": "03b25147a4e5381549607c18e22158f7c6abc6b26bcedffc8cb31791c3966771",
+      "patch_sha256": "44ca16383c7cd8699e83afc9a378e4e49619876e9bf230d1f9c535f21d27f085",
+      "tree_sha256": "831aa3ed28cd51d7367760bc132d7ab37a360ec66862099f5afb8d6198f4c6bf",
       "file_count": 2256
     },
     "mineclonia": {
@@ -37,11 +37,12 @@
       "changed": false
     },
     "luanti": {
-      "installed": "/home/dannhill/Projects/cdda-mineclonia/luanti/bin/luanti",
+      "source_commit": "edec4b2",
+      "change": "Only readonly body scroll limits and one unit assertion; native control, protocol and clock paths unchanged.",
+      "previous_sha256": "f2600d2223034f65e2727b892aca8263250c05850f24939e7587cd9020ad97db",
+      "sha256": "b502f707fdf02115c52c6d63a583a395aa637bef0cb8e46f718b7491ef8d9484",
       "source": "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/luanti/bin/luanti",
-      "previous_sha256": "ca83339f77223d6c1d78c38d3942e6cb7672510130674f5c4acd6072a640e84d",
-      "sha256": "f2600d2223034f65e2727b892aca8263250c05850f24939e7587cd9020ad97db",
-      "changed": true
+      "installed": "/home/dannhill/Projects/cdda-mineclonia/luanti/bin/luanti"
     }
   },
   "native_reader": {
@@ -532,50 +533,71 @@
         "checks": 27,
         "result": "PASS",
         "path": "artifacts/controls-hud-20261008/installed-held/checks.json",
-        "sha256": "aaf9f52f85f5e185f951413fa5547cfed07792020dca766091456d59486febd0"
+        "sha256": "aaf9f52f85f5e185f951413fa5547cfed07792020dca766091456d59486febd0",
+        "luanti_sha256": "f2600d2223034f65e2727b892aca8263250c05850f24939e7587cd9020ad97db"
       },
       "installed-toggle": {
         "checks": 22,
         "result": "PASS",
         "path": "artifacts/controls-hud-20261008/installed-toggle/checks.json",
-        "sha256": "dd246bcf310fb8250e993cdedebd1cd8ed6ed0fcfa463b2c3fa8351662680210"
+        "sha256": "dd246bcf310fb8250e993cdedebd1cd8ed6ed0fcfa463b2c3fa8351662680210",
+        "luanti_sha256": "f2600d2223034f65e2727b892aca8263250c05850f24939e7587cd9020ad97db"
       },
       "installed-action": {
         "checks": 24,
         "result": "PASS",
         "path": "artifacts/controls-hud-20261008/installed-action/checks.json",
-        "sha256": "a3803fc0ee950fd5ccec39a0df9821037d63a5caf783929695cddc13b1ecc91a"
+        "sha256": "a3803fc0ee950fd5ccec39a0df9821037d63a5caf783929695cddc13b1ecc91a",
+        "luanti_sha256": "f2600d2223034f65e2727b892aca8263250c05850f24939e7587cd9020ad97db"
       },
       "installed-reload": {
         "checks": 8,
         "result": "PASS",
         "path": "artifacts/controls-hud-20261008/installed-reload/checks.json",
-        "sha256": "b7047c343a22cf2a168ac0dcff810526e57984acead0c2a15b32aa513e7d1fa1"
+        "sha256": "b7047c343a22cf2a168ac0dcff810526e57984acead0c2a15b32aa513e7d1fa1",
+        "luanti_sha256": "f2600d2223034f65e2727b892aca8263250c05850f24939e7587cd9020ad97db"
       },
       "body-regression-final": {
         "checks": 19,
         "result": "PASS",
         "path": "artifacts/controls-hud-20261008/body-regression-final/checks.json",
-        "sha256": "e8c176a1aff93a33828ccdf236526f2be3dc60d0d8d3632fc3d2ace259ffd51f"
+        "sha256": "e8c176a1aff93a33828ccdf236526f2be3dc60d0d8d3632fc3d2ace259ffd51f",
+        "luanti_sha256": "f2600d2223034f65e2727b892aca8263250c05850f24939e7587cd9020ad97db"
       },
       "pickup-regression": {
         "checks": 18,
         "result": "PASS",
         "path": "artifacts/controls-hud-20261008/pickup-regression/checks.json",
-        "sha256": "c5ff93021cd915f25680db2260c4c9fc515a530713aec80e556dc16da80109dc"
+        "sha256": "c5ff93021cd915f25680db2260c4c9fc515a530713aec80e556dc16da80109dc",
+        "luanti_sha256": "f2600d2223034f65e2727b892aca8263250c05850f24939e7587cd9020ad97db"
       },
       "vertical-regression": {
         "checks": 17,
         "result": "PASS",
         "path": "artifacts/controls-hud-20261008/vertical-regression/checks.json",
-        "sha256": "ea594eb943d4e93af746b05f28db029266f12de06865936951aacc60a351be28"
+        "sha256": "ea594eb943d4e93af746b05f28db029266f12de06865936951aacc60a351be28",
+        "luanti_sha256": "f2600d2223034f65e2727b892aca8263250c05850f24939e7587cd9020ad97db"
       },
       "melee-regression": {
         "checks": 23,
         "result": "PASS",
         "path": "artifacts/controls-hud-20261008/melee-regression/checks.json",
-        "sha256": "7e20357e3bc633e25a4742a6407ae01e517a11adb93465975f5c90d54d01adeb"
+        "sha256": "7e20357e3bc633e25a4742a6407ae01e517a11adb93465975f5c90d54d01adeb",
+        "luanti_sha256": "f2600d2223034f65e2727b892aca8263250c05850f24939e7587cd9020ad97db"
+      },
+      "installed-held-movement": {
+        "checks": 15,
+        "result": "PASS",
+        "path": "artifacts/controls-hud-20261008/installed-held-movement/checks.json",
+        "sha256": "8535196d0a0650e10f55c1c2e1d25b8add4d0c298e9a66a05dcd0c4c05a6b79a",
+        "luanti_sha256": "f2600d2223034f65e2727b892aca8263250c05850f24939e7587cd9020ad97db"
       }
+    },
+    "movement_distances": {
+      "walk": 1.6754000000000033,
+      "run": 3.4080999999999975,
+      "crouch": 0.832499999999996,
+      "prone": 0.28870000000000573
     }
   },
   "artifacts": {
@@ -587,7 +609,13 @@
     "artifacts/controls-hud-20261008/refresh-runtime-final.json": "8796500ba27f497a4c61253f9b4aa7a4d819069dbe001a68b798938406aea1f7",
     "artifacts/controls-hud-20261008/source-replay-runtime-final.json": "34e21434ddf8a9dd02ab46dcd7e4056d7f7d93beb72f43b2d3811dbccde06b37",
     "artifacts/controls-hud-20261008/baseline-check-runtime-final.log": "bdf2404a7755942f90e5ac865e4cb616162e82c5b76468d9f5a57e230a8531b9",
-    "artifacts/controls-hud-20261008/installed-runtime.json": "1f7b7446c214437e9ea3f589da6f998320463b69254548976a1d16ef2937bf67"
+    "artifacts/controls-hud-20261008/installed-runtime.json": "1f7b7446c214437e9ea3f589da6f998320463b69254548976a1d16ef2937bf67",
+    "artifacts/controls-hud-20261008/build-luanti-scroll.log": "ac894d8096bd216d393fb09dd96932af3ea430a1b5c8be8c1db6e046ff3875d0",
+    "artifacts/controls-hud-20261008/tests-luanti-scroll.log": "7bb5378f07342cd5965b15ee82b78a0b28a2ece429e3ccd9cf8895d032fef789",
+    "artifacts/controls-hud-20261008/source-replay-scroll.json": "12ed0136013df35c1212e56d8a315ce4103ed4ec4e83432259a0196f279650b2",
+    "artifacts/controls-hud-20261008/refresh-scroll.json": "8491f1369e2b7a7619b113f7c3de8bf162cb2cd05aa5d0a3495dfba76239cc78",
+    "artifacts/controls-hud-20261008/baseline-check-scroll.log": "bdf2404a7755942f90e5ac865e4cb616162e82c5b76468d9f5a57e230a8531b9",
+    "artifacts/controls-hud-20261008/installed-runtime-scroll.json": "4120e21800737ef2628484811f59f82ed412e4f8e1ab8d9ca9b9fdfafdc6390a"
   },
   "commands": [
     "python3 tools/takeover_baseline.py capture",
@@ -599,7 +627,8 @@
     "DISPLAY=:1 XAUTHORITY=/run/user/1000/gdm/Xauthority python3 tests/controls_presentation_gui_test.py --workspace . --fixture artifacts/controls-hud-20261008/fixture-indoor/user --native-reader artifacts/controls-hud-20261008/native-save-reader-final --artifacts <new private directory> [--toggle-controls | --action-driven]",
     "python3 tests/controls_presentation_gui_test.py --workspace . --fixture artifacts/controls-hud-20261008/installed-held/user --native-reader artifacts/controls-hud-20261008/native-save-reader-final --artifacts <new private directory> --resume-only",
     "python3 tools/verify_captured_sources.py --receipt <new source-replay.json>",
-    "python3 tools/takeover_baseline.py check"
+    "python3 tools/takeover_baseline.py check",
+    "python3 tests/held_posture_movement_gui_test.py --workspace . --fixture artifacts/playable-core-postures-20261008/fixture/user --native-reader artifacts/controls-hud-20261008/native-save-reader-final --artifacts <new private directory>"
   ],
   "manual": {
     "previous_slices": "All four checklist items PASS in each of pickup/body/melee/postures; explicit user validation",
@@ -618,5 +647,71 @@
     "gui-openable-held: artificial pool classified outside by native terrain cache",
     "gui-indoor-held: click attempted before existing 200 ms interaction debounce",
     "body-regression: wrong fixture path; no runtime launched"
-  ]
+  ],
+  "base_source_commit": "5639a671e4226328bd28c948257539f9f44d0c52",
+  "base_sources": {
+    "cdda": {
+      "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+      "patch_sha256": "acc92a22ce4bc3747c260fd005d75d93c7d4038c19a3b14d93b2f8d1468f6294",
+      "tree_sha256": "b11491ff08766bfcd7654d0683e01b175da074d6dc67876a9f053a28b7d97f25",
+      "file_count": 8582
+    },
+    "luanti": {
+      "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
+      "patch_sha256": "1a67e4501a3e1aef5eba4cef4543537b6befa28780b6bd58e107b5ceceaa134b",
+      "tree_sha256": "03b25147a4e5381549607c18e22158f7c6abc6b26bcedffc8cb31791c3966771",
+      "file_count": 2256
+    },
+    "mineclonia": {
+      "commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36",
+      "file_count": 9359
+    }
+  },
+  "base_installed": {
+    "cdda": {
+      "installed": "/home/dannhill/Projects/cdda-mineclonia/cdda/build/src/cdda-server",
+      "source": "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/cdda/build/src/cdda-server",
+      "previous_sha256": "6686d95de986aa27426539903ee08a8b1ca5cabf40c3275251e1091fe1d87458",
+      "sha256": "6686d95de986aa27426539903ee08a8b1ca5cabf40c3275251e1091fe1d87458",
+      "changed": false
+    },
+    "luanti": {
+      "installed": "/home/dannhill/Projects/cdda-mineclonia/luanti/bin/luanti",
+      "source": "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/luanti/bin/luanti",
+      "previous_sha256": "ca83339f77223d6c1d78c38d3942e6cb7672510130674f5c4acd6072a640e84d",
+      "sha256": "f2600d2223034f65e2727b892aca8263250c05850f24939e7587cd9020ad97db",
+      "changed": true
+    }
+  },
+  "post_validation_scroll_polish": {
+    "scope": "Only avatarStatusForm scroll bounds and one unit assertion. Input/protocol/clock/camera/backend unchanged.",
+    "source_commit": "edec4b27b9f69539aa2a60e4fd1878ce33310854",
+    "runtime": {
+      "source_commit": "edec4b2",
+      "change": "Only readonly body scroll limits and one unit assertion; native control, protocol and clock paths unchanged.",
+      "previous_sha256": "f2600d2223034f65e2727b892aca8263250c05850f24939e7587cd9020ad97db",
+      "sha256": "b502f707fdf02115c52c6d63a583a395aa637bef0cb8e46f718b7491ef8d9484",
+      "source": "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/luanti/bin/luanti",
+      "installed": "/home/dannhill/Projects/cdda-mineclonia/luanti/bin/luanti"
+    },
+    "engine_tests": "307 tests + 648 Catch2 assertions PASS",
+    "checks": {
+      "body-scroll-verification": {
+        "count": 21,
+        "result": "PASS",
+        "path": "artifacts/controls-hud-20261008/body-scroll-verification/checks.json",
+        "sha256": "2c9d191d3b02df9b48b7e9b8dc7e013352719400fdb166b827b50af052248b09",
+        "luanti_sha256": "b502f707fdf02115c52c6d63a583a395aa637bef0cb8e46f718b7491ef8d9484"
+      },
+      "installed-body-scroll": {
+        "count": 21,
+        "result": "PASS",
+        "path": "artifacts/controls-hud-20261008/installed-body-scroll/checks.json",
+        "sha256": "2c9d191d3b02df9b48b7e9b8dc7e013352719400fdb166b827b50af052248b09",
+        "luanti_sha256": "b502f707fdf02115c52c6d63a583a395aa637bef0cb8e46f718b7491ef8d9484"
+      }
+    }
+  }
 }
