@@ -51,6 +51,8 @@ def main():
     config = out / 'client.conf'
     config.write_text('screen_w = 1280\nscreen_h = 800\nfullscreen = false\nfps_max = 60\n'
                       'vsync = false\nenable_clouds = false\ngui_scaling = 1\n'
+                      'keymap_cdda_run = KEY_KEY_R\nkeymap_cdda_crouch = KEY_KEY_X\n'
+                      'cwm_run_toggle = true\ncwm_crouch_toggle = true\n'
                       f'port = {port}\ncwm_trace_file = {trace}\ncwm_entity_trace_file = {out / "actors.csv"}\n')
     env = dict(os.environ, CDDA_USERDIR=str(user), CDDA_WORLD='audit_fixture',
                LUANTI_WORLD=str(out / 'luanti'), LUANTI_CONFIG=str(config),

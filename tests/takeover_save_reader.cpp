@@ -42,11 +42,13 @@ int main(int argc, const char *argv[]) {
     bool create_body = false;
     bool create_combat = false;
     bool create_posture = false;
+    bool create_ergonomics = false;
     bool resave = false;
     for (int i = 1; i < argc; ++i) {
         std::string arg(argv[i]);
         if (arg == "--create") create = true;
         else if (arg == "--create-pickup") { create = true; create_pickup = true; }
+        else if (arg == "--create-ergonomics") { create = true; create_posture = true; create_body = true; create_ergonomics = true; }
         else if (arg == "--create-posture") { create = true; create_posture = true; }
         else if (arg == "--create-combat") { create = true; create_combat = true; }
         else if (arg == "--create-body") { create = true; create_body = true; }
@@ -133,6 +135,12 @@ int main(int argc, const char *argv[]) {
         u.move_to(tripoint_abs_ms(tripoint(60,60,0)));
         calendar::turn = calendar::turn_zero + 36_hours;
         u.i_add(item(itype_id("rock"), calendar::turn));
+        if (create_ergonomics) {
+            for (int y = 58; y <= 62; ++y)
+                for (int x = 58; x <= 62; ++x)
+                    m.ter_set(tripoint(x,y,0), ter_str_id("t_water_sh"));
+            m.add_item_or_charges(tripoint(60,59,0), item(itype_id("rock"), calendar::turn));
+        }
         if (create_vertical) {
             // Canonical multi-Z fixture, built by the pristine pinned core.
             // No production exporter, projection or CWM server creates it.

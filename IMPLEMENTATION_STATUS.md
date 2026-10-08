@@ -1,5 +1,11 @@
 # Implementation status
 
+User validation on 2026-10-08: pickup, body HUD/sheet, pointed melee and
+native run/postures all four checklist items PASS each. [Feedback](docs/source/playable-core-feedback-2026-10-08.md)
+authorizes familiar hold controls and visual pause/camera fixes. Earlier
+pending entries below describe their delivery dates, not current acceptance.
+
+
 The fourth independent [native running/posture slice](docs/fixes/native-postures.md)
 is implemented and CWM 2.8 runtimes installed. R toggles run/walk, X crouch/walk,
 P prone/walk; native speed, stamina, noise, exhaustion and canonical mode
@@ -11,7 +17,7 @@ melee 21 checks pass. Native save reading uses pinned pristine CDDA. Evidence
 and exact source identities are [recorded](docs/fixes/native-postures-evidence.json).
 The user explicitly requested a third deferral and autonomous work on another
 essential independent feature. All four [manual checklists](docs/validation/pending-manual.md)
-remain IN ATTESA. Third-person rigs/animations remain future work; no full
+were subsequently explicitly validated. Third-person rigs/animations remain future work; no full
 M5.5/SAVE-001 certification or manual acceptance is claimed.
 
 Earlier delivery entries below retain historical protocol versions and test

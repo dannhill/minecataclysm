@@ -42,7 +42,7 @@ def main():
     env.pop('CDDA_TERRAIN_DEMO', None)
     print('Prova posture isolata:', session, flush=True)
     print('Scena senza nemici: nessuna raccolta, equipaggiamento o scheda H necessari.', flush=True)
-    print('R: corsa/cammino. X: accovacciato/cammino. P: a terra/cammino.', flush=True)
+    print('Ctrl sinistro: tieni per correre. Shift: tieni per accovacciarti. P: a terra/cammino.', flush=True)
     print('Visuale e velocita seguono la postura nativa. F7: pausa/riprendi.', flush=True)
     print('Movimento continuo 4x. Rilancia senza --fresh per riprendere il save.', flush=True)
     os.execve(root / 'start.sh', [str(root / 'start.sh'), '--go', '--name', 'posture_demo', *client_args], env)

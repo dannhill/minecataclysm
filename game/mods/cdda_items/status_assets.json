@@ -1,0 +1,42 @@
+[
+  {
+    "texture": "heart.png",
+    "source": "mineclonia/mods/HUD/mcl_base_textures/textures/heart.png",
+    "sha256": "4fe25ac3b6a5bd290a5813ab5bf4f1db01d1391f1cea06f7f9134702571495d7"
+  },
+  {
+    "texture": "mcl_hunger_icon_exhaustion.png",
+    "source": "mineclonia/mods/PLAYER/mcl_hunger/textures/mcl_hunger_icon_exhaustion.png",
+    "sha256": "8b6116cb1c62c091f13942f8ae121ff20ebb06ac57d289dce7e80d0113c1ae70"
+  },
+  {
+    "texture": "mcl_hunger_bgicon_exhaustion.png",
+    "source": "mineclonia/mods/PLAYER/mcl_hunger/textures/mcl_hunger_bgicon_exhaustion.png",
+    "sha256": "a0b223cff37403aeecf0544995a5b0d7cdd2ba213485920afb690da0d3038970"
+  },
+  {
+    "texture": "hbhunger_icon.png",
+    "source": "mineclonia/mods/PLAYER/mcl_hunger/textures/hbhunger_icon.png",
+    "sha256": "ac58f5deb485147f4dcb619fe080c8abb1b897ac5f76edaf3a98e19855bb9220"
+  },
+  {
+    "texture": "mcl_armor_inv_helmet_iron.png",
+    "source": "mineclonia/mods/ITEMS/mcl_armor/textures/mcl_armor_inv_helmet_iron.png",
+    "sha256": "6bc222d2af8a82ca2ff621914c8711e6d8b6b6a6454baf5ee502ff11bbacda8c"
+  },
+  {
+    "texture": "mcl_armor_inv_chestplate_iron.png",
+    "source": "mineclonia/mods/ITEMS/mcl_armor/textures/mcl_armor_inv_chestplate_iron.png",
+    "sha256": "2a487c03a33a584ad67bfd6e06874905a21e242fbf0a3f39d5398e9215c46eac"
+  },
+  {
+    "texture": "mcl_armor_inv_leggings_iron.png",
+    "source": "mineclonia/mods/ITEMS/mcl_armor/textures/mcl_armor_inv_leggings_iron.png",
+    "sha256": "a9ebf22f7db7b12fce146e3be6adecd72aaa526b976246649cef24ce2b5940e6"
+  },
+  {
+    "texture": "mcl_armor_inv_boots_iron.png",
+    "source": "mineclonia/mods/ITEMS/mcl_armor/textures/mcl_armor_inv_boots_iron.png",
+    "sha256": "e78b3ba399dc67f73a08450ad304c114c1e2414e33d6a1ef938c5d00f3bd8260"
+  }
+]

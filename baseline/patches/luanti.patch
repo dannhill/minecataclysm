@@ -1,3 +1,21 @@
+diff --git a/builtin/settingtypes.txt b/builtin/settingtypes.txt
+index 728eaf4..62c15aa 100644
+--- a/builtin/settingtypes.txt
++++ b/builtin/settingtypes.txt
+@@ -2557,3 +2557,13 @@ keymap_increase_viewing_range_min (View range increase key) key +
+ 
+ #    Key for decreasing the viewing range.
+ keymap_decrease_viewing_range_min (View range decrease key) key -
++
++[CDDA controls]
++
++# Hold by default; enable to toggle on each physical press.
++cwm_run_toggle (CDDA: toggle running) bool false
++cwm_crouch_toggle (CDDA: toggle crouching) bool false
++keymap_cdda_run (CDDA: run key) string KEY_LCONTROL
++keymap_cdda_crouch (CDDA: crouch key) string KEY_LSHIFT
++keymap_cdda_prone (CDDA: prone key) string KEY_KEY_P
++keymap_cdda_body (CDDA: body sheet key) string KEY_KEY_H
 diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
 index 65e5ab6..a8494d2 100644
 --- a/src/CMakeLists.txt
@@ -24,7 +42,7 @@ index d451d09..eb8db1d 100644
  	PARENT_SCOPE
  )
 diff --git a/src/client/client.cpp b/src/client/client.cpp
-index 6d42e75..46b16e3 100644
+index 6d42e75..df01ef1 100644
 --- a/src/client/client.cpp
 +++ b/src/client/client.cpp
 @@ -9,6 +9,7 @@
@@ -74,6 +92,15 @@ index 6d42e75..46b16e3 100644
  	/*
  		Send it to the server
  	*/
+@@ -1623,6 +1635,8 @@ void Client::inventoryAction(InventoryAction *a)
+ 
+ float Client::getAnimationTime()
+ {
++    auto& bridge = cdda_client::CddaBridge::getInstance();
++    if (bridge.ownsPlayer(this)) return std::fmod(bridge.visualAnimationTime(), 60.);
+ 	return m_animation_time;
+ }
+ 
 diff --git a/src/client/clientenvironment.cpp b/src/client/clientenvironment.cpp
 index b6ae675..9e33201 100644
 --- a/src/client/clientenvironment.cpp
@@ -106,7 +133,7 @@ index b6ae675..9e33201 100644
  		/*
  			Local player handling
 diff --git a/src/client/game.cpp b/src/client/game.cpp
-index 27b5833..61c0aea 100644
+index 27b5833..9024b5a 100644
 --- a/src/client/game.cpp
 +++ b/src/client/game.cpp
 @@ -8,6 +8,7 @@
@@ -143,7 +170,25 @@ index 27b5833..61c0aea 100644
  struct LocalFormspecHandler : public TextDest
  {
  	LocalFormspecHandler(const std::string &formname)
-@@ -932,6 +952,7 @@ class Game {
+@@ -443,12 +463,15 @@ class GameGlobalShaderConstantSetter : public IShaderConstantSetter
+ 		get_sunlight_color(&sunlight, daynight_ratio);
+ 		m_day_light.set(sunlight, services);
+ 
+-		u32 animation_timer = m_client->getEnv().getFrameTime() % 1000000;
++		auto& bridge = cdda_client::CddaBridge::getInstance();
++        const bool cwm = bridge.ownsPlayer(m_client);
++        u32 animation_timer = (cwm ? static_cast<u64>(bridge.visualAnimationTime() * 1000.) :
++            m_client->getEnv().getFrameTime()) % 1000000;
+ 		float animation_timer_f = (float)animation_timer / 100000.f;
+ 		m_animation_timer_vertex.set(&animation_timer_f, services);
+ 		m_animation_timer_pixel.set(&animation_timer_f, services);
+ 
+-		float animation_timer_delta_f = (float)m_client->getEnv().getFrameTimeDelta() / 100000.f;
++		float animation_timer_delta_f = (cwm ? bridge.visualAnimationDelta() * 1000.f : (float)m_client->getEnv().getFrameTimeDelta()) / 100000.f;
+ 		m_animation_timer_delta_vertex.set(&animation_timer_delta_f, services);
+ 		m_animation_timer_delta_pixel.set(&animation_timer_delta_f, services);
+ 
+@@ -932,6 +955,7 @@ class Game {
  	bool m_first_loop_after_window_activation = false;
  	bool m_camera_offset_changed = false;
  	bool m_game_focused = false;
@@ -151,7 +196,7 @@ index 27b5833..61c0aea 100644
  
  	bool m_does_lost_focus_pause_game = false;
  
-@@ -1009,6 +1030,8 @@ Game::Game() :
+@@ -1009,6 +1033,8 @@ Game::Game() :
  
  Game::~Game()
  {
@@ -160,7 +205,7 @@ index 27b5833..61c0aea 100644
  	delete client;
  	delete soundmaker;
  	sound_manager.reset();
-@@ -1239,6 +1262,8 @@ void Game::shutdown()
+@@ -1239,6 +1265,8 @@ void Game::shutdown()
  		}
  	}
  
@@ -169,30 +214,19 @@ index 27b5833..61c0aea 100644
  	delete client;
  	client = nullptr;
  	delete soundmaker;
-@@ -2053,7 +2078,34 @@ void Game::processUserInput(f32 dtime)
+@@ -2053,7 +2081,23 @@ void Game::processUserInput(f32 dtime)
  
  void Game::processKeyInput()
  {
 -	if (wasKeyDown(KeyType::DROP)) {
-+    // OS key-repeat emits additional wasKeyDown events while a key is held.
-+    // A native mode toggle is one physical press, never a held-key action.
-+    const bool cwm_player = cdda_client::CddaBridge::getInstance().ownsPlayer(client);
-+    static bool posture_held[3] = {};
-+    bool posture_pressed[3] = {};
-+    const GameKeyType posture_keys[] = {KeyType::CDDA_RUN, KeyType::CDDA_CROUCH, KeyType::CDDA_PRONE};
-+    for (size_t i = 0; i < 3; ++i) {
-+        const bool down = isKeyDown(posture_keys[i]);
-+        const bool event = cwm_player && wasKeyDown(posture_keys[i]);
-+        posture_pressed[i] = cwm_player && !posture_held[i] && (down || event);
-+        posture_held[i] = down;
++    auto& cwm_bridge = cdda_client::CddaBridge::getInstance();
++    const bool cwm_player = cwm_bridge.ownsPlayer(client);
++    if (cwm_player) {
++        // Sample levels, including release; OS autorepeat cannot toggle modes.
++        cwm_bridge.handlePostureInput(isKeyDown(KeyType::CDDA_RUN),
++            isKeyDown(KeyType::CDDA_CROUCH), isKeyDown(KeyType::CDDA_PRONE));
 +    }
-+    if (posture_pressed[0]) {
-+        cdda_client::CddaBridge::getInstance().toggleMovementMode(1);
-+    } else if (posture_pressed[1]) {
-+        cdda_client::CddaBridge::getInstance().toggleMovementMode(2);
-+    } else if (posture_pressed[2]) {
-+        cdda_client::CddaBridge::getInstance().toggleMovementMode(3);
-+    } else if (wasKeyDown(KeyType::CDDA_BODY) &&
++    if (wasKeyDown(KeyType::CDDA_BODY) &&
 +			cdda_client::CddaBridge::getInstance().ownsPlayer(client)) {
 +		const auto form = cdda_client::CddaBridge::getInstance().openBodyStatus();
 +		if (!form.empty()) {
@@ -205,7 +239,7 @@ index 27b5833..61c0aea 100644
  		dropSelectedItem(isKeyDown(KeyType::SNEAK));
  	} else if (wasKeyDown(KeyType::AUTOFORWARD)) {
  		toggleAutoforward();
-@@ -2083,7 +2135,8 @@ void Game::processKeyInput()
+@@ -2083,7 +2127,8 @@ void Game::processKeyInput()
  	} else if (wasKeyDown(KeyType::FREEMOVE)) {
  		toggleFreeMove();
  	} else if (wasKeyDown(KeyType::JUMP)) {
@@ -215,7 +249,7 @@ index 27b5833..61c0aea 100644
  	} else if (wasKeyDown(KeyType::PITCHMOVE)) {
  		togglePitchMove();
  	} else if (wasKeyDown(KeyType::FASTMOVE)) {
-@@ -2154,9 +2207,17 @@ void Game::processKeyInput()
+@@ -2154,9 +2199,17 @@ void Game::processKeyInput()
  	} else if (wasKeyDown(KeyType::ZOOM)) {
  		checkZoomEnabled();
  	} else if (wasKeyDown(KeyType::QUICKTUNE_NEXT)) {
@@ -235,7 +269,7 @@ index 27b5833..61c0aea 100644
  	} else if (wasKeyDown(KeyType::QUICKTUNE_INC)) {
  		quicktune->inc();
  	} else if (wasKeyDown(KeyType::QUICKTUNE_DEC)) {
-@@ -2178,6 +2239,9 @@ void Game::processItemSelection(u16 *new_playeritem)
+@@ -2178,6 +2231,9 @@ void Game::processItemSelection(u16 *new_playeritem)
  	LocalPlayer *player = client->getEnv().getLocalPlayer();
  
  	*new_playeritem = player->getWieldIndex();
@@ -245,7 +279,7 @@ index 27b5833..61c0aea 100644
  	u16 max_item = player->getMaxHotbarItemcount();
  	if (max_item == 0)
  		return;
-@@ -2737,8 +2801,83 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
+@@ -2737,8 +2793,83 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
  		control.aux1 = control.aux1 ^ true;
  	}
  
@@ -329,7 +363,7 @@ index 27b5833..61c0aea 100644
  	//tt.stop();
  }
  
-@@ -2784,6 +2923,42 @@ inline void Game::step(f32 dtime)
+@@ -2784,6 +2915,42 @@ inline void Game::step(f32 dtime)
  
  	if (!m_is_paused)
  		client->step(dtime);
@@ -372,7 +406,7 @@ index 27b5833..61c0aea 100644
  }
  
  static void pauseNodeAnimation(PausedNodesList &paused, scene::ISceneNode *node) {
-@@ -3246,6 +3421,7 @@ void Game::updateCamera(f32 dtime)
+@@ -3246,6 +3413,7 @@ void Game::updateCamera(f32 dtime)
  	tool_reload_ratio = MYMIN(tool_reload_ratio, 1.0);
  	camera->update(player, dtime, tool_reload_ratio);
  	camera->step(dtime);
@@ -380,7 +414,7 @@ index 27b5833..61c0aea 100644
  
  	f32 camera_fov = camera->getFovMax();
  	v3s16 camera_offset = camera->getOffset();
-@@ -3262,6 +3438,7 @@ void Game::updateCamera(f32 dtime)
+@@ -3262,6 +3430,7 @@ void Game::updateCamera(f32 dtime)
  		if (m_camera_offset_changed) {
  			client->updateCameraOffset(camera_offset);
  			client->getEnv().updateCameraOffset(camera_offset);
@@ -388,7 +422,7 @@ index 27b5833..61c0aea 100644
  
  			if (clouds)
  				clouds->updateCameraOffset(camera_offset);
-@@ -3365,6 +3542,37 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
+@@ -3365,6 +3534,37 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
  	// but the halo rendering code is already inefficient so there's no point in optimizing it here
  	hud->updateSelectionMesh(camera_offset);
  
@@ -426,7 +460,7 @@ index 27b5833..61c0aea 100644
  	// Allow digging again if button is not pressed
  	if (runData.digging_blocked && !isKeyDown(KeyType::DIG))
  		runData.digging_blocked = false;
-@@ -4319,7 +4527,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
+@@ -4319,7 +4519,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
  	/*
  		Fog
  	*/
@@ -554,17 +588,19 @@ index d6e2863..239953a 100644
  	std::vector<std::unique_ptr<MeshUpdateWorkerThread>> m_workers;
  };
 diff --git a/src/defaultsettings.cpp b/src/defaultsettings.cpp
-index 7758c96..b4af28e 100644
+index 7758c96..488884b 100644
 --- a/src/defaultsettings.cpp
 +++ b/src/defaultsettings.cpp
-@@ -166,6 +166,11 @@ void set_default_settings()
+@@ -166,6 +166,13 @@ void set_default_settings()
  	settings->setDefault("keymap_toggle_hud", "KEY_F1");
  	settings->setDefault("keymap_toggle_chat", "KEY_F2");
  	settings->setDefault("keymap_toggle_fog", "KEY_F3");
 +	settings->setDefault("keymap_cdda_body", "KEY_KEY_H");
-+	settings->setDefault("keymap_cdda_run", "KEY_KEY_R");
-+	settings->setDefault("keymap_cdda_crouch", "KEY_KEY_X");
++	settings->setDefault("keymap_cdda_run", "KEY_LCONTROL");
++	settings->setDefault("keymap_cdda_crouch", "KEY_LSHIFT");
 +	settings->setDefault("keymap_cdda_prone", "KEY_KEY_P");
++	settings->setDefault("cwm_run_toggle", "false");
++	settings->setDefault("cwm_crouch_toggle", "false");
 +
  #ifndef NDEBUG
  	settings->setDefault("keymap_toggle_update_camera", "KEY_F4");
@@ -646,10 +682,10 @@ index 5d6b891..48c0d59 100644
  		g_settings->getFlagStr("anticheat_flags", flagdesc_anticheat, nullptr);
  
 diff --git a/src/unittest/test_mapblock.cpp b/src/unittest/test_mapblock.cpp
-index 7f3f860..9ea0ea4 100644
+index 7f3f860..c80320d 100644
 --- a/src/unittest/test_mapblock.cpp
 +++ b/src/unittest/test_mapblock.cpp
-@@ -10,6 +10,13 @@
+@@ -10,6 +10,14 @@
  #include "serialization.h"
  #include "noise.h"
  #include "inventory.h"
@@ -659,11 +695,12 @@ index 7f3f860..9ea0ea4 100644
 +#include "cdda/ground_item_projection.h"
 +#include "cdda/ground_item_visual.h"
 +#include "cdda/avatar_status.h"
++#include "cdda/posture_input.h"
 +#endif
  
  class TestMapBlock : public TestBase
  {
-@@ -32,7 +39,13 @@ class TestMapBlock : public TestBase
+@@ -32,7 +40,14 @@ class TestMapBlock : public TestBase
  	void testLoad20(IGameDef *gamedef);
  
  	// Tests loading a non-standard MapBlock
@@ -674,11 +711,12 @@ index 7f3f860..9ea0ea4 100644
 +    void testCddaOpeningCoordinates();
 +    void testCddaGroundItemProjection();
 +    void testCddaBodyStatusEscaping();
++    void testCddaPostureInput();
 +#endif
  };
  
  static TestMapBlock g_test_instance;
-@@ -44,9 +57,102 @@ void TestMapBlock::runTests(IGameDef *gamedef)
+@@ -44,9 +59,139 @@ void TestMapBlock::runTests(IGameDef *gamedef)
  	TEST(testSave29, gamedef);
  	TEST(testLoad29, gamedef);
  	TEST(testLoad20, gamedef);
@@ -689,6 +727,7 @@ index 7f3f860..9ea0ea4 100644
 +    TEST(testCddaOpeningCoordinates);
 +    TEST(testCddaGroundItemProjection);
 +    TEST(testCddaBodyStatusEscaping);
++    TEST(testCddaPostureInput);
 +#endif
  }
  
@@ -706,9 +745,45 @@ index 7f3f860..9ea0ea4 100644
 +    UASSERT(form.find("x\\]\\;button\\[") != std::string::npos);
 +    UASSERT(form.find(";inject;click") == std::string::npos);
 +    UASSERT(form.find("left\\;arm") != std::string::npos);
-+    UASSERT(form.find("table[") != std::string::npos);
++    UASSERT(form.find("table[") == std::string::npos);
++    UASSERT(form.find("scroll_container[") != std::string::npos);
++    UASSERT(form.find("heart.png") != std::string::npos);
 +    UASSERT(form.find("list[") == std::string::npos);
 +    UASSERTEQ(std::string, statusColor("c_red"), "#ef6666");
++}
++
++void TestMapBlock::testCddaPostureInput()
++{
++    using cdda_client::PostureInput;
++    PostureInput input;
++    UASSERTEQ(int, input.sample({true,false,false},false,false,true,0), 1);
++    UASSERTEQ(int, input.sample({true,false,false},false,false,true,1), 1);
++    UASSERTEQ(int, input.sample({false,false,false},false,false,true,1), 0);
++    UASSERTEQ(int, input.sample({false,true,false},false,false,true,0), 2);
++    UASSERTEQ(int, input.sample({false,false,false},false,false,true,2), 0);
++    UASSERTEQ(int, input.sample({false,false,true},false,false,true,0), 3);
++    UASSERTEQ(int, input.sample({false,false,true},false,false,true,3), 3);
++    UASSERTEQ(int, input.sample({false,false,false},false,false,true,3), 3);
++    UASSERTEQ(int, input.sample({true,false,false},false,false,false,3), -1);
++    UASSERTEQ(int, input.sample({true,false,false},false,false,true,3), 3);
++    input.sample({false,false,false},false,false,true,3);
++    UASSERTEQ(int, input.sample({true,false,false},false,false,true,3), 1);
++    input.reject(1);
++    UASSERTEQ(int, input.sample({true,false,false},false,false,true,3), 3);
++    PostureInput exhausted;
++    exhausted.sample({true,false,false},false,false,true,0);
++    exhausted.sample({true,false,false},false,false,true,1);
++    UASSERTEQ(int, exhausted.sample({true,false,false},false,false,true,0), 0);
++    UASSERTEQ(int, exhausted.sample({true,false,false},false,false,true,0), 0);
++    PostureInput toggle;
++    UASSERTEQ(int, toggle.sample({true,false,false},true,true,true,0), 1);
++    UASSERTEQ(int, toggle.sample({true,false,false},true,true,true,1), 1);
++    UASSERTEQ(int, toggle.sample({false,false,false},true,true,true,1), 1);
++    UASSERTEQ(int, toggle.sample({true,false,false},true,true,true,1), 0);
++    const auto segments = cdda_client::statusSegments("||\\");
++    UASSERT(segments[0] == 1.f && segments[2] == .5f && segments[3] == 0.f);
++    UASSERT(cdda_client::statusSegments("-----")[0] == 0.f);
++    UASSERT(cdda_client::statusSegments(":")[0] == .25f);
 +}
 +
 +void TestMapBlock::testCddaOpeningCoordinates()
@@ -784,12 +859,13 @@ index 7f3f860..9ea0ea4 100644
  void TestMapBlock::testSaveLoad(IGameDef *gamedef, const u8 version)
 diff --git a/src/cdda/avatar_status.h b/src/cdda/avatar_status.h
 new file mode 100644
-index 0000000..5a349eb
+index 0000000..0254539
 --- /dev/null
 +++ b/src/cdda/avatar_status.h
-@@ -0,0 +1,62 @@
+@@ -0,0 +1,101 @@
 +#pragma once
 +#include <string>
++#include <array>
 +#include <vector>
 +
 +namespace cdda_client {
@@ -824,38 +900,76 @@ index 0000000..5a349eb
 +    // Pad the native five-segment UI bar; never reconstruct HP from it.
 +    return "[" + native + std::string(native.size() < 5 ? 5 - native.size() : 0, '.') + "]";
 +}
++// Native get_bar output: full pipe, half slash, tiny colon, zero dashes.
++// These are display segments, not reconstructed exact HP or stamina.
++inline std::array<float, 5> statusSegments(const std::string& text) {
++    std::array<float, 5> result{};
++    size_t i = 0;
++    for (char c : text) {
++        if (i == result.size()) break;
++        result[i++] = c == '|' ? 1.f : c == '\\' ? .5f : c == ':' ? .25f : 0.f;
++    }
++    return result;
++}
++inline std::string bodyPartIcon(const std::string& id) {
++    const char* kind = id == "head" ? "helmet" : id == "leg_l" || id == "leg_r" ? "leggings" : "chestplate";
++    return std::string("mcl_armor_inv_") + kind + "_iron.png";
++}
++inline std::string statusIconRow(double x, double y, const std::string& text,
++        const std::string& icon) {
++    std::string form;
++    const auto segments = statusSegments(text);
++    for (size_t i = 0; i < segments.size(); ++i) {
++        const auto position = std::to_string(x + .42 * i) + "," + std::to_string(y);
++        form += "image[" + position + ";0.36,0.36;" + icon + "^[opacity:45]";
++        if (segments[i] > 0) {
++            // Half/tiny fills keep native display resolution, with no invented HP.
++            const auto pct = std::to_string(int(segments[i] * 100));
++            form += "image[" + position + ";0.36,0.36;" + icon + "^[opacity:0^[lowpart:" + pct + ":" + icon + "]";
++        }
++    }
++    return form;
++}
 +inline std::string avatarStatusForm(const AvatarStatusView& status) {
 +    std::string form = "formspec_version[4]size[12,10]no_prepend[]"
 +        "bgcolor[#182322f5;true]style_type[label;textcolor=#eeeeee]"
 +        "box[0,0;12,10;#182322f5]"
 +        "label[0.4,0.4;Corpo e sopravvivenza]"
 +        "label[0.4,0.9;Tempo in pausa - descrizioni percepite dal personaggio]"
-+        "label[0.4,1.5;Stamina: " + statusEscape(statusBarText(status.stamina.text)) + "]";
-+    form += "tablecolumns[color;text;text]tableoptions[background=#202c2d;border=false;highlight=#344748]"
-+        "table[0.4,2;5.3,6.5;needs;";
-+    bool comma = false;
++        "label[0.4,1.5;Stamina]";
++    form += statusIconRow(2.1, 1.3, status.stamina.text, "mcl_hunger_icon_exhaustion.png");
++    form += "scrollbaroptions[min=0;max=" + std::to_string(status.needs.size() * 8) +
++        ";smallstep=8;largestep=24]scrollbar[5.5,2;0.25,6.3;vertical;needs_scroll;0]"
++        "scroll_container[0.4,2;5,6.3;needs_scroll;vertical;0.1]";
++    double y = .2;
 +    for (const auto& value : status.needs) {
-+        if (comma) form += ',';
-+        comma = true;
-+        form += statusColor(value.color) + ',' + statusEscape(value.label) + ',' +
-+            statusEscape(value.text.empty() ? "-" : value.text);
++        form += "style[need_" + statusEscape(value.id) + ";textcolor=" + statusColor(value.color) + "]";
++        form += "label[0," + std::to_string(y) + ";" + statusEscape(value.label) + ": " +
++            statusEscape(value.text.empty() ? "-" : value.text) + "]";
++        y += .75;
 +    }
-+    form += ";0]tablecolumns[color;text;text;text]table[6,2;5.6,6.5;parts;";
-+    form += "#eeeeee,Parte,Salute,Temperatura";
-+    for (const auto& part : status.parts)
-+        form += ',' + statusColor(part.health.color) + ',' + statusEscape(part.label) + ',' +
-+            statusEscape(statusBarText(part.health.text)) + ',' + statusEscape(part.temperature.text);
-+    form += ";0]label[0.4,8.8;Barre: cinque segmenti. '-' nei bisogni: nessuna indicazione percepita.]"
++    form += "scroll_container_end[]scrollbaroptions[min=0;max=" + std::to_string(status.parts.size() * 11) +
++        ";smallstep=8;largestep=24]scrollbar[11.3,2;0.25,6.3;vertical;parts_scroll;0]"
++        "scroll_container[6,2;5.1,6.3;parts_scroll;vertical;0.1]";
++    y = .1;
++    for (const auto& part : status.parts) {
++        form += "image[0," + std::to_string(y) + ";0.5,0.5;" + bodyPartIcon(part.id) + "]";
++        form += "label[0.6," + std::to_string(y + .25) + ";" + statusEscape(part.label) + "]";
++        form += statusIconRow(2.5, y + .05, part.health.text, "heart.png");
++        form += "label[0.6," + std::to_string(y + .72) + ";" + statusEscape(part.temperature.text) + "]";
++        y += 1.1;
++    }
++    form += "scroll_container_end[]label[0.4,8.8;Cinque icone = cinque segmenti nativi. Condizioni e temperatura separate.]"
 +        "button_exit[4.3,9.2;3.4,0.6;close;Torna al gioco]";
 +    return form;
 +}
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..47c0905
+index 0000000..8bbffda
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,1890 @@
+@@ -0,0 +1,1990 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
@@ -864,6 +978,10 @@ index 0000000..47c0905
 +#include "ground_item_visual.h"
 +#include "ground_item_formspec.h"
 +#include "avatar_status.h"
++#include "posture_input.h"
++#include <IGUIImage.h>
++#include <IGUISkin.h>
++#include <IGUIFont.h>
 +#include "inventorymanager.h"
 +#include <optional>
 +#include <limits>
@@ -933,6 +1051,8 @@ index 0000000..47c0905
 +    AvatarStatusView avatar_status_;
 +    bool body_form_open_{false}, body_close_requested_{false};
 +    irr::gui::IGUIStaticText* survival_text_{nullptr};
++    irr::gui::IGUIStaticText* possessions_text_{nullptr};
++    std::vector<irr::gui::IGUIImage*> hud_images_;
 +    uint64_t ack_revision_{0};
 +    uint64_t pending_move_{0};
 +    uint64_t pointed_actor_{0}, last_attack_target_{0}, attacks_sent_{0}, last_attack_command_{0};
@@ -950,6 +1070,11 @@ index 0000000..47c0905
 +    static constexpr float step_duration = 0.2f;
 +    float player_feet_offset_{0.f};
 +    float player_eye_offset_{0.f};
++    double visual_animation_time_{0};
++    float visual_animation_delta_{0};
++    PostureInput posture_input_;
++    uint64_t posture_command_{0};
++    int requested_posture_{0};
 +
 +    std::unordered_map<uint64_t, VisualEntity> entities_;
 +    std::unordered_map<uint64_t, VisualVehicle> vehicles_;
@@ -1456,6 +1581,7 @@ index 0000000..47c0905
 +        origin_valid_ = false;
 +        pending_move_ = 0; metrics_.pending_decision = 0;
 +        player_feet_offset_ = player_eye_offset_ = 0.f;
++        posture_input_ = {}; posture_command_ = 0;
 +    }
 +
 +    bool send_clock_control(CDDA::CWM::SimulationControl action, float scale = 1.f) {
@@ -1541,6 +1667,7 @@ index 0000000..47c0905
 +    }
 +
 +    void update(float dtime) {
++        visual_animation_delta_ = 0.f;
 +        ipc_work_ = {};
 +        if (!connection_ || !connection_->is_valid()) {
 +            disconnected();
@@ -1576,9 +1703,14 @@ index 0000000..47c0905
 +            if (sync_timer_ > 5.f) { connection_->close(); disconnected(); return; }
 +        }
 +
++        const bool frozen = !player_ready_ || !session_.ready() || metrics_.pause_reasons ||
++            metrics_.pending_decision || sent_menu_pause_ == 1 || body_form_open_ || ground_container_open_;
++        visual_animation_delta_ = frozen ? 0.f : dtime * (metrics_.realtime ? metrics_.time_scale : 1.f);
++        visual_animation_time_ += visual_animation_delta_;
++
 +        // Interpolate visual entities
 +        for (auto& [id, ent] : entities_) {
-+            const float elapsed = metrics_.realtime && metrics_.pause_reasons ? 0.f : dtime;
++            const float elapsed = frozen ? 0.f : dtime;
 +            ent.interpolation_time = std::min(ent.motion_seconds, ent.interpolation_time + elapsed);
 +            ent.current_pos = ent.start_pos + (ent.target_pos - ent.start_pos) *
 +                              (ent.interpolation_time / ent.motion_seconds);
@@ -1596,8 +1728,13 @@ index 0000000..47c0905
 +                        feet = 1.f; eye = -.85f; // crouched passage over the sill
 +                    } else if (ent.state_flags & UNDERWATER) { feet = -1.8f; eye = 0.f; }
 +                    else if (ent.state_flags & SWIMMING) { feet = -1.2f; eye = 0.f; }
-+                    else if (ent.state_flags & WADING) feet = -.3f;
-+                    const float blend = 1.f - std::exp(-20.f * (metrics_.realtime && metrics_.pause_reasons ? 0.f : dtime));
++                    else if (ent.state_flags & WADING) {
++                        feet = -.3f;
++                        // Keep a prone eye above the shallow-water/floor surface.
++                        // Wading and prone offsets must not lower it twice.
++                        if (ent.state_flags & PRONE) eye += .3f;
++                    }
++                    const float blend = 1.f - std::exp(-20.f * (frozen ? 0.f : dtime));
 +                    player_feet_offset_ += (feet - player_feet_offset_) * blend;
 +                    player_eye_offset_ += (eye - player_eye_offset_) * blend;
 +                    local_player->eye_offset_first.Y = player_eye_offset_ * 10.f;
@@ -1612,11 +1749,11 @@ index 0000000..47c0905
 +            smgr_ = client_->getSceneManager();
 +        }
 +
-+        update_ground_item_visuals(dtime);
++        update_ground_item_visuals(visual_animation_delta_);
 +
 +        for (auto& [id, veh] : vehicles_) {
 +            v3f diff = veh.target_pos - veh.current_pos;
-+            veh.current_pos += diff * std::min(1.0f, dtime * 12.0f);
++            veh.current_pos += diff * std::min(1.0f, (frozen ? 0.f : dtime) * 12.0f);
 +
 +            if (smgr_) {
 +                for (auto& comp : veh.components) {
@@ -2015,8 +2152,14 @@ index 0000000..47c0905
 +                const auto* ack = msg->payload_as_CommandAck();
 +                if (ack) {
 +                    if (ack->command_id() == last_attack_command_) last_attack_result_ = ack->accepted() ? 1 : 0;
++                    if (ack->command_id() == posture_command_ && !ack->accepted())
++                        posture_input_.reject(requested_posture_);
 +                    if (!ack->accepted() && ack->error_message()) {
-+                        item_hint_ = utf8_to_wide(ack->error_message()->str());
++                        const auto error = ack->error_message()->str();
++                        item_hint_ = error == "Native movement mode unavailable" && requested_posture_ == 1 &&
++                            ack->command_id() == posture_command_ ?
++                            L"Corsa non disponibile: riprendi fiato o controlla le condizioni delle gambe." :
++                            utf8_to_wide(error);
 +                        item_hint_until_ = std::chrono::steady_clock::now() + std::chrono::seconds(3);
 +                    }
 +                    if (ack->command_id() == pending_move_) { move_acked_ = true; ack_revision_ = ack->result_revision(); }
@@ -2152,7 +2295,7 @@ index 0000000..47c0905
 +    std::string trace_path;
 +    if (g_settings->getNoEx("cwm_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->trace_.open(trace_path);
-+        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog,ipc_connected,ipc_input,ipc_output,ipc_read_bytes,ipc_write_bytes,ipc_frames,ipc_dispatch_bytes,ipc_read_calls,ipc_write_calls,session_state,input_ready,session_id,player_id,connection_id,sequence,resync_count,entity_cache,vehicle_cache,scene_origin_x,scene_origin_y,simulation_time,realtime,pause_reasons,time_scale,sent_intent,continuous_motion,intent_x,intent_y,ipc_latency_ms,projection_ms,ground_tiles,owned_items,ground_container,ground_hover,queued_pickup,ground_visual_nodes,ground_hover_items,ground_target_items,ground_target_visual_nodes,ground_target_first_type,status_available,body_form,survival_visible,status_stamina,status_head,status_arm_l,combat_hover,attacks_sent,attack_target,attack_target_hp,attack_result,player_state_flags,player_eye_offset\n";
++        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog,ipc_connected,ipc_input,ipc_output,ipc_read_bytes,ipc_write_bytes,ipc_frames,ipc_dispatch_bytes,ipc_read_calls,ipc_write_calls,session_state,input_ready,session_id,player_id,connection_id,sequence,resync_count,entity_cache,vehicle_cache,scene_origin_x,scene_origin_y,simulation_time,realtime,pause_reasons,time_scale,sent_intent,continuous_motion,intent_x,intent_y,ipc_latency_ms,projection_ms,ground_tiles,owned_items,ground_container,ground_hover,queued_pickup,ground_visual_nodes,ground_hover_items,ground_target_items,ground_target_visual_nodes,ground_target_first_type,status_available,body_form,survival_visible,status_stamina,status_head,status_arm_l,combat_hover,attacks_sent,attack_target,attack_target_hp,attack_result,player_state_flags,player_eye_offset,visual_animation_time,visual_animation_delta,ground_item_rotation\n";
 +    }
 +    if (g_settings->getNoEx("cwm_entity_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->entity_trace_.open(trace_path);
@@ -2166,6 +2309,8 @@ index 0000000..47c0905
 +        if (pimpl_->debug_text_) pimpl_->debug_text_->remove();
 +        if (pimpl_->item_hint_text_) pimpl_->item_hint_text_->remove();
 +        if (pimpl_->survival_text_) pimpl_->survival_text_->remove();
++        if (pimpl_->possessions_text_) pimpl_->possessions_text_->remove();
++        for (auto* image : pimpl_->hud_images_) image->remove();
 +        if (pimpl_->clock_text_) pimpl_->clock_text_->remove();
 +        if (pimpl_->safety_text_) pimpl_->safety_text_->remove();
 +        if (pimpl_->decision_text_) pimpl_->decision_text_->remove();
@@ -2303,7 +2448,7 @@ index 0000000..47c0905
 +        << ',' << [&]() { for (const auto& part : pimpl_->avatar_status_.parts) if (part.id == "head") return part.health.text; return std::string{}; }()
 +        << ',' << [&]() { for (const auto& part : pimpl_->avatar_status_.parts) if (part.id == "arm_l") return part.health.text; return std::string{}; }()
 +        << ',' << pimpl_->pointed_actor_ << ',' << pimpl_->attacks_sent_ << ',' << pimpl_->last_attack_target_
-+        << ',' << [&]() { const auto it = pimpl_->entities_.find(pimpl_->last_attack_target_); return it == pimpl_->entities_.end() ? -1 : int(it->second.hp_percent); }() << ',' << pimpl_->last_attack_result_ << ',' << entity.state_flags << ',' << pimpl_->player_eye_offset_ << '\n';
++        << ',' << [&]() { const auto it = pimpl_->entities_.find(pimpl_->last_attack_target_); return it == pimpl_->entities_.end() ? -1 : int(it->second.hp_percent); }() << ',' << pimpl_->last_attack_result_ << ',' << entity.state_flags << ',' << pimpl_->player_eye_offset_ << ',' << pimpl_->visual_animation_time_ << ',' << pimpl_->visual_animation_delta_ << ',' << pimpl_->ground_item_rotation_ << '\n';
 +    pimpl_->trace_.flush();
 +}
 +
@@ -2387,25 +2532,35 @@ index 0000000..47c0905
 +    return impl.pointed_actor_ != 0;
 +}
 +
-+bool CddaBridge::toggleMovementMode(int mode) {
-+    if (!pimpl_ || mode < 1 || mode > 3) return false;
++void CddaBridge::handlePostureInput(bool run, bool crouch, bool prone) {
++    if (!pimpl_) return;
 +    auto& impl = *pimpl_;
-+    if (!impl.connection_ || !impl.connection_->is_valid() || !impl.session_.ready() ||
-+        !impl.player_ready_ || impl.pending_move_ || impl.metrics_.pending_decision ||
-+        impl.metrics_.pause_reasons || (impl.sent_menu_pause_ == 1) || impl.body_form_open_ ||
-+        impl.ground_container_open_) return false;
-+    const auto flags = impl.entities_.at(1).state_flags;
-+    const uint32_t bit = mode == 1 ? cdda::cwm::RUNNING :
-+        mode == 2 ? cdda::cwm::CROUCHING : cdda::cwm::PRONE;
-+    const auto selected = static_cast<CDDA::CWM::MovementMode>(flags & bit ? 0 : mode);
++    const auto player = impl.entities_.find(1);
++    const auto flags = player == impl.entities_.end() ? 0 : player->second.state_flags;
++    const int confirmed = flags & cdda::cwm::PRONE ? 3 :
++        flags & cdda::cwm::CROUCHING ? 2 : flags & cdda::cwm::RUNNING ? 1 : 0;
++    const bool allowed = impl.connection_ && impl.connection_->is_valid() && impl.session_.ready() &&
++        impl.player_ready_ && !impl.metrics_.pending_decision && !impl.metrics_.pause_reasons &&
++        impl.sent_menu_pause_ != 1 && !impl.body_form_open_ && !impl.ground_container_open_;
++    const int desired = impl.posture_input_.sample({run, crouch, prone},
++        g_settings->getBool("cwm_run_toggle"), g_settings->getBool("cwm_crouch_toggle"), allowed, confirmed);
++    if (desired < 0 || desired == confirmed || impl.pending_move_) return;
 +    const uint64_t command = impl.session_.next_command++;
 +    auto builder = impl.session_.builder();
-+    const auto bytes = builder.build_movement_mode_request(command, selected);
-+    if (!impl.connection_->send_message(bytes.data(), bytes.size())) return false;
-+    impl.pending_move_ = command;
++    const auto bytes = builder.build_movement_mode_request(command,
++        static_cast<CDDA::CWM::MovementMode>(desired));
++    if (!impl.connection_->send_message(bytes.data(), bytes.size())) return;
++    impl.posture_command_ = impl.pending_move_ = command;
++    impl.requested_posture_ = desired;
 +    impl.move_acked_ = false;
 +    impl.sent_move_ = std::chrono::steady_clock::now();
-+    return true;
++}
++
++double CddaBridge::visualAnimationTime() const {
++    return pimpl_ ? pimpl_->visual_animation_time_ : 0.;
++}
++float CddaBridge::visualAnimationDelta() const {
++    return pimpl_ ? pimpl_->visual_animation_delta_ : 0.f;
 +}
 +
 +bool CddaBridge::attackPointedTarget() {
@@ -2594,7 +2749,8 @@ index 0000000..47c0905
 +        flags & cdda::cwm::CROUCHING ? L"Accovacciato" :
 +        flags & cdda::cwm::RUNNING ? L"Corsa" : L"Cammino";
 +    const std::wstring mode_text = std::wstring(posture) +
-+        L"\nR: corsa | X: accovacciati | P: a terra (ripremi per camminare)";
++        L"\nCtrl: corsa (" + std::wstring(g_settings->getBool("cwm_run_toggle") ? L"toggle" : L"tieni") +
++        L") | Shift: accovacciati (" + std::wstring(g_settings->getBool("cwm_crouch_toggle") ? L"toggle" : L"tieni") + L") | P: a terra";
 +    pimpl_->posture_text_->setText(mode_text.c_str());
 +    pimpl_->posture_text_->setVisible(pimpl_->session_.ready() && player != pimpl_->entities_.end() &&
 +        !pimpl_->ground_container_open_ && !pimpl_->body_form_open_ && !pimpl_->metrics_.pending_decision);
@@ -2604,24 +2760,82 @@ index 0000000..47c0905
 +        pimpl_->survival_text_->setOverrideColor(irr::video::SColor(255, 240, 245, 238));
 +        pimpl_->survival_text_->setBackgroundColor(irr::video::SColor(220, 24, 35, 34));
 +    }
-+    const int width = std::min<int>(530, screen.Width - 20);
++    const int width = std::min<int>(365, screen.Width - 20);
++    const int panel_top = std::max<int>(285, screen.Height - 240);
++    const int line = guienv->getSkin()->getFont()->getDimension(L"A").Height + 3;
 +    pimpl_->survival_text_->setRelativePosition(irr::core::rect<irr::s32>(10,
-+        std::max<int>(285, screen.Height - 195), 10 + width, screen.Height - 10));
-+    std::string survival = "Corpo [H]  |  ";
-+    if (!pimpl_->session_.ready()) survival += "Stato CDDA non sincronizzato";
-+    else if (!pimpl_->avatar_status_.available) survival += "Stato CDDA non disponibile";
++        panel_top, 10 + width, screen.Height - 10));
++    std::string survival = "Corpo [H]";
++    if (!pimpl_->session_.ready()) survival += "\nStato CDDA non sincronizzato";
++    else if (!pimpl_->avatar_status_.available) survival += "\nStato CDDA non disponibile";
 +    else {
-+        survival += "Stamina " + statusBarText(pimpl_->avatar_status_.stamina.text);
-+        for (const auto& part : pimpl_->avatar_status_.parts)
-+            if (part.id == "head" || part.id == "torso")
-+                survival += "\n" + part.label + "  " + statusBarText(part.health.text);
++        survival += "\nStamina\nTesta\nTorso";
 +        for (const auto& value : pimpl_->avatar_status_.needs)
 +            if (value.id == "hunger" || value.id == "thirst" || value.id == "fatigue" || value.id == "pain")
 +                if (!value.text.empty()) survival += "\n" + value.label + ": " + value.text;
 +    }
 +    pimpl_->survival_text_->setText(utf8_to_wide(survival).c_str());
-+    pimpl_->survival_text_->setVisible(!pimpl_->ground_container_open_ && !pimpl_->body_form_open_ &&
-+        !pimpl_->metrics_.pending_decision);
++    const bool hud_visible = !pimpl_->ground_container_open_ && !pimpl_->body_form_open_ &&
++        !pimpl_->metrics_.pending_decision;
++    pimpl_->survival_text_->setVisible(hud_visible);
++
++    // GUI images are reused across frames; no local HP/food inventory authority.
++    size_t image_index = 0;
++    for (auto* image : pimpl_->hud_images_) image->setVisible(false);
++    auto image = [&](const std::string& texture, int x, int y, int w, int h, const std::wstring& tooltip = L"") {
++        if (image_index == pimpl_->hud_images_.size())
++            pimpl_->hud_images_.push_back(guienv->addImage(irr::core::rect<irr::s32>()));
++        auto* widget = pimpl_->hud_images_[image_index++];
++        widget->setImage(pimpl_->client_->getTextureSource()->getTexture(texture));
++        widget->setScaleImage(true);
++        widget->setRelativePosition(irr::core::rect<irr::s32>(x, y, x + w, y + h));
++        widget->setToolTipText(tooltip.c_str());
++        widget->setVisible(hud_visible && pimpl_->session_.ready());
++    };
++    auto bar = [&](const std::string& text, const std::string& icon, int y) {
++        const auto segments = statusSegments(text);
++        for (size_t i = 0; i < segments.size(); ++i) {
++            const int x = 160 + i * 27;
++            image(icon + "^[opacity:45", x, y, 23, 23);
++            if (segments[i] > 0)
++                image(icon + "^[opacity:0^[lowpart:" + std::to_string(int(segments[i] * 100)) + ":" + icon,
++                    x, y, 23, 23);
++        }
++    };
++    if (pimpl_->avatar_status_.available && pimpl_->session_.ready()) {
++        bar(pimpl_->avatar_status_.stamina.text, "mcl_hunger_icon_exhaustion.png", panel_top + line);
++        for (const auto& part : pimpl_->avatar_status_.parts)
++            if (part.id == "head" || part.id == "torso") {
++                const int y = panel_top + line * (part.id == "head" ? 2 : 3);
++                image(bodyPartIcon(part.id), 120, y, 23, 23);
++                bar(part.health.text, "heart.png", y);
++            }
++    }
++    if (!pimpl_->possessions_text_) {
++        pimpl_->possessions_text_ = guienv->addStaticText(L"", irr::core::rect<irr::s32>(), false, true);
++        pimpl_->possessions_text_->setOverrideColor(irr::video::SColor(255, 240, 245, 238));
++    }
++    const int slots = std::min<int>(9, (screen.Width - width - 40) / 44);
++    const int left = std::max<int>(width + 30, (screen.Width - slots * 44) / 2);
++    pimpl_->possessions_text_->setRelativePosition(irr::core::rect<irr::s32>(left, screen.Height - 80,
++        std::min<int>(screen.Width - 10, left + slots * 44), screen.Height - 52));
++    const auto count = pimpl_->owned_items_.size();
++    const auto summary = "Oggetti posseduti (vista)" +
++        (count > size_t(slots) ? " +" + std::to_string(count - slots) : std::string{});
++    pimpl_->possessions_text_->setText(utf8_to_wide(summary).c_str());
++    pimpl_->possessions_text_->setVisible(hud_visible && pimpl_->session_.ready() && slots > 0);
++    for (int i = 0; i < slots; ++i) {
++        const int x = left + i * 44;
++        image("mcl_formspec_itemslot.png", x, screen.Height - 50, 42, 42);
++        if (size_t(i) >= count) continue;
++        const auto& owned = pimpl_->owned_items_[i];
++        const auto name = pimpl_->ground_item_visual_name(owned.type_id);
++        const auto& def = pimpl_->client_->getItemDefManager()->get(name);
++        std::string tooltip = owned.name;
++        if (owned.count_by_charges) tooltip += " x" + std::to_string(owned.charges);
++        image(def.inventory_image.empty() ? "cdda_items_fallback.png" : def.inventory_image,
++            x + 4, screen.Height - 46, 34, 34, utf8_to_wide(tooltip));
++    }
 +
 +    if (!pimpl_->item_hint_text_)
 +        pimpl_->item_hint_text_ = guienv->addStaticText(L"",
@@ -2748,10 +2962,10 @@ index 0000000..47c0905
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.h b/src/cdda/cdda_bridge.h
 new file mode 100644
-index 0000000..9e1cfb3
+index 0000000..561afaf
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.h
-@@ -0,0 +1,146 @@
+@@ -0,0 +1,148 @@
 +// Luanti C++ CWM Presentation Bridge
 +// Licensed under Apache-2.0
 +#pragma once
@@ -2839,7 +3053,9 @@ index 0000000..9e1cfb3
 +
 +    // Input hooks
 +    bool handleMoveInput(int dir);
-+    bool toggleMovementMode(int mode);
++    void handlePostureInput(bool run, bool crouch, bool prone);
++    double visualAnimationTime() const;
++    float visualAnimationDelta() const;
 +    bool handleInteract(int x, int y, int z, int action);
 +    bool handlePointedOpening(const v3s16& node, bool close);
 +    bool pointCombatTarget(const irr::core::line3d<float>& ray);
@@ -3046,4 +3262,59 @@ index 0000000..a550994
 +	return "cdda_items:i_" + suffix;
 +}
 +
++} // namespace cdda_client
+diff --git a/src/cdda/posture_input.h b/src/cdda/posture_input.h
+new file mode 100644
+index 0000000..bbe7444
+--- /dev/null
++++ b/src/cdda/posture_input.h
+@@ -0,0 +1,49 @@
++#pragma once
++#include <array>
++
++namespace cdda_client {
++// Desired input only. The bridge still waits for native ACK + world state;
++// this class never changes authoritative posture or assumes a cost/speed.
++class PostureInput {
++    std::array<bool, 3> last_{};
++    std::array<bool, 2> blocked_{};
++    int latched_{0}, last_confirmed_{0};
++    bool initialized_{false};
++public:
++    void reject(int mode) {
++        if (mode == 1 || mode == 2) blocked_[mode - 1] = true;
++        if (latched_ == mode) latched_ = 0;
++    }
++    int sample(const std::array<bool, 3>& down, bool run_toggle,
++               bool crouch_toggle, bool allowed, int confirmed) {
++        if (!initialized_ && allowed) {
++            latched_ = confirmed == 3 || (confirmed == 1 && run_toggle) ||
++                (confirmed == 2 && crouch_toggle) ? confirmed : 0;
++            initialized_ = true;
++        }
++        if (!allowed) {
++            for (int i = 0; i < 2; ++i) blocked_[i] = down[i];
++            last_ = down;
++            last_confirmed_ = confirmed;
++            return -1; // Menu/recovery presses are never replayed.
++        }
++        for (int i = 0; i < 2; ++i) if (!down[i]) blocked_[i] = false;
++        // Native exhaustion may switch RUN to WALK inside a tile. Require a
++        // new physical press rather than retrying rejected RUN every frame.
++        if (last_confirmed_ == 1 && confirmed != 1 && down[0]) reject(1);
++        const bool toggle[] = {run_toggle, crouch_toggle};
++        for (int i = 0; i < 2; ++i)
++            if (toggle[i] && down[i] && !last_[i] && !blocked_[i])
++                latched_ = latched_ == i + 1 ? 0 : i + 1;
++        if (down[2] && !last_[2]) {
++            latched_ = latched_ == 3 ? 0 : 3;
++            for (int i = 0; i < 2; ++i) blocked_[i] = down[i];
++        }
++        last_ = down;
++        last_confirmed_ = confirmed;
++        if (!crouch_toggle && down[1] && !blocked_[1]) return 2;
++        if (!run_toggle && down[0] && !blocked_[0]) return 1;
++        return latched_;
++    }
++};
 +} // namespace cdda_client

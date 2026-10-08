@@ -1,13 +1,12 @@
-# Validazioni manuali da riproporre
+# Validazioni manuali del playable core
 
-L'utente il 2026-10-08 ha chiesto di rinviare ancora tutte e tre le prove
-(raccolta, HUD/scheda corporea e melee puntato) e proseguire autonomamente con
-un'ulteriore feature essenziale ortogonale. **Rinviata non significa approvata.**
-Le posture/corsa native sono la quarta fetta indipendente; anche la relativa
-checklist viene conservata qui. Nessuna prova manuale blocca lo sviluppo
-esplicitamente autorizzato e nessuna viene dichiarata accettata.
+L'utente il 2026-10-08 ha eseguito e approvato tutti i quattro punti di
+ciascuna delle quattro checklist. Il [riscontro](../source/playable-core-feedback-2026-10-08.md)
+supera i rinvii precedenti. Le checklist sotto conservano i comandi della
+versione provata (R/X/P); le nuove preferenze Ctrl/Shift sono un adattamento
+successivo e avranno una verifica separata.
 
-## Raccolta — IN ATTESA
+## Raccolta — VALIDATA: 1–4 PASS
 
 Dalla directory del progetto: `./pickup-demo.sh --fresh`. Copia isolata,
 movimento continuo 4x; davanti alla partenza, guardando in basso, sasso e
@@ -25,7 +24,7 @@ Il pannello inferiore è ancora di sola lettura, anche per indossati,
 impugnati e contenuti annidati; le icone generiche sono fallback. Dettagli e
 verifica automatizzata: [ground-items-ui.md](../fixes/ground-items-ui.md).
 
-## HUD e scheda corporea — IN ATTESA
+## HUD e scheda corporea — VALIDATA: 1–4 PASS
 
 Feature indipendente dalla raccolta: `./body-demo.sh --fresh`. Personaggio
 assetato/stanco, testa e braccio sinistro feriti; nessun pickup necessario.
@@ -41,10 +40,9 @@ assetato/stanco, testa e braccio sinistro feriti; nessun pickup necessario.
    sono quelle del save CDDA; la scheda torna consultabile.
 
 Entrambe le demo conservano sessioni separate dai salvataggi normali.
-Queste checklist si ripropongono alla fine dell'implementazione; nessuna
-approvazione manuale è stata ricevuta per raccolta o HUD/scheda.
+Entrambe le checklist sono ora accettate dall'utente.
 
-## Corpo a corpo puntato — IN ATTESA
+## Corpo a corpo puntato — VALIDATA: 1–4 PASS
 
 Feature indipendente dalle altre due: `./combat-demo.sh --fresh`. Mazza già
 impugnata e zombie ostile subito davanti, immobilizzato solo nella scena di
@@ -60,10 +58,9 @@ prova. **E** riconosce la minaccia; **F7** mette in pausa/riprende.
 4. Esci e rilancia `./combat-demo.sh` senza `--fresh`: bersaglio morto/cadavere
    coerenti con il save. Questa prova non richiede raccolta né scheda H.
 
-Anche questa checklist resta rinviata per richiesta esplicita dell'utente;
-le verifiche automatizzate non sostituiscono la sua accettazione visiva.
+Checklist accettata dall'utente, compreso il mancato avvicinamento automatico.
 
-## Corsa e posture native — IN ATTESA
+## Corsa e posture native — VALIDATA: 1–4 PASS
 
 Quarta feature indipendente: `./posture-demo.sh --fresh`, copia isolata con
 area iniziale priva di bersagli predisposti e senza raccolta obbligatoria;
@@ -83,5 +80,4 @@ rimossi dalla sola fixture; esplorare oltre può incontrare creature native.
    stamina, CDDA deve interrompere la corsa; non puoi forzare R mentre affannato.
 
 Altezze di visuale sono un primo adattamento 3D; le animazioni del corpo/rig
-in terza persona verranno completate separatamente. Tutte e quattro le prove
-restano in attesa: nessuna richiesta di test immediato o approvazione implicita.
+in terza persona verranno completate separatamente. Tutte e quattro le prove hanno accettazione manuale esplicita.

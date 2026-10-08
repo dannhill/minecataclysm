@@ -10,6 +10,15 @@ un panorama più ampio; nebbia, memoria distante e rilievo restano da scegliere.
 Lo [stato implementato](IMPLEMENTATION_STATUS.md) e le evidenze restano separati
 dagli obiettivi. La roadmap originale M0–M9 conserva i propri significati.
 
+## Riscontro del playable core — 2026-10-08
+
+Tutte le prove manuali raccolta/corpo/melee/posture sono PASS. Il
+[riscontro corrente](docs/source/playable-core-feedback-2026-10-08.md) aggiunge
+Ctrl/Shift tenuti premuti, toggle configurabile, animazioni ferme in pausa,
+camera sicura in acqua bassa e HUD con asset Mineclonia. Barra oggetti visibile
+di sola lettura; equipaggiamento rapido richiede una fetta nativa dedicata.
+Salute vitale e malattie restano distinte; media HP non finalizzata.
+
 ## Prodotto e autorità
 
 Profondità CDDA completa, interfacce guidate e dettagli manuali progressivi.
