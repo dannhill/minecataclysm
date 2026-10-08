@@ -41,6 +41,7 @@ inline bool valid_inventory(const CDDA::CWM::InventoryView* view) {
         for (unsigned i = 0; i < 5; ++i)
             if (!text(entry->reasons()->Get(i), 2048) ||
                 bool(entry->actions() & (1 << i)) == bool(entry->reasons()->Get(i)->size())) return false;
+        if ((entry->actions() & 16) && (!entry->consume_moves() || !entry->consume_label()->size())) return false;
         depths.push_back(entry->parent_id() ? depths[entry->parent_id()] + 1 : 0);
         if (depths.back() > 32) return false;
     }

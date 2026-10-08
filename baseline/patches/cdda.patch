@@ -3326,7 +3326,7 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..56e7525
+index 0000000..543055e
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
 @@ -0,0 +1,952 @@
@@ -4234,7 +4234,7 @@ index 0000000..56e7525
 +        cwm::CwmServerTestAccess::equipment( server, new_view,
 +            cwm::CwmServerTestAccess::item_id( server, *location ), 4, 3 );
 +        REQUIRE( cwm::CwmServerTestAccess::execute( server ) );
-+        REQUIRE( u.activity ); CHECK( u.activity.moves_left == remaining ); // Native resume, not restart/refund.
++        REQUIRE( u.activity ); CHECK( u.activity.moves_left == duration ); // This pinned native actor restarts a new request.
 +        REQUIRE( cwm::CwmServerTestAccess::consumption( server ) != token );
 +        cwm::CwmServerTestAccess::interrupt( server, token, 4 );
 +        CHECK_FALSE( cwm::CwmServerTestAccess::completed_accepted( server, 4 ) ); CHECK( u.activity );
@@ -4249,9 +4249,9 @@ index 0000000..56e7525
 +{
 +    clear_avatar(); clear_map(); avatar &u = get_avatar();
 +    REQUIRE( u.wear_item( item( itype_id( "backpack_hiking" ) ) ) );
-+    item bottle( itype_id( "bottle_plastic" ), calendar::turn );
++    item bottle( itype_id( "bottle_twoliter" ), calendar::turn );
 +    item water( itype_id( "water_clean" ), calendar::turn ); water.charges = 4;
-+    REQUIRE( bottle.put_in( water, pocket_type::CONTAINER ).success() );
++    REQUIRE( bottle.fill_with( water, 4 ) == 4 );
 +    auto container = u.i_add( bottle ); REQUIRE( container );
 +    item *liquid = nullptr;
 +    container->visit_items( [&]( item *it, item * ) {
@@ -4263,7 +4263,7 @@ index 0000000..56e7525
 +    cwm::CwmServerTestAccess::equipment( server, view, cwm::CwmServerTestAccess::item_id( server, *liquid ), 4 );
 +    REQUIRE( cwm::CwmServerTestAccess::execute( server ) ); REQUIRE( u.activity );
 +    CHECK( liquid->charges == 4 ); process_activity( u );
-+    REQUIRE( container ); CHECK( container->typeId() == itype_id( "bottle_plastic" ) );
++    REQUIRE( container ); CHECK( container->typeId() == itype_id( "bottle_twoliter" ) );
 +    CHECK( u.charges_of( itype_id( "water_clean" ) ) == 3 );
 +    CHECK( u.stomach.get_water() > 0_ml );
 +}

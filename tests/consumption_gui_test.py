@@ -238,12 +238,12 @@ def main():
             def rotten(v):
                 return next(e for e in entries(v) if e.TypeId() == b'apple' and e.ConsumeWarning())
             if args.resume_only:
-                check('reload_keeps_water_in_original_container', item(view,'water_clean').Charges() == 3 and item(view,'water_clean').ParentId() == item(view,'bottle_plastic').Id())
+                check('reload_keeps_water_in_original_container', item(view,'water_clean').Charges() == 3 and item(view,'water_clean').ParentId() == item(view,'bottle_twoliter').Id())
                 check('reload_keeps_rotten_apple_and_rock', rotten(view) is not None and item(view,'rock') is not None)
                 tap('Escape');wait(lambda r: int(r['equipment_form']) == 0)
             else:
                 check('food_and_drink_native_actions_and_duration', food(view).Actions() & 16 and food(view).ConsumeMoves() > 0 and item(view,'water_clean').ConsumeLabel() == b'Bevi')
-                check('liquid_nested_in_native_bottle', item(view,'water_clean').ParentId() == item(view,'bottle_plastic').Id())
+                check('liquid_nested_in_native_bottle', item(view,'water_clean').ParentId() == item(view,'bottle_twoliter').Id())
                 check('non_food_cannot_be_consumed', not item(view,'rock').Actions() & 16)
                 check('rotten_food_has_native_warning_without_consumption', bool(rotten(view).ConsumeWarning()) and rotten(view).Actions() & 16)
                 first = food(view)
@@ -278,7 +278,7 @@ def main():
                 select_item(item(view,'water_clean'));action(4);finish_action()
                 wait(lambda r: int(r['consumption_token']) == 0,timeout=20)
                 view = open_inventory()
-                check('drink_consumes_one_charge_not_bottle', item(view,'water_clean').Charges() == 3 and item(view,'bottle_plastic') is not None)
+                check('drink_consumes_one_charge_not_bottle', item(view,'water_clean').Charges() == 3 and item(view,'bottle_twoliter') is not None)
                 selected = rotten(view);select_item(selected);shot('rotten-warning.png')
                 action(4);wait(lambda r: int(r['pending_decision']) > 0)
                 shot('native-food-warning.png');tap(cancel_choice());finish_action()

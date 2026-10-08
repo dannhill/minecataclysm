@@ -24,6 +24,16 @@ int main() {
         CHECK(MessageVerifier::verify(bytes.data(),bytes.size()));
         CHECK(valid_inventory(GetCwmMessage(bytes.data())->payload_as_InventoryView()) == (defect==0 || defect==5));
     }
+    for (int defect=0;defect<5;++defect) {
+        auto bytes=inventory(0);
+        auto* source=static_cast<InventoryView*>(GetMutableCwmMessage(bytes.data())->mutable_payload());
+        auto* entry=source->mutable_entries()->GetMutableObject(0);
+        if (defect==1) entry->mutate_consume_moves(-1);
+        if (defect==2) entry->mutate_actions(128);
+        if (defect==3) entry->mutate_actions(17);
+        if (defect==4) entry->mutable_reasons()->GetMutableObject(4)->Mutate(0,'\0');
+        CHECK(valid_inventory(source)==(defect==0));
+    }
     MessageBuilder wire(10,7,{11,22,33});
     auto query=wire.build_inventory_query(42);
     CHECK(GetCwmMessage(query.data())->payload_as_InventoryQueryRequest()->query_id()==42);

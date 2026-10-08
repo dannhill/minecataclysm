@@ -275,11 +275,11 @@ int main(int argc, const char *argv[]) {
             }
             item rotten(itype_id("apple"), calendar::turn);
             rotten.set_relative_rot(2.0); rotten.set_var("uid", "consumption-rotten"); u.i_add(rotten);
-            item bottle(itype_id("bottle_plastic"), calendar::turn);
+            item bottle(itype_id("bottle_twoliter"), calendar::turn);
             bottle.set_var("uid", "consumption-bottle");
             item water(itype_id("water_clean"), calendar::turn); water.charges = 4;
             water.set_var("uid", "consumption-water");
-            if (!bottle.put_in(water, pocket_type::CONTAINER).success()) return 23;
+            if (bottle.fill_with(water, 4) != 4) return 23;
             u.i_add(bottle);
             item rock(itype_id("rock"), calendar::turn); rock.set_var("uid", "consumption-rock"); u.i_add(rock);
             u.set_thirst(200); u.update_stomach(calendar::turn, calendar::turn);
