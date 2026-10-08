@@ -3018,10 +3018,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..1940273
+index 0000000..cd65849
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,656 @@
+@@ -0,0 +1,662 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "move_mode.h"
@@ -3093,6 +3093,11 @@ index 0000000..1940273
 +    static bool accepted( const CwmServer &server ) {
 +        REQUIRE( server.result_ );
 +        return server.result_->accepted;
++    }
++    static bool completed_accepted( const CwmServer &server, uint64_t id ) {
++        const auto *entry = server.ledger_.find( id );
++        REQUIRE( entry ); REQUIRE( entry->complete );
++        return entry->outcome.accepted;
 +    }
 +    static int choice_without_peer( CwmServer &server, const std::string &text,
 +                                    const std::vector<std::string> &choices ) {
@@ -3674,7 +3679,8 @@ index 0000000..1940273
 +        else u.set_stamina( 0 );
 +        CHECK_FALSE( cwm::CwmServerTestAccess::execute( server ) );
 +    }
-+    CHECK_FALSE( cwm::CwmServerTestAccess::accepted( server ) );
++    if( queued ) CHECK_FALSE( cwm::CwmServerTestAccess::accepted( server ) );
++    else CHECK_FALSE( cwm::CwmServerTestAccess::completed_accepted( server, 1 ) );
 +    CHECK( u.is_walking() );
 +    CHECK( u.moves == 100 );
 +}

@@ -89,6 +89,8 @@ def main():
                             if not data:
                                 closed = True
                                 break
+                            with (out / ('client-wire.bin' if source is client_socket else 'server-wire.bin')).open('ab') as wire_log:
+                                wire_log.write(data)
                             (server_socket if source is client_socket else client_socket).sendall(data)
                         if closed:
                             break
@@ -177,7 +179,7 @@ def main():
             wait(lambda r: int(r['pause_reasons']) == 0)
             mask = 128 | 256 | 512
             def mode(): return int(latest()['player_state_flags']) & mask
-            def select(key, expected):
+            def choose_mode(key, expected):
                 tap(key)
                 wait(lambda r: (int(r['player_state_flags']) & mask) == expected and int(r['pending_move']) == 0)
             if args.resume_only:
@@ -188,9 +190,9 @@ def main():
                 check('starts_native_walking', mode() == 0)
                 position = [latest()[k] for k in ('target_x', 'target_y', 'target_z')]
                 initial_time = latest()['simulation_time']
-                select('r', 128)
+                choose_mode('r', 128)
                 shot('running.png')
-                select('r', 0)
+                choose_mode('r', 0)
                 xdo('keydown', '--window', window, 'x')
                 wait(lambda r: (int(r['player_state_flags']) & mask) == 256)
                 time.sleep(.8)
@@ -198,7 +200,7 @@ def main():
                 check('held_crouch_key_does_not_toggle_back', mode() == 256)
                 wait(lambda r: abs(float(r['player_eye_offset']) + .7) < .025)
                 shot('crouched.png')
-                select('p', 512)
+                choose_mode('p', 512)
                 wait(lambda r: abs(float(r['player_eye_offset']) + 1.3) < .025)
                 shot('prone.png')
                 check('all_mode_changes_preserve_native_coordinates', position == [latest()[k] for k in ('target_x', 'target_y', 'target_z')])
@@ -212,11 +214,11 @@ def main():
                     tap('F7'); wait(lambda r: int(r['pause_reasons']) == 0)
                     time.sleep(.5)
                     check('paused_keys_not_replayed', mode() == 512)
-                select('p', 0)
+                choose_mode('p', 0)
                 distances = {}
                 if not args.action_driven:
                     for name, key, flags in [('walk', None, 0), ('run','r',128), ('crouch','x',256), ('prone','p',512)]:
-                        if key: select(key, flags)
+                        if key: choose_mode(key, flags)
                         wait(lambda r: int(r['pending_move']) == 0)
                         before_move = latest()
                         xdo('keydown', 'w'); time.sleep(.45); xdo('keyup', 'w')
@@ -230,7 +232,7 @@ def main():
                     check('actual_crouch_slower_than_walk', .2 < distances['crouch'] < distances['walk'] * .8)
                     check('actual_prone_slower_than_crouch', .05 < distances['prone'] < distances['crouch'] * .8)
                 else:
-                    select('p', 512)
+                    choose_mode('p', 512)
                 connection_id = latest()['connection_id']
                 drop.set()
                 wait(lambda r: r['connection_id'] != connection_id and int(r['input_ready']) == 1, timeout=20)
@@ -252,6 +254,7 @@ def main():
             stop.set()
             relay_thread.join(timeout=3)
             listener.close()
+            (out / "relay-errors.json").write_text(json.dumps(relay_errors))
             scratch.cleanup()
             if old_window:
                 subprocess.run(['xdotool', 'windowactivate', old_window], capture_output=True)

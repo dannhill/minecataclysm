@@ -73,6 +73,11 @@ def main():
                 target.symlink_to(os.readlink(source))
             else:
                 shutil.copy2(source, target)
+                # A source can be edited while the previous reconstruction is
+                # still building, making the old object newer than copy2's
+                # preserved timestamp. Force dependency rebuilding of every
+                # changed regular source; inventory checks content and mode.
+                os.utime(target, None)
             changed += 1
         actual, digest = inventory(ws / name)
         if actual != entries or digest != item['tree_sha256']:
