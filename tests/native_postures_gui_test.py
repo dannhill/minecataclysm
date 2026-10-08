@@ -195,9 +195,12 @@ def main():
                 choose_mode('r', 0)
                 xdo('keydown', '--window', window, 'x')
                 wait(lambda r: (int(r['player_state_flags']) & mask) == 256)
+                held_start = int(latest()['time_ns'])
                 time.sleep(.8)
                 xdo('keyup', '--window', window, 'x')
-                check('held_crouch_key_does_not_toggle_back', mode() == 256)
+                held_rows = [r for r in rows() if int(r['time_ns']) >= held_start]
+                check('held_crouch_key_does_not_toggle_back', mode() == 256 and
+                      all(int(r['player_state_flags']) & mask == 256 for r in held_rows))
                 wait(lambda r: abs(float(r['player_eye_offset']) + .7) < .025)
                 shot('crouched.png')
                 choose_mode('p', 512)
