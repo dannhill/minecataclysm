@@ -1,5 +1,22 @@
 # Implementation status
 
+The fourth independent [native running/posture slice](docs/fixes/native-postures.md)
+is implemented and CWM 2.8 runtimes installed. R toggles run/walk, X crouch/walk,
+P prone/walk; native speed, stamina, noise, exhaustion and canonical mode
+remain authoritative. First-person camera follows confirmed posture. Scoped
+verification PASS: CDDA 7,448 assertions/43 cases; protocol 5/5; Luanti 306
+individual tests/648 Catch2 assertions. Installed posture GUI: 16 continuous,
+12 ordinary-mode and 8 actual save-reload checks. Body regression 19, pickup 18,
+melee 21 checks pass. Native save reading uses pinned pristine CDDA. Evidence
+and exact source identities are [recorded](docs/fixes/native-postures-evidence.json).
+The user explicitly requested a third deferral and autonomous work on another
+essential independent feature. All four [manual checklists](docs/validation/pending-manual.md)
+remain IN ATTESA. Third-person rigs/animations remain future work; no full
+M5.5/SAVE-001 certification or manual acceptance is claimed.
+
+Earlier delivery entries below retain historical protocol versions and test
+counts; current installed runtime evidence is the CWM 2.8 slice above.
+
 The independent [pointed melee slice](docs/fixes/pointed-melee.md) is implemented
 and both CWM 2.7 runtimes installed. Left click targets perceived adjacent
 hostiles; CDDA owns weapon rules, passive defenses, damage, practice, stamina

@@ -60,13 +60,15 @@ prova. **E** riconosce la minaccia; **F7** mette in pausa/riprende.
 4. Esci e rilancia `./combat-demo.sh` senza `--fresh`: bersaglio morto/cadavere
    coerenti con il save. Questa prova non richiede raccolta né scheda H.
 
-Tutte e tre le checklist restano rinviate per richiesta esplicita dell'utente;
+Anche questa checklist resta rinviata per richiesta esplicita dell'utente;
 le verifiche automatizzate non sostituiscono la sua accettazione visiva.
 
 ## Corsa e posture native — IN ATTESA
 
-Quarta feature indipendente: `./posture-demo.sh --fresh`, copia isolata senza
-nemici e senza oggetti da raccogliere; movimento continuo 4x già approvato.
+Quarta feature indipendente: `./posture-demo.sh --fresh`, copia isolata con
+area iniziale priva di bersagli predisposti e senza raccolta obbligatoria;
+movimento continuo 4x già approvato. Gli spawn fissi nella bolla iniziale sono
+rimossi dalla sola fixture; esplorare oltre può incontrare creature native.
 
 1. Premi **R**: pannello «Corsa», WASD più veloce e consumo maggiore di stamina.
    Ripremi R: «Cammino». Tenere R premuto non deve alternare ripetutamente.

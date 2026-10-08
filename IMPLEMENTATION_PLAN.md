@@ -203,15 +203,20 @@ azioni CDDA e mai applicati a un inventario Luanti autonomo. La simulazione rest
 in pausa mentre la GUI è aperta. La presentazione passa automaticamente fra
 nessun item, item singolo e pila in base allo stato autorevole corrente.
 
-Avanzamento locale 2026-10-08: raccolta/pila con GUI Mineclonia e HUD/scheda
-corporea implementati; entrambe le prove manuali nuovamente rinviate per
-richiesta dell'utente. La successiva fetta ortogonale è
-[melee puntato](docs/fixes/pointed-melee.md): bersagli ostili adiacenti, arma
-corrente e difese/costi nativi, senza dipendenza dalle due interfacce da
-validare. Primo combattimento, non chiusura dell'intero punto 5: ranged,
-reach, animazioni/feedback avanzati e attacco deliberato a neutrali restano
-successivi. Tutte e tre le [checklist](docs/validation/pending-manual.md) restano
-IN ATTESA; verifiche automatiche e accettazione visiva sono distinte.
+Avanzamento locale 2026-10-08: raccolta/pila con GUI Mineclonia,
+HUD/scheda corporea e [melee puntato](docs/fixes/pointed-melee.md) implementati;
+tutte e tre le prove manuali nuovamente rinviate su richiesta dell'utente.
+La quarta fetta essenziale ortogonale sono le
+[corsa/posture native](docs/fixes/native-postures.md), già previste nelle
+fondazioni/comandi: R corsa/cammino, X accovacciato/cammino, P a terra/cammino,
+velocità/stamina/rumore CDDA, visuale 3D corrispondente e save canonico.
+Non richiede nessuna delle tre interfacce da validare. Rig/animazioni in terza
+persona restano successivi. Melee resta il primo combattimento, non chiusura
+dell'intero punto 5: ranged, reach, feedback avanzati e attacco deliberato a
+neutrali restano nel piano. Tutte e quattro le
+[checklist](docs/validation/pending-manual.md) restano IN ATTESA;
+verifiche automatiche e accettazione visiva sono distinte. Il calendario
+approvato e i nove batch di mapping restano invariati.
 
 ## Fase 3 — M6, veicoli
 
