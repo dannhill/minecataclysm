@@ -1,5 +1,11 @@
 # Corsa e posture native
 
+Aggiornamento successivo 2026-10-08: l'utente valida tutti i quattro punti
+della checklist di questa fetta. I riferimenti a prove pending/rinviate sotto
+conservano il contesto della consegna originale. I nuovi comandi/HUD sono in
+[controlli e presentazione](controls-and-survival-presentation.md).
+
+
 Quarta fetta essenziale indipendente dalle tre validazioni manuali rinviate.
 R alterna corsa/cammino; X accovacciato/cammino; P a terra/cammino. Le shortcut
 sono configurabili via keymap_cdda_run/crouch/prone. Shift conserva le azioni

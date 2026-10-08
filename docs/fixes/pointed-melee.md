@@ -1,5 +1,11 @@
 # Combattimento corpo a corpo puntato
 
+Aggiornamento successivo 2026-10-08: l'utente valida tutti i quattro punti
+della checklist di questa fetta. I riferimenti a prove pending/rinviate sotto
+conservano il contesto della consegna originale. I nuovi comandi/HUD sono in
+[controlli e presentazione](controls-and-survival-presentation.md).
+
+
 Prima fetta del combattimento previsto dal playable core: clic sinistro su una
 creatura percepita, ostile e adiacente. Un nuovo clic per ogni attacco; il mouse
 premuto non ripete colpi. CDDA usa arma impugnata o mani nude, difese passive,

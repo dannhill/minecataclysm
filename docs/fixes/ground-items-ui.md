@@ -1,5 +1,11 @@
 # Oggetti a terra: puntamento e GUI Mineclonia
 
+Aggiornamento successivo 2026-10-08: l'utente valida tutti i quattro punti
+della checklist di questa fetta. I riferimenti a prove pending/rinviate sotto
+conservano il contesto della consegna originale. I nuovi comandi/HUD sono in
+[controlli e presentazione](controls-and-survival-presentation.md).
+
+
 Segue il [backend PICKUP](ground-items-pickup.md) e le direttive della
 [continuazione recuperata](../source/continuation-2026-10-07.md).
 Sorgenti della consegna: `5b8c5b44ae9d6851b8f425152832eed4c944a1b9`.

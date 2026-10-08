@@ -22,6 +22,10 @@ postura mantenuta ripristina il cammino alla ripresa; P canonico resta nel save.
 Shift conserva chiusura porte/finestre e discesa. Azioni contestuali vengono
 processate prima delle nuove richieste gratuite di postura, così una pressione
 simultanea non occupa lo slot del clic/Spazio con un cambio di postura.
+Se OPEN/CLOSE incontra solo il roundtrip di una postura, si conserva al massimo
+un clic per un secondo: portata/stato rivalidati da CDDA, annullamento su
+menu/pausa/recovery/disconnessione. Il debounce delle interazioni già presente
+(200 ms) resta applicato. Altre azioni non vengono accodate da questa regola.
 I tasti sono configurabili (`keymap_cdda_run/crouch/prone/body`), le etichette
 leggono la configurazione. `cwm_run_toggle` e `cwm_crouch_toggle` sono bool,
 default false, nel catalogo impostazioni Luanti. Per il launcher si possono
@@ -58,6 +62,8 @@ dashes vuoti. Non si ricostruiscono gli HP esatti da questa quantizzazione.
 Malattie/condizioni non vengono mescolate con la salute; una media degli arti
 potrebbe nascondere una ferita mortale alla testa/torso. È una raccomandazione
 esplicita, non l'approvazione dedotta della formula proposta dall'utente.
+L'elenco completo delle malattie/effect e le interazioni mediche restano
+pianificati; questa fetta non ne implementa la UI completa.
 Fame resta la descrizione percepita, anche `-` quando non esiste un'indicazione;
 non si inventa un'equivalenza calorie → cosce di pollo Minecraft.
 
@@ -75,7 +81,7 @@ media nella stessa mod. Nessun gameplay Lua Mineclonia aggiunto.
 
 `./controls-demo.sh --fresh`: scena privata con acqua bassa allo spawn,
 sasso davanti e finestra a destra. Non modifica i mondi normali.
-[Checklist breve salvata](../validation/pending-manual.md#Adattamenti-comandi-e-presentazione--NUOVA-PROVA).
+[Checklist breve salvata](../validation/pending-manual.md).
 
 ## Evidenze
 

@@ -1,5 +1,11 @@
 # HUD di sopravvivenza e scheda corporea
 
+Aggiornamento successivo 2026-10-08: l'utente valida tutti i quattro punti
+della checklist di questa fetta. I riferimenti a prove pending/rinviate sotto
+conservano il contesto della consegna originale. I nuovi comandi/HUD sono in
+[controlli e presentazione](controls-and-survival-presentation.md).
+
+
 Slice essenziale del playable core, indipendente dalla nuova GUI di raccolta.
 L'utente il 2026-10-08 autorizza questa prosecuzione autonoma e rinvia il test
 della raccolta. Entrambe le [checklist](../validation/pending-manual.md) restano

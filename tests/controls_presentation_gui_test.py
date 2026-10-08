@@ -250,6 +250,7 @@ def main():
                 xdo('click','3')
                 wait(lambda r: accepted_action(1) and int(r['pending_move']) == 0)
                 check('pointed_window_open_native_ack',True)
+                time.sleep(.25)  # Existing interaction debounce is 200 ms.
                 # One physical chord, with no waiting for a posture roundtrip.
                 xdo('keydown','--delay','0','Shift_L','mousedown','3')
                 time.sleep(.15)
@@ -260,6 +261,7 @@ def main():
                     wait(lambda r: int(r['player_state_flags']) & mask == 0 and int(r['pending_move']) == 0)
                     xdo('click','3')
                     wait(lambda r: accepted_action(1) == 2 and int(r['pending_move']) == 0)
+                    time.sleep(.25)
                     slow_posture_reply.set()
                     xdo('keydown','Shift_L')
                     time.sleep(.1)
@@ -329,6 +331,8 @@ def main():
             scene_origin = [int(final_row[k]) for k in ('scene_origin_x', 'scene_origin_y')]
             check('actual_runtime_survives', proc.poll() is None)
         finally:
+            if window and proc.poll() is None:
+                shot('last-frame.png')
             subprocess.run(['xdotool', 'mouseup', '1'], capture_output=True)
             subprocess.run(['xdotool', 'keyup', 'w', 'Control_L', 'Shift_L', 'p'], capture_output=True)
             if proc.poll() is None:
