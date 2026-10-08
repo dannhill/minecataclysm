@@ -88,3 +88,21 @@ sasso davanti e finestra a destra. Non modifica i mondi normali.
 Artifacts: `artifacts/controls-hud-20261008/`. Identità sorgenti, comandi,
 binari e risultati nel registro `controls-and-survival-presentation-evidence.json`.
 I controlli sono mirati: nessuna certificazione globale M5.5/SAVE-001.
+
+
+Verifica installata: controlli mantenuti **27/27**, toggle **22/22**, modalità
+scandita dalle azioni **24/24**, riavvio reale prono **8/8**, corpo **19/19**, raccolta **18/18**, scale e
+rimappatura **17/17**, melee **23/23** (anche respinta nativa). CDDA **7.448
+assertions / 43 casi**, Luanti **307 test + 648 assertions Catch2**, CWM **5/5**.
+Le prove usano salvataggi/configurazioni privati; il reader del core CDDA
+pristine controlla il save, compresa la finestra richiusa e tutti i 12 HP
+nel caso corporeo. Immagini del vero client sono conservate negli artefatti.
+
+Tentativi superseded conservati: `gui-chords-held` usava t_window fisso,
+correttamente non apribile; `gui-openable-held` era fuori dal cache nativo
+INDOORS; `gui-indoor-held` cliccava prima dei 200 ms di debounce esistenti.
+La fixture finale conserva una casella di pavimento interno vicino alla
+pozza e usa t_window_no_curtains; il driver rispetta il debounce, controlla
+ACK nativi e il terreno nel save. Non sono bypass di produzione. Il primo
+avvio della regressione corpo aveva un path fixture errato e non avviava
+il gioco; `body-regression-final` è il risultato valido.

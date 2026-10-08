@@ -6,6 +6,28 @@ authorizes familiar hold controls and visual pause/camera fixes. Earlier
 pending entries below describe their delivery dates, not current acceptance.
 
 
+The [familiar controls and survival presentation](docs/fixes/controls-and-survival-presentation.md)
+are implemented and the verified Luanti runtime is installed (CWM 2.8 remains
+unchanged). Left Ctrl/Shift hold native run/crouch, optional toggle preferences,
+P latched prone. Native contextual modifiers remain functional; a bounded
+opening click survives only its posture roundtrip and is cancelled on pause/
+recovery. Native display segments use Mineclonia hearts/armor/stamina icons;
+owned items have a read-only strip. H freezes pickup/node/shader animations,
+S no longer selects table rows, prone shallow-water camera stays above the
+surface, and unavailable running has a readable explanation.
+CDDA 7,448 assertions/43 cases; Luanti 307 tests/648 Catch2 assertions; protocol
+5/5 PASS. Installed controls GUI: 27 held, 22 toggle, 24 ordinary-mode checks;
+actual reload 8; body regression 19 (all 12 native HP unchanged), pickup 18, vertical 17 and
+melee 23 (including native knockback) PASS.
+Source identities, remaining scope and results are in the [evidence](docs/fixes/controls-and-survival-presentation-evidence.json).
+Only the [new four-point checklist](docs/validation/pending-manual.md) awaits
+manual feedback. Full diseases/medical UI, quantitative hunger redesign and
+native timed quick equipment switching remain future work. No full M5.5 or
+SAVE-001 certification is claimed.
+
+Earlier delivery entries below retain historical controls, protocol versions
+and pending states; subsequent explicit user validation supersedes those.
+
 The fourth independent [native running/posture slice](docs/fixes/native-postures.md)
 is implemented and CWM 2.8 runtimes installed. R toggles run/walk, X crouch/walk,
 P prone/walk; native speed, stamina, noise, exhaustion and canonical mode
