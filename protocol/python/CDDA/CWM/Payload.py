@@ -40,3 +40,5 @@ class Payload(object):
     CraftingView = 34
     CraftingRequest = 35
     CancelCraftingRequest = 36
+    RangedRequest = 37
+    CancelReloadRequest = 38

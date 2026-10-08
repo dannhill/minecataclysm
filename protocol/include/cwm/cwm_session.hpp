@@ -94,7 +94,20 @@ inline bool valid_world(const CDDA::CWM::WorldSnapshot* world) {
         if (!consumption->token() || consumption->total_moves() <= 0 ||
             consumption->remaining_moves() < 0 || consumption->remaining_moves() > consumption->total_moves()) return false;
     }
-    if (int(bool(world->consumption())) + int(bool(world->first_aid())) + int(bool(world->crafting())) > 1) return false;
+    if (int(bool(world->consumption())) + int(bool(world->first_aid())) + int(bool(world->crafting())) + int(bool(world->reload())) > 1) return false;
+    if (const auto* reload = world->reload()) {
+        if (!reload->token() || reload->total_moves() <= 0 || reload->remaining_moves() < 0 ||
+            reload->remaining_moves() > reload->total_moves()) return false;
+    }
+    if (const auto* gun = world->ranged_weapon()) {
+        const auto text = [](const auto* s, size_t max, bool empty = true) {
+            return s && s->size() <= max && (empty || s->size()) &&
+                std::string_view(s->c_str(), s->size()).find('\0') == std::string_view::npos;
+        };
+        if (!gun->token() || !text(gun->name(), 16384, false) || !text(gun->reason(), 16384) ||
+            gun->ammo() < 0 || gun->range() < 0 || !std::isfinite(gun->recoil()) ||
+            gun->recoil() < 0 || gun->recoil() > 1000000) return false;
+    }
     if (const auto* craft = world->crafting()) {
         if (!craft->token() || craft->progress() < 0 || craft->progress() > 10000000) return false;
     }

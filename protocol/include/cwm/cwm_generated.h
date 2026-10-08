@@ -142,6 +142,18 @@ struct InventoryViewBuilder;
 struct EquipmentRequest;
 struct EquipmentRequestBuilder;
 
+struct RangedRequest;
+struct RangedRequestBuilder;
+
+struct RangedWeaponState;
+struct RangedWeaponStateBuilder;
+
+struct ReloadState;
+struct ReloadStateBuilder;
+
+struct CancelReloadRequest;
+struct CancelReloadRequestBuilder;
+
 struct AttackRequest;
 struct AttackRequestBuilder;
 
@@ -436,6 +448,39 @@ inline const char *EnumNameEquipmentAction(EquipmentAction e) {
   return EnumNamesEquipmentAction()[index];
 }
 
+enum class RangedAction : int8_t {
+  AIM = 0,
+  FIRE = 1,
+  RELOAD = 2,
+  MIN = AIM,
+  MAX = RELOAD
+};
+
+inline const RangedAction (&EnumValuesRangedAction())[3] {
+  static const RangedAction values[] = {
+    RangedAction::AIM,
+    RangedAction::FIRE,
+    RangedAction::RELOAD
+  };
+  return values;
+}
+
+inline const char * const *EnumNamesRangedAction() {
+  static const char * const names[4] = {
+    "AIM",
+    "FIRE",
+    "RELOAD",
+    nullptr
+  };
+  return names;
+}
+
+inline const char *EnumNameRangedAction(RangedAction e) {
+  if (::flatbuffers::IsOutRange(e, RangedAction::AIM, RangedAction::RELOAD)) return "";
+  const size_t index = static_cast<size_t>(e);
+  return EnumNamesRangedAction()[index];
+}
+
 enum class Payload : uint8_t {
   NONE = 0,
   HelloRequest = 1,
@@ -474,11 +519,13 @@ enum class Payload : uint8_t {
   CraftingView = 34,
   CraftingRequest = 35,
   CancelCraftingRequest = 36,
+  RangedRequest = 37,
+  CancelReloadRequest = 38,
   MIN = NONE,
-  MAX = CancelCraftingRequest
+  MAX = CancelReloadRequest
 };
 
-inline const Payload (&EnumValuesPayload())[37] {
+inline const Payload (&EnumValuesPayload())[39] {
   static const Payload values[] = {
     Payload::NONE,
     Payload::HelloRequest,
@@ -516,13 +563,15 @@ inline const Payload (&EnumValuesPayload())[37] {
     Payload::CraftingQueryRequest,
     Payload::CraftingView,
     Payload::CraftingRequest,
-    Payload::CancelCraftingRequest
+    Payload::CancelCraftingRequest,
+    Payload::RangedRequest,
+    Payload::CancelReloadRequest
   };
   return values;
 }
 
 inline const char * const *EnumNamesPayload() {
-  static const char * const names[38] = {
+  static const char * const names[40] = {
     "NONE",
     "HelloRequest",
     "HelloResponse",
@@ -560,13 +609,15 @@ inline const char * const *EnumNamesPayload() {
     "CraftingView",
     "CraftingRequest",
     "CancelCraftingRequest",
+    "RangedRequest",
+    "CancelReloadRequest",
     nullptr
   };
   return names;
 }
 
 inline const char *EnumNamePayload(Payload e) {
-  if (::flatbuffers::IsOutRange(e, Payload::NONE, Payload::CancelCraftingRequest)) return "";
+  if (::flatbuffers::IsOutRange(e, Payload::NONE, Payload::CancelReloadRequest)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesPayload()[index];
 }
@@ -717,6 +768,14 @@ template<> struct PayloadTraits<CDDA::CWM::CraftingRequest> {
 
 template<> struct PayloadTraits<CDDA::CWM::CancelCraftingRequest> {
   static const Payload enum_value = Payload::CancelCraftingRequest;
+};
+
+template<> struct PayloadTraits<CDDA::CWM::RangedRequest> {
+  static const Payload enum_value = Payload::RangedRequest;
+};
+
+template<> struct PayloadTraits<CDDA::CWM::CancelReloadRequest> {
+  static const Payload enum_value = Payload::CancelReloadRequest;
 };
 
 bool VerifyPayload(::flatbuffers::Verifier &verifier, const void *obj, Payload type);
@@ -2527,7 +2586,9 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_AVATAR_STATUS = 42,
     VT_CONSUMPTION = 44,
     VT_FIRST_AID = 46,
-    VT_CRAFTING = 48
+    VT_CRAFTING = 48,
+    VT_RANGED_WEAPON = 50,
+    VT_RELOAD = 52
   };
   uint64_t world_revision() const {
     return GetField<uint64_t>(VT_WORLD_REVISION, 0);
@@ -2667,6 +2728,18 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   CDDA::CWM::CraftingState *mutable_crafting() {
     return GetPointer<CDDA::CWM::CraftingState *>(VT_CRAFTING);
   }
+  const CDDA::CWM::RangedWeaponState *ranged_weapon() const {
+    return GetPointer<const CDDA::CWM::RangedWeaponState *>(VT_RANGED_WEAPON);
+  }
+  CDDA::CWM::RangedWeaponState *mutable_ranged_weapon() {
+    return GetPointer<CDDA::CWM::RangedWeaponState *>(VT_RANGED_WEAPON);
+  }
+  const CDDA::CWM::ReloadState *reload() const {
+    return GetPointer<const CDDA::CWM::ReloadState *>(VT_RELOAD);
+  }
+  CDDA::CWM::ReloadState *mutable_reload() {
+    return GetPointer<CDDA::CWM::ReloadState *>(VT_RELOAD);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint64_t>(verifier, VT_WORLD_REVISION, 8) &&
@@ -2715,6 +2788,10 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyTable(first_aid()) &&
            VerifyOffset(verifier, VT_CRAFTING) &&
            verifier.VerifyTable(crafting()) &&
+           VerifyOffset(verifier, VT_RANGED_WEAPON) &&
+           verifier.VerifyTable(ranged_weapon()) &&
+           VerifyOffset(verifier, VT_RELOAD) &&
+           verifier.VerifyTable(reload()) &&
            verifier.EndTable();
   }
 };
@@ -2792,6 +2869,12 @@ struct WorldSnapshotBuilder {
   void add_crafting(::flatbuffers::Offset<CDDA::CWM::CraftingState> crafting) {
     fbb_.AddOffset(WorldSnapshot::VT_CRAFTING, crafting);
   }
+  void add_ranged_weapon(::flatbuffers::Offset<CDDA::CWM::RangedWeaponState> ranged_weapon) {
+    fbb_.AddOffset(WorldSnapshot::VT_RANGED_WEAPON, ranged_weapon);
+  }
+  void add_reload(::flatbuffers::Offset<CDDA::CWM::ReloadState> reload) {
+    fbb_.AddOffset(WorldSnapshot::VT_RELOAD, reload);
+  }
   explicit WorldSnapshotBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -2827,7 +2910,9 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshot(
     ::flatbuffers::Offset<CDDA::CWM::AvatarStatus> avatar_status = 0,
     ::flatbuffers::Offset<CDDA::CWM::ConsumptionState> consumption = 0,
     ::flatbuffers::Offset<CDDA::CWM::FirstAidState> first_aid = 0,
-    ::flatbuffers::Offset<CDDA::CWM::CraftingState> crafting = 0) {
+    ::flatbuffers::Offset<CDDA::CWM::CraftingState> crafting = 0,
+    ::flatbuffers::Offset<CDDA::CWM::RangedWeaponState> ranged_weapon = 0,
+    ::flatbuffers::Offset<CDDA::CWM::ReloadState> reload = 0) {
   WorldSnapshotBuilder builder_(_fbb);
   builder_.add_completed_command_id(completed_command_id);
   builder_.add_resync_id(resync_id);
@@ -2835,6 +2920,8 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshot(
   builder_.add_base_revision(base_revision);
   builder_.add_simulation_time_seconds(simulation_time_seconds);
   builder_.add_world_revision(world_revision);
+  builder_.add_reload(reload);
+  builder_.add_ranged_weapon(ranged_weapon);
   builder_.add_crafting(crafting);
   builder_.add_first_aid(first_aid);
   builder_.add_consumption(consumption);
@@ -2879,7 +2966,9 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshotDirect(
     ::flatbuffers::Offset<CDDA::CWM::AvatarStatus> avatar_status = 0,
     ::flatbuffers::Offset<CDDA::CWM::ConsumptionState> consumption = 0,
     ::flatbuffers::Offset<CDDA::CWM::FirstAidState> first_aid = 0,
-    ::flatbuffers::Offset<CDDA::CWM::CraftingState> crafting = 0) {
+    ::flatbuffers::Offset<CDDA::CWM::CraftingState> crafting = 0,
+    ::flatbuffers::Offset<CDDA::CWM::RangedWeaponState> ranged_weapon = 0,
+    ::flatbuffers::Offset<CDDA::CWM::ReloadState> reload = 0) {
   auto chunks__ = chunks ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::ChunkSnapshot>>(*chunks) : 0;
   auto entities__ = entities ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::EntityState>>(*entities) : 0;
   auto vehicles__ = vehicles ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::VehicleState>>(*vehicles) : 0;
@@ -2913,7 +3002,9 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshotDirect(
       avatar_status,
       consumption,
       first_aid,
-      crafting);
+      crafting,
+      ranged_weapon,
+      reload);
 }
 
 struct SimulationState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -5166,6 +5257,362 @@ inline ::flatbuffers::Offset<EquipmentRequest> CreateEquipmentRequest(
   return builder_.Finish();
 }
 
+struct RangedRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef RangedRequestBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_COMMAND_ID = 4,
+    VT_WEAPON_TOKEN = 6,
+    VT_TARGET_ENTITY_ID = 8,
+    VT_ACTION = 10
+  };
+  uint64_t command_id() const {
+    return GetField<uint64_t>(VT_COMMAND_ID, 0);
+  }
+  bool mutate_command_id(uint64_t _command_id = 0) {
+    return SetField<uint64_t>(VT_COMMAND_ID, _command_id, 0);
+  }
+  uint64_t weapon_token() const {
+    return GetField<uint64_t>(VT_WEAPON_TOKEN, 0);
+  }
+  bool mutate_weapon_token(uint64_t _weapon_token = 0) {
+    return SetField<uint64_t>(VT_WEAPON_TOKEN, _weapon_token, 0);
+  }
+  uint64_t target_entity_id() const {
+    return GetField<uint64_t>(VT_TARGET_ENTITY_ID, 0);
+  }
+  bool mutate_target_entity_id(uint64_t _target_entity_id = 0) {
+    return SetField<uint64_t>(VT_TARGET_ENTITY_ID, _target_entity_id, 0);
+  }
+  CDDA::CWM::RangedAction action() const {
+    return static_cast<CDDA::CWM::RangedAction>(GetField<int8_t>(VT_ACTION, 0));
+  }
+  bool mutate_action(CDDA::CWM::RangedAction _action = static_cast<CDDA::CWM::RangedAction>(0)) {
+    return SetField<int8_t>(VT_ACTION, static_cast<int8_t>(_action), 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_COMMAND_ID, 8) &&
+           VerifyField<uint64_t>(verifier, VT_WEAPON_TOKEN, 8) &&
+           VerifyField<uint64_t>(verifier, VT_TARGET_ENTITY_ID, 8) &&
+           VerifyField<int8_t>(verifier, VT_ACTION, 1) &&
+           verifier.EndTable();
+  }
+};
+
+struct RangedRequestBuilder {
+  typedef RangedRequest Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_command_id(uint64_t command_id) {
+    fbb_.AddElement<uint64_t>(RangedRequest::VT_COMMAND_ID, command_id, 0);
+  }
+  void add_weapon_token(uint64_t weapon_token) {
+    fbb_.AddElement<uint64_t>(RangedRequest::VT_WEAPON_TOKEN, weapon_token, 0);
+  }
+  void add_target_entity_id(uint64_t target_entity_id) {
+    fbb_.AddElement<uint64_t>(RangedRequest::VT_TARGET_ENTITY_ID, target_entity_id, 0);
+  }
+  void add_action(CDDA::CWM::RangedAction action) {
+    fbb_.AddElement<int8_t>(RangedRequest::VT_ACTION, static_cast<int8_t>(action), 0);
+  }
+  explicit RangedRequestBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<RangedRequest> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<RangedRequest>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<RangedRequest> CreateRangedRequest(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t command_id = 0,
+    uint64_t weapon_token = 0,
+    uint64_t target_entity_id = 0,
+    CDDA::CWM::RangedAction action = CDDA::CWM::RangedAction::AIM) {
+  RangedRequestBuilder builder_(_fbb);
+  builder_.add_target_entity_id(target_entity_id);
+  builder_.add_weapon_token(weapon_token);
+  builder_.add_command_id(command_id);
+  builder_.add_action(action);
+  return builder_.Finish();
+}
+
+struct RangedWeaponState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef RangedWeaponStateBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_TOKEN = 4,
+    VT_NAME = 6,
+    VT_AMMO = 8,
+    VT_RANGE = 10,
+    VT_RECOIL = 12,
+    VT_REASON = 14,
+    VT_CAN_RELOAD = 16
+  };
+  uint64_t token() const {
+    return GetField<uint64_t>(VT_TOKEN, 0);
+  }
+  bool mutate_token(uint64_t _token = 0) {
+    return SetField<uint64_t>(VT_TOKEN, _token, 0);
+  }
+  const ::flatbuffers::String *name() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_NAME);
+  }
+  ::flatbuffers::String *mutable_name() {
+    return GetPointer<::flatbuffers::String *>(VT_NAME);
+  }
+  int32_t ammo() const {
+    return GetField<int32_t>(VT_AMMO, 0);
+  }
+  bool mutate_ammo(int32_t _ammo = 0) {
+    return SetField<int32_t>(VT_AMMO, _ammo, 0);
+  }
+  int32_t range() const {
+    return GetField<int32_t>(VT_RANGE, 0);
+  }
+  bool mutate_range(int32_t _range = 0) {
+    return SetField<int32_t>(VT_RANGE, _range, 0);
+  }
+  double recoil() const {
+    return GetField<double>(VT_RECOIL, 0.0);
+  }
+  bool mutate_recoil(double _recoil = 0.0) {
+    return SetField<double>(VT_RECOIL, _recoil, 0.0);
+  }
+  const ::flatbuffers::String *reason() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_REASON);
+  }
+  ::flatbuffers::String *mutable_reason() {
+    return GetPointer<::flatbuffers::String *>(VT_REASON);
+  }
+  bool can_reload() const {
+    return GetField<uint8_t>(VT_CAN_RELOAD, 0) != 0;
+  }
+  bool mutate_can_reload(bool _can_reload = 0) {
+    return SetField<uint8_t>(VT_CAN_RELOAD, static_cast<uint8_t>(_can_reload), 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_TOKEN, 8) &&
+           VerifyOffset(verifier, VT_NAME) &&
+           verifier.VerifyString(name()) &&
+           VerifyField<int32_t>(verifier, VT_AMMO, 4) &&
+           VerifyField<int32_t>(verifier, VT_RANGE, 4) &&
+           VerifyField<double>(verifier, VT_RECOIL, 8) &&
+           VerifyOffset(verifier, VT_REASON) &&
+           verifier.VerifyString(reason()) &&
+           VerifyField<uint8_t>(verifier, VT_CAN_RELOAD, 1) &&
+           verifier.EndTable();
+  }
+};
+
+struct RangedWeaponStateBuilder {
+  typedef RangedWeaponState Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_token(uint64_t token) {
+    fbb_.AddElement<uint64_t>(RangedWeaponState::VT_TOKEN, token, 0);
+  }
+  void add_name(::flatbuffers::Offset<::flatbuffers::String> name) {
+    fbb_.AddOffset(RangedWeaponState::VT_NAME, name);
+  }
+  void add_ammo(int32_t ammo) {
+    fbb_.AddElement<int32_t>(RangedWeaponState::VT_AMMO, ammo, 0);
+  }
+  void add_range(int32_t range) {
+    fbb_.AddElement<int32_t>(RangedWeaponState::VT_RANGE, range, 0);
+  }
+  void add_recoil(double recoil) {
+    fbb_.AddElement<double>(RangedWeaponState::VT_RECOIL, recoil, 0.0);
+  }
+  void add_reason(::flatbuffers::Offset<::flatbuffers::String> reason) {
+    fbb_.AddOffset(RangedWeaponState::VT_REASON, reason);
+  }
+  void add_can_reload(bool can_reload) {
+    fbb_.AddElement<uint8_t>(RangedWeaponState::VT_CAN_RELOAD, static_cast<uint8_t>(can_reload), 0);
+  }
+  explicit RangedWeaponStateBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<RangedWeaponState> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<RangedWeaponState>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<RangedWeaponState> CreateRangedWeaponState(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t token = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> name = 0,
+    int32_t ammo = 0,
+    int32_t range = 0,
+    double recoil = 0.0,
+    ::flatbuffers::Offset<::flatbuffers::String> reason = 0,
+    bool can_reload = false) {
+  RangedWeaponStateBuilder builder_(_fbb);
+  builder_.add_recoil(recoil);
+  builder_.add_token(token);
+  builder_.add_reason(reason);
+  builder_.add_range(range);
+  builder_.add_ammo(ammo);
+  builder_.add_name(name);
+  builder_.add_can_reload(can_reload);
+  return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<RangedWeaponState> CreateRangedWeaponStateDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t token = 0,
+    const char *name = nullptr,
+    int32_t ammo = 0,
+    int32_t range = 0,
+    double recoil = 0.0,
+    const char *reason = nullptr,
+    bool can_reload = false) {
+  auto name__ = name ? _fbb.CreateString(name) : 0;
+  auto reason__ = reason ? _fbb.CreateString(reason) : 0;
+  return CDDA::CWM::CreateRangedWeaponState(
+      _fbb,
+      token,
+      name__,
+      ammo,
+      range,
+      recoil,
+      reason__,
+      can_reload);
+}
+
+struct ReloadState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef ReloadStateBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_TOKEN = 4,
+    VT_TOTAL_MOVES = 6,
+    VT_REMAINING_MOVES = 8
+  };
+  uint64_t token() const {
+    return GetField<uint64_t>(VT_TOKEN, 0);
+  }
+  bool mutate_token(uint64_t _token = 0) {
+    return SetField<uint64_t>(VT_TOKEN, _token, 0);
+  }
+  int32_t total_moves() const {
+    return GetField<int32_t>(VT_TOTAL_MOVES, 0);
+  }
+  bool mutate_total_moves(int32_t _total_moves = 0) {
+    return SetField<int32_t>(VT_TOTAL_MOVES, _total_moves, 0);
+  }
+  int32_t remaining_moves() const {
+    return GetField<int32_t>(VT_REMAINING_MOVES, 0);
+  }
+  bool mutate_remaining_moves(int32_t _remaining_moves = 0) {
+    return SetField<int32_t>(VT_REMAINING_MOVES, _remaining_moves, 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_TOKEN, 8) &&
+           VerifyField<int32_t>(verifier, VT_TOTAL_MOVES, 4) &&
+           VerifyField<int32_t>(verifier, VT_REMAINING_MOVES, 4) &&
+           verifier.EndTable();
+  }
+};
+
+struct ReloadStateBuilder {
+  typedef ReloadState Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_token(uint64_t token) {
+    fbb_.AddElement<uint64_t>(ReloadState::VT_TOKEN, token, 0);
+  }
+  void add_total_moves(int32_t total_moves) {
+    fbb_.AddElement<int32_t>(ReloadState::VT_TOTAL_MOVES, total_moves, 0);
+  }
+  void add_remaining_moves(int32_t remaining_moves) {
+    fbb_.AddElement<int32_t>(ReloadState::VT_REMAINING_MOVES, remaining_moves, 0);
+  }
+  explicit ReloadStateBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<ReloadState> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<ReloadState>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<ReloadState> CreateReloadState(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t token = 0,
+    int32_t total_moves = 0,
+    int32_t remaining_moves = 0) {
+  ReloadStateBuilder builder_(_fbb);
+  builder_.add_token(token);
+  builder_.add_remaining_moves(remaining_moves);
+  builder_.add_total_moves(total_moves);
+  return builder_.Finish();
+}
+
+struct CancelReloadRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef CancelReloadRequestBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_COMMAND_ID = 4,
+    VT_ACTIVITY_TOKEN = 6
+  };
+  uint64_t command_id() const {
+    return GetField<uint64_t>(VT_COMMAND_ID, 0);
+  }
+  bool mutate_command_id(uint64_t _command_id = 0) {
+    return SetField<uint64_t>(VT_COMMAND_ID, _command_id, 0);
+  }
+  uint64_t activity_token() const {
+    return GetField<uint64_t>(VT_ACTIVITY_TOKEN, 0);
+  }
+  bool mutate_activity_token(uint64_t _activity_token = 0) {
+    return SetField<uint64_t>(VT_ACTIVITY_TOKEN, _activity_token, 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_COMMAND_ID, 8) &&
+           VerifyField<uint64_t>(verifier, VT_ACTIVITY_TOKEN, 8) &&
+           verifier.EndTable();
+  }
+};
+
+struct CancelReloadRequestBuilder {
+  typedef CancelReloadRequest Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_command_id(uint64_t command_id) {
+    fbb_.AddElement<uint64_t>(CancelReloadRequest::VT_COMMAND_ID, command_id, 0);
+  }
+  void add_activity_token(uint64_t activity_token) {
+    fbb_.AddElement<uint64_t>(CancelReloadRequest::VT_ACTIVITY_TOKEN, activity_token, 0);
+  }
+  explicit CancelReloadRequestBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<CancelReloadRequest> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<CancelReloadRequest>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<CancelReloadRequest> CreateCancelReloadRequest(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t command_id = 0,
+    uint64_t activity_token = 0) {
+  CancelReloadRequestBuilder builder_(_fbb);
+  builder_.add_activity_token(activity_token);
+  builder_.add_command_id(command_id);
+  return builder_.Finish();
+}
+
 struct AttackRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef AttackRequestBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
@@ -5870,6 +6317,12 @@ struct CwmMessage FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const CDDA::CWM::CancelCraftingRequest *payload_as_CancelCraftingRequest() const {
     return payload_type() == CDDA::CWM::Payload::CancelCraftingRequest ? static_cast<const CDDA::CWM::CancelCraftingRequest *>(payload()) : nullptr;
   }
+  const CDDA::CWM::RangedRequest *payload_as_RangedRequest() const {
+    return payload_type() == CDDA::CWM::Payload::RangedRequest ? static_cast<const CDDA::CWM::RangedRequest *>(payload()) : nullptr;
+  }
+  const CDDA::CWM::CancelReloadRequest *payload_as_CancelReloadRequest() const {
+    return payload_type() == CDDA::CWM::Payload::CancelReloadRequest ? static_cast<const CDDA::CWM::CancelReloadRequest *>(payload()) : nullptr;
+  }
   void *mutable_payload() {
     return GetPointer<void *>(VT_PAYLOAD);
   }
@@ -6048,6 +6501,14 @@ template<> inline const CDDA::CWM::CraftingRequest *CwmMessage::payload_as<CDDA:
 
 template<> inline const CDDA::CWM::CancelCraftingRequest *CwmMessage::payload_as<CDDA::CWM::CancelCraftingRequest>() const {
   return payload_as_CancelCraftingRequest();
+}
+
+template<> inline const CDDA::CWM::RangedRequest *CwmMessage::payload_as<CDDA::CWM::RangedRequest>() const {
+  return payload_as_RangedRequest();
+}
+
+template<> inline const CDDA::CWM::CancelReloadRequest *CwmMessage::payload_as<CDDA::CWM::CancelReloadRequest>() const {
+  return payload_as_CancelReloadRequest();
 }
 
 struct CwmMessageBuilder {
@@ -6258,6 +6719,14 @@ inline bool VerifyPayload(::flatbuffers::Verifier &verifier, const void *obj, Pa
     }
     case Payload::CancelCraftingRequest: {
       auto ptr = reinterpret_cast<const CDDA::CWM::CancelCraftingRequest *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::RangedRequest: {
+      auto ptr = reinterpret_cast<const CDDA::CWM::RangedRequest *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::CancelReloadRequest: {
+      auto ptr = reinterpret_cast<const CDDA::CWM::CancelReloadRequest *>(obj);
       return verifier.VerifyTable(ptr);
     }
     default: return true;

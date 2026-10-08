@@ -1,8 +1,8 @@
 diff --git a/builtin/settingtypes.txt b/builtin/settingtypes.txt
-index 728eaf4..9b14870 100644
+index 728eaf4..329f08e 100644
 --- a/builtin/settingtypes.txt
 +++ b/builtin/settingtypes.txt
-@@ -2557,3 +2557,13 @@ keymap_increase_viewing_range_min (View range increase key) key +
+@@ -2557,3 +2557,16 @@ keymap_increase_viewing_range_min (View range increase key) key +
  
  #    Key for decreasing the viewing range.
  keymap_decrease_viewing_range_min (View range decrease key) key -
@@ -16,6 +16,9 @@ index 728eaf4..9b14870 100644
 +keymap_cdda_crouch (CDDA: crouch key) string KEY_LSHIFT
 +keymap_cdda_prone (CDDA: prone key) string KEY_KEY_X
 +keymap_cdda_body (CDDA: body sheet key) string KEY_KEY_H
++
++keymap_cdda_aim (CDDA held native aim) key KEY_KEY_F
++keymap_cdda_reload (CDDA native reload) key KEY_KEY_R
 diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
 index 65e5ab6..a8494d2 100644
 --- a/src/CMakeLists.txt
@@ -133,7 +136,7 @@ index b6ae675..9e33201 100644
  		/*
  			Local player handling
 diff --git a/src/client/game.cpp b/src/client/game.cpp
-index 27b5833..a72632b 100644
+index 27b5833..aea784c 100644
 --- a/src/client/game.cpp
 +++ b/src/client/game.cpp
 @@ -8,6 +8,7 @@
@@ -489,7 +492,7 @@ index 27b5833..a72632b 100644
  
  			if (clouds)
  				clouds->updateCameraOffset(camera_offset);
-@@ -3365,6 +3587,37 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
+@@ -3365,6 +3587,39 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
  	// but the halo rendering code is already inefficient so there's no point in optimizing it here
  	hud->updateSelectionMesh(camera_offset);
  
@@ -502,6 +505,8 @@ index 27b5833..a72632b 100644
 +			item_ray.end = pointed.intersection_point;
 +		const bool items_pointed = bridge.pointGroundItems(item_ray);
 +		bridge.pointCombatTarget(item_ray);
++        if (wasKeyDown(KeyType::CDDA_RELOAD)) bridge.reloadWeapon();
++        bridge.handleAimInput(isKeyDown(KeyType::CDDA_AIM));
 +		if (!bridge.getMetrics().pending_decision && wasKeyPressed(KeyType::DIG) &&
 +				bridge.attackPointedTarget()) camera->setDigging(0);
 +		if (!bridge.getMetrics().pending_decision && wasKeyPressed(KeyType::PLACE)) {
@@ -527,7 +532,7 @@ index 27b5833..a72632b 100644
  	// Allow digging again if button is not pressed
  	if (runData.digging_blocked && !isKeyDown(KeyType::DIG))
  		runData.digging_blocked = false;
-@@ -4319,7 +4572,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
+@@ -4319,7 +4574,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
  	/*
  		Fog
  	*/
@@ -566,14 +571,16 @@ index 2da9efa..93b5bcd 100644
  		v2s32 pos(floor(e->pos.X * (float) m_screensize.X + 0.5),
  				floor(e->pos.Y * (float) m_screensize.Y + 0.5));
 diff --git a/src/client/inputhandler.cpp b/src/client/inputhandler.cpp
-index 88969f0..f5c6209 100644
+index 88969f0..a179909 100644
 --- a/src/client/inputhandler.cpp
 +++ b/src/client/inputhandler.cpp
-@@ -63,6 +63,11 @@ void KeyCache::populate()
+@@ -63,6 +63,13 @@ void KeyCache::populate()
  			getKeySetting("keymap_decrease_viewing_range_min");
  	key[KeyType::RANGESELECT] = getKeySetting("keymap_rangeselect");
  	key[KeyType::ZOOM] = getKeySetting("keymap_zoom");
 +	key[KeyType::CDDA_BODY] = getKeySetting("keymap_cdda_body");
++    key[KeyType::CDDA_AIM] = getKeySetting("keymap_cdda_aim");
++    key[KeyType::CDDA_RELOAD] = getKeySetting("keymap_cdda_reload");
 +    key[KeyType::CDDA_CRAFTING] = getKeySetting("keymap_cdda_crafting");
 +	key[KeyType::CDDA_RUN] = getKeySetting("keymap_cdda_run");
 +	key[KeyType::CDDA_CROUCH] = getKeySetting("keymap_cdda_crouch");
@@ -582,15 +589,17 @@ index 88969f0..f5c6209 100644
  	key[KeyType::QUICKTUNE_NEXT] = getKeySetting("keymap_quicktune_next");
  	key[KeyType::QUICKTUNE_PREV] = getKeySetting("keymap_quicktune_prev");
 diff --git a/src/client/keys.h b/src/client/keys.h
-index 4bce131..10c1dfc 100644
+index 4bce131..de74875 100644
 --- a/src/client/keys.h
 +++ b/src/client/keys.h
-@@ -56,6 +56,11 @@ class KeyType
+@@ -56,6 +56,13 @@ class KeyType
  		DECREASE_VIEWING_RANGE,
  		RANGESELECT,
  		ZOOM,
 +		CDDA_BODY,
 +        CDDA_CRAFTING,
++        CDDA_AIM,
++        CDDA_RELOAD,
 +		CDDA_RUN,
 +		CDDA_CROUCH,
 +		CDDA_PRONE,
@@ -657,14 +666,16 @@ index d6e2863..239953a 100644
  	std::vector<std::unique_ptr<MeshUpdateWorkerThread>> m_workers;
  };
 diff --git a/src/defaultsettings.cpp b/src/defaultsettings.cpp
-index 7758c96..6937411 100644
+index 7758c96..cce4b34 100644
 --- a/src/defaultsettings.cpp
 +++ b/src/defaultsettings.cpp
-@@ -166,6 +166,14 @@ void set_default_settings()
+@@ -166,6 +166,16 @@ void set_default_settings()
  	settings->setDefault("keymap_toggle_hud", "KEY_F1");
  	settings->setDefault("keymap_toggle_chat", "KEY_F2");
  	settings->setDefault("keymap_toggle_fog", "KEY_F3");
 +	settings->setDefault("keymap_cdda_body", "KEY_KEY_H");
++    settings->setDefault("keymap_cdda_aim", "KEY_KEY_F");
++    settings->setDefault("keymap_cdda_reload", "KEY_KEY_R");
 +    settings->setDefault("keymap_cdda_crafting", "KEY_KEY_K");
 +	settings->setDefault("keymap_cdda_run", "KEY_LCONTROL");
 +	settings->setDefault("keymap_cdda_crouch", "KEY_LSHIFT");
@@ -1098,10 +1109,10 @@ index 0000000..2214cd4
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..a34c6ec
+index 0000000..99f20f0
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,2295 @@
+@@ -0,0 +1,2333 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
@@ -1254,6 +1265,11 @@ index 0000000..a34c6ec
 +    uint64_t activity_token_{0}, cancel_activity_sent_{0};
 +    int activity_total_{0}, activity_remaining_{0};
 +    bool first_aid_{false}, crafting_{false};
++    bool reloading_{false};
++    uint64_t weapon_token_{0}, aim_sent_{0}, fire_sent_{0}, reload_sent_{0};
++    int weapon_ammo_{0}, weapon_range_{0}; double weapon_recoil_{0};
++    std::string weapon_name_, weapon_reason_;
++
 +    CraftingView crafting_view_;
 +    bool crafting_open_{false}, crafting_close_{false}, crafting_dirty_{false};
 +    uint64_t next_crafting_query_{1}, crafting_query_{0}, crafting_sent_{0};
@@ -1286,12 +1302,12 @@ index 0000000..a34c6ec
 +
 +    std::string equipment_form() const {
 +        return equipmentForm(equipment_view_, equipment_page_, equipment_selected_, equipment_search_,
-+            equipment_filter_, equipment_notice_, [&](const auto& type) { return ground_item_visual_name(type); }, activity_token_, first_aid_, crafting_);
++            equipment_filter_, equipment_notice_, [&](const auto& type) { return ground_item_visual_name(type); }, activity_token_, first_aid_, crafting_, reloading_);
 +    }
 +    void cancel_equipment() {
 +        queued_crafting_.reset(); crafting_query_ = 0; crafting_view_ = {};
 +        crafting_close_ = crafting_open_;
-+        queued_cancel_activity_.reset(); activity_token_ = 0;
++        queued_cancel_activity_.reset(); activity_token_ = 0; weapon_token_ = 0; reloading_ = false;
 +        activity_total_ = activity_remaining_ = 0;
 +        queued_equipment_.reset(); inventory_query_ = 0; equipment_view_ = {};
 +        equipment_close_ = equipment_open_;
@@ -1317,7 +1333,7 @@ index 0000000..a34c6ec
 +        auto wire = session_.builder();
 +        const uint64_t id = session_.next_command++;
 +        const bool cancel = queued_cancel_activity_.has_value();
-+        const auto bytes = cancel ? (crafting_ ? wire.build_cancel_crafting(id, *queued_cancel_activity_) : first_aid_ ? wire.build_cancel_first_aid(id, *queued_cancel_activity_) : wire.build_cancel_consumption(id, *queued_cancel_activity_)) : queued_crafting_ ?
++        const auto bytes = cancel ? (crafting_ ? wire.build_cancel_crafting(id, *queued_cancel_activity_) : first_aid_ ? wire.build_cancel_first_aid(id, *queued_cancel_activity_) : reloading_ ? wire.build_cancel_reload(id, *queued_cancel_activity_) : wire.build_cancel_consumption(id, *queued_cancel_activity_)) : queued_crafting_ ?
 +            wire.build_crafting_request(id, queued_crafting_->view, queued_crafting_->entry) : wire.build_equipment_request(id, queued_equipment_->view, queued_equipment_->item,
 +                static_cast<CDDA::CWM::EquipmentAction>(queued_equipment_->action));
 +        if (!connection_->send_message(bytes.data(), bytes.size())) { cancel_equipment(); return; }
@@ -2088,12 +2104,17 @@ index 0000000..a34c6ec
 +                metrics_.safety_stop = snap->safety_stop();
 +                const auto* consumption = snap->consumption();
 +                const uint64_t previous_consumption = activity_token_;
++                const auto* reload = snap->reload(); reloading_ = reload != nullptr;
++                const auto* gun = snap->ranged_weapon();
++                weapon_token_ = gun ? gun->token() : 0; weapon_ammo_ = gun ? gun->ammo() : 0;
++                weapon_range_ = gun ? gun->range() : 0; weapon_recoil_ = gun ? gun->recoil() : 0;
++                weapon_name_ = gun ? gun->name()->str() : ""; weapon_reason_ = gun ? gun->reason()->str() : "";
 +                const auto* aid = snap->first_aid();
 +                const auto* craft = snap->crafting(); crafting_ = craft != nullptr;
 +                first_aid_ = aid != nullptr;
-+                activity_token_ = craft ? craft->token() : aid ? aid->token() : consumption ? consumption->token() : 0;
-+                activity_total_ = craft ? 10000000 : aid ? aid->total_moves() : consumption ? consumption->total_moves() : 0;
-+                activity_remaining_ = craft ? 10000000 - craft->progress() : aid ? aid->remaining_moves() : consumption ? consumption->remaining_moves() : 0;
++                activity_token_ = reload ? reload->token() : craft ? craft->token() : aid ? aid->token() : consumption ? consumption->token() : 0;
++                activity_total_ = reload ? reload->total_moves() : craft ? 10000000 : aid ? aid->total_moves() : consumption ? consumption->total_moves() : 0;
++                activity_remaining_ = reload ? reload->remaining_moves() : craft ? 10000000 - craft->progress() : aid ? aid->remaining_moves() : consumption ? consumption->remaining_moves() : 0;
 +                if (previous_consumption != activity_token_ && equipment_open_) equipment_dirty_ = true;
 +                if (previous_consumption != activity_token_ && crafting_open_) crafting_dirty_ = true;
 +                const auto projection_started = std::chrono::steady_clock::now();
@@ -2489,7 +2510,28 @@ index 0000000..a34c6ec
 +        return true;
 +    }
 +
++    bool send_ranged_request(int action) {
++        const auto now = std::chrono::steady_clock::now();
++        if (!weapon_token_ || !connection_ || !connection_->is_valid() || !session_.ready() || !player_ready_ ||
++            pending_move_ || activity_token_ || metrics_.pending_decision || metrics_.pause_reasons || sent_menu_pause_ == 1 ||
++            equipment_open_ || crafting_open_ || ground_container_open_ || body_form_open_ || now < next_move_) return false;
++        if (action != 2) {
++            const auto it = entities_.find(pointed_actor_);
++            if (it == entities_.end() || !it->second.perceived || !(it->second.state_flags & cdda::cwm::HOSTILE_TO_PLAYER)) return false;
++        }
++        const auto id = session_.next_command++; auto wire = session_.builder();
++        const auto bytes = wire.build_ranged_request(id,weapon_token_,action == 2 ? 0 : pointed_actor_,static_cast<CDDA::CWM::RangedAction>(action));
++        if (!connection_->send_message(bytes.data(),bytes.size())) return false;
++        pending_move_ = id; move_acked_ = false; sent_move_ = now;
++        next_move_ = now + std::chrono::milliseconds(50);
++        if (action == 0) ++aim_sent_; else if (action == 2) ++reload_sent_; else {
++            ++fire_sent_; last_attack_target_ = pointed_actor_; ++attacks_sent_;
++            last_attack_command_ = id; last_attack_result_ = -1;
++        }
++        return true;
++    }
 +    bool send_attack_request() {
++        if (weapon_token_) return send_ranged_request(1);
 +        const auto now = std::chrono::steady_clock::now();
 +        if (!connection_ || !connection_->is_valid() || !session_.ready() || !player_ready_ ||
 +            pending_move_ || metrics_.pending_decision || metrics_.pause_reasons ||
@@ -2559,7 +2601,7 @@ index 0000000..a34c6ec
 +    std::string trace_path;
 +    if (g_settings->getNoEx("cwm_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->trace_.open(trace_path);
-+        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog,ipc_connected,ipc_input,ipc_output,ipc_read_bytes,ipc_write_bytes,ipc_frames,ipc_dispatch_bytes,ipc_read_calls,ipc_write_calls,session_state,input_ready,session_id,player_id,connection_id,sequence,resync_count,entity_cache,vehicle_cache,scene_origin_x,scene_origin_y,simulation_time,realtime,pause_reasons,time_scale,sent_intent,continuous_motion,intent_x,intent_y,ipc_latency_ms,projection_ms,ground_tiles,owned_items,ground_container,ground_hover,queued_pickup,ground_visual_nodes,ground_hover_items,ground_target_items,ground_target_visual_nodes,ground_target_first_type,status_available,body_form,survival_visible,status_stamina,status_head,status_arm_l,combat_hover,attacks_sent,attack_target,attack_target_hp,attack_result,player_state_flags,player_eye_offset,visual_animation_time,visual_animation_delta,ground_item_rotation,status_hunger_level,status_thirst_level,status_fatigue_level,status_pain_level,hud_images_active,equipment_form,inventory_view,inventory_entries,equipment_selected,equipment_sent,pending_decision,consumption_token,consumption_total,consumption_remaining,cancel_consumption_sent,first_aid_token,first_aid_total,first_aid_remaining,crafting_form,crafting_view,crafting_selected,crafting_sent,crafting_token,crafting_progress\n";
++        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog,ipc_connected,ipc_input,ipc_output,ipc_read_bytes,ipc_write_bytes,ipc_frames,ipc_dispatch_bytes,ipc_read_calls,ipc_write_calls,session_state,input_ready,session_id,player_id,connection_id,sequence,resync_count,entity_cache,vehicle_cache,scene_origin_x,scene_origin_y,simulation_time,realtime,pause_reasons,time_scale,sent_intent,continuous_motion,intent_x,intent_y,ipc_latency_ms,projection_ms,ground_tiles,owned_items,ground_container,ground_hover,queued_pickup,ground_visual_nodes,ground_hover_items,ground_target_items,ground_target_visual_nodes,ground_target_first_type,status_available,body_form,survival_visible,status_stamina,status_head,status_arm_l,combat_hover,attacks_sent,attack_target,attack_target_hp,attack_result,player_state_flags,player_eye_offset,visual_animation_time,visual_animation_delta,ground_item_rotation,status_hunger_level,status_thirst_level,status_fatigue_level,status_pain_level,hud_images_active,equipment_form,inventory_view,inventory_entries,equipment_selected,equipment_sent,pending_decision,consumption_token,consumption_total,consumption_remaining,cancel_consumption_sent,first_aid_token,first_aid_total,first_aid_remaining,crafting_form,crafting_view,crafting_selected,crafting_sent,crafting_token,crafting_progress,weapon_token,weapon_ammo,weapon_recoil,aim_sent,fire_sent,reload_sent,reload_token,reload_total,reload_remaining\n";
 +    }
 +    if (g_settings->getNoEx("cwm_entity_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->entity_trace_.open(trace_path);
@@ -2724,12 +2766,16 @@ index 0000000..a34c6ec
 +        << ',' << pimpl_->equipment_open_ << ',' << pimpl_->equipment_view_.view
 +        << ',' << pimpl_->equipment_view_.entries.size() << ',' << pimpl_->equipment_selected_
 +        << ',' << pimpl_->equipment_sent_ << ',' << pimpl_->metrics_.pending_decision
-+        << ',' << ((pimpl_->first_aid_ || pimpl_->crafting_) ? 0 : pimpl_->activity_token_) << ',' << ((pimpl_->first_aid_ || pimpl_->crafting_) ? 0 : pimpl_->activity_total_) << ',' << ((pimpl_->first_aid_ || pimpl_->crafting_) ? 0 : pimpl_->activity_remaining_)
++        << ',' << ((pimpl_->first_aid_ || pimpl_->crafting_ || pimpl_->reloading_) ? 0 : pimpl_->activity_token_) << ',' << ((pimpl_->first_aid_ || pimpl_->crafting_ || pimpl_->reloading_) ? 0 : pimpl_->activity_total_) << ',' << ((pimpl_->first_aid_ || pimpl_->crafting_ || pimpl_->reloading_) ? 0 : pimpl_->activity_remaining_)
 +        << ',' << pimpl_->cancel_activity_sent_
 +        << ',' << (pimpl_->first_aid_ ? pimpl_->activity_token_ : 0) << ',' << (pimpl_->first_aid_ ? pimpl_->activity_total_ : 0) << ',' << (pimpl_->first_aid_ ? pimpl_->activity_remaining_ : 0)
 +        << ',' << pimpl_->crafting_open_ << ',' << pimpl_->crafting_view_.view << ',' << pimpl_->crafting_selected_
 +        << ',' << pimpl_->crafting_sent_ << ',' << (pimpl_->crafting_ ? pimpl_->activity_token_ : 0)
-+        << ',' << (pimpl_->crafting_ ? 10000000 - pimpl_->activity_remaining_ : 0) << '\n';
++        << ',' << (pimpl_->crafting_ ? 10000000 - pimpl_->activity_remaining_ : 0)
++        << ',' << pimpl_->weapon_token_ << ',' << pimpl_->weapon_ammo_ << ',' << pimpl_->weapon_recoil_
++        << ',' << pimpl_->aim_sent_ << ',' << pimpl_->fire_sent_ << ',' << pimpl_->reload_sent_
++        << ',' << (pimpl_->reloading_ ? pimpl_->activity_token_ : 0) << ',' << (pimpl_->reloading_ ? pimpl_->activity_total_ : 0)
++        << ',' << (pimpl_->reloading_ ? pimpl_->activity_remaining_ : 0) << '\n';
 +    pimpl_->trace_.flush();
 +}
 +
@@ -2805,9 +2851,9 @@ index 0000000..a34c6ec
 +    }
 +    if (impl.pointed_actor_) {
 +        const auto& ent = impl.entities_.at(impl.pointed_actor_);
-+        impl.hover_hint_ = utf8_to_wide(ent.name) +
++        impl.hover_hint_ = (impl.weapon_token_ ? utf8_to_wide(impl.weapon_name_) + L" [" + std::to_wstring(impl.weapon_ammo_) + L"] — " : L"") + utf8_to_wide(ent.name) +
 +            ((ent.state_flags & cdda::cwm::HOSTILE_TO_PLAYER) ?
-+             (impl.metrics_.pause_reasons ? L" — riprendi per attaccare" : L" — clic sinistro: attacco ravvicinato") :
++             (impl.metrics_.pause_reasons ? L" — riprendi per attaccare" : impl.weapon_token_ ? L" — F mantenuto: mira; clic sinistro: spara; R: ricarica" : L" — clic sinistro: attacco ravvicinato") :
 +             L" — creatura non ostile");
 +    }
 +    return impl.pointed_actor_ != 0;
@@ -2843,6 +2889,9 @@ index 0000000..a34c6ec
 +float CddaBridge::visualAnimationDelta() const {
 +    return pimpl_ ? pimpl_->visual_animation_delta_ : 0.f;
 +}
++
++void CddaBridge::handleAimInput(bool held) { if (pimpl_ && held) pimpl_->send_ranged_request(0); }
++bool CddaBridge::reloadWeapon() { return pimpl_ && pimpl_->send_ranged_request(2); }
 +
 +bool CddaBridge::attackPointedTarget() {
 +    return pimpl_ && pimpl_->send_attack_request();
@@ -3274,7 +3323,7 @@ index 0000000..a34c6ec
 +        std::wstring consumption_hint;
 +        if (pimpl_->activity_token_ && pimpl_->activity_total_ > 0) {
 +            const int percent = int(100LL * (pimpl_->activity_total_ - pimpl_->activity_remaining_) / pimpl_->activity_total_);
-+            consumption_hint = (pimpl_->crafting_ ? L"Crafting in corso: " : pimpl_->first_aid_ ? L"Trattamento in corso: " : L"Consumo in corso: ") + std::to_wstring(percent) + L"% - I: interrompi";
++            consumption_hint = (pimpl_->crafting_ ? L"Crafting in corso: " : pimpl_->first_aid_ ? L"Trattamento in corso: " : pimpl_->reloading_ ? L"Ricarica in corso: " : L"Consumo in corso: ") + std::to_wstring(percent) + L"% - I: interrompi";
 +        }
 +        pimpl_->item_hint_text_->setText(consumption_hint.empty() ? hint.c_str() : consumption_hint.c_str());
 +        pimpl_->item_hint_text_->setVisible(pimpl_->session_.ready() &&
@@ -3399,10 +3448,10 @@ index 0000000..a34c6ec
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.h b/src/cdda/cdda_bridge.h
 new file mode 100644
-index 0000000..bf6e603
+index 0000000..95be100
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.h
-@@ -0,0 +1,156 @@
+@@ -0,0 +1,158 @@
 +// Luanti C++ CWM Presentation Bridge
 +// Licensed under Apache-2.0
 +#pragma once
@@ -3497,6 +3546,8 @@ index 0000000..bf6e603
 +    bool handlePointedOpening(const v3s16& node, bool close);
 +    bool pointCombatTarget(const irr::core::line3d<float>& ray);
 +    bool attackPointedTarget();
++    void handleAimInput(bool held);
++    bool reloadWeapon();
 +    bool pointGroundItems(const irr::core::line3d<float>& ray);
 +    std::string activateGroundItems();
 +    Inventory* getInventoryMirror(const InventoryLocation& location);
@@ -3623,7 +3674,7 @@ index 0000000..a5935f0
 +} // namespace cdda_client
 diff --git a/src/cdda/equipment_inventory.h b/src/cdda/equipment_inventory.h
 new file mode 100644
-index 0000000..ce4c5e5
+index 0000000..a27d0d1
 --- /dev/null
 +++ b/src/cdda/equipment_inventory.h
 @@ -0,0 +1,144 @@
@@ -3713,7 +3764,7 @@ index 0000000..ce4c5e5
 +}
 +inline std::string equipmentForm(const EquipmentView& view, size_t page, uint32_t selected,
 +        const std::string& search, int filter, const std::string& notice,
-+        const std::function<std::string(const std::string&)>& icon, uint64_t consumption_token = 0, bool first_aid = false, bool crafting = false) {
++        const std::function<std::string(const std::string&)>& icon, uint64_t consumption_token = 0, bool first_aid = false, bool crafting = false, bool reloading = false) {
 +    std::string f = "formspec_version[4]size[16,11]no_prepend[]bgcolor[#00000000]"
 +        "background9[0,0;16,11;mcl_base_textures_background9.png;false;7]"
 +        "style_type[label;textcolor=#323232]"
@@ -3722,7 +3773,7 @@ index 0000000..ce4c5e5
 +        "field[0.4,1;5.6,0.65;search;;" + statusEscape(search) + "]field_close_on_enter[search;false]"
 +        "button[6.1,1;1.6,0.65;find;Cerca]dropdown[8,1;3.3,0.65;filter;Tutti,Impugnati,Indossati,Nelle tasche;" + std::to_string(filter + 1) + "]"
 +        "button[11.6,1;1.8,0.65;refresh;Aggiorna]button_exit[13.7,1;1.8,0.65;close;Chiudi]";
-+    if (consumption_token) f += "button[8,1.9;7.5,0.6;cancel_consume;" + std::string(crafting ? "Interrompi crafting" : first_aid ? "Interrompi trattamento" : "Interrompi consumo") + "]";
++    if (consumption_token) f += "button[8,1.9;7.5,0.6;cancel_consume;" + std::string(crafting ? "Interrompi crafting" : first_aid ? "Interrompi trattamento" : reloading ? "Interrompi ricarica" : "Interrompi consumo") + "]";
 +    if (!view.view) return f + "label[0.5,2.2;" + statusEscape(view.error.empty() ? "Lettura inventario nativo..." : view.error) + "]";
 +    f += "label[0.5,2;Peso " + equipmentAmount(view.weight) + " / " + equipmentAmount(view.weight_capacity) +
 +        " kg - Volume " + equipmentAmount(view.volume) + " / " + equipmentAmount(view.volume_capacity) + " L]";

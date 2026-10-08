@@ -6,20 +6,20 @@
       "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
       "shallow": true,
       "patch": "baseline/patches/cdda.patch",
-      "patch_sha256": "a17c6bc1d08e776c5e728aea8c5306b0cc23ecc8b75a51ce131026b9d7e0ac6b",
+      "patch_sha256": "da0b6b709fc9e9141f260a6c589f77dfcb3c37d5557bfa57844bef5adad627d7",
       "tree_inventory": "baseline/trees/cdda.json",
-      "tree_sha256": "6e6a9cd1830875ebc72f2864415fee3e8c1d50ad097eb87dbe1a2725c5ea69b3",
-      "file_count": 8585,
-      "original_status": " M src/CMakeLists.txt\n M src/avatar_action.cpp\n M src/avatar_action.h\n M src/character.cpp\n M src/character_body.cpp\n M src/character_inventory.cpp\n M src/craft_command.cpp\n M src/craft_command.h\n M src/crafting.cpp\n M src/crafting.h\n M src/do_turn.cpp\n M src/do_turn.h\n M src/game.cpp\n M src/game.h\n M src/handle_action.cpp\n M src/iexamine.cpp\n M src/iuse_actor.cpp\n M src/melee.cpp\n M src/output.cpp\n M src/pickup.cpp\n M src/recipe.cpp\n M src/recipe.h\n M src/ui.cpp\n M tests/CMakeLists.txt\n M tests/test_main.cpp\n?? src/cwm/cwm_crafting.h\n?? src/cwm/cwm_inventory.h\n?? src/cwm/cwm_main.cpp\n?? src/cwm/cwm_map_exporter.cpp\n?? src/cwm/cwm_map_exporter.h\n?? src/cwm/cwm_server.cpp\n?? src/cwm/cwm_server.h\n?? src/cwm/cwm_status_gauges.h\n?? src/cwm_motion.cpp\n?? src/cwm_motion.h\n?? src/safe_mode_actions.h\n?? tests/cwm_pickup_test.cpp\n?? tests/cwm_projection_test.cpp\n?? tests/cwm_runtime_test.cpp\n"
+      "tree_sha256": "c953014a43841560894e587b3313af086dc0b0869e7c02f345cefc288cdbba13",
+      "file_count": 8586,
+      "original_status": " M src/CMakeLists.txt\n M src/avatar.cpp\n M src/avatar_action.cpp\n M src/avatar_action.h\n M src/character.cpp\n M src/character_body.cpp\n M src/character_inventory.cpp\n M src/craft_command.cpp\n M src/craft_command.h\n M src/crafting.cpp\n M src/crafting.h\n M src/do_turn.cpp\n M src/do_turn.h\n M src/game.cpp\n M src/game.h\n M src/handle_action.cpp\n M src/iexamine.cpp\n M src/iuse_actor.cpp\n M src/melee.cpp\n M src/output.cpp\n M src/pickup.cpp\n M src/ranged.cpp\n M src/ranged.h\n M src/recipe.cpp\n M src/recipe.h\n M src/ui.cpp\n M tests/CMakeLists.txt\n M tests/test_main.cpp\n?? src/cwm/cwm_crafting.h\n?? src/cwm/cwm_inventory.h\n?? src/cwm/cwm_main.cpp\n?? src/cwm/cwm_map_exporter.cpp\n?? src/cwm/cwm_map_exporter.h\n?? src/cwm/cwm_ranged.h\n?? src/cwm/cwm_server.cpp\n?? src/cwm/cwm_server.h\n?? src/cwm/cwm_status_gauges.h\n?? src/cwm_motion.cpp\n?? src/cwm_motion.h\n?? src/safe_mode_actions.h\n?? tests/cwm_pickup_test.cpp\n?? tests/cwm_projection_test.cpp\n?? tests/cwm_runtime_test.cpp\n"
     },
     "luanti": {
       "url": "https://github.com/luanti-org/luanti.git",
       "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
       "shallow": true,
       "patch": "baseline/patches/luanti.patch",
-      "patch_sha256": "84580f3fc45ed23b1a64d1007b923a23611a72e587709550704e008157854ca1",
+      "patch_sha256": "e856d949510dd48bdd07df31d81b64b8fe974e491cb188c081be1c75641fec61",
       "tree_inventory": "baseline/trees/luanti.json",
-      "tree_sha256": "aa57685272e012abdbfce756a64c955f46e66effacb27fae7f9f9730f6b629a7",
+      "tree_sha256": "e333c6729a3f95d599a853d9118683eb9df12b778f41f48ee3630b81baa8fc63",
       "file_count": 2258,
       "original_status": " M builtin/settingtypes.txt\n M src/CMakeLists.txt\n M src/client/CMakeLists.txt\n M src/client/client.cpp\n M src/client/clientenvironment.cpp\n M src/client/game.cpp\n M src/client/hud.cpp\n M src/client/inputhandler.cpp\n M src/client/keys.h\n M src/client/mesh_generator_thread.cpp\n M src/client/mesh_generator_thread.h\n M src/defaultsettings.cpp\n M src/network/clientpackethandler.cpp\n M src/server/player_sao.cpp\n M src/unittest/test_mapblock.cpp\n?? src/cdda/avatar_status.h\n?? src/cdda/cdda_bridge.cpp\n?? src/cdda/cdda_bridge.h\n?? src/cdda/crafting_inventory.h\n?? src/cdda/equipment_inventory.h\n?? src/cdda/ground_item_formspec.h\n?? src/cdda/ground_item_projection.h\n?? src/cdda/ground_item_visual.h\n?? src/cdda/posture_input.h\n"
     },

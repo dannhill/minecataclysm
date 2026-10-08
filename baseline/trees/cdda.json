@@ -36652,7 +36652,7 @@
   {
     "path": "src/avatar.cpp",
     "mode": "100644",
-    "sha256": "43fffe94a389550235222f9e9b6d7438fd37d9ba07b5fe77d79e4f31ba2a0a63"
+    "sha256": "dd5684222d474a1232dad8c138f340e75a5991ffb484c63b2fed6fb5ed32ee4c"
   },
   {
     "path": "src/avatar.h",
@@ -37337,22 +37337,27 @@
   {
     "path": "src/cwm/cwm_map_exporter.cpp",
     "mode": "100644",
-    "sha256": "d81b1adcc4e29130a6956e8a3f491e061277c3039778365e324aa1a1247ca31b"
+    "sha256": "ad13381a3da6b960ddbdb2628d1ab8dde1bd062281d2954ba4a41aa90912e432"
   },
   {
     "path": "src/cwm/cwm_map_exporter.h",
     "mode": "100644",
-    "sha256": "2fe483e25bdaf74168abaaa787f68af9089fd19d7201a6cefe3a5d4a347fe613"
+    "sha256": "67dca5e7569a454b19b9a22d266bdcec49ffce7d0b172013f67cc9cb4bbaeab8"
+  },
+  {
+    "path": "src/cwm/cwm_ranged.h",
+    "mode": "100644",
+    "sha256": "f05e85d00f4ca1f77c2ba8d2d2b1e663817605955b0b0bfa7b9517bd467103cb"
   },
   {
     "path": "src/cwm/cwm_server.cpp",
     "mode": "100644",
-    "sha256": "fd1e992ad67c72af08d66e68353bc7f6541cfbf2b68684d651d6eaa2c622de85"
+    "sha256": "58f0d376c124ef3611c39921b7424a31c7fe8d5822b65f906b4433cd96ccbbab"
   },
   {
     "path": "src/cwm/cwm_server.h",
     "mode": "100644",
-    "sha256": "2783a6d12f545409291d87a7dfd31328b5a79918ca93f0bdd4c21376cd5af1c6"
+    "sha256": "18f43ee32f217c22ec9e8870d541cc2dca37ba426b4ade2a5634068383f237d6"
   },
   {
     "path": "src/cwm/cwm_status_gauges.h",
@@ -37817,7 +37822,7 @@
   {
     "path": "src/game.cpp",
     "mode": "100644",
-    "sha256": "b0688c401efc09a789a8b2f860bbf8b3bdb49f990a6ee7ebbbfa3258750312b2"
+    "sha256": "55a0d5d7d60ffaec2958cb07c5c7e374ba80925123c40086a922e626bc55e9bf"
   },
   {
     "path": "src/game.h",
@@ -39402,12 +39407,12 @@
   {
     "path": "src/ranged.cpp",
     "mode": "100644",
-    "sha256": "dc665081a02bb0daeaf28faa6f28d59cf2d7efd389e5553a55998ed5ba889052"
+    "sha256": "5bee7836cfafdabe43b158befbc832ffed0b872a43d0bf385b968a7eb79ed9d7"
   },
   {
     "path": "src/ranged.h",
     "mode": "100644",
-    "sha256": "f69bbe31384cd61af072596f7c77918030580d2a26994c2a9fa96f3c8a2b5749"
+    "sha256": "554a8f8b0094e994f8ba935ab3cd1fb194fd8cf227fb4f31573914c40701cd88"
   },
   {
     "path": "src/reachability_cache.cpp",

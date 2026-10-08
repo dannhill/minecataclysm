@@ -1232,7 +1232,7 @@
   {
     "path": "builtin/settingtypes.txt",
     "mode": "100644",
-    "sha256": "666f17e8894e5793db45d12a02eb00f6454750a1ca6bc67bc3848be98a0384d2"
+    "sha256": "31762716b29457519ecea9987900bbb620f97a64c0255902e4e8af31f3cb0272"
   },
   {
     "path": "client/serverlist/.gitignore",
@@ -7237,12 +7237,12 @@
   {
     "path": "src/cdda/cdda_bridge.cpp",
     "mode": "100644",
-    "sha256": "b8bd9d9ee976515ffc0b2078c875fe6f47da6909ce87cddc4912648ae0e547aa"
+    "sha256": "b7118faa0e59e01988badedeffbeed9fb575db4f2392e61ef36ea5b8dc85e6aa"
   },
   {
     "path": "src/cdda/cdda_bridge.h",
     "mode": "100644",
-    "sha256": "fa983fb8f8697bdda645e8cd52ebd890e8e87ba321ebc3338c43658720b925c5"
+    "sha256": "b9d04eb8eca617410e96b9076733cc8222bfc46da37d8c9e21f0cb50eb06dc6f"
   },
   {
     "path": "src/cdda/crafting_inventory.h",
@@ -7252,7 +7252,7 @@
   {
     "path": "src/cdda/equipment_inventory.h",
     "mode": "100644",
-    "sha256": "a9cb7919654bd94621b4ca1a66560d3ee2daa5b502f3c33c30a1d56aa4b714e9"
+    "sha256": "a12297d2e884025d0ccea210b82e6afb40bb426d37b02bfc55a4df44e79a362b"
   },
   {
     "path": "src/cdda/ground_item_formspec.h",
@@ -7457,7 +7457,7 @@
   {
     "path": "src/client/game.cpp",
     "mode": "100644",
-    "sha256": "47b0ef56ad97c88a9706026c731f33919a4274e652a230c4c7ac5da165012190"
+    "sha256": "96131f797d918d34b405e477eb4d724eeb3eba27b3995a494acd5c0e6aa466c8"
   },
   {
     "path": "src/client/game.h",
@@ -7517,7 +7517,7 @@
   {
     "path": "src/client/inputhandler.cpp",
     "mode": "100644",
-    "sha256": "39d27a763c7533f793b43469c785f32e37e3a6802e9d92f14b22de2960101c8c"
+    "sha256": "2777798b536e3c38aabf067fbe3320bca24fbac415fa44ea26f92829105e0cee"
   },
   {
     "path": "src/client/inputhandler.h",
@@ -7547,7 +7547,7 @@
   {
     "path": "src/client/keys.h",
     "mode": "100644",
-    "sha256": "6eb759d04c095f36da1249ed14c7ab7d5a8198f668cdfed7c348e51a84fa6d85"
+    "sha256": "89beb5e4096c39bc819e7d6083162302d0ca86089e18f08da1154f81fd6b210f"
   },
   {
     "path": "src/client/localplayer.cpp",
@@ -8152,7 +8152,7 @@
   {
     "path": "src/defaultsettings.cpp",
     "mode": "100644",
-    "sha256": "7def8ca7fda28bd2d7f117e6dccdd8fdc073d039e416f210915056e2a8b5f7c1"
+    "sha256": "082cd3127883b8e8671936940b56eebaae7806c7869d22454059a5544627f6a9"
   },
   {
     "path": "src/defaultsettings.h",

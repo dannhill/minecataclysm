@@ -216,6 +216,8 @@ table WorldSnapshot {
     consumption: ConsumptionState;
     first_aid: FirstAidState;
     crafting: CraftingState;
+    ranged_weapon: RangedWeaponState;
+    reload: ReloadState;
 }
 
 table SimulationState {
@@ -349,6 +351,13 @@ table EquipmentRequest {
     action: EquipmentAction;
 }
 
+enum RangedAction : byte { AIM = 0, FIRE = 1, RELOAD = 2 }
+// Weapon generation and entity identity, never client ammunition/damage/coordinates.
+table RangedRequest { command_id: uint64; weapon_token: uint64; target_entity_id: uint64; action: RangedAction; }
+table RangedWeaponState { token: uint64; name: string; ammo: int32; range: int32; recoil: float64; reason: string; can_reload: bool; }
+table ReloadState { token: uint64; total_moves: int32; remaining_moves: int32; }
+table CancelReloadRequest { command_id: uint64; activity_token: uint64; }
+
 table AttackRequest {
     command_id: uint64;
     target_entity_id: uint64;
@@ -424,6 +433,8 @@ union Payload {
     ,CraftingView
     ,CraftingRequest
     ,CancelCraftingRequest
+    ,RangedRequest
+    ,CancelReloadRequest
 }
 
 table CwmMessage {

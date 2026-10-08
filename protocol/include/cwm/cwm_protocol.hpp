@@ -11,7 +11,7 @@
 namespace cdda::cwm {
 
 constexpr uint16_t PROTOCOL_VERSION_MAJOR = 2;
-constexpr uint16_t PROTOCOL_VERSION_MINOR = 13;
+constexpr uint16_t PROTOCOL_VERSION_MINOR = 14;
 
 struct Identity { uint64_t session{0}, player{0}, connection{0}; };
 
@@ -82,6 +82,14 @@ public:
         return finish_message(CDDA::CWM::Payload::MovementModeRequest, req.Union());
     }
 
+    std::vector<uint8_t> build_ranged_request(uint64_t id, uint64_t weapon, uint64_t target, CDDA::CWM::RangedAction action) {
+        auto req = CDDA::CWM::CreateRangedRequest(fbb_, id, weapon, target, action);
+        return finish_message(CDDA::CWM::Payload::RangedRequest, req.Union());
+    }
+    std::vector<uint8_t> build_cancel_reload(uint64_t id, uint64_t token) {
+        auto req = CDDA::CWM::CreateCancelReloadRequest(fbb_, id, token);
+        return finish_message(CDDA::CWM::Payload::CancelReloadRequest, req.Union());
+    }
     std::vector<uint8_t> build_attack_request(uint64_t command_id, uint64_t target_entity_id) {
         const auto req = CDDA::CWM::CreateAttackRequest(fbb_, command_id, target_entity_id);
         return finish_message(CDDA::CWM::Payload::AttackRequest, req.Union());

@@ -29,6 +29,51 @@ index 6d5d148..4181ad1 100644
  endif ()
  
  if (MINGW AND NOT RELEASE)
+diff --git a/src/avatar.cpp b/src/avatar.cpp
+index 83ae79c..0af6ca4 100644
+--- a/src/avatar.cpp
++++ b/src/avatar.cpp
+@@ -1,4 +1,6 @@
+ #include "avatar.h"
++#include "do_turn.h"
++#include "item_pocket.h"
+ 
+ #include <algorithm>
+ #include <array>
+@@ -1459,6 +1461,33 @@ item::reload_option avatar::select_ammo( const item_location &base, bool prompt,
+         return item::reload_option();
+     }
+ 
++    if( external_ui_active() ) {
++        std::vector<item::reload_option> options;
++        list_ammo( base, options, empty );
++        std::vector<item::reload_option> accessible;
++        std::vector<std::string> labels;
++        for( auto &opt : options ) {
++            bool sealed = false;
++            for( auto loc = opt.ammo; loc.has_parent(); loc = loc.parent_item() ) {
++                if( !loc.parent_pocket() || !loc.parent_pocket()->is_type( pocket_type::CONTAINER ) || loc.parent_pocket()->sealed() ) { sealed = true; break; }
++            }
++            if( !opt || sealed ) { continue; }
++            labels.push_back( opt.ammo->tname() + " / " + opt.ammo.describe( this ) +
++                              " / " + std::to_string( opt.qty() ) + " / " + std::to_string( opt.moves() ) + " moves" );
++            accessible.push_back( std::move( opt ) );
++        }
++        if( accessible.empty() ) {
++            external_ui_choice( "No accessible compatible ammunition.", { "Cancel" } );
++            return item::reload_option();
++        }
++        labels.push_back( "Cancel" );
++        const int choice = external_ui_choice( "Choose ammunition for " + base->tname(), labels );
++        if( choice < 0 || choice >= static_cast<int>( accessible.size() ) ) { return item::reload_option(); }
++        auto opt = std::move( accessible[choice] );
++        if( !query_yn( "Reload " + base->tname() + " with " + opt.ammo->tname() +
++                       " (" + std::to_string( opt.qty() ) + ")?" ) ) { return item::reload_option(); }
++        return opt;
++    }
+     return game_menus::inv::select_ammo( *this, base, prompt, empty );
+ }
+ 
 diff --git a/src/avatar_action.cpp b/src/avatar_action.cpp
 index d7e91fc..82129c8 100644
 --- a/src/avatar_action.cpp
@@ -653,7 +698,7 @@ index 6ebdaa7..205549f 100644
  
  #endif // CATA_SRC_DO_TURN_H
 diff --git a/src/game.cpp b/src/game.cpp
-index 195bc1e..981a09d 100644
+index 195bc1e..98967f0 100644
 --- a/src/game.cpp
 +++ b/src/game.cpp
 @@ -1,4 +1,6 @@
@@ -703,6 +748,15 @@ index 195bc1e..981a09d 100644
      Messages::display_messages();
      u.get_avatar_diary()->death_entry();
      show_scores_ui( *achievements_tracker_ptr, stats(), get_kill_tracker() );
+@@ -9781,7 +9800,7 @@ void game::reload( item_location &loc, bool prompt, bool empty )
+         loc = item_location( loc, &loc->only_item() );
+     }
+ 
+-    item::reload_option opt = u.ammo_location &&
++    item::reload_option opt = !external_ui_active() && u.ammo_location &&
+                               loc->can_reload_with( *u.ammo_location.get_item(), false ) ?
+                               item::reload_option( &u, loc, u.ammo_location ) :
+                               u.select_ammo( loc, prompt, empty );
 @@ -10496,7 +10515,7 @@ bool game::walk_move( const tripoint &dest_loc, const bool via_ramp, const bool
          u.moves -= static_cast<int>( std::ceil( base_moves + encumb_moves ) );
          crit->use_mech_power( u.current_movement_mode()->mech_power_use() );
@@ -994,6 +1048,115 @@ index 183628b..9a64f94 100644
      if( answer == "YES" ) {
          u.set_value( "THIEF_MODE", "THIEF_STEAL" );
          u.set_value( "THIEF_MODE_KEEP", "NO" );
+diff --git a/src/ranged.cpp b/src/ranged.cpp
+index 6973ff1..c4eaffb 100644
+--- a/src/ranged.cpp
++++ b/src/ranged.cpp
+@@ -1532,6 +1532,15 @@ static void do_aim( Character &you, const item &relevant, const double min_recoi
+     }
+ }
+ 
++void target_handler::aim_for_moves( avatar &you, const item &weapon, const tripoint &target, int budget )
++{
++    const double cap = calculate_aim_cap( you, target );
++    const int stop = you.moves - std::min( std::max( budget, 0 ), std::max( you.moves, 0 ) );
++    while( you.moves > stop ) {
++        do_aim( you, weapon, cap );
++    }
++}
++
+ struct confidence_rating {
+     double aim_level;
+     char symbol;
+@@ -3241,48 +3250,56 @@ void target_ui::update_turrets_in_range()
+     }
+ }
+ 
+-void target_ui::recalc_aim_turning_penalty()
++double target_handler::aim_turning_recoil( const Character &you, const tripoint &dst )
+ {
+-    // since we are recalcing recoil dirty the aimm cache
+-    you->aim_cache_dirty = true;
+-
+-    if( status != Status::Good ) {
+-        // We don't care about invalid situations
+-        predicted_recoil = MAX_RECOIL;
+-        return;
+-    }
+-
+-    double curr_recoil = you->recoil;
++    const tripoint src = you.pos();
++    double result = MAX_RECOIL;
++    double curr_recoil = you.recoil;
+     tripoint curr_recoil_pos;
+-    const Creature *lt_ptr = you->last_target.lock().get();
++    const Creature *lt_ptr = you.last_target.lock().get();
+     if( lt_ptr ) {
+         curr_recoil_pos = lt_ptr->pos();
+-    } else if( you->last_target_pos ) {
+-        curr_recoil_pos = get_map().getlocal( *you->last_target_pos );
++    } else if( you.last_target_pos ) {
++        curr_recoil_pos = get_map().getlocal( *you.last_target_pos );
+     } else {
+         curr_recoil_pos = src;
+     }
+ 
+     if( curr_recoil_pos == dst ) {
+         // We're aiming at that point right now, no penalty
+-        predicted_recoil = curr_recoil;
++        result = curr_recoil;
+     } else if( curr_recoil_pos == src ) {
+         // The player wasn't aiming anywhere, max it out
+-        predicted_recoil = MAX_RECOIL;
++        result = MAX_RECOIL;
+     } else {
+         // Raise it proportionally to how much
+         // the player has to turn from previous aiming point
+         // the player loses their aim more quickly if less skilled, normalizing at 5 skill.
+         /** @EFFECT_GUN increases the penalty for reorienting aim while below 5 */
+-        const double skill_penalty = std::max( 0.0, 5.0 - you->get_skill_level( skill_gun ) );
++        const double skill_penalty = std::max( 0.0, 5.0 - you.get_skill_level( skill_gun ) );
+         const double recoil_per_degree = skill_penalty * MAX_RECOIL / 180.0;
+         const units::angle angle_curr = coord_to_angle( src, curr_recoil_pos );
+         const units::angle angle_desired = coord_to_angle( src, dst );
+         const units::angle phi = normalize( angle_curr - angle_desired );
+         const units::angle angle = std::min( phi, 360.0_degrees - phi );
+-        predicted_recoil =
++        result =
+             std::min( MAX_RECOIL, curr_recoil + to_degrees( angle ) * recoil_per_degree );
+     }
++    return result;
++}
++
++void target_ui::recalc_aim_turning_penalty()
++{
++    // since we are recalcing recoil dirty the aimm cache
++    you->aim_cache_dirty = true;
++
++    if( status != Status::Good ) {
++        // We don't care about invalid situations
++        predicted_recoil = MAX_RECOIL;
++        return;
++    }
++
++    predicted_recoil = target_handler::aim_turning_recoil( *you, dst );
+ }
+ 
+ void target_ui::apply_aim_turning_penalty() const
+diff --git a/src/ranged.h b/src/ranged.h
+index a93fc5a..0b3d5f3 100644
+--- a/src/ranged.h
++++ b/src/ranged.h
+@@ -28,6 +28,9 @@ namespace target_handler
+ // Trajectory to target. Empty if selection was aborted or player ran out of moves
+ using trajectory = std::vector<tripoint>;
+ 
++double aim_turning_recoil( const Character &you, const tripoint &target );
++void aim_for_moves( avatar &you, const item &weapon, const tripoint &target, int budget );
++
+ /** Generic target select without fire something */
+ trajectory mode_select_only( avatar &you, int range );
+ 
 diff --git a/src/recipe.cpp b/src/recipe.cpp
 index 9d29dd0..3ee6d3a 100644
 --- a/src/recipe.cpp
@@ -1870,16 +2033,17 @@ index 0000000..1a0308e
 +}
 diff --git a/src/cwm/cwm_map_exporter.cpp b/src/cwm/cwm_map_exporter.cpp
 new file mode 100644
-index 0000000..478cf6e
+index 0000000..e0f4875
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.cpp
-@@ -0,0 +1,627 @@
+@@ -0,0 +1,631 @@
 +#include "cwm_motion.h"
 +// CDDA CWM Map & Entity Exporter Implementation
 +// Licensed under Apache-2.0
 +
 +#include "cwm_map_exporter.h"
 +#include "cwm_crafting.h"
++#include "cwm_ranged.h"
 +#include "cwm_status_gauges.h"
 +#include "cwm/tile_semantics.hpp"
 +#include "mapdata.h"
@@ -2059,7 +2223,7 @@ index 0000000..478cf6e
 +    bool include_chunks,
 +    ProjectionCache* cache, cdda::cwm::Identity identity,
 +    uint64_t base_revision, uint64_t state_id, uint64_t resync_id,
-+    uint64_t completed_command_id, const ClockView* clock, uint64_t activity_token
++    uint64_t completed_command_id, const ClockView* clock, uint64_t activity_token, uint64_t weapon_token
 +) {
 +    cdda::cwm::MessageBuilder builder(sequence_num, world_rev, identity);
 +    auto& fbb = builder.builder();
@@ -2439,6 +2603,9 @@ index 0000000..478cf6e
 +    const auto crafting = activity_token && work ?
 +        CDDA::CWM::CreateCraftingState(fbb, activity_token, std::clamp(work->item_counter, 0, 10000000)) :
 +        flatbuffers::Offset<CDDA::CWM::CraftingState>{};
++    const auto ranged = export_ranged_weapon(fbb, const_cast<avatar&>(u), weapon_token);
++    const auto reload = activity_token && u.activity.id() == activity_id("ACT_RELOAD") && u.activity.moves_total>0 ?
++        CDDA::CWM::CreateReloadState(fbb,activity_token,u.activity.moves_total,std::clamp(u.activity.moves_left,0,u.activity.moves_total)) : flatbuffers::Offset<CDDA::CWM::ReloadState>{};
 +    auto world_snap = CDDA::CWM::CreateWorldSnapshot(
 +        fbb,
 +        world_rev,
@@ -2452,7 +2619,7 @@ index 0000000..478cf6e
 +        g.safe_mode == SAFE_MODE_STOP || u.has_effect(efftype_id("laserlocked")) ||
 +            (clock && (clock->pause_reasons & 4)),
 +        include_chunks, base_revision, state_id, resync_id, completed_command_id,
-+        spawned_vec, removed_vec, clock_state, ground_items_vec, owned_items_vec, avatar_status, consumption, first_aid, crafting
++        spawned_vec, removed_vec, clock_state, ground_items_vec, owned_items_vec, avatar_status, consumption, first_aid, crafting, ranged, reload
 +    );
 +
 +    return builder.finish_message(CDDA::CWM::Payload::WorldSnapshot, world_snap.Union());
@@ -2503,7 +2670,7 @@ index 0000000..478cf6e
 +} // namespace cwm
 diff --git a/src/cwm/cwm_map_exporter.h b/src/cwm/cwm_map_exporter.h
 new file mode 100644
-index 0000000..b707595
+index 0000000..c68aca2
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.h
 @@ -0,0 +1,65 @@
@@ -2551,7 +2718,7 @@ index 0000000..b707595
 +        cdda::cwm::Identity identity = {},
 +        uint64_t base_revision = 0, uint64_t state_id = 1,
 +        uint64_t resync_id = 0, uint64_t completed_command_id = 0,
-+        const ClockView* clock = nullptr, uint64_t activity_token = 0
++        const ClockView* clock = nullptr, uint64_t activity_token = 0, uint64_t weapon_token = 0
 +    );
 +
 +    static std::vector<uint8_t> export_tile_delta(
@@ -2572,12 +2739,109 @@ index 0000000..b707595
 +};
 +
 +} // namespace cwm
+diff --git a/src/cwm/cwm_ranged.h b/src/cwm/cwm_ranged.h
+new file mode 100644
+index 0000000..54ad346
+--- /dev/null
++++ b/src/cwm/cwm_ranged.h
+@@ -0,0 +1,91 @@
++#pragma once
++#include "avatar.h"
++#include "avatar_action.h"
++#include "activity_actor_definitions.h"
++#include "cwm_inventory.h"
++#include "cwm_map_exporter.h"
++#include "game.h"
++#include "gun_mode.h"
++#include "monster.h"
++#include "npc.h"
++#include "ranged.h"
++#include "map.h"
++#include "flag.h"
++#include "json_flag.h"
++#include "output.h"
++#include "enums.h"
++namespace cwm {
++// Resolve only existing native hostile/perceived identities. The camera sends
++// neither coordinates nor a claimed distance/damage/line of sight.
++inline Creature* perceived_hostile(uint64_t id, avatar& u, game& g) {
++    Creature* result = nullptr;
++    if (id & (uint64_t(1)<<63)) {
++        for (npc& n : g.all_npcs()) if (((uint64_t(1)<<63)|uint64_t(n.getID().get_value())) == id && n.is_enemy()) result=&n;
++    } else if (id & (uint64_t(1)<<62)) {
++        for (monster& m : g.all_monsters()) if (CwmMapExporter::monster_entity_id(m)==id && !m.is_hallucination() &&
++            m.friendly==0 && !m.has_effect(efftype_id("pet")) && m.attitude_to(u)==Creature::Attitude::HOSTILE) result=&m;
++    }
++    return result && !result->is_dead_state() && get_map().inbounds(result->pos()) && u.sees(*result) ? result : nullptr;
++}
++inline std::string ranged_weapon_error(avatar& u, int action) {
++    const auto w=u.get_wielded_item();
++    if (!w || !w->is_gun()) return "Impugna prima un'arma da fuoco.";
++    if (u.activity) return "Interrompi o concludi l'attivita prima di agire.";
++    if (u.is_mounted() || u.in_vehicle) return "Armi montate/veicoli: interfaccia successiva.";
++    const auto mode=w->gun_current_mode();
++    if (!mode || mode->has_flag(flag_RELOAD_AND_SHOOT)) return "Archi e armi carica-e-spara: interfaccia successiva.";
++    if (action==2) return w->is_reloadable() && u.rate_action_reload(*w)==hint_rating::good ? "" : "Arma non ricaricabile o gia piena.";
++    std::vector<std::string> messages;
++    const bool common=gunmode_checks_common(u,get_map(),messages,mode);
++    const bool weapon=gunmode_checks_weapon(u,get_map(),messages,mode);
++    if (common && weapon) return "";
++    std::string why;
++    for (const auto& m:messages) why+=remove_color_tags(m)+"\n";
++    return why.empty() ? "Arma non pronta a sparare." : why;
++}
++class RangedSelection {
++    item_location weapon_;
++    std::string mode_;
++    uint64_t token_{0}, next_{1};
++public:
++    void clear() { weapon_={};mode_.clear();token_=0; }
++    uint64_t refresh(avatar& u) {
++        const auto w=u.get_wielded_item();
++        if (!w || !w->is_gun()) { clear();return 0; }
++        const auto mode=w->gun_current_mode();
++        const std::string id=mode ? w->gun_get_mode_id().str() : "";
++        if (!token_ || weapon_!=w || mode_!=id) { weapon_=w;mode_=id;token_=next_++; }
++        return token_;
++    }
++    std::string validate(avatar& u, game& g, uint64_t weapon, uint64_t target, int action) {
++        if (action<0 || action>2 || !weapon || weapon!=refresh(u)) return "Arma o modalita cambiata; ripunta il bersaglio.";
++        auto why=ranged_weapon_error(u,action);if (!why.empty()) return why;
++        if (action==2) return target ? "La ricarica non richiede un bersaglio." : "";
++        const auto* t=perceived_hostile(target,u,g);
++        const auto gun=u.get_wielded_item()->gun_current_mode();
++        if (!t || rl_dist(u.pos(),t->pos())>gun->gun_range(&u)) return "Bersaglio non percepito, non ostile o fuori portata.";
++        return "";
++    }
++    bool execute(avatar& u, game& g, uint64_t weapon, uint64_t target, int action) {
++        if (!validate(u,g,weapon,target,action).empty()) return false;
++        if (action==2) { g.reload_wielded(true);return u.activity.id()==activity_id("ACT_RELOAD"); }
++        auto* t=perceived_hostile(target,u,g);const auto w=u.get_wielded_item();const auto mode=w->gun_current_mode();
++        if (!t || !avatar_action::can_fire_weapon(u,get_map(),*w)) return false;
++        u.recoil=target_handler::aim_turning_recoil(u,t->pos());
++        if (!u.last_target_pos || *u.last_target_pos!=get_map().getabs(t->pos())) u.aim_cache_dirty=true;
++        u.last_target_pos=get_map().getabs(t->pos());u.last_target=g.shared_from(*t);
++        if (mode->has_flag(json_flag_ALWAYS_AIMED)) u.recoil=0;
++        const int moves=u.moves;
++        if (action==0) { target_handler::aim_for_moves(u,*mode,t->pos(),100);return u.moves<moves; }
++        return u.fire_gun(t->pos(),mode.qty,*mode)>0; // Native cost/recoil/dispersion/projectile/damage/charges/skill.
++    }
++};
++inline flatbuffers::Offset<CDDA::CWM::RangedWeaponState> export_ranged_weapon(flatbuffers::FlatBufferBuilder& f, avatar& u,uint64_t token) {
++    const auto w=u.get_wielded_item();
++    if (!token || !w || !w->is_gun()) return {};
++    const auto mode=w->gun_current_mode();
++    auto name=f.CreateString(w->tname().substr(0,16384));auto why=f.CreateString(ranged_weapon_error(u,1).substr(0,16384));
++    return CDDA::CWM::CreateRangedWeaponState(f,token,name,mode ? std::max(0,mode->ammo_remaining()) : 0,
++        mode ? std::max(0,mode->gun_range(&u)) : 0,std::clamp(u.recoil,0.0,double(MAX_RECOIL)),why,ranged_weapon_error(u,2).empty());
++}
++} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..12c1c01
+index 0000000..5a30a40
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,887 @@
+@@ -0,0 +1,905 @@
 +#include "cwm_motion.h"
 +// CDDA CWM IPC Server Implementation
 +// Licensed under Apache-2.0
@@ -2685,7 +2949,7 @@ index 0000000..12c1c01
 +        activity_kind_ = "ACT_CRAFT"; activity_total_ = 10000000; activity_remaining_ = remaining;
 +        return;
 +    }
-+    if ((u.activity.id() != activity_id("ACT_CONSUME") && u.activity.id() != activity_id("ACT_FIRSTAID")) ||
++    if ((u.activity.id() != activity_id("ACT_CONSUME") && u.activity.id() != activity_id("ACT_FIRSTAID") && u.activity.id() != activity_id("ACT_RELOAD")) ||
 +            u.activity.moves_total <= 0 || u.activity.moves_left <= 0) {
 +        activity_token_ = 0; activity_total_ = activity_remaining_ = 0;
 +        return;
@@ -2704,7 +2968,7 @@ index 0000000..12c1c01
 +        static_cast<float>(clock_.scale()), motion_seconds_, continuous_};
 +    auto snapshot = CwmMapExporter::export_world_snapshot(sequence_counter_, world_revision_,
 +                    u, m, g, full, &projection_cache_, identity_, sent_revision_, state_id,
-+                    resync_id_, completed, realtime_ ? &clock : nullptr, activity_token_);
++                    resync_id_, completed, realtime_ ? &clock : nullptr, activity_token_, ranged_selection_.refresh(u));
 +    const bool is_full = CDDA::CWM::GetCwmMessage(snapshot.data())->payload_as_WorldSnapshot()->full();
 +    if (emit(snapshot)) {
 +        snapshot_sent_ = true;
@@ -3027,7 +3291,16 @@ index 0000000..12c1c01
 +        result_ = Result{command.id, false, "Interrompi o concludi l'attivita prima di agire."};
 +        return false;
 +    }
-+    if (command.crafting_view) {
++    if (command.ranged_action >= 0) {
++        auto error = ranged_selection_.validate(u,g,command.ranged_weapon,command.ranged_target,command.ranged_action);
++        if (realtime_ && pause_reasons(g)) error="Simulation is paused";
++        if (!error.empty()) { result_=Result{command.id,false,error};return false; }
++        inventory_selection_.clear();crafting_selection_.clear();
++        accepted=ranged_selection_.execute(u,g,command.ranged_weapon,command.ranged_target,command.ranged_action);
++        refresh_activity(u);++world_revision_;
++        result_=Result{command.id,accepted,accepted ? "" : "Azione nativa annullata o non riuscita."};
++        return accepted || u.moves!=before_moves;
++    } else if (command.crafting_view) {
 +        auto error = crafting_selection_.validate(u, command.crafting_view, command.crafting_entry);
 +        if (realtime_ && pause_reasons(g)) error = "Simulation is paused";
 +        if (!error.empty()) { result_ = Result{command.id, false, error}; return false; }
@@ -3261,6 +3534,10 @@ index 0000000..12c1c01
 +                ":" + std::to_string(request->pickup_charges()) +
 +                ":" + std::to_string(request->pickup_count_by_charges());
 +        }
++    } else if (const auto* request = msg->payload_as_RangedRequest()) {
++        id=request->command_id();signature="ranged:"+std::to_string(request->weapon_token())+":"+std::to_string(request->target_entity_id())+":"+std::to_string(int(request->action()));
++    } else if (const auto* request = msg->payload_as_CancelReloadRequest()) {
++        id=request->command_id();signature="cancel-reload:"+std::to_string(request->activity_token());
 +    } else if (const auto* request = msg->payload_as_CraftingRequest()) {
 +        id = request->command_id(); signature = "craft:" + std::to_string(request->view_id()) + ":" + std::to_string(request->entry_id());
 +    } else if (const auto* request = msg->payload_as_CancelCraftingRequest()) {
@@ -3301,14 +3578,15 @@ index 0000000..12c1c01
 +    }
 +    if (status == Status::Expired) { send_result({id, false, "Command identity expired"}, u, m, g); return; }
 +    if (status != Status::Fresh) { server_->client()->close(); return; }
-+    if (msg->payload_as_CancelConsumptionRequest() || msg->payload_as_CancelFirstAidRequest() || msg->payload_as_CancelCraftingRequest()) {
++    if (msg->payload_as_CancelConsumptionRequest() || msg->payload_as_CancelFirstAidRequest() || msg->payload_as_CancelCraftingRequest() || msg->payload_as_CancelReloadRequest()) {
 +        const auto* meal = msg->payload_as_CancelConsumptionRequest();
 +        const auto* aid = msg->payload_as_CancelFirstAidRequest();
 +        const auto* craft = msg->payload_as_CancelCraftingRequest();
-+        const auto token = meal ? meal->activity_token() : aid ? aid->activity_token() : craft->activity_token();
++        const auto* reload = msg->payload_as_CancelReloadRequest();
++        const auto token = meal ? meal->activity_token() : aid ? aid->activity_token() : craft ? craft->activity_token() : reload->activity_token();
 +        refresh_activity(u);
 +        const bool valid = activity_token_ && token == activity_token_ &&
-+            u.activity.id() == activity_id(meal ? "ACT_CONSUME" : aid ? "ACT_FIRSTAID" : "ACT_CRAFT") &&
++            u.activity.id() == activity_id(meal ? "ACT_CONSUME" : aid ? "ACT_FIRSTAID" : craft ? "ACT_CRAFT" : "ACT_RELOAD") &&
 +            u.activity.is_interruptible() && (!realtime_ || !pause_reasons(g));
 +        if (valid) {
 +            u.cancel_activity(); // Native interruption/backlog rules, no refund.
@@ -3403,6 +3681,10 @@ index 0000000..12c1c01
 +            else if (m.impassable(target) && !get_creature_tracker().creature_at(target, true) &&
 +                     !m.open_door(u, target, !m.is_outside(u.pos()), true)) error = "Movement blocked";
 +        }
++    } else if (const auto* request = msg->payload_as_RangedRequest()) {
++        command.id=request->command_id();command.ranged_weapon=request->weapon_token();command.ranged_target=request->target_entity_id();command.ranged_action=int(request->action());
++        error=ranged_selection_.validate(u,g,command.ranged_weapon,command.ranged_target,command.ranged_action);
++        if (!g.check_safe_mode_allowed(false)) error="Safe mode: threat requires acknowledgement";
 +    } else if (const auto* request = msg->payload_as_CraftingRequest()) {
 +        command.id = request->command_id(); command.crafting_view = request->view_id();
 +        command.crafting_entry = request->entry_id();
@@ -3467,10 +3749,10 @@ index 0000000..12c1c01
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.h b/src/cwm/cwm_server.h
 new file mode 100644
-index 0000000..3f40d74
+index 0000000..b407122
 --- /dev/null
 +++ b/src/cwm/cwm_server.h
-@@ -0,0 +1,138 @@
+@@ -0,0 +1,142 @@
 +// CDDA CWM IPC Server
 +// Licensed under Apache-2.0
 +#pragma once
@@ -3484,6 +3766,7 @@ index 0000000..3f40d74
 +#include "cwm_map_exporter.h"
 +#include "cwm_inventory.h"
 +#include "cwm_crafting.h"
++#include "cwm_ranged.h"
 +#include "cwm/cwm_session.hpp"
 +#include "cwm/cwm_clock.hpp"
 +
@@ -3554,6 +3837,7 @@ index 0000000..3f40d74
 +    std::string activity_kind_;
 +    void refresh_activity(const avatar& u);
 +
++    RangedSelection ranged_selection_;
 +    CraftingSelection crafting_selection_;
 +    std::chrono::steady_clock::time_point next_crafting_query_{};
 +    std::chrono::steady_clock::time_point next_inventory_query_{};
@@ -3562,6 +3846,8 @@ index 0000000..3f40d74
 +        uint64_t id{0};
 +        bool move{false};
 +        uint64_t attack_target{0};
++        int ranged_action{-1};
++        uint64_t ranged_weapon{0}, ranged_target{0};
 +        int movement_mode{-1};
 +        uint64_t inventory_view{0};
 +        uint32_t inventory_item{0};

@@ -371,8 +371,30 @@ class WorldSnapshot(object):
             return obj
         return None
 
+    # WorldSnapshot
+    def RangedWeapon(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(50))
+        if o != 0:
+            x = self._tab.Indirect(o + self._tab.Pos)
+            from CDDA.CWM.RangedWeaponState import RangedWeaponState
+            obj = RangedWeaponState()
+            obj.Init(self._tab.Bytes, x)
+            return obj
+        return None
+
+    # WorldSnapshot
+    def Reload(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(52))
+        if o != 0:
+            x = self._tab.Indirect(o + self._tab.Pos)
+            from CDDA.CWM.ReloadState import ReloadState
+            obj = ReloadState()
+            obj.Init(self._tab.Bytes, x)
+            return obj
+        return None
+
 def WorldSnapshotStart(builder):
-    builder.StartObject(23)
+    builder.StartObject(25)
 
 def Start(builder):
     WorldSnapshotStart(builder)
@@ -568,6 +590,18 @@ def WorldSnapshotAddCrafting(builder, crafting):
 
 def AddCrafting(builder, crafting):
     WorldSnapshotAddCrafting(builder, crafting)
+
+def WorldSnapshotAddRangedWeapon(builder, rangedWeapon):
+    builder.PrependUOffsetTRelativeSlot(23, flatbuffers.number_types.UOffsetTFlags.py_type(rangedWeapon), 0)
+
+def AddRangedWeapon(builder, rangedWeapon):
+    WorldSnapshotAddRangedWeapon(builder, rangedWeapon)
+
+def WorldSnapshotAddReload(builder, reload):
+    builder.PrependUOffsetTRelativeSlot(24, flatbuffers.number_types.UOffsetTFlags.py_type(reload), 0)
+
+def AddReload(builder, reload):
+    WorldSnapshotAddReload(builder, reload)
 
 def WorldSnapshotEnd(builder):
     return builder.EndObject()
