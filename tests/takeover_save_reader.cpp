@@ -141,6 +141,9 @@ int main(int argc, const char *argv[]) {
                     m.ter_set(tripoint(x,y,0), ter_str_id("t_water_sh"));
             m.add_item_or_charges(tripoint(60,59,0), item(itype_id("rock"), calendar::turn));
             m.ter_set(tripoint(61,60,0), ter_str_id("t_window_no_curtains"));
+            // Native outside_cache uses INDOORS on terrain/furniture within
+            // one tile, not the roof above this artificial pool.
+            m.ter_set(tripoint(59,60,0), ter_str_id("t_floor"));
         }
         if (create_vertical) {
             // Canonical multi-Z fixture, built by the pristine pinned core.

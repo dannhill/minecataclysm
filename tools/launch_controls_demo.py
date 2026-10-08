@@ -14,7 +14,7 @@ def main():
     parser.add_argument('--fresh', action='store_true')
     args, client_args = parser.parse_known_args()
     root = Path(__file__).resolve().parents[1]
-    fixture = root / 'artifacts/controls-hud-20261008/fixture-chords'
+    fixture = root / 'artifacts/controls-hud-20261008/fixture-indoor'
     directory = root / 'artifacts/controls-demo'
     directory.mkdir(parents=True, exist_ok=True)
     pointer = directory / 'last-session'
