@@ -37322,7 +37322,7 @@
   {
     "path": "src/cwm/cwm_crafting.h",
     "mode": "100644",
-    "sha256": "1810d30898d3ae209046ae2c9ba52d35a9d2ea66bf3333e1f4569e7aac7461e6"
+    "sha256": "4cc2613ce696c9a317e65ca3586dd06a00f53ab8b62d524128d7c27d72b42d17"
   },
   {
     "path": "src/cwm/cwm_inventory.h",

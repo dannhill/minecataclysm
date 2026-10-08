@@ -1068,10 +1068,10 @@ index 09a7711..9b0c484 100644
          DebugLog( D_INFO, DC_ALL ) <<
 diff --git a/src/cwm/cwm_crafting.h b/src/cwm/cwm_crafting.h
 new file mode 100644
-index 0000000..9aca53f
+index 0000000..dee2811
 --- /dev/null
 +++ b/src/cwm/cwm_crafting.h
-@@ -0,0 +1,132 @@
+@@ -0,0 +1,134 @@
 +#pragma once
 +#include "avatar.h"
 +#include "avatar_action.h"
@@ -1079,6 +1079,7 @@ index 0000000..9aca53f
 +#include "craft_command.h"
 +#include "crafting.h"
 +#include "item.h"
++#include "itype.h"
 +#include "item_location.h"
 +#include "inventory.h"
 +#include "recipe_dictionary.h"
@@ -1109,10 +1110,10 @@ index 0000000..9aca53f
 +        if (u.activity) return "Interrompi o concludi l'attivita prima di creare.";
 +        if (u.is_mounted() || u.is_underwater()) return "Crafting non disponibile in questa posizione.";
 +        if (rec.category == "CC_BUILDING" || rec.is_practice()) return "Lavorazione dedicata prevista in seguito.";
-+        for (const auto& output : rec.create_results(batch))
-+            if (output.made_of(phase_id::LIQUID)) return "Risultati liquidi: gestione contenitori prevista in seguito.";
-+        for (const auto& output : rec.create_byproducts(batch))
-+            if (output.made_of(phase_id::LIQUID)) return "Sottoprodotti liquidi: gestione contenitori prevista in seguito.";
++        if (rec.result()->phase != phase_id::SOLID)
++            return "Risultati liquidi/gassosi: gestione contenitori prevista in seguito.";
++        // Sampling a byproduct group here would advance native RNG on a read-only query.
++        if (rec.has_byproducts()) return "Ricette con sottoprodotti: supporto dedicato previsto in seguito.";
 +        if (u.morale_crafting_speed_multiplier(rec) <= 0) return "Morale insufficiente.";
 +        if (u.lighting_craft_speed_multiplier(rec) <= 0) return "Luce insufficiente.";
 +        if (!u.has_recipe(&rec, u.crafting_inventory(), u.get_crafting_group())) return "Ricetta non disponibile.";
@@ -1156,6 +1157,7 @@ index 0000000..9aca53f
 +                if (!work && !rec.simple_requirements().can_make_with_inventory(inv,
 +                    rec.get_component_filter(recipe_filter_flags::no_favorite | recipe_filter_flags::no_equipped), batch))
 +                    requirements += "Mancano: " + remove_color_tags(rec.simple_requirements().list_missing()) + "\n";
++                requirements += remove_color_tags(rec.primary_skill_string(u) + "\n" + rec.required_skills_string(u)) + "\n";
 +                requirements += remove_color_tags(rec.required_proficiencies_string(&u)) + "\n";
 +                requirements += remove_color_tags(rec.missing_proficiencies_string(&u)) + "\n";
 +                const auto books = u.get_books_for_recipe(inv, &rec);

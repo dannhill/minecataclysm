@@ -1,8 +1,8 @@
 # Validazioni manuali del playable core
 
-Stato corrente: **12 punti pendenti**, quattro inventario/equipaggiamento,
-quattro cibo/bevande e quattro medicazioni. Le vecchie checklist VALIDATE
-sotto conservano la cronologia; non attestano queste tre nuove fette.
+Stato corrente: **16 punti pendenti**, quattro inventario/equipaggiamento,
+quattro cibo/bevande, quattro medicazioni e quattro crafting. Le vecchie checklist VALIDATE
+sotto conservano la cronologia; non attestano queste quattro nuove fette.
 
 L'utente il 2026-10-08 ha eseguito e approvato tutti i quattro punti di
 ciascuna delle quattro checklist. Il [riscontro](../source/playable-core-feedback-2026-10-08.md)
@@ -210,3 +210,28 @@ Questa fetta copre gli oggetti esterni non commestibili con attore heal:
 bende, salviette e analoghi. Farmaci ingeribili, antisettici liquidi, cura di
 NPC, chirurgia e avvio parte→oggetto dalla scheda H restano successivi.
 [Dettagli tecnici](../fixes/native-medicine.md). Accettazione manuale non dedotta.
+
+
+## Crafting guidato — PENDING, rinviato su richiesta dell'utente
+
+Dalla directory del progetto: `./crafting-demo.sh --fresh`. Scena e salvataggio
+isolati; K apre il catalogo CDDA. Non serve completare le altre checklist.
+
+1. K: ricerca `bandages_makeshift`, seleziona la ricetta senza utensile e leggi
+   materiali, luce/competenze, fonti e durata. Lotto 1–20 aggiorna i requisiti.
+   Il tempo resta fermo nella GUI; Esc esce senza creare né consumare materiali.
+2. Avvia lotto 1: scegli materiale/fonte con i numeri della decisione nativa.
+   Rifiuta la conferma finale e verifica che non compaiano lavori/risultati;
+   ripeti confermando. Il foglio preferito non deve essere consumato.
+3. Avvia lotto 2, apri K o I durante il progresso, attendi e verifica la pausa;
+   interrompi. K mostra il lavoro incompleto marcato R, da riprendere senza
+   ricomprare i componenti. Al termine controlla in I le quattro bende prodotte.
+4. Avvia un altro lotto 2 e chiudi il gioco mentre il lavoro è in corso (K per
+   fermare il tempo prima di uscire). Rilancia `./crafting-demo.sh` senza --fresh:
+   riprende il lavoro salvato e lo completa una sola volta. Se cambi stanza/
+   materiali, una ricetta senza requisiti deve spiegare perché non è avviabile.
+
+Accettazione grafica/usabilità dell'utente ancora pendente. Questa prima fetta
+non include ricette liquide, sottoprodotti, pratica, preferiti di ricette,
+collegamenti di sottoricette, selezione della singola istanza fra oggetti
+identici né accelerazione automatica delle attività lunghe: restano nel piano.
