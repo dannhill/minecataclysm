@@ -267,7 +267,10 @@ def main():
                 check('empty_reticle_sends_no_shot',latest()['fire_sent']==sent)
                 turn(-27,-18);wait(lambda r:int(r['combat_hover'])>0);neutral=latest()['combat_hover'];sent=latest()['fire_sent'];xdo('click','1');time.sleep(.3)
                 check('friendly_creature_not_accepted_as_ranged_target',neutral!=target and latest()['fire_sent']==sent)
-                turn(0,-8);wait(lambda r:r['combat_hover']==target)
+                turn(0,-8)
+                if int(latest()['attack_target_hp']) >= 0:
+                    wait(lambda r:r['combat_hover']==target)
+                # A native critical may kill this target; reload needs no live enemy.
                 begin_reload(cancel=True);check('cancel_ammo_choice_keeps_rounds',int(latest()['weapon_ammo'])==2 and int(latest()['reload_token'])==0)
                 begin_reload(decline=True);check('decline_reload_keeps_rounds',int(latest()['weapon_ammo'])==2 and int(latest()['reload_token'])==0)
                 begin_reload()
