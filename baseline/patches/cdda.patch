@@ -352,7 +352,7 @@ index 57edee0..b081a8a 100644
      crafter->last_batch = batch_size;
      crafter->lastrecipe = rec->ident();
 diff --git a/src/craft_command.h b/src/craft_command.h
-index 4a508eb..3647b56 100644
+index 4a508eb..4f2a491 100644
 --- a/src/craft_command.h
 +++ b/src/craft_command.h
 @@ -63,8 +63,8 @@ class craft_command
@@ -362,7 +362,7 @@ index 4a508eb..3647b56 100644
 -                       const std::optional<tripoint> &loc ) :
 -            rec( to_make ), batch_size( batch_size ), longcraft( is_long ), crafter( crafter ), loc( loc ) {}
 +                       const std::optional<tripoint> &loc, bool protect = false ) :
-+            rec( to_make ), batch_size( batch_size ), longcraft( is_long ), crafter( crafter ), loc( loc ), protected_components( protect ) {}
++            rec( to_make ), batch_size( batch_size ), longcraft( is_long ), protected_components( protect ), crafter( crafter ), loc( loc ) {}
  
          /**
           * Selects components to use for the craft, then assigns the crafting activity to 'crafter'.
@@ -1068,10 +1068,10 @@ index 09a7711..9b0c484 100644
          DebugLog( D_INFO, DC_ALL ) <<
 diff --git a/src/cwm/cwm_crafting.h b/src/cwm/cwm_crafting.h
 new file mode 100644
-index 0000000..eb6b011
+index 0000000..9aca53f
 --- /dev/null
 +++ b/src/cwm/cwm_crafting.h
-@@ -0,0 +1,127 @@
+@@ -0,0 +1,132 @@
 +#pragma once
 +#include "avatar.h"
 +#include "avatar_action.h"
@@ -1153,6 +1153,11 @@ index 0000000..eb6b011
 +                lines.insert(lines.end(), tools.begin(), tools.end());
 +                std::string requirements;
 +                for (const auto& line : lines) requirements += remove_color_tags(line) + "\n";
++                if (!work && !rec.simple_requirements().can_make_with_inventory(inv,
++                    rec.get_component_filter(recipe_filter_flags::no_favorite | recipe_filter_flags::no_equipped), batch))
++                    requirements += "Mancano: " + remove_color_tags(rec.simple_requirements().list_missing()) + "\n";
++                requirements += remove_color_tags(rec.required_proficiencies_string(&u)) + "\n";
++                requirements += remove_color_tags(rec.missing_proficiencies_string(&u)) + "\n";
 +                const auto books = u.get_books_for_recipe(inv, &rec);
 +                for (const auto& book : books) requirements += "Book: " + item::nname(book) + "\n";
 +                requirements += "Helpers: " + std::to_string(u.available_assistant_count(rec));
@@ -1172,7 +1177,7 @@ index 0000000..eb6b011
 +        return reply.finish_message(CDDA::CWM::Payload::CraftingView, view.Union());
 +    }
 +    std::string validate(avatar& u, uint64_t view, uint32_t entry) const {
-+        if (!view || view != view_ || !entry || entry > entries_.size()) return "Catalogo scaduto: riapri C.";
++        if (!view || view != view_ || !entry || entry > entries_.size()) return "Catalogo scaduto: riapri K.";
 +        u.invalidate_crafting_inventory();
 +        const auto& choice = entries_[entry-1];
 +        if (choice.resume) {
@@ -3836,10 +3841,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..6727646
+index 0000000..d6090c2
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,1086 @@
+@@ -0,0 +1,1182 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "move_mode.h"
@@ -3924,6 +3929,11 @@ index 0000000..6727646
 +        cdda::cwm::MessageBuilder wire( server.received_sequence_ + 1, 1, server.identity_ );
 +        const auto bytes = wire.build_cancel_first_aid( id, token );
 +        server.handle_client_message( bytes.data(), bytes.size(), get_avatar(), get_map(), *g );
++    }
++    static void interrupt_crafting( CwmServer &server, uint64_t token, uint64_t id ) {
++        cdda::cwm::MessageBuilder wire(server.received_sequence_+1,1,server.identity_);
++        const auto bytes=wire.build_cancel_crafting(id,token);
++        server.handle_client_message(bytes.data(),bytes.size(),get_avatar(),get_map(),*g);
 +    }
 +    static void cancel( CwmServer &server ) { server.cancel_connection(); }
 +    static void complete( CwmServer &server ) {
@@ -4925,6 +4935,97 @@ index 0000000..6727646
 +    CHECK_FALSE( cwm::CwmServerTestAccess::accepted( server ) );
 +    CHECK( u.activity.id() == activity_id( "ACT_FIRSTAID" ) );
 +    CHECK( u.activity.moves_left == 6000 ); CHECK( u.moves == before );
++}
++
++TEST_CASE( "cwm_crafting_catalog_uses_known_native_requirements_and_protection", "[cwm][crafting]" )
++{
++    clear_avatar(); clear_map(); clear_creatures();
++    avatar &u = get_avatar(); u.setpos( tripoint(60,60,0) );
++    REQUIRE( u.wear_item(item(itype_id("backpack_hiking"))) );
++    const recipe &rec = recipe_id("bandages_makeshift").obj(); u.learn_recipe(&rec);
++    item &sheet = u.i_add(item(itype_id("sheet_cotton")));
++    cwm::CraftingSelection selection;
++    cdda::cwm::MessageBuilder wire(1,1,{101,102,103});
++    const int moves = u.moves; const auto time = calendar::turn;
++    auto bytes = selection.query(u,1,"bandages_makeshift",1,wire);
++    const auto *view = CDDA::CWM::GetCwmMessage(bytes.data())->payload_as_CraftingView();
++    REQUIRE( cdda::cwm::valid_crafting(view) );
++    REQUIRE( view->entries()->size() >= 1 );
++    const auto *entry = view->entries()->Get(0);
++    CHECK( entry->recipe_id()->str() == "bandages_makeshift" );
++    CHECK( entry->reason()->str().empty() );
++    CHECK( entry->expected_moves() > 0 );
++    CHECK( entry->requirements()->size() > 0 );
++    CHECK( u.moves == moves ); CHECK( calendar::turn == time ); CHECK_FALSE(u.activity);
++    const auto old = selection.view();
++    sheet.is_favorite = true;
++    CHECK_FALSE( selection.validate(u,old,1).empty() );
++    sheet.is_favorite = false; REQUIRE(u.wield(item_location(u,&sheet)));
++    CHECK_FALSE( selection.validate(u,old,1).empty() );
++    selection.clear(); CHECK_FALSE(selection.validate(u,old,1).empty());
++    CHECK_FALSE(selection.validate(u,old,0).empty());
++}
++
++TEST_CASE( "cwm_native_crafting_confirms_components_and_preserves_canceled_work", "[cwm][crafting]" )
++{
++    clear_avatar(); clear_map(); clear_creatures();
++    avatar &u = get_avatar(); u.setpos(tripoint(60,60,0));
++    REQUIRE(u.wear_item(item(itype_id("backpack_hiking"))));
++    const recipe &rec=recipe_id("bandages_makeshift").obj(); u.learn_recipe(&rec);
++    item &sheet=u.i_add(item(itype_id("sheet_cotton")));
++    sheet.set_var("uid","crafting-unit-sheet");
++    g->new_game=false; uquit=QUIT_NO; g->set_safe_mode(SAFE_MODE_OFF);
++    const override_option autosave("AUTOSAVE","false");
++    bool decline=false;
++    SECTION("declining consumes no components") { decline=true; }
++    SECTION("accepted work consumes native components and can resume") {}
++    cwm::CraftingSelection selection;
++    cdda::cwm::MessageBuilder wire(1,1,{101,102,103});
++    auto bytes=selection.query(u,1,"bandages_makeshift",1,wire);
++    auto view=CDDA::CWM::GetCwmMessage(bytes.data())->payload_as_CraftingView();
++    REQUIRE(view->entries()->Get(0)->reason()->str().empty());
++    bool acted=false, confirmed=false;
++    do_turn_with_action([&]() {
++        u.moves=100;
++        acted=selection.execute(u,view->view_id(),1);
++        finish_external_action_phase(); return false;
++    }, [&](const std::string& text,const std::vector<std::string>& choices) {
++        if(text.find("Consume these components")!=std::string::npos) {
++            confirmed=true; CHECK(text.find("cotton")!=std::string::npos);
++            return decline ? int(choices.size()-1) : 0;
++        }
++        return 0;
++    });
++    CHECK(confirmed); CHECK(acted==!decline);
++    CHECK(character_has_item_with_var_val(u,"uid","crafting-unit-sheet")==decline);
++    if(decline) { CHECK_FALSE(u.activity); return; }
++    REQUIRE(u.activity.id()==activity_id("ACT_CRAFT"));
++    auto work=cwm::active_craft(u); REQUIRE(work); REQUIRE(work->is_craft());
++    CHECK(work->get_making().ident()==rec.ident()); CHECK(work->components.size()==1);
++    u.moves=100; u.activity.do_turn(u); REQUIRE(u.activity);
++    const int progress=work->item_counter; CHECK(progress>0); CHECK(progress<10000000);
++    cwm::CwmServer server("/unused-cwm-craft-test"); cwm::CwmServerTestAccess::ready(server);
++    const auto token=cwm::CwmServerTestAccess::consumption(server); REQUIRE(token);
++    cwm::CwmServerTestAccess::interrupt_crafting(server,token+1,1);
++    CHECK(u.activity.id()==activity_id("ACT_CRAFT"));
++    cwm::CwmServerTestAccess::interrupt_crafting(server,token,2);
++    CHECK_FALSE(u.activity); REQUIRE(work); CHECK(work->item_counter==progress);
++    cwm::CwmServerTestAccess::interrupt_crafting(server,token,2); // Deduplication cannot remove/refund work.
++    REQUIRE(work); CHECK(work->item_counter==progress);
++    cdda::cwm::MessageBuilder resumed(2,1,{101,102,103});
++    auto resumed_bytes=selection.query(u,2,"bandages_makeshift",1,resumed);
++    auto resumed_view=CDDA::CWM::GetCwmMessage(resumed_bytes.data())->payload_as_CraftingView();
++    REQUIRE(resumed_view->entries()->Get(0)->resume());
++    REQUIRE(resumed_view->entries()->Get(0)->progress()==progress);
++    do_turn_with_action([&]() {
++        u.moves=100; CHECK(selection.execute(u,resumed_view->view_id(),1));
++        finish_external_action_phase();return false;
++    }, [](const auto&,const auto&){return 0;});
++    REQUIRE(u.activity.id()==activity_id("ACT_CRAFT"));
++    for(int turn=0; turn<100 && u.activity; ++turn) {u.moves=100;u.activity.do_turn(u);}
++    CHECK_FALSE(u.activity);
++    CHECK_FALSE(character_has_item_with_var_val(u,"uid","crafting-unit-sheet"));
++    CHECK(u.amount_of(itype_id("bandages_makeshift"))==2);
 +}
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644

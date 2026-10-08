@@ -37242,7 +37242,7 @@
   {
     "path": "src/craft_command.h",
     "mode": "100644",
-    "sha256": "e838de25f0d1726feb7391349b62065ba323053d9b294fe48391154283df95d7"
+    "sha256": "e61ac6b9746866be5bd094bac9bad2b44151606b6e92b7a54d9f0bb38d453c41"
   },
   {
     "path": "src/crafting.cpp",
@@ -37322,7 +37322,7 @@
   {
     "path": "src/cwm/cwm_crafting.h",
     "mode": "100644",
-    "sha256": "170c4af07e80bf675bee077eeb31a697265d47ea82d92a0f5fb21a2ef7cd7f8a"
+    "sha256": "1810d30898d3ae209046ae2c9ba52d35a9d2ea66bf3333e1f4569e7aac7461e6"
   },
   {
     "path": "src/cwm/cwm_inventory.h",
@@ -40887,7 +40887,7 @@
   {
     "path": "tests/cwm_pickup_test.cpp",
     "mode": "100644",
-    "sha256": "d8ffe31553b6e81a403e310f3d10025a80ba93231134041707dcb9364efb1723"
+    "sha256": "d19ff7e403d02731da6e3d5a52aba37f93b23018e650deb0c00540255a4d9d40"
   },
   {
     "path": "tests/cwm_projection_test.cpp",

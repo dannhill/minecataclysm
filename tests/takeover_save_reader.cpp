@@ -4,6 +4,7 @@
 #include <memory>
 #include <string>
 #include "avatar.h"
+#include "recipe_dictionary.h"
 #include "cached_options.h"
 #include "calendar.h"
 #include "color.h"
@@ -43,6 +44,7 @@ int main(int argc, const char *argv[]) {
     bool create_equipment = false;
     bool create_consumption = false;
     bool create_medicine = false;
+    bool create_crafting = false;
     bool create_body = false;
     bool create_combat = false;
     bool create_posture = false;
@@ -51,6 +53,7 @@ int main(int argc, const char *argv[]) {
     for (int i = 1; i < argc; ++i) {
         std::string arg(argv[i]);
         if (arg == "--create") create = true;
+        else if (arg == "--create-crafting") { create = true; create_crafting = true; create_posture = true; }
         else if (arg == "--create-medicine") { create = true; create_medicine = true; create_posture = true; }
         else if (arg == "--create-consumption") { create = true; create_consumption = true; create_posture = true; }
         else if (arg == "--create-equipment") { create = true; create_equipment = true; create_posture = true; }
@@ -289,6 +292,20 @@ int main(int argc, const char *argv[]) {
             u.i_add(bottle);
             item rock(itype_id("rock"), calendar::turn); rock.set_var("uid", "consumption-rock"); u.i_add(rock);
             u.set_thirst(200); u.update_stomach(calendar::turn, calendar::turn);
+            u.moves = 100; g->set_safe_mode(SAFE_MODE_OFF);
+        }
+        if (create_crafting) {
+            u.remove_weapon();
+            if (!u.wear_item(item(itype_id("backpack_hiking"), calendar::turn))) return 25;
+            u.learn_recipe(&recipe_id("bandages_makeshift").obj());
+            for (int i = 0; i < 8; ++i) {
+                item sheet(itype_id("sheet_cotton"), calendar::turn);
+                sheet.set_var("uid", "crafting-sheet-" + std::to_string(i)); u.i_add(sheet);
+            }
+            item favorite(itype_id("sheet_cotton"), calendar::turn); favorite.is_favorite = true;
+            favorite.set_var("uid", "crafting-favorite"); u.i_add(favorite);
+            item nearby(itype_id("sheet_cotton_patchwork"), calendar::turn);
+            nearby.set_var("uid", "crafting-nearby"); get_map().add_item(u.pos()+tripoint_east, nearby);
             u.moves = 100; g->set_safe_mode(SAFE_MODE_OFF);
         }
         if (create_medicine) {
