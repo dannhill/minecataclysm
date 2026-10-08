@@ -108,6 +108,10 @@ int main(int argc, const char *argv[]) {
         overmap_buffer.create_custom_overmap(point_abs_om{}, specials);
         auto &m = get_map();
         m.load(tripoint_abs_sm(m.get_abs_sub()), false);
+        // Density zero does not remove fixed mapgen spawns. Only this safe
+        // posture fixture clears them; normal worlds and other demos retain
+        // their native spawn behavior.
+        if (create_posture) m.clear_spawns();
         for (int y = 48; y <= 76; ++y) {
             for (int x = 48; x <= 76; ++x) {
                 m.ter_set(tripoint(x,y,0), ter_str_id("t_floor"));

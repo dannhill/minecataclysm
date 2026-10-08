@@ -852,10 +852,10 @@ index 0000000..5a349eb
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..4ad25d3
+index 0000000..47c0905
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,1886 @@
+@@ -0,0 +1,1890 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
@@ -2578,11 +2578,16 @@ index 0000000..4ad25d3
 +void CddaBridge::renderDebugOverlay(irr::gui::IGUIEnvironment* guienv) {
 +    if (!guienv || !pimpl_) return;
 +
++    const auto screen = guienv->getVideoDriver()->getScreenSize();
 +    if (!pimpl_->posture_text_) {
-+        pimpl_->posture_text_ = guienv->addStaticText(L"", irr::core::rect<irr::s32>(10, 105, 650, 155), true, true, nullptr, -1, true);
++        pimpl_->posture_text_ = guienv->addStaticText(L"", irr::core::rect<irr::s32>(), true, true, nullptr, -1, true);
 +        pimpl_->posture_text_->setOverrideColor(irr::video::SColor(255, 240, 245, 238));
 +        pimpl_->posture_text_->setBackgroundColor(irr::video::SColor(220, 24, 35, 34));
 +    }
++    const int posture_left = screen.Width >= 1000 ? 420 : 10;
++    const int posture_top = screen.Width >= 1000 ? 105 : 160;
++    pimpl_->posture_text_->setRelativePosition(irr::core::rect<irr::s32>(posture_left, posture_top,
++        std::min<int>(screen.Width - 10, posture_left + 680), posture_top + 50));
 +    const auto player = pimpl_->entities_.find(1);
 +    const uint32_t flags = player == pimpl_->entities_.end() ? 0 : player->second.state_flags;
 +    const wchar_t* posture = flags & cdda::cwm::PRONE ? L"A terra" :
@@ -2599,7 +2604,6 @@ index 0000000..4ad25d3
 +        pimpl_->survival_text_->setOverrideColor(irr::video::SColor(255, 240, 245, 238));
 +        pimpl_->survival_text_->setBackgroundColor(irr::video::SColor(220, 24, 35, 34));
 +    }
-+    const auto screen = guienv->getVideoDriver()->getScreenSize();
 +    const int width = std::min<int>(530, screen.Width - 20);
 +    pimpl_->survival_text_->setRelativePosition(irr::core::rect<irr::s32>(10,
 +        std::max<int>(285, screen.Height - 195), 10 + width, screen.Height - 10));
