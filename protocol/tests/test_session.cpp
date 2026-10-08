@@ -76,8 +76,6 @@ std::vector<uint8_t> roster(uint64_t seq, EntityType kind=EntityType::MONSTER,
     auto removed=f.CreateVector(duplicate_remove?std::vector{removal,removal}:std::vector<flatbuffers::Offset<EntityRemoved>>{});
     auto vehicles=f.CreateVector(std::vector<flatbuffers::Offset<VehicleState>>{});
     auto fields=f.CreateVector(std::vector<flatbuffers::Offset<FieldState>>{});
-    const auto consumption = consumption_case ? CreateConsumptionState(f,consumption_case==2?0:42,
-        consumption_case==3?0:100,consumption_case==4?-1:consumption_case==5?101:50) : flatbuffers::Offset<ConsumptionState>{};
     auto body=CreateWorldSnapshot(f,seq+2,&origin,0,0,actors,vehicles,fields,0,false,false,
         seq+1,seq,0,0,spawned,removed);
     return b.finish_message(Payload::WorldSnapshot,body.Union());

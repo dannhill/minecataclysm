@@ -144,3 +144,35 @@ sassi nelle tasche. `I` apre l'inventario anche nel gioco normale.
 Quantita parziali, trasferimenti mirati tra tasche/contenitori, apertura di
 tasche sigillate e hotbar interattiva vengono dopo: non sono implementati
 in questa prima fetta. [Dettagli e verifica tecnica](../fixes/native-equipment.md).
+
+
+## Cibo e bevande nativi — DA PROVARE, rinviato su richiesta
+
+La checklist inventario/equipaggiamento sopra rimane pendente. Non si
+trasformano le verifiche automatiche in accettazione grafica dell'utente.
+Avvio isolato: `./consumption-demo.sh --fresh`. Zaino gia fornito dal core
+nativo con due mele fresche, una marcia, una bottiglia con quattro porzioni
+d'acqua pulita e un sasso. La stessa funzione e disponibile con I nel gioco.
+
+1. **I**, scegli una mela fresca: dettagli e **Mangia**; scegli l'acqua nella
+   bottiglia: **Bevi**. Il sasso non deve offrire Consuma. Leggere mantiene
+   tempo/personaggio fermi. Mangia/Bevi chiudono il menu e avviano un consumo
+   con indicazione di progresso; una sola porzione si toglie alla fine.
+2. Durante una mela premi **I**: il progresso si ferma col menu; **Interrompi
+   consumo** torna al gioco, conservando la porzione non ancora consumata.
+   Avvia poi nuovamente Mangia e lascia terminare. La durata della nuova
+   richiesta segue il comportamento CDDA del pin, senza rimborso del tempo
+   gia trascorso. I bisogni si aggiornano attraverso digestione nativa, non
+   con una cura istantanea inventata dalla GUI.
+3. Seleziona la mela marcia: avviso nel dettaglio, conferma nativa dopo
+   Mangia. Scegli **No** con il numero mostrato: mela conservata, nessuna
+   attivita bloccata. Con **F7** in pausa, prova Mangia/Bevi: niente comando
+   ritardato dopo la ripresa; chiudere I conserva la pausa F7.
+4. Bevi una porzione e mangiane una, esci e riavvia `./consumption-demo.sh`
+   senza --fresh: bottiglia/quantita e bisogni restano coerenti, senza
+   duplicazioni. Puoi anche uscire durante un consumo: il save mantiene
+   l'attivita nativa; al rientro il tempo riprende da quel lavoro residuo.
+
+Farmaci/medicazioni, bere da fontane, aprire tasche sigillate, scegliere
+quantita e travasare richiedono le prossime fette. Le icone mancanti restano
+fallback con nomi CDDA. [Dettagli tecnici](../fixes/native-consumption.md).

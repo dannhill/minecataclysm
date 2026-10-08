@@ -6,10 +6,44 @@ captured implementation; it does not approve its gaps. The executable schema
 is [cwm.fbs](cwm.fbs). Audit findings and evidence are in
 [M5.5](../docs/audits/M5.5.md).
 
-The current runtime requires **CWM 2.10**. This breaks the old negotiation
+The current runtime requires **CWM 2.11**. This breaks the old negotiation
 contract; schema fields and union members are appended without changing the
 existing FlatBuffers offsets. Both executables must be rebuilt together.
 The historical coverage table below is retained as audit evidence.
+
+CWM 2.11 appends CONSUME=4 to EquipmentAction, native `consume_moves`,
+`consume_label` and the first read-only `consume_warning` to InventoryEntry.
+All five reasons are required, matching the enabled action mask. CONSUME
+is limited to owned FOOD/DRINK, accessible unsealed container pockets, native
+can_eat availability and foods whose use action needs no separate interface
+(PETFOOD is exempt like native eat). MED/tools and other special uses are
+blocked. Soft warnings remain enabled: the native actor asks the full set of
+warnings interactively before starting. Declining schedules no work and
+consumes no serving. Native avatar_action::eat assigns ACT_CONSUME with empty
+terminal-menu continuation; completion is entirely the native actor's job.
+Native eat does not charge obtain_cost separately: access_moves is descriptive,
+not a cost added by the bridge. Quantities, digestion, ownership confirmation
+and container removal/preservation remain native.
+
+WorldSnapshot.consumption replaces the optional native progress: an ephemeral
+activity token, positive total_moves, 0 <= remaining_moves <= total_moves.
+It is absent when no active positive-work consumption exists. Client validation
+rejects malformed progress via resync. This is native work, not a wall-time
+ETA; pause/speed changes need no local inference. Tokens are renewed on each
+CWM start, including restarting the same item, and after native load in a new
+server. They are not saved. No other consumption initiator is exposed in this
+slice. CancelConsumptionRequest(command_id, activity_token) goes through the
+session/sequence guards and at-most-once ledger, then cancels the matching
+interruptible native activity immediately at the coordinator boundary, never
+behind its busy action queue. Manual/threat/decision/recovery pauses reject it;
+the UI removes the menu pause before sending, as with other owned actions.
+Stale/zero/different tokens cannot cancel a later meal. Native cancellation
+preserves already spent time and native backlog rules. In this pinned native
+actor, a newly requested consume restarts its duration; the bridge does not
+patch that behavior. A canonical load retains in-flight native actor work.
+Ordinary mode uses the same native activity but completes it without real-time
+pacing, so the interactive progress/cancel experience is primarily RT-02.
+CommandAck for CONSUME means activity start accepted, not food already eaten.
 
 CWM 2.10 appends `InventoryQueryRequest(query_id)`, `InventoryView` and
 `EquipmentRequest(command_id, view_id, item_id, action)`. Query IDs correlate
@@ -21,7 +55,7 @@ selection cache. Error replies have view_id 0, empty lists and a reason.
 Views contain at most 2,048 entries, 8,192 pockets and 32 ancestry levels, with
 an explicit truncation flag. Entry IDs are contiguous view-local handles, not
 persistent item IDs. Parent precedes child; parent/pocket links, action bits
-and four reasons are validated before rendering. Technical contents use
+and five reasons are validated before rendering. Technical contents use
 pocket_index -1 and cannot bypass their native interaction. Pockets report
 native volume/weight capacities, remaining space, length/access constraints,
 sealed/rigid/watertight flags. Negative remaining capacity is permitted for
@@ -38,7 +72,7 @@ wear and takeoff pay native costs and use existing decision prompts.
 TAKEOFF can natively drop a loaded container when no storage is available;
 its contents remain inside. Cancellation is preserved. Sealed/technical
 contents, partial quantities, arbitrary transfers and liquid destination
-selection require later interaction slices. Both executables require 2.10.
+selection require later interaction slices. Both executables require 2.11.
 
 CWM 2.9 appends `StatusValue.perceived_level`: -1 unavailable, otherwise
 an ordinal 0–10 well-being level, higher is better. CDDA quantizes only the
