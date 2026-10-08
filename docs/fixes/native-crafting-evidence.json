@@ -1,0 +1,1201 @@
+{
+  "status": "SCOPED_AUTOMATED_PASS",
+  "protocol": "2.13",
+  "production_commit": "5f30913b1a847e816f2477b6c2c18682016d5701",
+  "native_build_commit": "6df2b5e484c692e373b270a061c51fd115d30f2c",
+  "verification_driver_commit": "6356dab84c0989b1a46bfc72f782d64e195d4222",
+  "artifact_root": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008",
+  "build_mode": "Incremental reconstructed sources from pinned original repositories and complete committed patches; caches retained. No cold build, full M5.5 or full SAVE-001 claimed.",
+  "environment": {
+    "os": "Linux-7.0.11-76070011-generic-x86_64-with-glibc2.35",
+    "python": "3.10.12",
+    "compiler": "c++ (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0",
+    "display": ":1",
+    "xauthority": "/run/user/1000/gdm/Xauthority"
+  },
+  "source_manifest": {
+    "format_version": 1,
+    "repositories": {
+      "cdda": {
+        "url": "https://github.com/CleverRaven/Cataclysm-DDA.git",
+        "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+        "shallow": true,
+        "patch": "baseline/patches/cdda.patch",
+        "patch_sha256": "a17c6bc1d08e776c5e728aea8c5306b0cc23ecc8b75a51ce131026b9d7e0ac6b",
+        "tree_inventory": "baseline/trees/cdda.json",
+        "tree_sha256": "6e6a9cd1830875ebc72f2864415fee3e8c1d50ad097eb87dbe1a2725c5ea69b3",
+        "file_count": 8585,
+        "original_status": " M src/CMakeLists.txt\n M src/avatar_action.cpp\n M src/avatar_action.h\n M src/character.cpp\n M src/character_body.cpp\n M src/character_inventory.cpp\n M src/craft_command.cpp\n M src/craft_command.h\n M src/crafting.cpp\n M src/crafting.h\n M src/do_turn.cpp\n M src/do_turn.h\n M src/game.cpp\n M src/game.h\n M src/handle_action.cpp\n M src/iexamine.cpp\n M src/iuse_actor.cpp\n M src/melee.cpp\n M src/output.cpp\n M src/pickup.cpp\n M src/recipe.cpp\n M src/recipe.h\n M src/ui.cpp\n M tests/CMakeLists.txt\n M tests/test_main.cpp\n?? src/cwm/cwm_crafting.h\n?? src/cwm/cwm_inventory.h\n?? src/cwm/cwm_main.cpp\n?? src/cwm/cwm_map_exporter.cpp\n?? src/cwm/cwm_map_exporter.h\n?? src/cwm/cwm_server.cpp\n?? src/cwm/cwm_server.h\n?? src/cwm/cwm_status_gauges.h\n?? src/cwm_motion.cpp\n?? src/cwm_motion.h\n?? src/safe_mode_actions.h\n?? tests/cwm_pickup_test.cpp\n?? tests/cwm_projection_test.cpp\n?? tests/cwm_runtime_test.cpp\n"
+      },
+      "luanti": {
+        "url": "https://github.com/luanti-org/luanti.git",
+        "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
+        "shallow": true,
+        "patch": "baseline/patches/luanti.patch",
+        "patch_sha256": "84580f3fc45ed23b1a64d1007b923a23611a72e587709550704e008157854ca1",
+        "tree_inventory": "baseline/trees/luanti.json",
+        "tree_sha256": "aa57685272e012abdbfce756a64c955f46e66effacb27fae7f9f9730f6b629a7",
+        "file_count": 2258,
+        "original_status": " M builtin/settingtypes.txt\n M src/CMakeLists.txt\n M src/client/CMakeLists.txt\n M src/client/client.cpp\n M src/client/clientenvironment.cpp\n M src/client/game.cpp\n M src/client/hud.cpp\n M src/client/inputhandler.cpp\n M src/client/keys.h\n M src/client/mesh_generator_thread.cpp\n M src/client/mesh_generator_thread.h\n M src/defaultsettings.cpp\n M src/network/clientpackethandler.cpp\n M src/server/player_sao.cpp\n M src/unittest/test_mapblock.cpp\n?? src/cdda/avatar_status.h\n?? src/cdda/cdda_bridge.cpp\n?? src/cdda/cdda_bridge.h\n?? src/cdda/crafting_inventory.h\n?? src/cdda/equipment_inventory.h\n?? src/cdda/ground_item_formspec.h\n?? src/cdda/ground_item_projection.h\n?? src/cdda/ground_item_visual.h\n?? src/cdda/posture_input.h\n"
+      },
+      "mineclonia": {
+        "url": "https://github.com/mark-wiemer/mineclonia.git",
+        "commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+        "shallow": true,
+        "patch": "baseline/patches/mineclonia.patch",
+        "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "tree_inventory": "baseline/trees/mineclonia.json",
+        "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36",
+        "file_count": 9359,
+        "original_status": ""
+      }
+    }
+  },
+  "protocol_schema": {
+    "path": "/home/dannhill/Projects/cdda-mineclonia/protocol/cwm.fbs",
+    "sha256": "ab12a26ea54677fde0ca24a37d6eb1e401ccce3b465771484a209ca836c040bb"
+  },
+  "source_refresh": {
+    "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/refresh-contrast.json",
+    "sha256": "af041725ecfe144e05d339dc303edc503829d18f12ee905947986b74b42e151c"
+  },
+  "source_replay": {
+    "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/source-replay-contrast.json",
+    "sha256": "7a8c630d56c60a82af6cd9aeb2e35a82f1a49df0f300c1d65e42dbc323a04f79"
+  },
+  "baseline_check": {
+    "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/baseline-check-contrast.log",
+    "sha256": "0d677bccb7f810ba3bf13224cecae4e2f3770bcfaf8d448061e5f5835e37584f"
+  },
+  "runtime": {
+    "cdda": {
+      "source": "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/cdda/build/src/cdda-server",
+      "installed": "/home/dannhill/Projects/cdda-mineclonia/cdda/build/src/cdda-server",
+      "sha256": "3569b76a9dcac8ad2535a246d9e15bda0e83db35da6756139c5aae3a775ccb13",
+      "rollback": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/cdda-previous-runtime",
+      "previous_sha256": "4db072aaeaa9ffdf9bf5a1a5488a0983f3c6c4fb27d596655902d3d41451b9eb"
+    },
+    "luanti": {
+      "source": "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/luanti/bin/luanti",
+      "installed": "/home/dannhill/Projects/cdda-mineclonia/luanti/bin/luanti",
+      "sha256": "0863ad5a9edf81fc3bf5aeabb65b20f9f5d61cf3bd9ddd6af8829f195f9de240",
+      "rollback": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/luanti-previous-runtime",
+      "previous_sha256": "f19f249b03f65d46ce8eee07e6b568c96a66f2fc729979acc946ce6e0bf84176"
+    }
+  },
+  "independent_native_reader": {
+    "source": "/home/dannhill/Projects/cdda-mineclonia/tests/takeover_save_reader.cpp",
+    "source_sha256": "0fc522aea61d70f8a3b8471805de099faa11f306490b662a16d8c189c3eb1262",
+    "binary": {
+      "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/native-save-reader",
+      "sha256": "3beb9842fdd9fb0db7d433a24ec313da0045242cc0ce49f3fb24b43344ec77cb"
+    },
+    "recipe": {
+      "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/reader-build.json",
+      "sha256": "08445094fdf01b5e670a2cd0cd696e6583efa168dc6d3fd92f5f6eeb40a33977"
+    },
+    "pristine_core": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/pristine-cdda",
+    "commands": [
+      [
+        "/usr/bin/c++",
+        "-DBACKTRACE",
+        "-DCMAKE",
+        "-DDATA_DIR_PREFIX",
+        "-DGIT_VERSION",
+        "-DPREFIX=/usr/local",
+        "-DRELEASE",
+        "-DUSE_HOME_DIR",
+        "-I/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/pristine-cdda/src",
+        "-isystem",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/pristine-cdda/src/third-party",
+        "-Werror",
+        "-Wall",
+        "-Wextra",
+        "-Wformat-signedness",
+        "-Wlogical-op",
+        "-Wmissing-declarations",
+        "-Wmissing-noreturn",
+        "-Wnon-virtual-dtor",
+        "-Wold-style-cast",
+        "-Woverloaded-virtual",
+        "-Wpedantic",
+        "-Wsuggest-override",
+        "-Wunused-macros",
+        "-Wzero-as-null-pointer-constant",
+        "-Wno-unknown-warning-option",
+        "-Wno-dangling-reference",
+        "-Wno-c++20-compat",
+        "-Wno-unknown-warning",
+        "-Wredundant-decls",
+        "-fsigned-char",
+        "-g1",
+        "-O0",
+        "-DNDEBUG",
+        "-pthread",
+        "-std=c++17",
+        "-c",
+        "/home/dannhill/Projects/cdda-mineclonia/tests/takeover_save_reader.cpp",
+        "-o",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/native-save-reader.o"
+      ],
+      [
+        "/usr/bin/c++",
+        "-Werror",
+        "-Wall",
+        "-Wextra",
+        "-Wformat-signedness",
+        "-Wlogical-op",
+        "-Wmissing-declarations",
+        "-Wmissing-noreturn",
+        "-Wnon-virtual-dtor",
+        "-Wold-style-cast",
+        "-Woverloaded-virtual",
+        "-Wpedantic",
+        "-Wsuggest-override",
+        "-Wunused-macros",
+        "-Wzero-as-null-pointer-constant",
+        "-Wno-unknown-warning-option",
+        "-Wno-dangling-reference",
+        "-Wno-c++20-compat",
+        "-Wno-unknown-warning",
+        "-Wredundant-decls",
+        "-fsigned-char",
+        "-g1",
+        "-O0",
+        "-DNDEBUG",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/native-save-reader.o",
+        "CMakeFiles/takeover_save_reader.dir/messages.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/achievement.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/action.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/active_item_cache.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/activity_actor.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/activity_handlers.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/activity_item_handling.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/activity_tracker.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/activity_type.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/addiction.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/advanced_inv.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/advanced_inv_area.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/advanced_inv_listitem.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/advanced_inv_pagination.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/advanced_inv_pane.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/ammo.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/ammo_effect.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/anatomy.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/animation.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/armor_layers.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/ascii_art.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/assign.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/auto_note.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/auto_pickup.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/avatar.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/avatar_action.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/ballistics.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/basecamp.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/behavior.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/behavior_oracle.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/behavior_strategy.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/bionics.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/bionics_ui.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/bodygraph.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/bodypart.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/bonuses.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/butchery_requirements.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/cached_options.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/calendar.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/calendar_ui.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/cata_bitset.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/cata_tiles.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/cata_utility.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/cata_variant.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/catacharset.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/cellular_automata.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/char_validity_check.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/character.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/character_ammo.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/character_armor.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/character_attire.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/character_body.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/character_crafting.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/character_escape.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/character_guns.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/character_id.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/character_inventory.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/character_martial_arts.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/character_modifier.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/character_morale.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/character_oracle.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/character_proficiency.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/city.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/climbing.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/clothing_mod.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/clzones.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/color.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/compatibility.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/computer.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/computer_session.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/condition.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/construction.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/construction_category.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/construction_group.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/consumption.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/contents_change_handler.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/coordinate_conversions.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/coordinates.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/craft_command.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/crafting.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/crafting_gui.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/crash.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/creature.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/creature_tracker.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/cursesport.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/damage.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/debug.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/debug_menu.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/demangle.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/dependency_tree.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/descriptions.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/dialogue_chatbin.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/dialogue_helpers.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/dialogue_win.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/diary.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/diary_ui.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/disease.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/dispersion.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/display.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/distraction_manager.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/distribution.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/do_turn.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/drawing_primitives.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/editmap.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/effect.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/effect_on_condition.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/effect_source.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/emit.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/emscripten_exception.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/event.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/event_bus.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/event_field_transformations.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/event_statistics.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/explosion.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/faction.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/faction_camp.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/fault.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/field.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/field_type.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/filesystem.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/filesystem_impl.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/flag.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/flexbuffer_cache.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/flexbuffer_json.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/font_loader.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/fungal_effects.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/game.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/game_inventory.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/game_ui.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/gamemode.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/gamemode_tutorial.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/gates.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/generic_factory.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/grab.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/handle_action.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/handle_liquid.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/harvest.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/help.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/iexamine.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/iexamine_actors.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/init.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/input.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/inventory.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/inventory_ui.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/item.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/item_action.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/item_category.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/item_components.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/item_contents.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/item_factory.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/item_group.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/item_location.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/item_pocket.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/item_search.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/item_stack.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/iteminfo_query.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/itype.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/iuse.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/iuse_actor.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/iuse_software.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/iuse_software_kitten.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/iuse_software_lightson.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/iuse_software_minesweeper.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/iuse_software_snake.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/iuse_software_sokoban.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/json.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/json_loader.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/kill_tracker.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/lang_stats.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/level_cache.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/lightmap.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/line.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/live_view.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/loading_ui.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/localized_comparator.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/lru_cache.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/magic.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/magic_enchantment.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/magic_spell_effect.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/magic_teleporter_list.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/magic_ter_fur_transform.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/main_menu.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/map.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/map_extras.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/map_field.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/map_item_stack.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/map_memory.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/map_selector.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mapbuffer.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mapdata.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mapgen.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mapgen_functions.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mapgendata.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mapgenformat.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mapsharing.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/martialarts.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/material.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/math_parser.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/math_parser_diag.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/math_parser_diag_value.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/math_parser_func.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/math_parser_jmath.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/math_parser_shim.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mattack_actors.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/medical_ui.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/melee.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/memorial_logger.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mission.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mission_companion.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mission_end.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mission_place.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mission_start.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mission_ui.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mission_util.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/missiondef.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mmap_file.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mod_manager.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mod_manager_ui.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mod_tileset.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/monattack.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mondeath.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mondefense.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/monexamine.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/monfaction.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mongroup.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/monmove.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/monster.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/monster_oracle.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/monstergenerator.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mood_face.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/morale.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/morale_types.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/move_mode.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mtype.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/music.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mutation.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mutation_data.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mutation_type.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mutation_ui.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/ncurses_def.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/newcharacter.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/npc.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/npc_attack.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/npc_class.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/npcmove.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/npctalk.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/npctalk_funcs.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/npctrade.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/npctrade_utils.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/options.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/ordered_static_globals.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/output.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/overlay_ordering.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/overmap.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/overmap_connection.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/overmap_location.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/overmap_noise.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/overmap_ui.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/overmapbuffer.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/panels.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/past_games_info.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/path_info.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/pathfinding.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/pickup.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/pinyin.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/pixel_minimap.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/pixel_minimap_projectors.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/player_activity.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/player_difficulty.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/player_display.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/player_hardcoded_effects.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/point.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/popup.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/profession.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/profession_group.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/proficiency.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/proficiency_ui.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/projectile.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/ranged.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/reachability_cache.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/recipe.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/recipe_dictionary.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/recipe_groups.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/regional_settings.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/relic.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/requirements.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/rng.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/rotatable_symbols.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/safe_reference.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/safemode_ui.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/savegame.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/savegame_json.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/savegame_legacy.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/scenario.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/scent_block.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/scent_map.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/scores_ui.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/sdl_font.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/sdl_gamepad.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/sdl_geometry.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/sdl_utils.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/sdl_wrappers.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/sdlsound.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/sdltiles.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/shadowcasting.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/shearing.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/shop_cons_rate.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/simple_pathfinding.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/simplexnoise.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/skill.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/skill_boost.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/skill_ui.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/smart_controller_ui.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/sounds.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/speech.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/speed_description.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/start_location.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/stats_tracker.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/stomach.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/string_editor_window.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/string_formatter.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/string_id.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/string_id_null_ids.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/string_input_popup.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/subbodypart.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/submap.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/suffer.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/system_locale.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/talker_avatar.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/talker_character.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/talker_furniture.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/talker_item.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/talker_monster.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/talker_npc.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/talker_topic.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/teleport.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/temp_crafting_inventory.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/test_data.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/text_snippets.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/text_style_check_reader.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/tgz_archiver.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/tileray.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/timed_event.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/trade_ui.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/trait_group.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/translation.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/translation_document.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/translation_gendered.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/translation_manager.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/translation_manager_impl.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/translation_plural_evaluator.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/translations.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/trap.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/trapfunc.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/try_parse_integer.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/turret.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/ui.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/ui_manager.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/unicode.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/units.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/units_utility.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/veh_appliance.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/veh_interact.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/veh_type.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/veh_utils.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/vehicle.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/vehicle_autodrive.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/vehicle_display.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/vehicle_group.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/vehicle_move.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/vehicle_part.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/vehicle_selector.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/vehicle_use.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/version.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/visitable.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/vitamin.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/wcwidth.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/weakpoint.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/weather.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/weather_gen.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/weather_type.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/widget.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/wincurse.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/wish.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/worldfactory.cpp.o",
+        "-o",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/native-save-reader",
+        "third-party/libflatbuffers.a",
+        "-lncursesw",
+        "/usr/lib/x86_64-linux-gnu/libformw.so",
+        "/usr/lib/x86_64-linux-gnu/libz.so"
+      ],
+      [
+        "/usr/bin/strip",
+        "--strip-debug",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/native-save-reader"
+      ]
+    ],
+    "link_cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/pristine-cdda/build/src",
+    "core_pin": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+    "core_modified_tracked_paths": [
+      "src/CMakeLists.txt"
+    ],
+    "core_note": "Only the test-oracle target registration differs; original gameplay/serialization sources remain unmodified."
+  },
+  "fixture": {
+    "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/fixture/before.json",
+    "sha256": "9031d053f22ef78ad7111d19a45c38c8be1cbe7219ddd36d800f1900a8613017"
+  },
+  "commands": {
+    "refresh": [
+      "python3",
+      "tools/refresh_verification_workspace.py",
+      "--workspace",
+      "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace",
+      "--receipt",
+      "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/refresh-contrast.json"
+    ],
+    "cdda_build": [
+      "cmake",
+      "--build",
+      "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/cdda/build",
+      "--target",
+      "cdda-server",
+      "cata_test",
+      "--parallel",
+      "2"
+    ],
+    "luanti_build": [
+      "cmake",
+      "--build",
+      "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/luanti/build",
+      "--target",
+      "luanti",
+      "--parallel",
+      "2"
+    ],
+    "native_tests": {
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/cdda",
+      "argv": [
+        "build/tests/cata_test",
+        "[cwm],[diving],[pickup],[crafting]",
+        "--rng-seed",
+        "42",
+        "--user-dir=/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/native-unit-latest"
+      ]
+    },
+    "luanti_tests": [
+      "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/luanti/bin/luanti",
+      "--run-unittests"
+    ],
+    "protocol_tests": [
+      "ctest",
+      "--test-dir",
+      "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/protocol/build",
+      "--output-on-failure"
+    ],
+    "source_replay": [
+      "python3",
+      "tools/verify_captured_sources.py",
+      "--receipt",
+      "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/source-replay-contrast.json"
+    ],
+    "baseline_check": [
+      "python3",
+      "tools/takeover_baseline.py",
+      "check"
+    ],
+    "fixture": [
+      "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/native-save-reader",
+      "--create-crafting",
+      "--userdir",
+      "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/fixture/user",
+      "--datadir",
+      "/home/dannhill/Projects/cdda-mineclonia/cdda/data",
+      "--output",
+      "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/fixture/before.json"
+    ]
+  },
+  "verification": {
+    "native": {
+      "assertions": 84101,
+      "cases": 83,
+      "filter": "[cwm],[diving],[pickup],[crafting]",
+      "log": {
+        "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/tests-native-latest.log",
+        "sha256": "545f26cc18591459a7b42ba9f5c76c2a386e3682211243955f3d17a412f9691b"
+      },
+      "build_log": {
+        "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/build-cdda-final.log",
+        "sha256": "7ca5ccd6e01205853c0dadf411c427d3b8b503705b48973b63e9081e6f5387cb"
+      }
+    },
+    "luanti": {
+      "individual_tests": 308,
+      "modules": 47,
+      "catch_assertions": 648,
+      "catch_cases": 4,
+      "log": {
+        "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/tests-luanti-contrast.log",
+        "sha256": "83c97a2a292c76454253dd1994350883c69a17f34f2fd1b0ad7cdc32d9523eb7"
+      },
+      "build_log": {
+        "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/build-luanti-contrast.log",
+        "sha256": "d68a5ae4b3fb8712d7ad2d8e4f21644b574cb8a8ee5350c2afb22b37688d7fef"
+      }
+    },
+    "protocol": {
+      "passed": 7,
+      "total": 7,
+      "log": {
+        "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/tests-protocol-installed.log",
+        "sha256": "36b9c799ad92e8c0004101f436add9efaab1ca973b7a0e4d0e2f82742204e53b"
+      }
+    },
+    "renderer": {
+      "unique_checks_by_run": [
+        {
+          "name": "gui-final",
+          "command": [
+            "python3",
+            "tests/crafting_gui_test.py",
+            "--workspace",
+            ".",
+            "--fixture",
+            "artifacts/native-crafting-20261008/fixture/user",
+            "--native-reader",
+            "artifacts/native-crafting-20261008/native-save-reader",
+            "--artifacts",
+            "artifacts/native-crafting-20261008/gui-final",
+            "--save-active"
+          ],
+          "exit_code": 0,
+          "checks": 27,
+          "passed": true,
+          "checks_receipt": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/gui-final/checks.json",
+            "sha256": "b14d843016249f80dc6a4741a2841c6accbb0603ee90161943540aae0941065f"
+          },
+          "native_save": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/gui-final/native.json",
+            "sha256": "079e11d8632405d9017d1330bd237804addd0befe48326d3c35d34e6d701ac09"
+          },
+          "log": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/gui-final.log",
+            "sha256": "f02bdb1123202eef544d9fac2d55ba4059179cafeb87b79681859cf553c7cc19"
+          },
+          "evidence": {
+            "relay-errors.json": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/gui-final/relay-errors.json",
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+            },
+            "save-active-craft.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/gui-final/save-active-craft.png",
+              "sha256": "207e0c4f0e02a3562ca5398d925e7409c880cc4c85943362dc9a81544c1a194f"
+            },
+            "component-sources.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/gui-final/component-sources.png",
+              "sha256": "b5bb348c3ff686c8e55fcb1171b45734f5e97b63ed1aab4683c796aadb9c2f61"
+            },
+            "camera.csv": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/gui-final/camera.csv",
+              "sha256": "fa7b6d92bc1f7fa1128e675bf6d9d243ea60126004dcbdcc37caddf439b62497"
+            },
+            "server-wire.bin": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/gui-final/server-wire.bin",
+              "sha256": "7f64a4028babe292909c22cb013b84ce815c9171b3b44443c4a2e31fff436100"
+            },
+            "incomplete-work.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/gui-final/incomplete-work.png",
+              "sha256": "dce473dc9d48b8751c414722f31f0f5671d28aa111a5a164ee9c35291e5bdb8a"
+            },
+            "component-confirmation.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/gui-final/component-confirmation.png",
+              "sha256": "80b5eeb9b0f326b055a8f6c4892065d68692a03217b903fc31b1d71d031d3e65"
+            },
+            "crafting-paused.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/gui-final/crafting-paused.png",
+              "sha256": "5ece5eada87c9fc5fae2b0ae9bbddf5abce848fcc872779bf2e3967dee9c6854"
+            },
+            "client-wire.bin": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/gui-final/client-wire.bin",
+              "sha256": "119519dc958867757d24da8e2cfaeb03e65703739b88a0d1cc98abf1310bc156"
+            },
+            "recipe-details.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/gui-final/recipe-details.png",
+              "sha256": "6009890e232fc79fd56c8dcbdcabb2520e91440ad338a977b8c6e82e047986b4"
+            },
+            "catalog.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/gui-final/catalog.png",
+              "sha256": "16637240b4952f64c7bdff2501536c73677e4f7d50539c058d85d5602fa28b6c"
+            }
+          }
+        },
+        {
+          "name": "gui-final-resume",
+          "command": [
+            "python3",
+            "tests/crafting_gui_test.py",
+            "--workspace",
+            ".",
+            "--fixture",
+            "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/gui-final/user",
+            "--native-reader",
+            "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/native-save-reader",
+            "--artifacts",
+            "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/gui-final-resume",
+            "--resume-active"
+          ],
+          "exit_code": 0,
+          "checks": 11,
+          "passed": true,
+          "checks_receipt": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/gui-final-resume/checks.json",
+            "sha256": "82e1adc6488b5066406b50eabde2de645f77cede0a78bfd56e31cfa79f199d75"
+          },
+          "native_save": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/gui-final-resume/native.json",
+            "sha256": "84c626b4ebed800b1febe7ecb1f99a67596828717ae7198ea3ccbb63d7ed0c3f"
+          },
+          "log": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/gui-final-resume.log",
+            "sha256": "9e043251ad1eff0316661242b38e577de52614d8bda95bec52f7a05eff07d40b"
+          },
+          "evidence": {
+            "relay-errors.json": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/gui-final-resume/relay-errors.json",
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+            },
+            "camera.csv": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/gui-final-resume/camera.csv",
+              "sha256": "2767b95854a05053c5b4dffeb3262983d5423be3ff8d2259622e11cd0dbb7ce4"
+            },
+            "server-wire.bin": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/gui-final-resume/server-wire.bin",
+              "sha256": "e35da13fb02771a941ac23322ee932e25b18341f75a9bf9492137121988b3a07"
+            },
+            "reloaded.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/gui-final-resume/reloaded.png",
+              "sha256": "45728db9817636e3ef7415fc28ed0a0c0cc692ad2cc866697892741a3828610d"
+            },
+            "client-wire.bin": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/gui-final-resume/client-wire.bin",
+              "sha256": "75b94f5076f9a7af3e7c9e219d383024b4e2f126db83730fb3a6023622b04eb9"
+            },
+            "catalog.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/gui-final-resume/catalog.png",
+              "sha256": "b4253333d16e95d762a8a0a2f69e1b4a8d7974bc3d59d49449146eb1df235482"
+            }
+          }
+        },
+        {
+          "name": "gui-ordinary",
+          "command": [
+            "python3",
+            "tests/crafting_gui_test.py",
+            "--workspace",
+            ".",
+            "--fixture",
+            "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/fixture/user",
+            "--native-reader",
+            "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/native-save-reader",
+            "--artifacts",
+            "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/gui-ordinary",
+            "--action-driven"
+          ],
+          "exit_code": 0,
+          "checks": 19,
+          "passed": true,
+          "checks_receipt": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/gui-ordinary/checks.json",
+            "sha256": "ba80d6aa4aaccb69f5aac7d6436278fbfeb3c26a60e997c84bd553c07bed8cfe"
+          },
+          "native_save": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/gui-ordinary/native.json",
+            "sha256": "28602c9a07a43d3ca34b9a1e1eddeeef71e0d6920a49b7ab25e5522af05b2ce0"
+          },
+          "log": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/gui-ordinary.log",
+            "sha256": "6989ce088d562228236950719be624d2e1fb1e8ec520839e0c8c8c8053c8db21"
+          },
+          "evidence": {
+            "relay-errors.json": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/gui-ordinary/relay-errors.json",
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+            },
+            "component-sources.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/gui-ordinary/component-sources.png",
+              "sha256": "1d34fb7828520ab3bf89e9bb3b6c09c4070712032b5e3842647b21af9b9230ef"
+            },
+            "camera.csv": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/gui-ordinary/camera.csv",
+              "sha256": "38b153136e1ce7f365c12d66d88116d327b8edd148d1684cfb4224359fe5e222"
+            },
+            "server-wire.bin": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/gui-ordinary/server-wire.bin",
+              "sha256": "45e4ddaded55083523a22acbb15015572e173d76fa664420e791e17727f804a4"
+            },
+            "component-confirmation.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/gui-ordinary/component-confirmation.png",
+              "sha256": "679c7523e18ac10b6f6299cad1fff185a228462dd6843811779c79376a7d9601"
+            },
+            "client-wire.bin": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/gui-ordinary/client-wire.bin",
+              "sha256": "472467b5f3163c3821382086800b0a07254adb032bb28c6c9b2846e9e25981dd"
+            },
+            "recipe-details.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/gui-ordinary/recipe-details.png",
+              "sha256": "0b5b379af9296877569c7917c6cd559c7d618fe08b3ab5e71157f7bcb5a258fb"
+            },
+            "catalog.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/gui-ordinary/catalog.png",
+              "sha256": "9796f4bb888ebb8133f111c01dce26ea2fe10545b9673bad8a8676829d39f47e"
+            }
+          }
+        },
+        {
+          "name": "medicine-regression",
+          "command": [
+            "python3",
+            "tests/medicine_gui_test.py",
+            "--workspace",
+            ".",
+            "--fixture",
+            "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-medicine-20261008/fixture/user",
+            "--native-reader",
+            "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/native-save-reader",
+            "--artifacts",
+            "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/medicine-regression",
+            "--save-active"
+          ],
+          "exit_code": 0,
+          "checks": 35,
+          "passed": true,
+          "checks_receipt": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/medicine-regression/checks.json",
+            "sha256": "920269f3580f356971eba4acd7cb8bb2d434527c687494f58e80def4c18406cc"
+          },
+          "native_save": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/medicine-regression/native.json",
+            "sha256": "35a8acb44b0fcf3e7915923b03e32e485ae4079d1b103bb0a5cc8a39ffd53e67"
+          },
+          "log": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/medicine-regression.log",
+            "sha256": "692ba2f21f6a411058d11d369c00b3b18ff41ded6fd9ace81ee7830e82808d47"
+          },
+          "evidence": {
+            "relay-errors.json": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/medicine-regression/relay-errors.json",
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+            },
+            "body-choice.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/medicine-regression/body-choice.png",
+              "sha256": "b04f956f7b45beabf12ee361cdca39eed8d31e47e9115fb2518559b4b255771b"
+            },
+            "camera.csv": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/medicine-regression/camera.csv",
+              "sha256": "0c5662bd1ec872949b578f61103af5130d6f1584c3598ac195e10d3d77d09c71"
+            },
+            "treated-body.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/medicine-regression/treated-body.png",
+              "sha256": "4b9a0c2501cd97d9e4d2c0ae876a9ec0cab07ccff3d33bee80b6a9fafd71c830"
+            },
+            "server-wire.bin": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/medicine-regression/server-wire.bin",
+              "sha256": "4e80ca943c55c8eadc8cd1a62d60f00823f0637e68e53ce2bb9ba9e78e11daa1"
+            },
+            "medicine-detail.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/medicine-regression/medicine-detail.png",
+              "sha256": "2d9511605f7e714088fc98f1a6cf24d12b4c6dc8e6722ad716b12589928c98fa"
+            },
+            "save-active-firstaid.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/medicine-regression/save-active-firstaid.png",
+              "sha256": "68e61fd70db7621a359fbc5d37d83caa43a6a465f6687edc6a139b746ef00e52"
+            },
+            "inventory.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/medicine-regression/inventory.png",
+              "sha256": "f6439db578914bf397483b6c203ff2cf70e5b5790c7ffcf35c2299a644820d2a"
+            },
+            "firstaid-pause.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/medicine-regression/firstaid-pause.png",
+              "sha256": "24fb8885c34b41f2b493807910befe451b1841236114fb12adbc14aed94ee424"
+            },
+            "client-wire.bin": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/medicine-regression/client-wire.bin",
+              "sha256": "01eec5b7b9e4bdf2769ae0ee7be8b04444e1e72f5c4409c4a34171be64c0f32c"
+            },
+            "confirmation.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/medicine-regression/confirmation.png",
+              "sha256": "b5f9d2dad15848e79bbd1d13cdb4aa24dd0ad07d0f3a5b88b067069c03d6b1dc"
+            }
+          }
+        },
+        {
+          "name": "medicine-regression-resume",
+          "command": [
+            "python3",
+            "tests/medicine_gui_test.py",
+            "--workspace",
+            ".",
+            "--fixture",
+            "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/medicine-regression/user",
+            "--native-reader",
+            "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/native-save-reader",
+            "--artifacts",
+            "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/medicine-regression-resume",
+            "--resume-active"
+          ],
+          "exit_code": 0,
+          "checks": 14,
+          "passed": true,
+          "checks_receipt": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/medicine-regression-resume/checks.json",
+            "sha256": "718f4660d95cf3a2c15aded8632b25b0a7a1fed00aa012982f41a9d95e147652"
+          },
+          "native_save": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/medicine-regression-resume/native.json",
+            "sha256": "9713844d22f77b27100a364698833b4bf90a38dcd1cba626ad93313062075251"
+          },
+          "log": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/medicine-regression-resume.log",
+            "sha256": "c0e969162606e224ac2a941026f1ad82c9fb3cc0af11fdbbd3ef4f5d295ebd7b"
+          },
+          "evidence": {
+            "relay-errors.json": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/medicine-regression-resume/relay-errors.json",
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+            },
+            "camera.csv": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/medicine-regression-resume/camera.csv",
+              "sha256": "64a6312b7c06192423d66f062f3c1499ddc8bc23c4abe07f21a745fb15556099"
+            },
+            "server-wire.bin": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/medicine-regression-resume/server-wire.bin",
+              "sha256": "1c2618d124dfba9bcf4efc6b34395b18c9ce1f10e8aa5daa13177472e4337899"
+            },
+            "reloaded.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/medicine-regression-resume/reloaded.png",
+              "sha256": "4df6d55738d919fbba541c0c1ad3b8e011234b997d74f0ec614d1f49b5f75efd"
+            },
+            "inventory.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/medicine-regression-resume/inventory.png",
+              "sha256": "2f325d8de0834b2f3f897b3390cbdf0d44b7ddc208b65e708d23844fd36d114b"
+            },
+            "client-wire.bin": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/medicine-regression-resume/client-wire.bin",
+              "sha256": "32a9fbef3307c24d698aa1fabf381508d74600994ee0764f32558b2f63bebed7"
+            }
+          }
+        },
+        {
+          "name": "consumption-regression",
+          "command": [
+            "python3",
+            "tests/consumption_gui_test.py",
+            "--workspace",
+            ".",
+            "--fixture",
+            "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-consumption-20261008/fixture/user",
+            "--native-reader",
+            "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/native-save-reader",
+            "--artifacts",
+            "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/consumption-regression"
+          ],
+          "exit_code": 0,
+          "checks": 31,
+          "passed": true,
+          "checks_receipt": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/consumption-regression/checks.json",
+            "sha256": "6f97f23ec5d7e394f986153de84f2cd5a53e4999d026c807d12cb1a12edb2f7e"
+          },
+          "native_save": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/consumption-regression/native.json",
+            "sha256": "ce6ff5e0f51d5d60837c08f5cca991f5b8e6f852904007cf4fb87e06f84f4972"
+          },
+          "log": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/consumption-regression.log",
+            "sha256": "d90ceb41d29e7bc23db088af16d0c9f2200f1c62cfefd65dcc829816e31f9461"
+          },
+          "evidence": {
+            "native-food-warning.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/consumption-regression/native-food-warning.png",
+              "sha256": "dd748bcdc9f7ad41e5f630a22c64472b4036f730206babb8d47725a32731e2e2"
+            },
+            "relay-errors.json": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/consumption-regression/relay-errors.json",
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+            },
+            "rotten-warning.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/consumption-regression/rotten-warning.png",
+              "sha256": "bb3e218eb56513b11401bec05b515d87ad686f4818fee896f1860d4acecf46da"
+            },
+            "camera.csv": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/consumption-regression/camera.csv",
+              "sha256": "98efe05fa0a1d4c778b2b99d1177ff16a7a6d3f444cde7a52ad038f168fbadc4"
+            },
+            "server-wire.bin": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/consumption-regression/server-wire.bin",
+              "sha256": "0a17b1a95197d8e7b08042fa13f5c4210f5fc6cb641db7224af91f8ec03c7669"
+            },
+            "cancel-consumption.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/consumption-regression/cancel-consumption.png",
+              "sha256": "db63ed5f8eaaf8d6208de76d64d3fedf3435d2508c0dfbc54ee867efda1d9196"
+            },
+            "food-detail.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/consumption-regression/food-detail.png",
+              "sha256": "646e21e52e659854aab49dd32f7128be350f8faa19b9d25a77ff56fa88a3617a"
+            },
+            "inventory.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/consumption-regression/inventory.png",
+              "sha256": "b062f350fa3f7866fa81373cb66137da326190966f0877dc367dc96c73a71307"
+            },
+            "client-wire.bin": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/consumption-regression/client-wire.bin",
+              "sha256": "e725015b51451c39ea790235ff90fa5aa42f2bf0c560ff4e6f9c807207d3be3f"
+            }
+          }
+        },
+        {
+          "name": "equipment-regression",
+          "command": [
+            "python3",
+            "tests/equipment_gui_test.py",
+            "--workspace",
+            ".",
+            "--fixture",
+            "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-equipment-20261008/fixture/user",
+            "--native-reader",
+            "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/native-save-reader",
+            "--artifacts",
+            "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/equipment-regression"
+          ],
+          "exit_code": 0,
+          "checks": 29,
+          "passed": true,
+          "checks_receipt": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/equipment-regression/checks.json",
+            "sha256": "3fab8c68a415cc758d6f6bcf132c3ec73b686100040b1fe4201492b81035de37"
+          },
+          "native_save": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/equipment-regression/native.json",
+            "sha256": "8f05f71ada92f4f1dab4a84253d0f9ad0454ed66acb6d85db41990683b042ef7"
+          },
+          "log": {
+            "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/equipment-regression.log",
+            "sha256": "a106bd9b932c4ee90303b85dc147ccb05c80c704f317322d33d2dd0f06593abd"
+          },
+          "evidence": {
+            "relay-errors.json": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/equipment-regression/relay-errors.json",
+              "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+            },
+            "camera.csv": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/equipment-regression/camera.csv",
+              "sha256": "bddb723307cc127fa856ad03aa88f7beebbd96c147bac2b7c3c0b0d4147b2050"
+            },
+            "hat-details.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/equipment-regression/hat-details.png",
+              "sha256": "0bcc740012da789077fce4957d07862c82d62627b3e5921a671a897262cad3a1"
+            },
+            "server-wire.bin": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/equipment-regression/server-wire.bin",
+              "sha256": "f9fb89f2749c6eac91aa7b24f72fa91350e486879e1d0898e7375f4bdecc150b"
+            },
+            "inventory.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/equipment-regression/inventory.png",
+              "sha256": "1a577f8e2441feaf13274efaff54b96ea2350c653c0f821074eb7057da7a5aae"
+            },
+            "client-wire.bin": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/equipment-regression/client-wire.bin",
+              "sha256": "b6e0cd9a1e933ce599a92aac7cf4cc0a611eaf3cc8f729005714647872f6eff0"
+            },
+            "native-stow-choice.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/equipment-regression/native-stow-choice.png",
+              "sha256": "9fb3578e183c6f6c547e96cc980746a5b92059d05001cb812fc1288cfdfcf7b1"
+            },
+            "search-filter.png": {
+              "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/equipment-regression/search-filter.png",
+              "sha256": "1f5768df596f6c57086a9f7441b98c773550b99e52d77b9b8247ac13a0b9a015"
+            }
+          }
+        }
+      ],
+      "total": 166,
+      "installed_runtime": true,
+      "ordinary_mode_and_actual_save_reload": true
+    }
+  },
+  "secondary_review": {
+    "model": "gemini-3.8-flash-high",
+    "effort": "high",
+    "mode": "Prompt-only read-only static review of the crafting validator; no tools or source edits",
+    "result": {
+      "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/agy-review-result.json",
+      "sha256": "f047f2ef1da8a0484b57500b7bd003f7953a599b99b55e72a154b2896b25b9b4"
+    },
+    "assessment": {
+      "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/agy-review-assessment.md",
+      "sha256": "84acd22b815c85e1de187df20218c6261aefc3a9db4d8408f4552cf4566bdd69"
+    },
+    "prompt": {
+      "path": "/home/dannhill/Projects/cdda-mineclonia/artifacts/native-crafting-20261008/agy-review-prompt.txt",
+      "sha256": "ebe6ccb6514a14c9dcd6d2d3eb310fba42ac5fbe450b295cb39057cf2e694b12"
+    },
+    "duration_seconds": 133.060288083,
+    "authority": "Supplementary only; all claims independently checked; string_view adopted, other incorrect or inapplicable claims rejected"
+  },
+  "manual_validation": {
+    "status": "PENDING",
+    "total": 16,
+    "new_crafting_points": 4,
+    "path": "docs/validation/pending-manual.md"
+  },
+  "deferred": [
+    "Liquid/gas results and container chooser",
+    "Byproducts, practice, overmap buildings",
+    "Recipe favorites and linked subrecipes",
+    "Per-instance selection among identical components",
+    "Vehicle/external deep-container work",
+    "Reading, disassembly and general jobs",
+    "General long-activity acceleration/slowdown",
+    "Full SAVE-001 and new conformance gate"
+  ],
+  "notes": [
+    "CDDA native ACT_CRAFT and canonical craft item own gameplay and persistence. No client-side result creation.",
+    "Native type/source/count choices plus explicit summary; no promise of per-instance material selection.",
+    "Protected equipped types conservatively exclude unequipped copies of those types too.",
+    "Native unit and protocol sources unchanged after the final textarea contrast edit; native tree hashes identify tested source.",
+    "Renderer fixture uses bandages_makeshift without tools; it does not verify every recipe, powered tool or container combination.",
+    "Earlier failing unit/GUI experiments and pre-contrast successful runs are retained under artifact_root and excluded from final renderer totals.",
+    "Refreshing initially rejected native test-generated recipe CSV reports; reports moved to isolated evidence, source inventories then match.",
+    "Artifact saves/configurations are isolated; user worlds never opened or deleted.",
+    "Installed pair checksums match reconstructed binaries; pre-feature rollback pair retained."
+  ]
+}

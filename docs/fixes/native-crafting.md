@@ -44,6 +44,9 @@ il crafting non vengono accodati. Reconnect/resync invalidano i vecchi handle.
 Snapshot con attivita simultanee o contatori malformati richiedono resync.
 Gli adattatori di scelta riusano le voci native del crafting, senza duplicarne
 le regole nel client; le altre uilist terminali restano fuori da questa fetta.
+La scena del renderer verifica bandages_makeshift senza utensili: non attesta
+ogni ricetta, ogni utensile a cariche o ogni combinazione di contenitori.
+Le regole restano native; queste combinazioni richiedono copertura dedicata.
 
 ## Prova rinviata
 
@@ -69,6 +72,12 @@ artifacts/native-crafting-20261008/native-save-reader --create-crafting \
   --userdir artifacts/native-crafting-20261008/fixture/user \
   --datadir cdda/data --output artifacts/native-crafting-20261008/fixture/before.json
 ```
+
+Verifiche mirate PASS: 84.101 asserzioni CDDA/83 casi; 308 test Luanti e
+648 asserzioni Catch2/4 casi; protocollo 7/7; renderer installato 166 controlli
+(crafting RT/save 27, ripresa 11, turni 19; medicazioni 35 + ripresa 14,
+consumo 31, equipaggiamento 29). Le build sono incrementali su sorgenti
+ricostruiti, con cache conservate; non sono build fredde indipendenti.
 
 Artefatti: `artifacts/native-crafting-20261008`. La revisione AGY Gemini
 3.8 Flash High ha completato un controllo limitato del validatore in 133 s;

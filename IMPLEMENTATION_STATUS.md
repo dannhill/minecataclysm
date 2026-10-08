@@ -1,5 +1,30 @@
 # Implementation status
 
+Current delivery: [guided native crafting](docs/fixes/native-crafting.md),
+CWM 2.13; both reconstructed runtimes installed together. K opens known recipes,
+native book/helper knowledge, requirements, search and manual batches 1–20.
+Native component/source choices and an explicit summary precede creation;
+favored/equipped types and nonempty liquid containers are protected components.
+ACT_CRAFT and the canonical work item own costs/progress/failures/results.
+K/I pause and interrupt; K resumes owned or accessible nearby surface work.
+Canonical in-flight work reloads in the actual renderer and completes once;
+an independent pristine core confirms exact results and the protected favorite.
+Scoped PASS: CDDA 84,101 assertions/83 cases; Luanti 308 tests plus 648 Catch2
+assertions/4 cases; protocol 7/7. Installed renderer crafting: 27 RT/save,
+11 in-flight reload and 19 ordinary-mode checks; medicine 35 + 14 reload,
+consumption 31 and equipment 29 regression checks, 166 total. Exact
+source/binary identities and receipts: [evidence](docs/fixes/native-crafting-evidence.json).
+Four new crafting points bring [the manual backlog](docs/validation/pending-manual.md)
+to 16 PENDING. No automatic result implies user acceptance. Liquid/gas and
+byproduct recipes, practice/buildings, recipe favorites/subrecipes, per-instance
+components, vehicle work, reading/disassembly and general acceleration remain
+later slices; the entire crafting/reading roadmap point is not complete.
+Next essential slice: native ranged combat/aiming/reload. Deep inventory and
+extended jobs stay scheduled. M5.5 remains historical FAILED; full SAVE-001 open.
+
+The CWM 2.12 delivery below is historical, superseded by the current 2.13
+runtime; its identities and scoped evidence remain preserved.
+
 Current delivery: [native wound treatments](docs/fixes/native-medicine.md),
 CWM 2.12; reconstructed runtimes installed together. I offers Medica... for
 owned external heal items, native body-part selection and explicit confirmation.
