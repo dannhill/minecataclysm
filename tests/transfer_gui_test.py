@@ -257,19 +257,26 @@ def main():
                 transfer_panel();select_item(item(view,'9mm'));destination(view,item(view,'bag_plastic'));quantity(31)
                 sent=latest()['transfers_sent'];click(11.75,9.97)
                 check('excess_quantity_remains_in_menu_without_command',latest()['transfers_sent']==sent and int(latest()['equipment_form'])==1)
-                quantity(7);shot('transfer-selected.png');action(True)
-                wait(lambda r:int(r['transfer_token'])>0)
-                check('insert_uses_paid_native_activity',int(latest()['transfer_total'])>0 and int(latest()['transfer_remaining'])>0)
-                view=open_inventory();remaining=int(latest()['transfer_remaining']);stopped=latest()['simulation_time'];time.sleep(.8)
-                check('menu_freezes_native_work_and_time',int(latest()['transfer_remaining'])==remaining and latest()['simulation_time']==stopped)
-                shot('transfer-paused.png')
-                if args.save_active:
-                    check('saved_work_has_not_moved_ammo_early',item(view,'9mm').Charges()==30)
-                    check('actual_runtime_survives',proc.poll() is None)
+                quantity(7);shot('transfer-selected.png')
+                if args.action_driven:
+                    # The ordinary native loop can finish five seconds of work
+                    # between two GUI frames; it has no wall-clock pacing.
+                    tap('Escape');view=open_inventory()
+                    check('ordinary_escape_changes_no_ammunition',item(view,'9mm').Charges()==30)
                 else:
-                    cancelled=int(latest()['cancel_consumption_sent']);click(11.75,2.2)
-                    wait(lambda r:int(r['equipment_form'])==0 and int(r['cancel_consumption_sent'])==cancelled+1)
-                    finish();view=open_inventory();check('native_cancel_keeps_all_thirty_rounds',item(view,'9mm').Charges()==30)
+                    action(True);wait(lambda r:int(r['transfer_token'])>0)
+                    check('insert_uses_paid_native_activity',int(latest()['transfer_total'])>0 and int(latest()['transfer_remaining'])>0)
+                    view=open_inventory();remaining=int(latest()['transfer_remaining']);stopped=latest()['simulation_time'];time.sleep(.8)
+                    check('menu_freezes_native_work_and_time',int(latest()['transfer_remaining'])==remaining and latest()['simulation_time']==stopped)
+                    shot('transfer-paused.png')
+                    if args.save_active:
+                        check('saved_work_has_not_moved_ammo_early',item(view,'9mm').Charges()==30)
+                        check('actual_runtime_survives',proc.poll() is None)
+                    else:
+                        cancelled=int(latest()['cancel_consumption_sent']);click(11.75,2.2)
+                        wait(lambda r:int(r['equipment_form'])==0 and int(r['cancel_consumption_sent'])==cancelled+1)
+                        finish();view=open_inventory();check('native_cancel_keeps_all_thirty_rounds',item(view,'9mm').Charges()==30)
+                if not args.save_active:
                     transfer_panel();select_item(item(view,'9mm'));destination(view,item(view,'bag_plastic'));quantity(7);action(True);finish()
                     view=open_inventory();bag=item(view,'bag_plastic');nested=item(view,'9mm',bag.Id())
                     check('native_transfer_splits_exact_seven',nested.Charges()==7)
@@ -346,6 +353,7 @@ def main():
         check('canonical_dropped_container_keeps_four_rounds',sum(i.get('charges',0) for i in items(bag) if i['typeid']=='9mm')==4)
         check('canonical_ground_receives_three_loose_rounds',sum(i.get('charges',0) for i in ground if i['typeid']=='9mm')==7)
     check('canonical_position_unchanged',native['player_abs']==[60,60,0])
+    if args.action_driven: check('ordinary_transfers_pay_native_simulation_time',native['time']>json.loads((args.fixture.parent/'before.json').read_text())['time'])
     (out / 'summary.json').write_text(json.dumps(dict(checks=checks, native_save=str(output)), indent=2)+'\n')
 
 

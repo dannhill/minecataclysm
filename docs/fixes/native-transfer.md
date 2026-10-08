@@ -14,7 +14,10 @@ trasferimento rimangono nativi. Per il deposito CDDA non fornisce una durata
 totale: viene mostrato un lavoro attivo senza inventare una percentuale. Per
 l'inserimento si mostra il costo e il lavoro residuo nativi. **I** ferma
 il tempo; **Interrompi trasferimento** invoca cancel_activity nativo.
-Non vengono modificati inventari o cariche nel client Luanti.
+Non vengono modificati inventari o cariche nel client Luanti. Nel fallback
+scandito dalle azioni, senza scheduler real time, il loop nativo puo completare
+il lavoro fra due frame grafici: paga comunque il tempo simulato. Le prove
+di pausa/interruzione durante il progresso usano la modalita RT della demo.
 
 CWM 2.15 conserva union 38 e appende ItemTransferRequest 39 e
 CancelItemTransferRequest 40; aggiunge metadati di sola lettura all'InventoryEntry
