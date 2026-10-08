@@ -11,6 +11,8 @@ presenta l'esito, senza applicare danni propri.
 mazza già impugnata e zombie ostile subito davanti, con immobilizzazione nativa
 solo nella fixture. E riconosce la minaccia; F7 pausa/riprende. Nessun attacco
 viene accodato durante pausa, menu o recupero della connessione.
+La tecnica BRUTAL della mazza può respingere il bersaglio: riavvicinarsi
+prima del colpo successivo. Anche questo effetto è nativo.
 Senza `--fresh` riprende la stessa sessione canonica CDDA.
 
 CWM 2.7 abilita AttackRequest con identità canonica del bersaglio, inclusa nella

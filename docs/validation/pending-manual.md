@@ -51,6 +51,7 @@ prova. **E** riconosce la minaccia; **F7** mette in pausa/riprende.
 
 1. Punta lo zombie: nome e suggerimento di attacco; clic sinistro per un colpo.
    Tieni poi premuto: un solo attacco, senza raffica. Ripeti con nuovi clic.
+   Se la mazza lo respinge, riavvicinati: i colpi fuori portata sono rifiutati.
 2. Metti in pausa con F7 e clicca: niente attacco. Riprendi: nessun colpo
    ritardato dal clic fatto durante la pausa. Il mirino nel vuoto non attacca.
 3. Uccidi il bersaglio con nuovi clic: modello rimosso, cadavere nativo a terra.

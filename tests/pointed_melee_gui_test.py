@@ -50,7 +50,7 @@ def main():
     config = out / 'client.conf'
     config.write_text('screen_w = 1280\nscreen_h = 800\nfullscreen = false\nfps_max = 60\n'
                       'vsync = false\nenable_clouds = false\ngui_scaling = 1\n'
-                      f'port = {port}\ncwm_trace_file = {trace}\n')
+                      f'port = {port}\ncwm_trace_file = {trace}\ncwm_entity_trace_file = {out / "actors.csv"}\n')
     env = dict(os.environ, CDDA_USERDIR=str(user), CDDA_WORLD='audit_fixture',
                LUANTI_WORLD=str(out / 'luanti'), LUANTI_CONFIG=str(config),
                LOG_DIR=str(out / 'logs'), CDDA_BIN=str(ws / 'cdda/build/src/cdda-server'),
@@ -219,16 +219,56 @@ def main():
             wait(lambda r: r['connection_id'] != connection_id and int(r['input_ready']) == 1, timeout=20)
             wait(lambda r: int(r['pause_reasons']) == 0)
             check('full_recovery_does_not_repeat_attack', int(latest()['attacks_sent']) == int(sent) + 1)
-            # Real native damage/defenses can miss; bounded clicks until native
-            # death removes the authoritative entity and its owned scene node.
-            for _ in range(16):
+            def target_pose():
+                with (out / 'actors.csv').open() as stream:
+                    records = [r for r in csv.DictReader(stream) if r['id'] == target]
+                return records[-1]
+            clicks_moved_player = False
+            out_of_reach_checked = False
+            # Native bat BRUTAL can knock the target back. Follow with native
+            # movement, never inferring a hit or weakening native range checks.
+            for _ in range(20):
                 if int(latest()['attack_target_hp']) < 0:
                     break
-                turn(0, -12)
+                actor, r = target_pose(), latest()
+                dx, dz = float(actor['target_x']) - float(r['target_x']), float(actor['target_z']) - float(r['target_z'])
+                yaw = math.degrees(math.atan2(-dx, dz))
+                turn(yaw, -25)
                 wait(lambda r: r['combat_hover'] == target)
-                previous = int(latest()['attacks_sent'])
+                native_distance = max(abs(round(float(actor['target_x'])) - round(float(r['target_x']))),
+                                      abs(round(float(actor['target_z'])) - round(float(r['target_z']))))
+                if native_distance > 1:
+                    if not out_of_reach_checked:
+                        hp = latest()['attack_target_hp']
+                        previous = int(latest()['attacks_sent'])
+                        click()
+                        wait(lambda r: int(r['attacks_sent']) > previous and int(r['pending_move']) == 0)
+                        check('native_knockback_target_cannot_be_hit_at_range', int(latest()['attack_result']) == 0 and latest()['attack_target_hp'] == hp)
+                        out_of_reach_checked = True
+                    for _ in range(15):
+                        r, actor = latest(), target_pose()
+                        gap = max(abs(round(float(actor['target_x'])) - round(float(r['target_x']))),
+                                  abs(round(float(actor['target_z'])) - round(float(r['target_z']))))
+                        if gap <= 1:
+                            break
+                        if args.action_driven:
+                            tap('w')
+                        else:
+                            xdo('keydown', 'w'); time.sleep(.075); xdo('keyup', 'w'); time.sleep(.4)
+                    check('native_movement_reaches_knocked_back_target', gap <= 1)
+                    actor, r = target_pose(), latest()
+                    dx, dz = float(actor['target_x']) - float(r['target_x']), float(actor['target_z']) - float(r['target_z'])
+                    turn(math.degrees(math.atan2(-dx, dz)), -25)
+                    wait(lambda r: r['combat_hover'] == target)
+                before_click = latest()
+                previous = int(before_click['attacks_sent'])
                 click()
                 wait(lambda r: int(r['attacks_sent']) > previous and int(r['pending_move']) == 0)
+                after_click = latest()
+                clicks_moved_player |= any(abs(float(after_click[k]) - float(before_click[k])) > .02
+                                          for k in ('target_x','target_y','target_z'))
+            check('pointed_attacks_do_not_move_player', not clicks_moved_player)
+            final_position = [float(latest()[k]) for k in ('target_x','target_y','target_z')]
             check('native_death_removes_target', int(latest()['attack_target_hp']) == -1)
             time.sleep(.4)
             sent = latest()['attacks_sent']
@@ -238,6 +278,7 @@ def main():
             check('actual_runtime_survives', proc.poll() is None)
         finally:
             subprocess.run(['xdotool', 'mouseup', '1'], capture_output=True)
+            subprocess.run(['xdotool', 'keyup', 'w'], capture_output=True)
             if proc.poll() is None:
                 os.killpg(proc.pid, signal.SIGTERM)
                 try:
@@ -260,10 +301,10 @@ def main():
     after = json.loads(output.read_text())
     check('native_monster_death_persisted', not any(m['typeid'] == 'mon_zombie' for m in after['monsters']))
     check('specific_native_corpse_created_at_target', any(
-        tile['pos'] == [60,59,0] and any(it.get('typeid') == 'corpse' and
+        any(it.get('typeid') == 'corpse' and
             it.get('corpse') == 'mon_zombie' and it.get('name') == 'Bersaglio melee'
             for it in tile['items']) for tile in after['ground_items']))
-    check('attacks_did_not_move_player', after['player_abs'] == before['player_abs'])
+    check('native_save_preserves_final_authoritative_anchor', after['player_abs'] == [round(final_position[0]), -round(final_position[2]), round(final_position[1] / 3)])
     check('native_time_paid_for_combat', after['time'] > before['time'])
     check('weapon_remains_native_and_equipped', 'bat' in str(after['player']['weapon']))
     (out / 'summary.json').write_text(json.dumps(dict(checks=checks, baseline=str(args.fixture.resolve().parent/'before.json'), native_save=str(output)), indent=2)+'\n')
