@@ -3266,10 +3266,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..e03571b
+index 0000000..f214c19
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,747 @@
+@@ -0,0 +1,748 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "move_mode.h"
@@ -3957,8 +3957,9 @@ index 0000000..e03571b
 +    u.setpos( tripoint( 60, 60, 0 ) );
 +    REQUIRE( u.wear_item( item( itype_id( "backpack_hiking" ) ) ) );
 +    item hat( itype_id( "hat_ball" ) ); hat.set_var( "uid", "equipment-hat" );
-+    item &owned = u.i_add( hat );
-+    item_location location( u, &owned );
++    item_location location = u.i_add( hat );
++    REQUIRE( location );
++    item &owned = *location;
 +    const auto parents = u.parents( owned );
 +    REQUIRE_FALSE( parents.empty() );
 +    cwm::CwmServer server( "/unused-equipment" );

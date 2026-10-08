@@ -39,6 +39,7 @@ int main(int argc, const char *argv[]) {
     bool create_actor_demo = false;
     bool create_realtime = false;
     bool create_pickup = false;
+    bool create_equipment = false;
     bool create_body = false;
     bool create_combat = false;
     bool create_posture = false;
@@ -47,6 +48,7 @@ int main(int argc, const char *argv[]) {
     for (int i = 1; i < argc; ++i) {
         std::string arg(argv[i]);
         if (arg == "--create") create = true;
+        else if (arg == "--create-equipment") { create = true; create_equipment = true; create_posture = true; }
         else if (arg == "--create-pickup") { create = true; create_pickup = true; }
         else if (arg == "--create-ergonomics") { create = true; create_posture = true; create_body = true; create_ergonomics = true; }
         else if (arg == "--create-posture") { create = true; create_posture = true; }
@@ -260,6 +262,19 @@ int main(int argc, const char *argv[]) {
             ammunition.set_var("uid", "pickup-selected");
             m.add_item(target, ammunition);
             if (!u.wear_item(item(itype_id("backpack_hiking"), calendar::turn))) return 13;
+            g->set_safe_mode(SAFE_MODE_OFF);
+        }
+        if (create_equipment) {
+            u.remove_weapon();
+            if (!u.wear_item(item(itype_id("backpack_hiking"), calendar::turn))) return 20;
+            item hat(itype_id("hat_ball"), calendar::turn); hat.set_var("uid", "equipment-hat"); u.i_add(hat);
+            item bandana(itype_id("bandana"), calendar::turn); bandana.set_var("uid", "equipment-bandana"); u.i_add(bandana);
+            for (int i = 0; i < 2; ++i) {
+                item stone(itype_id("rock"), calendar::turn); stone.set_var("uid", "equipment-rock-" + std::to_string(i)); u.i_add(stone);
+            }
+            item bat(itype_id("bat"), calendar::turn); bat.set_var("uid", "equipment-bat");
+            if (!u.wield(bat)) return 21;
+            u.moves = 100;
             g->set_safe_mode(SAFE_MODE_OFF);
         }
         if (create_combat) {

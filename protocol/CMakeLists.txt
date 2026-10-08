@@ -54,3 +54,7 @@ add_test(NAME test_session COMMAND test_session)
 add_executable(test_clock tests/test_clock.cpp)
 target_link_libraries(test_clock PRIVATE cwm_protocol)
 add_test(NAME test_clock COMMAND test_clock)
+
+add_executable(test_inventory tests/test_inventory.cpp)
+target_link_libraries(test_inventory PRIVATE cwm_protocol)
+add_test(NAME test_inventory COMMAND test_inventory)

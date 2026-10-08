@@ -1037,10 +1037,10 @@ index 0000000..ebc8b75
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..52c1a17
+index 0000000..392ef19
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,2162 @@
+@@ -0,0 +1,2165 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
@@ -1217,7 +1217,7 @@ index 0000000..52c1a17
 +    }
 +    void flush_equipment() {
 +        if (!queued_equipment_) return;
-+        if (!session_.ready() || !player_ready_ || metrics_.pending_decision || (metrics_.pause_reasons & ~uint32_t(2))) {
++        if (!session_.ready() || !player_ready_ || metrics_.pending_decision || (metrics_.pause_reasons & uint32_t(1 | 4 | 16))) {
 +            queued_equipment_.reset();
 +            item_hint_ = L"Equipaggiamento annullato: gioco in pausa o selezione scaduta.";
 +            item_hint_until_ = std::chrono::steady_clock::now() + std::chrono::seconds(4);
@@ -2447,7 +2447,7 @@ index 0000000..52c1a17
 +    std::string trace_path;
 +    if (g_settings->getNoEx("cwm_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->trace_.open(trace_path);
-+        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog,ipc_connected,ipc_input,ipc_output,ipc_read_bytes,ipc_write_bytes,ipc_frames,ipc_dispatch_bytes,ipc_read_calls,ipc_write_calls,session_state,input_ready,session_id,player_id,connection_id,sequence,resync_count,entity_cache,vehicle_cache,scene_origin_x,scene_origin_y,simulation_time,realtime,pause_reasons,time_scale,sent_intent,continuous_motion,intent_x,intent_y,ipc_latency_ms,projection_ms,ground_tiles,owned_items,ground_container,ground_hover,queued_pickup,ground_visual_nodes,ground_hover_items,ground_target_items,ground_target_visual_nodes,ground_target_first_type,status_available,body_form,survival_visible,status_stamina,status_head,status_arm_l,combat_hover,attacks_sent,attack_target,attack_target_hp,attack_result,player_state_flags,player_eye_offset,visual_animation_time,visual_animation_delta,ground_item_rotation,status_hunger_level,status_thirst_level,status_fatigue_level,status_pain_level,hud_images_active\n";
++        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog,ipc_connected,ipc_input,ipc_output,ipc_read_bytes,ipc_write_bytes,ipc_frames,ipc_dispatch_bytes,ipc_read_calls,ipc_write_calls,session_state,input_ready,session_id,player_id,connection_id,sequence,resync_count,entity_cache,vehicle_cache,scene_origin_x,scene_origin_y,simulation_time,realtime,pause_reasons,time_scale,sent_intent,continuous_motion,intent_x,intent_y,ipc_latency_ms,projection_ms,ground_tiles,owned_items,ground_container,ground_hover,queued_pickup,ground_visual_nodes,ground_hover_items,ground_target_items,ground_target_visual_nodes,ground_target_first_type,status_available,body_form,survival_visible,status_stamina,status_head,status_arm_l,combat_hover,attacks_sent,attack_target,attack_target_hp,attack_result,player_state_flags,player_eye_offset,visual_animation_time,visual_animation_delta,ground_item_rotation,status_hunger_level,status_thirst_level,status_fatigue_level,status_pain_level,hud_images_active,equipment_form,inventory_view,inventory_entries,equipment_selected,equipment_sent,pending_decision\n";
 +    }
 +    if (g_settings->getNoEx("cwm_entity_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->entity_trace_.open(trace_path);
@@ -2608,7 +2608,10 @@ index 0000000..52c1a17
 +        pimpl_->trace_ << ',' << level;
 +    }
 +    pimpl_->trace_ << ',' << std::count_if(pimpl_->hud_images_.begin(), pimpl_->hud_images_.end(),
-+        [](const auto* image) { return image->isVisible(); }) << '\n';
++        [](const auto* image) { return image->isVisible(); })
++        << ',' << pimpl_->equipment_open_ << ',' << pimpl_->equipment_view_.view
++        << ',' << pimpl_->equipment_view_.entries.size() << ',' << pimpl_->equipment_selected_
++        << ',' << pimpl_->equipment_sent_ << ',' << pimpl_->metrics_.pending_decision << '\n';
 +    pimpl_->trace_.flush();
 +}
 +
@@ -3363,7 +3366,7 @@ index 0000000..4c7d5d8
 +} // namespace cdda_client
 diff --git a/src/cdda/equipment_inventory.h b/src/cdda/equipment_inventory.h
 new file mode 100644
-index 0000000..2fae19b
+index 0000000..434d668
 --- /dev/null
 +++ b/src/cdda/equipment_inventory.h
 @@ -0,0 +1,132 @@
@@ -3485,7 +3488,7 @@ index 0000000..2fae19b
 +                "; lunghezza max " + std::to_string(p.length) + " mm; accesso " + std::to_string(p.access) + " mosse" +
 +                (p.sealed ? "; sigillata" : "") + (p.rigid ? "; rigida" : "") + (p.watertight ? "; stagna" : "");
 +        }
-+        f += "textarea[8,2.6;7.5,5.1;detail;;" + statusEscape(detail) + "]";
++        f += "textarea[8,2.6;7.5,5.1;;;" + statusEscape(detail) + "]";
 +        const std::array<std::string,4> names{{"Impugna", "Riponi", "Indossa", "Togli"}};
 +        for (unsigned i = 0; i < 4; ++i) {
 +            const auto x = std::to_string(8 + (i % 2) * 3.8), y = std::to_string(7.95 + (i / 2) * .85);
