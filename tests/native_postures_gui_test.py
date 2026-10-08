@@ -189,8 +189,11 @@ def main():
             else:
                 check('starts_native_walking', mode() == 0)
                 position = [latest()[k] for k in ('target_x', 'target_y', 'target_z')]
-                initial_time = latest()['simulation_time']
                 choose_mode('r', 128)
+                # Canonical fixture contains inherited move debt (-12). The
+                # first admitted command starts the native turn prelude and
+                # settles it. Further free mode changes must add no turns.
+                initial_time = latest()['simulation_time']
                 shot('running.png')
                 choose_mode('r', 0)
                 xdo('keydown', '--window', window, 'x')
