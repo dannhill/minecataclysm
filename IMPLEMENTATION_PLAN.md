@@ -214,16 +214,19 @@ nessun item, item singolo e pila in base allo stato autorevole corrente.
 
 Avanzamento locale 2026-10-08: raccolta/pila con GUI Mineclonia,
 HUD/scheda corporea e [melee puntato](docs/fixes/pointed-melee.md) implementati;
-tutte e tre le prove manuali nuovamente rinviate su richiesta dell'utente.
+le prove furono inizialmente rinviate; ora tutte e quattro sono validate
+nel [riscontro corrente](docs/source/playable-core-feedback-2026-10-08.md).
 La quarta fetta essenziale ortogonale sono le
 [corsa/posture native](docs/fixes/native-postures.md), già previste nelle
-fondazioni/comandi: R corsa/cammino, X accovacciato/cammino, P a terra/cammino,
+fondazioni/comandi: inizialmente R/X/P toggle, ora Ctrl/Shift mantenuti e
+P toggle secondo la direttiva successiva;
 velocità/stamina/rumore CDDA, visuale 3D corrispondente e save canonico.
 Non richiede nessuna delle tre interfacce da validare. Rig/animazioni in terza
 persona restano successivi. Melee resta il primo combattimento, non chiusura
 dell'intero punto 5: ranged, reach, feedback avanzati e attacco deliberato a
 neutrali restano nel piano. Tutte e quattro le
-[checklist](docs/validation/pending-manual.md) restano IN ATTESA;
+[checklist](docs/validation/pending-manual.md) originali sono PASS;
+solo gli adattamenti successivi hanno una nuova prova;
 verifiche automatiche e accettazione visiva sono distinte. Il calendario
 approvato e i nove batch di mapping restano invariati.
 

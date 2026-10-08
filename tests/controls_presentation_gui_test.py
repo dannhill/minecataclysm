@@ -334,6 +334,8 @@ def main():
     check('save_readable_by_pristine_native_core', result.returncode == 0)
     after = json.loads(output.read_text())
     check('prone_is_canonical_native_save_field', after['player']['move_mode'] == 'prone')
+    if not args.resume_only:
+        check('pointed_window_closed_in_canonical_save', [61,60,0,'t_window_no_curtains','f_null'] in after['terrain_and_furniture'])
     check('canonical_native_anchor_preserved', after['player_abs'] == [scene_origin[0] + round(final_position[0]), scene_origin[1] - round(final_position[2]), round(final_position[1] / 3)])
     check('visual_sheet_does_not_pickup_or_attack', all(int(r['attacks_sent']) == 0 and int(r['queued_pickup']) == 0 for r in rows()))
     (out / 'summary.json').write_text(json.dumps(dict(checks=checks, fixture=str(args.fixture.resolve()), native_save=str(output)), indent=2)+'\n')
