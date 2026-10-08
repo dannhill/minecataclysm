@@ -77,6 +77,16 @@ void test_attack_request_roundtrip() {
     std::cout << "[PASS] test_attack_request_roundtrip" << std::endl;
 }
 
+void test_movement_mode_request_roundtrip() {
+    MessageBuilder builder(12, 125, {101, 102, 103});
+    const auto bytes = builder.build_movement_mode_request(79, CDDA::CWM::MovementMode::PRONE);
+    const auto* msg = MessageVerifier::parse(bytes.data(), bytes.size());
+    assert(msg && msg->payload_type() == CDDA::CWM::Payload::MovementModeRequest);
+    assert(msg->session_id() == 101 && msg->player_id() == 102 && msg->connection_id() == 103);
+    const auto* req = msg->payload_as_MovementModeRequest();
+    assert(req && req->command_id() == 79 && req->mode() == CDDA::CWM::MovementMode::PRONE);
+}
+
 void test_tile_delta_roundtrip() {
     MessageBuilder builder(10, 200);
     auto bytes = builder.build_tile_delta(15, -20, 1, 404, 0x01, 14, 2);
@@ -137,6 +147,7 @@ int main() {
     test_move_request_roundtrip();
     test_pickup_request_roundtrip();
     test_attack_request_roundtrip();
+    test_movement_mode_request_roundtrip();
     test_tile_delta_roundtrip();
     test_ground_item_snapshot_roundtrip();
     test_malformed_buffer_rejected();

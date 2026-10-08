@@ -1,10 +1,11 @@
 # Validazioni manuali da riproporre
 
-L'utente il 2026-10-08 ha chiesto di rinviare ancora entrambe le prove
-(raccolta e HUD/scheda corporea) e proseguire autonomamente con un'altra
-feature essenziale ortogonale. **Rinviata non significa approvata.**
-Riproporre tutte le checklist alla prossima consegna, senza bloccare lo
-sviluppo autorizzato né anticipare l'inventario interattivo.
+L'utente il 2026-10-08 ha chiesto di rinviare ancora tutte e tre le prove
+(raccolta, HUD/scheda corporea e melee puntato) e proseguire autonomamente con
+un'ulteriore feature essenziale ortogonale. **Rinviata non significa approvata.**
+Le posture/corsa native sono la quarta fetta indipendente; anche la relativa
+checklist viene conservata qui. Nessuna prova manuale blocca lo sviluppo
+esplicitamente autorizzato e nessuna viene dichiarata accettata.
 
 ## Raccolta — IN ATTESA
 
@@ -61,3 +62,24 @@ prova. **E** riconosce la minaccia; **F7** mette in pausa/riprende.
 
 Tutte e tre le checklist restano rinviate per richiesta esplicita dell'utente;
 le verifiche automatizzate non sostituiscono la sua accettazione visiva.
+
+## Corsa e posture native — IN ATTESA
+
+Quarta feature indipendente: `./posture-demo.sh --fresh`, copia isolata senza
+nemici e senza oggetti da raccogliere; movimento continuo 4x già approvato.
+
+1. Premi **R**: pannello «Corsa», WASD più veloce e consumo maggiore di stamina.
+   Ripremi R: «Cammino». Tenere R premuto non deve alternare ripetutamente.
+2. Premi **X**: «Accovacciato», visuale più bassa e movimento più lento.
+   Ripremi X per rialzarti; **P** dà «A terra», visuale ancora più bassa e
+   strisciamento più lento. Ripremi P per camminare. Shift resta modificatore
+   per chiusura porte/finestre e discesa, senza cambiare postura.
+3. **F7**, poi R/X/P: niente cambio durante la pausa e niente comando ritardato
+   alla ripresa. Le nuove posture non devono spostarti/teletrasportarti.
+4. Lasciati accovacciato o a terra, esci e rilancia `./posture-demo.sh` senza
+   `--fresh`: postura e posizione conservate. Se corri fino a esaurire la
+   stamina, CDDA deve interrompere la corsa; non puoi forzare R mentre affannato.
+
+Altezze di visuale sono un primo adattamento 3D; le animazioni del corpo/rig
+in terza persona verranno completate separatamente. Tutte e quattro le prove
+restano in attesa: nessuna richiesta di test immediato o approvazione implicita.

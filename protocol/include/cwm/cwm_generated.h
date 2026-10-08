@@ -94,6 +94,9 @@ struct MoveRequestBuilder;
 struct InteractRequest;
 struct InteractRequestBuilder;
 
+struct MovementModeRequest;
+struct MovementModeRequestBuilder;
+
 struct AttackRequest;
 struct AttackRequestBuilder;
 
@@ -310,6 +313,42 @@ inline const char *EnumNameSimulationControl(SimulationControl e) {
   return EnumNamesSimulationControl()[index];
 }
 
+enum class MovementMode : int8_t {
+  WALK = 0,
+  RUN = 1,
+  CROUCH = 2,
+  PRONE = 3,
+  MIN = WALK,
+  MAX = PRONE
+};
+
+inline const MovementMode (&EnumValuesMovementMode())[4] {
+  static const MovementMode values[] = {
+    MovementMode::WALK,
+    MovementMode::RUN,
+    MovementMode::CROUCH,
+    MovementMode::PRONE
+  };
+  return values;
+}
+
+inline const char * const *EnumNamesMovementMode() {
+  static const char * const names[5] = {
+    "WALK",
+    "RUN",
+    "CROUCH",
+    "PRONE",
+    nullptr
+  };
+  return names;
+}
+
+inline const char *EnumNameMovementMode(MovementMode e) {
+  if (::flatbuffers::IsOutRange(e, MovementMode::WALK, MovementMode::PRONE)) return "";
+  const size_t index = static_cast<size_t>(e);
+  return EnumNamesMovementMode()[index];
+}
+
 enum class Payload : uint8_t {
   NONE = 0,
   HelloRequest = 1,
@@ -338,11 +377,12 @@ enum class Payload : uint8_t {
   SimulationControlRequest = 24,
   MovementIntentRequest = 25,
   ContinuousIntentRequest = 26,
+  MovementModeRequest = 27,
   MIN = NONE,
-  MAX = ContinuousIntentRequest
+  MAX = MovementModeRequest
 };
 
-inline const Payload (&EnumValuesPayload())[27] {
+inline const Payload (&EnumValuesPayload())[28] {
   static const Payload values[] = {
     Payload::NONE,
     Payload::HelloRequest,
@@ -370,13 +410,14 @@ inline const Payload (&EnumValuesPayload())[27] {
     Payload::EntitySpawned,
     Payload::SimulationControlRequest,
     Payload::MovementIntentRequest,
-    Payload::ContinuousIntentRequest
+    Payload::ContinuousIntentRequest,
+    Payload::MovementModeRequest
   };
   return values;
 }
 
 inline const char * const *EnumNamesPayload() {
-  static const char * const names[28] = {
+  static const char * const names[29] = {
     "NONE",
     "HelloRequest",
     "HelloResponse",
@@ -404,13 +445,14 @@ inline const char * const *EnumNamesPayload() {
     "SimulationControlRequest",
     "MovementIntentRequest",
     "ContinuousIntentRequest",
+    "MovementModeRequest",
     nullptr
   };
   return names;
 }
 
 inline const char *EnumNamePayload(Payload e) {
-  if (::flatbuffers::IsOutRange(e, Payload::NONE, Payload::ContinuousIntentRequest)) return "";
+  if (::flatbuffers::IsOutRange(e, Payload::NONE, Payload::MovementModeRequest)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesPayload()[index];
 }
@@ -521,6 +563,10 @@ template<> struct PayloadTraits<CDDA::CWM::MovementIntentRequest> {
 
 template<> struct PayloadTraits<CDDA::CWM::ContinuousIntentRequest> {
   static const Payload enum_value = Payload::ContinuousIntentRequest;
+};
+
+template<> struct PayloadTraits<CDDA::CWM::MovementModeRequest> {
+  static const Payload enum_value = Payload::MovementModeRequest;
 };
 
 bool VerifyPayload(::flatbuffers::Verifier &verifier, const void *obj, Payload type);
@@ -3120,6 +3166,63 @@ inline ::flatbuffers::Offset<InteractRequest> CreateInteractRequestDirect(
       pickup_count_by_charges);
 }
 
+struct MovementModeRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef MovementModeRequestBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_COMMAND_ID = 4,
+    VT_MODE = 6
+  };
+  uint64_t command_id() const {
+    return GetField<uint64_t>(VT_COMMAND_ID, 0);
+  }
+  bool mutate_command_id(uint64_t _command_id = 0) {
+    return SetField<uint64_t>(VT_COMMAND_ID, _command_id, 0);
+  }
+  CDDA::CWM::MovementMode mode() const {
+    return static_cast<CDDA::CWM::MovementMode>(GetField<int8_t>(VT_MODE, 0));
+  }
+  bool mutate_mode(CDDA::CWM::MovementMode _mode = static_cast<CDDA::CWM::MovementMode>(0)) {
+    return SetField<int8_t>(VT_MODE, static_cast<int8_t>(_mode), 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_COMMAND_ID, 8) &&
+           VerifyField<int8_t>(verifier, VT_MODE, 1) &&
+           verifier.EndTable();
+  }
+};
+
+struct MovementModeRequestBuilder {
+  typedef MovementModeRequest Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_command_id(uint64_t command_id) {
+    fbb_.AddElement<uint64_t>(MovementModeRequest::VT_COMMAND_ID, command_id, 0);
+  }
+  void add_mode(CDDA::CWM::MovementMode mode) {
+    fbb_.AddElement<int8_t>(MovementModeRequest::VT_MODE, static_cast<int8_t>(mode), 0);
+  }
+  explicit MovementModeRequestBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<MovementModeRequest> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<MovementModeRequest>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<MovementModeRequest> CreateMovementModeRequest(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t command_id = 0,
+    CDDA::CWM::MovementMode mode = CDDA::CWM::MovementMode::WALK) {
+  MovementModeRequestBuilder builder_(_fbb);
+  builder_.add_command_id(command_id);
+  builder_.add_mode(mode);
+  return builder_.Finish();
+}
+
 struct AttackRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef AttackRequestBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
@@ -3794,6 +3897,9 @@ struct CwmMessage FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const CDDA::CWM::ContinuousIntentRequest *payload_as_ContinuousIntentRequest() const {
     return payload_type() == CDDA::CWM::Payload::ContinuousIntentRequest ? static_cast<const CDDA::CWM::ContinuousIntentRequest *>(payload()) : nullptr;
   }
+  const CDDA::CWM::MovementModeRequest *payload_as_MovementModeRequest() const {
+    return payload_type() == CDDA::CWM::Payload::MovementModeRequest ? static_cast<const CDDA::CWM::MovementModeRequest *>(payload()) : nullptr;
+  }
   void *mutable_payload() {
     return GetPointer<void *>(VT_PAYLOAD);
   }
@@ -3932,6 +4038,10 @@ template<> inline const CDDA::CWM::MovementIntentRequest *CwmMessage::payload_as
 
 template<> inline const CDDA::CWM::ContinuousIntentRequest *CwmMessage::payload_as<CDDA::CWM::ContinuousIntentRequest>() const {
   return payload_as_ContinuousIntentRequest();
+}
+
+template<> inline const CDDA::CWM::MovementModeRequest *CwmMessage::payload_as<CDDA::CWM::MovementModeRequest>() const {
+  return payload_as_MovementModeRequest();
 }
 
 struct CwmMessageBuilder {
@@ -4102,6 +4212,10 @@ inline bool VerifyPayload(::flatbuffers::Verifier &verifier, const void *obj, Pa
     }
     case Payload::ContinuousIntentRequest: {
       auto ptr = reinterpret_cast<const CDDA::CWM::ContinuousIntentRequest *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::MovementModeRequest: {
+      auto ptr = reinterpret_cast<const CDDA::CWM::MovementModeRequest *>(obj);
       return verifier.VerifyTable(ptr);
     }
     default: return true;

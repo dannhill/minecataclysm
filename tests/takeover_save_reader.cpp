@@ -41,11 +41,13 @@ int main(int argc, const char *argv[]) {
     bool create_pickup = false;
     bool create_body = false;
     bool create_combat = false;
+    bool create_posture = false;
     bool resave = false;
     for (int i = 1; i < argc; ++i) {
         std::string arg(argv[i]);
         if (arg == "--create") create = true;
         else if (arg == "--create-pickup") { create = true; create_pickup = true; }
+        else if (arg == "--create-posture") { create = true; create_posture = true; }
         else if (arg == "--create-combat") { create = true; create_combat = true; }
         else if (arg == "--create-body") { create = true; create_body = true; }
         else if (arg == "--create-ledge") { create = true; create_ledge = true; }
@@ -87,7 +89,7 @@ int main(int argc, const char *argv[]) {
     if (create) {
         auto *world = world_generator->make_new_world(world_name, {mod_id("dda")});
         if (!world) return 3;
-        if (create_actors || create_combat) {
+        if (create_actors || create_combat || create_posture) {
             world->WORLD_OPTIONS["SPAWN_DENSITY"].setValue("0.0");
             world->WORLD_OPTIONS["WANDER_SPAWNS"].setValue("false");
             if (!world->save()) return 11;
@@ -287,7 +289,7 @@ int main(int argc, const char *argv[]) {
             u.set_skill_level(skill_id("swimming"),10);
             get_weather().update_weather();
             if (!g->save()) return 5;
-        } else if (!create_vertical && !create_pickup && !create_body && !create_combat) {
+        } else if (!create_vertical && !create_pickup && !create_body && !create_combat && !create_posture) {
         g->place_critter_at(mtype_id("mon_zombie"), tripoint(65,65,0));
         auto guy = make_shared_fast<npc>();
         guy->normalize();
@@ -300,7 +302,7 @@ int main(int argc, const char *argv[]) {
         get_weather().update_weather();
         if (!g->save()) return 5;
         }
-        if (create_vertical || create_pickup || create_body || create_combat) {
+        if (create_vertical || create_pickup || create_body || create_combat || create_posture) {
             get_weather().update_weather();
             if (!g->save()) return 5;
         }

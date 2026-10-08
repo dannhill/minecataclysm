@@ -11,7 +11,7 @@ class NativeWire:
         self.lock = threading.RLock()
     def hello_fields(self, b):
         Hello.HelloRequestAddProtocolVersionMajor(b,2)
-        Hello.HelloRequestAddProtocolVersionMinor(b,7)
+        Hello.HelloRequestAddProtocolVersionMinor(b,8)
         Hello.HelloRequestAddClientId(b,self.client_id)
     def finish(self, b, kind, value):
         if kind == Payload.Payload.HelloRequest:
@@ -54,7 +54,7 @@ class AuthorityWire:
         return envelope(b,kind,value,self.sequence,self.revision,self.identity)
     def hello_fields(self,b):
         HelloResponse.HelloResponseAddProtocolVersionMajor(b,2)
-        HelloResponse.HelloResponseAddProtocolVersionMinor(b,7)
+        HelloResponse.HelloResponseAddProtocolVersionMinor(b,8)
         HelloResponse.HelloResponseAddNextCommandId(b,1)
     def reset(self,request=0):
         import flatbuffers

@@ -251,6 +251,14 @@ table InteractRequest {
     pickup_count_by_charges: bool;
 }
 
+enum MovementMode : byte { WALK = 0, RUN = 1, CROUCH = 2, PRONE = 3 }
+
+// Native mode selection, independent of held movement intent or camera pose.
+table MovementModeRequest {
+    command_id: uint64;
+    mode: MovementMode;
+}
+
 table AttackRequest {
     command_id: uint64;
     target_entity_id: uint64;
@@ -316,6 +324,7 @@ union Payload {
     ,SimulationControlRequest
     ,MovementIntentRequest
     ,ContinuousIntentRequest
+    ,MovementModeRequest
 }
 
 table CwmMessage {

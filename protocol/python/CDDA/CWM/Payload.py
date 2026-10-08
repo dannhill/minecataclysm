@@ -30,3 +30,4 @@ class Payload(object):
     SimulationControlRequest = 24
     MovementIntentRequest = 25
     ContinuousIntentRequest = 26
+    MovementModeRequest = 27

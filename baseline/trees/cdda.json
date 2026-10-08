@@ -36662,12 +36662,12 @@
   {
     "path": "src/avatar_action.cpp",
     "mode": "100644",
-    "sha256": "2f6787f51e1f560ac2d6fa1857de36aa0eeafd9fdd64d92fe53f6b0bfdfb8fce"
+    "sha256": "31fc629ca0913b0920f2fe3dee34a9aaf4b8b5f2e526d70916a8e7e6c373f5fc"
   },
   {
     "path": "src/avatar_action.h",
     "mode": "100644",
-    "sha256": "74cd930945c867f9b5565f637b34d4454587f347debf0c7a00184c46b31f34ed"
+    "sha256": "41e955175a36a765e90023fd663e36f7798c264a1dc69d11ac7cdeea770d71f2"
   },
   {
     "path": "src/ballistics.cpp",
@@ -37327,7 +37327,7 @@
   {
     "path": "src/cwm/cwm_map_exporter.cpp",
     "mode": "100644",
-    "sha256": "39aefcc1f68fa39f8a1e5bf5e75de8900af2349f673dc156af917d6d2c6e527b"
+    "sha256": "ee9ee1414e31c3ee4fabe3afe999cef304508f1acb322e2a240f21e2bc221f60"
   },
   {
     "path": "src/cwm/cwm_map_exporter.h",
@@ -37337,17 +37337,17 @@
   {
     "path": "src/cwm/cwm_server.cpp",
     "mode": "100644",
-    "sha256": "89bd1d43cf6558bf357de85f291c47dcfe44ba2b28dc28b17a8adc3ddf03d478"
+    "sha256": "040d2d7b5682ea5de6eea5c054827e4cbfdf21c084559f8ec680ef4f18bee96d"
   },
   {
     "path": "src/cwm/cwm_server.h",
     "mode": "100644",
-    "sha256": "6723728579b7d95f77ef26f64daaa82e2ffaa6e1b33426d34071584dfa8a2f68"
+    "sha256": "54b13314968a135f9ca27121f98cfa34ec27f7c66b1971761706aae1458b51fc"
   },
   {
     "path": "src/cwm_motion.cpp",
     "mode": "100644",
-    "sha256": "4f7c4768af9c4a719e9a1fb7d5f369ba66c24c2d01fbd3b003463f01441f0507"
+    "sha256": "ef01808f6e50bb45be238137da0a3009e4acbbbcffb4a2cfc5bcd70eaac23b8b"
   },
   {
     "path": "src/cwm_motion.h",
@@ -37802,7 +37802,7 @@
   {
     "path": "src/game.cpp",
     "mode": "100644",
-    "sha256": "458fa4633a55cc512503535edffa78c5db7ff7d17811de12f796bba21eba7bb4"
+    "sha256": "b0688c401efc09a789a8b2f860bbf8b3bdb49f990a6ee7ebbbfa3258750312b2"
   },
   {
     "path": "src/game.h",
@@ -40872,17 +40872,17 @@
   {
     "path": "tests/cwm_pickup_test.cpp",
     "mode": "100644",
-    "sha256": "7588a75ac80804b40b83b0aeaae8afdcb127f76c789b3fdad9b79fadc34f7c38"
+    "sha256": "553290bdbc3bd680baa6d2439732ededd9cacd5e282c7bac679f21b60b361cbc"
   },
   {
     "path": "tests/cwm_projection_test.cpp",
     "mode": "100644",
-    "sha256": "1ec3fb5f6cf1ca8359aac80d8e1ea36639d289f2c5ce42f450809062ea7e9ccc"
+    "sha256": "5171ebc4e80a3bd0fb2c0bd4d53e22a9068a907b6c998f3615b951dc84694d9d"
   },
   {
     "path": "tests/cwm_runtime_test.cpp",
     "mode": "100644",
-    "sha256": "99b02f002a83a2646cd25e62b0e2a5fb38f88a8e3585eda6d7c5c969892ae00c"
+    "sha256": "d1e119241a4a7a8b8bacca0620fde4a37baaa90b7a4ece0896cec5237013a1df"
   },
   {
     "path": "tests/data/name.json",

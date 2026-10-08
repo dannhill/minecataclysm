@@ -2,6 +2,7 @@
 #pragma once
 #include "cwm_protocol.hpp"
 #include "cwm_transport.hpp"
+#include "tile_semantics.hpp"
 #include <algorithm>
 #include <cmath>
 #include <deque>
@@ -86,6 +87,8 @@ inline bool valid_world(const CDDA::CWM::WorldSnapshot* world) {
         const auto* p = actor->pos();
         if (!std::isfinite(p->x()) || !std::isfinite(p->y()) || !std::isfinite(p->z()) ||
             std::abs(p->x()) > 32767 || std::abs(p->y()) > 32767 || std::abs(p->z()) > 1024) return false;
+        const uint32_t posture = actor->state_flags() & (RUNNING | CROUCHING | PRONE);
+        if (posture && ((posture & (posture - 1)) || actor->id() != 1)) return false;
         if (actor->id() == 1) player = true;
         actor_states.emplace(actor->id(), actor);
     }

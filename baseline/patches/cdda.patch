@@ -30,7 +30,7 @@ index 6d5d148..4181ad1 100644
  
  if (MINGW AND NOT RELEASE)
 diff --git a/src/avatar_action.cpp b/src/avatar_action.cpp
-index d7e91fc..3e18593 100644
+index d7e91fc..82129c8 100644
 --- a/src/avatar_action.cpp
 +++ b/src/avatar_action.cpp
 @@ -1,3 +1,4 @@
@@ -78,10 +78,22 @@ index d7e91fc..3e18593 100644
      uilist menu;
      menu.title = _( "Diving will destroy the following items.  Proceed?" );
      menu.text = _( "These items are not inside a waterproof container." );
-@@ -154,6 +181,30 @@ static bool check_water_affect_items( avatar &you )
+@@ -154,6 +181,42 @@ static bool check_water_affect_items( avatar &you )
      return true;
  }
  
++void avatar_action::check_run_mode( avatar &you )
++{
++    if( you.is_running() ) {
++        if( !you.can_run() ) {
++            you.toggle_run_mode();
++        }
++        if( you.get_stamina() <= 0 ) {
++            you.add_effect( effect_winded, 10_turns );
++        }
++    }
++}
++
 +bool avatar_action::attack( avatar &you, Creature &target )
 +{
 +    if( !g->check_safe_mode_allowed( false ) ||
@@ -109,7 +121,7 @@ index d7e91fc..3e18593 100644
  bool avatar_action::move( avatar &you, map &m, const tripoint &d )
  {
      bool in_shell = you.has_active_mutation( trait_SHELL2 ) ||
-@@ -631,7 +682,10 @@ void avatar_action::swim( map &m, avatar &you, const tripoint &p )
+@@ -631,7 +694,10 @@ void avatar_action::swim( map &m, avatar &you, const tripoint &p )
          }
      }
      if( you.oxygen <= 5 && you.is_underwater() ) {
@@ -121,7 +133,7 @@ index d7e91fc..3e18593 100644
              popup( _( "You need to breathe!  (%s to surface.)" ), press_x( ACTION_MOVE_UP ) );
          } else {
              popup( _( "You need to breathe but you can't swim!  Get to dry land, quick!" ) );
-@@ -659,11 +713,13 @@ void avatar_action::swim( map &m, avatar &you, const tripoint &p )
+@@ -659,11 +725,13 @@ void avatar_action::swim( map &m, avatar &you, const tripoint &p )
      if( m.veh_at( you.pos() ).part_with_feature( VPFLAG_BOARDABLE, true ) ) {
          m.board_vehicle( you.pos(), &you );
      }
@@ -138,7 +150,7 @@ index d7e91fc..3e18593 100644
  
      body_part_set flags;
 diff --git a/src/avatar_action.h b/src/avatar_action.h
-index fe8ad11..7bfeb7b 100644
+index fe8ad11..01087a4 100644
 --- a/src/avatar_action.h
 +++ b/src/avatar_action.h
 @@ -11,6 +11,7 @@
@@ -149,12 +161,15 @@ index fe8ad11..7bfeb7b 100644
  class avatar;
  class item;
  class item_location;
-@@ -39,6 +40,9 @@ inline bool move( avatar &you, map &m, const point &d )
+@@ -39,6 +40,12 @@ inline bool move( avatar &you, map &m, const point &d )
      return move( you, m, tripoint( d, 0 ) );
  }
  
 +// Pointed adjacent melee: native effects/weapon/defenses/cost, no movement rerouting.
 +bool attack( avatar &you, Creature &target );
++
++// Same native exhaustion transition for tile and fractional movement.
++void check_run_mode( avatar &you );
 +
  // Handle moving from a ramp
  bool ramp_move( avatar &you, map &m, const tripoint &dest );
@@ -415,7 +430,7 @@ index 6ebdaa7..205549f 100644
  
  #endif // CATA_SRC_DO_TURN_H
 diff --git a/src/game.cpp b/src/game.cpp
-index 195bc1e..9660342 100644
+index 195bc1e..981a09d 100644
 --- a/src/game.cpp
 +++ b/src/game.cpp
 @@ -1,4 +1,6 @@
@@ -425,7 +440,15 @@ index 195bc1e..9660342 100644
  
  #include <functional>
  #include <clocale>
-@@ -2763,6 +2765,17 @@ bool game::is_game_over()
+@@ -248,7 +250,6 @@ static const efftype_id effect_stunned( "stunned" );
+ static const efftype_id effect_tetanus( "tetanus" );
+ static const efftype_id effect_tied( "tied" );
+ static const efftype_id effect_took_xanax( "took_xanax" );
+-static const efftype_id effect_winded( "winded" );
+ 
+ static const faction_id faction_no_faction( "no_faction" );
+ static const faction_id faction_your_followers( "your_followers" );
+@@ -2763,6 +2764,17 @@ bool game::is_game_over()
  void game::bury_screen() const
  {
      avatar &u = get_avatar();
@@ -443,7 +466,7 @@ index 195bc1e..9660342 100644
  
      std::vector<std::string> vRip;
  
-@@ -2951,6 +2964,13 @@ void game::bury_screen() const
+@@ -2951,6 +2963,13 @@ void game::bury_screen() const
  void game::death_screen()
  {
      gamemode->game_over();
@@ -457,7 +480,7 @@ index 195bc1e..9660342 100644
      Messages::display_messages();
      u.get_avatar_diary()->death_entry();
      show_scores_ui( *achievements_tracker_ptr, stats(), get_kill_tracker() );
-@@ -10496,7 +10516,7 @@ bool game::walk_move( const tripoint &dest_loc, const bool via_ramp, const bool
+@@ -10496,7 +10515,7 @@ bool game::walk_move( const tripoint &dest_loc, const bool via_ramp, const bool
          u.moves -= static_cast<int>( std::ceil( base_moves + encumb_moves ) );
          crit->use_mech_power( u.current_movement_mode()->mech_power_use() );
      } else {
@@ -466,7 +489,7 @@ index 195bc1e..9660342 100644
          /**
          TODO:
          This should really use the mounted creatures stamina, if mounted.
-@@ -10570,7 +10590,7 @@ bool game::walk_move( const tripoint &dest_loc, const bool via_ramp, const bool
+@@ -10570,7 +10589,7 @@ bool game::walk_move( const tripoint &dest_loc, const bool via_ramp, const bool
          }
      }
  
@@ -475,6 +498,22 @@ index 195bc1e..9660342 100644
  
      //only clatter items every so often based on activity level
      if( to_turns<int>( calendar::turn - u.last_pocket_noise ) > std::max( static_cast<int>
+@@ -11463,14 +11482,7 @@ void game::on_move_effects()
+         }
+     }
+ 
+-    if( u.is_running() ) {
+-        if( !u.can_run() ) {
+-            u.toggle_run_mode();
+-        }
+-        if( u.get_stamina() <= 0 ) {
+-            u.add_effect( effect_winded, 10_turns );
+-        }
+-    }
++    avatar_action::check_run_mode( u );
+ 
+     // apply martial art move bonuses
+     u.martial_arts_data->ma_onmove_effects( u );
 diff --git a/src/game.h b/src/game.h
 index c25584e..fdb835f 100644
 --- a/src/game.h
@@ -1160,10 +1199,10 @@ index 0000000..1a0308e
 +}
 diff --git a/src/cwm/cwm_map_exporter.cpp b/src/cwm/cwm_map_exporter.cpp
 new file mode 100644
-index 0000000..a390237
+index 0000000..7bb48a2
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.cpp
-@@ -0,0 +1,600 @@
+@@ -0,0 +1,603 @@
 +#include "cwm_motion.h"
 +// CDDA CWM Map & Entity Exporter Implementation
 +// Licensed under Apache-2.0
@@ -1512,6 +1551,9 @@ index 0000000..a390237
 +            static_cast<float>(u_pos.y + (clock && clock->continuous ? motion.y : 0)), static_cast<float>(u_pos.z));
 +
 +        uint32_t player_flags = 0;
++        if (u.is_running()) player_flags |= cdda::cwm::RUNNING;
++        else if (u.is_crouching()) player_flags |= cdda::cwm::CROUCHING;
++        else if (u.is_prone()) player_flags |= cdda::cwm::PRONE;
 +        const auto player_tile = export_block(u_pos, m, 15);
 +        if (player_tile.material_id() != cdda::cwm::WATER) {
 +            if (player_tile.state_flags() & cdda::cwm::GOES_UP)
@@ -1837,10 +1879,10 @@ index 0000000..6463f0e
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..284bafd
+index 0000000..d8633c7
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,719 @@
+@@ -0,0 +1,746 @@
 +#include "cwm_motion.h"
 +// CDDA CWM IPC Server Implementation
 +// Licensed under Apache-2.0
@@ -1855,6 +1897,7 @@ index 0000000..284bafd
 +#include <cstring>
 +#include <iostream>
 +#include "avatar.h"
++#include "move_mode.h"
 +#include "avatar_action.h"
 +#include "creature_tracker.h"
 +#include "game.h"
@@ -1870,6 +1913,10 @@ index 0000000..284bafd
 +
 +namespace cwm {
 +namespace {
++const move_mode_id mode_ids[] = {move_mode_id("walk"), move_mode_id("run"),
++    move_mode_id("crouch"), move_mode_id("prone")};
++bool valid_mode(int mode) { return mode >= 0 && mode < 4; }
++
 +const point directions[] = {point_zero, point(0,-1), point(1,-1), point(1,0),
 +    point(1,1), point(0,1), point(-1,1), point(-1,0), point(-1,-1)};
 +
@@ -2255,7 +2302,21 @@ index 0000000..284bafd
 +bool CwmServer::execute(const Command& command, avatar& u, map& m, game& g) {
 +    const int before_moves = u.moves;
 +    bool accepted = false;
-+    if (command.attack_target) {
++    if (command.movement_mode >= 0) {
++        if (!valid_mode(command.movement_mode) || (realtime_ && pause_reasons(g))) {
++            result_ = Result{command.id, false, "Movement mode unavailable"};
++            return false;
++        }
++        // Use the same native setter as keyboard mode selection: availability,
++        // hauling, recoil and perception invalidation belong to CDDA. No move
++        // cost is invented and the paid subtile offset is retained.
++        if (!u.can_switch_to(mode_ids[command.movement_mode])) {
++            result_ = Result{command.id, false, "Native movement mode unavailable"};
++            return false;
++        }
++        u.set_movement_mode(mode_ids[command.movement_mode]);
++        accepted = u.movement_mode_is(mode_ids[command.movement_mode]);
++    } else if (command.attack_target) {
 +        Creature* target = attack_target(command.attack_target, u, m, g);
 +        if (!target || (realtime_ && pause_reasons(g))) {
 +            result_ = Result{command.id, false, "Melee target unavailable, not hostile or out of reach"};
@@ -2402,6 +2463,8 @@ index 0000000..284bafd
 +                ":" + std::to_string(request->pickup_charges()) +
 +                ":" + std::to_string(request->pickup_count_by_charges());
 +        }
++    } else if (const auto* request = msg->payload_as_MovementModeRequest()) {
++        id = request->command_id(); signature = "mode:" + std::to_string(int(request->mode()));
 +    } else if (const auto* request = msg->payload_as_AttackRequest()) {
 +        id = request->command_id(); signature = "attack:" + std::to_string(request->target_entity_id());
 +    } else if (const auto* request = msg->payload_as_AcknowledgeThreatRequest()) {
@@ -2514,6 +2577,12 @@ index 0000000..284bafd
 +            else if (m.impassable(target) && !get_creature_tracker().creature_at(target, true) &&
 +                     !m.open_door(u, target, !m.is_outside(u.pos()), true)) error = "Movement blocked";
 +        }
++    } else if (msg->payload_type() == CDDA::CWM::Payload::MovementModeRequest) {
++        const auto* request = msg->payload_as_MovementModeRequest();
++        command.id = request->command_id();
++        command.movement_mode = int(request->mode());
++        if (!valid_mode(command.movement_mode)) error = "Unsupported movement mode";
++        else if (!u.can_switch_to(mode_ids[command.movement_mode])) error = "Native movement mode unavailable";
 +    } else if (msg->payload_type() == CDDA::CWM::Payload::AttackRequest) {
 +        const auto* request = msg->payload_as_AttackRequest();
 +        command.id = request->command_id();
@@ -2562,10 +2631,10 @@ index 0000000..284bafd
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.h b/src/cwm/cwm_server.h
 new file mode 100644
-index 0000000..a7a8655
+index 0000000..71bff50
 --- /dev/null
 +++ b/src/cwm/cwm_server.h
-@@ -0,0 +1,121 @@
+@@ -0,0 +1,122 @@
 +// CDDA CWM IPC Server
 +// Licensed under Apache-2.0
 +#pragma once
@@ -2646,6 +2715,7 @@ index 0000000..a7a8655
 +        uint64_t id{0};
 +        bool move{false};
 +        uint64_t attack_target{0};
++        int movement_mode{-1};
 +        int action{0};
 +        int x{0}, y{0}, z{0}; // absolute CDDA coordinates, captured on receipt
 +        uint32_t pickup_stack_index{0};
@@ -2689,10 +2759,10 @@ index 0000000..a7a8655
 +} // namespace cwm
 diff --git a/src/cwm_motion.cpp b/src/cwm_motion.cpp
 new file mode 100644
-index 0000000..fdfb69f
+index 0000000..41bd437
 --- /dev/null
 +++ b/src/cwm_motion.cpp
-@@ -0,0 +1,204 @@
+@@ -0,0 +1,205 @@
 +#include "cwm_motion.h"
 +
 +#include <algorithm>
@@ -2879,6 +2949,7 @@ index 0000000..fdfb69f
 +    if( result.distance > 1e-8 ) {
 +        const StaminaScope scope( result.distance * ( swimming ? u.swim_speed() : cost ) );
 +        u.burn_move_stamina( 0 );
++        avatar_action::check_run_mode( u );
 +        u.set_activity_level( u.current_movement_mode()->exertion_level() );
 +        u.recoil = MAX_RECOIL;
 +        u.last_target_pos = std::nullopt;
@@ -2947,12 +3018,14 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..089b8ba
+index 0000000..1940273
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,574 @@
+@@ -0,0 +1,656 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
++#include "move_mode.h"
++#include "cwm_motion.h"
 +#include "avatar_action.h"
 +#include "monster.h"
 +#include "overmapbuffer.h"
@@ -2997,6 +3070,11 @@ index 0000000..089b8ba
 +    static void attack( CwmServer &server, uint64_t target, uint64_t id = 1 ) {
 +        cdda::cwm::MessageBuilder wire( server.received_sequence_ + 1, 1, server.identity_ );
 +        const auto bytes = wire.build_attack_request( id, target );
++        server.handle_client_message( bytes.data(), bytes.size(), get_avatar(), get_map(), *g );
++    }
++    static void mode( CwmServer &server, int mode, uint64_t id = 1 ) {
++        cdda::cwm::MessageBuilder wire( server.received_sequence_ + 1, 1, server.identity_ );
++        const auto bytes = wire.build_movement_mode_request( id, static_cast<CDDA::CWM::MovementMode>( mode ) );
 +        server.handle_client_message( bytes.data(), bytes.size(), get_avatar(), get_map(), *g );
 +    }
 +    static void cancel( CwmServer &server ) { server.cancel_connection(); }
@@ -3525,14 +3603,91 @@ index 0000000..089b8ba
 +    }
 +    clear_creatures();
 +}
++
++TEST_CASE( "cwm_movement_mode_uses_native_setter_without_cost_or_displacement", "[cwm][posture]" )
++{
++    clear_avatar();
++    clear_map();
++    clear_creatures();
++    avatar &u = get_avatar();
++    map &m = get_map();
++    u.setpos( tripoint( 60, 60, 0 ) );
++    u.moves = 1000;
++    cwm_motion::State offset = cwm_motion::load( u, m );
++    offset.x = .23; offset.y = -.15; offset.credit = .4;
++    cwm_motion::store( u, m, offset );
++    const auto pos = u.pos();
++    const int stamina = u.get_stamina();
++    const auto time = calendar::turn;
++    const auto rng = rng_get_engine();
++    const char *ids[] = { "walk", "run", "crouch", "prone" };
++    for( int selected : { 1, 2, 3, 0 } ) {
++        CAPTURE( selected );
++        cwm::CwmServer server( "/unused-cwm-posture" );
++        cwm::CwmServerTestAccess::ready( server );
++        cwm::CwmServerTestAccess::mode( server, selected );
++        REQUIRE( server.has_queued_action() );
++        CHECK( cwm::CwmServerTestAccess::execute( server ) );
++        CHECK( cwm::CwmServerTestAccess::accepted( server ) );
++        CHECK( u.movement_mode_is( move_mode_id( ids[selected] ) ) );
++        CHECK( u.moves == 1000 );
++        CHECK( u.get_stamina() == stamina );
++        CHECK( u.pos() == pos );
++        CHECK( cwm_motion::load( u, m ).x == offset.x );
++        CHECK( cwm_motion::load( u, m ).y == offset.y );
++        CHECK( cwm_motion::load( u, m ).credit == offset.credit );
++        CHECK( calendar::turn == time );
++        CHECK( rng_get_engine() == rng );
++        cwm::CwmServerTestAccess::complete( server );
++        cwm::CwmServerTestAccess::ready( server );
++        // A completed duplicate must not reapply the setter's recoil effect.
++        u.recoil = 0;
++        cwm::CwmServerTestAccess::mode( server, selected );
++        CHECK_FALSE( server.has_queued_action() );
++        CHECK( u.recoil == 0 );
++    }
++}
++
++TEST_CASE( "cwm_movement_mode_rechecks_native_availability_and_pause", "[cwm][posture]" )
++{
++    clear_avatar(); clear_map();
++    avatar &u = get_avatar();
++    u.setpos( tripoint( 60, 60, 0 ) );
++    u.moves = 100;
++    cwm::CwmServer server( "/unused-cwm-posture" );
++    cwm::CwmServerTestAccess::ready( server );
++    bool queued = false;
++    int selection = 1;
++    bool paused_after = false;
++    SECTION( "exhaustion at admission" ) { u.set_stamina( 0 ); }
++    SECTION( "broken legs at admission" ) {
++        u.set_part_hp_cur( bodypart_id( "leg_l" ), 0 );
++        u.set_part_hp_cur( bodypart_id( "leg_r" ), 0 );
++    }
++    SECTION( "invalid mode" ) { selection = 99; }
++    SECTION( "exhaustion after admission" ) { queued = true; }
++    SECTION( "pause after admission" ) { queued = true; paused_after = true; }
++    cwm::CwmServerTestAccess::mode( server, selection );
++    REQUIRE( server.has_queued_action() == queued );
++    if( queued ) {
++        if( paused_after ) { server.enable_continuous(); cwm::CwmServerTestAccess::pause( server ); }
++        else u.set_stamina( 0 );
++        CHECK_FALSE( cwm::CwmServerTestAccess::execute( server ) );
++    }
++    CHECK_FALSE( cwm::CwmServerTestAccess::accepted( server ) );
++    CHECK( u.is_walking() );
++    CHECK( u.moves == 100 );
++}
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644
-index 0000000..1e6d1fa
+index 0000000..80794b8
 --- /dev/null
 +++ b/tests/cwm_projection_test.cpp
-@@ -0,0 +1,643 @@
+@@ -0,0 +1,671 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
++#include "move_mode.h"
++#include "cwm/cwm_session.hpp"
 +#include "avatar_action.h"
 +#include "game.h"
 +#include "item.h"
@@ -4174,15 +4329,42 @@ index 0000000..1e6d1fa
 +    CHECK( calendar::turn == time );
 +    clear_creatures();
 +}
++
++TEST_CASE("cwm_posture_projection_is_native_read_only_and_rejects_conflicting_flags", "[cwm][posture]")
++{
++    clear_avatar(); clear_map(); clear_creatures();
++    avatar &u = get_avatar(); map &m = get_map();
++    u.setpos(tripoint(60,60,0));
++    m.ter_set(u.pos(), ter_str_id("t_floor"));
++    const char *ids[] = {"walk", "run", "crouch", "prone"};
++    const uint32_t flags[] = {0, cdda::cwm::RUNNING, cdda::cwm::CROUCHING, cdda::cwm::PRONE};
++    for(int i = 0; i < 4; ++i) {
++        u.set_movement_mode(move_mode_id(ids[i]));
++        const int moves = u.moves, stamina = u.get_stamina();
++        const auto rng = rng_get_engine();
++        auto bytes = cwm::CwmMapExporter::export_world_snapshot(1, 1, u, m, *g, true);
++        const auto *world = CDDA::CWM::GetCwmMessage(bytes.data())->payload_as_WorldSnapshot();
++        CHECK(cdda::cwm::valid_world(world));
++        CHECK(world->entities()->Get(0)->state_flags() == flags[i]);
++        CHECK(u.moves == moves); CHECK(u.get_stamina() == stamina);
++        CHECK(rng_get_engine() == rng);
++        auto *bad = static_cast<CDDA::CWM::WorldSnapshot*>(CDDA::CWM::GetMutableCwmMessage(bytes.data())->mutable_payload());
++        if(i > 0) {
++            REQUIRE(bad->mutable_entities()->GetMutableObject(0)->mutate_state_flags(cdda::cwm::RUNNING | cdda::cwm::PRONE));
++            CHECK_FALSE(cdda::cwm::valid_world(bad));
++        }
++    }
++}
 diff --git a/tests/cwm_runtime_test.cpp b/tests/cwm_runtime_test.cpp
 new file mode 100644
-index 0000000..cba9d7a
+index 0000000..aaa1a30
 --- /dev/null
 +++ b/tests/cwm_runtime_test.cpp
-@@ -0,0 +1,410 @@
+@@ -0,0 +1,462 @@
 +#include "cwm_motion.h"
 +#include "cata_catch.h"
 +#include "avatar.h"
++#include "move_mode.h"
 +#include "avatar_action.h"
 +#include "item.h"
 +#include "item_location.h"
@@ -4589,4 +4771,55 @@ index 0000000..cba9d7a
 +        CHECK( cwm_motion::load( u, m ).x == 0 );
 +        CHECK( cwm_motion::load( u, m ).credit == saved.credit );
 +    }
++}
++
++TEST_CASE( "cwm_continuous_postures_keep_native_speed_stamina_and_noise", "[cwm][continuous][posture]" )
++{
++    double distances[4] = {};
++    int burns[4] = {}, sounds[4] = {};
++    const char *ids[] = { "walk", "run", "crouch", "prone" };
++    for( int mode = 0; mode < 4; ++mode ) {
++        CAPTURE( mode );
++        prepare_runtime();
++        avatar &u = get_avatar(); map &m = get_map();
++        m.ter_set( u.pos(), ter_str_id( "t_floor" ) );
++        u.set_movement_mode( move_mode_id( ids[mode] ) );
++        u.remove_value( "cwm_motion_v1" ); u.remove_value( "cwm_stamina_fraction" );
++        const int cost = u.run_cost( 100, false );
++        const int stamina = u.get_stamina();
++        // Compare sampling with native one-shot stamina for exactly one tile.
++        u.burn_move_stamina( cost );
++        burns[mode] = stamina - u.get_stamina();
++        u.set_stamina( stamina ); u.moves = 1000;
++        const auto step = cwm_motion::advance( u, m, 1, 0, .04 );
++        distances[mode] = step.distance;
++        CHECK( step.distance == Approx( .04 * u.get_speed() / cost ) );
++        sounds[mode] = u.footstep_sound();
++        cwm_motion::recenter( u, m ); u.remove_value( "cwm_motion_v1" );
++        u.remove_value( "cwm_stamina_fraction" ); u.set_stamina( stamina ); u.moves = 1000;
++        for( const point d : { point_east, point_south, point_west, point_north } )
++            for( int i = 0; i < 25; ++i )
++                cwm_motion::advance( u, m, d.x, d.y, .01 * cost / u.get_speed() );
++        CHECK( 1000 - u.moves == cost );
++        CHECK( stamina - u.get_stamina() == burns[mode] );
++    }
++    CHECK( distances[1] > distances[0] ); CHECK( distances[0] > distances[2] );
++    CHECK( distances[2] > distances[3] ); CHECK( burns[1] > burns[0] );
++    CHECK( sounds[1] > sounds[0] ); CHECK( sounds[0] > sounds[2] );
++    CHECK( sounds[2] > sounds[3] );
++}
++
++TEST_CASE( "cwm_fractional_running_stops_at_native_exhaustion_before_a_tile_crossing", "[cwm][posture]" )
++{
++    prepare_runtime(); avatar &u = get_avatar(); map &m = get_map();
++    m.ter_set( u.pos(), ter_str_id( "t_floor" ) );
++    u.set_movement_mode( move_mode_id( "run" ) );
++    u.set_stamina( 1 ); u.moves = 100;
++    u.remove_value( "cwm_motion_v1" ); u.remove_value( "cwm_stamina_fraction" );
++    const auto pos = u.pos();
++    const auto step = cwm_motion::advance( u, m, 1, 0, .04 );
++    REQUIRE( step.distance > 0 );
++    CHECK( u.pos() == pos ); CHECK( u.get_stamina() == 0 );
++    CHECK( u.is_walking() ); CHECK( u.has_effect( efftype_id( "winded" ) ) );
++    CHECK_FALSE( u.can_switch_to( move_mode_id( "run" ) ) );
 +}

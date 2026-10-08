@@ -6,10 +6,22 @@ captured implementation; it does not approve its gaps. The executable schema
 is [cwm.fbs](cwm.fbs). Audit findings and evidence are in
 [M5.5](../docs/audits/M5.5.md).
 
-The current runtime requires **CWM 2.7**. This breaks the old negotiation
+The current runtime requires **CWM 2.8**. This breaks the old negotiation
 contract; schema fields and union members are appended without changing the
 existing FlatBuffers offsets. Both executables must be rebuilt together.
 The historical coverage table below is retained as audit evidence.
+
+CWM 2.8 appends `MovementModeRequest(command_id, mode)` for WALK/RUN/CROUCH/PRONE.
+The native coordinator checks bounds, readiness/pause and native availability,
+then queues the same native mode setter used by CDDA keyboard controls.
+Execution rechecks availability and pause. Native mode selection is free;
+no artificial movement/time/stamina cost or displacement is introduced.
+Mode participates in command deduplication. Player state bits 7/8/9 describe
+RUNNING/CROUCHING/PRONE; absence means standing/walking. Conflicting bits,
+or posture bits on non-player entities, invalidate a snapshot and require
+resynchronization. The client changes camera height only after native state.
+Native movement-mode multipliers, stamina, noise and canonical `move_mode`
+persistence remain authoritative. Matching 2.8 executables are required.
 
 CWM 2.7 enables the existing `AttackRequest(command_id, target_entity_id)`
 for adjacent pointed melee against perceived hostile monsters/NPCs. The

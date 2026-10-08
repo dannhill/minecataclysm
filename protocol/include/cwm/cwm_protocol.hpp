@@ -11,7 +11,7 @@
 namespace cdda::cwm {
 
 constexpr uint16_t PROTOCOL_VERSION_MAJOR = 2;
-constexpr uint16_t PROTOCOL_VERSION_MINOR = 7;
+constexpr uint16_t PROTOCOL_VERSION_MINOR = 8;
 
 struct Identity { uint64_t session{0}, player{0}, connection{0}; };
 
@@ -75,6 +75,11 @@ public:
             pickup_type_id.empty() ? nullptr : pickup_type_id.c_str(),
             pickup_charges, pickup_count_by_charges);
         return finish_message(CDDA::CWM::Payload::InteractRequest, req.Union());
+    }
+
+    std::vector<uint8_t> build_movement_mode_request(uint64_t command_id, CDDA::CWM::MovementMode mode) {
+        const auto req = CDDA::CWM::CreateMovementModeRequest(fbb_, command_id, mode);
+        return finish_message(CDDA::CWM::Payload::MovementModeRequest, req.Union());
     }
 
     std::vector<uint8_t> build_attack_request(uint64_t command_id, uint64_t target_entity_id) {
