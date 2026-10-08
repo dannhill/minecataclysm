@@ -3426,10 +3426,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..726b34b
+index 0000000..76f9804
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,1070 @@
+@@ -0,0 +1,1071 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "move_mode.h"
@@ -3507,6 +3507,11 @@ index 0000000..726b34b
 +    static void interrupt( CwmServer &server, uint64_t token, uint64_t id ) {
 +        cdda::cwm::MessageBuilder wire( server.received_sequence_ + 1, 1, server.identity_ );
 +        const auto bytes = wire.build_cancel_consumption( id, token );
++        server.handle_client_message( bytes.data(), bytes.size(), get_avatar(), get_map(), *g );
++    }
++    static void interrupt_medicine( CwmServer &server, uint64_t token, uint64_t id ) {
++        cdda::cwm::MessageBuilder wire( server.received_sequence_ + 1, 1, server.identity_ );
++        const auto bytes = wire.build_cancel_first_aid( id, token );
 +        server.handle_client_message( bytes.data(), bytes.size(), get_avatar(), get_map(), *g );
 +    }
 +    static void cancel( CwmServer &server ) { server.cancel_connection(); }
@@ -4411,7 +4416,7 @@ index 0000000..726b34b
 +    SECTION( "body chooser cancel" ) { decline_part = true; }
 +    SECTION( "explicit confirmation decline" ) { decline_confirm = true; }
 +    SECTION( "interruption preserves unused treatment" ) { interrupt = true; }
-+    SECTION( "native expert wound care cost" ) { expert = true; u.add_proficiency( proficiency_id( "prof_wound_care_expert" ) ); }
++    SECTION( "native expert wound care cost" ) { expert = true; u.add_proficiency( proficiency_id( "prof_wound_care_expert" ), true ); }
 +    int prompts = 0;
 +    REQUIRE_FALSE( do_turn_with_action( [&]() {
 +        cwm::CwmServerTestAccess::execute( server );
@@ -4456,15 +4461,11 @@ index 0000000..726b34b
 +        cwm::CwmServerTestAccess::mode( server, 2, 3 );
 +        CHECK_FALSE( server.has_queued_action() ); CHECK( u.activity );
 +        if( interrupt ) {
-+            cdda::cwm::MessageBuilder wire( 5, 1, { 101, 102, 103 } );
-+            auto cancel = wire.build_cancel_first_aid( 4, token );
-+            server.handle_client_message( cancel.data(), cancel.size(), u, get_map(), *g );
++            cwm::CwmServerTestAccess::interrupt_medicine( server, token, 4 );
 +            CHECK( cwm::CwmServerTestAccess::completed_accepted( server, 4 ) );
 +            CHECK_FALSE( u.activity ); CHECK( location );
 +            CHECK_FALSE( u.has_effect( efftype_id( "bandaged" ), arm ) );
-+            cdda::cwm::MessageBuilder duplicate( 6, 1, { 101, 102, 103 } );
-+            cancel = duplicate.build_cancel_first_aid( 4, token );
-+            server.handle_client_message( cancel.data(), cancel.size(), u, get_map(), *g );
++            cwm::CwmServerTestAccess::interrupt_medicine( server, token, 4 );
 +            CHECK_FALSE( u.activity ); CHECK( location );
 +        } else {
 +            process_activity( u ); CHECK_FALSE( u.activity );
