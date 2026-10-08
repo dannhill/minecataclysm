@@ -2947,14 +2947,15 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..6020150
+index 0000000..7b0bdc4
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,480 @@
+@@ -0,0 +1,567 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "avatar_action.h"
 +#include "monster.h"
++#include "overmapbuffer.h"
 +#include "npc.h"
 +#include "mtype.h"
 +#include "rng.h"
@@ -3429,6 +3430,92 @@ index 0000000..6020150
 +    CHECK( get_avatar().moves == native_moves );
 +    CHECK( get_avatar().get_stamina() == native_stamina );
 +    CHECK( rng_get_engine() == native_rng );
++    clear_creatures();
++}
++
++TEST_CASE( "native_slow_melee_warning_uses_external_choices", "[cwm][melee]" )
++{
++    clear_avatar();
++    clear_map();
++    clear_creatures();
++    const override_option no_autosave( "AUTOSAVE", "false" );
++    avatar &u = get_avatar();
++    u.setpos( tripoint( 60, 60, 0 ) );
++    item anvil( itype_id( "anvil" ) );
++    REQUIRE( u.wield( anvil ) );
++    REQUIRE( u.attack_speed( anvil ) > 1000 );
++    u.moves = 100;
++    calendar::turn = calendar::turn_zero + 36_hours;
++    g->new_game = false;
++    g->uquit = QUIT_NO;
++    g->set_safe_mode( SAFE_MODE_OFF );
++    monster *mon = g->place_critter_at( mtype_id( "mon_zombie" ), u.pos() + tripoint_north );
++    REQUIRE( mon );
++    mon->moves = -100000;
++    int choice = 2;
++    SECTION( "approve" ) { choice = 0; }
++    SECTION( "ignore native warning window" ) { choice = 1; }
++    SECTION( "decline" ) { choice = 2; }
++    SECTION( "lost peer declines" ) { choice = -1; }
++    cwm::CwmServer server( "/unused-melee-warning-fixture" );
++    int prompts = 0;
++    REQUIRE_FALSE( do_turn_with_action( [&]() {
++        const int moves = u.moves;
++        const bool result = u.melee_attack( *mon, true );
++        CHECK( result == ( choice == 0 || choice == 1 ) );
++        CHECK( ( u.moves < moves ) == ( choice == 0 || choice == 1 ) );
++        // Declining preserves the native pre-warning bookkeeping/RNG but pays
++        // no attack cost. Finish the player phase explicitly for this fixture.
++        finish_external_action_phase();
++        return result;
++    }, [&]( const std::string &text, const std::vector<std::string> &options ) {
++        ++prompts;
++        CHECK( text.find( "long time" ) != std::string::npos );
++        REQUIRE( ( options == std::vector<std::string>{ "Yes", "Ignore further warnings", "No" } ) );
++        return choice < 0 ? cwm::CwmServerTestAccess::choice_without_peer( server, text, options ) : choice;
++    } ) );
++    CHECK( prompts == 1 );
++    clear_creatures();
++}
++
++TEST_CASE( "cwm_pointed_npc_melee_only_admits_native_enemies", "[cwm][melee]" )
++{
++    clear_avatar();
++    clear_map();
++    clear_creatures();
++    avatar &u = get_avatar();
++    u.setpos( tripoint( 60, 60, 0 ) );
++    calendar::turn = calendar::turn_zero + 36_hours;
++    g->set_safe_mode( SAFE_MODE_OFF );
++    u.recalc_sight_limits();
++    g->reset_light_level();
++    get_map().build_map_cache( 0 );
++    get_map().invalidate_visibility_cache();
++    get_map().update_visibility_cache( 0 );
++    auto person = make_shared_fast<npc>();
++    person->normalize();
++    person->randomize();
++    person->set_fac( faction_id( "no_faction" ) );
++    person->setID( g->assign_npc_id(), false );
++    person->spawn_at_precise( tripoint_abs_ms( get_map().getabs( u.pos() + tripoint_north ) ) );
++    overmap_buffer.insert_npc( person );
++    g->load_npcs();
++    REQUIRE( u.sees( *person ) );
++    bool hostile = false;
++    SECTION( "neutral NPC" ) { person->set_attitude( NPCATT_NULL ); }
++    SECTION( "enemy NPC" ) { person->set_attitude( NPCATT_KILL ); hostile = true; }
++    u.moves = 1000;
++    cwm::CwmServer server( "/unused-cwm-npc-melee-fixture" );
++    cwm::CwmServerTestAccess::ready( server );
++    const auto id = uint64_t( 1 ) << 63 | uint64_t( person->getID().get_value() );
++    cwm::CwmServerTestAccess::attack( server, id );
++    CHECK( server.has_queued_action() == hostile );
++    if( hostile ) {
++        CHECK( cwm::CwmServerTestAccess::execute( server ) );
++        CHECK( u.moves < 1000 );
++    } else {
++        CHECK( u.moves == 1000 );
++    }
 +    clear_creatures();
 +}
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
