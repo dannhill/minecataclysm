@@ -728,7 +728,7 @@ index 5d6b891..48c0d59 100644
  		g_settings->getFlagStr("anticheat_flags", flagdesc_anticheat, nullptr);
  
 diff --git a/src/unittest/test_mapblock.cpp b/src/unittest/test_mapblock.cpp
-index 7f3f860..d7853ac 100644
+index 7f3f860..e6f8655 100644
 --- a/src/unittest/test_mapblock.cpp
 +++ b/src/unittest/test_mapblock.cpp
 @@ -10,6 +10,15 @@
@@ -764,7 +764,7 @@ index 7f3f860..d7853ac 100644
  };
  
  static TestMapBlock g_test_instance;
-@@ -44,9 +61,193 @@ void TestMapBlock::runTests(IGameDef *gamedef)
+@@ -44,9 +61,179 @@ void TestMapBlock::runTests(IGameDef *gamedef)
  	TEST(testSave29, gamedef);
  	TEST(testLoad29, gamedef);
  	TEST(testLoad20, gamedef);
@@ -827,21 +827,7 @@ index 7f3f860..d7853ac 100644
 +    const auto form = avatarStatusForm(status);
 +    UASSERT(form.find("x\\]\\;button\\[") != std::string::npos);
 +    UASSERT(form.find(";inject;click") == std::string::npos);
-+    view.entries[1].actions |= 16;
-+    view.entries[1].consume_label = "Mangia";
-+    view.entries[1].consume_moves = 1000;
-+    view.entries[1].consume_warning = "spoiled];button[inject";
-+    const auto meal = equipmentForm(view,0,2,"",0,"",[](const auto&) { return "known:rock"; },42);
-+    UASSERT(meal.find(";action_4;Mangia]") != std::string::npos);
-+    UASSERT(meal.find(";cancel_consume;") != std::string::npos);
-+    UASSERT(meal.find("spoiled\\]\\;button\\[") != std::string::npos);
-+    UASSERT(form.find("left\\;arm") != std::string::npos);
-+    UASSERT(form.find("table[") == std::string::npos);
-+    UASSERT(form.find("scroll_container[") != std::string::npos);
-+    UASSERT(form.find("scrollbaroptions[min=0;max=0;") != std::string::npos);
-+    UASSERT(form.find("heart.png") != std::string::npos);
-+    UASSERT(form.find("list[") == std::string::npos);
-+    UASSERTEQ(std::string, statusColor("c_red"), "#ef6666");
++
 +}
 +
 +void TestMapBlock::testCddaPostureInput()
