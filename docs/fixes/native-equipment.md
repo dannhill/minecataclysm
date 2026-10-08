@@ -43,6 +43,10 @@ eseguibili, fixture indipendente, comandi e risultati. Build incrementali
 su sorgenti ricostruiti dai pin/patch; nessun cold build o gate globale
 M5.5/SAVE-001 viene dichiarato. I test usano copie isolate, mai i save utente.
 
+Risultati finali: CDDA 7.824 asserzioni / 49 casi; Luanti 308 test e 648
+asserzioni Catch2; protocollo 6/6. Renderer reale: 29 verifiche su ricostruito,
+29 su installato, 26 in modalita ordinaria e 11 di riavvio del save. Tutte PASS.
+
 Il lettore/creatore di fixture e collegato al core CDDA pristine del pin.
 I test nativi controllano costi, replay, selezioni mutate, annullamento,
 carichi annidati e zaino lasciato a terra completo. Il test del renderer reale

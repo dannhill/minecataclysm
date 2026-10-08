@@ -1,5 +1,29 @@
 # Implementation status
 
+
+Current delivery: [native inventory/equipment](docs/fixes/native-equipment.md),
+CWM 2.10; both reconstructed runtimes installed. I opens native owned objects,
+search/filters, pocket provenance and capacities. Wield/stow/wear/takeoff use
+native item_locations, action costs and disposal choices; no optimistic
+inventory mutation or free hotbar equipment. Refresh/reconnect/resync discard
+stale handles. Native takeoff can drop a loaded bag when storage is unavailable,
+with its contents preserved; the UI explains this possibility.
+Scoped verification PASS: CDDA 7,824 assertions/49 cases; Luanti 308 tests
+and 648 Catch2 assertions; protocol 6/6. Actual renderer: reconstructed and
+installed real-time 29/29 each, installed ordinary mode 26/26, actual native
+reload 11/11 including unchanged position and time for read-only inventory.
+The independent pristine-core reader confirms each fixture item exactly once.
+Exact identities and reproducible commands: [evidence](docs/fixes/native-equipment-evidence.json).
+Manual acceptance is PENDING: user cannot test now; four checks saved in
+[the usual checklist](docs/validation/pending-manual.md). Prior accepted
+features remain accepted. Quantities, targeted pocket/external-container
+transfers, sealed/technical contents and timed quick equipment remain later
+slices. Next essential step is consumption/medical basics, then crafting.
+M5.5 remains historical FAILED; full SAVE-001 is still open.
+
+The CWM 2.9 presentation delivery below is historical, superseded by the
+2.10 runtime above; its evidence preserves the corresponding old binaries.
+
 Current delivery: [compact icon HUD / shallow prone dip / X](docs/fixes/icon-survival-hud.md),
 CWM 2.9. All four familiar-control/pause/camera adaptations have explicit user
 PASS (in addition to the original four feature checklists). The last requested
