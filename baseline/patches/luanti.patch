@@ -1098,7 +1098,7 @@ index 0000000..2214cd4
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..1245de3
+index 0000000..a34c6ec
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
 @@ -0,0 +1,2295 @@
@@ -1325,7 +1325,7 @@ index 0000000..1245de3
 +        queued_equipment_.reset(); queued_cancel_activity_.reset(); queued_crafting_.reset();
 +        if (cancel) ++cancel_activity_sent_; else if (craft) ++crafting_sent_; else ++equipment_sent_;
 +        pending_move_ = id; move_acked_ = false; sent_move_ = std::chrono::steady_clock::now();
-+        item_hint_ = L"Azione equipaggiamento inviata a CDDA.";
++        item_hint_ = craft ? L"Scelta componenti e avvio lavoro." : L"Azione equipaggiamento inviata a CDDA.";
 +        item_hint_until_ = std::chrono::steady_clock::now() + std::chrono::seconds(3);
 +    }
 +
@@ -3169,11 +3169,11 @@ index 0000000..1245de3
 +        L") | " + key_label("keymap_cdda_crouch") + L": accovacciati (" + std::wstring(g_settings->getBool("cwm_crouch_toggle") ? L"toggle" : L"tieni") + L") | " + key_label("keymap_cdda_prone") + L": a terra";
 +    pimpl_->posture_text_->setText(mode_text.c_str());
 +    pimpl_->posture_text_->setVisible(pimpl_->session_.ready() && player != pimpl_->entities_.end() &&
-+        !pimpl_->ground_container_open_ && !pimpl_->body_form_open_ && !pimpl_->equipment_open_ && !pimpl_->metrics_.pending_decision);
++        !pimpl_->ground_container_open_ && !pimpl_->body_form_open_ && !pimpl_->equipment_open_ && !pimpl_->crafting_open_ && !pimpl_->metrics_.pending_decision);
 +
 +    // Compact Minecraft-style rows above the possessions strip. All fills
 +    // come from native display segments or native perceived categories.
-+    const bool hud_visible = !pimpl_->ground_container_open_ && !pimpl_->body_form_open_ && !pimpl_->equipment_open_ &&
++    const bool hud_visible = !pimpl_->ground_container_open_ && !pimpl_->body_form_open_ && !pimpl_->equipment_open_ && !pimpl_->crafting_open_ &&
 +        !pimpl_->metrics_.pending_decision;
 +    const float scale = std::min(1.f, float(screen.Width - 20) / 396.f);
 +    const auto px = [&](float value) { return int(std::round(value * scale)); };
@@ -3278,7 +3278,7 @@ index 0000000..1245de3
 +        }
 +        pimpl_->item_hint_text_->setText(consumption_hint.empty() ? hint.c_str() : consumption_hint.c_str());
 +        pimpl_->item_hint_text_->setVisible(pimpl_->session_.ready() &&
-+            !pimpl_->metrics_.pending_decision && !pimpl_->ground_container_open_ && !pimpl_->equipment_open_);
++            !pimpl_->metrics_.pending_decision && !pimpl_->ground_container_open_ && !pimpl_->equipment_open_ && !pimpl_->crafting_open_);
 +    }
 +
 +    if (pimpl_->metrics_.realtime) {
@@ -3292,7 +3292,7 @@ index 0000000..1245de3
 +            pimpl_->metrics_.time_scale, pimpl_->metrics_.pause_reasons ? L"IN PAUSA" : L"ATTIVO",
 +            pimpl_->metrics_.continuous_motion ? L"MOVIMENTO CONTINUO" : L"GRIGLIA");
 +        pimpl_->clock_text_->setText(text);
-+        pimpl_->clock_text_->setVisible(!pimpl_->ground_container_open_ && !pimpl_->body_form_open_ && !pimpl_->equipment_open_);
++        pimpl_->clock_text_->setVisible(!pimpl_->ground_container_open_ && !pimpl_->body_form_open_ && !pimpl_->equipment_open_ && !pimpl_->crafting_open_);
 +    } else if (pimpl_->clock_text_) pimpl_->clock_text_->setVisible(false);
 +
 +    if (pimpl_->terrain_demo_) {
@@ -3391,8 +3391,8 @@ index 0000000..1245de3
 +                 pimpl_->metrics_.vehicles_count);
 +        
 +        pimpl_->debug_text_->setText(text);
-+        pimpl_->debug_text_->setVisible(!pimpl_->equipment_open_);
-+        pimpl_->debug_text_->setVisible(!pimpl_->ground_container_open_ && !pimpl_->body_form_open_ && !pimpl_->equipment_open_);
++        pimpl_->debug_text_->setVisible(!pimpl_->equipment_open_ && !pimpl_->crafting_open_);
++        pimpl_->debug_text_->setVisible(!pimpl_->ground_container_open_ && !pimpl_->body_form_open_ && !pimpl_->equipment_open_ && !pimpl_->crafting_open_);
 +    }
 +}
 +

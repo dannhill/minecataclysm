@@ -1105,10 +1105,10 @@ index 09a7711..9b0c484 100644
          DebugLog( D_INFO, DC_ALL ) <<
 diff --git a/src/cwm/cwm_crafting.h b/src/cwm/cwm_crafting.h
 new file mode 100644
-index 0000000..3f28cc4
+index 0000000..9b2bebd
 --- /dev/null
 +++ b/src/cwm/cwm_crafting.h
-@@ -0,0 +1,161 @@
+@@ -0,0 +1,166 @@
 +#pragma once
 +#include "avatar.h"
 +#include "avatar_action.h"
@@ -1193,9 +1193,14 @@ index 0000000..3f28cc4
 +                    const auto error = InventorySelection::access_error(work);
 +                    if (!error.empty()) reason = error;
 +                } // Native continuation validates only remaining requirements.
-+                auto lines = rec.simple_requirements().get_folded_components_list(70, c_light_gray, inv,
-+                    rec.get_component_filter(recipe_filter_flags::no_favorite | recipe_filter_flags::no_equipped), batch);
-+                auto tools = rec.simple_requirements().get_folded_tools_list(70, c_light_gray, inv, batch);
++                const int actual_batch = work ? work->get_making_batch_size() : batch;
++                const auto remaining = work ? work->get_continue_reqs() : rec.simple_requirements();
++                const auto filter = rec.get_component_filter(recipe_filter_flags::no_favorite | recipe_filter_flags::no_equipped);
++                if (work && !remaining.can_make_with_inventory(inv, filter, 1))
++                    reason = "Componenti di riparazione mancanti per riprendere.";
++                auto lines = remaining.get_folded_components_list(70, c_light_gray, inv, filter, work ? 1 : batch);
++                auto tools = rec.simple_requirements().get_folded_tools_list(70, c_light_gray, inv, actual_batch);
++                if (work) lines.insert(lines.begin(), "Materiali originali gia consumati; qui sono mostrati gli eventuali ricambi e gli utensili del lotto.");
 +                lines.insert(lines.end(), tools.begin(), tools.end());
 +                std::string requirements;
 +                for (const auto& line : lines) requirements += remove_color_tags(line) + "\n";
@@ -1212,7 +1217,7 @@ index 0000000..3f28cc4
 +                const auto rid = fbb.CreateString(rec.ident().str()), type = fbb.CreateString(rec.result().is_null() ? "in_progress_craft" : rec.result().str());
 +                const auto title = fbb.CreateString(name.substr(0, 16384)), req = fbb.CreateString(requirements.substr(0, 16384));
 +                const auto why = fbb.CreateString(reason);
-+                const int64_t time = u.crafting_speed_multiplier(rec) > 0 ? std::max<int64_t>(0, u.expected_time_to_craft(rec, batch)) : 0;
++                const int64_t time = u.crafting_speed_multiplier(rec) > 0 ? std::max<int64_t>(0, u.expected_time_to_craft(rec, actual_batch)) : 0;
 +                rows.push_back(CDDA::CWM::CreateCraftingEntry(fbb, rows.size()+1, rid, type, title, req, why,
 +                    time, bool(work), work ? std::clamp(work->item_counter, 0, 10000000) : 0));
 +            };
