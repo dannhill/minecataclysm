@@ -379,6 +379,7 @@ def main():
     check('canonical_position_unchanged_by_treatment',native['player_abs']==before['player_abs'])
     effects=native['player']['effects']
     check('native_saved_effects_are_bandaged_and_disinfected', 'bandaged' in effects and 'disinfected' in effects)
+    check('canonical_effects_apply_only_to_chosen_body_parts',set(effects.get('bandaged',{}))==({'arm_l','torso'} if args.resume_active else {'arm_l'}) and set(effects.get('disinfected',{}))=={'torso'})
     if args.save_active:
         activity=native['player']['activity']
         check('pristine_core_reads_native_firstaid_actor',activity['type']=='ACT_FIRSTAID' and activity['moves_left']>0 and activity['str_values']==['torso'])
