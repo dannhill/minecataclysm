@@ -6,10 +6,22 @@ captured implementation; it does not approve its gaps. The executable schema
 is [cwm.fbs](cwm.fbs). Audit findings and evidence are in
 [M5.5](../docs/audits/M5.5.md).
 
-The current runtime requires **CWM 2.6**. This breaks the old negotiation
+The current runtime requires **CWM 2.7**. This breaks the old negotiation
 contract; schema fields and union members are appended without changing the
 existing FlatBuffers offsets. Both executables must be rebuilt together.
 The historical coverage table below is retained as audit evidence.
+
+CWM 2.7 enables the existing `AttackRequest(command_id, target_entity_id)`
+for adjacent pointed melee against perceived hostile monsters/NPCs. The
+`HOSTILE_TO_PLAYER` actor state bit (6) comes from native attitude and is
+published only when perceived. No client damage/weapon formulas are added.
+Identity participates in deduplication; admission and execution both resolve
+current native identity, hostility, visibility, same-level adjacency and
+clear path. Paused/recovering clients cannot queue attacks for later.
+Native melee owns damage, defenses, stamina, proficiency and action cost.
+No hostile-target fallback by coordinates; no ranged, reach or friendly attack
+in this slice. The long-attack warning uses coordinator decisions with No
+last, so losing the peer cancels. Both executables require matching 2.7.
 
 CWM 2.3 appends authoritative ground-item tile lists to `WorldSnapshot`.
 Empty lists in incremental updates remove the previous pile; full state

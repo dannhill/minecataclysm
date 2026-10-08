@@ -1160,7 +1160,7 @@ index 0000000..1a0308e
 +}
 diff --git a/src/cwm/cwm_map_exporter.cpp b/src/cwm/cwm_map_exporter.cpp
 new file mode 100644
-index 0000000..8f4af62
+index 0000000..a390237
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.cpp
 @@ -0,0 +1,600 @@
@@ -1577,10 +1577,10 @@ index 0000000..8f4af62
 +                mon_type,
 +                &pos,
 +                0.0f,
-+                flags,
++                0,
 +                hp_pct,
 +                mon_name,
-+                perceived
++                perceived, flags
 +            );
 +            entity_offsets.push_back(mon_state);
 +        }
@@ -1596,7 +1596,7 @@ index 0000000..8f4af62
 +        const bool perceived = u.sees(person);
 +        const uint32_t flags = perceived && person.is_enemy() ? uint32_t(cdda::cwm::HOSTILE_TO_PLAYER) : 0;
 +        entity_offsets.push_back(CDDA::CWM::CreateEntityState(fbb, id,
-+            CDDA::CWM::EntityType::NPC, type, &pos, 0.0f, flags, 100, name, perceived));
++            CDDA::CWM::EntityType::NPC, type, &pos, 0.0f, 0, 100, name, perceived, flags));
 +    }
 +
 +    if (clock && clock->realtime) for (const auto& actor : entity_offsets) {
@@ -1837,7 +1837,7 @@ index 0000000..6463f0e
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..a0e9a20
+index 0000000..284bafd
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
 @@ -0,0 +1,719 @@
@@ -1877,15 +1877,15 @@ index 0000000..a0e9a20
 +    Creature* target = nullptr;
 +    if (id & (uint64_t(1) << 63)) {
 +        for (npc& person : g.all_npcs())
-+            if (((uint64_t(1) << 63) | uint64_t(person.getID().get_value())) == id && person.is_enemy())
++            if (((uint64_t(1) << 63) | uint64_t(person.getID().get_value())) == id && !person.is_dead() && person.is_enemy())
 +                target = &person;
 +    } else if (id & (uint64_t(1) << 62)) {
 +        for (monster& critter : g.all_monsters())
-+            if (CwmMapExporter::monster_entity_id(critter) == id && !critter.is_hallucination() &&
++            if (CwmMapExporter::monster_entity_id(critter) == id && !critter.is_dead() && !critter.is_hallucination() &&
 +                critter.friendly == 0 && !critter.has_effect(efftype_id("pet")) &&
 +                critter.attitude_to(u) == Creature::Attitude::HOSTILE) target = &critter;
 +    }
-+    if (!target || target->is_dead() || !m.inbounds(target->pos()) || target->posz() != u.posz() ||
++    if (!target || target->is_dead_state() || !m.inbounds(target->pos()) || target->posz() != u.posz() ||
 +        !u.is_adjacent(target, false) || !u.sees(*target) ||
 +        !m.clear_path(u.pos(), target->pos(), 1, 1, 100)) return nullptr;
 +    return target;
@@ -2947,10 +2947,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..9144b13
+index 0000000..6020150
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,443 @@
+@@ -0,0 +1,480 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "avatar_action.h"
@@ -3394,12 +3394,49 @@ index 0000000..9144b13
 +    }
 +    clear_creatures();
 +}
++
++TEST_CASE( "pointed_melee_preserves_native_bump_damage_cost_and_rng", "[cwm][melee]" )
++{
++    const auto setup = [&]() {
++        clear_avatar();
++        clear_map();
++        clear_creatures();
++        avatar &u = get_avatar();
++        u.setpos( tripoint( 60, 60, 0 ) );
++        g->set_safe_mode( SAFE_MODE_OFF );
++        item bat( itype_id( "bat" ) );
++        REQUIRE( u.wield( bat ) );
++        u.set_skill_level( skill_id( "melee" ), 4 );
++        u.set_skill_level( skill_id( "bashing" ), 4 );
++        u.moves = 1000;
++        monster *mon = g->place_critter_at( mtype_id( "mon_zombie" ), u.pos() + tripoint_north );
++        REQUIRE( mon );
++        rng_set_engine_seed( 783 );
++        return mon;
++    };
++    monster *mon = setup();
++    const int before_hp = mon->get_hp();
++    avatar_action::move( get_avatar(), get_map(), tripoint_north );
++    const int native_hp = mon->get_hp();
++    const int native_moves = get_avatar().moves;
++    const int native_stamina = get_avatar().get_stamina();
++    const auto native_rng = rng_get_engine();
++    REQUIRE( native_moves < 1000 );
++    REQUIRE( native_hp < before_hp );
++    mon = setup();
++    avatar_action::attack( get_avatar(), *mon );
++    CHECK( mon->get_hp() == native_hp );
++    CHECK( get_avatar().moves == native_moves );
++    CHECK( get_avatar().get_stamina() == native_stamina );
++    CHECK( rng_get_engine() == native_rng );
++    clear_creatures();
++}
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644
-index 0000000..401cff6
+index 0000000..1e6d1fa
 --- /dev/null
 +++ b/tests/cwm_projection_test.cpp
-@@ -0,0 +1,610 @@
+@@ -0,0 +1,643 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "avatar_action.h"
@@ -4009,6 +4046,39 @@ index 0000000..401cff6
 +    CHECK(world->ground_item_tiles()->Get(0)->coord()->x() == after_p.x);
 +    CHECK(world->ground_item_tiles()->Get(0)->coord()->y() == after_p.y);
 +    CHECK(world->ground_item_tiles()->Get(0)->items()->size() == 0);
++}
++
++TEST_CASE( "cwm_hostility_cue_is_native_and_perception_filtered", "[cwm][melee]" )
++{
++    clear_avatar();
++    clear_map();
++    clear_creatures();
++    avatar &u = get_avatar();
++    u.setpos( tripoint( 60, 60, 0 ) );
++    calendar::turn = calendar::turn_zero + 36_hours;
++    u.recalc_sight_limits();
++    g->reset_light_level();
++    get_map().build_map_cache( 0 );
++    get_map().invalidate_visibility_cache();
++    get_map().update_visibility_cache( 0 );
++    monster *mon = g->place_critter_at( mtype_id( "mon_zombie" ), u.pos() + tripoint_north );
++    REQUIRE( mon );
++    SECTION( "visible hostile" ) {}
++    SECTION( "friendly" ) { mon->friendly = -1; }
++    SECTION( "not perceived" ) { mon->setpos( u.pos() + tripoint( 15, 0, 0 ) ); }
++    const auto rng = rng_get_engine();
++    const auto time = calendar::turn;
++    const auto bytes = cwm::CwmMapExporter::export_world_snapshot( 1, 1, u, get_map(), *g );
++    const auto *world = CDDA::CWM::GetCwmMessage( bytes.data() )->payload_as_WorldSnapshot();
++    REQUIRE( world->entities()->size() == 2 );
++    const auto *state = world->entities()->Get( 1 );
++    CHECK( state->perceived() == u.sees( *mon ) );
++    CHECK( bool( state->state_flags() & cdda::cwm::HOSTILE_TO_PLAYER ) ==
++           ( u.sees( *mon ) && mon->attitude_to( u ) == Creature::Attitude::HOSTILE ) );
++    CHECK( cwm::CwmMapExporter::monster_entity_id( *mon ) == state->id() );
++    CHECK( rng_get_engine() == rng );
++    CHECK( calendar::turn == time );
++    clear_creatures();
 +}
 diff --git a/tests/cwm_runtime_test.cpp b/tests/cwm_runtime_test.cpp
 new file mode 100644

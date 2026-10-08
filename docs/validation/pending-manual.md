@@ -42,3 +42,21 @@ assetato/stanco, testa e braccio sinistro feriti; nessun pickup necessario.
 Entrambe le demo conservano sessioni separate dai salvataggi normali.
 Queste checklist si ripropongono alla fine dell'implementazione; nessuna
 approvazione manuale è stata ricevuta per raccolta o HUD/scheda.
+
+## Corpo a corpo puntato — IN ATTESA
+
+Feature indipendente dalle altre due: `./combat-demo.sh --fresh`. Mazza già
+impugnata e zombie ostile subito davanti, immobilizzato solo nella scena di
+prova. **E** riconosce la minaccia; **F7** mette in pausa/riprende.
+
+1. Punta lo zombie: nome e suggerimento di attacco; clic sinistro per un colpo.
+   Tieni poi premuto: un solo attacco, senza raffica. Ripeti con nuovi clic.
+2. Metti in pausa con F7 e clicca: niente attacco. Riprendi: nessun colpo
+   ritardato dal clic fatto durante la pausa. Il mirino nel vuoto non attacca.
+3. Uccidi il bersaglio con nuovi clic: modello rimosso, cadavere nativo a terra.
+   Nessun movimento verso il bersaglio causato dal clic.
+4. Esci e rilancia `./combat-demo.sh` senza `--fresh`: bersaglio morto/cadavere
+   coerenti con il save. Questa prova non richiede raccolta né scheda H.
+
+Tutte e tre le checklist restano rinviate per richiesta esplicita dell'utente;
+le verifiche automatizzate non sostituiscono la sua accettazione visiva.

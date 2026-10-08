@@ -65,6 +65,18 @@ void test_pickup_request_roundtrip() {
     std::cout << "[PASS] test_pickup_request_roundtrip" << std::endl;
 }
 
+void test_attack_request_roundtrip() {
+    const uint64_t target = (uint64_t(1) << 63) | 187;
+    MessageBuilder builder(11, 124, {101, 102, 103});
+    const auto bytes = builder.build_attack_request(78, target);
+    const auto* msg = MessageVerifier::parse(bytes.data(), bytes.size());
+    assert(msg && msg->payload_type() == CDDA::CWM::Payload::AttackRequest);
+    assert(msg->session_id() == 101 && msg->player_id() == 102 && msg->connection_id() == 103);
+    const auto* req = msg->payload_as_AttackRequest();
+    assert(req && req->command_id() == 78 && req->target_entity_id() == target);
+    std::cout << "[PASS] test_attack_request_roundtrip" << std::endl;
+}
+
 void test_tile_delta_roundtrip() {
     MessageBuilder builder(10, 200);
     auto bytes = builder.build_tile_delta(15, -20, 1, 404, 0x01, 14, 2);
@@ -124,6 +136,7 @@ int main() {
     test_hello_roundtrip();
     test_move_request_roundtrip();
     test_pickup_request_roundtrip();
+    test_attack_request_roundtrip();
     test_tile_delta_roundtrip();
     test_ground_item_snapshot_roundtrip();
     test_malformed_buffer_rejected();
