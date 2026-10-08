@@ -18,6 +18,8 @@ import time
 import select
 import tempfile
 import threading
+import struct
+import sys
 
 
 def main():
@@ -153,6 +155,30 @@ def main():
                 str(max(-130, min(130, round(-dpitch / .2)))))
             time.sleep(.12)
         time.sleep(.4)
+    sys.path.insert(0,str(ws / 'protocol/python'))
+    from CDDA.CWM import CwmMessage, Payload, InteractRequest, CommandAck
+    def wire_messages(filename):
+        raw = (out / filename).read_bytes()
+        offset = 0
+        while offset + 4 <= len(raw):
+            size = struct.unpack_from('>I',raw,offset)[0]
+            offset += 4
+            if offset + size > len(raw): break
+            yield CwmMessage.CwmMessage.GetRootAs(raw[offset:offset+size],0)
+            offset += size
+    def accepted_action(action):
+        commands = set()
+        for msg in wire_messages('client-wire.bin'):
+            if msg.PayloadType() == Payload.Payload.InteractRequest:
+                request = InteractRequest.InteractRequest()
+                request.Init(msg.Payload().Bytes,msg.Payload().Pos)
+                if request.Action() == action: commands.add(request.CommandId())
+        for msg in wire_messages('server-wire.bin'):
+            if msg.PayloadType() == Payload.Payload.CommandAck:
+                ack = CommandAck.CommandAck()
+                ack.Init(msg.Payload().Bytes,msg.Payload().Pos)
+                if ack.CommandId() in commands and ack.Accepted(): return True
+        return False
     window = None
     with (out / 'launcher.log').open('w') as log:
         proc = subprocess.Popen([str(ws / 'start.sh'), '--go', '--name', 'posture_tester', '--info'],
@@ -215,6 +241,21 @@ def main():
                     xdo('keyup','Control_L')
                     wait(lambda r: int(r['player_state_flags']) & mask == 0)
                     check('crouch_priority_and_return_to_held_run', True)
+                turn(-90,-50)
+                xdo('click','3')
+                wait(lambda r: accepted_action(1) and int(r['pending_move']) == 0)
+                check('pointed_window_open_native_ack',True)
+                # One physical chord, with no waiting for a posture roundtrip.
+                xdo('keydown','Shift_L','mousedown','3')
+                time.sleep(.15)
+                xdo('mouseup','3','keyup','Shift_L')
+                wait(lambda r: accepted_action(2) and int(r['pending_move']) == 0)
+                check('simultaneous_shift_close_keeps_context_action_priority',True)
+                if args.toggle_controls:
+                    # The modifier press also latched crouch in toggle mode.
+                    if mode() == 256: choose_mode('Shift_L',0)
+                else:
+                    wait(lambda r: int(r['player_state_flags']) & mask == 0)
                 choose_mode('p',512)
                 wait(lambda r: abs(float(r['player_eye_offset']) + 1.) < .025)
                 wait(lambda r: float(r['camera_y']) - float(r['target_y']) * 10 > 8.)

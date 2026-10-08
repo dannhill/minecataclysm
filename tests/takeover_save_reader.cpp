@@ -140,6 +140,7 @@ int main(int argc, const char *argv[]) {
                 for (int x = 58; x <= 62; ++x)
                     m.ter_set(tripoint(x,y,0), ter_str_id("t_water_sh"));
             m.add_item_or_charges(tripoint(60,59,0), item(itype_id("rock"), calendar::turn));
+            m.ter_set(tripoint(61,60,0), ter_str_id("t_window"));
         }
         if (create_vertical) {
             // Canonical multi-Z fixture, built by the pristine pinned core.

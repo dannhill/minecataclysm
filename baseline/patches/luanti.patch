@@ -133,7 +133,7 @@ index b6ae675..9e33201 100644
  		/*
  			Local player handling
 diff --git a/src/client/game.cpp b/src/client/game.cpp
-index 27b5833..9024b5a 100644
+index 27b5833..f10ecaf 100644
 --- a/src/client/game.cpp
 +++ b/src/client/game.cpp
 @@ -8,6 +8,7 @@
@@ -205,7 +205,21 @@ index 27b5833..9024b5a 100644
  	delete client;
  	delete soundmaker;
  	sound_manager.reset();
-@@ -1239,6 +1265,8 @@ void Game::shutdown()
+@@ -1181,6 +1207,13 @@ void Game::run()
+ 		updateCamera(dtime);
+ 		updateSound(dtime);
+ 		processPlayerInteraction(dtime, m_game_ui->m_flags.show_hud);
++        // Context actions (Shift+right click, Shift+Space) have priority over
++        // the free posture request, so a simultaneous modifier cannot steal
++        // their single-command slot. Sample levels even during menus/recovery.
++        auto& cwm_bridge = cdda_client::CddaBridge::getInstance();
++        if (cwm_bridge.ownsPlayer(client))
++            cwm_bridge.handlePostureInput(isKeyDown(KeyType::CDDA_RUN),
++                isKeyDown(KeyType::CDDA_CROUCH), isKeyDown(KeyType::CDDA_PRONE));
+ 		updateFrame(&graph, &stats, dtime, cam_view);
+ 		updateProfilerGraphs(&graph);
+ 
+@@ -1239,6 +1272,8 @@ void Game::shutdown()
  		}
  	}
  
@@ -214,18 +228,11 @@ index 27b5833..9024b5a 100644
  	delete client;
  	client = nullptr;
  	delete soundmaker;
-@@ -2053,7 +2081,23 @@ void Game::processUserInput(f32 dtime)
+@@ -2053,7 +2088,16 @@ void Game::processUserInput(f32 dtime)
  
  void Game::processKeyInput()
  {
 -	if (wasKeyDown(KeyType::DROP)) {
-+    auto& cwm_bridge = cdda_client::CddaBridge::getInstance();
-+    const bool cwm_player = cwm_bridge.ownsPlayer(client);
-+    if (cwm_player) {
-+        // Sample levels, including release; OS autorepeat cannot toggle modes.
-+        cwm_bridge.handlePostureInput(isKeyDown(KeyType::CDDA_RUN),
-+            isKeyDown(KeyType::CDDA_CROUCH), isKeyDown(KeyType::CDDA_PRONE));
-+    }
 +    if (wasKeyDown(KeyType::CDDA_BODY) &&
 +			cdda_client::CddaBridge::getInstance().ownsPlayer(client)) {
 +		const auto form = cdda_client::CddaBridge::getInstance().openBodyStatus();
