@@ -70,6 +70,8 @@ def main():
     relay_path = Path(scratch.name) / 'relay.sock'
     native_path = out / 'native-socket'
     stop, drop = threading.Event(), threading.Event()
+    shutting_down = threading.Event()
+    expected_shutdown_errors = []
     relay_errors = []
     listener = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     listener.bind(str(relay_path)); listener.listen(1); listener.settimeout(.1)
@@ -98,6 +100,9 @@ def main():
                             (server_socket if source is client_socket else client_socket).sendall(data)
                         if closed:
                             break
+        except (ConnectionResetError, BrokenPipeError) as error:
+            if shutting_down.is_set(): expected_shutdown_errors.append(str(error))
+            else: relay_errors.append(str(error))
         except Exception as error:
             relay_errors.append(str(error))
     relay_thread = threading.Thread(target=relay, daemon=True)
@@ -324,6 +329,7 @@ def main():
                     check('shutdown_fixture_retains_unfinished_native_work', int(latest()['consumption_remaining']) > 0)
 
         finally:
+            shutting_down.set() # Resets caused by our SIGTERM are expected only after this boundary.
             subprocess.run(['xdotool', 'keyup', 'w'], capture_output=True)
             if proc.poll() is None:
                 os.killpg(proc.pid, signal.SIGTERM)
@@ -336,6 +342,7 @@ def main():
             relay_thread.join(timeout=3)
             listener.close()
             (out / 'relay-errors.json').write_text(json.dumps(relay_errors))
+            (out / 'expected-shutdown-errors.json').write_text(json.dumps(expected_shutdown_errors))
             scratch.cleanup()
             if old_window:
                 subprocess.run(['xdotool', 'windowactivate', old_window], capture_output=True)
