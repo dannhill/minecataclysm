@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Exercise the native wound treatments in the actual Luanti renderer.
+"""Exercise native crafting in the actual Luanti renderer.
 
-Requires an independently created --create-medicine fixture, X11, xdotool,
+Requires an independently created --create-crafting fixture, X11, xdotool,
 ImageMagick and Pillow. Never opens an existing user world.
 """
 import argparse
@@ -66,7 +66,7 @@ def main():
         env.pop('CDDA_REALTIME', None)
     # A byte-transparent local relay lets the real client lose IPC while a
     # selection is queued under manual pause. Gameplay still runs in CDDA.
-    scratch = tempfile.TemporaryDirectory(prefix='cwm-body-gui-')
+    scratch = tempfile.TemporaryDirectory(prefix='cwm-crafting-gui-')
     relay_path = Path(scratch.name) / 'relay.sock'
     native_path = out / 'native-socket'
     stop, drop = threading.Event(), threading.Event()
