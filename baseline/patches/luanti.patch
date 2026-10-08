@@ -3265,7 +3265,7 @@ index 0000000..a550994
 +} // namespace cdda_client
 diff --git a/src/cdda/posture_input.h b/src/cdda/posture_input.h
 new file mode 100644
-index 0000000..bbe7444
+index 0000000..ca45474
 --- /dev/null
 +++ b/src/cdda/posture_input.h
 @@ -0,0 +1,49 @@
@@ -3301,7 +3301,7 @@ index 0000000..bbe7444
 +        for (int i = 0; i < 2; ++i) if (!down[i]) blocked_[i] = false;
 +        // Native exhaustion may switch RUN to WALK inside a tile. Require a
 +        // new physical press rather than retrying rejected RUN every frame.
-+        if (last_confirmed_ == 1 && confirmed != 1 && down[0]) reject(1);
++        if (last_confirmed_ == 1 && confirmed == 0 && down[0]) reject(1);
 +        const bool toggle[] = {run_toggle, crouch_toggle};
 +        for (int i = 0; i < 2; ++i)
 +            if (toggle[i] && down[i] && !last_[i] && !blocked_[i])
