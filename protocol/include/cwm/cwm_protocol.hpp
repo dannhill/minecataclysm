@@ -11,7 +11,7 @@
 namespace cdda::cwm {
 
 constexpr uint16_t PROTOCOL_VERSION_MAJOR = 2;
-constexpr uint16_t PROTOCOL_VERSION_MINOR = 10;
+constexpr uint16_t PROTOCOL_VERSION_MINOR = 11;
 
 struct Identity { uint64_t session{0}, player{0}, connection{0}; };
 
@@ -97,6 +97,10 @@ public:
         return finish_message(CDDA::CWM::Payload::EquipmentRequest, request.Union());
     }
 
+    std::vector<uint8_t> build_cancel_consumption(uint64_t command_id, uint64_t token) {
+        const auto request = CDDA::CWM::CreateCancelConsumptionRequest(fbb_, command_id, token);
+        return finish_message(CDDA::CWM::Payload::CancelConsumptionRequest, request.Union());
+    }
     std::vector<uint8_t> build_command_ack(uint64_t command_id, bool accepted, const std::string& err_msg = "", uint64_t result_revision = 0) {
         auto err = fbb_.CreateString(err_msg);
         auto ack = CDDA::CWM::CreateCommandAck(fbb_, command_id, accepted, err, result_revision);

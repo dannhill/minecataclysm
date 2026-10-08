@@ -795,10 +795,10 @@ index 09a7711..9b0c484 100644
          DebugLog( D_INFO, DC_ALL ) <<
 diff --git a/src/cwm/cwm_inventory.h b/src/cwm/cwm_inventory.h
 new file mode 100644
-index 0000000..9c2c546
+index 0000000..b61f3be
 --- /dev/null
 +++ b/src/cwm/cwm_inventory.h
-@@ -0,0 +1,150 @@
+@@ -0,0 +1,168 @@
 +#pragma once
 +#include <algorithm>
 +#include <array>
@@ -806,6 +806,9 @@ index 0000000..9c2c546
 +#include <vector>
 +#include <string>
 +#include "avatar.h"
++#include "calendar.h"
++#include "flag.h"
++#include "itype.h"
 +#include "item.h"
 +#include "item_category.h"
 +#include "item_location.h"
@@ -846,7 +849,7 @@ index 0000000..9c2c546
 +    static std::string action_error(avatar& u, item_location location, int action) {
 +        if (!location || !location.held_by(u) || !u.has_item(*location))
 +            return "Oggetto non piu posseduto.";
-+        if (action < 0 || action > 3) return "Azione equipaggiamento non supportata.";
++        if (action < 0 || action > 4) return "Azione equipaggiamento non supportata.";
 +        if (u.activity) return "Attendi la conclusione dell'attivita nativa.";
 +        const auto access = access_error(location);
 +        if (!access.empty()) return access;
@@ -866,9 +869,19 @@ index 0000000..9c2c546
 +            if (worn) return "Oggetto gia indossato.";
 +            const auto result = u.can_wear(*location);
 +            if (!result.success()) return result.str();
-+        } else {
++        } else if (action == 3) {
 +            const auto result = u.can_takeoff(*location);
 +            if (!result.success()) return result.str();
++        }
++        if (action == 4) {
++            if (!location->is_food()) return "Seleziona cibo o una bevanda; medicina e uso strumenti richiedono un'altra interfaccia.";
++            if (location->count_by_charges() && location->charges <= 0) return "Nessuna porzione disponibile.";
++            if (location->type->has_use() && !location->type->can_use("PETFOOD"))
++                return "Alimento con uso speciale: interazione dedicata non ancora disponibile.";
++            const auto result = u.can_eat(*location);
++            if (!result.success()) return remove_color_tags(result.str());
++            if (location->will_spill() && !location->is_container_empty())
++                return "Contenitore commestibile pieno: gestione dei contenuti richiesta.";
 +        }
 +        if ((action == 0 || action == 2) && location->will_spill() && !location->is_container_empty())
 +            return "Contenitore aperto pieno: gestione dei liquidi richiesta.";
@@ -912,17 +925,22 @@ index 0000000..9c2c546
 +                }
 +                uint8_t actions = 0;
 +                std::vector<flatbuffers::Offset<flatbuffers::String>> reasons;
-+                for (int action = 0; action < 4; ++action) {
++                for (int action = 0; action < 5; ++action) {
 +                    const auto reason = action_error(u, location, action);
 +                    if (reason.empty()) actions |= 1 << action;
 +                    reasons.push_back(fbb.CreateString(reason));
 +                }
 +                const int access = access_error(location).empty() ? std::max(0, location.obtain_cost(u)) : 0;
++                const bool food = it->is_food();
++                const auto consume_label = !food ? "" :
++                    it->get_comestible()->comesttype == "FOOD" || it->has_flag(flag_USE_EAT_VERB) ? "Mangia" : "Bevi";
++                const int consume_moves = food ? std::max(0, to_moves<int>(u.get_consume_time(*it))) : 0;
++                const auto warning = food && u.can_eat(*it).success() ? u.will_eat(*it, false).str() : "";
 +                entries.push_back(CDDA::CWM::CreateInventoryEntryDirect(fbb, id, parent_id, pocket_index,
 +                    it->typeId().str().c_str(), remove_color_tags(it->tname()).c_str(), it->get_category_shallow().name().c_str(),
 +                    it->charges, it->count_by_charges(), worn, wielded,
 +                    units::to_gram<int64_t>(it->weight()), units::to_milliliter<int64_t>(it->volume()),
-+                    units::to_millimeter<int64_t>(it->length()), access, actions, &reasons));
++                    units::to_millimeter<int64_t>(it->length()), access, actions, &reasons, consume_moves, consume_label, remove_color_tags(warning).c_str()));
 +                bindings_.push_back({location, ancestors, it->typeId().str(), it->charges,
 +                                     it->count_by_charges(), worn, wielded});
 +                ids[it] = id;
@@ -1355,10 +1373,10 @@ index 0000000..1a0308e
 +}
 diff --git a/src/cwm/cwm_map_exporter.cpp b/src/cwm/cwm_map_exporter.cpp
 new file mode 100644
-index 0000000..8358c7a
+index 0000000..f37c2d8
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.cpp
-@@ -0,0 +1,604 @@
+@@ -0,0 +1,608 @@
 +#include "cwm_motion.h"
 +// CDDA CWM Map & Entity Exporter Implementation
 +// Licensed under Apache-2.0
@@ -1533,7 +1551,7 @@ index 0000000..8358c7a
 +    bool include_chunks,
 +    ProjectionCache* cache, cdda::cwm::Identity identity,
 +    uint64_t base_revision, uint64_t state_id, uint64_t resync_id,
-+    uint64_t completed_command_id, const ClockView* clock
++    uint64_t completed_command_id, const ClockView* clock, uint64_t consumption_token
 +) {
 +    cdda::cwm::MessageBuilder builder(sequence_num, world_rev, identity);
 +    auto& fbb = builder.builder();
@@ -1901,6 +1919,10 @@ index 0000000..8358c7a
 +
 +    const auto clock_state = clock ? CDDA::CWM::CreateSimulationState(fbb,
 +        clock->realtime, clock->pause_reasons, clock->scale, clock->continuous) : flatbuffers::Offset<CDDA::CWM::SimulationState>{};
++    const auto consumption = consumption_token && u.activity.id() == activity_id("ACT_CONSUME") &&
++        u.activity.moves_total > 0 && u.activity.moves_left > 0 ?
++        CDDA::CWM::CreateConsumptionState(fbb, consumption_token, u.activity.moves_total, u.activity.moves_left) :
++        flatbuffers::Offset<CDDA::CWM::ConsumptionState>{};
 +    auto world_snap = CDDA::CWM::CreateWorldSnapshot(
 +        fbb,
 +        world_rev,
@@ -1914,7 +1936,7 @@ index 0000000..8358c7a
 +        g.safe_mode == SAFE_MODE_STOP || u.has_effect(efftype_id("laserlocked")) ||
 +            (clock && (clock->pause_reasons & 4)),
 +        include_chunks, base_revision, state_id, resync_id, completed_command_id,
-+        spawned_vec, removed_vec, clock_state, ground_items_vec, owned_items_vec, avatar_status
++        spawned_vec, removed_vec, clock_state, ground_items_vec, owned_items_vec, avatar_status, consumption
 +    );
 +
 +    return builder.finish_message(CDDA::CWM::Payload::WorldSnapshot, world_snap.Union());
@@ -1965,7 +1987,7 @@ index 0000000..8358c7a
 +} // namespace cwm
 diff --git a/src/cwm/cwm_map_exporter.h b/src/cwm/cwm_map_exporter.h
 new file mode 100644
-index 0000000..6463f0e
+index 0000000..49c9167
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.h
 @@ -0,0 +1,65 @@
@@ -2013,7 +2035,7 @@ index 0000000..6463f0e
 +        cdda::cwm::Identity identity = {},
 +        uint64_t base_revision = 0, uint64_t state_id = 1,
 +        uint64_t resync_id = 0, uint64_t completed_command_id = 0,
-+        const ClockView* clock = nullptr
++        const ClockView* clock = nullptr, uint64_t consumption_token = 0
 +    );
 +
 +    static std::vector<uint8_t> export_tile_delta(
@@ -2036,10 +2058,10 @@ index 0000000..6463f0e
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..869d852
+index 0000000..47fab2b
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,783 @@
+@@ -0,0 +1,816 @@
 +#include "cwm_motion.h"
 +// CDDA CWM IPC Server Implementation
 +// Licensed under Apache-2.0
@@ -2138,14 +2160,25 @@ index 0000000..869d852
 +    awaiting_state_ = 0;
 +}
 +
++void CwmServer::refresh_consumption(const avatar& u) {
++    if (u.activity.id() != activity_id("ACT_CONSUME") || u.activity.moves_total <= 0 || u.activity.moves_left <= 0) {
++        consumption_token_ = 0; consumption_total_ = consumption_remaining_ = 0;
++        return;
++    }
++    if (!consumption_token_ || consumption_total_ != u.activity.moves_total ||
++        consumption_remaining_ < u.activity.moves_left) consumption_token_ = next_consumption_token_++;
++    consumption_total_ = u.activity.moves_total; consumption_remaining_ = u.activity.moves_left;
++}
++
 +void CwmServer::send_state(avatar& u, map& m, game& g, bool full, uint64_t completed) {
 +    if (!has_active_client() || !negotiated_ || rejecting_) return;
++    refresh_consumption(u);
 +    const auto state_id = next_state_++;
 +    const CwmMapExporter::ClockView clock{realtime_, pause_reasons(g),
 +        static_cast<float>(clock_.scale()), motion_seconds_, continuous_};
 +    auto snapshot = CwmMapExporter::export_world_snapshot(sequence_counter_, world_revision_,
 +                    u, m, g, full, &projection_cache_, identity_, sent_revision_, state_id,
-+                    resync_id_, completed, realtime_ ? &clock : nullptr);
++                    resync_id_, completed, realtime_ ? &clock : nullptr, consumption_token_);
 +    const bool is_full = CDDA::CWM::GetCwmMessage(snapshot.data())->payload_as_WorldSnapshot()->full();
 +    if (emit(snapshot)) {
 +        snapshot_sent_ = true;
@@ -2473,6 +2506,15 @@ index 0000000..869d852
 +            case 1: accepted = u.unwield(); break;
 +            case 2: accepted = bool(u.wear(location)); break;
 +            case 3: accepted = u.takeoff(location.obtain(u)); break;
++            case 4:
++                consumption_token_ = 0;
++                // Same native eat path, without terminal-menu continuation.
++                avatar_action::eat(u, location, {}, {}, "", activity_id("ACT_CONSUME"));
++                accepted = u.activity.id() == activity_id("ACT_CONSUME") && u.activity.moves_left > 0;
++                // Native actor declined the warning and scheduled zero work.
++                if (!accepted && u.activity.id() == activity_id("ACT_CONSUME")) u.activity.set_to_null();
++                refresh_consumption(u);
++                break;
 +        }
 +        const bool acted = accepted || u.moves != before_moves;
 +        if (acted) ++world_revision_;
@@ -2649,6 +2691,8 @@ index 0000000..869d852
 +                ":" + std::to_string(request->pickup_charges()) +
 +                ":" + std::to_string(request->pickup_count_by_charges());
 +        }
++    } else if (const auto* request = msg->payload_as_CancelConsumptionRequest()) {
++        id = request->command_id(); signature = "cancel-consumption:" + std::to_string(request->activity_token());
 +    } else if (const auto* request = msg->payload_as_EquipmentRequest()) {
 +        id = request->command_id(); signature = "equipment:" + std::to_string(request->view_id()) +
 +            ":" + std::to_string(request->item_id()) + ":" + std::to_string(int(request->action()));
@@ -2681,6 +2725,17 @@ index 0000000..869d852
 +    }
 +    if (status == Status::Expired) { send_result({id, false, "Command identity expired"}, u, m, g); return; }
 +    if (status != Status::Fresh) { server_->client()->close(); return; }
++    if (const auto* request = msg->payload_as_CancelConsumptionRequest()) {
++        refresh_consumption(u);
++        const bool valid = consumption_token_ && request->activity_token() == consumption_token_ &&
++            u.activity.is_interruptible() && (!realtime_ || !pause_reasons(g));
++        if (valid) {
++            u.cancel_activity(); // Native interruption/backlog rules, no refund.
++            consumption_token_ = 0; inventory_selection_.clear(); ++world_revision_;
++        }
++        send_result({id, valid, valid ? "" : "Consumo concluso, cambiato o gioco in pausa."}, u, m, g);
++        return; // Never enqueue cancellation behind the busy native activity.
++    }
 +    if (const auto* request = msg->payload_as_ContinuousIntentRequest()) {
 +        const float x = request->x(), y = request->y();
 +        const double length = std::hypot(double(x), double(y));
@@ -2825,10 +2880,10 @@ index 0000000..869d852
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.h b/src/cwm/cwm_server.h
 new file mode 100644
-index 0000000..44a8ec7
+index 0000000..db71fed
 --- /dev/null
 +++ b/src/cwm/cwm_server.h
-@@ -0,0 +1,128 @@
+@@ -0,0 +1,132 @@
 +// CDDA CWM IPC Server
 +// Licensed under Apache-2.0
 +#pragma once
@@ -2906,6 +2961,10 @@ index 0000000..44a8ec7
 +    uint64_t next_state_{1}, awaiting_state_{0}, resync_id_{0};
 +    bool negotiated_{false}, ready_{false}, rejecting_{false};
 +    InventorySelection inventory_selection_;
++    uint64_t next_consumption_token_{1}, consumption_token_{0};
++    int consumption_total_{0}, consumption_remaining_{0};
++    void refresh_consumption(const avatar& u);
++
 +    std::chrono::steady_clock::time_point next_inventory_query_{};
 +    std::chrono::steady_clock::time_point handshake_deadline_;
 +    struct Command {
@@ -3267,10 +3326,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..18df6e8
+index 0000000..56e7525
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,853 @@
+@@ -0,0 +1,952 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "move_mode.h"
@@ -3341,6 +3400,12 @@ index 0000000..18df6e8
 +    static void equipment( CwmServer &server, uint64_t view, uint32_t item_id, int action, uint64_t id = 1 ) {
 +        cdda::cwm::MessageBuilder wire( server.received_sequence_ + 1, 1, server.identity_ );
 +        const auto bytes = wire.build_equipment_request( id, view, item_id, static_cast<CDDA::CWM::EquipmentAction>( action ) );
++        server.handle_client_message( bytes.data(), bytes.size(), get_avatar(), get_map(), *g );
++    }
++    static uint64_t consumption( CwmServer &server ) { server.refresh_consumption( get_avatar() ); return server.consumption_token_; }
++    static void interrupt( CwmServer &server, uint64_t token, uint64_t id ) {
++        cdda::cwm::MessageBuilder wire( server.received_sequence_ + 1, 1, server.identity_ );
++        const auto bytes = wire.build_cancel_consumption( id, token );
 +        server.handle_client_message( bytes.data(), bytes.size(), get_avatar(), get_map(), *g );
 +    }
 +    static void cancel( CwmServer &server ) { server.cancel_connection(); }
@@ -4123,6 +4188,99 @@ index 0000000..18df6e8
 +        } );
 +    }
 +    CHECK( copies == 1 );
++}
++
++
++TEST_CASE( "cwm_consumption_is_native_timed_and_cancel_is_immediate_deduplicated", "[cwm][consumption]" )
++{
++    clear_avatar(); clear_map(); avatar &u = get_avatar();
++    u.setpos( tripoint( 60, 60, 0 ) );
++    REQUIRE( u.wear_item( item( itype_id( "backpack_hiking" ) ) ) );
++    item apple( itype_id( "apple" ), calendar::turn ); apple.set_var( "uid", "consume-selected" );
++    auto location = u.i_add( apple ); REQUIRE( location );
++    u.moves = 1000;
++    const int duration = to_moves<int>( u.get_consume_time( *location ) );
++    const int initial_food = u.stomach.get_calories();
++    cwm::CwmServer server( "/unused-consumption" ); cwm::CwmServerTestAccess::ready( server );
++    const auto view = cwm::CwmServerTestAccess::inventory( server );
++    const auto id = cwm::CwmServerTestAccess::item_id( server, *location );
++    cwm::CwmServerTestAccess::equipment( server, view, id, 4 ); REQUIRE( server.has_queued_action() );
++    REQUIRE( cwm::CwmServerTestAccess::execute( server ) );
++    REQUIRE( cwm::CwmServerTestAccess::accepted( server ) );
++    CHECK( u.moves == 1000 ); REQUIRE( u.activity.id() == activity_id( "ACT_CONSUME" ) );
++    CHECK( u.activity.moves_total == duration ); CHECK( u.activity.moves_left == duration );
++    CHECK( u.stomach.get_calories() == initial_food );
++    CHECK( character_has_item_with_var_val( u, "uid", "consume-selected" ) );
++    const auto token = cwm::CwmServerTestAccess::consumption( server ); REQUIRE( token );
++    cwm::CwmServerTestAccess::complete( server );
++    SECTION( "completion applies the native serving and digestion" ) {
++        process_activity( u ); CHECK_FALSE( u.activity );
++        CHECK_FALSE( character_has_item_with_var_val( u, "uid", "consume-selected" ) );
++        CHECK( u.stomach.get_calories() > initial_food );
++        cwm::CwmServerTestAccess::equipment( server, view, id, 4 );
++        CHECK_FALSE( server.has_queued_action() ); CHECK_FALSE( u.activity );
++    }
++    SECTION( "cancel while busy runs immediately with no consumption or refund" ) {
++        u.activity.moves_left -= 100;
++        const int remaining = u.activity.moves_left;
++        cwm::CwmServerTestAccess::interrupt( server, token, 2 );
++        CHECK( cwm::CwmServerTestAccess::completed_accepted( server, 2 ) );
++        CHECK_FALSE( u.activity ); CHECK_FALSE( server.has_queued_action() );
++        CHECK( u.stomach.get_calories() == initial_food ); CHECK( u.moves == 1000 );
++        CHECK( character_has_item_with_var_val( u, "uid", "consume-selected" ) );
++        REQUIRE_FALSE( u.backlog.empty() ); CHECK( u.backlog.front().moves_left == remaining );
++        cwm::CwmServerTestAccess::interrupt( server, token, 2 ); CHECK_FALSE( u.activity );
++        const auto new_view = cwm::CwmServerTestAccess::inventory( server );
++        cwm::CwmServerTestAccess::equipment( server, new_view,
++            cwm::CwmServerTestAccess::item_id( server, *location ), 4, 3 );
++        REQUIRE( cwm::CwmServerTestAccess::execute( server ) );
++        REQUIRE( u.activity ); CHECK( u.activity.moves_left == remaining ); // Native resume, not restart/refund.
++        REQUIRE( cwm::CwmServerTestAccess::consumption( server ) != token );
++        cwm::CwmServerTestAccess::interrupt( server, token, 4 );
++        CHECK_FALSE( cwm::CwmServerTestAccess::completed_accepted( server, 4 ) ); CHECK( u.activity );
++    }
++    SECTION( "stale cancellation cannot stop an active meal" ) {
++        cwm::CwmServerTestAccess::interrupt( server, token + 1, 2 );
++        CHECK_FALSE( cwm::CwmServerTestAccess::completed_accepted( server, 2 ) ); CHECK( u.activity );
++    }
++}
++
++TEST_CASE( "cwm_drinking_keeps_native_container_and_consumes_one_charge", "[cwm][consumption]" )
++{
++    clear_avatar(); clear_map(); avatar &u = get_avatar();
++    REQUIRE( u.wear_item( item( itype_id( "backpack_hiking" ) ) ) );
++    item bottle( itype_id( "bottle_plastic" ), calendar::turn );
++    item water( itype_id( "water_clean" ), calendar::turn ); water.charges = 4;
++    REQUIRE( bottle.put_in( water, pocket_type::CONTAINER ).success() );
++    auto container = u.i_add( bottle ); REQUIRE( container );
++    item *liquid = nullptr;
++    container->visit_items( [&]( item *it, item * ) {
++        if( it->typeId() == itype_id( "water_clean" ) ) liquid = it;
++        return VisitResponse::NEXT;
++    } ); REQUIRE( liquid );
++    cwm::CwmServer server( "/unused-drinking" ); cwm::CwmServerTestAccess::ready( server );
++    const auto view = cwm::CwmServerTestAccess::inventory( server );
++    cwm::CwmServerTestAccess::equipment( server, view, cwm::CwmServerTestAccess::item_id( server, *liquid ), 4 );
++    REQUIRE( cwm::CwmServerTestAccess::execute( server ) ); REQUIRE( u.activity );
++    CHECK( liquid->charges == 4 ); process_activity( u );
++    REQUIRE( container ); CHECK( container->typeId() == itype_id( "bottle_plastic" ) );
++    CHECK( u.charges_of( itype_id( "water_clean" ) ) == 3 );
++    CHECK( u.stomach.get_water() > 0_ml );
++}
++
++TEST_CASE( "cwm_consume_revalidates_charges_and_rejects_non_food", "[cwm][consumption]" )
++{
++    clear_avatar(); clear_map(); avatar &u = get_avatar();
++    REQUIRE( u.wear_item( item( itype_id( "backpack_hiking" ) ) ) );
++    auto food = u.i_add( item( itype_id( "apple" ), calendar::turn ) ); REQUIRE( food );
++    auto rock = u.i_add( item( itype_id( "rock" ) ) ); REQUIRE( rock );
++    CHECK_FALSE( cwm::InventorySelection::action_error( u, rock, 4 ).empty() );
++    cwm::CwmServer server( "/unused-consume-stale" ); cwm::CwmServerTestAccess::ready( server );
++    const auto view = cwm::CwmServerTestAccess::inventory( server );
++    cwm::CwmServerTestAccess::equipment( server, view, cwm::CwmServerTestAccess::item_id( server, *food ), 4 );
++    REQUIRE( server.has_queued_action() ); ++food->charges;
++    CHECK_FALSE( cwm::CwmServerTestAccess::execute( server ) ); CHECK_FALSE( u.activity );
++    CHECK( food );
 +}
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644

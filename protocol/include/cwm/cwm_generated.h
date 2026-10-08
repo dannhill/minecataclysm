@@ -97,6 +97,12 @@ struct InteractRequestBuilder;
 struct MovementModeRequest;
 struct MovementModeRequestBuilder;
 
+struct ConsumptionState;
+struct ConsumptionStateBuilder;
+
+struct CancelConsumptionRequest;
+struct CancelConsumptionRequestBuilder;
+
 struct InventoryQueryRequest;
 struct InventoryQueryRequestBuilder;
 
@@ -369,33 +375,36 @@ enum class EquipmentAction : int8_t {
   STOW = 1,
   WEAR = 2,
   TAKEOFF = 3,
+  CONSUME = 4,
   MIN = WIELD,
-  MAX = TAKEOFF
+  MAX = CONSUME
 };
 
-inline const EquipmentAction (&EnumValuesEquipmentAction())[4] {
+inline const EquipmentAction (&EnumValuesEquipmentAction())[5] {
   static const EquipmentAction values[] = {
     EquipmentAction::WIELD,
     EquipmentAction::STOW,
     EquipmentAction::WEAR,
-    EquipmentAction::TAKEOFF
+    EquipmentAction::TAKEOFF,
+    EquipmentAction::CONSUME
   };
   return values;
 }
 
 inline const char * const *EnumNamesEquipmentAction() {
-  static const char * const names[5] = {
+  static const char * const names[6] = {
     "WIELD",
     "STOW",
     "WEAR",
     "TAKEOFF",
+    "CONSUME",
     nullptr
   };
   return names;
 }
 
 inline const char *EnumNameEquipmentAction(EquipmentAction e) {
-  if (::flatbuffers::IsOutRange(e, EquipmentAction::WIELD, EquipmentAction::TAKEOFF)) return "";
+  if (::flatbuffers::IsOutRange(e, EquipmentAction::WIELD, EquipmentAction::CONSUME)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesEquipmentAction()[index];
 }
@@ -432,11 +441,12 @@ enum class Payload : uint8_t {
   InventoryQueryRequest = 28,
   InventoryView = 29,
   EquipmentRequest = 30,
+  CancelConsumptionRequest = 31,
   MIN = NONE,
-  MAX = EquipmentRequest
+  MAX = CancelConsumptionRequest
 };
 
-inline const Payload (&EnumValuesPayload())[31] {
+inline const Payload (&EnumValuesPayload())[32] {
   static const Payload values[] = {
     Payload::NONE,
     Payload::HelloRequest,
@@ -468,13 +478,14 @@ inline const Payload (&EnumValuesPayload())[31] {
     Payload::MovementModeRequest,
     Payload::InventoryQueryRequest,
     Payload::InventoryView,
-    Payload::EquipmentRequest
+    Payload::EquipmentRequest,
+    Payload::CancelConsumptionRequest
   };
   return values;
 }
 
 inline const char * const *EnumNamesPayload() {
-  static const char * const names[32] = {
+  static const char * const names[33] = {
     "NONE",
     "HelloRequest",
     "HelloResponse",
@@ -506,13 +517,14 @@ inline const char * const *EnumNamesPayload() {
     "InventoryQueryRequest",
     "InventoryView",
     "EquipmentRequest",
+    "CancelConsumptionRequest",
     nullptr
   };
   return names;
 }
 
 inline const char *EnumNamePayload(Payload e) {
-  if (::flatbuffers::IsOutRange(e, Payload::NONE, Payload::EquipmentRequest)) return "";
+  if (::flatbuffers::IsOutRange(e, Payload::NONE, Payload::CancelConsumptionRequest)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesPayload()[index];
 }
@@ -639,6 +651,10 @@ template<> struct PayloadTraits<CDDA::CWM::InventoryView> {
 
 template<> struct PayloadTraits<CDDA::CWM::EquipmentRequest> {
   static const Payload enum_value = Payload::EquipmentRequest;
+};
+
+template<> struct PayloadTraits<CDDA::CWM::CancelConsumptionRequest> {
+  static const Payload enum_value = Payload::CancelConsumptionRequest;
 };
 
 bool VerifyPayload(::flatbuffers::Verifier &verifier, const void *obj, Payload type);
@@ -2428,7 +2444,8 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_CLOCK = 36,
     VT_GROUND_ITEM_TILES = 38,
     VT_OWNED_ITEMS = 40,
-    VT_AVATAR_STATUS = 42
+    VT_AVATAR_STATUS = 42,
+    VT_CONSUMPTION = 44
   };
   uint64_t world_revision() const {
     return GetField<uint64_t>(VT_WORLD_REVISION, 0);
@@ -2550,6 +2567,12 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   CDDA::CWM::AvatarStatus *mutable_avatar_status() {
     return GetPointer<CDDA::CWM::AvatarStatus *>(VT_AVATAR_STATUS);
   }
+  const CDDA::CWM::ConsumptionState *consumption() const {
+    return GetPointer<const CDDA::CWM::ConsumptionState *>(VT_CONSUMPTION);
+  }
+  CDDA::CWM::ConsumptionState *mutable_consumption() {
+    return GetPointer<CDDA::CWM::ConsumptionState *>(VT_CONSUMPTION);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint64_t>(verifier, VT_WORLD_REVISION, 8) &&
@@ -2592,6 +2615,8 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyVectorOfTables(owned_items()) &&
            VerifyOffset(verifier, VT_AVATAR_STATUS) &&
            verifier.VerifyTable(avatar_status()) &&
+           VerifyOffset(verifier, VT_CONSUMPTION) &&
+           verifier.VerifyTable(consumption()) &&
            verifier.EndTable();
   }
 };
@@ -2660,6 +2685,9 @@ struct WorldSnapshotBuilder {
   void add_avatar_status(::flatbuffers::Offset<CDDA::CWM::AvatarStatus> avatar_status) {
     fbb_.AddOffset(WorldSnapshot::VT_AVATAR_STATUS, avatar_status);
   }
+  void add_consumption(::flatbuffers::Offset<CDDA::CWM::ConsumptionState> consumption) {
+    fbb_.AddOffset(WorldSnapshot::VT_CONSUMPTION, consumption);
+  }
   explicit WorldSnapshotBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -2692,7 +2720,8 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshot(
     ::flatbuffers::Offset<CDDA::CWM::SimulationState> clock = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::GroundItemTileState>>> ground_item_tiles = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::GroundItemState>>> owned_items = 0,
-    ::flatbuffers::Offset<CDDA::CWM::AvatarStatus> avatar_status = 0) {
+    ::flatbuffers::Offset<CDDA::CWM::AvatarStatus> avatar_status = 0,
+    ::flatbuffers::Offset<CDDA::CWM::ConsumptionState> consumption = 0) {
   WorldSnapshotBuilder builder_(_fbb);
   builder_.add_completed_command_id(completed_command_id);
   builder_.add_resync_id(resync_id);
@@ -2700,6 +2729,7 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshot(
   builder_.add_base_revision(base_revision);
   builder_.add_simulation_time_seconds(simulation_time_seconds);
   builder_.add_world_revision(world_revision);
+  builder_.add_consumption(consumption);
   builder_.add_avatar_status(avatar_status);
   builder_.add_owned_items(owned_items);
   builder_.add_ground_item_tiles(ground_item_tiles);
@@ -2738,7 +2768,8 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshotDirect(
     ::flatbuffers::Offset<CDDA::CWM::SimulationState> clock = 0,
     const std::vector<::flatbuffers::Offset<CDDA::CWM::GroundItemTileState>> *ground_item_tiles = nullptr,
     const std::vector<::flatbuffers::Offset<CDDA::CWM::GroundItemState>> *owned_items = nullptr,
-    ::flatbuffers::Offset<CDDA::CWM::AvatarStatus> avatar_status = 0) {
+    ::flatbuffers::Offset<CDDA::CWM::AvatarStatus> avatar_status = 0,
+    ::flatbuffers::Offset<CDDA::CWM::ConsumptionState> consumption = 0) {
   auto chunks__ = chunks ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::ChunkSnapshot>>(*chunks) : 0;
   auto entities__ = entities ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::EntityState>>(*entities) : 0;
   auto vehicles__ = vehicles ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::VehicleState>>(*vehicles) : 0;
@@ -2769,7 +2800,8 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshotDirect(
       clock,
       ground_item_tiles__,
       owned_items__,
-      avatar_status);
+      avatar_status,
+      consumption);
 }
 
 struct SimulationState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -3310,6 +3342,133 @@ inline ::flatbuffers::Offset<MovementModeRequest> CreateMovementModeRequest(
   return builder_.Finish();
 }
 
+struct ConsumptionState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef ConsumptionStateBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_TOKEN = 4,
+    VT_TOTAL_MOVES = 6,
+    VT_REMAINING_MOVES = 8
+  };
+  uint64_t token() const {
+    return GetField<uint64_t>(VT_TOKEN, 0);
+  }
+  bool mutate_token(uint64_t _token = 0) {
+    return SetField<uint64_t>(VT_TOKEN, _token, 0);
+  }
+  int32_t total_moves() const {
+    return GetField<int32_t>(VT_TOTAL_MOVES, 0);
+  }
+  bool mutate_total_moves(int32_t _total_moves = 0) {
+    return SetField<int32_t>(VT_TOTAL_MOVES, _total_moves, 0);
+  }
+  int32_t remaining_moves() const {
+    return GetField<int32_t>(VT_REMAINING_MOVES, 0);
+  }
+  bool mutate_remaining_moves(int32_t _remaining_moves = 0) {
+    return SetField<int32_t>(VT_REMAINING_MOVES, _remaining_moves, 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_TOKEN, 8) &&
+           VerifyField<int32_t>(verifier, VT_TOTAL_MOVES, 4) &&
+           VerifyField<int32_t>(verifier, VT_REMAINING_MOVES, 4) &&
+           verifier.EndTable();
+  }
+};
+
+struct ConsumptionStateBuilder {
+  typedef ConsumptionState Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_token(uint64_t token) {
+    fbb_.AddElement<uint64_t>(ConsumptionState::VT_TOKEN, token, 0);
+  }
+  void add_total_moves(int32_t total_moves) {
+    fbb_.AddElement<int32_t>(ConsumptionState::VT_TOTAL_MOVES, total_moves, 0);
+  }
+  void add_remaining_moves(int32_t remaining_moves) {
+    fbb_.AddElement<int32_t>(ConsumptionState::VT_REMAINING_MOVES, remaining_moves, 0);
+  }
+  explicit ConsumptionStateBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<ConsumptionState> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<ConsumptionState>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<ConsumptionState> CreateConsumptionState(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t token = 0,
+    int32_t total_moves = 0,
+    int32_t remaining_moves = 0) {
+  ConsumptionStateBuilder builder_(_fbb);
+  builder_.add_token(token);
+  builder_.add_remaining_moves(remaining_moves);
+  builder_.add_total_moves(total_moves);
+  return builder_.Finish();
+}
+
+struct CancelConsumptionRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef CancelConsumptionRequestBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_COMMAND_ID = 4,
+    VT_ACTIVITY_TOKEN = 6
+  };
+  uint64_t command_id() const {
+    return GetField<uint64_t>(VT_COMMAND_ID, 0);
+  }
+  bool mutate_command_id(uint64_t _command_id = 0) {
+    return SetField<uint64_t>(VT_COMMAND_ID, _command_id, 0);
+  }
+  uint64_t activity_token() const {
+    return GetField<uint64_t>(VT_ACTIVITY_TOKEN, 0);
+  }
+  bool mutate_activity_token(uint64_t _activity_token = 0) {
+    return SetField<uint64_t>(VT_ACTIVITY_TOKEN, _activity_token, 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_COMMAND_ID, 8) &&
+           VerifyField<uint64_t>(verifier, VT_ACTIVITY_TOKEN, 8) &&
+           verifier.EndTable();
+  }
+};
+
+struct CancelConsumptionRequestBuilder {
+  typedef CancelConsumptionRequest Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_command_id(uint64_t command_id) {
+    fbb_.AddElement<uint64_t>(CancelConsumptionRequest::VT_COMMAND_ID, command_id, 0);
+  }
+  void add_activity_token(uint64_t activity_token) {
+    fbb_.AddElement<uint64_t>(CancelConsumptionRequest::VT_ACTIVITY_TOKEN, activity_token, 0);
+  }
+  explicit CancelConsumptionRequestBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<CancelConsumptionRequest> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<CancelConsumptionRequest>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<CancelConsumptionRequest> CreateCancelConsumptionRequest(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t command_id = 0,
+    uint64_t activity_token = 0) {
+  CancelConsumptionRequestBuilder builder_(_fbb);
+  builder_.add_activity_token(activity_token);
+  builder_.add_command_id(command_id);
+  return builder_.Finish();
+}
+
 struct InventoryQueryRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef InventoryQueryRequestBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
@@ -3372,7 +3531,10 @@ struct InventoryEntry FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_LENGTH_MM = 28,
     VT_ACCESS_MOVES = 30,
     VT_ACTIONS = 32,
-    VT_REASONS = 34
+    VT_REASONS = 34,
+    VT_CONSUME_MOVES = 36,
+    VT_CONSUME_LABEL = 38,
+    VT_CONSUME_WARNING = 40
   };
   uint32_t id() const {
     return GetField<uint32_t>(VT_ID, 0);
@@ -3470,6 +3632,24 @@ struct InventoryEntry FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   ::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *mutable_reasons() {
     return GetPointer<::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *>(VT_REASONS);
   }
+  int32_t consume_moves() const {
+    return GetField<int32_t>(VT_CONSUME_MOVES, 0);
+  }
+  bool mutate_consume_moves(int32_t _consume_moves = 0) {
+    return SetField<int32_t>(VT_CONSUME_MOVES, _consume_moves, 0);
+  }
+  const ::flatbuffers::String *consume_label() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_CONSUME_LABEL);
+  }
+  ::flatbuffers::String *mutable_consume_label() {
+    return GetPointer<::flatbuffers::String *>(VT_CONSUME_LABEL);
+  }
+  const ::flatbuffers::String *consume_warning() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_CONSUME_WARNING);
+  }
+  ::flatbuffers::String *mutable_consume_warning() {
+    return GetPointer<::flatbuffers::String *>(VT_CONSUME_WARNING);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_ID, 4) &&
@@ -3493,6 +3673,11 @@ struct InventoryEntry FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_REASONS) &&
            verifier.VerifyVector(reasons()) &&
            verifier.VerifyVectorOfStrings(reasons()) &&
+           VerifyField<int32_t>(verifier, VT_CONSUME_MOVES, 4) &&
+           VerifyOffset(verifier, VT_CONSUME_LABEL) &&
+           verifier.VerifyString(consume_label()) &&
+           VerifyOffset(verifier, VT_CONSUME_WARNING) &&
+           verifier.VerifyString(consume_warning()) &&
            verifier.EndTable();
   }
 };
@@ -3549,6 +3734,15 @@ struct InventoryEntryBuilder {
   void add_reasons(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>>> reasons) {
     fbb_.AddOffset(InventoryEntry::VT_REASONS, reasons);
   }
+  void add_consume_moves(int32_t consume_moves) {
+    fbb_.AddElement<int32_t>(InventoryEntry::VT_CONSUME_MOVES, consume_moves, 0);
+  }
+  void add_consume_label(::flatbuffers::Offset<::flatbuffers::String> consume_label) {
+    fbb_.AddOffset(InventoryEntry::VT_CONSUME_LABEL, consume_label);
+  }
+  void add_consume_warning(::flatbuffers::Offset<::flatbuffers::String> consume_warning) {
+    fbb_.AddOffset(InventoryEntry::VT_CONSUME_WARNING, consume_warning);
+  }
   explicit InventoryEntryBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -3577,11 +3771,17 @@ inline ::flatbuffers::Offset<InventoryEntry> CreateInventoryEntry(
     int64_t length_mm = 0,
     int32_t access_moves = 0,
     uint8_t actions = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>>> reasons = 0) {
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>>> reasons = 0,
+    int32_t consume_moves = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> consume_label = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> consume_warning = 0) {
   InventoryEntryBuilder builder_(_fbb);
   builder_.add_length_mm(length_mm);
   builder_.add_volume_ml(volume_ml);
   builder_.add_weight_grams(weight_grams);
+  builder_.add_consume_warning(consume_warning);
+  builder_.add_consume_label(consume_label);
+  builder_.add_consume_moves(consume_moves);
   builder_.add_reasons(reasons);
   builder_.add_access_moves(access_moves);
   builder_.add_charges(charges);
@@ -3615,11 +3815,16 @@ inline ::flatbuffers::Offset<InventoryEntry> CreateInventoryEntryDirect(
     int64_t length_mm = 0,
     int32_t access_moves = 0,
     uint8_t actions = 0,
-    const std::vector<::flatbuffers::Offset<::flatbuffers::String>> *reasons = nullptr) {
+    const std::vector<::flatbuffers::Offset<::flatbuffers::String>> *reasons = nullptr,
+    int32_t consume_moves = 0,
+    const char *consume_label = nullptr,
+    const char *consume_warning = nullptr) {
   auto type_id__ = type_id ? _fbb.CreateString(type_id) : 0;
   auto name__ = name ? _fbb.CreateString(name) : 0;
   auto category__ = category ? _fbb.CreateString(category) : 0;
   auto reasons__ = reasons ? _fbb.CreateVector<::flatbuffers::Offset<::flatbuffers::String>>(*reasons) : 0;
+  auto consume_label__ = consume_label ? _fbb.CreateString(consume_label) : 0;
+  auto consume_warning__ = consume_warning ? _fbb.CreateString(consume_warning) : 0;
   return CDDA::CWM::CreateInventoryEntry(
       _fbb,
       id,
@@ -3637,7 +3842,10 @@ inline ::flatbuffers::Offset<InventoryEntry> CreateInventoryEntryDirect(
       length_mm,
       access_moves,
       actions,
-      reasons__);
+      reasons__,
+      consume_moves,
+      consume_label__,
+      consume_warning__);
 }
 
 struct InventoryPocket FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -4823,6 +5031,9 @@ struct CwmMessage FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const CDDA::CWM::EquipmentRequest *payload_as_EquipmentRequest() const {
     return payload_type() == CDDA::CWM::Payload::EquipmentRequest ? static_cast<const CDDA::CWM::EquipmentRequest *>(payload()) : nullptr;
   }
+  const CDDA::CWM::CancelConsumptionRequest *payload_as_CancelConsumptionRequest() const {
+    return payload_type() == CDDA::CWM::Payload::CancelConsumptionRequest ? static_cast<const CDDA::CWM::CancelConsumptionRequest *>(payload()) : nullptr;
+  }
   void *mutable_payload() {
     return GetPointer<void *>(VT_PAYLOAD);
   }
@@ -4977,6 +5188,10 @@ template<> inline const CDDA::CWM::InventoryView *CwmMessage::payload_as<CDDA::C
 
 template<> inline const CDDA::CWM::EquipmentRequest *CwmMessage::payload_as<CDDA::CWM::EquipmentRequest>() const {
   return payload_as_EquipmentRequest();
+}
+
+template<> inline const CDDA::CWM::CancelConsumptionRequest *CwmMessage::payload_as<CDDA::CWM::CancelConsumptionRequest>() const {
+  return payload_as_CancelConsumptionRequest();
 }
 
 struct CwmMessageBuilder {
@@ -5163,6 +5378,10 @@ inline bool VerifyPayload(::flatbuffers::Verifier &verifier, const void *obj, Pa
     }
     case Payload::EquipmentRequest: {
       auto ptr = reinterpret_cast<const CDDA::CWM::EquipmentRequest *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::CancelConsumptionRequest: {
+      auto ptr = reinterpret_cast<const CDDA::CWM::CancelConsumptionRequest *>(obj);
       return verifier.VerifyTable(ptr);
     }
     default: return true;

@@ -40,6 +40,7 @@ int main(int argc, const char *argv[]) {
     bool create_realtime = false;
     bool create_pickup = false;
     bool create_equipment = false;
+    bool create_consumption = false;
     bool create_body = false;
     bool create_combat = false;
     bool create_posture = false;
@@ -48,6 +49,7 @@ int main(int argc, const char *argv[]) {
     for (int i = 1; i < argc; ++i) {
         std::string arg(argv[i]);
         if (arg == "--create") create = true;
+        else if (arg == "--create-consumption") { create = true; create_consumption = true; create_posture = true; }
         else if (arg == "--create-equipment") { create = true; create_equipment = true; create_posture = true; }
         else if (arg == "--create-pickup") { create = true; create_pickup = true; }
         else if (arg == "--create-ergonomics") { create = true; create_posture = true; create_body = true; create_ergonomics = true; }
@@ -263,6 +265,25 @@ int main(int argc, const char *argv[]) {
             m.add_item(target, ammunition);
             if (!u.wear_item(item(itype_id("backpack_hiking"), calendar::turn))) return 13;
             g->set_safe_mode(SAFE_MODE_OFF);
+        }
+        if (create_consumption) {
+            u.remove_weapon();
+            if (!u.wear_item(item(itype_id("backpack_hiking"), calendar::turn))) return 22;
+            for (int i = 0; i < 2; ++i) {
+                item apple(itype_id("apple"), calendar::turn);
+                apple.set_var("uid", "consumption-apple-" + std::to_string(i)); u.i_add(apple);
+            }
+            item rotten(itype_id("apple"), calendar::turn);
+            rotten.set_relative_rot(2.0); rotten.set_var("uid", "consumption-rotten"); u.i_add(rotten);
+            item bottle(itype_id("bottle_plastic"), calendar::turn);
+            bottle.set_var("uid", "consumption-bottle");
+            item water(itype_id("water_clean"), calendar::turn); water.charges = 4;
+            water.set_var("uid", "consumption-water");
+            if (!bottle.put_in(water, pocket_type::CONTAINER).success()) return 23;
+            u.i_add(bottle);
+            item rock(itype_id("rock"), calendar::turn); rock.set_var("uid", "consumption-rock"); u.i_add(rock);
+            u.set_thirst(200); u.update_stomach(calendar::turn, calendar::turn);
+            u.moves = 100; g->set_safe_mode(SAFE_MODE_OFF);
         }
         if (create_equipment) {
             u.remove_weapon();

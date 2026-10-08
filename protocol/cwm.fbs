@@ -211,6 +211,7 @@ table WorldSnapshot {
     owned_items: [GroundItemState];
     // Complete native read-only status, replaced with each publication.
     avatar_status: AvatarStatus;
+    consumption: ConsumptionState;
 }
 
 table SimulationState {
@@ -262,6 +263,11 @@ table MovementModeRequest {
     mode: MovementMode;
 }
 
+// Progress is native ACT_CONSUME work, never a presentation timer. Token is
+// ephemeral to this server activity, not an item or canonical save field.
+table ConsumptionState { token: uint64; total_moves: int32; remaining_moves: int32; }
+table CancelConsumptionRequest { command_id: uint64; activity_token: uint64; }
+
 // Read-only correlated query. Handles live only in this session/view and
 // reference native item_locations; never interpret a display stack index.
 table InventoryQueryRequest { query_id: uint64; }
@@ -280,9 +286,12 @@ table InventoryEntry {
     volume_ml: int64;
     length_mm: int64;
     access_moves: int32;
-    // Bits 0..3 correspond to EquipmentAction, validated by CDDA again.
+    // Bits 0..4 correspond to EquipmentAction, validated by CDDA again.
     actions: uint8;
     reasons: [string];
+    consume_moves: int32;
+    consume_label: string;
+    consume_warning: string;
 }
 table InventoryPocket {
     owner_id: uint32;
@@ -310,7 +319,7 @@ table InventoryView {
     volume_ml: int64;
     volume_capacity_ml: int64;
 }
-enum EquipmentAction : byte { WIELD = 0, STOW = 1, WEAR = 2, TAKEOFF = 3 }
+enum EquipmentAction : byte { WIELD = 0, STOW = 1, WEAR = 2, TAKEOFF = 3, CONSUME = 4 }
 table EquipmentRequest {
     command_id: uint64;
     view_id: uint64;
@@ -387,6 +396,7 @@ union Payload {
     ,InventoryQueryRequest
     ,InventoryView
     ,EquipmentRequest
+    ,CancelConsumptionRequest
 }
 
 table CwmMessage {

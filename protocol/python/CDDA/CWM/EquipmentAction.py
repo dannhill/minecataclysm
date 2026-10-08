@@ -7,3 +7,4 @@ class EquipmentAction(object):
     STOW = 1
     WEAR = 2
     TAKEOFF = 3
+    CONSUME = 4

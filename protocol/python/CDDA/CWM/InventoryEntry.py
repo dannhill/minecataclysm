@@ -149,8 +149,29 @@ class InventoryEntry(object):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(34))
         return o == 0
 
+    # InventoryEntry
+    def ConsumeMoves(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(36))
+        if o != 0:
+            return self._tab.Get(flatbuffers.number_types.Int32Flags, o + self._tab.Pos)
+        return 0
+
+    # InventoryEntry
+    def ConsumeLabel(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(38))
+        if o != 0:
+            return self._tab.String(o + self._tab.Pos)
+        return None
+
+    # InventoryEntry
+    def ConsumeWarning(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(40))
+        if o != 0:
+            return self._tab.String(o + self._tab.Pos)
+        return None
+
 def InventoryEntryStart(builder):
-    builder.StartObject(16)
+    builder.StartObject(19)
 
 def Start(builder):
     InventoryEntryStart(builder)
@@ -256,6 +277,24 @@ def InventoryEntryStartReasonsVector(builder, numElems):
 
 def StartReasonsVector(builder, numElems):
     return InventoryEntryStartReasonsVector(builder, numElems)
+
+def InventoryEntryAddConsumeMoves(builder, consumeMoves):
+    builder.PrependInt32Slot(16, consumeMoves, 0)
+
+def AddConsumeMoves(builder, consumeMoves):
+    InventoryEntryAddConsumeMoves(builder, consumeMoves)
+
+def InventoryEntryAddConsumeLabel(builder, consumeLabel):
+    builder.PrependUOffsetTRelativeSlot(17, flatbuffers.number_types.UOffsetTFlags.py_type(consumeLabel), 0)
+
+def AddConsumeLabel(builder, consumeLabel):
+    InventoryEntryAddConsumeLabel(builder, consumeLabel)
+
+def InventoryEntryAddConsumeWarning(builder, consumeWarning):
+    builder.PrependUOffsetTRelativeSlot(18, flatbuffers.number_types.UOffsetTFlags.py_type(consumeWarning), 0)
+
+def AddConsumeWarning(builder, consumeWarning):
+    InventoryEntryAddConsumeWarning(builder, consumeWarning)
 
 def InventoryEntryEnd(builder):
     return builder.EndObject()

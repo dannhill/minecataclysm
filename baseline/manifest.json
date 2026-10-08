@@ -6,9 +6,9 @@
       "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
       "shallow": true,
       "patch": "baseline/patches/cdda.patch",
-      "patch_sha256": "f28b3b8f00d9ba0cd8d8602290b491a76ffdeccfbc748952bf809a5cb004c504",
+      "patch_sha256": "ae339eaa55cbc6d71bd41cf4827fae22533f68f1186a96a3e686d2020729c29c",
       "tree_inventory": "baseline/trees/cdda.json",
-      "tree_sha256": "84e03569df32b5e9066e9a6d69dd1a01f0708aecedb3a22610041b3e061d4021",
+      "tree_sha256": "bee32849d04e59eeaeafadd4d0e66a525d1b5e9ae4938dd5fc358b5237ed6c80",
       "file_count": 8584,
       "original_status": " M src/CMakeLists.txt\n M src/avatar_action.cpp\n M src/avatar_action.h\n M src/character.cpp\n M src/character_inventory.cpp\n M src/do_turn.cpp\n M src/do_turn.h\n M src/game.cpp\n M src/game.h\n M src/handle_action.cpp\n M src/iexamine.cpp\n M src/melee.cpp\n M src/output.cpp\n M src/pickup.cpp\n M tests/CMakeLists.txt\n M tests/test_main.cpp\n?? src/cwm/cwm_inventory.h\n?? src/cwm/cwm_main.cpp\n?? src/cwm/cwm_map_exporter.cpp\n?? src/cwm/cwm_map_exporter.h\n?? src/cwm/cwm_server.cpp\n?? src/cwm/cwm_server.h\n?? src/cwm/cwm_status_gauges.h\n?? src/cwm_motion.cpp\n?? src/cwm_motion.h\n?? src/safe_mode_actions.h\n?? tests/cwm_pickup_test.cpp\n?? tests/cwm_projection_test.cpp\n?? tests/cwm_runtime_test.cpp\n"
     },
@@ -17,9 +17,9 @@
       "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
       "shallow": true,
       "patch": "baseline/patches/luanti.patch",
-      "patch_sha256": "0fab2aec277110445cd4dc7500181dcf52d1af904ef757b43a26f251475eb30c",
+      "patch_sha256": "7d9fb913738792a83903c1e4c50313662245b1ba2be0b9f11a16513bbf75747f",
       "tree_inventory": "baseline/trees/luanti.json",
-      "tree_sha256": "782d78ad82edd8b110d460ec5f525f36968833c466917298f8eb8a29c3bec32a",
+      "tree_sha256": "4a7cd5adfdbfe58d47ebcd2c5cd07861f4c13498c8ea193e684c62cd9a36c3e3",
       "file_count": 2257,
       "original_status": " M builtin/settingtypes.txt\n M src/CMakeLists.txt\n M src/client/CMakeLists.txt\n M src/client/client.cpp\n M src/client/clientenvironment.cpp\n M src/client/game.cpp\n M src/client/hud.cpp\n M src/client/inputhandler.cpp\n M src/client/keys.h\n M src/client/mesh_generator_thread.cpp\n M src/client/mesh_generator_thread.h\n M src/defaultsettings.cpp\n M src/network/clientpackethandler.cpp\n M src/server/player_sao.cpp\n M src/unittest/test_mapblock.cpp\n?? src/cdda/avatar_status.h\n?? src/cdda/cdda_bridge.cpp\n?? src/cdda/cdda_bridge.h\n?? src/cdda/equipment_inventory.h\n?? src/cdda/ground_item_formspec.h\n?? src/cdda/ground_item_projection.h\n?? src/cdda/ground_item_visual.h\n?? src/cdda/posture_input.h\n"
     },

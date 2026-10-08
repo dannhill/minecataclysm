@@ -338,8 +338,19 @@ class WorldSnapshot(object):
             return obj
         return None
 
+    # WorldSnapshot
+    def Consumption(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(44))
+        if o != 0:
+            x = self._tab.Indirect(o + self._tab.Pos)
+            from CDDA.CWM.ConsumptionState import ConsumptionState
+            obj = ConsumptionState()
+            obj.Init(self._tab.Bytes, x)
+            return obj
+        return None
+
 def WorldSnapshotStart(builder):
-    builder.StartObject(20)
+    builder.StartObject(21)
 
 def Start(builder):
     WorldSnapshotStart(builder)
@@ -517,6 +528,12 @@ def WorldSnapshotAddAvatarStatus(builder, avatarStatus):
 
 def AddAvatarStatus(builder, avatarStatus):
     WorldSnapshotAddAvatarStatus(builder, avatarStatus)
+
+def WorldSnapshotAddConsumption(builder, consumption):
+    builder.PrependUOffsetTRelativeSlot(20, flatbuffers.number_types.UOffsetTFlags.py_type(consumption), 0)
+
+def AddConsumption(builder, consumption):
+    WorldSnapshotAddConsumption(builder, consumption)
 
 def WorldSnapshotEnd(builder):
     return builder.EndObject()
