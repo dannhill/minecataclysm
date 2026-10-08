@@ -1105,7 +1105,7 @@ index 09a7711..9b0c484 100644
          DebugLog( D_INFO, DC_ALL ) <<
 diff --git a/src/cwm/cwm_crafting.h b/src/cwm/cwm_crafting.h
 new file mode 100644
-index 0000000..9b2bebd
+index 0000000..55817e7
 --- /dev/null
 +++ b/src/cwm/cwm_crafting.h
 @@ -0,0 +1,166 @@
@@ -1263,13 +1263,13 @@ index 0000000..9b2bebd
 +        if (!validate(u, view, entry).empty()) return false;
 +        auto choice = entries_[entry-1]; const int batch = batch_; clear();
 +        if (choice.work) {
-+            if (choice.work.held_by(u)) avatar_action::use_item(u, choice.work, "craft");
++            if (choice.work.held_by(u)) avatar_action::use_item(u, choice.work, "CRAFT");
 +            else if (u.can_continue_craft(*choice.work))
 +                u.assign_activity(craft_activity_actor(choice.work, false)); // Same native workbench path as iexamine.
 +
 +        } else if (crafting_allowed(u, *choice.rec)) {
-+            craft_command command(choice.rec, batch, false, &u, std::nullopt, true);
-+            command.execute();
++            *u.last_craft = craft_command(choice.rec, batch, false, &u, std::nullopt, true);
++            u.last_craft->execute();
 +        }
 +        return u.activity.id() == activity_id("ACT_CRAFT");
 +    }
@@ -3914,10 +3914,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..e7e287a
+index 0000000..988d945
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,1232 @@
+@@ -0,0 +1,1235 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "move_mode.h"
@@ -5063,6 +5063,9 @@ index 0000000..e7e287a
 +    sheet.set_var("uid","crafting-unit-sheet");
 +    get_map().add_item(u.pos()+tripoint_west,item(itype_id("sheet_cotton_patchwork")));
 +    g->new_game=false; g->uquit=QUIT_NO; g->set_safe_mode(SAFE_MODE_OFF);
++    calendar::turn = calendar::turn_zero + 36_hours;
++    get_weather().update_weather(); u.recalc_sight_limits(); g->reset_light_level();
++    get_map().build_map_cache(0); get_map().invalidate_visibility_cache(); get_map().update_visibility_cache(0);
 +    const override_option autosave("AUTOSAVE","false");
 +    bool decline=false;
 +    SECTION("declining consumes no components") { decline=true; }
