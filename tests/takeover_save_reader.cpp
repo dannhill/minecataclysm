@@ -40,11 +40,13 @@ int main(int argc, const char *argv[]) {
     bool create_realtime = false;
     bool create_pickup = false;
     bool create_body = false;
+    bool create_combat = false;
     bool resave = false;
     for (int i = 1; i < argc; ++i) {
         std::string arg(argv[i]);
         if (arg == "--create") create = true;
         else if (arg == "--create-pickup") { create = true; create_pickup = true; }
+        else if (arg == "--create-combat") { create = true; create_combat = true; }
         else if (arg == "--create-body") { create = true; create_body = true; }
         else if (arg == "--create-ledge") { create = true; create_ledge = true; }
         else if (arg == "--create-exploration") { create = true; create_exploration = true; }
@@ -85,7 +87,7 @@ int main(int argc, const char *argv[]) {
     if (create) {
         auto *world = world_generator->make_new_world(world_name, {mod_id("dda")});
         if (!world) return 3;
-        if (create_actors) {
+        if (create_actors || create_combat) {
             world->WORLD_OPTIONS["SPAWN_DENSITY"].setValue("0.0");
             world->WORLD_OPTIONS["WANDER_SPAWNS"].setValue("false");
             if (!world->save()) return 11;
@@ -242,6 +244,24 @@ int main(int argc, const char *argv[]) {
             if (!u.wear_item(item(itype_id("backpack_hiking"), calendar::turn))) return 13;
             g->set_safe_mode(SAFE_MODE_OFF);
         }
+        if (create_combat) {
+            // Native fixture only: equipment is supplied by pristine CDDA,
+            // independently of the unvalidated pickup/equipment interfaces.
+            u.remove_weapon();
+            item bat(itype_id("bat"), calendar::turn);
+            if (!u.wield(bat)) return 14;
+            u.set_skill_level(skill_id("melee"), 4);
+            u.set_skill_level(skill_id("bashing"), 4);
+            u.moves = 100;
+            auto* hostile = g->place_critter_at(mtype_id("mon_zombie"), tripoint(60,59,0));
+            if (!hostile) return 15;
+            hostile->unique_name = "Bersaglio melee";
+            // A native immobilizing condition makes this an isolated control
+            // demo, not a new production AI or damage rule.
+            hostile->add_effect(efftype_id("tied"),10_days,true);
+            hostile->moves = -10000;
+            g->set_safe_mode(SAFE_MODE_OFF);
+        }
         if (create_body) {
             // Native-only fixture: no ground items or pickup UI dependency.
             // Initialize the native hunger descriptor without simulating any
@@ -267,7 +287,7 @@ int main(int argc, const char *argv[]) {
             u.set_skill_level(skill_id("swimming"),10);
             get_weather().update_weather();
             if (!g->save()) return 5;
-        } else if (!create_vertical && !create_pickup && !create_body) {
+        } else if (!create_vertical && !create_pickup && !create_body && !create_combat) {
         g->place_critter_at(mtype_id("mon_zombie"), tripoint(65,65,0));
         auto guy = make_shared_fast<npc>();
         guy->normalize();
@@ -280,7 +300,7 @@ int main(int argc, const char *argv[]) {
         get_weather().update_weather();
         if (!g->save()) return 5;
         }
-        if (create_vertical || create_pickup || create_body) {
+        if (create_vertical || create_pickup || create_body || create_combat) {
             get_weather().update_weather();
             if (!g->save()) return 5;
         }

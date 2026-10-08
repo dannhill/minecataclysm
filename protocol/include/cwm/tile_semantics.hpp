@@ -22,6 +22,7 @@ enum ActorState : uint32_t {
     UNDERWATER = 1u << 3,
     ON_UP_CONNECTION = 1u << 4,
     ON_DOWN_CONNECTION = 1u << 5,
+    HOSTILE_TO_PLAYER = 1u << 6, // native attitude, only for a perceived creature
 };
 enum Material : uint16_t {
     AIR = 0, DIRT = 1, GRASS = 2, WALL = 3, FLOOR = 4,

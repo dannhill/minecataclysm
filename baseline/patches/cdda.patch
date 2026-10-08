@@ -30,7 +30,7 @@ index 6d5d148..4181ad1 100644
  
  if (MINGW AND NOT RELEASE)
 diff --git a/src/avatar_action.cpp b/src/avatar_action.cpp
-index d7e91fc..6d99647 100644
+index d7e91fc..3e18593 100644
 --- a/src/avatar_action.cpp
 +++ b/src/avatar_action.cpp
 @@ -1,3 +1,4 @@
@@ -78,7 +78,38 @@ index d7e91fc..6d99647 100644
      uilist menu;
      menu.title = _( "Diving will destroy the following items.  Proceed?" );
      menu.text = _( "These items are not inside a waterproof container." );
-@@ -631,7 +658,10 @@ void avatar_action::swim( map &m, avatar &you, const tripoint &p )
+@@ -154,6 +181,30 @@ static bool check_water_affect_items( avatar &you )
+     return true;
+ }
+ 
++bool avatar_action::attack( avatar &you, Creature &target )
++{
++    if( !g->check_safe_mode_allowed( false ) ||
++        you.has_active_mutation( trait_SHELL2 ) || you.has_active_mutation( trait_SHELL3 ) ) {
++        return false;
++    }
++    if( !you.move_effects( true ) ) {
++        you.moves -= 100;
++        return false;
++    }
++    // Preserve the monster bump-attack pacification rule; NPC attacks use the
++    // native NPC branch, which does not perform this check.
++    if( target.is_monster() &&
++        !you.try_break_relax_gas( _( "Your willpower asserts itself, and so do you!" ),
++                                 _( "You're too pacified to strike anything…" ) ) ) {
++        return false;
++    }
++    const bool attacked = you.melee_attack( target, true );
++    if( npc *person = target.as_npc() ) {
++        person->make_angry();
++    }
++    return attacked;
++}
++
+ bool avatar_action::move( avatar &you, map &m, const tripoint &d )
+ {
+     bool in_shell = you.has_active_mutation( trait_SHELL2 ) ||
+@@ -631,7 +682,10 @@ void avatar_action::swim( map &m, avatar &you, const tripoint &p )
          }
      }
      if( you.oxygen <= 5 && you.is_underwater() ) {
@@ -90,7 +121,7 @@ index d7e91fc..6d99647 100644
              popup( _( "You need to breathe!  (%s to surface.)" ), press_x( ACTION_MOVE_UP ) );
          } else {
              popup( _( "You need to breathe but you can't swim!  Get to dry land, quick!" ) );
-@@ -659,11 +689,13 @@ void avatar_action::swim( map &m, avatar &you, const tripoint &p )
+@@ -659,11 +713,13 @@ void avatar_action::swim( map &m, avatar &you, const tripoint &p )
      if( m.veh_at( you.pos() ).part_with_feature( VPFLAG_BOARDABLE, true ) ) {
          m.board_vehicle( you.pos(), &you );
      }
@@ -106,6 +137,28 @@ index d7e91fc..6d99647 100644
      }
  
      body_part_set flags;
+diff --git a/src/avatar_action.h b/src/avatar_action.h
+index fe8ad11..7bfeb7b 100644
+--- a/src/avatar_action.h
++++ b/src/avatar_action.h
+@@ -11,6 +11,7 @@
+ #include "units_fwd.h"
+ 
+ class Character;
++class Creature;
+ class avatar;
+ class item;
+ class item_location;
+@@ -39,6 +40,9 @@ inline bool move( avatar &you, map &m, const point &d )
+     return move( you, m, tripoint( d, 0 ) );
+ }
+ 
++// Pointed adjacent melee: native effects/weapon/defenses/cost, no movement rerouting.
++bool attack( avatar &you, Creature &target );
++
+ // Handle moving from a ramp
+ bool ramp_move( avatar &you, map &m, const tripoint &dest );
+ 
 diff --git a/src/character.cpp b/src/character.cpp
 index a90f830..84949ac 100644
 --- a/src/character.cpp
@@ -539,6 +592,42 @@ index e2e738d..e3ed1a6 100644
  
      creature_tracker &creatures = get_creature_tracker();
      if( g->climb_down_menu_pick( examp, cmenu.ret ) ) {
+diff --git a/src/melee.cpp b/src/melee.cpp
+index da5b265..6bfd418 100644
+--- a/src/melee.cpp
++++ b/src/melee.cpp
+@@ -1,4 +1,5 @@
+ #include "melee.h"
++#include "do_turn.h"
+ 
+ #include <algorithm>
+ #include <array>
+@@ -618,7 +619,16 @@ bool Character::melee_attack_abstract( Creature &t, bool allow_special,
+     }
+ 
+     if( is_avatar() && move_cost > 1000 && calendar::turn > melee_warning_turn ) {
+-        const std::string &action = query_popup()
++        const std::string warning = string_format(
++                                        _( "<color_light_red>Attacking with your %1$s will take a long time.  "
++                                           "Are you sure you want to continue?</color>" ), cur_weap.display_name() );
++        std::string action;
++        if( external_ui_active() ) {
++            const int choice = external_ui_choice( warning,
++                               { _( "Yes" ), _( "Ignore further warnings" ), _( "No" ) } );
++            action = choice == 0 ? "YES" : choice == 1 ? "IGNORE" : "NO";
++        } else {
++            action = query_popup()
+                                     .context( "CANCEL_ACTIVITY_OR_IGNORE_QUERY" )
+                                     .message( _( "<color_light_red>Attacking with your %1$s will take a long time.  "
+                                               "Are you sure you want to continue?</color>" ),
+@@ -628,6 +638,7 @@ bool Character::melee_attack_abstract( Creature &t, bool allow_special,
+                                     .option( "IGNORE" )
+                                     .query()
+                                     .action;
++        }
+ 
+         if( action == "NO" ) {
+             return false;
 diff --git a/src/output.cpp b/src/output.cpp
 index 38b1d71..e5b7a12 100644
 --- a/src/output.cpp
@@ -1071,10 +1160,10 @@ index 0000000..1a0308e
 +}
 diff --git a/src/cwm/cwm_map_exporter.cpp b/src/cwm/cwm_map_exporter.cpp
 new file mode 100644
-index 0000000..096ecd7
+index 0000000..8f4af62
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.cpp
-@@ -0,0 +1,590 @@
+@@ -0,0 +1,600 @@
 +#include "cwm_motion.h"
 +// CDDA CWM Map & Entity Exporter Implementation
 +// Licensed under Apache-2.0
@@ -1136,6 +1225,11 @@ index 0000000..096ecd7
 +    return id;
 +}
 +} // namespace
++
++uint64_t CwmMapExporter::monster_entity_id(const monster& critter) {
++    const int id = stored_monster_id(critter);
++    return id ? monster_namespace | uint64_t(id) : 0;
++}
 +
 +flatbuffers::Offset<CDDA::CWM::AvatarStatus> CwmMapExporter::export_avatar_status(
 +    flatbuffers::FlatBufferBuilder& fbb, const avatar& u)
@@ -1473,6 +1567,9 @@ index 0000000..096ecd7
 +            }
 +
 +            const uint64_t entity_id = persistent_monster_id(critter, g, monster_ids, reserved_monster_ids);
++            const bool perceived = u.sees(critter);
++            const uint32_t flags = perceived && critter.attitude_to(u) == Creature::Attitude::HOSTILE ?
++                uint32_t(cdda::cwm::HOSTILE_TO_PLAYER) : 0;
 +            auto mon_state = CDDA::CWM::CreateEntityState(
 +                fbb,
 +                entity_id,
@@ -1480,10 +1577,10 @@ index 0000000..096ecd7
 +                mon_type,
 +                &pos,
 +                0.0f,
-+                0,
++                flags,
 +                hp_pct,
 +                mon_name,
-+                u.sees(critter)
++                perceived
 +            );
 +            entity_offsets.push_back(mon_state);
 +        }
@@ -1496,8 +1593,10 @@ index 0000000..096ecd7
 +        const auto p = person.pos();
 +        const CDDA::CWM::Vec3f pos(p.x, p.y, p.z);
 +        const uint64_t id = (uint64_t(1) << 63) | static_cast<uint64_t>(person.getID().get_value());
++        const bool perceived = u.sees(person);
++        const uint32_t flags = perceived && person.is_enemy() ? uint32_t(cdda::cwm::HOSTILE_TO_PLAYER) : 0;
 +        entity_offsets.push_back(CDDA::CWM::CreateEntityState(fbb, id,
-+            CDDA::CWM::EntityType::NPC, type, &pos, 0.0f, 0, 100, name, u.sees(person)));
++            CDDA::CWM::EntityType::NPC, type, &pos, 0.0f, flags, 100, name, perceived));
 +    }
 +
 +    if (clock && clock->realtime) for (const auto& actor : entity_offsets) {
@@ -1667,10 +1766,10 @@ index 0000000..096ecd7
 +} // namespace cwm
 diff --git a/src/cwm/cwm_map_exporter.h b/src/cwm/cwm_map_exporter.h
 new file mode 100644
-index 0000000..8fa5e66
+index 0000000..6463f0e
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.h
-@@ -0,0 +1,63 @@
+@@ -0,0 +1,65 @@
 +// CDDA CWM Map & Entity Exporter
 +// Licensed under Apache-2.0
 +#pragma once
@@ -1699,6 +1798,8 @@ index 0000000..8fa5e66
 +        std::set<uint64_t> actors;
 +    };
 +    struct ClockView { bool realtime{false}; uint32_t pause_reasons{0}; float scale{1.f}; float motion_seconds{.2f}; bool continuous{false}; };
++    // Read an already assigned canonical identity without allocating or using RNG.
++    static uint64_t monster_entity_id(const monster& critter);
 +    static CDDA::CWM::CwmBlock export_block(const tripoint& p, map& m, uint8_t light);
 +    static flatbuffers::Offset<CDDA::CWM::AvatarStatus> export_avatar_status(
 +        flatbuffers::FlatBufferBuilder& fbb, const avatar& u);
@@ -1736,10 +1837,10 @@ index 0000000..8fa5e66
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..a4ecc9f
+index 0000000..a0e9a20
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,685 @@
+@@ -0,0 +1,719 @@
 +#include "cwm_motion.h"
 +// CDDA CWM IPC Server Implementation
 +// Licensed under Apache-2.0
@@ -1771,6 +1872,24 @@ index 0000000..a4ecc9f
 +namespace {
 +const point directions[] = {point_zero, point(0,-1), point(1,-1), point(1,0),
 +    point(1,1), point(0,1), point(-1,1), point(-1,0), point(-1,-1)};
++
++Creature* attack_target(uint64_t id, avatar& u, map& m, game& g) {
++    Creature* target = nullptr;
++    if (id & (uint64_t(1) << 63)) {
++        for (npc& person : g.all_npcs())
++            if (((uint64_t(1) << 63) | uint64_t(person.getID().get_value())) == id && person.is_enemy())
++                target = &person;
++    } else if (id & (uint64_t(1) << 62)) {
++        for (monster& critter : g.all_monsters())
++            if (CwmMapExporter::monster_entity_id(critter) == id && !critter.is_hallucination() &&
++                critter.friendly == 0 && !critter.has_effect(efftype_id("pet")) &&
++                critter.attitude_to(u) == Creature::Attitude::HOSTILE) target = &critter;
++    }
++    if (!target || target->is_dead() || !m.inbounds(target->pos()) || target->posz() != u.posz() ||
++        !u.is_adjacent(target, false) || !u.sees(*target) ||
++        !m.clear_path(u.pos(), target->pos(), 1, 1, 100)) return nullptr;
++    return target;
++}
 +
 +std::string vertical_error(const avatar& u, const map& m, int direction) {
 +    // Contextual connections/swimming only. Free climbing requires a spatial
@@ -2136,7 +2255,14 @@ index 0000000..a4ecc9f
 +bool CwmServer::execute(const Command& command, avatar& u, map& m, game& g) {
 +    const int before_moves = u.moves;
 +    bool accepted = false;
-+    if (command.move) {
++    if (command.attack_target) {
++        Creature* target = attack_target(command.attack_target, u, m, g);
++        if (!target || (realtime_ && pause_reasons(g))) {
++            result_ = Result{command.id, false, "Melee target unavailable, not hostile or out of reach"};
++            return false;
++        }
++        accepted = avatar_action::attack(u, *target);
++    } else if (command.move) {
 +        if (!g.check_safe_mode_allowed(false)) {
 +            result_ = Result{command.id, false, "Safe mode: threat requires acknowledgement"};
 +            return false;
@@ -2276,6 +2402,8 @@ index 0000000..a4ecc9f
 +                ":" + std::to_string(request->pickup_charges()) +
 +                ":" + std::to_string(request->pickup_count_by_charges());
 +        }
++    } else if (const auto* request = msg->payload_as_AttackRequest()) {
++        id = request->command_id(); signature = "attack:" + std::to_string(request->target_entity_id());
 +    } else if (const auto* request = msg->payload_as_AcknowledgeThreatRequest()) {
 +        id = request->command_id(); signature = "threat";
 +    } else if (const auto* request = msg->payload_as_MovementIntentRequest()) {
@@ -2386,6 +2514,13 @@ index 0000000..a4ecc9f
 +            else if (m.impassable(target) && !get_creature_tracker().creature_at(target, true) &&
 +                     !m.open_door(u, target, !m.is_outside(u.pos()), true)) error = "Movement blocked";
 +        }
++    } else if (msg->payload_type() == CDDA::CWM::Payload::AttackRequest) {
++        const auto* request = msg->payload_as_AttackRequest();
++        command.id = request->command_id();
++        command.attack_target = request->target_entity_id();
++        if (!attack_target(command.attack_target, u, m, g))
++            error = "Melee target unavailable, not hostile or out of reach";
++        else if (!g.check_safe_mode_allowed(false)) error = "Safe mode: threat requires acknowledgement";
 +    } else if (msg->payload_type() == CDDA::CWM::Payload::InteractRequest) {
 +        const auto* request = msg->payload_as_InteractRequest();
 +        if (!request) return;
@@ -2427,10 +2562,10 @@ index 0000000..a4ecc9f
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.h b/src/cwm/cwm_server.h
 new file mode 100644
-index 0000000..c9f846b
+index 0000000..a7a8655
 --- /dev/null
 +++ b/src/cwm/cwm_server.h
-@@ -0,0 +1,120 @@
+@@ -0,0 +1,121 @@
 +// CDDA CWM IPC Server
 +// Licensed under Apache-2.0
 +#pragma once
@@ -2510,6 +2645,7 @@ index 0000000..c9f846b
 +    struct Command {
 +        uint64_t id{0};
 +        bool move{false};
++        uint64_t attack_target{0};
 +        int action{0};
 +        int x{0}, y{0}, z{0}; // absolute CDDA coordinates, captured on receipt
 +        uint32_t pickup_stack_index{0};
@@ -2811,12 +2947,18 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..63ae9d0
+index 0000000..9144b13
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,299 @@
+@@ -0,0 +1,443 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
++#include "avatar_action.h"
++#include "monster.h"
++#include "npc.h"
++#include "mtype.h"
++#include "rng.h"
++#include "cwm/tile_semantics.hpp"
 +#include "calendar.h"
 +#include "game.h"
 +#include "item.h"
@@ -2851,6 +2993,18 @@ index 0000000..63ae9d0
 +                           selected.charges, selected.count_by_charges() );
 +        server.handle_client_message( bytes.data(), bytes.size(), get_avatar(), get_map(), *g );
 +    }
++    static void attack( CwmServer &server, uint64_t target, uint64_t id = 1 ) {
++        cdda::cwm::MessageBuilder wire( server.received_sequence_ + 1, 1, server.identity_ );
++        const auto bytes = wire.build_attack_request( id, target );
++        server.handle_client_message( bytes.data(), bytes.size(), get_avatar(), get_map(), *g );
++    }
++    static void cancel( CwmServer &server ) { server.cancel_connection(); }
++    static void complete( CwmServer &server ) {
++        REQUIRE( server.result_ );
++        server.send_result( *server.result_, get_avatar(), get_map(), *g );
++        server.result_.reset();
++    }
++    static void pause( CwmServer &server ) { server.manual_pause_ = true; }
 +    static bool execute( CwmServer &server ) {
 +        REQUIRE( server.commands_.size() == 1 );
 +        const auto command = server.commands_.front();
@@ -3113,6 +3267,132 @@ index 0000000..63ae9d0
 +        return cancel_disposition ? cwm::CwmServerTestAccess::choice_without_peer( server, text, choices ) : 0;
 +    } ) );
 +    CHECK( prompts == ( wield || cancel_disposition ? 2 : 1 ) );
++}
++
++TEST_CASE( "cwm_pointed_melee_revalidates_native_identity_and_reach", "[cwm][melee]" )
++{
++    clear_avatar();
++    clear_map();
++    clear_creatures();
++    avatar &u = get_avatar();
++    map &m = get_map();
++    u.setpos( tripoint( 60, 60, 0 ) );
++    calendar::turn = calendar::turn_zero + 36_hours;
++    g->set_safe_mode( SAFE_MODE_OFF );
++    get_weather().update_weather();
++    u.recalc_sight_limits();
++    g->reset_light_level();
++    m.build_map_cache( 0 );
++    m.invalidate_visibility_cache();
++    m.update_visibility_cache( 0 );
++    monster *mon = g->place_critter_at( mtype_id( "mon_zombie" ), u.pos() + tripoint_north );
++    REQUIRE( mon );
++    mon->set_value( "cwm_monster_id", "187" );
++    const auto id = cwm::CwmMapExporter::monster_entity_id( *mon );
++    REQUIRE( id == ( uint64_t( 1 ) << 62 | 187 ) );
++    REQUIRE( u.sees( *mon ) );
++    REQUIRE( mon->attitude_to( u ) == Creature::Attitude::HOSTILE );
++    u.moves = 1000;
++    cwm::CwmServer server( "/unused-cwm-melee-fixture" );
++    cwm::CwmServerTestAccess::ready( server );
++    cwm::CwmServerTestAccess::attack( server, id );
++    REQUIRE( server.has_queued_action() );
++    CHECK( u.moves == 1000 );
++
++    bool valid = false;
++    SECTION( "native adjacent hostile attack" ) { valid = true; }
++    SECTION( "target moves away after admission" ) { mon->setpos( u.pos() + tripoint( 0, -4, 0 ) ); }
++    SECTION( "target goes upstairs" ) { mon->setpos( u.pos() + tripoint( 0, -1, 1 ) ); }
++    SECTION( "target becomes friendly" ) { mon->friendly = -1; }
++    SECTION( "target becomes a pet" ) { mon->add_effect( efftype_id( "pet" ), 1_hours ); }
++    SECTION( "identity changes on the same creature" ) { mon->set_value( "cwm_monster_id", "188" ); }
++    SECTION( "target dies before execution" ) { mon->set_hp( 0 ); }
++    SECTION( "player moves out of reach" ) { u.setpos( u.pos() + tripoint_east * 5 ); }
++    SECTION( "opaque wall blocks the target" ) {
++        m.ter_set( mon->pos(), ter_str_id( "t_wall" ) );
++        m.build_map_cache( 0 );
++        m.invalidate_visibility_cache();
++        m.update_visibility_cache( 0 );
++    }
++    const int hp = mon->get_hp();
++    const int stamina = u.get_stamina();
++    const auto time = calendar::turn;
++    const auto rng = rng_get_engine();
++    CHECK( cwm::CwmServerTestAccess::execute( server ) == valid );
++    CHECK( cwm::CwmServerTestAccess::accepted( server ) == valid );
++    CHECK( calendar::turn == time ); // only do_turn advances world time
++    if( valid ) {
++        CHECK( u.moves < 1000 );
++        CHECK( u.get_stamina() < stamina );
++        CHECK( server.world_revision() == 2 );
++    } else {
++        CHECK( u.moves == 1000 );
++        CHECK( u.get_stamina() == stamina );
++        CHECK( mon->get_hp() == hp );
++        CHECK( rng_get_engine() == rng );
++        CHECK( server.world_revision() == 1 );
++    }
++    clear_creatures();
++}
++
++TEST_CASE( "cwm_melee_pending_completed_and_canceled_commands_do_not_repeat", "[cwm][melee]" )
++{
++    clear_avatar();
++    clear_map();
++    clear_creatures();
++    avatar &u = get_avatar();
++    u.setpos( tripoint( 60, 60, 0 ) );
++    calendar::turn = calendar::turn_zero + 36_hours;
++    g->set_safe_mode( SAFE_MODE_OFF );
++    u.recalc_sight_limits();
++    g->reset_light_level();
++    get_map().build_map_cache( 0 );
++    get_map().invalidate_visibility_cache();
++    get_map().update_visibility_cache( 0 );
++    monster *mon = g->place_critter_at( mtype_id( "mon_zombie" ), u.pos() + tripoint_north );
++    REQUIRE( mon );
++    mon->set_value( "cwm_monster_id", "200" );
++    const uint64_t id = cwm::CwmMapExporter::monster_entity_id( *mon );
++    const std::string socket = "/tmp/cwm-melee-test-" + std::to_string( getpid() ) + ".sock";
++    cwm::CwmServer server( socket );
++    REQUIRE( server.start() );
++    auto peer = cdda::cwm::IpcClient::connect_unix( socket );
++    REQUIRE( peer );
++    REQUIRE( cwm::CwmServerTestAccess::accept_peer( server ) );
++    cwm::CwmServerTestAccess::ready( server );
++    u.moves = 1000;
++    cwm::CwmServerTestAccess::attack( server, id );
++    REQUIRE( server.has_queued_action() );
++    SECTION( "duplicate pending then completed command" ) {
++        cwm::CwmServerTestAccess::attack( server, id );
++        REQUIRE( cwm::CwmServerTestAccess::execute( server ) );
++        cwm::CwmServerTestAccess::complete( server );
++        const int moves = u.moves;
++        const int hp = mon->get_hp();
++        cwm::CwmServerTestAccess::attack( server, id );
++        CHECK_FALSE( server.has_queued_action() );
++        CHECK( u.moves == moves );
++        CHECK( mon->get_hp() == hp );
++    }
++    SECTION( "same command ID different target closes peer" ) {
++        cwm::CwmServerTestAccess::attack( server, id + 1 );
++        CHECK_FALSE( server.has_active_client() );
++    }
++    SECTION( "disconnect cancels pending input" ) {
++        cwm::CwmServerTestAccess::cancel( server );
++        CHECK_FALSE( server.has_queued_action() );
++        CHECK( u.moves == 1000 );
++    }
++    SECTION( "manual pause refuses input without delayed attack" ) {
++        cwm::CwmServerTestAccess::cancel( server );
++        cwm::CwmServerTestAccess::ready( server );
++        server.enable_realtime();
++        cwm::CwmServerTestAccess::pause( server );
++        cwm::CwmServerTestAccess::attack( server, id, 2 );
++        CHECK_FALSE( server.has_queued_action() );
++        CHECK( u.moves == 1000 );
++    }
++    clear_creatures();
 +}
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644

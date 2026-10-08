@@ -106,7 +106,7 @@ index b6ae675..9e33201 100644
  		/*
  			Local player handling
 diff --git a/src/client/game.cpp b/src/client/game.cpp
-index 27b5833..ec15c56 100644
+index 27b5833..571d853 100644
 --- a/src/client/game.cpp
 +++ b/src/client/game.cpp
 @@ -8,6 +8,7 @@
@@ -370,7 +370,7 @@ index 27b5833..ec15c56 100644
  
  			if (clouds)
  				clouds->updateCameraOffset(camera_offset);
-@@ -3365,6 +3524,34 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
+@@ -3365,6 +3524,37 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
  	// but the halo rendering code is already inefficient so there's no point in optimizing it here
  	hud->updateSelectionMesh(camera_offset);
  
@@ -382,6 +382,9 @@ index 27b5833..ec15c56 100644
 +		if (pointed.type != POINTEDTHING_NOTHING)
 +			item_ray.end = pointed.intersection_point;
 +		const bool items_pointed = bridge.pointGroundItems(item_ray);
++		bridge.pointCombatTarget(item_ray);
++		if (!bridge.getMetrics().pending_decision && wasKeyPressed(KeyType::DIG) &&
++				bridge.attackPointedTarget()) camera->setDigging(0);
 +		if (!bridge.getMetrics().pending_decision && wasKeyPressed(KeyType::PLACE)) {
 +			if (items_pointed && !isKeyDown(KeyType::SNEAK)) {
 +				const auto form = bridge.activateGroundItems();
@@ -405,7 +408,7 @@ index 27b5833..ec15c56 100644
  	// Allow digging again if button is not pressed
  	if (runData.digging_blocked && !isKeyDown(KeyType::DIG))
  		runData.digging_blocked = false;
-@@ -4319,7 +4506,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
+@@ -4319,7 +4509,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
  	/*
  		Fog
  	*/
@@ -822,10 +825,10 @@ index 0000000..5a349eb
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..1fdce91
+index 0000000..d392b15
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,1767 @@
+@@ -0,0 +1,1842 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
@@ -905,6 +908,7 @@ index 0000000..1fdce91
 +    irr::gui::IGUIStaticText* survival_text_{nullptr};
 +    uint64_t ack_revision_{0};
 +    uint64_t pending_move_{0};
++    uint64_t pointed_actor_{0}, last_attack_target_{0}, attacks_sent_{0};
 +    bool move_acked_{false};
 +    std::chrono::steady_clock::time_point next_move_{};
 +    std::chrono::steady_clock::time_point sent_move_{};
@@ -981,6 +985,7 @@ index 0000000..1fdce91
 +            item_hint_ = L"Selezione annullata. Punta di nuovo l'oggetto per raccoglierlo.";
 +            item_hint_until_ = std::chrono::steady_clock::now() + std::chrono::seconds(3);
 +        }
++        pointed_actor_ = 0;
 +        queued_pickup_.reset(); pointed_ground_.reset(); hover_hint_.clear();
 +        ground_close_requested_ = ground_container_open_;
 +    }
@@ -2045,6 +2050,24 @@ index 0000000..1fdce91
 +        return true;
 +    }
 +
++    bool send_attack_request() {
++        const auto now = std::chrono::steady_clock::now();
++        if (!connection_ || !connection_->is_valid() || !session_.ready() || !player_ready_ ||
++            pending_move_ || metrics_.pending_decision || metrics_.pause_reasons ||
++            ground_container_open_ || body_form_open_ || now < next_move_) return false;
++        const auto it = entities_.find(pointed_actor_);
++        if (it == entities_.end() || !it->second.perceived || !it->second.scene_node ||
++            !(it->second.state_flags & cdda::cwm::HOSTILE_TO_PLAYER)) return false;
++        const uint64_t command = session_.next_command++;
++        auto builder = session_.builder();
++        const auto req = builder.build_attack_request(command, pointed_actor_);
++        if (!connection_->send_message(req.data(), req.size())) return false;
++        pending_move_ = command; move_acked_ = false; sent_move_ = now;
++        next_move_ = now + std::chrono::milliseconds(200);
++        last_attack_target_ = pointed_actor_; ++attacks_sent_;
++        return true;
++    }
++
 +    bool acknowledge_threat() {
 +        if (!connection_ || !connection_->is_valid() || !session_.ready() || !player_ready_ || pending_move_)
 +            return false;
@@ -2096,7 +2119,7 @@ index 0000000..1fdce91
 +    std::string trace_path;
 +    if (g_settings->getNoEx("cwm_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->trace_.open(trace_path);
-+        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog,ipc_connected,ipc_input,ipc_output,ipc_read_bytes,ipc_write_bytes,ipc_frames,ipc_dispatch_bytes,ipc_read_calls,ipc_write_calls,session_state,input_ready,session_id,player_id,connection_id,sequence,resync_count,entity_cache,vehicle_cache,scene_origin_x,scene_origin_y,simulation_time,realtime,pause_reasons,time_scale,sent_intent,continuous_motion,intent_x,intent_y,ipc_latency_ms,projection_ms,ground_tiles,owned_items,ground_container,ground_hover,queued_pickup,ground_visual_nodes,ground_hover_items,ground_target_items,ground_target_visual_nodes,ground_target_first_type,status_available,body_form,survival_visible,status_stamina,status_head,status_arm_l\n";
++        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog,ipc_connected,ipc_input,ipc_output,ipc_read_bytes,ipc_write_bytes,ipc_frames,ipc_dispatch_bytes,ipc_read_calls,ipc_write_calls,session_state,input_ready,session_id,player_id,connection_id,sequence,resync_count,entity_cache,vehicle_cache,scene_origin_x,scene_origin_y,simulation_time,realtime,pause_reasons,time_scale,sent_intent,continuous_motion,intent_x,intent_y,ipc_latency_ms,projection_ms,ground_tiles,owned_items,ground_container,ground_hover,queued_pickup,ground_visual_nodes,ground_hover_items,ground_target_items,ground_target_visual_nodes,ground_target_first_type,status_available,body_form,survival_visible,status_stamina,status_head,status_arm_l,combat_hover,attacks_sent,attack_target,attack_target_hp\n";
 +    }
 +    if (g_settings->getNoEx("cwm_entity_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->entity_trace_.open(trace_path);
@@ -2244,7 +2267,9 @@ index 0000000..1fdce91
 +        << ',' << (pimpl_->survival_text_ && pimpl_->survival_text_->isVisible())
 +        << ',' << pimpl_->avatar_status_.stamina.text
 +        << ',' << [&]() { for (const auto& part : pimpl_->avatar_status_.parts) if (part.id == "head") return part.health.text; return std::string{}; }()
-+        << ',' << [&]() { for (const auto& part : pimpl_->avatar_status_.parts) if (part.id == "arm_l") return part.health.text; return std::string{}; }() << '\n';
++        << ',' << [&]() { for (const auto& part : pimpl_->avatar_status_.parts) if (part.id == "arm_l") return part.health.text; return std::string{}; }()
++        << ',' << pimpl_->pointed_actor_ << ',' << pimpl_->attacks_sent_ << ',' << pimpl_->last_attack_target_
++        << ',' << [&]() { const auto it = pimpl_->entities_.find(pimpl_->last_attack_target_); return it == pimpl_->entities_.end() ? -1 : int(it->second.hp_percent); }() << '\n';
 +    pimpl_->trace_.flush();
 +}
 +
@@ -2277,6 +2302,59 @@ index 0000000..1fdce91
 +    const auto tile = luantiToCddaCoord(node);
 +    return handleInteract(tile.X, tile.Y, tile.Z, static_cast<int>(close ?
 +        CDDA::CWM::InteractAction::CLOSE : CDDA::CWM::InteractAction::OPEN));
++}
++
++bool CddaBridge::pointCombatTarget(const irr::core::line3d<float>& ray) {
++    if (!pimpl_) return false;
++    auto& impl = *pimpl_;
++    impl.pointed_actor_ = 0;
++    if (!impl.session_.ready() || !impl.player_ready_ || impl.metrics_.pending_decision) return false;
++    // The pointing ray uses absolute world coordinates; Irrlicht actors use
++    // camera-relative coordinates. Keep both endpoints in the same space.
++    const auto offset = impl.client_->getEnv().getCameraOffset();
++    const v3f shift = v3f(offset.X, offset.Y, offset.Z) * 10.f;
++    const irr::core::line3d<float> local_ray(ray.start - shift, ray.end - shift);
++    float closest = std::numeric_limits<float>::max();
++    for (auto& [id, ent] : impl.entities_) {
++        if (id == 1 || !ent.perceived || !ent.scene_node) continue;
++        auto* node = static_cast<irr::scene::ISceneNode*>(ent.scene_node);
++        if (!node->isVisible()) continue;
++        node->updateAbsolutePosition();
++        const auto box = node->getTransformedBoundingBox();
++        // Slab intersection gives the first surface, rather than choosing the
++        // nearest center when visual bounds overlap.
++        float begin = 0.f, end = 1.f;
++        const auto delta = local_ray.getVector();
++        const float start[] = {local_ray.start.X, local_ray.start.Y, local_ray.start.Z};
++        const float direction[] = {delta.X, delta.Y, delta.Z};
++        const float lo[] = {box.MinEdge.X, box.MinEdge.Y, box.MinEdge.Z};
++        const float hi[] = {box.MaxEdge.X, box.MaxEdge.Y, box.MaxEdge.Z};
++        bool hit = true;
++        for (int axis = 0; axis < 3 && hit; ++axis) {
++            if (std::abs(direction[axis]) < 1e-6f) {
++                hit = start[axis] >= lo[axis] && start[axis] <= hi[axis];
++            } else {
++                float a = (lo[axis] - start[axis]) / direction[axis];
++                float b = (hi[axis] - start[axis]) / direction[axis];
++                if (a > b) std::swap(a, b);
++                begin = std::max(begin, a); end = std::min(end, b);
++                hit = begin <= end;
++            }
++        }
++        if (hit && begin < closest) { closest = begin; impl.pointed_actor_ = id; }
++    }
++    if (impl.pointed_actor_) {
++        const auto& ent = impl.entities_.at(impl.pointed_actor_);
++        impl.hover_hint_ = utf8_to_wide(ent.name) +
++            ((ent.state_flags & cdda::cwm::HOSTILE_TO_PLAYER) ?
++             (impl.metrics_.pause_reasons ? L" — riprendi per attaccare" : L" — clic sinistro: attacco ravvicinato") :
++             L" — creatura non ostile");
++    }
++    return impl.pointed_actor_ != 0;
++}
++
++bool CddaBridge::attackPointedTarget() {
++    return pimpl_ && pimpl_->send_attack_request();
 +}
 +
 +bool CddaBridge::pointGroundItems(const irr::core::line3d<float>& ray) {
@@ -2595,10 +2673,10 @@ index 0000000..1fdce91
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.h b/src/cdda/cdda_bridge.h
 new file mode 100644
-index 0000000..c76f302
+index 0000000..3d82d92
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.h
-@@ -0,0 +1,143 @@
+@@ -0,0 +1,145 @@
 +// Luanti C++ CWM Presentation Bridge
 +// Licensed under Apache-2.0
 +#pragma once
@@ -2688,6 +2766,8 @@ index 0000000..c76f302
 +    bool handleMoveInput(int dir);
 +    bool handleInteract(int x, int y, int z, int action);
 +    bool handlePointedOpening(const v3s16& node, bool close);
++    bool pointCombatTarget(const irr::core::line3d<float>& ray);
++    bool attackPointedTarget();
 +    bool pointGroundItems(const irr::core::line3d<float>& ray);
 +    std::string activateGroundItems();
 +    Inventory* getInventoryMirror(const InventoryLocation& location);

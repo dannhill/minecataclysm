@@ -36662,12 +36662,12 @@
   {
     "path": "src/avatar_action.cpp",
     "mode": "100644",
-    "sha256": "c60d55bba6d11380a2705762a83823aaba720813df6f351b7686efbff1167364"
+    "sha256": "2f6787f51e1f560ac2d6fa1857de36aa0eeafd9fdd64d92fe53f6b0bfdfb8fce"
   },
   {
     "path": "src/avatar_action.h",
     "mode": "100644",
-    "sha256": "50be2e9e86db396c3b7d0c00406d6c5fa9e427d7ba0ad2ea703d3cb0d8ea4c88"
+    "sha256": "74cd930945c867f9b5565f637b34d4454587f347debf0c7a00184c46b31f34ed"
   },
   {
     "path": "src/ballistics.cpp",
@@ -37327,22 +37327,22 @@
   {
     "path": "src/cwm/cwm_map_exporter.cpp",
     "mode": "100644",
-    "sha256": "24537674c19ac1f52a453a6c4807cf4305d7231b66c8061c7a1e51f0ac943e95"
+    "sha256": "0532126666c6100d194cf8b6673cac33774ffccb9e316f5820fc5e9e86af168e"
   },
   {
     "path": "src/cwm/cwm_map_exporter.h",
     "mode": "100644",
-    "sha256": "0fa7278283c60a8f970f58f590124f3b6407872ea499e62fef22ff5befa72df0"
+    "sha256": "5b39cfef77b978ba9fc105e458c67a3be9c205a3c77122fa51df08b2c79bac17"
   },
   {
     "path": "src/cwm/cwm_server.cpp",
     "mode": "100644",
-    "sha256": "4b7ae2e1703a083ec5b797fc93a7d4f5fba0d97e93a5c125c43b759db313bdf9"
+    "sha256": "d4afd05d49e59f448c2980937e63ac89dac2cdc7fe627ed3d4b1e0574a154712"
   },
   {
     "path": "src/cwm/cwm_server.h",
     "mode": "100644",
-    "sha256": "d2f74ee4e4a71919b609aa0034d2024485f4a79e0e0b7f85b39d559365f64c45"
+    "sha256": "6723728579b7d95f77ef26f64daaa82e2ffaa6e1b33426d34071584dfa8a2f68"
   },
   {
     "path": "src/cwm_motion.cpp",
@@ -38677,7 +38677,7 @@
   {
     "path": "src/melee.cpp",
     "mode": "100644",
-    "sha256": "fba2a49765b59215d85bfed845b86c0ecf8c8e19de0d3b90cd8d2c9b72a824cc"
+    "sha256": "8da12ff5782bc1ff94020e9bb2409aece6d1b3c374ad901690b6bf41fcbd00fc"
   },
   {
     "path": "src/melee.h",
@@ -40872,7 +40872,7 @@
   {
     "path": "tests/cwm_pickup_test.cpp",
     "mode": "100644",
-    "sha256": "e92bb9b36342982bbfed5fa82ee152891a68cea1e75c200a5f2d7bfa3988a6e8"
+    "sha256": "a9cc558a1b9cef26ebb27ee3a8ab7019f040eeafd4a7107f324848a6e733badb"
   },
   {
     "path": "tests/cwm_projection_test.cpp",

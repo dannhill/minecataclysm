@@ -1,10 +1,10 @@
 # Validazioni manuali da riproporre
 
-L'utente il 2026-10-08 non può provare il gioco e chiede di rinviare la
-validazione della raccolta, proseguendo autonomamente con una feature
-essenziale indipendente. **Rinviata non significa approvata.** Riproporre
-questa checklist alla consegna del successivo HUD/scheda corporea, insieme
-alla sua checklist. L'inventario interattivo non è anticipato da questa scelta.
+L'utente il 2026-10-08 ha chiesto di rinviare ancora entrambe le prove
+(raccolta e HUD/scheda corporea) e proseguire autonomamente con un'altra
+feature essenziale ortogonale. **Rinviata non significa approvata.**
+Riproporre tutte le checklist alla prossima consegna, senza bloccare lo
+sviluppo autorizzato né anticipare l'inventario interattivo.
 
 ## Raccolta — IN ATTESA
 
