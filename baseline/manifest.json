@@ -6,9 +6,9 @@
       "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
       "shallow": true,
       "patch": "baseline/patches/cdda.patch",
-      "patch_sha256": "4f260546f14acab1f973f4cb085f7dec9200a17d910e7fc8237c2d3a4b632ac7",
+      "patch_sha256": "515c7f39ab859495542d6c774dd54268715745724e72efdd773abae88bc6a2b1",
       "tree_inventory": "baseline/trees/cdda.json",
-      "tree_sha256": "e2ae0976bb2b7e3d1e8be2b1dfba028b49bd7d7e574bf21c5dbf236ff9fb3880",
+      "tree_sha256": "40b55722a1f60f05f95f5a6a79153e9f174bcb41a3ceadcb5267643c5f6c6145",
       "file_count": 8584,
       "original_status": " M src/CMakeLists.txt\n M src/avatar_action.cpp\n M src/avatar_action.h\n M src/character.cpp\n M src/character_body.cpp\n M src/character_inventory.cpp\n M src/do_turn.cpp\n M src/do_turn.h\n M src/game.cpp\n M src/game.h\n M src/handle_action.cpp\n M src/iexamine.cpp\n M src/iuse_actor.cpp\n M src/melee.cpp\n M src/output.cpp\n M src/pickup.cpp\n M tests/CMakeLists.txt\n M tests/test_main.cpp\n?? src/cwm/cwm_inventory.h\n?? src/cwm/cwm_main.cpp\n?? src/cwm/cwm_map_exporter.cpp\n?? src/cwm/cwm_map_exporter.h\n?? src/cwm/cwm_server.cpp\n?? src/cwm/cwm_server.h\n?? src/cwm/cwm_status_gauges.h\n?? src/cwm_motion.cpp\n?? src/cwm_motion.h\n?? src/safe_mode_actions.h\n?? tests/cwm_pickup_test.cpp\n?? tests/cwm_projection_test.cpp\n?? tests/cwm_runtime_test.cpp\n"
     },

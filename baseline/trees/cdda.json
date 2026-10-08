@@ -37332,7 +37332,7 @@
   {
     "path": "src/cwm/cwm_map_exporter.cpp",
     "mode": "100644",
-    "sha256": "54876e1f8235fe14e4c7e7b22a22ae3802d7b93e8534324e3adbef420e78eb14"
+    "sha256": "72a6634d71dbbe0b50c8dc214b6f05692fae5063f5b5b05bb5c4ffb1a1930f88"
   },
   {
     "path": "src/cwm/cwm_map_exporter.h",
@@ -40882,7 +40882,7 @@
   {
     "path": "tests/cwm_pickup_test.cpp",
     "mode": "100644",
-    "sha256": "3e3a940d4d13b60f8b68b87e1d003847ff7e01149620ebe16bf488b4d7eca886"
+    "sha256": "d8ffe31553b6e81a403e310f3d10025a80ba93231134041707dcb9364efb1723"
   },
   {
     "path": "tests/cwm_projection_test.cpp",

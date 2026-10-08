@@ -1447,7 +1447,7 @@ index 0000000..1a0308e
 +}
 diff --git a/src/cwm/cwm_map_exporter.cpp b/src/cwm/cwm_map_exporter.cpp
 new file mode 100644
-index 0000000..2abb83d
+index 0000000..cdfbbb1
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.cpp
 @@ -0,0 +1,622 @@
@@ -1553,8 +1553,8 @@ index 0000000..2abb83d
 +                conditions.push_back(remove_color_tags(u.get_effect(effect_id, bp).get_speed_name()));
 +        }
 +        const auto known = fbb.CreateVectorOfStrings(conditions);
-+        parts.push_back(CDDA::CWM::CreateBodyPartStatusDirect(fbb, bp.id().str().c_str(),
-+            body_part_name_as_heading(bp, 1).c_str(), health, temperature, known));
++        parts.push_back(CDDA::CWM::CreateBodyPartStatus(fbb, fbb.CreateString(bp.id().str()),
++            fbb.CreateString(body_part_name_as_heading(bp, 1)), health, temperature, known));
 +    }
 +    const auto needs_vec = fbb.CreateVector(needs);
 +    const auto parts_vec = fbb.CreateVector(parts);
@@ -3442,10 +3442,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..afce1a5
+index 0000000..6727646
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,1072 @@
+@@ -0,0 +1,1086 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "move_mode.h"
@@ -3466,6 +3466,7 @@ index 0000000..afce1a5
 +#include "do_turn.h"
 +#include "pickup.h"
 +#include "proficiency.h"
++#include "activity_actor_definitions.h"
 +#include "item_pocket.h"
 +#include "map_selector.h"
 +#include "safe_mode_actions.h"
@@ -4517,6 +4518,19 @@ index 0000000..afce1a5
 +        auto drug = u.i_add( item( itype_id( "aspirin" ) ) ); REQUIRE( drug );
 +        CHECK_FALSE( cwm::InventorySelection::action_error( u, drug, 5 ).empty() );
 +    }
++}
++
++TEST_CASE( "cwm_queued_gameplay_cannot_replace_new_native_firstaid", "[cwm][medicine]" )
++{
++    clear_avatar(); clear_map(); avatar &u = get_avatar();
++    cwm::CwmServer server( "/unused-firstaid-queue" ); cwm::CwmServerTestAccess::ready( server );
++    cwm::CwmServerTestAccess::mode( server, 2 ); REQUIRE( server.has_queued_action() );
++    u.assign_activity( firstaid_activity_actor( 6000, "bandage", u.getID() ) );
++    const int before = u.moves;
++    CHECK_FALSE( cwm::CwmServerTestAccess::execute( server ) );
++    CHECK_FALSE( cwm::CwmServerTestAccess::accepted( server ) );
++    CHECK( u.activity.id() == activity_id( "ACT_FIRSTAID" ) );
++    CHECK( u.activity.moves_left == 6000 ); CHECK( u.moves == before );
 +}
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644
