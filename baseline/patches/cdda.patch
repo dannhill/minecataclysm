@@ -375,7 +375,7 @@ index 4a508eb..4f2a491 100644
          Character *crafter;
  
 diff --git a/src/crafting.cpp b/src/crafting.cpp
-index ae12520..6874f9c 100644
+index ae12520..11eafa8 100644
 --- a/src/crafting.cpp
 +++ b/src/crafting.cpp
 @@ -1,4 +1,5 @@
@@ -384,7 +384,7 @@ index ae12520..6874f9c 100644
  
  #include <algorithm>
  #include <climits>
-@@ -112,11 +113,28 @@ static const trait_id trait_INT_ALPHA( "INT_ALPHA" );
+@@ -112,11 +113,31 @@ static const trait_id trait_INT_ALPHA( "INT_ALPHA" );
  static const std::string flag_BLIND_EASY( "BLIND_EASY" );
  static const std::string flag_BLIND_HARD( "BLIND_HARD" );
  static const std::string flag_FULL_MAGAZINE( "FULL_MAGAZINE" );
@@ -401,8 +401,11 @@ index ae12520..6874f9c 100644
 +    }
 +    labels.push_back( "Cancel" );
 +    const int choice = external_ui_choice( remove_color_tags( menu.title + "\n" + menu.text ), labels );
-+    menu.ret = choice >= 0 && size_t( choice ) < indices.size() ?
-+               menu.entries[indices[choice]].retval : UILIST_CANCEL;
++    if( choice < 0 || size_t( choice ) >= indices.size() ) { menu.ret = UILIST_CANCEL; return; }
++    const int index = indices[choice];
++    // Native calc_data resolves an unspecified (-1) retval to its entry index.
++    // Resolve it here without constructing a curses window.
++    menu.ret = menu.entries[index].retval == -1 ? index : menu.entries[index].retval;
 +}
 +
  static const std::string flag_NO_RESIZE( "NO_RESIZE" );
@@ -414,7 +417,7 @@ index ae12520..6874f9c 100644
  {
      if( p.morale_crafting_speed_multiplier( rec ) <= 0.0f ) {
          if( p.is_avatar() ) {
-@@ -842,7 +860,7 @@ static item_location place_craft_or_disassembly(
+@@ -842,7 +863,7 @@ static item_location place_craft_or_disassembly(
              amenu.addentry( STASH, can_stash, '3', _( "Store it in your inventory." ) );
              amenu.addentry( DROP, true, '4', _( "Drop it on the ground." ) );
  
@@ -423,7 +426,21 @@ index ae12520..6874f9c 100644
              const option choice = amenu.ret == UILIST_CANCEL ? DROP : static_cast<option>( amenu.ret );
              switch( choice ) {
                  case WIELD_CRAFT: {
-@@ -1693,7 +1711,7 @@ const requirement_data *Character::select_requirements(
+@@ -1530,8 +1551,11 @@ bool Character::can_continue_craft( item &craft, const requirement_data &continu
+     // Avoid building an inventory from the map if we don't have to, as it is expensive
+     if( !continue_reqs.is_empty() ) {
+ 
+-        auto std_filter = [&rec]( const item & it ) {
+-            return rec.get_component_filter()( it ) && ( it.is_container_empty() ||
++        const auto component_filter = rec.get_component_filter( external_ui_active() ?
++                                      recipe_filter_flags::no_favorite | recipe_filter_flags::no_equipped :
++                                      recipe_filter_flags::none );
++        auto std_filter = [component_filter]( const item & it ) {
++            return component_filter( it ) && ( it.is_container_empty() ||
+                     !it.is_watertight_container() );
+         };
+         const std::function<bool( const item & )> no_rotten_filter =
+@@ -1693,7 +1717,7 @@ const requirement_data *Character::select_requirements(
      menu.allow_cancel = true;
      menu.desc_enabled = true;
      menu.title = _( "Use which selection of components?" );
@@ -432,7 +449,7 @@ index ae12520..6874f9c 100644
  
      if( menu.ret < 0 || static_cast<size_t>( menu.ret ) >= alternatives.size() ) {
          return nullptr;
-@@ -1938,7 +1956,7 @@ comp_selection<item_comp> Character::select_item_component( const std::vector<it
+@@ -1938,7 +1962,7 @@ comp_selection<item_comp> Character::select_item_component( const std::vector<it
  
          // Get the selection via a menu popup
          cmenu.title = _( "Use which component?" );
@@ -441,7 +458,7 @@ index ae12520..6874f9c 100644
  
          if( cmenu.ret < 0 ||
              static_cast<size_t>( cmenu.ret ) >= map_has.size() + player_has.size() + mixed.size() ) {
-@@ -2196,7 +2214,7 @@ Character::select_tool_component( const std::vector<tool_comp> &tools, int batch
+@@ -2196,7 +2220,7 @@ Character::select_tool_component( const std::vector<tool_comp> &tools, int batch
  
          // Get selection via a popup menu
          tmenu.title = _( "Use which tool?" );
@@ -978,7 +995,7 @@ index 183628b..9a64f94 100644
          u.set_value( "THIEF_MODE", "THIEF_STEAL" );
          u.set_value( "THIEF_MODE_KEEP", "NO" );
 diff --git a/src/recipe.cpp b/src/recipe.cpp
-index 9d29dd0..ace2eeb 100644
+index 9d29dd0..3ee6d3a 100644
 --- a/src/recipe.cpp
 +++ b/src/recipe.cpp
 @@ -14,6 +14,7 @@
@@ -989,13 +1006,14 @@ index 9d29dd0..ace2eeb 100644
  #include "color.h"
  #include "debug.h"
  #include "enum_traits.h"
-@@ -1299,9 +1300,18 @@ std::function<bool( const item & )> recipe::get_component_filter(
+@@ -1299,9 +1300,20 @@ std::function<bool( const item & )> recipe::get_component_filter(
          };
      }
  
 -    return [ rotten_filter, favorite_filter, frozen_filter,
++    const bool protected_components = static_cast<bool>( flags & recipe_filter_flags::no_equipped );
 +    std::set<itype_id> protected_types;
-+    if( static_cast<bool>( flags & recipe_filter_flags::no_equipped ) ) {
++    if( protected_components ) {
 +        Character &p = get_player_character();
 +        for( const item_location &loc : p.all_items_loc() ) {
 +            if( p.is_worn( *loc ) || p.get_wielded_item() == loc ) {
@@ -1003,10 +1021,11 @@ index 9d29dd0..ace2eeb 100644
 +            }
 +        }
 +    }
-+    return [ rotten_filter, favorite_filter, frozen_filter, protected_types,
++    return [ rotten_filter, favorite_filter, frozen_filter, protected_types, protected_components,
                     magazine_filter ]( const item & component ) {
 -        return is_crafting_component( component ) &&
-+        return !protected_types.count( component.typeId() ) && is_crafting_component( component ) &&
++        return ( !protected_components || component.is_container_empty() || !component.is_watertight_container() ) &&
++               !protected_types.count( component.typeId() ) && is_crafting_component( component ) &&
                 rotten_filter( component ) &&
                 favorite_filter( component ) &&
                 frozen_filter( component ) &&
@@ -1022,6 +1041,24 @@ index 6e66b47..1d12175 100644
  };
  
  enum class recipe_time_flag : int {
+diff --git a/src/ui.cpp b/src/ui.cpp
+index b901cde..58b5398 100644
+--- a/src/ui.cpp
++++ b/src/ui.cpp
+@@ -1,3 +1,4 @@
++#include "do_turn.h"
+ #include "ui.h"
+ 
+ #include <cctype>
+@@ -244,7 +245,7 @@ uilist::operator int() const
+  */
+ void uilist::init()
+ {
+-    cata_assert( !test_mode ); // uilist should not be used in tests where there's no place for it
++    cata_assert( !test_mode || external_ui_active() ); // External choices build entries without curses.
+     w_x_setup = pos_scalar::auto_assign {};
+     w_y_setup = pos_scalar::auto_assign {};
+     w_width_setup = size_scalar::auto_assign {};
 diff --git a/tests/CMakeLists.txt b/tests/CMakeLists.txt
 index bfe0773..66ca653 100644
 --- a/tests/CMakeLists.txt
@@ -1068,7 +1105,7 @@ index 09a7711..9b0c484 100644
          DebugLog( D_INFO, DC_ALL ) <<
 diff --git a/src/cwm/cwm_crafting.h b/src/cwm/cwm_crafting.h
 new file mode 100644
-index 0000000..b25ac51
+index 0000000..3f28cc4
 --- /dev/null
 +++ b/src/cwm/cwm_crafting.h
 @@ -0,0 +1,161 @@
@@ -1123,7 +1160,7 @@ index 0000000..b25ac51
 +        if (!u.has_recipe(&rec, u.crafting_inventory(), u.get_crafting_group())) return "Ricetta non disponibile.";
 +        if (!rec.character_has_required_proficiencies(u)) return "Competenze obbligatorie mancanti.";
 +        if (!u.can_start_craft(&rec, recipe_filter_flags::no_favorite | recipe_filter_flags::no_equipped, batch))
-+            return "Componenti o utensili insufficienti; preferiti e tipi equipaggiati sono protetti.";
++            return "Componenti o utensili insufficienti; preferiti, tipi equipaggiati e contenitori liquidi pieni sono protetti.";
 +        return "";
 +    }
 +public:
@@ -3872,10 +3909,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..c8ede16
+index 0000000..7495591
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,1226 @@
+@@ -0,0 +1,1231 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "move_mode.h"
@@ -4987,6 +5024,8 @@ index 0000000..c8ede16
 +    REQUIRE( u.wear_item(item(itype_id("backpack_hiking"))) );
 +    const recipe &rec = recipe_id("bandages_makeshift").obj(); u.learn_recipe(&rec);
 +    item &sheet = u.i_add(item(itype_id("sheet_cotton")));
++    item filled=item(itype_id("water")).in_container(itype_id("bottle_plastic"));
++    CHECK_FALSE(rec.get_component_filter(recipe_filter_flags::no_equipped)(filled));
 +    cwm::CraftingSelection selection;
 +    cdda::cwm::MessageBuilder wire(1,1,{101,102,103});
 +    const int moves = u.moves; const auto time = calendar::turn;
@@ -5017,6 +5056,7 @@ index 0000000..c8ede16
 +    const recipe &rec=recipe_id("bandages_makeshift").obj(); u.learn_recipe(&rec);
 +    item &sheet=u.i_add(item(itype_id("sheet_cotton")));
 +    sheet.set_var("uid","crafting-unit-sheet");
++    get_map().add_item(u.pos()+tripoint_west,item(itype_id("sheet_cotton_patchwork")));
 +    g->new_game=false; uquit=QUIT_NO; g->set_safe_mode(SAFE_MODE_OFF);
 +    const override_option autosave("AUTOSAVE","false");
 +    bool decline=false;
@@ -5037,6 +5077,8 @@ index 0000000..c8ede16
 +            confirmed=true; CHECK(text.find("cotton")!=std::string::npos);
 +            return decline ? int(choices.size()-1) : 0;
 +        }
++        for(size_t i=0; i<choices.size(); ++i) if(choices[i].find("on person")!=std::string::npos)
++            return int(i);
 +        return 0;
 +    });
 +    CHECK(confirmed); CHECK(acted==!decline);

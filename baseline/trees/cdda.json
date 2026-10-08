@@ -37247,7 +37247,7 @@
   {
     "path": "src/crafting.cpp",
     "mode": "100644",
-    "sha256": "c519a6dffc98e8b8477c74f8de61a7450773e1db401dd51ee7ab85084f2e045b"
+    "sha256": "d05c5f051cec0b4741e6ad40783f531989a5613e00a92d6f05929694945ab366"
   },
   {
     "path": "src/crafting.h",
@@ -37322,7 +37322,7 @@
   {
     "path": "src/cwm/cwm_crafting.h",
     "mode": "100644",
-    "sha256": "9549fc67b20011f48a0fce7b9d94892575df0a9ba6a22bbab50a9ed365378e30"
+    "sha256": "564e156c8403b76d0e04bac8f3c926a88d35fb79a7eec10d0d1a12e68281ff40"
   },
   {
     "path": "src/cwm/cwm_inventory.h",
@@ -39422,7 +39422,7 @@
   {
     "path": "src/recipe.cpp",
     "mode": "100644",
-    "sha256": "566177bbc5cf171a24eb47b1b3adc4dd68c68bc89ed968800809809250720ba5"
+    "sha256": "07879b5c689d9984012ec30a9410b2464d352ee42113042e6c46cf804da04a20"
   },
   {
     "path": "src/recipe.h",
@@ -40347,7 +40347,7 @@
   {
     "path": "src/ui.cpp",
     "mode": "100644",
-    "sha256": "a30862ce7f5cb6592470250e39ccffd5e91d2bf0cf24a57c95d60f1463531dcf"
+    "sha256": "31856364cd6e71a1cd5a4d4d61d863ddec6a45a20c5ca17f832ffeb02c64efc7"
   },
   {
     "path": "src/ui.h",
@@ -40887,7 +40887,7 @@
   {
     "path": "tests/cwm_pickup_test.cpp",
     "mode": "100644",
-    "sha256": "4739b38509c187516daf798e89805bbe28b54fb561d9aaaeebfa2f005a586e86"
+    "sha256": "e117ec141030f48c1912f8ec041cef2376c95164fff7daa4e4870519617f66ee"
   },
   {
     "path": "tests/cwm_projection_test.cpp",
