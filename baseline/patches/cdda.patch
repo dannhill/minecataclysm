@@ -4244,10 +4244,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..f2b9779
+index 0000000..5391ddb
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,1335 @@
+@@ -0,0 +1,1337 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "move_mode.h"
@@ -5522,7 +5522,8 @@ index 0000000..f2b9779
 +    u.set_skill_level(skill_id("gun"),8);u.set_skill_level(skill_id("pistol"),8);u.recoil=MAX_RECOIL;u.moves=100;
 +    set_time_to_day();m.build_map_cache(0,true);m.invalidate_visibility_cache();m.update_visibility_cache(0);
 +    auto* target=g->place_critter_at(mtype_id("mon_zombie"),u.pos()+tripoint(0,-4,0));REQUIRE(target);INFO("Native light " << m.ambient_light_at(u.pos()) << " target " << m.ambient_light_at(target->pos()));REQUIRE(u.sees(*target));
-+    const auto id=cwm::CwmMapExporter::monster_entity_id(*target);cwm::RangedSelection selection;const auto token=selection.refresh(u);REQUIRE(token);
++    cwm::CwmMapExporter::export_world_snapshot(1,1,u,m,*g);
++    const auto id=cwm::CwmMapExporter::monster_entity_id(*target);REQUIRE(id);cwm::RangedSelection selection;const auto token=selection.refresh(u);REQUIRE(token);
 +    auto w=u.get_wielded_item();const int ammo=w->ammo_remaining();const auto time=calendar::turn;
 +    flatbuffers::FlatBufferBuilder f;const auto state=cwm::export_ranged_weapon(f,u,token);f.Finish(state);
 +    CHECK(calendar::turn==time);CHECK(u.moves==100);CHECK(u.recoil==MAX_RECOIL);CHECK(w->ammo_remaining()==ammo);
@@ -5548,7 +5549,8 @@ index 0000000..f2b9779
 +    set_time_to_day();m.build_map_cache(0,true);m.invalidate_visibility_cache();m.update_visibility_cache(0);
 +    auto* target=g->place_critter_at(mtype_id("mon_zombie"),u.pos()+tripoint(0,-4,0));REQUIRE(target);INFO("Native light " << m.ambient_light_at(u.pos()) << " target " << m.ambient_light_at(target->pos()));REQUIRE(u.sees(*target));
 +    g->set_safe_mode(SAFE_MODE_OFF);cwm::CwmServer server("/unused-ranged");cwm::CwmServerTestAccess::ready(server);
-+    const auto token=cwm::CwmServerTestAccess::weapon(server);const auto id=cwm::CwmMapExporter::monster_entity_id(*target);
++    cwm::CwmMapExporter::export_world_snapshot(1,1,u,m,*g);
++    const auto token=cwm::CwmServerTestAccess::weapon(server);const auto id=cwm::CwmMapExporter::monster_entity_id(*target);REQUIRE(id);
 +    cwm::CwmServerTestAccess::ranged(server,token,id,1);REQUIRE(server.has_queued_action());
 +    cwm::CwmServerTestAccess::ranged(server,token,id,1);REQUIRE(server.has_queued_action());
 +    SECTION("target becomes friendly") {target->friendly=-1;}

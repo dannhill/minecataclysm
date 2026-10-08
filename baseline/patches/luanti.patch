@@ -136,7 +136,7 @@ index b6ae675..9e33201 100644
  		/*
  			Local player handling
 diff --git a/src/client/game.cpp b/src/client/game.cpp
-index 27b5833..bb1afdd 100644
+index 27b5833..6e2b8a8 100644
 --- a/src/client/game.cpp
 +++ b/src/client/game.cpp
 @@ -8,6 +8,7 @@
@@ -492,7 +492,16 @@ index 27b5833..bb1afdd 100644
  
  			if (clouds)
  				clouds->updateCameraOffset(camera_offset);
-@@ -3365,6 +3587,41 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
+@@ -3314,6 +3536,8 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
+ 
+ 	const ItemDefinition &selected_def = selected_item.getDefinition(itemdef_manager);
+ 	f32 d = getToolRange(selected_item, hand_item, itemdef_manager);
++    if (cdda_client::CddaBridge::getInstance().ownsPlayer(client))
++        d = std::max(d, cdda_client::CddaBridge::getInstance().pointingRange());
+ 
+ 	core::line3d<f32> shootline;
+ 
+@@ -3365,6 +3589,41 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
  	// but the halo rendering code is already inefficient so there's no point in optimizing it here
  	hud->updateSelectionMesh(camera_offset);
  
@@ -534,7 +543,7 @@ index 27b5833..bb1afdd 100644
  	// Allow digging again if button is not pressed
  	if (runData.digging_blocked && !isKeyDown(KeyType::DIG))
  		runData.digging_blocked = false;
-@@ -4319,7 +4576,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
+@@ -4319,7 +4578,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
  	/*
  		Fog
  	*/
@@ -1111,10 +1120,10 @@ index 0000000..2214cd4
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..af8d5fd
+index 0000000..3fbba1f
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,2338 @@
+@@ -0,0 +1,2346 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
@@ -2812,6 +2821,14 @@ index 0000000..af8d5fd
 +        CDDA::CWM::InteractAction::CLOSE : CDDA::CWM::InteractAction::OPEN));
 +}
 +
++float CddaBridge::pointingRange() const {
++    // Extend the presentation ray beyond the disposable Luanti hand's reach.
++    // Native range/perception still authorize the shot; cap traversal to the
++    // reality-bubble extent even for a malformed/unreasonably large range.
++    return pimpl_ && pimpl_->weapon_token_ ?
++        std::max(4.f, float(std::clamp(pimpl_->weapon_range_, 0, 132)) + 1.f) : 4.f;
++}
++
 +bool CddaBridge::pointCombatTarget(const irr::core::line3d<float>& ray) {
 +    if (!pimpl_) return false;
 +    auto& impl = *pimpl_;
@@ -3455,10 +3472,10 @@ index 0000000..af8d5fd
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.h b/src/cdda/cdda_bridge.h
 new file mode 100644
-index 0000000..95be100
+index 0000000..89c7754
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.h
-@@ -0,0 +1,158 @@
+@@ -0,0 +1,159 @@
 +// Luanti C++ CWM Presentation Bridge
 +// Licensed under Apache-2.0
 +#pragma once
@@ -3552,6 +3569,7 @@ index 0000000..95be100
 +    bool handleInteract(int x, int y, int z, int action);
 +    bool handlePointedOpening(const v3s16& node, bool close);
 +    bool pointCombatTarget(const irr::core::line3d<float>& ray);
++    float pointingRange() const;
 +    bool attackPointedTarget();
 +    void handleAimInput(bool held);
 +    bool reloadWeapon();
