@@ -36652,7 +36652,7 @@
   {
     "path": "src/avatar.cpp",
     "mode": "100644",
-    "sha256": "dd5684222d474a1232dad8c138f340e75a5991ffb484c63b2fed6fb5ed32ee4c"
+    "sha256": "645b6188c4b2750621fde841e1a5ffb9d4175b4e7f9294ce14ed810254ae204a"
   },
   {
     "path": "src/avatar.h",
@@ -37347,7 +37347,7 @@
   {
     "path": "src/cwm/cwm_ranged.h",
     "mode": "100644",
-    "sha256": "06d2555faf51e7f411ecc0fa0df335d67cb7deaf8fc96da9b821741d15cb421b"
+    "sha256": "db5f30c57b43cb12332a7a1aa121df59d756a654c3bddd6f20a10c97820da8eb"
   },
   {
     "path": "src/cwm/cwm_server.cpp",
@@ -40892,7 +40892,7 @@
   {
     "path": "tests/cwm_pickup_test.cpp",
     "mode": "100644",
-    "sha256": "7191511608b3afdfbe916dd592a731c005210d56be72fbfe5ddb7cab6afbe046"
+    "sha256": "a4c4887833282aa65a4a72fa216e4fd1c7f7a65b4f435cdae5ca8f7f7e1164cd"
   },
   {
     "path": "tests/cwm_projection_test.cpp",

@@ -30,7 +30,7 @@ index 6d5d148..4181ad1 100644
  
  if (MINGW AND NOT RELEASE)
 diff --git a/src/avatar.cpp b/src/avatar.cpp
-index 83ae79c..0af6ca4 100644
+index 83ae79c..99e0e65 100644
 --- a/src/avatar.cpp
 +++ b/src/avatar.cpp
 @@ -1,4 +1,6 @@
@@ -40,7 +40,28 @@ index 83ae79c..0af6ca4 100644
  
  #include <algorithm>
  #include <array>
-@@ -1459,6 +1461,33 @@ item::reload_option avatar::select_ammo( const item_location &base, bool prompt,
+@@ -1232,6 +1234,11 @@ bool avatar::cant_see( const tripoint &p )
+ 
+ void avatar::rebuild_aim_cache()
+ {
++    // Steadiness queries physical perception, which calls cant_see again.
++    // Do not recursively rebuild, or consult the previous aim cone while
++    // computing its replacement. The final cone below still limits vision.
++    aim_cache_dirty = false;
++    aim_cache.fill( false );
+     double pi = 2 * acos( 0.0 );
+ 
+     const tripoint local_last_target = get_map().getlocal( last_target_pos.value() );
+@@ -1247,7 +1254,7 @@ void avatar::rebuild_aim_cache()
+     // todo: this is not the correct weapon when aiming with fake items
+     item *weapon = get_wielded_item() ? &*get_wielded_item() : &null_item_reference();
+     // calc steadiness with player recoil (like they are taking a regular shot not careful etc.
+-    float range = 3.0f - 2.8f * calc_steadiness( *this, *weapon, last_target_pos.value(), recoil );
++    float range = 3.0f - 2.8f * calc_steadiness( *this, *weapon, local_last_target, recoil );
+ 
+     // pin between pi and negative pi
+     float upper_bound = base_angle + range;
+@@ -1459,6 +1466,33 @@ item::reload_option avatar::select_ammo( const item_location &base, bool prompt,
          return item::reload_option();
      }
  
@@ -2741,10 +2762,10 @@ index 0000000..c68aca2
 +} // namespace cwm
 diff --git a/src/cwm/cwm_ranged.h b/src/cwm/cwm_ranged.h
 new file mode 100644
-index 0000000..44b1041
+index 0000000..43d3a08
 --- /dev/null
 +++ b/src/cwm/cwm_ranged.h
-@@ -0,0 +1,102 @@
+@@ -0,0 +1,103 @@
 +#pragma once
 +#include "avatar.h"
 +#include "avatar_action.h"
@@ -2834,8 +2855,9 @@ index 0000000..44b1041
 +        u.last_target_pos=get_map().getabs(t->pos());u.last_target=g.shared_from(*t);
 +        if (mode->has_flag(flag_id("ALWAYS_AIMED"))) u.recoil=0;
 +        const int moves=u.moves;
-+        if (action==0) { target_handler::aim_for_moves(u,*mode,t->pos(),100);aimed_target_=target;return u.moves<moves; }
-+        return u.fire_gun(t->pos(),mode.qty,*mode)>0; // Native cost/recoil/dispersion/projectile/damage/charges/skill.
++        if (action==0) { target_handler::aim_for_moves(u,*mode,t->pos(),100);u.aim_cache_dirty=true;aimed_target_=target;return u.moves<moves; }
++        const bool fired=u.fire_gun(t->pos(),mode.qty,*mode)>0; // Native cost/recoil/dispersion/projectile/damage/charges/skill.
++        u.aim_cache_dirty=true;return fired;
 +    }
 +};
 +inline flatbuffers::Offset<CDDA::CWM::RangedWeaponState> export_ranged_weapon(flatbuffers::FlatBufferBuilder& f, avatar& u,uint64_t token) {
@@ -4222,10 +4244,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..c664317
+index 0000000..8fc6442
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,1332 @@
+@@ -0,0 +1,1335 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "move_mode.h"
@@ -5508,6 +5530,9 @@ index 0000000..c664317
 +    CHECK(u.moves<=0);CHECK(u.recoil<MAX_RECOIL);CHECK(w->ammo_remaining()==ammo);CHECK(calendar::turn==time);
 +    const double aimed=u.recoil;u.moves=100;
 +    CHECK(selection.maintaining_aim(u,*g));CHECK(u.recoil==aimed);CHECK(u.moves==100); // Holding is read-only, never extra aim.
++    CHECK(u.sees(*target)); // Rebuilding the native aim cone must not recursively query itself.
++    u.recoil=0;u.aim_cache_dirty=true;
++    CHECK_FALSE(u.cant_see(target->pos()));CHECK(u.cant_see(u.pos()+tripoint(0,30,0)));
 +    u.moves=100;u.recoil=0;const auto before=u.moves;
 +    REQUIRE(selection.execute(u,*g,token,id,1));CHECK(w->ammo_remaining()==ammo-1);CHECK(u.moves<before);CHECK(u.recoil>0);
 +    CHECK(target->get_hp()<target->get_hp_max());
