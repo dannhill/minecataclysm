@@ -186,7 +186,7 @@ def main():
                 wait(lambda r: (int(r['player_state_flags']) & mask) == expected and int(r['pending_move']) == 0)
             if args.resume_only:
                 check('saved_prone_restored_on_actual_reload', mode() == 512)
-                wait(lambda r: abs(float(r['player_eye_offset']) + 1.3) < .025)
+                wait(lambda r: abs(float(r['player_eye_offset']) + (1. if int(r['player_state_flags']) & 2 else 1.3)) < .025)
                 shot('prone-reloaded.png')
             else:
                 check('starts_native_walking_in_shallow_water', mode() == 0 and int(latest()['player_state_flags']) & 2)
@@ -245,6 +245,14 @@ def main():
                 if not args.action_driven:
                     tap('F7'); wait(lambda r: int(r['pause_reasons']) & 1 and float(r['visual_animation_delta']) == 0)
                     frozen = latest()
+                    turn(135,-15)
+                    shot('water-paused-before.png')
+                    time.sleep(.7)
+                    shot('water-paused-after.png')
+                    water_before = Image.open(out / 'water-paused-before.png').convert('RGB')
+                    water_after = Image.open(out / 'water-paused-after.png').convert('RGB')
+                    water_box = (880,350,1100,580)
+                    check('rendered_water_pixels_frozen_in_manual_pause', ImageChops.difference(water_before.crop(water_box),water_after.crop(water_box)).getbbox() is None)
                     for key in ('Control_L','Shift_L','p'): tap(key)
                     check('paused_controls_and_animation_remain_stopped', mode() == 512 and latest()['visual_animation_time'] == frozen['visual_animation_time'])
                     tap('F7'); wait(lambda r: int(r['pause_reasons']) == 0)

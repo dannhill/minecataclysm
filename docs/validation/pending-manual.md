@@ -81,3 +81,26 @@ rimossi dalla sola fixture; esplorare oltre può incontrare creature native.
 
 Altezze di visuale sono un primo adattamento 3D; le animazioni del corpo/rig
 in terza persona verranno completate separatamente. Tutte e quattro le prove hanno accettazione manuale esplicita.
+
+
+## Adattamenti comandi e presentazione — NUOVA PROVA
+
+Le quattro checklist sopra sono già accettate. Solo queste modifiche
+successive richiedono un nuovo riscontro: `./controls-demo.sh --fresh`
+(copia isolata con acqua bassa alla partenza e sasso davanti).
+
+1. **Ctrl sinistro** tenuto: corsa; rilascio: cammino. **Shift** tenuto:
+   accovacciato; rilascio: cammino. **P** resta toggle. In pausa F7 i tasti
+   non devono produrre cambi ritardati. Le preferenze `cwm_run_toggle` e
+   `cwm_crouch_toggle` nelle impostazioni consentono il comportamento toggle.
+   Shift+tasto destro e Shift+Spazio conservano chiusura e discesa native.
+2. **H**: bisogni/parti leggibili con icone; premere S più volte non seleziona
+   Sete/Sonno. Il sasso e l'acqua restano fermi durante la pausa e riprendono
+   alla chiusura. La pausa F7 resta attiva dopo aver richiuso H.
+3. **P nell'acqua bassa**: la visuale resta sopra la superficie, senza il
+   vuoto nella metà inferiore; P per rialzarsi. Questa prova non comprende
+   ancora la presentazione completa dell'immersione profonda.
+4. HUD: cuori separati testa/torso, icone stamina, fame descritta da CDDA,
+   oggetti posseduti visibili nella barra. La barra è ancora una vista:
+   numeri/rotella non equipaggiano quegli oggetti. Il toggle sdraio persiste
+   nel save. Il rifiuto della corsa deve avere una spiegazione comprensibile.

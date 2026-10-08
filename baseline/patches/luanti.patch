@@ -859,7 +859,7 @@ index 7f3f860..c80320d 100644
  void TestMapBlock::testSaveLoad(IGameDef *gamedef, const u8 version)
 diff --git a/src/cdda/avatar_status.h b/src/cdda/avatar_status.h
 new file mode 100644
-index 0000000..0254539
+index 0000000..fdcf808
 --- /dev/null
 +++ b/src/cdda/avatar_status.h
 @@ -0,0 +1,101 @@
@@ -943,12 +943,12 @@ index 0000000..0254539
 +        "scroll_container[0.4,2;5,6.3;needs_scroll;vertical;0.1]";
 +    double y = .2;
 +    for (const auto& value : status.needs) {
-+        form += "style[need_" + statusEscape(value.id) + ";textcolor=" + statusColor(value.color) + "]";
++        form += "style_type[label;textcolor=" + statusColor(value.color) + "]";
 +        form += "label[0," + std::to_string(y) + ";" + statusEscape(value.label) + ": " +
 +            statusEscape(value.text.empty() ? "-" : value.text) + "]";
 +        y += .75;
 +    }
-+    form += "scroll_container_end[]scrollbaroptions[min=0;max=" + std::to_string(status.parts.size() * 11) +
++    form += "scroll_container_end[]style_type[label;textcolor=#eeeeee]scrollbaroptions[min=0;max=" + std::to_string(status.parts.size() * 11) +
 +        ";smallstep=8;largestep=24]scrollbar[11.3,2;0.25,6.3;vertical;parts_scroll;0]"
 +        "scroll_container[6,2;5.1,6.3;parts_scroll;vertical;0.1]";
 +    y = .1;
@@ -966,10 +966,10 @@ index 0000000..0254539
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..8bbffda
+index 0000000..d3a2f75
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,1990 @@
+@@ -0,0 +1,1999 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
@@ -2748,9 +2748,16 @@ index 0000000..8bbffda
 +    const wchar_t* posture = flags & cdda::cwm::PRONE ? L"A terra" :
 +        flags & cdda::cwm::CROUCHING ? L"Accovacciato" :
 +        flags & cdda::cwm::RUNNING ? L"Corsa" : L"Cammino";
-+    const std::wstring mode_text = std::wstring(posture) +
-+        L"\nCtrl: corsa (" + std::wstring(g_settings->getBool("cwm_run_toggle") ? L"toggle" : L"tieni") +
-+        L") | Shift: accovacciati (" + std::wstring(g_settings->getBool("cwm_crouch_toggle") ? L"toggle" : L"tieni") + L") | P: a terra";
++    const auto key_label = [](const char* setting) {
++        auto key = g_settings->get(setting);
++        if (key == "KEY_LCONTROL") return std::wstring(L"Ctrl");
++        if (key == "KEY_LSHIFT") return std::wstring(L"Shift");
++        if (key.rfind("KEY_KEY_", 0) == 0) key.erase(0, 8);
++        else if (key.rfind("KEY_", 0) == 0) key.erase(0, 4);
++        return utf8_to_wide(key);
++    };
++    const std::wstring mode_text = std::wstring(posture) + L"\n" + key_label("keymap_cdda_run") + L": corsa (" + std::wstring(g_settings->getBool("cwm_run_toggle") ? L"toggle" : L"tieni") +
++        L") | " + key_label("keymap_cdda_crouch") + L": accovacciati (" + std::wstring(g_settings->getBool("cwm_crouch_toggle") ? L"toggle" : L"tieni") + L") | " + key_label("keymap_cdda_prone") + L": a terra";
 +    pimpl_->posture_text_->setText(mode_text.c_str());
 +    pimpl_->posture_text_->setVisible(pimpl_->session_.ready() && player != pimpl_->entities_.end() &&
 +        !pimpl_->ground_container_open_ && !pimpl_->body_form_open_ && !pimpl_->metrics_.pending_decision);
@@ -2762,7 +2769,7 @@ index 0000000..8bbffda
 +    }
 +    const int width = std::min<int>(365, screen.Width - 20);
 +    const int panel_top = std::max<int>(285, screen.Height - 240);
-+    const int line = guienv->getSkin()->getFont()->getDimension(L"A").Height + 3;
++    const int line = guienv->getSkin()->getFont()->getDimension(L"A").Height;
 +    pimpl_->survival_text_->setRelativePosition(irr::core::rect<irr::s32>(10,
 +        panel_top, 10 + width, screen.Height - 10));
 +    std::string survival = "Corpo [H]";
@@ -2772,7 +2779,7 @@ index 0000000..8bbffda
 +        survival += "\nStamina\nTesta\nTorso";
 +        for (const auto& value : pimpl_->avatar_status_.needs)
 +            if (value.id == "hunger" || value.id == "thirst" || value.id == "fatigue" || value.id == "pain")
-+                if (!value.text.empty()) survival += "\n" + value.label + ": " + value.text;
++                survival += "\n" + value.label + ": " + (value.text.empty() ? "-" : value.text);
 +    }
 +    pimpl_->survival_text_->setText(utf8_to_wide(survival).c_str());
 +    const bool hud_visible = !pimpl_->ground_container_open_ && !pimpl_->body_form_open_ &&
@@ -2804,6 +2811,8 @@ index 0000000..8bbffda
 +    };
 +    if (pimpl_->avatar_status_.available && pimpl_->session_.ready()) {
 +        bar(pimpl_->avatar_status_.stamina.text, "mcl_hunger_icon_exhaustion.png", panel_top + line);
++        // Hunger is a native perceived description, not a synthetic calorie gauge.
++        image("hbhunger_icon.png", 10 + width - 25, panel_top + line * 4, 20, 20);
 +        for (const auto& part : pimpl_->avatar_status_.parts)
 +            if (part.id == "head" || part.id == "torso") {
 +                const int y = panel_top + line * (part.id == "head" ? 2 : 3);
