@@ -754,10 +754,10 @@ index 7f3f860..9ea0ea4 100644
  void TestMapBlock::testSaveLoad(IGameDef *gamedef, const u8 version)
 diff --git a/src/cdda/avatar_status.h b/src/cdda/avatar_status.h
 new file mode 100644
-index 0000000..e6447d3
+index 0000000..5a349eb
 --- /dev/null
 +++ b/src/cdda/avatar_status.h
-@@ -0,0 +1,57 @@
+@@ -0,0 +1,62 @@
 +#pragma once
 +#include <string>
 +#include <vector>
@@ -790,12 +790,17 @@ index 0000000..e6447d3
 +    }
 +    return result;
 +}
++inline std::string statusBarText(const std::string& native) {
++    // Pad the native five-segment UI bar; never reconstruct HP from it.
++    return "[" + native + std::string(native.size() < 5 ? 5 - native.size() : 0, '.') + "]";
++}
 +inline std::string avatarStatusForm(const AvatarStatusView& status) {
 +    std::string form = "formspec_version[4]size[12,10]no_prepend[]"
 +        "bgcolor[#182322f5;true]style_type[label;textcolor=#eeeeee]"
++        "box[0,0;12,10;#182322f5]"
 +        "label[0.4,0.4;Corpo e sopravvivenza]"
 +        "label[0.4,0.9;Tempo in pausa - descrizioni percepite dal personaggio]"
-+        "label[0.4,1.5;Stamina: " + statusEscape(status.stamina.text) + "]";
++        "label[0.4,1.5;Stamina: " + statusEscape(statusBarText(status.stamina.text)) + "]";
 +    form += "tablecolumns[color;text;text]tableoptions[background=#202c2d;border=false;highlight=#344748]"
 +        "table[0.4,2;5.3,6.5;needs;";
 +    bool comma = false;
@@ -809,15 +814,15 @@ index 0000000..e6447d3
 +    form += "#eeeeee,Parte,Salute,Temperatura";
 +    for (const auto& part : status.parts)
 +        form += ',' + statusColor(part.health.color) + ',' + statusEscape(part.label) + ',' +
-+            statusEscape(part.health.text) + ',' + statusEscape(part.temperature.text);
-+    form += ";0]label[0.4,8.8;'-' = nessuna indicazione nativa. Nessuna diagnosi o cura automatica.]"
++            statusEscape(statusBarText(part.health.text)) + ',' + statusEscape(part.temperature.text);
++    form += ";0]label[0.4,8.8;Barre: cinque segmenti. '-' nei bisogni: nessuna indicazione percepita.]"
 +        "button_exit[4.3,9.2;3.4,0.6;close;Torna al gioco]";
 +    return form;
 +}
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..bbae121
+index 0000000..1fdce91
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
 @@ -0,0 +1,1767 @@
@@ -2453,10 +2458,10 @@ index 0000000..bbae121
 +    if (!pimpl_->session_.ready()) survival += "Stato CDDA non sincronizzato";
 +    else if (!pimpl_->avatar_status_.available) survival += "Stato CDDA non disponibile";
 +    else {
-+        survival += "Stamina " + pimpl_->avatar_status_.stamina.text;
++        survival += "Stamina " + statusBarText(pimpl_->avatar_status_.stamina.text);
 +        for (const auto& part : pimpl_->avatar_status_.parts)
 +            if (part.id == "head" || part.id == "torso")
-+                survival += "\n" + part.label + "  " + part.health.text;
++                survival += "\n" + part.label + "  " + statusBarText(part.health.text);
 +        for (const auto& value : pimpl_->avatar_status_.needs)
 +            if (value.id == "hunger" || value.id == "thirst" || value.id == "fatigue" || value.id == "pain")
 +                if (!value.text.empty()) survival += "\n" + value.label + ": " + value.text;
