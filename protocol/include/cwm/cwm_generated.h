@@ -103,6 +103,12 @@ struct ConsumptionStateBuilder;
 struct CancelConsumptionRequest;
 struct CancelConsumptionRequestBuilder;
 
+struct FirstAidState;
+struct FirstAidStateBuilder;
+
+struct CancelFirstAidRequest;
+struct CancelFirstAidRequestBuilder;
+
 struct InventoryQueryRequest;
 struct InventoryQueryRequestBuilder;
 
@@ -376,35 +382,38 @@ enum class EquipmentAction : int8_t {
   WEAR = 2,
   TAKEOFF = 3,
   CONSUME = 4,
+  TREAT = 5,
   MIN = WIELD,
-  MAX = CONSUME
+  MAX = TREAT
 };
 
-inline const EquipmentAction (&EnumValuesEquipmentAction())[5] {
+inline const EquipmentAction (&EnumValuesEquipmentAction())[6] {
   static const EquipmentAction values[] = {
     EquipmentAction::WIELD,
     EquipmentAction::STOW,
     EquipmentAction::WEAR,
     EquipmentAction::TAKEOFF,
-    EquipmentAction::CONSUME
+    EquipmentAction::CONSUME,
+    EquipmentAction::TREAT
   };
   return values;
 }
 
 inline const char * const *EnumNamesEquipmentAction() {
-  static const char * const names[6] = {
+  static const char * const names[7] = {
     "WIELD",
     "STOW",
     "WEAR",
     "TAKEOFF",
     "CONSUME",
+    "TREAT",
     nullptr
   };
   return names;
 }
 
 inline const char *EnumNameEquipmentAction(EquipmentAction e) {
-  if (::flatbuffers::IsOutRange(e, EquipmentAction::WIELD, EquipmentAction::CONSUME)) return "";
+  if (::flatbuffers::IsOutRange(e, EquipmentAction::WIELD, EquipmentAction::TREAT)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesEquipmentAction()[index];
 }
@@ -442,11 +451,12 @@ enum class Payload : uint8_t {
   InventoryView = 29,
   EquipmentRequest = 30,
   CancelConsumptionRequest = 31,
+  CancelFirstAidRequest = 32,
   MIN = NONE,
-  MAX = CancelConsumptionRequest
+  MAX = CancelFirstAidRequest
 };
 
-inline const Payload (&EnumValuesPayload())[32] {
+inline const Payload (&EnumValuesPayload())[33] {
   static const Payload values[] = {
     Payload::NONE,
     Payload::HelloRequest,
@@ -479,13 +489,14 @@ inline const Payload (&EnumValuesPayload())[32] {
     Payload::InventoryQueryRequest,
     Payload::InventoryView,
     Payload::EquipmentRequest,
-    Payload::CancelConsumptionRequest
+    Payload::CancelConsumptionRequest,
+    Payload::CancelFirstAidRequest
   };
   return values;
 }
 
 inline const char * const *EnumNamesPayload() {
-  static const char * const names[33] = {
+  static const char * const names[34] = {
     "NONE",
     "HelloRequest",
     "HelloResponse",
@@ -518,13 +529,14 @@ inline const char * const *EnumNamesPayload() {
     "InventoryView",
     "EquipmentRequest",
     "CancelConsumptionRequest",
+    "CancelFirstAidRequest",
     nullptr
   };
   return names;
 }
 
 inline const char *EnumNamePayload(Payload e) {
-  if (::flatbuffers::IsOutRange(e, Payload::NONE, Payload::CancelConsumptionRequest)) return "";
+  if (::flatbuffers::IsOutRange(e, Payload::NONE, Payload::CancelFirstAidRequest)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesPayload()[index];
 }
@@ -655,6 +667,10 @@ template<> struct PayloadTraits<CDDA::CWM::EquipmentRequest> {
 
 template<> struct PayloadTraits<CDDA::CWM::CancelConsumptionRequest> {
   static const Payload enum_value = Payload::CancelConsumptionRequest;
+};
+
+template<> struct PayloadTraits<CDDA::CWM::CancelFirstAidRequest> {
+  static const Payload enum_value = Payload::CancelFirstAidRequest;
 };
 
 bool VerifyPayload(::flatbuffers::Verifier &verifier, const void *obj, Payload type);
@@ -2445,7 +2461,8 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_GROUND_ITEM_TILES = 38,
     VT_OWNED_ITEMS = 40,
     VT_AVATAR_STATUS = 42,
-    VT_CONSUMPTION = 44
+    VT_CONSUMPTION = 44,
+    VT_FIRST_AID = 46
   };
   uint64_t world_revision() const {
     return GetField<uint64_t>(VT_WORLD_REVISION, 0);
@@ -2573,6 +2590,12 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   CDDA::CWM::ConsumptionState *mutable_consumption() {
     return GetPointer<CDDA::CWM::ConsumptionState *>(VT_CONSUMPTION);
   }
+  const CDDA::CWM::FirstAidState *first_aid() const {
+    return GetPointer<const CDDA::CWM::FirstAidState *>(VT_FIRST_AID);
+  }
+  CDDA::CWM::FirstAidState *mutable_first_aid() {
+    return GetPointer<CDDA::CWM::FirstAidState *>(VT_FIRST_AID);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint64_t>(verifier, VT_WORLD_REVISION, 8) &&
@@ -2617,6 +2640,8 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyTable(avatar_status()) &&
            VerifyOffset(verifier, VT_CONSUMPTION) &&
            verifier.VerifyTable(consumption()) &&
+           VerifyOffset(verifier, VT_FIRST_AID) &&
+           verifier.VerifyTable(first_aid()) &&
            verifier.EndTable();
   }
 };
@@ -2688,6 +2713,9 @@ struct WorldSnapshotBuilder {
   void add_consumption(::flatbuffers::Offset<CDDA::CWM::ConsumptionState> consumption) {
     fbb_.AddOffset(WorldSnapshot::VT_CONSUMPTION, consumption);
   }
+  void add_first_aid(::flatbuffers::Offset<CDDA::CWM::FirstAidState> first_aid) {
+    fbb_.AddOffset(WorldSnapshot::VT_FIRST_AID, first_aid);
+  }
   explicit WorldSnapshotBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -2721,7 +2749,8 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshot(
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::GroundItemTileState>>> ground_item_tiles = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::GroundItemState>>> owned_items = 0,
     ::flatbuffers::Offset<CDDA::CWM::AvatarStatus> avatar_status = 0,
-    ::flatbuffers::Offset<CDDA::CWM::ConsumptionState> consumption = 0) {
+    ::flatbuffers::Offset<CDDA::CWM::ConsumptionState> consumption = 0,
+    ::flatbuffers::Offset<CDDA::CWM::FirstAidState> first_aid = 0) {
   WorldSnapshotBuilder builder_(_fbb);
   builder_.add_completed_command_id(completed_command_id);
   builder_.add_resync_id(resync_id);
@@ -2729,6 +2758,7 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshot(
   builder_.add_base_revision(base_revision);
   builder_.add_simulation_time_seconds(simulation_time_seconds);
   builder_.add_world_revision(world_revision);
+  builder_.add_first_aid(first_aid);
   builder_.add_consumption(consumption);
   builder_.add_avatar_status(avatar_status);
   builder_.add_owned_items(owned_items);
@@ -2769,7 +2799,8 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshotDirect(
     const std::vector<::flatbuffers::Offset<CDDA::CWM::GroundItemTileState>> *ground_item_tiles = nullptr,
     const std::vector<::flatbuffers::Offset<CDDA::CWM::GroundItemState>> *owned_items = nullptr,
     ::flatbuffers::Offset<CDDA::CWM::AvatarStatus> avatar_status = 0,
-    ::flatbuffers::Offset<CDDA::CWM::ConsumptionState> consumption = 0) {
+    ::flatbuffers::Offset<CDDA::CWM::ConsumptionState> consumption = 0,
+    ::flatbuffers::Offset<CDDA::CWM::FirstAidState> first_aid = 0) {
   auto chunks__ = chunks ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::ChunkSnapshot>>(*chunks) : 0;
   auto entities__ = entities ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::EntityState>>(*entities) : 0;
   auto vehicles__ = vehicles ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::VehicleState>>(*vehicles) : 0;
@@ -2801,7 +2832,8 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshotDirect(
       ground_item_tiles__,
       owned_items__,
       avatar_status,
-      consumption);
+      consumption,
+      first_aid);
 }
 
 struct SimulationState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -3464,6 +3496,133 @@ inline ::flatbuffers::Offset<CancelConsumptionRequest> CreateCancelConsumptionRe
     uint64_t command_id = 0,
     uint64_t activity_token = 0) {
   CancelConsumptionRequestBuilder builder_(_fbb);
+  builder_.add_activity_token(activity_token);
+  builder_.add_command_id(command_id);
+  return builder_.Finish();
+}
+
+struct FirstAidState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef FirstAidStateBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_TOKEN = 4,
+    VT_TOTAL_MOVES = 6,
+    VT_REMAINING_MOVES = 8
+  };
+  uint64_t token() const {
+    return GetField<uint64_t>(VT_TOKEN, 0);
+  }
+  bool mutate_token(uint64_t _token = 0) {
+    return SetField<uint64_t>(VT_TOKEN, _token, 0);
+  }
+  int32_t total_moves() const {
+    return GetField<int32_t>(VT_TOTAL_MOVES, 0);
+  }
+  bool mutate_total_moves(int32_t _total_moves = 0) {
+    return SetField<int32_t>(VT_TOTAL_MOVES, _total_moves, 0);
+  }
+  int32_t remaining_moves() const {
+    return GetField<int32_t>(VT_REMAINING_MOVES, 0);
+  }
+  bool mutate_remaining_moves(int32_t _remaining_moves = 0) {
+    return SetField<int32_t>(VT_REMAINING_MOVES, _remaining_moves, 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_TOKEN, 8) &&
+           VerifyField<int32_t>(verifier, VT_TOTAL_MOVES, 4) &&
+           VerifyField<int32_t>(verifier, VT_REMAINING_MOVES, 4) &&
+           verifier.EndTable();
+  }
+};
+
+struct FirstAidStateBuilder {
+  typedef FirstAidState Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_token(uint64_t token) {
+    fbb_.AddElement<uint64_t>(FirstAidState::VT_TOKEN, token, 0);
+  }
+  void add_total_moves(int32_t total_moves) {
+    fbb_.AddElement<int32_t>(FirstAidState::VT_TOTAL_MOVES, total_moves, 0);
+  }
+  void add_remaining_moves(int32_t remaining_moves) {
+    fbb_.AddElement<int32_t>(FirstAidState::VT_REMAINING_MOVES, remaining_moves, 0);
+  }
+  explicit FirstAidStateBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<FirstAidState> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<FirstAidState>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<FirstAidState> CreateFirstAidState(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t token = 0,
+    int32_t total_moves = 0,
+    int32_t remaining_moves = 0) {
+  FirstAidStateBuilder builder_(_fbb);
+  builder_.add_token(token);
+  builder_.add_remaining_moves(remaining_moves);
+  builder_.add_total_moves(total_moves);
+  return builder_.Finish();
+}
+
+struct CancelFirstAidRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef CancelFirstAidRequestBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_COMMAND_ID = 4,
+    VT_ACTIVITY_TOKEN = 6
+  };
+  uint64_t command_id() const {
+    return GetField<uint64_t>(VT_COMMAND_ID, 0);
+  }
+  bool mutate_command_id(uint64_t _command_id = 0) {
+    return SetField<uint64_t>(VT_COMMAND_ID, _command_id, 0);
+  }
+  uint64_t activity_token() const {
+    return GetField<uint64_t>(VT_ACTIVITY_TOKEN, 0);
+  }
+  bool mutate_activity_token(uint64_t _activity_token = 0) {
+    return SetField<uint64_t>(VT_ACTIVITY_TOKEN, _activity_token, 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_COMMAND_ID, 8) &&
+           VerifyField<uint64_t>(verifier, VT_ACTIVITY_TOKEN, 8) &&
+           verifier.EndTable();
+  }
+};
+
+struct CancelFirstAidRequestBuilder {
+  typedef CancelFirstAidRequest Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_command_id(uint64_t command_id) {
+    fbb_.AddElement<uint64_t>(CancelFirstAidRequest::VT_COMMAND_ID, command_id, 0);
+  }
+  void add_activity_token(uint64_t activity_token) {
+    fbb_.AddElement<uint64_t>(CancelFirstAidRequest::VT_ACTIVITY_TOKEN, activity_token, 0);
+  }
+  explicit CancelFirstAidRequestBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<CancelFirstAidRequest> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<CancelFirstAidRequest>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<CancelFirstAidRequest> CreateCancelFirstAidRequest(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t command_id = 0,
+    uint64_t activity_token = 0) {
+  CancelFirstAidRequestBuilder builder_(_fbb);
   builder_.add_activity_token(activity_token);
   builder_.add_command_id(command_id);
   return builder_.Finish();
@@ -5034,6 +5193,9 @@ struct CwmMessage FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const CDDA::CWM::CancelConsumptionRequest *payload_as_CancelConsumptionRequest() const {
     return payload_type() == CDDA::CWM::Payload::CancelConsumptionRequest ? static_cast<const CDDA::CWM::CancelConsumptionRequest *>(payload()) : nullptr;
   }
+  const CDDA::CWM::CancelFirstAidRequest *payload_as_CancelFirstAidRequest() const {
+    return payload_type() == CDDA::CWM::Payload::CancelFirstAidRequest ? static_cast<const CDDA::CWM::CancelFirstAidRequest *>(payload()) : nullptr;
+  }
   void *mutable_payload() {
     return GetPointer<void *>(VT_PAYLOAD);
   }
@@ -5192,6 +5354,10 @@ template<> inline const CDDA::CWM::EquipmentRequest *CwmMessage::payload_as<CDDA
 
 template<> inline const CDDA::CWM::CancelConsumptionRequest *CwmMessage::payload_as<CDDA::CWM::CancelConsumptionRequest>() const {
   return payload_as_CancelConsumptionRequest();
+}
+
+template<> inline const CDDA::CWM::CancelFirstAidRequest *CwmMessage::payload_as<CDDA::CWM::CancelFirstAidRequest>() const {
+  return payload_as_CancelFirstAidRequest();
 }
 
 struct CwmMessageBuilder {
@@ -5382,6 +5548,10 @@ inline bool VerifyPayload(::flatbuffers::Verifier &verifier, const void *obj, Pa
     }
     case Payload::CancelConsumptionRequest: {
       auto ptr = reinterpret_cast<const CDDA::CWM::CancelConsumptionRequest *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::CancelFirstAidRequest: {
+      auto ptr = reinterpret_cast<const CDDA::CWM::CancelFirstAidRequest *>(obj);
       return verifier.VerifyTable(ptr);
     }
     default: return true;

@@ -11,6 +11,7 @@
 #include "filesystem.h"
 #include "game.h"
 #include "item.h"
+#include "flag.h"
 #include "json.h"
 #include "loading_ui.h"
 #include "map.h"
@@ -41,6 +42,7 @@ int main(int argc, const char *argv[]) {
     bool create_pickup = false;
     bool create_equipment = false;
     bool create_consumption = false;
+    bool create_medicine = false;
     bool create_body = false;
     bool create_combat = false;
     bool create_posture = false;
@@ -49,6 +51,7 @@ int main(int argc, const char *argv[]) {
     for (int i = 1; i < argc; ++i) {
         std::string arg(argv[i]);
         if (arg == "--create") create = true;
+        else if (arg == "--create-medicine") { create = true; create_medicine = true; create_posture = true; }
         else if (arg == "--create-consumption") { create = true; create_consumption = true; create_posture = true; }
         else if (arg == "--create-equipment") { create = true; create_equipment = true; create_posture = true; }
         else if (arg == "--create-pickup") { create = true; create_pickup = true; }
@@ -286,6 +289,21 @@ int main(int argc, const char *argv[]) {
             u.i_add(bottle);
             item rock(itype_id("rock"), calendar::turn); rock.set_var("uid", "consumption-rock"); u.i_add(rock);
             u.set_thirst(200); u.update_stomach(calendar::turn, calendar::turn);
+            u.moves = 100; g->set_safe_mode(SAFE_MODE_OFF);
+        }
+        if (create_medicine) {
+            u.remove_weapon();
+            if (!u.wear_item(item(itype_id("backpack_hiking"), calendar::turn))) return 24;
+            u.set_part_hp_cur(bodypart_id("arm_l"), u.get_part_hp_max(bodypart_id("arm_l")) / 2);
+            u.set_part_hp_cur(bodypart_id("torso"), u.get_part_hp_max(bodypart_id("torso")) * 2 / 3);
+            for (int i = 0; i < 3; ++i) {
+                item bandage(itype_id("bandages"), calendar::turn);
+                bandage.set_var("uid", "medicine-bandage-" + std::to_string(i)); u.i_add(bandage);
+            }
+            item wipe(itype_id("alcohol_wipes"), calendar::turn);
+            wipe.set_var("uid", "medicine-wipe"); u.i_add(wipe);
+            item dirty(itype_id("bandages_makeshift"), calendar::turn); dirty.set_flag(flag_id("FILTHY"));
+            dirty.set_var("uid", "medicine-dirty"); u.i_add(dirty);
             u.moves = 100; g->set_safe_mode(SAFE_MODE_OFF);
         }
         if (create_equipment) {

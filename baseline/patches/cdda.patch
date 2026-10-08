@@ -217,6 +217,48 @@ index a90f830..84949ac 100644
      add_msg_debug( debugmode::DF_CHARACTER, "Stamina burn: %d", -( ( moves * burn_ratio ) / 100 ) );
      // Chance to suffer pain if overburden and stamina runs out or has trait BADBACK
      // Starts at 1 in 25, goes down by 5 for every 50% more carried
+diff --git a/src/character_body.cpp b/src/character_body.cpp
+index 96a2dec..87b12cf 100644
+--- a/src/character_body.cpp
++++ b/src/character_body.cpp
+@@ -1,6 +1,7 @@
+ #include "avatar.h"
+ #include "character.h"
+ #include "display.h"
++#include "do_turn.h"
+ #include "flag.h"
+ #include "game.h"
+ #include "make_static.h"
+@@ -1324,7 +1325,28 @@ bodypart_id Character::body_window( const std::string &menu_header,
+         bmenu.set_selected( default_selection_idx );
+     }
+ 
+-    bmenu.query();
++    if( external_ui_active() ) {
++        std::vector<int> mapping;
++        std::vector<std::string> labels;
++        std::string text = remove_color_tags( bmenu.text );
++        for( size_t i = 0; i < parts.size(); ++i ) {
++            // No disabled choice is selectable over IPC. Preserve the native
++            // explanation rather than deriving healing rules in the bridge.
++            if( parts[i].allowed ) {
++                mapping.push_back( static_cast<int>( i ) );
++                labels.push_back( remove_color_tags( bmenu.entries[i].txt ) + "\n" +
++                                  remove_color_tags( bmenu.entries[i].desc ) );
++            } else if( is_valid_choice ) {
++                text += "\n" + parts[i].name + ": " + remove_color_tags( bmenu.entries[i].desc );
++            }
++        }
++        labels.push_back( _( "Cancel" ) );
++        const int selected = external_ui_choice( text, labels );
++        bmenu.ret = selected >= 0 && static_cast<size_t>( selected ) < mapping.size() ?
++                    mapping[selected] : -1;
++    } else {
++        bmenu.query();
++    }
+     if( bmenu.ret >= 0 && static_cast<size_t>( bmenu.ret ) < parts.size() &&
+         parts[bmenu.ret].allowed ) {
+         return parts[bmenu.ret].bp;
 diff --git a/src/character_inventory.cpp b/src/character_inventory.cpp
 index 5d80fec..46a5c2d 100644
 --- a/src/character_inventory.cpp
@@ -631,6 +673,28 @@ index e2e738d..e3ed1a6 100644
  
      creature_tracker &creatures = get_creature_tracker();
      if( g->climb_down_menu_pick( examp, cmenu.ret ) ) {
+diff --git a/src/iuse_actor.cpp b/src/iuse_actor.cpp
+index 248ed42..51a1c39 100644
+--- a/src/iuse_actor.cpp
++++ b/src/iuse_actor.cpp
+@@ -1,3 +1,4 @@
++#include "do_turn.h"
+ #include "iuse_actor.h"
+ 
+ #include <cctype>
+@@ -3319,6 +3320,12 @@ std::optional<int> heal_actor::use( Character *p, item &it, const tripoint &pos
+         return std::nullopt;
+     }
+ 
++    if( external_ui_active() && !query_yn( string_format(
++            _( "Apply %1$s to %2$s?  Treatment takes time; bandaging and disinfecting help recovery, not necessarily immediate health." ),
++            it.tname(), hpp->name.translated() ) ) ) {
++        return std::nullopt;
++    }
++
+     // each tier of proficiency cuts required time by half
+     int cost = move_cost;
+     cost = p->has_proficiency( proficiency_prof_wound_care_expert ) ? cost / 2 : cost;
 diff --git a/src/melee.cpp b/src/melee.cpp
 index da5b265..6bfd418 100644
 --- a/src/melee.cpp
@@ -795,10 +859,10 @@ index 09a7711..9b0c484 100644
          DebugLog( D_INFO, DC_ALL ) <<
 diff --git a/src/cwm/cwm_inventory.h b/src/cwm/cwm_inventory.h
 new file mode 100644
-index 0000000..b61f3be
+index 0000000..32789a0
 --- /dev/null
 +++ b/src/cwm/cwm_inventory.h
-@@ -0,0 +1,168 @@
+@@ -0,0 +1,178 @@
 +#pragma once
 +#include <algorithm>
 +#include <array>
@@ -849,7 +913,7 @@ index 0000000..b61f3be
 +    static std::string action_error(avatar& u, item_location location, int action) {
 +        if (!location || !location.held_by(u) || !u.has_item(*location))
 +            return "Oggetto non piu posseduto.";
-+        if (action < 0 || action > 4) return "Azione equipaggiamento non supportata.";
++        if (action < 0 || action > 5) return "Azione equipaggiamento non supportata.";
 +        if (u.activity) return "Attendi la conclusione dell'attivita nativa.";
 +        const auto access = access_error(location);
 +        if (!access.empty()) return access;
@@ -872,6 +936,16 @@ index 0000000..b61f3be
 +        } else if (action == 3) {
 +            const auto result = u.can_takeoff(*location);
 +            if (!result.success()) return result.str();
++        }
++        if (action == 5) {
++            if (!location->is_medical_tool() || location->is_comestible())
++                return "Seleziona una benda o un trattamento esterno; farmaci e liquidi richiedono la loro interfaccia.";
++            if (u.is_underwater()) return "Non puoi medicarti sott'acqua.";
++            if (u.is_mounted()) return "Scendi dalla cavalcatura prima di medicarti.";
++            if (location->is_filthy()) return "Oggetto sporco: non utilizzabile per medicare.";
++            if (location->is_broken()) return "Oggetto rotto.";
++            if (!u.can_use_heal_item(*location)) return "Biologia non compatibile con questo trattamento.";
++            if (!location->ammo_sufficient(&u, "heal")) return "Cariche insufficienti per questo trattamento.";
 +        }
 +        if (action == 4) {
 +            if (!location->is_food()) return "Seleziona cibo o una bevanda; medicina e uso strumenti richiedono un'altra interfaccia.";
@@ -925,7 +999,7 @@ index 0000000..b61f3be
 +                }
 +                uint8_t actions = 0;
 +                std::vector<flatbuffers::Offset<flatbuffers::String>> reasons;
-+                for (int action = 0; action < 5; ++action) {
++                for (int action = 0; action < 6; ++action) {
 +                    const auto reason = action_error(u, location, action);
 +                    if (reason.empty()) actions |= 1 << action;
 +                    reasons.push_back(fbb.CreateString(reason));
@@ -1373,10 +1447,10 @@ index 0000000..1a0308e
 +}
 diff --git a/src/cwm/cwm_map_exporter.cpp b/src/cwm/cwm_map_exporter.cpp
 new file mode 100644
-index 0000000..f37c2d8
+index 0000000..f9116ea
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.cpp
-@@ -0,0 +1,608 @@
+@@ -0,0 +1,612 @@
 +#include "cwm_motion.h"
 +// CDDA CWM Map & Entity Exporter Implementation
 +// Licensed under Apache-2.0
@@ -1551,7 +1625,7 @@ index 0000000..f37c2d8
 +    bool include_chunks,
 +    ProjectionCache* cache, cdda::cwm::Identity identity,
 +    uint64_t base_revision, uint64_t state_id, uint64_t resync_id,
-+    uint64_t completed_command_id, const ClockView* clock, uint64_t consumption_token
++    uint64_t completed_command_id, const ClockView* clock, uint64_t activity_token
 +) {
 +    cdda::cwm::MessageBuilder builder(sequence_num, world_rev, identity);
 +    auto& fbb = builder.builder();
@@ -1919,10 +1993,14 @@ index 0000000..f37c2d8
 +
 +    const auto clock_state = clock ? CDDA::CWM::CreateSimulationState(fbb,
 +        clock->realtime, clock->pause_reasons, clock->scale, clock->continuous) : flatbuffers::Offset<CDDA::CWM::SimulationState>{};
-+    const auto consumption = consumption_token && u.activity.id() == activity_id("ACT_CONSUME") &&
++    const auto consumption = activity_token && u.activity.id() == activity_id("ACT_CONSUME") &&
 +        u.activity.moves_total > 0 && u.activity.moves_left > 0 ?
-+        CDDA::CWM::CreateConsumptionState(fbb, consumption_token, u.activity.moves_total, u.activity.moves_left) :
++        CDDA::CWM::CreateConsumptionState(fbb, activity_token, u.activity.moves_total, u.activity.moves_left) :
 +        flatbuffers::Offset<CDDA::CWM::ConsumptionState>{};
++    const auto first_aid = activity_token && u.activity.id() == activity_id("ACT_FIRSTAID") &&
++        u.activity.moves_total > 0 && u.activity.moves_left > 0 ?
++        CDDA::CWM::CreateFirstAidState(fbb, activity_token, u.activity.moves_total, u.activity.moves_left) :
++        flatbuffers::Offset<CDDA::CWM::FirstAidState>{};
 +    auto world_snap = CDDA::CWM::CreateWorldSnapshot(
 +        fbb,
 +        world_rev,
@@ -1936,7 +2014,7 @@ index 0000000..f37c2d8
 +        g.safe_mode == SAFE_MODE_STOP || u.has_effect(efftype_id("laserlocked")) ||
 +            (clock && (clock->pause_reasons & 4)),
 +        include_chunks, base_revision, state_id, resync_id, completed_command_id,
-+        spawned_vec, removed_vec, clock_state, ground_items_vec, owned_items_vec, avatar_status, consumption
++        spawned_vec, removed_vec, clock_state, ground_items_vec, owned_items_vec, avatar_status, consumption, first_aid
 +    );
 +
 +    return builder.finish_message(CDDA::CWM::Payload::WorldSnapshot, world_snap.Union());
@@ -1987,7 +2065,7 @@ index 0000000..f37c2d8
 +} // namespace cwm
 diff --git a/src/cwm/cwm_map_exporter.h b/src/cwm/cwm_map_exporter.h
 new file mode 100644
-index 0000000..49c9167
+index 0000000..b707595
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.h
 @@ -0,0 +1,65 @@
@@ -2035,7 +2113,7 @@ index 0000000..49c9167
 +        cdda::cwm::Identity identity = {},
 +        uint64_t base_revision = 0, uint64_t state_id = 1,
 +        uint64_t resync_id = 0, uint64_t completed_command_id = 0,
-+        const ClockView* clock = nullptr, uint64_t consumption_token = 0
++        const ClockView* clock = nullptr, uint64_t activity_token = 0
 +    );
 +
 +    static std::vector<uint8_t> export_tile_delta(
@@ -2058,10 +2136,10 @@ index 0000000..49c9167
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..90f66a3
+index 0000000..0c3d7bd
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,818 @@
+@@ -0,0 +1,837 @@
 +#include "cwm_motion.h"
 +// CDDA CWM IPC Server Implementation
 +// Licensed under Apache-2.0
@@ -2160,25 +2238,27 @@ index 0000000..90f66a3
 +    awaiting_state_ = 0;
 +}
 +
-+void CwmServer::refresh_consumption(const avatar& u) {
-+    if (u.activity.id() != activity_id("ACT_CONSUME") || u.activity.moves_total <= 0 || u.activity.moves_left <= 0) {
-+        consumption_token_ = 0; consumption_total_ = consumption_remaining_ = 0;
++void CwmServer::refresh_activity(const avatar& u) {
++    if ((u.activity.id() != activity_id("ACT_CONSUME") && u.activity.id() != activity_id("ACT_FIRSTAID")) ||
++            u.activity.moves_total <= 0 || u.activity.moves_left <= 0) {
++        activity_token_ = 0; activity_total_ = activity_remaining_ = 0;
 +        return;
 +    }
-+    if (!consumption_token_ || consumption_total_ != u.activity.moves_total ||
-+        consumption_remaining_ < u.activity.moves_left) consumption_token_ = next_consumption_token_++;
-+    consumption_total_ = u.activity.moves_total; consumption_remaining_ = u.activity.moves_left;
++    if (!activity_token_ || activity_kind_ != u.activity.id().str() || activity_total_ != u.activity.moves_total ||
++        activity_remaining_ < u.activity.moves_left) activity_token_ = next_activity_token_++;
++    activity_kind_ = u.activity.id().str();
++    activity_total_ = u.activity.moves_total; activity_remaining_ = u.activity.moves_left;
 +}
 +
 +void CwmServer::send_state(avatar& u, map& m, game& g, bool full, uint64_t completed) {
 +    if (!has_active_client() || !negotiated_ || rejecting_) return;
-+    refresh_consumption(u);
++    refresh_activity(u);
 +    const auto state_id = next_state_++;
 +    const CwmMapExporter::ClockView clock{realtime_, pause_reasons(g),
 +        static_cast<float>(clock_.scale()), motion_seconds_, continuous_};
 +    auto snapshot = CwmMapExporter::export_world_snapshot(sequence_counter_, world_revision_,
 +                    u, m, g, full, &projection_cache_, identity_, sent_revision_, state_id,
-+                    resync_id_, completed, realtime_ ? &clock : nullptr, consumption_token_);
++                    resync_id_, completed, realtime_ ? &clock : nullptr, activity_token_);
 +    const bool is_full = CDDA::CWM::GetCwmMessage(snapshot.data())->payload_as_WorldSnapshot()->full();
 +    if (emit(snapshot)) {
 +        snapshot_sent_ = true;
@@ -2507,13 +2587,24 @@ index 0000000..90f66a3
 +            case 2: accepted = bool(u.wear(location)); break;
 +            case 3: accepted = u.takeoff(location.obtain(u)); break;
 +            case 4:
-+                consumption_token_ = 0;
++                activity_token_ = 0;
 +                // Same native eat path, without terminal-menu continuation.
 +                avatar_action::eat(u, location, {}, {}, "", activity_id("ACT_CONSUME"));
 +                accepted = u.activity.id() == activity_id("ACT_CONSUME") && u.activity.moves_left > 0;
 +                // Native actor declined the warning and scheduled zero work.
 +                if (!accepted && u.activity.id() == activity_id("ACT_CONSUME")) u.activity.set_to_null();
-+                refresh_consumption(u);
++                refresh_activity(u);
++                break;
++            case 5:
++                activity_token_ = 0;
++                avatar_action::use_item(u, location, "heal");
++                accepted = u.activity.id() == activity_id("ACT_FIRSTAID") && u.activity.moves_left > 0;
++                if (accepted && location) {
++                    // Retain the exact native obtained/nested location, as the
++                    // upstream consume actor does for first aid completion.
++                    u.activity.targets.clear(); u.activity.targets.push_back(location);
++                }
++                refresh_activity(u);
 +                break;
 +        }
 +        const bool acted = accepted || u.moves != before_moves;
@@ -2691,6 +2782,8 @@ index 0000000..90f66a3
 +                ":" + std::to_string(request->pickup_charges()) +
 +                ":" + std::to_string(request->pickup_count_by_charges());
 +        }
++    } else if (const auto* request = msg->payload_as_CancelFirstAidRequest()) {
++        id = request->command_id(); signature = "cancel-first-aid:" + std::to_string(request->activity_token());
 +    } else if (const auto* request = msg->payload_as_CancelConsumptionRequest()) {
 +        id = request->command_id(); signature = "cancel-consumption:" + std::to_string(request->activity_token());
 +    } else if (const auto* request = msg->payload_as_EquipmentRequest()) {
@@ -2725,15 +2818,19 @@ index 0000000..90f66a3
 +    }
 +    if (status == Status::Expired) { send_result({id, false, "Command identity expired"}, u, m, g); return; }
 +    if (status != Status::Fresh) { server_->client()->close(); return; }
-+    if (const auto* request = msg->payload_as_CancelConsumptionRequest()) {
-+        refresh_consumption(u);
-+        const bool valid = consumption_token_ && request->activity_token() == consumption_token_ &&
++    if (msg->payload_as_CancelConsumptionRequest() || msg->payload_as_CancelFirstAidRequest()) {
++        const auto* meal = msg->payload_as_CancelConsumptionRequest();
++        const auto* aid = msg->payload_as_CancelFirstAidRequest();
++        const auto token = meal ? meal->activity_token() : aid->activity_token();
++        refresh_activity(u);
++        const bool valid = activity_token_ && token == activity_token_ &&
++            u.activity.id() == activity_id(meal ? "ACT_CONSUME" : "ACT_FIRSTAID") &&
 +            u.activity.is_interruptible() && (!realtime_ || !pause_reasons(g));
 +        if (valid) {
 +            u.cancel_activity(); // Native interruption/backlog rules, no refund.
-+            consumption_token_ = 0; inventory_selection_.clear(); ++world_revision_;
++            activity_token_ = 0; inventory_selection_.clear(); ++world_revision_;
 +        }
-+        send_result({id, valid, valid ? "" : "Consumo concluso, cambiato o gioco in pausa."}, u, m, g);
++        send_result({id, valid, valid ? "" : "Attivita conclusa, cambiata o gioco in pausa."}, u, m, g);
 +        return; // Never enqueue cancellation behind the busy native activity.
 +    }
 +    if (const auto* request = msg->payload_as_ContinuousIntentRequest()) {
@@ -2872,7 +2969,7 @@ index 0000000..90f66a3
 +            }
 +        }
 +    } else return;
-+    if (u.activity.id() == activity_id("ACT_CONSUME")) error = "Interrompi il consumo prima di agire.";
++    if (u.activity) error = "Interrompi o concludi l'attivita prima di agire.";
 +    if (commands_.size() >= 32) error = "Command queue full";
 +    if (realtime_ && pause_reasons(g)) error = "Simulation is paused";
 +    if (!error.empty()) send_result(Result{command.id, false, error}, u, m, g);
@@ -2882,10 +2979,10 @@ index 0000000..90f66a3
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.h b/src/cwm/cwm_server.h
 new file mode 100644
-index 0000000..db71fed
+index 0000000..ab607f3
 --- /dev/null
 +++ b/src/cwm/cwm_server.h
-@@ -0,0 +1,132 @@
+@@ -0,0 +1,133 @@
 +// CDDA CWM IPC Server
 +// Licensed under Apache-2.0
 +#pragma once
@@ -2963,9 +3060,10 @@ index 0000000..db71fed
 +    uint64_t next_state_{1}, awaiting_state_{0}, resync_id_{0};
 +    bool negotiated_{false}, ready_{false}, rejecting_{false};
 +    InventorySelection inventory_selection_;
-+    uint64_t next_consumption_token_{1}, consumption_token_{0};
-+    int consumption_total_{0}, consumption_remaining_{0};
-+    void refresh_consumption(const avatar& u);
++    uint64_t next_activity_token_{1}, activity_token_{0};
++    int activity_total_{0}, activity_remaining_{0};
++    std::string activity_kind_;
++    void refresh_activity(const avatar& u);
 +
 +    std::chrono::steady_clock::time_point next_inventory_query_{};
 +    std::chrono::steady_clock::time_point handshake_deadline_;
@@ -3328,10 +3426,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..f70e7d6
+index 0000000..726b34b
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,957 @@
+@@ -0,0 +1,1070 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "move_mode.h"
@@ -3351,6 +3449,7 @@ index 0000000..f70e7d6
 +#include "player_helpers.h"
 +#include "do_turn.h"
 +#include "pickup.h"
++#include "proficiency.h"
 +#include "item_pocket.h"
 +#include "map_selector.h"
 +#include "safe_mode_actions.h"
@@ -3404,7 +3503,7 @@ index 0000000..f70e7d6
 +        const auto bytes = wire.build_equipment_request( id, view, item_id, static_cast<CDDA::CWM::EquipmentAction>( action ) );
 +        server.handle_client_message( bytes.data(), bytes.size(), get_avatar(), get_map(), *g );
 +    }
-+    static uint64_t consumption( CwmServer &server ) { server.refresh_consumption( get_avatar() ); return server.consumption_token_; }
++    static uint64_t consumption( CwmServer &server ) { server.refresh_activity( get_avatar() ); return server.activity_token_; }
 +    static void interrupt( CwmServer &server, uint64_t token, uint64_t id ) {
 +        cdda::cwm::MessageBuilder wire( server.received_sequence_ + 1, 1, server.identity_ );
 +        const auto bytes = wire.build_cancel_consumption( id, token );
@@ -4288,6 +4387,118 @@ index 0000000..f70e7d6
 +    REQUIRE( server.has_queued_action() ); ++food->charges;
 +    CHECK_FALSE( cwm::CwmServerTestAccess::execute( server ) ); CHECK_FALSE( u.activity );
 +    CHECK( food );
++}
++
++TEST_CASE( "cwm_medicine_uses_native_body_selection_confirmation_and_firstaid", "[cwm][medicine]" )
++{
++    clear_avatar(); clear_map(); clear_creatures();
++    const override_option no_autosave( "AUTOSAVE", "false" );
++    avatar &u = get_avatar(); u.setpos( tripoint( 60, 60, 0 ) );
++    REQUIRE( u.wear_item( item( itype_id( "backpack_hiking" ) ) ) );
++    const bodypart_id arm( "arm_l" ), torso( "torso" );
++    u.set_part_hp_cur( arm, u.get_part_hp_max( arm ) / 2 );
++    auto location = u.i_add( item( itype_id( "bandages" ) ) ); REQUIRE( location );
++    location->set_var( "uid", "medicine-selected" );
++    const int arm_hp = u.get_part_hp_cur( arm );
++    const int torso_hp = u.get_part_hp_cur( torso );
++    u.moves = 100; g->new_game = false; g->uquit = QUIT_NO; g->set_safe_mode( SAFE_MODE_OFF );
++    cwm::CwmServer server( "/unused-medicine" ); cwm::CwmServerTestAccess::ready( server );
++    const auto view = cwm::CwmServerTestAccess::inventory( server );
++    const auto id = cwm::CwmServerTestAccess::item_id( server, *location ); REQUIRE( id );
++    cwm::CwmServerTestAccess::equipment( server, view, id, 5 ); REQUIRE( server.has_queued_action() );
++    bool decline_part = false, decline_confirm = false, interrupt = false, expert = false;
++    SECTION( "native completion applies only the selected part" ) {}
++    SECTION( "body chooser cancel" ) { decline_part = true; }
++    SECTION( "explicit confirmation decline" ) { decline_confirm = true; }
++    SECTION( "interruption preserves unused treatment" ) { interrupt = true; }
++    SECTION( "native expert wound care cost" ) { expert = true; u.add_proficiency( proficiency_id( "prof_wound_care_expert" ) ); }
++    int prompts = 0;
++    REQUIRE_FALSE( do_turn_with_action( [&]() {
++        cwm::CwmServerTestAccess::execute( server );
++        CHECK( cwm::CwmServerTestAccess::accepted( server ) == !( decline_part || decline_confirm ) );
++        if( !decline_part && !decline_confirm ) {
++            REQUIRE( u.activity.id() == activity_id( "ACT_FIRSTAID" ) );
++            CHECK( u.activity.str_values == std::vector<std::string>{ "arm_l" } );
++            CHECK( u.activity.moves_total == ( expert ? 3000 : 6000 ) );
++            CHECK( u.activity.targets.front() == location );
++            CHECK_FALSE( u.has_effect( efftype_id( "bandaged" ), arm ) );
++            CHECK( character_has_item_with_var_val( u, "uid", "medicine-selected" ) );
++        }
++        finish_external_action_phase(); return false;
++    }, [&]( const std::string &text, const std::vector<std::string> &options ) {
++        ++prompts;
++        if( prompts == 1 ) {
++            CHECK( text.find( "Select a body part" ) != std::string::npos );
++            REQUIRE( options.size() == 2 ); CHECK( options.back() == "Cancel" );
++            CHECK( options.front().find( "left arm" ) != std::string::npos );
++            CHECK( options.front().find( "Bandaged" ) != std::string::npos );
++            return decline_part ? 1 : 0;
++        }
++        CHECK( text.find( "left arm" ) != std::string::npos );
++        CHECK( options == std::vector<std::string>{ "Yes", "No" } );
++        return decline_confirm ? 1 : 0;
++    } ) );
++    CHECK( prompts == ( decline_part ? 1 : 2 ) );
++    if( decline_part || decline_confirm ) {
++        CHECK_FALSE( u.activity ); CHECK( location );
++    } else {
++        cwm::CwmServerTestAccess::complete( server );
++        const auto token = cwm::CwmServerTestAccess::consumption( server ); REQUIRE( token );
++        const auto bytes = cwm::CwmMapExporter::export_world_snapshot( 1, 2, u, get_map(), *g, true,
++            nullptr, {}, 0, 1, 0, 0, nullptr, token );
++        const auto* snapshot = CDDA::CWM::GetCwmMessage( bytes.data() )->payload_as_WorldSnapshot();
++        REQUIRE( snapshot->first_aid() ); CHECK_FALSE( snapshot->consumption() );
++        CHECK( snapshot->first_aid()->total_moves() == ( expert ? 3000 : 6000 ) );
++        CHECK( cdda::cwm::valid_world( snapshot ) );
++        // A meal token/payload cannot cancel first aid, even with matching token.
++        cwm::CwmServerTestAccess::interrupt( server, token, 2 );
++        CHECK_FALSE( cwm::CwmServerTestAccess::completed_accepted( server, 2 ) ); CHECK( u.activity );
++        cwm::CwmServerTestAccess::mode( server, 2, 3 );
++        CHECK_FALSE( server.has_queued_action() ); CHECK( u.activity );
++        if( interrupt ) {
++            cdda::cwm::MessageBuilder wire( 5, 1, { 101, 102, 103 } );
++            auto cancel = wire.build_cancel_first_aid( 4, token );
++            server.handle_client_message( cancel.data(), cancel.size(), u, get_map(), *g );
++            CHECK( cwm::CwmServerTestAccess::completed_accepted( server, 4 ) );
++            CHECK_FALSE( u.activity ); CHECK( location );
++            CHECK_FALSE( u.has_effect( efftype_id( "bandaged" ), arm ) );
++            cdda::cwm::MessageBuilder duplicate( 6, 1, { 101, 102, 103 } );
++            cancel = duplicate.build_cancel_first_aid( 4, token );
++            server.handle_client_message( cancel.data(), cancel.size(), u, get_map(), *g );
++            CHECK_FALSE( u.activity ); CHECK( location );
++        } else {
++            process_activity( u ); CHECK_FALSE( u.activity );
++            CHECK_FALSE( character_has_item_with_var_val( u, "uid", "medicine-selected" ) );
++            CHECK( u.has_effect( efftype_id( "bandaged" ), arm ) );
++            CHECK_FALSE( u.has_effect( efftype_id( "bandaged" ), torso ) );
++        }
++    }
++    // Native bandages have no instant HP effect; other parts cannot be cured.
++    CHECK( u.get_part_hp_cur( arm ) == arm_hp ); CHECK( u.get_part_hp_cur( torso ) == torso_hp );
++}
++
++TEST_CASE( "cwm_medicine_revalidates_native_item_constraints_without_mutation", "[cwm][medicine]" )
++{
++    clear_avatar(); clear_map(); avatar &u = get_avatar();
++    REQUIRE( u.wear_item( item( itype_id( "backpack_hiking" ) ) ) );
++    auto bandage = u.i_add( item( itype_id( "bandages" ) ) ); REQUIRE( bandage );
++    CHECK( cwm::InventorySelection::action_error( u, bandage, 5 ).empty() );
++    SECTION( "becomes filthy after admission" ) {
++        cwm::CwmServer server( "/unused-medicine-stale" ); cwm::CwmServerTestAccess::ready( server );
++        const auto view = cwm::CwmServerTestAccess::inventory( server );
++        cwm::CwmServerTestAccess::equipment( server, view, cwm::CwmServerTestAccess::item_id( server, *bandage ), 5 );
++        REQUIRE( server.has_queued_action() ); bandage->set_flag( flag_id( "FILTHY" ) );
++        CHECK_FALSE( cwm::CwmServerTestAccess::execute( server ) ); CHECK_FALSE( u.activity ); CHECK( bandage );
++    }
++    SECTION( "underwater" ) { u.set_underwater( true ); CHECK_FALSE( cwm::InventorySelection::action_error( u, bandage, 5 ).empty() ); }
++    SECTION( "food is not a wound treatment" ) {
++        auto food = u.i_add( item( itype_id( "apple" ) ) ); REQUIRE( food );
++        CHECK_FALSE( cwm::InventorySelection::action_error( u, food, 5 ).empty() );
++    }
++    SECTION( "liquid and oral medication deliberately require later interfaces" ) {
++        auto drug = u.i_add( item( itype_id( "aspirin" ) ) ); REQUIRE( drug );
++        CHECK_FALSE( cwm::InventorySelection::action_error( u, drug, 5 ).empty() );
++    }
 +}
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644

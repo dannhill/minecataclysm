@@ -33,12 +33,12 @@ inline bool valid_inventory(const CDDA::CWM::InventoryView* view) {
         if (!entry || entry->id() != ++id || entry->parent_id() >= id || entry->pocket_index() < -1 ||
             (!entry->parent_id() && entry->pocket_index() != -1) ||
             (entry->parent_id() && (entry->worn() || entry->wielded())) ||
-            (entry->worn() && entry->wielded()) || (entry->actions() & ~31) ||
+            (entry->worn() && entry->wielded()) || (entry->actions() & ~63) ||
             entry->weight_grams() < 0 || entry->volume_ml() < 0 || entry->length_mm() < 0 || entry->access_moves() < 0 ||
             !text(entry->type_id(), 1024, false) || !text(entry->name(), 16384, false) || !text(entry->category(), 1024) ||
-            !entry->reasons() || entry->reasons()->size() != 5 || entry->consume_moves() < 0 ||
+            !entry->reasons() || entry->reasons()->size() != 6 || entry->consume_moves() < 0 ||
             !text(entry->consume_label(), 128) || !text(entry->consume_warning(), 2048)) return false;
-        for (unsigned i = 0; i < 5; ++i)
+        for (unsigned i = 0; i < 6; ++i)
             if (!text(entry->reasons()->Get(i), 2048) ||
                 bool(entry->actions() & (1 << i)) == bool(entry->reasons()->Get(i)->size())) return false;
         if ((entry->actions() & 16) && (!entry->consume_moves() || !entry->consume_label()->size())) return false;
@@ -77,6 +77,11 @@ inline bool valid_world(const CDDA::CWM::WorldSnapshot* world) {
     if (const auto* consumption = world->consumption()) {
         if (!consumption->token() || consumption->total_moves() <= 0 ||
             consumption->remaining_moves() < 0 || consumption->remaining_moves() > consumption->total_moves()) return false;
+    }
+    if (world->consumption() && world->first_aid()) return false;
+    if (const auto* aid = world->first_aid()) {
+        if (!aid->token() || aid->total_moves() <= 0 || aid->remaining_moves() < 0 ||
+            aid->remaining_moves() > aid->total_moves()) return false;
     }
     if (world->owned_items() && !valid_items(world->owned_items())) return false;
     if (const auto* status = world->avatar_status()) {

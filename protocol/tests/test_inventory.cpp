@@ -7,7 +7,7 @@ using namespace CDDA::CWM;
 std::vector<uint8_t> inventory(int defect) {
     MessageBuilder wire(1,7,{11,22,33}); auto& f = wire.builder(); f.ForceDefaults(true);
     std::vector<flatbuffers::Offset<flatbuffers::String>> reasons;
-    for (int i=0;i<5;++i) reasons.push_back(f.CreateString(i==0?"":"not available"));
+    for (int i=0;i<6;++i) reasons.push_back(f.CreateString(i==0?"":"not available"));
     auto owner = CreateInventoryEntryDirect(f,1,0,-1,"backpack_hiking","pack","containers",0,false,true,false,500,3000,600,250,1,&reasons,0,"","");
     auto child = CreateInventoryEntryDirect(f,defect==1?1:2,defect==2?2:1,defect==3?9:0,
         "rock","stone","misc",0,false,false,false,100,100,10,100,defect==4?0:1,&reasons,0,"","");
@@ -43,5 +43,9 @@ int main() {
     auto cancel = wire.build_cancel_consumption(100, 50);
     CHECK(GetCwmMessage(cancel.data())->payload_as_CancelConsumptionRequest()->activity_token() == 50);
     CHECK(GetCwmMessage(cancel.data())->payload_as_CancelConsumptionRequest()->command_id() == 100);
+    auto aid = wire.build_cancel_first_aid(101, 51);
+    CHECK(GetCwmMessage(aid.data())->payload_as_CancelFirstAidRequest()->activity_token() == 51);
+    auto treat = wire.build_equipment_request(102,8,2,EquipmentAction::TREAT);
+    CHECK(GetCwmMessage(treat.data())->payload_as_EquipmentRequest()->action()==EquipmentAction::TREAT);
     std::cout << "Inventory bounds, ancestry, pocket links, action masks and request roundtrips PASS\n";
 }

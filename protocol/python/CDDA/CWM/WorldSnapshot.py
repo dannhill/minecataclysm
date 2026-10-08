@@ -349,8 +349,19 @@ class WorldSnapshot(object):
             return obj
         return None
 
+    # WorldSnapshot
+    def FirstAid(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(46))
+        if o != 0:
+            x = self._tab.Indirect(o + self._tab.Pos)
+            from CDDA.CWM.FirstAidState import FirstAidState
+            obj = FirstAidState()
+            obj.Init(self._tab.Bytes, x)
+            return obj
+        return None
+
 def WorldSnapshotStart(builder):
-    builder.StartObject(21)
+    builder.StartObject(22)
 
 def Start(builder):
     WorldSnapshotStart(builder)
@@ -534,6 +545,12 @@ def WorldSnapshotAddConsumption(builder, consumption):
 
 def AddConsumption(builder, consumption):
     WorldSnapshotAddConsumption(builder, consumption)
+
+def WorldSnapshotAddFirstAid(builder, firstAid):
+    builder.PrependUOffsetTRelativeSlot(21, flatbuffers.number_types.UOffsetTFlags.py_type(firstAid), 0)
+
+def AddFirstAid(builder, firstAid):
+    WorldSnapshotAddFirstAid(builder, firstAid)
 
 def WorldSnapshotEnd(builder):
     return builder.EndObject()

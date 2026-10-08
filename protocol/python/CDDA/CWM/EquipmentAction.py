@@ -8,3 +8,4 @@ class EquipmentAction(object):
     WEAR = 2
     TAKEOFF = 3
     CONSUME = 4
+    TREAT = 5

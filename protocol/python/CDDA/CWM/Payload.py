@@ -35,3 +35,4 @@ class Payload(object):
     InventoryView = 29
     EquipmentRequest = 30
     CancelConsumptionRequest = 31
+    CancelFirstAidRequest = 32
