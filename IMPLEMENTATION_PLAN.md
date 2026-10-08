@@ -239,13 +239,23 @@ anche i quattro adattamenti successivi sono PASS; il ritocco estetico non aggiun
 verifiche automatiche e accettazione visiva sono distinte. Il calendario
 approvato e i nove batch di mapping restano invariati.
 
-Prossima fetta autorizzata 2026-10-08: **inventario/equipaggiamento nativo**,
+Prima fetta implementata 2026-10-08: **inventario/equipaggiamento nativo**,
 I per query di oggetti/tasche con provenienza e capacita; Impugna/Riponi/
 Indossa/Togli attraverso item_location, vincoli e costi CDDA, scelte native,
 nessuna mutazione ottimistica o hotbar gratuita. Checklist manuale rinviata
 nel file abituale per indisponibilita dell'utente, senza dichiararla PASS.
 Quantita/drop/trasferimenti mirati e apertura tasche sigillate restano fette
-successive. Poi consumo cibo/acqua e medicina minima, quindi crafting.
+successive.
+
+Successiva fetta implementata 2026-10-08: **cibo/bevande nativi**, I con
+Mangia/Bevi, avvisi CDDA e ACT_CONSUME, durata/progresso autorevoli e
+interruzione esplicita, nessuna fame/sete o quantita modificate dal client.
+Salvataggio canonico anche con consumo in corso; movimento/azioni non
+accodati mentre si consuma. Farmaci/uso speciale, sigilli e travasi restano
+fuori da questa fetta. [Dettagli](docs/fixes/native-consumption.md).
+Quattro nuovi test grafici rinviati si aggiungono ai quattro inventario nel
+[backlog manuale](docs/validation/pending-manual.md); nessun PASS dedotto.
+Prossima fetta essenziale: medicina minima per oggetto/parte, poi crafting.
 
 
 ## Fase 3 — M6, veicoli

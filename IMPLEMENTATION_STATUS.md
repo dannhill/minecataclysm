@@ -1,6 +1,28 @@
 # Implementation status
 
 
+Current delivery: [native food/drink consumption](docs/fixes/native-consumption.md),
+CWM 2.11; reconstructed runtimes installed together. I offers Mangia/Bevi
+for owned accessible FOOD/DRINK, native duration and warnings. ACT_CONSUME
+owns serving removal, containers, digestion and effects. Progress is native
+work; I offers explicit interruption while busy, with stale-token and
+at-most-once guards. Manual/menu/threat pause and reconnect remain coherent;
+movement/gameplay requests made during consumption are not deferred.
+Canonical in-flight actor work is saved/read by the independent pristine core
+and resumed by the actual renderer. Scoped PASS: CDDA 7,939 assertions/52
+cases, Luanti 308 individual tests and 648 Catch2 assertions, protocol 6/6;
+renderer 33 reconstructed, 33 installed, 14 in-flight reload, 22 ordinary,
+and 29 equipment regression checks.
+[Exact evidence and reproduction](docs/fixes/native-consumption-evidence.json).
+Manual acceptance remains PENDING: four new consumption checks join the four
+inventory checks in [the usual backlog](docs/validation/pending-manual.md).
+MED/special-use items, seals, liquid transfer and arbitrary quantities remain
+later slices. Next: medicine for an explicitly selected object/body part,
+then crafting. M5.5 remains historical FAILED; full SAVE-001 is still open.
+
+The CWM 2.10 delivery below is historical; its binaries and evidence are
+preserved separately from the current 2.11 runtime.
+
 Current delivery: [native inventory/equipment](docs/fixes/native-equipment.md),
 CWM 2.10; both reconstructed runtimes installed. I opens native owned objects,
 search/filters, pocket provenance and capacities. Wield/stow/wear/takeoff use
