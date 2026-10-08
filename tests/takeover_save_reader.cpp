@@ -46,6 +46,7 @@ int main(int argc, const char *argv[]) {
     bool create_medicine = false;
     bool create_crafting = false;
     bool create_ranged = false;
+    bool create_transfer = false;
     bool create_body = false;
     bool create_combat = false;
     bool create_posture = false;
@@ -54,6 +55,7 @@ int main(int argc, const char *argv[]) {
     for (int i = 1; i < argc; ++i) {
         std::string arg(argv[i]);
         if (arg == "--create") create = true;
+        else if (arg == "--create-transfer") { create = true; create_transfer = true; create_posture = true; }
         else if (arg == "--create-ranged") { create = true; create_ranged = true; create_posture = true; }
         else if (arg == "--create-crafting") { create = true; create_crafting = true; create_posture = true; }
         else if (arg == "--create-medicine") { create = true; create_medicine = true; create_posture = true; }
@@ -353,6 +355,16 @@ int main(int argc, const char *argv[]) {
             dirty.set_var("uid", "medicine-dirty"); u.i_add(dirty);
             item rock(itype_id("rock"), calendar::turn); rock.set_var("uid", "medicine-rock"); u.i_add(rock);
             u.moves = 100; g->set_safe_mode(SAFE_MODE_OFF);
+        }
+        if (create_transfer) {
+            u.remove_weapon();
+            if (!u.wear_item(item(itype_id("backpack_hiking"), calendar::turn))) return 28;
+            item ammo(itype_id("9mm"), calendar::turn,30); ammo.set_var("uid","transfer-ammo"); u.i_add(ammo);
+            item bag(itype_id("bag_plastic"),calendar::turn);bag.set_var("uid","transfer-bag");u.i_add(bag);
+            item bottle(itype_id("bottle_plastic"),calendar::turn);bottle.set_var("uid","transfer-bottle");u.i_add(bottle);
+            item bat(itype_id("bat"),calendar::turn);bat.set_var("uid","transfer-bat");u.i_add(bat);
+            item stone(itype_id("rock"),calendar::turn);stone.set_var("uid","transfer-rock");u.i_add(stone);
+            u.moves=100;g->set_safe_mode(SAFE_MODE_OFF);
         }
         if (create_equipment) {
             u.remove_weapon();

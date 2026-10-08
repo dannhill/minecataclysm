@@ -1120,7 +1120,7 @@ index 0000000..2214cd4
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..5f202c8
+index 0000000..bf3b6a8
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
 @@ -0,0 +1,2400 @@
@@ -3161,7 +3161,7 @@ index 0000000..5f202c8
 +        if (quantity != fields.end()) {
 +            const auto& value = quantity->second;
 +            if (!value.empty() && value.size() <= 9 && std::all_of(value.begin(), value.end(), [](unsigned char c) { return std::isdigit(c); }))
-+                i.transfer_quantity_ = std::stoi(value);
++                { i.transfer_quantity_ = 0; for (const char c : value) i.transfer_quantity_ = i.transfer_quantity_ * 10 + c - '0'; }
 +            else i.transfer_quantity_ = 0;
 +        }
 +        for (const auto& e : i.equipment_view_.entries) {

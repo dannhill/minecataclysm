@@ -2927,7 +2927,7 @@ index 0000000..43d3a08
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..721791f
+index 0000000..0136e2e
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
 @@ -0,0 +1,949 @@
@@ -3656,7 +3656,7 @@ index 0000000..721791f
 +        }
 +    } else if (const auto* request = msg->payload_as_RangedRequest()) {
 +        id=request->command_id();signature="ranged:"+std::to_string(request->weapon_token())+":"+std::to_string(request->target_entity_id())+":"+std::to_string(int(request->action()));
-+    } else if (const auto* request = msg->payload_as_CancelReloadRequest() || msg->payload_as_CancelItemTransferRequest()) {
++    } else if (const auto* request = msg->payload_as_CancelReloadRequest()) {
 +        id=request->command_id();signature="cancel-reload:"+std::to_string(request->activity_token());
 +    } else if (const auto* request = msg->payload_as_CraftingRequest()) {
 +        id = request->command_id(); signature = "craft:" + std::to_string(request->view_id()) + ":" + std::to_string(request->entry_id());
@@ -4340,7 +4340,7 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..dbcca0a
+index 0000000..2a260a3
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
 @@ -0,0 +1,1420 @@
@@ -5719,7 +5719,7 @@ index 0000000..dbcca0a
 +    clear_avatar();clear_map();auto& u=get_avatar();u.setpos(tripoint(60,60,0));
 +    REQUIRE(u.wear_item(item(itype_id("backpack_hiking"))));
 +    auto ammo=u.i_add(item(itype_id("9mm"),calendar::turn,30));REQUIRE(ammo);
-+    auto pouch=u.i_add(item(itype_id("plastic_bag")));REQUIRE(pouch);
++    auto pouch=u.i_add(item(itype_id("bag_plastic")));REQUIRE(pouch);
 +    cwm::CwmServer server("/unused-insert");cwm::CwmServerTestAccess::ready(server);u.moves=1000;
 +    auto view=cwm::CwmServerTestAccess::inventory(server);auto id=cwm::CwmServerTestAccess::item_id(server,*ammo);
 +    auto dest=cwm::CwmServerTestAccess::item_id(server,*pouch);
@@ -5743,7 +5743,7 @@ index 0000000..dbcca0a
 +    clear_avatar();clear_map();auto& u=get_avatar();u.setpos(tripoint(60,60,0));
 +    REQUIRE(u.wear_item(item(itype_id("backpack_hiking"))));
 +    auto ammo=u.i_add(item(itype_id("9mm"),calendar::turn,30));REQUIRE(ammo);
-+    auto pouch=u.i_add(item(itype_id("plastic_bag")));REQUIRE(pouch);
++    auto pouch=u.i_add(item(itype_id("bag_plastic")));REQUIRE(pouch);
 +    cwm::CwmServer server("/unused-transfer-invalid");cwm::CwmServerTestAccess::ready(server);u.moves=1000;
 +    auto view=cwm::CwmServerTestAccess::inventory(server);auto id=cwm::CwmServerTestAccess::item_id(server,*ammo);auto dest=cwm::CwmServerTestAccess::item_id(server,*pouch);
 +    int quantity=7, action=1, mutation=0;bool queued=false;
@@ -5754,7 +5754,7 @@ index 0000000..dbcca0a
 +    SECTION("moved after admission"){queued=true;mutation=3;}
 +    SECTION("source container cycle"){id=dest;dest=cwm::CwmServerTestAccess::item_id(server,*ammo.parent_item());quantity=1;}
 +    SECTION("non-counted quantity"){id=dest;quantity=2;dest=cwm::CwmServerTestAccess::item_id(server,*ammo.parent_item());}
-+    SECTION("no space"){REQUIRE(pouch->put_in(item(itype_id("rock")),pocket_type::CONTAINER).success());REQUIRE(pouch->put_in(item(itype_id("rock")),pocket_type::CONTAINER).success());quantity=30;}
++    SECTION("no space"){REQUIRE(pouch->put_in(item(itype_id("water_clean"),calendar::turn,100),pocket_type::CONTAINER).success());quantity=30;}
 +    cwm::CwmServerTestAccess::transfer(server,view,id,quantity,dest,action);REQUIRE(server.has_queued_action()==queued);
 +    if(queued){
 +        if(mutation==1)ammo->charges=29;
