@@ -45,7 +45,9 @@ These fields and widgets do not create a Luanti-owned gameplay inventory.
 CWM 2.6 appends `avatar_status`: complete native player-facing stamina,
 needs and main body-part descriptions, including native health bars and
 perceived temperature. IDs are semantic; colors are native palette names.
-No raw HP, pain, calorie/vitamin values or hidden diagnoses are exposed.
+No raw numeric HP/pain fields, calorie/vitamin values or hidden diagnoses
+are exposed. A native description may include a perceived pain number when
+the native examination effect authorizes that precision.
 Empty native descriptions remain empty. A present status replaces the view;
 an absent one clears it on a full snapshot and preserves it on a delta.
 The exporter includes it in every state. Read-only UI queries do not run a

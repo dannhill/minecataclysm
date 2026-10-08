@@ -12,7 +12,15 @@ CWM 2.5 adds read-only native possessions to guarded, deduplicated pickup.
 Nine production mapping batches remain an independent lane. The lower panel
 is read-only. The authorized independent next slice is native survival HUD
 and read-only body status; interactive inventory/equipment follows later.
-This slice is being verified; no manual acceptance is claimed. Historical backend evidence is
+The independent [survival HUD/body sheet](docs/fixes/body-status-ui.md) is now
+implemented with scoped automated verification PASS and installed CWM 2.6 runtimes.
+H opens a read-only native sheet with menu pause; local Luanti HP/breath/hotbar
+are suppressed. Native CDDA: 7,049 assertions in 32 cases; Luanti: 306 tests;
+protocol: 5/5; installed body GUI: 16 ordinary-mode and 18 continuous-mode
+checks, plus exact native HP comparison for all 12 parts. Pickup regression:
+18/18 with the new installed runtimes. Both manual checklists remain pending;
+no new manual acceptance or full M5.5/SAVE-001 certification is claimed.
+Historical backend evidence is
 [retained](docs/fixes/ground-items-pickup.md).
 
 The [complete implementation plan](IMPLEMENTATION_PLAN.md) now incorporates

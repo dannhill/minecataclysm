@@ -1,0 +1,1027 @@
+{
+  "production_commit": "1a40905822300bb04a4abf583d63cadccaa6ae97",
+  "status": "SCOPED_AUTOMATED_PASS",
+  "manual_validation": "PENDING_EXPLICITLY_DEFERRED",
+  "failed_historical_gate": "M5.5 remains FAILED",
+  "build": "Incremental reconstructed sources, caches retained",
+  "artifact_root": "/home/dannhill/Projects/cdda-mineclonia/artifacts/playable-core-body-ui-20261008",
+  "environment": {
+    "os": "Linux-7.0.11-76070011-generic-x86_64-with-glibc2.35",
+    "display": ":1",
+    "python": "3.10.12",
+    "compiler": "c++ (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0"
+  },
+  "forks": {
+    "cdda": {
+      "url": "https://github.com/CleverRaven/Cataclysm-DDA.git",
+      "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+      "shallow": true,
+      "patch": "baseline/patches/cdda.patch",
+      "patch_sha256": "607acf826c60b94af69087d997827c6925e7c65da28f1687f5601af1f1e61f2f",
+      "tree_inventory": "baseline/trees/cdda.json",
+      "tree_sha256": "9d35912429d433317b6fb84ddb4f274362cd6e431990c0b544a2be1efa1f36b4",
+      "file_count": 8582,
+      "original_status": " M src/CMakeLists.txt\n M src/avatar_action.cpp\n M src/character.cpp\n M src/character_inventory.cpp\n M src/do_turn.cpp\n M src/do_turn.h\n M src/game.cpp\n M src/game.h\n M src/handle_action.cpp\n M src/iexamine.cpp\n M src/output.cpp\n M src/pickup.cpp\n M tests/CMakeLists.txt\n M tests/test_main.cpp\n?? src/cwm/cwm_main.cpp\n?? src/cwm/cwm_map_exporter.cpp\n?? src/cwm/cwm_map_exporter.h\n?? src/cwm/cwm_server.cpp\n?? src/cwm/cwm_server.h\n?? src/cwm_motion.cpp\n?? src/cwm_motion.h\n?? src/safe_mode_actions.h\n?? tests/cwm_pickup_test.cpp\n?? tests/cwm_projection_test.cpp\n?? tests/cwm_runtime_test.cpp\n"
+    },
+    "luanti": {
+      "url": "https://github.com/luanti-org/luanti.git",
+      "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
+      "shallow": true,
+      "patch": "baseline/patches/luanti.patch",
+      "patch_sha256": "d0a8560ebff82396a817283584ffae0536be60ef4eba08ce5056f9ff04347942",
+      "tree_inventory": "baseline/trees/luanti.json",
+      "tree_sha256": "075fb17766bb6aa159e9cb0519c5f120bf947009b8f396023db378ab11801159",
+      "file_count": 2255,
+      "original_status": " M src/CMakeLists.txt\n M src/client/CMakeLists.txt\n M src/client/client.cpp\n M src/client/clientenvironment.cpp\n M src/client/game.cpp\n M src/client/hud.cpp\n M src/client/inputhandler.cpp\n M src/client/keys.h\n M src/client/mesh_generator_thread.cpp\n M src/client/mesh_generator_thread.h\n M src/defaultsettings.cpp\n M src/network/clientpackethandler.cpp\n M src/server/player_sao.cpp\n M src/unittest/test_mapblock.cpp\n?? src/cdda/avatar_status.h\n?? src/cdda/cdda_bridge.cpp\n?? src/cdda/cdda_bridge.h\n?? src/cdda/ground_item_formspec.h\n?? src/cdda/ground_item_projection.h\n?? src/cdda/ground_item_visual.h\n"
+    },
+    "mineclonia": {
+      "url": "https://github.com/mark-wiemer/mineclonia.git",
+      "commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+      "shallow": true,
+      "patch": "baseline/patches/mineclonia.patch",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree_inventory": "baseline/trees/mineclonia.json",
+      "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36",
+      "file_count": 9359,
+      "original_status": ""
+    }
+  },
+  "protocol": "2.6",
+  "native_tests": {
+    "assertions": 7049,
+    "cases": 32,
+    "filter": "[cwm],[diving],[pickup]",
+    "seed": 42
+  },
+  "luanti_tests": {
+    "individual": 306,
+    "catch2_assertions": 648
+  },
+  "protocol_tests": {
+    "passed": 5,
+    "total": 5
+  },
+  "gui_checks": {
+    "installed-action": {
+      "passed": 16,
+      "total": 16,
+      "checks": {
+        "actual_start_ready": true,
+        "native_status_ingested_and_hud_visible": true,
+        "wounded_head_and_arm_match_pristine_native_ui": true,
+        "native_stamina_matches_without_local_estimate": true,
+        "body_sheet_pauses_native_time": true,
+        "read_only_sheet_does_not_move_or_transfer_items": true,
+        "survival_hud_hidden_behind_sheet": true,
+        "escape_returns_to_hud_and_restores_time_mode": true,
+        "real_ipc_reconnect_closes_stale_body_sheet": true,
+        "recovered_full_snapshot_restores_native_health": true,
+        "actual_runtime_survives": true,
+        "byte_relay_completed_without_errors": true,
+        "body_demo_save_readable_by_pristine_native_core": true,
+        "native_health_preserved_without_gui_healing": true,
+        "read_only_gui_preserves_native_position": true,
+        "read_only_gui_preserves_native_time_and_stamina": true
+      }
+    },
+    "installed-continuous": {
+      "passed": 18,
+      "total": 18,
+      "checks": {
+        "actual_start_ready": true,
+        "native_status_ingested_and_hud_visible": true,
+        "wounded_head_and_arm_match_pristine_native_ui": true,
+        "idle_native_time_advances": true,
+        "body_sheet_pauses_native_time": true,
+        "read_only_sheet_does_not_move_or_transfer_items": true,
+        "survival_hud_hidden_behind_sheet": true,
+        "escape_returns_to_hud_and_restores_time_mode": true,
+        "native_clock_resumes_after_sheet": true,
+        "closing_sheet_preserves_manual_pause": true,
+        "real_ipc_reconnect_closes_stale_body_sheet": true,
+        "recovered_full_snapshot_restores_native_health": true,
+        "manual_pause_survives_body_sheet_reconnect": true,
+        "actual_runtime_survives": true,
+        "byte_relay_completed_without_errors": true,
+        "body_demo_save_readable_by_pristine_native_core": true,
+        "native_health_preserved_without_gui_healing": true,
+        "read_only_gui_preserves_native_position": true
+      }
+    },
+    "pickup-regression": {
+      "passed": 18,
+      "total": 18,
+      "checks": {
+        "actual_start_ready": true,
+        "idle_does_not_auto_pickup": true,
+        "selected_ground_pile_is_rendered": true,
+        "container_freezes_native_time": true,
+        "escape_does_not_transfer_items": true,
+        "actual_chest_slots_detected": true,
+        "manual_pause_keeps_pickup_queued_without_free_transfer": true,
+        "reconnect_cancels_unsent_selection_and_container": true,
+        "reconnect_does_not_replay_stale_selection": true,
+        "only_selected_stack_transferred": true,
+        "single_item_uses_direct_pickup_without_container": true,
+        "emptied_ground_tile_removes_visual": true,
+        "actual_runtime_survives": true,
+        "byte_relay_completed_without_errors": true,
+        "gui_save_readable_by_independent_native_core": true,
+        "native_inventory_preserves_selected_seven_charge_stack": true,
+        "native_inventory_contains_directly_picked_single_item": true,
+        "no_native_ground_duplicates": true
+      }
+    }
+  },
+  "exact_hp_checks": {
+    "installed-action": {
+      "exact_native_hp_unchanged_for_every_body_part": true,
+      "native_before": {
+        "arm_l": [
+          40,
+          81
+        ],
+        "arm_r": [
+          81,
+          81
+        ],
+        "eyes": [
+          81,
+          81
+        ],
+        "foot_l": [
+          81,
+          81
+        ],
+        "foot_r": [
+          81,
+          81
+        ],
+        "hand_l": [
+          81,
+          81
+        ],
+        "hand_r": [
+          81,
+          81
+        ],
+        "head": [
+          54,
+          81
+        ],
+        "leg_l": [
+          81,
+          81
+        ],
+        "leg_r": [
+          81,
+          81
+        ],
+        "mouth": [
+          81,
+          81
+        ],
+        "torso": [
+          81,
+          81
+        ]
+      },
+      "native_after": {
+        "arm_l": [
+          40,
+          81
+        ],
+        "arm_r": [
+          81,
+          81
+        ],
+        "eyes": [
+          81,
+          81
+        ],
+        "foot_l": [
+          81,
+          81
+        ],
+        "foot_r": [
+          81,
+          81
+        ],
+        "hand_l": [
+          81,
+          81
+        ],
+        "hand_r": [
+          81,
+          81
+        ],
+        "head": [
+          54,
+          81
+        ],
+        "leg_l": [
+          81,
+          81
+        ],
+        "leg_r": [
+          81,
+          81
+        ],
+        "mouth": [
+          81,
+          81
+        ],
+        "torso": [
+          81,
+          81
+        ]
+      }
+    },
+    "installed-continuous": {
+      "exact_native_hp_unchanged_for_every_body_part": true,
+      "native_before": {
+        "arm_l": [
+          40,
+          81
+        ],
+        "arm_r": [
+          81,
+          81
+        ],
+        "eyes": [
+          81,
+          81
+        ],
+        "foot_l": [
+          81,
+          81
+        ],
+        "foot_r": [
+          81,
+          81
+        ],
+        "hand_l": [
+          81,
+          81
+        ],
+        "hand_r": [
+          81,
+          81
+        ],
+        "head": [
+          54,
+          81
+        ],
+        "leg_l": [
+          81,
+          81
+        ],
+        "leg_r": [
+          81,
+          81
+        ],
+        "mouth": [
+          81,
+          81
+        ],
+        "torso": [
+          81,
+          81
+        ]
+      },
+      "native_after": {
+        "arm_l": [
+          40,
+          81
+        ],
+        "arm_r": [
+          81,
+          81
+        ],
+        "eyes": [
+          81,
+          81
+        ],
+        "foot_l": [
+          81,
+          81
+        ],
+        "foot_r": [
+          81,
+          81
+        ],
+        "hand_l": [
+          81,
+          81
+        ],
+        "hand_r": [
+          81,
+          81
+        ],
+        "head": [
+          54,
+          81
+        ],
+        "leg_l": [
+          81,
+          81
+        ],
+        "leg_r": [
+          81,
+          81
+        ],
+        "mouth": [
+          81,
+          81
+        ],
+        "torso": [
+          81,
+          81
+        ]
+      }
+    }
+  },
+  "native_reader": {
+    "source": "/home/dannhill/Projects/cdda-mineclonia/tests/takeover_save_reader.cpp",
+    "source_sha256": "2c329b4bbde3ec87f6bfc68d761c9c162331fc1808f6a97403f1514a96e8ea42",
+    "pristine_core": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/pristine-cdda",
+    "commands": [
+      [
+        "/usr/bin/c++",
+        "-DBACKTRACE",
+        "-DCMAKE",
+        "-DDATA_DIR_PREFIX",
+        "-DGIT_VERSION",
+        "-DPREFIX=/usr/local",
+        "-DRELEASE",
+        "-DUSE_HOME_DIR",
+        "-I/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/pristine-cdda/src",
+        "-isystem",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/pristine-cdda/src/third-party",
+        "-Werror",
+        "-Wall",
+        "-Wextra",
+        "-Wformat-signedness",
+        "-Wlogical-op",
+        "-Wmissing-declarations",
+        "-Wmissing-noreturn",
+        "-Wnon-virtual-dtor",
+        "-Wold-style-cast",
+        "-Woverloaded-virtual",
+        "-Wpedantic",
+        "-Wsuggest-override",
+        "-Wunused-macros",
+        "-Wzero-as-null-pointer-constant",
+        "-Wno-unknown-warning-option",
+        "-Wno-dangling-reference",
+        "-Wno-c++20-compat",
+        "-Wno-unknown-warning",
+        "-Wredundant-decls",
+        "-fsigned-char",
+        "-g1",
+        "-O0",
+        "-DNDEBUG",
+        "-pthread",
+        "-std=c++17",
+        "-c",
+        "/home/dannhill/Projects/cdda-mineclonia/tests/takeover_save_reader.cpp",
+        "-o",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/playable-core-body-ui-20261008/native-save-reader.o"
+      ],
+      [
+        "/usr/bin/c++",
+        "-Werror",
+        "-Wall",
+        "-Wextra",
+        "-Wformat-signedness",
+        "-Wlogical-op",
+        "-Wmissing-declarations",
+        "-Wmissing-noreturn",
+        "-Wnon-virtual-dtor",
+        "-Wold-style-cast",
+        "-Woverloaded-virtual",
+        "-Wpedantic",
+        "-Wsuggest-override",
+        "-Wunused-macros",
+        "-Wzero-as-null-pointer-constant",
+        "-Wno-unknown-warning-option",
+        "-Wno-dangling-reference",
+        "-Wno-c++20-compat",
+        "-Wno-unknown-warning",
+        "-Wredundant-decls",
+        "-fsigned-char",
+        "-g1",
+        "-O0",
+        "-DNDEBUG",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/playable-core-body-ui-20261008/native-save-reader.o",
+        "CMakeFiles/takeover_save_reader.dir/messages.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/achievement.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/action.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/active_item_cache.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/activity_actor.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/activity_handlers.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/activity_item_handling.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/activity_tracker.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/activity_type.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/addiction.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/advanced_inv.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/advanced_inv_area.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/advanced_inv_listitem.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/advanced_inv_pagination.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/advanced_inv_pane.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/ammo.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/ammo_effect.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/anatomy.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/animation.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/armor_layers.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/ascii_art.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/assign.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/auto_note.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/auto_pickup.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/avatar.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/avatar_action.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/ballistics.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/basecamp.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/behavior.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/behavior_oracle.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/behavior_strategy.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/bionics.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/bionics_ui.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/bodygraph.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/bodypart.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/bonuses.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/butchery_requirements.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/cached_options.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/calendar.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/calendar_ui.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/cata_bitset.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/cata_tiles.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/cata_utility.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/cata_variant.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/catacharset.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/cellular_automata.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/char_validity_check.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/character.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/character_ammo.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/character_armor.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/character_attire.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/character_body.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/character_crafting.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/character_escape.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/character_guns.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/character_id.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/character_inventory.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/character_martial_arts.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/character_modifier.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/character_morale.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/character_oracle.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/character_proficiency.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/city.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/climbing.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/clothing_mod.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/clzones.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/color.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/compatibility.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/computer.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/computer_session.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/condition.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/construction.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/construction_category.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/construction_group.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/consumption.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/contents_change_handler.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/coordinate_conversions.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/coordinates.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/craft_command.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/crafting.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/crafting_gui.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/crash.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/creature.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/creature_tracker.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/cursesport.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/damage.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/debug.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/debug_menu.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/demangle.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/dependency_tree.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/descriptions.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/dialogue_chatbin.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/dialogue_helpers.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/dialogue_win.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/diary.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/diary_ui.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/disease.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/dispersion.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/display.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/distraction_manager.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/distribution.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/do_turn.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/drawing_primitives.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/editmap.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/effect.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/effect_on_condition.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/effect_source.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/emit.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/emscripten_exception.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/event.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/event_bus.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/event_field_transformations.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/event_statistics.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/explosion.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/faction.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/faction_camp.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/fault.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/field.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/field_type.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/filesystem.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/filesystem_impl.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/flag.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/flexbuffer_cache.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/flexbuffer_json.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/font_loader.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/fungal_effects.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/game.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/game_inventory.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/game_ui.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/gamemode.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/gamemode_tutorial.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/gates.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/generic_factory.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/grab.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/handle_action.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/handle_liquid.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/harvest.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/help.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/iexamine.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/iexamine_actors.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/init.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/input.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/inventory.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/inventory_ui.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/item.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/item_action.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/item_category.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/item_components.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/item_contents.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/item_factory.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/item_group.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/item_location.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/item_pocket.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/item_search.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/item_stack.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/iteminfo_query.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/itype.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/iuse.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/iuse_actor.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/iuse_software.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/iuse_software_kitten.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/iuse_software_lightson.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/iuse_software_minesweeper.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/iuse_software_snake.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/iuse_software_sokoban.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/json.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/json_loader.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/kill_tracker.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/lang_stats.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/level_cache.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/lightmap.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/line.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/live_view.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/loading_ui.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/localized_comparator.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/lru_cache.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/magic.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/magic_enchantment.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/magic_spell_effect.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/magic_teleporter_list.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/magic_ter_fur_transform.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/main_menu.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/map.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/map_extras.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/map_field.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/map_item_stack.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/map_memory.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/map_selector.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mapbuffer.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mapdata.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mapgen.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mapgen_functions.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mapgendata.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mapgenformat.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mapsharing.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/martialarts.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/material.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/math_parser.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/math_parser_diag.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/math_parser_diag_value.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/math_parser_func.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/math_parser_jmath.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/math_parser_shim.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mattack_actors.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/medical_ui.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/melee.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/memorial_logger.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mission.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mission_companion.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mission_end.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mission_place.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mission_start.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mission_ui.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mission_util.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/missiondef.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mmap_file.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mod_manager.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mod_manager_ui.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mod_tileset.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/monattack.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mondeath.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mondefense.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/monexamine.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/monfaction.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mongroup.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/monmove.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/monster.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/monster_oracle.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/monstergenerator.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mood_face.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/morale.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/morale_types.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/move_mode.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mtype.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/music.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mutation.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mutation_data.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mutation_type.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/mutation_ui.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/ncurses_def.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/newcharacter.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/npc.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/npc_attack.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/npc_class.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/npcmove.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/npctalk.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/npctalk_funcs.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/npctrade.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/npctrade_utils.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/options.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/ordered_static_globals.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/output.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/overlay_ordering.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/overmap.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/overmap_connection.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/overmap_location.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/overmap_noise.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/overmap_ui.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/overmapbuffer.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/panels.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/past_games_info.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/path_info.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/pathfinding.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/pickup.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/pinyin.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/pixel_minimap.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/pixel_minimap_projectors.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/player_activity.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/player_difficulty.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/player_display.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/player_hardcoded_effects.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/point.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/popup.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/profession.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/profession_group.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/proficiency.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/proficiency_ui.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/projectile.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/ranged.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/reachability_cache.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/recipe.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/recipe_dictionary.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/recipe_groups.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/regional_settings.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/relic.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/requirements.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/rng.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/rotatable_symbols.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/safe_reference.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/safemode_ui.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/savegame.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/savegame_json.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/savegame_legacy.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/scenario.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/scent_block.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/scent_map.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/scores_ui.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/sdl_font.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/sdl_gamepad.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/sdl_geometry.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/sdl_utils.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/sdl_wrappers.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/sdlsound.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/sdltiles.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/shadowcasting.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/shearing.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/shop_cons_rate.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/simple_pathfinding.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/simplexnoise.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/skill.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/skill_boost.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/skill_ui.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/smart_controller_ui.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/sounds.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/speech.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/speed_description.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/start_location.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/stats_tracker.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/stomach.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/string_editor_window.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/string_formatter.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/string_id.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/string_id_null_ids.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/string_input_popup.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/subbodypart.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/submap.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/suffer.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/system_locale.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/talker_avatar.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/talker_character.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/talker_furniture.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/talker_item.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/talker_monster.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/talker_npc.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/talker_topic.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/teleport.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/temp_crafting_inventory.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/test_data.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/text_snippets.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/text_style_check_reader.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/tgz_archiver.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/tileray.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/timed_event.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/trade_ui.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/trait_group.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/translation.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/translation_document.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/translation_gendered.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/translation_manager.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/translation_manager_impl.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/translation_plural_evaluator.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/translations.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/trap.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/trapfunc.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/try_parse_integer.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/turret.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/ui.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/ui_manager.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/unicode.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/units.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/units_utility.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/veh_appliance.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/veh_interact.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/veh_type.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/veh_utils.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/vehicle.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/vehicle_autodrive.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/vehicle_display.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/vehicle_group.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/vehicle_move.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/vehicle_part.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/vehicle_selector.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/vehicle_use.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/version.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/visitable.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/vitamin.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/wcwidth.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/weakpoint.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/weather.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/weather_gen.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/weather_type.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/widget.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/wincurse.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/wish.cpp.o",
+        "CMakeFiles/cataclysm-common.dir/worldfactory.cpp.o",
+        "-o",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/playable-core-body-ui-20261008/native-save-reader",
+        "third-party/libflatbuffers.a",
+        "-lncursesw",
+        "/usr/lib/x86_64-linux-gnu/libformw.so",
+        "/usr/lib/x86_64-linux-gnu/libz.so"
+      ],
+      [
+        "/usr/bin/strip",
+        "--strip-debug",
+        "/home/dannhill/Projects/cdda-mineclonia/artifacts/playable-core-body-ui-20261008/native-save-reader"
+      ]
+    ],
+    "binary_sha256": "6cc8140a60e6a3b6f537b7b12669648dd6bf9c0daea61d3817ea9de05812fca9"
+  },
+  "installed": {
+    "commit": "1a40905822300bb04a4abf583d63cadccaa6ae97",
+    "cd_da_compiled_source_commit": "2c1dd1db8eea78be4efbc5578811285fc0ea0628",
+    "native_source_tree": "9d35912429d433317b6fb84ddb4f274362cd6e431990c0b544a2be1efa1f36b4",
+    "native_inputs_unchanged": true,
+    "protocol_inputs": {
+      "protocol/CMakeLists.txt": "4d2bbdc57eaac1012dcefe8becfcb9fbe8e46f88",
+      "protocol/LICENSE": "ba60119fe4028322676a6411fc6b1dea9c171c7f",
+      "protocol/cwm.fbs": "df4d955f49bd5b892d9dbfc7ed106f3e1c4d7b80",
+      "protocol/include/cwm/cwm_clock.hpp": "871fe59baace926b5ac1270d7a53566d7d713291",
+      "protocol/include/cwm/cwm_framing.hpp": "23ff6ed91edb333241ca2849da698bae7e662353",
+      "protocol/include/cwm/cwm_generated.h": "758e03f0bed99d15fa3b6a23c5865a0e4eb4c089",
+      "protocol/include/cwm/cwm_protocol.hpp": "126596a37a6b6ff9a556da82bf25aec8bbebcdfb",
+      "protocol/include/cwm/cwm_session.hpp": "baf1db82c2f755c616b6ea65d840e9332912bd3c",
+      "protocol/include/cwm/cwm_transport.hpp": "8ecba89439523d39e0a7dd56d83560b93ddae4f6",
+      "protocol/include/cwm/ipc_transport.hpp": "7987f0ef342dc8cb56a792e5a10e2cb288310d7f",
+      "protocol/include/cwm/tile_semantics.hpp": "c1ae81b5498c82a8543ce4d334f271f831c9aead",
+      "protocol/python/CDDA/CWM/AcknowledgeThreatRequest.py": "58eba75a8e69209c2ece782129e925ece4212a1a",
+      "protocol/python/CDDA/CWM/AttackRequest.py": "a485075d45c84adcac079650714659fef5c806a6",
+      "protocol/python/CDDA/CWM/AvatarStatus.py": "2bd7d1a4681bd12f7e6fd75da013d9a6ce8bb6f4",
+      "protocol/python/CDDA/CWM/BodyPartStatus.py": "45e903d9994f1a262f4f096299784ad1e2559afb",
+      "protocol/python/CDDA/CWM/ChunkSnapshot.py": "1e20c99c7b3122f04a5bb2ea48dac5e213e30b5f",
+      "protocol/python/CDDA/CWM/CommandAck.py": "e614d3620c80a90aa81e51917ed905829213cf88",
+      "protocol/python/CDDA/CWM/ContinuousIntentRequest.py": "90f97d31a92a5ec9b51ea194d4b5f05ee4fb0f2b",
+      "protocol/python/CDDA/CWM/Coord3i.py": "ef9fead0b782c88f3384fabea953ff8e09f92ed0",
+      "protocol/python/CDDA/CWM/CwmBlock.py": "7a2d7f47e6ae68b82589527044731481222f4182",
+      "protocol/python/CDDA/CWM/CwmMessage.py": "a389f6742d889caac58299c1ff3d05ae9a08c2ae",
+      "protocol/python/CDDA/CWM/DecisionPrompt.py": "f149ce60af121f84487bc4cb174682432dda9fd9",
+      "protocol/python/CDDA/CWM/DecisionResponse.py": "f83bf33c7a09c0575e88b74620a9b522edd4f1e5",
+      "protocol/python/CDDA/CWM/EntityRemoved.py": "bfa7fdfcd201da88fc3040048205cc6c0d91520f",
+      "protocol/python/CDDA/CWM/EntitySpawned.py": "44e9af26c44361eb352643fe51cd72070ed0d319",
+      "protocol/python/CDDA/CWM/EntityState.py": "ffbbaf0b5a8802443a2622852a9fac7e46f673de",
+      "protocol/python/CDDA/CWM/EntityType.py": "2e775c29e09b0a2c1b61c4f9fb799744dc0cb9a9",
+      "protocol/python/CDDA/CWM/FieldState.py": "948e918bd34e04d8c6133b69ff6a4af3045fb26e",
+      "protocol/python/CDDA/CWM/GroundItemState.py": "668662182948b258a698eed211ff651775f3d60d",
+      "protocol/python/CDDA/CWM/GroundItemTileState.py": "c7b39565021551a176a3005231e454812bc99534",
+      "protocol/python/CDDA/CWM/Heartbeat.py": "020a3e863bafe64a3fc3e5a2b2ceeb058ec380dd",
+      "protocol/python/CDDA/CWM/HeartbeatAck.py": "7c7acdd892fb4011ec38071f85cbe7205b19eda5",
+      "protocol/python/CDDA/CWM/HelloRequest.py": "8bc2f5d08a47741ca64b3ea76c6ba91e11d731e9",
+      "protocol/python/CDDA/CWM/HelloResponse.py": "e6a877098c2aa99a79d6b5a7d95caeda92117827",
+      "protocol/python/CDDA/CWM/InteractAction.py": "19d7d6963c478f4d76eb975d4271e9556a0125e7",
+      "protocol/python/CDDA/CWM/InteractRequest.py": "b7ef097c67500cec4f3f2253d9d709a377e423d1",
+      "protocol/python/CDDA/CWM/MoveDirection.py": "8edbd47c1c254c543a25bf4a348e6ef1843eef74",
+      "protocol/python/CDDA/CWM/MoveRequest.py": "73be5c9f8427c51c320eb94ee973d28294a5ddf6",
+      "protocol/python/CDDA/CWM/MovementIntentRequest.py": "bc40a25e1691cb33f2feba584627db0c70151ba1",
+      "protocol/python/CDDA/CWM/Payload.py": "de3812145f2c4c9df0c281371c9a457f6c200942",
+      "protocol/python/CDDA/CWM/ResyncRequest.py": "09cad72a862a828269242cc92a14066c6eedb577",
+      "protocol/python/CDDA/CWM/SimulationControl.py": "53cda05e81a439dd4ea2e583f4a6316b4ad6e567",
+      "protocol/python/CDDA/CWM/SimulationControlRequest.py": "5fd038eb3aaa63b3a59f47fce2ad9b8415621323",
+      "protocol/python/CDDA/CWM/SimulationState.py": "ce0eea6657fa4fa8263f3ed66bffb92667b9509d",
+      "protocol/python/CDDA/CWM/SnapshotAck.py": "04ba461afe26674bc8031f75ad9f16432fb5fc5c",
+      "protocol/python/CDDA/CWM/StatusValue.py": "079d4a89266089a0ca6246e25880fae309f58d64",
+      "protocol/python/CDDA/CWM/TileDelta.py": "a2fcbb5d3c8d314b155a90181f7f769a55eeac7d",
+      "protocol/python/CDDA/CWM/TimeEvent.py": "f1507e54bb9819d86805cba9cc05e4001f485fc5",
+      "protocol/python/CDDA/CWM/Vec3f.py": "21420fca392ba2249976912fd86a7a68f0a0f66a",
+      "protocol/python/CDDA/CWM/VehicleComponentState.py": "e6ab19a28b13647ed43d26d860d090084e198182",
+      "protocol/python/CDDA/CWM/VehicleState.py": "b8aa77cc9b7d83bbead422bc93316e6c13e3a8c9",
+      "protocol/python/CDDA/CWM/WorldReset.py": "e75bbc2223565ffeddd1edb92e6329df0ace25c6",
+      "protocol/python/CDDA/CWM/WorldSnapshot.py": "572120fc7f5e239088ef03c07ef5f62a1f3b1b6d",
+      "protocol/python/CDDA/CWM/__init__.py": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "protocol/python/CDDA/__init__.py": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "protocol/tests/test_clock.cpp": "0b2a4a4adc6a104c2230823ca3d28b28fc0d1023",
+      "protocol/tests/test_ipc.cpp": "b5ca7abeca8b8399870ec07b5d6f6c73fb693bb3",
+      "protocol/tests/test_serialization.cpp": "6d415ca63d7aedbee1b8dc84696206d8ba4538b5",
+      "protocol/tests/test_session.cpp": "39be7a942cf8b5ee6bba54e2d70b6a916cc92635",
+      "protocol/tests/test_transport_limits.cpp": "c1dd3f448c50c246689c3f2204583e8661238e60"
+    },
+    "client_source_commit": "1a40905822300bb04a4abf583d63cadccaa6ae97",
+    "files": {
+      "cdda-server": {
+        "installed": "/home/dannhill/Projects/cdda-mineclonia/cdda/build/src/cdda-server",
+        "sha256": "5041fb59d94504beba36412165fcd02224c426a91450d14fe428d527077396db",
+        "built": "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/cdda/build/src/cdda-server",
+        "rollback": "/home/dannhill/Projects/cdda-mineclonia/artifacts/playable-core-body-ui-20261008/rollback/cdda-server",
+        "rollback_sha256": "20608c06fb1ef0c4b2935997e5ec90d9a897e67c39c0660ce9dd88a6f013134c"
+      },
+      "luanti": {
+        "installed": "/home/dannhill/Projects/cdda-mineclonia/luanti/bin/luanti",
+        "sha256": "a78c871b8599335afe1b7caf4541cb0ec6b236d6c7bb28247587bf96e8dedc8a",
+        "built": "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/luanti/bin/luanti",
+        "rollback": "/home/dannhill/Projects/cdda-mineclonia/artifacts/playable-core-body-ui-20261008/rollback/luanti",
+        "rollback_sha256": "c5b422b3a80191914cb4b576ba68fa019381cfe0a56cdda56c591096cce56ee6"
+      }
+    }
+  },
+  "files": {
+    "refresh-visual.json": {
+      "sha256": "8ebe761db7be6521929642fc459d5de259f8173942c0b722434ef6ac9f376ae5",
+      "bytes": 3714
+    },
+    "source-replay-final.json": {
+      "sha256": "404fd72b817c1954de03133e0b0268f59b1dafcdd1968922914089774ab687ae",
+      "bytes": 946
+    },
+    "baseline-check.log": {
+      "sha256": "a26c16229375df8210a45664a3f0d0f13b52afdd8134c0e35d80d7bd0fb1fdc8",
+      "bytes": 89
+    },
+    "installed-runtime.json": {
+      "sha256": "f683e3b884bfb2645cde5f46c1b72e3328ed5202a7fbffd4554eea812edfdd99",
+      "bytes": 6849
+    },
+    "native-reader-build-final.json": {
+      "sha256": "a471e4ac56ba1ab61e45dff8b63feee407e3f100fa0f2b5072607acc05f308b3",
+      "bytes": 25770
+    },
+    "cdda-build.log": {
+      "sha256": "0166ef7d69f41b91b1d5bcfb6b60b6fb251006d643c6473a30b2b37f6306f3e9",
+      "bytes": 1140
+    },
+    "cdda-tests.log": {
+      "sha256": "dc95cde9d9ab98c5d531bee16f8ae7753ac26f442cc759bf0136107067eb346f",
+      "bytes": 706
+    },
+    "protocol-tests.log": {
+      "sha256": "e8779d5a63c4656efd127fd16f4dc592228ee17102e4cc5596d9a8b6b426216f",
+      "bytes": 796
+    },
+    "luanti-build-visual.log": {
+      "sha256": "ac894d8096bd216d393fb09dd96932af3ea430a1b5c8be8c1db6e046ff3875d0",
+      "bytes": 734
+    },
+    "luanti-tests-visual.log": {
+      "sha256": "36bfab79ffd6f78d255aa8a1535f3767b4dc4112dc72104167a3069609418959",
+      "bytes": 18825
+    },
+    "fixture/before.json": {
+      "sha256": "4d247b773052a51bf81cf3a011faca521389e84cb4cf304e700a1809dca99580",
+      "bytes": 118069
+    },
+    "additional-native-hp-checks.json": {
+      "sha256": "ebfc48f59a8d01b921331d2a27a639daf2d838d4931f1cbb95139ffd7cfcd520",
+      "bytes": 2655
+    },
+    "installed-action/checks.json": {
+      "sha256": "24dc1f7b364f6c526653d0f920cb75a896ea8fcac0ac77d0ba33e83c4980c8ce",
+      "bytes": 815
+    },
+    "installed-action/native.json": {
+      "sha256": "3806cc2d30c631496f932778e72444e3634f4f61819db0992b47e31c210f9dc3",
+      "bytes": 122345
+    },
+    "installed-action/camera.csv": {
+      "sha256": "7cacf5400333037027423e12cbcc46aaf54d4cf97d091e45e34bfd5963935aac",
+      "bytes": 129998
+    },
+    "installed-action/survival-hud.png": {
+      "sha256": "0a6f662ee6d7795b5739758f66ccdb1fc244c00eb310a46b398620487fe6c1f9",
+      "bytes": 492919
+    },
+    "installed-action/native-body-sheet.png": {
+      "sha256": "4f25a557c378e9886afa6143a7280626f92842a3c7d02d156c35cb1ac05fd3c7",
+      "bytes": 277795
+    },
+    "installed-action/recovered-hud.png": {
+      "sha256": "3da994b2a56fe07d95f477643bd1020f608a9fe593787a23c71aa8e5412b9b56",
+      "bytes": 491740
+    },
+    "installed-continuous/checks.json": {
+      "sha256": "be229e09e9b7fe1af6aa0e9d5caa237b56202d1283384596456c93aade003dc0",
+      "bytes": 882
+    },
+    "installed-continuous/native.json": {
+      "sha256": "d41179e69a337a0677db5a45b99b58e6eb634b094f4e1f39b4042d78bdc2f524",
+      "bytes": 207377
+    },
+    "installed-continuous/camera.csv": {
+      "sha256": "d0b9167b36b90a23b36d07091469bd230e18f10034739ba7d66a0651a9c7ea31",
+      "bytes": 170343
+    },
+    "installed-continuous/survival-hud.png": {
+      "sha256": "ed15c9cee01ba614d71ce02bb51f8f3cae4d61fb8209b8298297eac4c0ad1885",
+      "bytes": 492014
+    },
+    "installed-continuous/native-body-sheet.png": {
+      "sha256": "5477138cc3a5450b37151ff07dc795c8ceac4d2486b545c62e64f4922887b309",
+      "bytes": 281126
+    },
+    "installed-continuous/recovered-hud.png": {
+      "sha256": "58d26a127f6b2f4bf2142dc017f0583fe4102fdaae90b56a954c4c4b6c211af7",
+      "bytes": 492512
+    },
+    "pickup-regression/checks.json": {
+      "sha256": "c5ff93021cd915f25680db2260c4c9fc515a530713aec80e556dc16da80109dc",
+      "bytes": 872
+    },
+    "pickup-regression/native.json": {
+      "sha256": "28c49fcb0386c737a4ee19f46d58dea04e6094d1f3299b6bf894f8489033022c",
+      "bytes": 208634
+    },
+    "pickup-regression/camera.csv": {
+      "sha256": "63151756eb04bd61c504c2a929b64b06038d2d934792d933bc3b9c37aaabe41b",
+      "bytes": 237133
+    },
+    "pickup-regression/native-stack-tooltip.png": {
+      "sha256": "c96898601b22404edd975164ac87904d56e6d2640d4e867fef2534b1bbb5afe0",
+      "bytes": 264075
+    },
+    "pickup-regression/empty-ground.png": {
+      "sha256": "7d475591659bfaf824194e5771ba0137268ccdda242263557229008c368a86ac",
+      "bytes": 343463
+    }
+  },
+  "limits": [
+    "Read-only body/survival slice; no treatment or interactive equipment",
+    "Native descriptions and main parts, no full clinical condition interface or diagram",
+    "No new full SAVE-001/M5.5/performance or broad anatomy/resolution certification",
+    "Manual pickup and body checks remain pending",
+    "Installed GUI runs had 16/18 checks; exact HP comparison added from the same native output afterwards and incorporated into the reproducer"
+  ]
+}

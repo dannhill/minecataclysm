@@ -249,6 +249,9 @@ def main():
     after = json.loads(output.read_text())
     after_parts = {p['id']: p for p in after['visible_status']['parts']}
     check('native_health_preserved_without_gui_healing', after_parts['head']['health']['text'] == native_parts['head']['health']['text'] and after_parts['arm_l']['health']['text'] == native_parts['arm_l']['health']['text'])
+    def hp_values(state):
+        return {id: (part['hp_cur'], part['hp_max']) for id, part in state['player']['body'].items()}
+    check('exact_native_hp_unchanged_for_every_body_part', hp_values(after) == hp_values(before))
     check('read_only_gui_preserves_native_position', after['player_abs'] == before['player_abs'])
     if args.action_driven:
         check('read_only_gui_preserves_native_time_and_stamina', after['time'] == before['time'] and after['visible_status']['stamina'] == before['visible_status']['stamina'])

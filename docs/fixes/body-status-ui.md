@@ -61,10 +61,66 @@ Senza `--fresh` riprende la stessa sessione, senza cancellare le precedenti.
 Il HUD/scheda è disponibile anche in `start.sh` e `pickup-demo.sh`.
 Le quattro prove sono nella [checklist congiunta](../validation/pending-manual.md).
 
-## Verifica in corso
+## Verifica della consegna
 
-Artefatti: `artifacts/playable-core-body-ui-20261008/`. Test nativi della
-proiezione e dell'analgesia, test di rifiuto/resync di stato malformato, prova
-GUI reale su fixture indipendente in modalità ordinaria e continua, controllo
-save con lettore linkato al core pristine. Esiti, sorgenti e binari saranno
-registrati alla conclusione della verifica.
+Sorgenti di produzione: `1a40905822300bb04a4abf583d63cadccaa6ae97`.
+Patch/inventari completi in `baseline/manifest.json`; riproduzione indipendente
+e confronto dei working fork PASS. Compilazione incrementale da sorgenti
+ricostruiti con cache mantenute, non una nuova compilazione completa a freddo.
+La [ricevuta](body-status-ui-evidence.json) contiene checksum, identità e limiti.
+Artefatti: `artifacts/playable-core-body-ui-20261008/`.
+
+- CDDA: **7.049 asserzioni / 32 casi PASS**, filtro `[cwm],[diving],[pickup]`,
+  seed 42. Nuova proiezione corporea pura e analgesia comprese.
+- Protocollo: **5/5 PASS**, inclusi rifiuto/resync prima dell'ingestione di
+  descrizioni mancanti, duplicate, NUL, liste eccessive o parti malformate.
+- Luanti finale: **306 test e 648 asserzioni Catch2 PASS**. Comprende escape
+  di stringhe native che potrebbero altrimenti inserire elementi nella formspec.
+- GUI reale con `start.sh` e binari **installati**: **16/16** in modalità
+  ordinaria e **18/18** in continua 4x. Salute concorde con core originale,
+  HUD visibile, sheet in pausa, WASD senza effetto in menu, Esc, pausa manuale
+  conservata, perdita IPC reale e nuova proiezione completa.
+- Due save letti dal core CDDA originale: posizione e salute conservate;
+  in modalità ordinaria anche tempo/stamina invariati. Un confronto aggiuntivo
+  degli stessi save conferma **HP correnti e massimi esatti di tutte le 12
+  parti** invariati, oltre alle barre percepite. È salvato separatamente in
+  `additional-native-hp-checks.json`; il test riproducibile ora include
+  direttamente questa asserzione, oltre alle 16/18 del giro installato.
+- Regressione della raccolta con i nuovi binari: **18/18 PASS**, GUI chest,
+  raccolta della pila scelta e del singolo sasso, annullamento dopo reconnect,
+  save originale senza duplicati. Questo non sostituisce il test visivo utente.
+
+L'ispezione degli screenshot reali ha portato a un pannello di fondo pieno
+e a barre con cinque posizioni (`[|||..]`). La GUI finale è stata ricontrollata
+e ritestata dopo questa modifica. Sono conservati anche gli screenshot
+del primo giro. Verifica automatizzata circoscritta PASS; **validazione
+manuale in attesa**, come esplicitamente richiesto dall'utente.
+
+Il server è compilato al commit `2c1dd1d`: il suo inventario CDDA e tutti gli
+input non documentali del protocollo sono identici a quelli di `1a40905`.
+Il client finale è compilato da `1a40905`; l'equivalenza e i checksum dei
+binari installati sono in `installed-runtime.json`. Il rollback conserva i
+due binari CWM 2.5 precedenti, senza modificare salvataggi utente.
+
+## Riproduzione
+
+Il core pristine di riferimento è CDDA `2478ae876eb1439be387d0e117808d33c9d6afa4`.
+`tests/takeover_save_reader.cpp --create-body` viene linkato ai suoi object
+file, senza exporter/server CWM; comandi, sorgente e SHA del lettore sono in
+`native-reader-build-final.json`. La fixture ne conserva `before.json` e il
+save nativo. La prima fixture mancava dell'effetto nativo della fame: la
+versione finale lo inizializza con `update_stomach(turn,turn)`, senza tempo
+trascorso, e conserva il primo tentativo in `fixture-pre-hunger/`.
+
+```sh
+python3 tools/refresh_verification_workspace.py --workspace artifacts/fnd03-session/workspace --receipt artifacts/nuova-verifica/refresh.json
+cmake --build artifacts/fnd03-session/workspace/cdda/build --target cdda-server cata_test --parallel 2
+cmake --build artifacts/fnd03-session/workspace/luanti/build --target luanti --parallel 2
+python3 tests/body_status_gui_test.py --workspace artifacts/fnd03-session/workspace --fixture artifacts/playable-core-body-ui-20261008/fixture/user --native-reader artifacts/playable-core-body-ui-20261008/native-save-reader --artifacts artifacts/nuova-verifica/gui-body
+```
+
+La directory di output della GUI deve essere nuova. Aggiungi `--action-driven`
+per la modalità ordinaria. Serve X11 con xdotool, ImageMagick e Pillow.
+Le prove clonano il save e usano configurazioni isolate; un relay trasparente
+consente la perdita IPC reale, senza simulazione finta. Nessun codice di
+produzione viene riscritto dal test.
