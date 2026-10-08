@@ -188,6 +188,23 @@ def main():
             wait(lambda r: int(r['body_form']) == 1 and (args.action_driven or int(r['pause_reasons']) & 2))
             opened = latest()
             shot('native-body-sheet.png')
+            # Native six main parts exceed the viewport only slightly. Scroll
+            # far down twice: the second pass must stay at the content bottom.
+            from PIL import Image, ImageChops
+            xdo('mousemove','--window',window,'840','360')
+            xdo('click','--repeat','12','--delay','20','5')
+            shot('body-scroll-bottom.png')
+            xdo('click','--repeat','12','--delay','20','5')
+            shot('body-scroll-bottom-again.png')
+            first = Image.open(out / 'body-scroll-bottom.png').convert('RGB')
+            second = Image.open(out / 'body-scroll-bottom-again.png').convert('RGB')
+            box = (705,220,950,500)
+            check('body_scroll_stops_at_content_bottom', ImageChops.difference(first.crop(box),second.crop(box)).getbbox() is None)
+            # The clipped torso temperature remains present, rather than an
+            # empty pane at maximum scroll. Require visible text/icon pixels.
+            pane = second.crop(box)
+            check('body_scroll_keeps_last_parts_visible', sum(1 for rgb in pane.getdata() if min(rgb) > 110) > 150)
+            xdo('mousemove','--window',window,'683','349')
             time.sleep(2)
             xdo('keydown', 'w')
             time.sleep(.4)

@@ -689,7 +689,7 @@ index 5d6b891..48c0d59 100644
  		g_settings->getFlagStr("anticheat_flags", flagdesc_anticheat, nullptr);
  
 diff --git a/src/unittest/test_mapblock.cpp b/src/unittest/test_mapblock.cpp
-index 7f3f860..c80320d 100644
+index 7f3f860..237632c 100644
 --- a/src/unittest/test_mapblock.cpp
 +++ b/src/unittest/test_mapblock.cpp
 @@ -10,6 +10,14 @@
@@ -723,7 +723,7 @@ index 7f3f860..c80320d 100644
  };
  
  static TestMapBlock g_test_instance;
-@@ -44,9 +59,139 @@ void TestMapBlock::runTests(IGameDef *gamedef)
+@@ -44,9 +59,140 @@ void TestMapBlock::runTests(IGameDef *gamedef)
  	TEST(testSave29, gamedef);
  	TEST(testLoad29, gamedef);
  	TEST(testLoad20, gamedef);
@@ -754,6 +754,7 @@ index 7f3f860..c80320d 100644
 +    UASSERT(form.find("left\\;arm") != std::string::npos);
 +    UASSERT(form.find("table[") == std::string::npos);
 +    UASSERT(form.find("scroll_container[") != std::string::npos);
++    UASSERT(form.find("scrollbaroptions[min=0;max=0;") != std::string::npos);
 +    UASSERT(form.find("heart.png") != std::string::npos);
 +    UASSERT(form.find("list[") == std::string::npos);
 +    UASSERTEQ(std::string, statusColor("c_red"), "#ef6666");
@@ -866,13 +867,14 @@ index 7f3f860..c80320d 100644
  void TestMapBlock::testSaveLoad(IGameDef *gamedef, const u8 version)
 diff --git a/src/cdda/avatar_status.h b/src/cdda/avatar_status.h
 new file mode 100644
-index 0000000..fdcf808
+index 0000000..c619496
 --- /dev/null
 +++ b/src/cdda/avatar_status.h
-@@ -0,0 +1,101 @@
+@@ -0,0 +1,102 @@
 +#pragma once
 +#include <string>
 +#include <array>
++#include <algorithm>
 +#include <vector>
 +
 +namespace cdda_client {
@@ -945,7 +947,7 @@ index 0000000..fdcf808
 +        "label[0.4,0.9;Tempo in pausa - descrizioni percepite dal personaggio]"
 +        "label[0.4,1.5;Stamina]";
 +    form += statusIconRow(2.1, 1.3, status.stamina.text, "mcl_hunger_icon_exhaustion.png");
-+    form += "scrollbaroptions[min=0;max=" + std::to_string(status.needs.size() * 8) +
++    form += "scrollbaroptions[min=0;max=" + std::to_string(std::max(0, (int(status.needs.size()) * 75 + 20 - 630 + 9) / 10)) +
 +        ";smallstep=8;largestep=24]scrollbar[5.5,2;0.25,6.3;vertical;needs_scroll;0]"
 +        "scroll_container[0.4,2;5,6.3;needs_scroll;vertical;0.1]";
 +    double y = .2;
@@ -955,7 +957,7 @@ index 0000000..fdcf808
 +            statusEscape(value.text.empty() ? "-" : value.text) + "]";
 +        y += .75;
 +    }
-+    form += "scroll_container_end[]style_type[label;textcolor=#eeeeee]scrollbaroptions[min=0;max=" + std::to_string(status.parts.size() * 11) +
++    form += "scroll_container_end[]style_type[label;textcolor=#eeeeee]scrollbaroptions[min=0;max=" + std::to_string(std::max(0, (int(status.parts.size()) * 110 + 10 - 630 + 9) / 10)) +
 +        ";smallstep=8;largestep=24]scrollbar[11.3,2;0.25,6.3;vertical;parts_scroll;0]"
 +        "scroll_container[6,2;5.1,6.3;parts_scroll;vertical;0.1]";
 +    y = .1;
