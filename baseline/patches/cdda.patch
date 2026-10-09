@@ -1646,10 +1646,10 @@ index 0000000..0866007
 +} // namespace cwm
 diff --git a/src/cwm/cwm_inventory.h b/src/cwm/cwm_inventory.h
 new file mode 100644
-index 0000000..5651398
+index 0000000..7b3c374
 --- /dev/null
 +++ b/src/cwm/cwm_inventory.h
-@@ -0,0 +1,253 @@
+@@ -0,0 +1,257 @@
 +#pragma once
 +#include <algorithm>
 +#include <array>
@@ -1765,6 +1765,10 @@ index 0000000..5651398
 +        auto error = validate_binding(u, view, id);
 +        return error.empty() ? action_error(u, target(id), action) : error;
 +    }
++    static unsigned ui_order(const item& it) {
++        const double value = it.get_var("cwm_inventory_position", 0);
++        return value >= 1 && value <= 2048 && std::floor(value) == value ? unsigned(value) : 0;
++    }
 +    std::string arrange(avatar& u, uint64_t view, uint32_t source, uint32_t before) {
 +        auto error = validate_binding(u, view, source); if (!error.empty()) return error;
 +        if (before) { error = validate_binding(u, view, before); if (!error.empty()) return error; }
@@ -1775,8 +1779,8 @@ index 0000000..5651398
 +            order.push_back(n);
 +        }
 +        std::stable_sort(order.begin(), order.end(), [&](unsigned a, unsigned b) {
-+            const int x = target(a)->get_var("cwm_inventory_position", 0);
-+            const int y = target(b)->get_var("cwm_inventory_position", 0);
++            const int x = ui_order(*target(a));
++            const int y = ui_order(*target(b));
 +            return (x > 0 ? x : 4096 + int(a)) < (y > 0 ? y : 4096 + int(b));
 +        });
 +        order.erase(std::find(order.begin(), order.end(), source));
@@ -1876,7 +1880,7 @@ index 0000000..5651398
 +                    units::to_gram<int64_t>(it->weight()), units::to_milliliter<int64_t>(it->volume()),
 +                    units::to_millimeter<int64_t>(it->length()), access, actions, &reasons, consume_moves, consume_label, remove_color_tags(warning).c_str(), transfer_source_error(u, location).c_str(),
 +                    std::any_of(container_pockets.begin(), container_pockets.end(),
-+                        [](const auto* p) { return p->is_type(pocket_type::CONTAINER); }), quick_slot, it->rotten(), std::clamp(it->get_var("cwm_inventory_position", 0), 0, 2048)));
++                        [](const auto* p) { return p->is_type(pocket_type::CONTAINER); }), quick_slot, it->rotten(), ui_order(*it)));
 +                bindings_.push_back({location, ancestors, it->typeId().str(), it->charges,
 +                                     it->count_by_charges(), worn, wielded});
 +                ids[it] = id;

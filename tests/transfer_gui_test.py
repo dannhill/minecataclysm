@@ -238,16 +238,28 @@ def main():
                 index=e.Id()-1
                 click(1.025+(index%6)*1.18,3.2+(index//6)*1.0)
                 wait(lambda r:int(r['equipment_selected'])==e.Id())
+            destination_point=None
             def destination(v,e):
+                nonlocal destination_point
                 containers=[x for x in entries(v) if x.Container()]
                 index=next(n for n,x in enumerate(containers) if x.Id()==e.Id())
                 assert index<12
-                click(11.75,2.8+index*.42)
+                destination_point=(11.75,2.8+index*.42)
+                click(*destination_point)
             def quantity(value):
                 click(1.2,9.97);xdo('key','ctrl+a');xdo('type','--clearmodifiers',str(value));time.sleep(.15)
             def action(insert):
                 sent=int(latest()['transfers_sent'])
-                click(11.75 if insert else 4.65,9.97)
+                selected=int(latest()['equipment_selected']);index=selected-1
+                source=(1.025+(index%6)*1.18,3.2+(index//6)*1.0)
+                target=destination_point if insert else (4.65,9.97)
+                assert target is not None
+                xdo('mousemove','--window',window,str(round(origin_x+source[0]*unit)),str(round(origin_y+source[1]*unit)))
+                xdo('mousedown','1');time.sleep(.15)
+                for n in range(1,8):
+                    x=source[0]+(target[0]-source[0])*n/7;y=source[1]+(target[1]-source[1])*n/7
+                    xdo('mousemove','--window',window,str(round(origin_x+x*unit)),str(round(origin_y+y*unit)));time.sleep(.04)
+                xdo('mouseup','1');time.sleep(.4)
                 wait(lambda r:int(r['transfers_sent'])==sent+1)
                 if not args.automatic_return:
                     tap('Escape')  # Legacy mechanism tests explicitly opt out.

@@ -27,6 +27,7 @@ def main():
         parser.add_argument('--' + name, type=Path, required=True)
     parser.add_argument('--action-driven', action='store_true', help='Verify ordinary start.sh mode without the real-time scheduler')
     parser.add_argument('--resume-only', action='store_true')
+    parser.add_argument('--drag-equipment', action='store_true')
     parser.add_argument('--sequential', action='store_true', help='Exercise UX-02 paid completion and automatic return')
     parser.add_argument('--quickbar', action='store_true', help='Verify UX-03 shortcuts, focus, native costs, pause and persistence')
     parser.add_argument('--quickbar-resume', action='store_true', help='Verify the saved UX-03 shortcut identities after actual reload')
@@ -357,6 +358,27 @@ def main():
                     shot('reloaded-shortcuts.png');tap('Escape');wait(lambda r:int(r['equipment_form'])==0)
                 view=open_inventory();check('quickbar_changes_leave_native_contents_intact',view.EntriesLength()==6 and item(view,'backpack_hiking').Worn())
                 # Stop in read-only I before closing the isolated runtime.
+            elif args.drag_equipment:
+                paused=latest()['simulation_time']
+                def paid_drag(source,target,decision=False):
+                    nonlocal view
+                    previous=latest()['inventory_view'];sent=int(latest()['equipment_sent'])
+                    drag(source,target)
+                    wait(lambda r:int(r['equipment_sent'])==sent+1)
+                    if decision:
+                        wait(lambda r:int(r['pending_decision'])>0);tap('1')
+                    wait(lambda r:int(r['equipment_form'])==1 and int(r['inventory_view'])>0 and r['inventory_view']!=previous and int(r['native_work_settled'])==1,timeout=25)
+                    shot('drag-paid-return.png');view=views()[-1]
+                paid_drag(cell(item(view,'hat_ball')),(6.425,2.575))
+                check('drag_into_wear_area_runs_native_wear',item(view,'hat_ball').Worn())
+                paid_drag((6.425,2.575),(10.225,8.275))
+                check('drag_worn_to_grid_runs_native_takeoff',not item(view,'hat_ball').Worn())
+                paid_drag((1.025,2.575),(10.225,8.275),decision=True)
+                check('drag_hand_to_grid_runs_native_stow',not any(view.Entries(n).Wielded() for n in range(view.EntriesLength())))
+                paid_drag(cell(item(view,'rock')),(1.025,2.575))
+                check('drag_into_hand_runs_native_wield',item(view,'rock').Wielded())
+                check('physical_drags_pay_native_time',int(latest()['simulation_time'])>int(paused))
+                shot('drag-final-equipment.png')
             elif args.sequential:
                 import struct
                 from CDDA.CWM.WorldSnapshot import WorldSnapshot

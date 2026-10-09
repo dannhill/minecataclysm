@@ -751,7 +751,7 @@ index 7758c96..135b8b9 100644
  	settings->setDefault("keymap_toggle_update_camera", "KEY_F4");
  #else
 diff --git a/src/gui/guiFormSpecMenu.cpp b/src/gui/guiFormSpecMenu.cpp
-index ed1c300..75c849c 100644
+index ed1c300..0752e2d 100644
 --- a/src/gui/guiFormSpecMenu.cpp
 +++ b/src/gui/guiFormSpecMenu.cpp
 @@ -169,6 +169,10 @@ void GUIFormSpecMenu::removeTooltip()
@@ -813,7 +813,7 @@ index ed1c300..75c849c 100644
  	}
  }
  
-+std::optional<size_t> GUIFormSpecMenu::cwmDragZoneAt(v2s32 point) const
++std::optional<size_t> GUIFormSpecMenu::cwmDragZoneAt(v2s32 point)
 +{
 +    for (size_t n = 0; n < m_cwm_drag_zones.size(); ++n)
 +        for (const auto &field : m_fields) if (field.fname == m_cwm_drag_zones[n].name) {
@@ -970,7 +970,7 @@ index ed1c300..75c849c 100644
  				&& isVisible()) {
  			// find the element that was clicked
 diff --git a/src/gui/guiFormSpecMenu.h b/src/gui/guiFormSpecMenu.h
-index 5c3fcd8..c8a1054 100644
+index 5c3fcd8..4b2ccf2 100644
 --- a/src/gui/guiFormSpecMenu.h
 +++ b/src/gui/guiFormSpecMenu.h
 @@ -334,6 +334,20 @@ class GUIFormSpecMenu : public GUIModalMenu
@@ -990,7 +990,7 @@ index 5c3fcd8..c8a1054 100644
 +    bool cwmDragEvent(const SEvent &event);
 +    void drawCwmDrag();
 +    bool cwmDragAllowed(const CwmDragZone &source, const CwmDragZone &target) const;
-+    std::optional<size_t> cwmDragZoneAt(v2s32 point) const;
++    std::optional<size_t> cwmDragZoneAt(v2s32 point);
  	std::vector<FieldSpec> m_fields;
  	std::vector<std::pair<FieldSpec, GUITable *>> m_tables;
  	std::vector<std::pair<FieldSpec, gui::IGUICheckBox *>> m_checkboxes;
@@ -1442,7 +1442,7 @@ index 0000000..2214cd4
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..84073f7
+index 0000000..ac67960
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
 @@ -0,0 +1,2678 @@
@@ -3660,7 +3660,7 @@ index 0000000..84073f7
 +            if (fields.count("quantity")) {
 +                const auto &text = fields.at("quantity");
 +                if (text.empty() || text.size() > 9 || !std::all_of(text.begin(), text.end(), [](unsigned char c) { return std::isdigit(c); })) quantity = 0;
-+                else quantity = std::stoi(text);
++                else { quantity = 0; for (const char c : text) quantity = quantity * 10 + c - '0'; }
 +            }
 +            if (!source->transfer_reason.empty()) { i.equipment_notice_ = source->transfer_reason; return; }
 +            if (quantity <= 0 || quantity > (source->counted ? source->charges : 1)) {

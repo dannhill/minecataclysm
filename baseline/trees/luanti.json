@@ -7237,7 +7237,7 @@
   {
     "path": "src/cdda/cdda_bridge.cpp",
     "mode": "100644",
-    "sha256": "db48ef8fbdc6a1fdc9078eae400efb3b49a535976c0c9c35c98b31953e142938"
+    "sha256": "f97a10aeb5f143488cf6d15488708e602f64ffe3c0c1d226a0b0de6ab82f04f9"
   },
   {
     "path": "src/cdda/cdda_bridge.h",
@@ -8377,12 +8377,12 @@
   {
     "path": "src/gui/guiFormSpecMenu.cpp",
     "mode": "100644",
-    "sha256": "bfab20f7601668049bb09a80cacfeb3ea7fec3eee4e855ff7c7d8d1fd70daa31"
+    "sha256": "799bef71e8fad02e5013c35bbd70300aa859be05cae0d3a77910b98fbb23c357"
   },
   {
     "path": "src/gui/guiFormSpecMenu.h",
     "mode": "100644",
-    "sha256": "25c2364763da1ceb5e6b348b709056ad9e99259bb3b52790393c2cf7b6e550cd"
+    "sha256": "7580107366ac0691bbb23d7eb853111448b0fb4024fb0dea719d28fd3636419e"
   },
   {
     "path": "src/gui/guiHyperText.cpp",
