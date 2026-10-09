@@ -302,9 +302,11 @@ def main():
                     tap('1') # Explicit native Store in inventory, no production auto-confirm.
                     wait(lambda r:int(r['native_work_settled'])==1 and int(r['pending_move'])==0,timeout=25)
                     check('quick_wield_preserves_binding_and_pays_native_time',slot(3).Wielded() and int(latest()['quick_wielded'])==3 and int(latest()['simulation_time'])>int(paused))
-                    tap('2');tap('g')
+                    # Deliver number and use in the same frame: use the new slot.
+                    xdo('keydown','2','g');time.sleep(.2);xdo('keyup','2','g')
                     wait(lambda r:int(r['native_work_settled'])==1 and int(r['pending_move'])==0 and slot(2).Worn(),timeout=25)
                     check('quick_clothing_uses_native_wear',slot(2).Worn())
+                    check('same_frame_slot_and_use_targets_new_selection',int(latest()['quick_slot'])==2 and slot(2).Worn())
                     check('world_quick_use_does_not_force_inventory',int(latest()['equipment_form'])==0)
                     tap('F7');wait(lambda r:int(r['pause_reasons'])&1)
                     sent=latest()['quick_use_sent'];paused=latest()['simulation_time'];tap('g');time.sleep(.5)

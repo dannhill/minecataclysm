@@ -7237,7 +7237,7 @@
   {
     "path": "src/cdda/cdda_bridge.cpp",
     "mode": "100644",
-    "sha256": "ec0b580c77280fca55050a0d31c01caf8e7b2f9ef97e9fe99bc63e1c65c02dd8"
+    "sha256": "980f3f01e620fe8fd84e1aa4a0cfc2e7ccfa836513b53f687dec5e40108f9c32"
   },
   {
     "path": "src/cdda/cdda_bridge.h",
@@ -7467,7 +7467,7 @@
   {
     "path": "src/client/game.cpp",
     "mode": "100644",
-    "sha256": "ed0f5c5f1798e66faa35c7ce45daaaf7cbfed905f3eb7f61115d9cf63849d62f"
+    "sha256": "3379882693e18954f0723f333c71ade90413391797c69e0766b4828d6a97b180"
   },
   {
     "path": "src/client/game.h",
