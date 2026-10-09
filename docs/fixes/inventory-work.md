@@ -45,7 +45,7 @@ Nessun campo Luanti nel protocollo e nessuna serializzazione canonica nuova.
 
 ## Evidenza e prove rinviate
 
-Le verifiche riproducibili e gli hash saranno registrati nel receipt
+Le verifiche riproducibili e gli hash sono registrati nel receipt
 [inventory-work-evidence.json](inventory-work-evidence.json). Build sui sorgenti
 ricostruiti con cache, non clean build fredda. Artefatti locali:
 `artifacts/ux02-inventory-work-20261009/`. I tentativi GUI preliminari sono
@@ -53,6 +53,26 @@ conservati separatamente: driver con ripressione I concorrente al ritorno e
 scelta nativa per riporre la mazza non gestita. La seconda prova ha inoltre
 intercettato il collegamento Esc mancante nel dispatch dei tasti, corretto
 e soggetto a nuova prova prima della consegna. Non sono risultati PASS.
+
+**PASS**: 8.640 asserzioni native / 68 casi (`[cwm],[pickup]`), protocollo
+9/9, Luanti 308 test / 47 moduli e 648 asserzioni Catch2 / 4 casi;
+ricostruzione indipendente delle sorgenti catturate. Nel renderer reale:
+**36 controlli sul binario finale**, compresi pixel del pannello visibile,
+consumo, cancel, decisione, pausa/reconnect e rilettura nel core pristine.
+Altri **186 controlli in sette sessioni** attestano l'identica logica prima
+del solo spostamento dell'indicatore, incluse tre azioni consecutive, correlazione
+fra native settled e MENU_OPEN, pannello trasferimenti, modalità a turni,
+attività salvata e ripresa una sola volta. Il receipt distingue hash/fasi;
+non sono presentati come un'unica suite del binario grafico finale.
+
+Coppia installata per start.sh, con rollback 2.15 conservato:
+CDDA `d8374e48f03a945365dea8558fa7dd6b2854deeb7ee41757aff612292601061b`,
+Luanti `a528a85a6912718bb626265c34e4d8040c5291b18d109196f560cd8f18ebc3ee`.
+[Indicatore dal runtime installato](../../artifacts/ux02-inventory-work-20261009/consumption-panel-installed/work-panel.png).
+Gli overlay debug/progresso preesistenti restano nel loro successivo task di
+produzione; quello nuovo è posizionato sopra l'HUD per essere leggibile.
+Minaccia/morte sono state ispezionate nel codice: le prove grafiche dedicate
+sono nel backlog, senza dichiararle implicitamente PASS.
 
 Quattro nuove prove [manuali](../validation/pending-manual.md), totale
 20 PENDING, senza obbligo di eseguirle ora. Nessuna accettazione grafica dedotta.

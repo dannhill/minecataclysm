@@ -1,6 +1,6 @@
 # Implementation status
 
-Current scoped delivery (2026-10-09): **UX-02 sequential inventory actions**.
+Current scoped delivery (2026-10-09): **UX-02 sequential inventory actions**, verified and installed for start.sh.
 One explicit operation closes the modal browser while native work/time runs;
 a compact non-modal indicator displays operation/progress. The browser returns
 only after CDDA confirms paid completion, preserving page/filter/search and

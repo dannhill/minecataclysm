@@ -1,0 +1,214 @@
+{
+  "scope": "UX-02 sequential inventory work, paid completion and automatic return; not global M5.5/SAVE-001 conformance",
+  "date": "2026-10-09",
+  "status": "scoped verification PASS; manual acceptance PENDING",
+  "source_commit": "6f56a1020e756d7d3ba395c52cd20f239b10e4c4",
+  "captured_sources": {
+    "cdda": {
+      "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+      "tree_sha256": "6591a0f40496ce82997026f6de0ccbbf6c9c28fba76d76d72b84b387b45cdd2f",
+      "patch_sha256": "a705f30300ef5dd31ceda198c2c0cef2958d6483d33a60d94e6a2cb107661142",
+      "file_count": 8586
+    },
+    "luanti": {
+      "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
+      "tree_sha256": "7a8f7fd3274a4368537b50c2e13a222e1d05e6ba072d07ee0cbe7eec464f264a",
+      "patch_sha256": "3b62f7c65a914c3867582bc6e56c7c49f2acf74fb92b8f11078b9a22789e8051",
+      "file_count": 2259
+    },
+    "mineclonia": {
+      "commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+      "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "file_count": 9359
+    }
+  },
+  "runtime_protocol": "2.16",
+  "installed_binaries": {
+    "cdda/build/src/cdda-server": {
+      "sha256": "d8374e48f03a945365dea8558fa7dd6b2854deeb7ee41757aff612292601061b",
+      "previous_sha256": "bf1898dbd1ec43072506962c46cb575443583a9d95fcc861d6cc308add7721d8",
+      "rollback": "artifacts/ux02-inventory-work-20261009/cdda-previous-runtime"
+    },
+    "luanti/bin/luanti": {
+      "sha256": "a528a85a6912718bb626265c34e4d8040c5291b18d109196f560cd8f18ebc3ee",
+      "previous_sha256": "c04505366583fb7075a426eb01ea4e4fecd0e8a5e534624976bba2c7267cf1c9",
+      "rollback": "artifacts/ux02-inventory-work-20261009/luanti-previous-runtime",
+      "presentation_candidate_sha256": "c1cd9d480774bb6fb2f3d491115284f3a06cff2b96b8fc428c23a9eca352c1c4",
+      "presentation_candidate_rollback": "artifacts/ux02-inventory-work-20261009/luanti-before-panel-position"
+    }
+  },
+  "install_receipt": "artifacts/ux02-inventory-work-20261009/install.json",
+  "environment": {
+    "platform": "Linux-7.0.11-76070011-generic-x86_64-with-glibc2.35",
+    "os": "Pop!_OS 22.04 LTS",
+    "compiler": "c++ (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0",
+    "gui": "private Xvfb 1280x800, Mesa/llvmpipe, xdotool input, actual Luanti renderer, transparent IPC relay; isolated cloned native fixtures only"
+  },
+  "build_mode": "incremental build after completed reconstruction refresh; retained caches; not a clean cold build",
+  "build_commands": [
+    "cmake --build cdda/build --target cdda-server cata_test -j3",
+    "cmake --build luanti/build -j3",
+    "cmake --build build/protocol -j3"
+  ],
+  "verification": {
+    "native": {
+      "status": "PASS",
+      "filter": "[cwm],[pickup]",
+      "assertions": 8640,
+      "cases": 68,
+      "rng_seed": 42,
+      "log": "artifacts/ux02-inventory-work-20261009/tests-native.log"
+    },
+    "protocol": {
+      "status": "PASS",
+      "registered_tests": 9,
+      "log": "artifacts/ux02-inventory-work-20261009/tests-protocol.log"
+    },
+    "luanti_final": {
+      "status": "PASS",
+      "tests": 308,
+      "modules": 47,
+      "catch_assertions": 648,
+      "catch_cases": 4,
+      "log": "artifacts/ux02-inventory-work-20261009/tests-luanti-panel.log"
+    },
+    "source_replay": {
+      "status": "PASS",
+      "receipt": "artifacts/ux02-inventory-work-20261009/source-replay-panel.json"
+    },
+    "gui": [
+      {
+        "case": "equipment-delivery",
+        "phase": "same functional sources, before final overlay positioning",
+        "runtime_cdda_sha256": "d8374e48f03a945365dea8558fa7dd6b2854deeb7ee41757aff612292601061b",
+        "runtime_luanti_sha256": "c1cd9d480774bb6fb2f3d491115284f3a06cff2b96b8fc428c23a9eca352c1c4",
+        "checks": 26,
+        "status": "PASS",
+        "summary": "artifacts/ux02-inventory-work-20261009/equipment-delivery/summary.json",
+        "summary_sha256": "13738bb5e9e1924f597699f80064a78899da3f160d454eec52b5f8e8c0703969",
+        "trace_sha256": "221cc9c81709f495f92626644a5a3e1aa4db93c84f7823c615446f1c4e5d2a61",
+        "native_reader_log_sha256": "42deb1bcec55b0f341ab364d8f93e9ec32acaad3a6666cfac7e43aedcf2ae5ab"
+      },
+      {
+        "case": "consumption-final",
+        "phase": "same functional sources, before final overlay positioning",
+        "runtime_cdda_sha256": "d8374e48f03a945365dea8558fa7dd6b2854deeb7ee41757aff612292601061b",
+        "runtime_luanti_sha256": "c1cd9d480774bb6fb2f3d491115284f3a06cff2b96b8fc428c23a9eca352c1c4",
+        "checks": 37,
+        "status": "PASS",
+        "summary": "artifacts/ux02-inventory-work-20261009/consumption-final/summary.json",
+        "summary_sha256": "e3bd57660b22675ca89dadb120a4d98d3c441901b6c8456677077c361f10778f",
+        "trace_sha256": "8a982784be6a616aedaeaa32abe70ad7af309db8c74236d766c8351a83fdb045",
+        "native_reader_log_sha256": "d30a26012f03219bc4ef5767416202d8cb8351f0d77d7e8c05b20edd029a877b"
+      },
+      {
+        "case": "transfer-final",
+        "phase": "same functional sources, before final overlay positioning",
+        "runtime_cdda_sha256": "d8374e48f03a945365dea8558fa7dd6b2854deeb7ee41757aff612292601061b",
+        "runtime_luanti_sha256": "c1cd9d480774bb6fb2f3d491115284f3a06cff2b96b8fc428c23a9eca352c1c4",
+        "checks": 31,
+        "status": "PASS",
+        "summary": "artifacts/ux02-inventory-work-20261009/transfer-final/summary.json",
+        "summary_sha256": "9a763e024225b20904d132c27bbf5348ed7d43126bc16aa8bc869d31dad8c754",
+        "trace_sha256": "9b2e53b581d4777084d3bf827e2f9dfd7ecaa73b5a3f0822042b051898b35809",
+        "native_reader_log_sha256": "36c5c75d99d7fb4e45cc48f04065dd8ef75dde985cf1644323cacac6ccfc9c96"
+      },
+      {
+        "case": "consumption-resume",
+        "phase": "same functional sources, before final overlay positioning",
+        "runtime_cdda_sha256": "d8374e48f03a945365dea8558fa7dd6b2854deeb7ee41757aff612292601061b",
+        "runtime_luanti_sha256": "c1cd9d480774bb6fb2f3d491115284f3a06cff2b96b8fc428c23a9eca352c1c4",
+        "checks": 14,
+        "status": "PASS",
+        "summary": "artifacts/ux02-inventory-work-20261009/consumption-resume/summary.json",
+        "summary_sha256": "322323128dfd6103a7a80d95f6acb1984b6fe3e380e06454accc2511008702fc",
+        "trace_sha256": "95d5163daefb693d17bc7c689a9e16de7f45da3b90ffd3cf493f9f8b81080395",
+        "native_reader_log_sha256": "e9e87d5b9c13644ead6403fca63deee8d15e7f54f6b3e725e005b97dcc12538d"
+      },
+      {
+        "case": "equipment-installed",
+        "phase": "same functional sources, before final overlay positioning",
+        "runtime_cdda_sha256": "d8374e48f03a945365dea8558fa7dd6b2854deeb7ee41757aff612292601061b",
+        "runtime_luanti_sha256": "c1cd9d480774bb6fb2f3d491115284f3a06cff2b96b8fc428c23a9eca352c1c4",
+        "checks": 26,
+        "status": "PASS",
+        "summary": "artifacts/ux02-inventory-work-20261009/equipment-installed/summary.json",
+        "summary_sha256": "c81ac5b3b53b3d645b1a70c52fd05e38b2b8792c7445a96711d32fcf9d8366e3",
+        "trace_sha256": "ed8c444a42ca3dd53e65ec5592b888e0f53aabb88c69e2be355602d58d071ed9",
+        "native_reader_log_sha256": "2710e740410ff0e13677e24ac28d17a564144a89551f3037c6af450e9e948247"
+      },
+      {
+        "case": "consumption-installed",
+        "phase": "same functional sources, before final overlay positioning",
+        "runtime_cdda_sha256": "d8374e48f03a945365dea8558fa7dd6b2854deeb7ee41757aff612292601061b",
+        "runtime_luanti_sha256": "c1cd9d480774bb6fb2f3d491115284f3a06cff2b96b8fc428c23a9eca352c1c4",
+        "checks": 35,
+        "status": "PASS",
+        "summary": "artifacts/ux02-inventory-work-20261009/consumption-installed/summary.json",
+        "summary_sha256": "2d394ccaa6a2dc94fcfc89f41284f8ab6f49715846561b3d2bb2458d028cf54e",
+        "trace_sha256": "52ba60397284637d2204685d37d3d90ac09d24055bc5e2a8910a4c09db4519e4",
+        "native_reader_log_sha256": "bd2fac53619e1eb5b0f6d7c0a367629b4e4ac11e67166fc6610764feb1457812"
+      },
+      {
+        "case": "equipment-action-driven-installed",
+        "phase": "same functional sources, before final overlay positioning",
+        "runtime_cdda_sha256": "d8374e48f03a945365dea8558fa7dd6b2854deeb7ee41757aff612292601061b",
+        "runtime_luanti_sha256": "c1cd9d480774bb6fb2f3d491115284f3a06cff2b96b8fc428c23a9eca352c1c4",
+        "checks": 17,
+        "status": "PASS",
+        "summary": "artifacts/ux02-inventory-work-20261009/equipment-action-driven-installed/summary.json",
+        "summary_sha256": "703f550856e9258ed3bd1b76679c20e73243c0db9c5652df4ee2af84fb417ba9",
+        "trace_sha256": "f95d8fb5377d7342415faea573b4d17801aa4632d62c900be8b9d2124eaf9d00",
+        "native_reader_log_sha256": "d60d1df44872ceb0bb7e04e395ed5cedcdc2e45a8799156dc56fafba23314176"
+      },
+      {
+        "case": "consumption-panel-installed",
+        "phase": "final installed panel position",
+        "runtime_cdda_sha256": "d8374e48f03a945365dea8558fa7dd6b2854deeb7ee41757aff612292601061b",
+        "runtime_luanti_sha256": "a528a85a6912718bb626265c34e4d8040c5291b18d109196f560cd8f18ebc3ee",
+        "checks": 36,
+        "status": "PASS",
+        "summary": "artifacts/ux02-inventory-work-20261009/consumption-panel-installed/summary.json",
+        "summary_sha256": "4af3fe8e59fe6ce1d29a94c2b9c14add8856ad4fb7d81bdb174cbb19577af193",
+        "trace_sha256": "aeaba59704e88d5f4b9a500787c47767a1cb93a725f0d9843d61a2536db9cd6a",
+        "native_reader_log_sha256": "1d2d6bcfd13c955c28a6df4a4865f92e623ac6e785e616e23827f7bf462a7b1b"
+      }
+    ],
+    "gui_final_binary_checks": 36,
+    "gui_prior_position_checks": 186
+  },
+  "pristine_reader": {
+    "binary": "artifacts/inventory-feedback-20261009/native-save-reader",
+    "sha256": "d65889a6cf0c36db31d493bba915a89bc7424d60f0ddb9800992fd0d4f39958a",
+    "build_receipt": "artifacts/inventory-feedback-20261009/reader-build.json",
+    "core": "original CDDA at pinned upstream commit; fixture helper only; no integration gameplay modifications"
+  },
+  "direct_invariant_checks": [
+    "Native executor costs, positive native credit and coordinator debt are required; early ACK is not completion.",
+    "Actual actor debit observer covers both canonical ACT_* loops and scoped provider restoration.",
+    "Native interruption preserves work already charged; queued operation is not inferred from old query IDs.",
+    "Real GUI menu-open revision follows the matching native settled revision for each of three consecutive RT operations.",
+    "Manual pause/disconnect take precedence, actual canonical mutation and saved actor survive.",
+    "Threat suppression and native death signal reviewed directly in implementation; dedicated graphical manual scenarios remain pending."
+  ],
+  "excluded_attempts": [
+    "equipment-sequential: driver omitted required native stow choice",
+    "consumption-automatic: driver pressed I while return was already opening",
+    "equipment-sequential-fixed: missing Escape dispatch caught and fixed",
+    "equipment-final: driver disconnected before the newly queued wear reached execution; fixed to await actual ACK/native correlation",
+    "equipment-action-driven: older driver labeled RT-only checks PASS via conditional shortcut; replaced by real native settled-state check in equipment-action-driven-installed",
+    "overlaid work indicator: visually covered by debug clock; moved above HUD and pixels verified on final installed runtime"
+  ],
+  "manual_backlog": {
+    "new_points": 4,
+    "total_pending": 20,
+    "file": "docs/validation/pending-manual.md",
+    "required_now": false
+  },
+  "unchanged_open_gates": {
+    "M5.5": "historical FAILED",
+    "SAVE-001": "full compatibility gate OPEN"
+  },
+  "next_task": "UX-03 interactive hotbar with distinct selection/native wielding and native costs"
+}
