@@ -248,7 +248,7 @@ def main():
                 click(*destination_point)
             def quantity(value):
                 click(1.2,9.97);xdo('key','ctrl+a');xdo('type','--clearmodifiers',str(value));time.sleep(.15)
-            def action(insert):
+            def action(insert,expect_sent=True):
                 sent=int(latest()['transfers_sent'])
                 selected=int(latest()['equipment_selected']);index=selected-1
                 source=(1.025+(index%6)*1.18,3.2+(index//6)*1.0)
@@ -260,6 +260,7 @@ def main():
                     x=source[0]+(target[0]-source[0])*n/7;y=source[1]+(target[1]-source[1])*n/7
                     xdo('mousemove','--window',window,str(round(origin_x+x*unit)),str(round(origin_y+y*unit)));time.sleep(.04)
                 xdo('mouseup','1');time.sleep(.4)
+                if not expect_sent:return
                 wait(lambda r:int(r['transfers_sent'])==sent+1)
                 if not args.automatic_return:
                     tap('Escape')  # Legacy mechanism tests explicitly opt out.
@@ -323,7 +324,7 @@ def main():
                     if not args.action_driven:
                         tap('F7');wait(lambda r:int(r['pause_reasons'])==1);view=open_inventory()
                         transfer_panel();select_item(item(view,'9mm'));quantity(1)
-                        sent=latest()['transfers_sent'];stopped=latest()['simulation_time'];click(4.65,9.97)
+                        sent=latest()['transfers_sent'];stopped=latest()['simulation_time'];action(False,expect_sent=False)
                         check('manual_pause_blocks_transfer_without_queuing',latest()['transfers_sent']==sent and int(latest()['equipment_form'])==1)
                         tap('Escape');wait(lambda r:int(r['equipment_form'])==0 and int(r['pause_reasons'])==1)
                         check('closing_transfer_menu_preserves_manual_pause',latest()['simulation_time']==stopped)

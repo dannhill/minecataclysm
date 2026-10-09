@@ -241,12 +241,13 @@ def main():
                     index=next(n for n,x in enumerate(visible) if x.Id()==e.Id())
                     click(1.025 + (index % 9)*1.15, 5.975 + ((index % 27) // 9)*1.15)
                 wait(lambda r: int(r['equipment_selected']) == e.Id())
-            def drag(source,target,cancel=False):
+            def drag(source,target,cancel=False,screenshot=None):
                 def move(xy):
                     xdo('mousemove','--window',window,str(round(origin_x+xy[0]*unit)),str(round(origin_y+xy[1]*unit)))
                 move(source);xdo('mousedown','1');time.sleep(.15)
                 for n in range(1,8):
                     move((source[0]+(target[0]-source[0])*n/7,source[1]+(target[1]-source[1])*n/7));time.sleep(.04)
+                if screenshot:shot(screenshot)
                 if cancel:tap('Escape')
                 xdo('mouseup','1');time.sleep(.4)
             def cell(e):
@@ -308,8 +309,11 @@ def main():
                     rock=item(view,'rock');bat=item(view,'bat')
                     drag(cell(rock),cell(bat),cancel=True)
                     check('escape_cancels_drag_without_closing_or_mutating',latest()['inventory_view']==old and int(latest()['equipment_form'])==1 and int(latest()['pending_move'])==0)
+                    sent=latest()['transfers_sent'];equipped=latest()['equipment_sent']
+                    drag(cell(rock),(-.5,-.5))
+                    check('outside_release_cancels_without_ground_drop',latest()['inventory_view']==old and latest()['transfers_sent']==sent and latest()['equipment_sent']==equipped and latest()['simulation_time']==paused)
                     old_view=latest()['inventory_view']
-                    drag(cell(rock),cell(bat))
+                    drag(cell(rock),cell(bat),screenshot='drag-ghost-and-target.png')
                     wait(lambda r:int(r['pending_move'])==0 and int(r['inventory_view'])>0 and r['inventory_view']!=old_view)
                     view=views()[-1]
                     check('drag_grid_order_is_persistent_native_ui_metadata',item(view,'rock').UiOrder()<item(view,'bat').UiOrder() and latest()['simulation_time']==paused)
@@ -355,6 +359,7 @@ def main():
                 else:
                     check('actual_reload_restores_bookmarks_not_inventory_order',not slot(1).BindingId() and slot(2).TypeId()==b'hat_ball' and slot(2).Worn() and slot(3).TypeId()==b'rock' and slot(3).Wielded())
                     check('reloaded_items_use_exact_saved_binding_ids',item(view,'hat_ball').QuickSlot()==2 and item(view,'rock').QuickSlot()==3)
+                    check('actual_reload_retains_grid_order_on_exact_instances',0<item(view,'rock').UiOrder()<item(view,'bat').UiOrder())
                     shot('reloaded-shortcuts.png');tap('Escape');wait(lambda r:int(r['equipment_form'])==0)
                 view=open_inventory();check('quickbar_changes_leave_native_contents_intact',view.EntriesLength()==6 and item(view,'backpack_hiking').Worn())
                 # Stop in read-only I before closing the isolated runtime.
@@ -653,6 +658,16 @@ def main():
             return result
         bookmarks=slot_values(native['player'])
         check('pristine_core_retains_optional_bookmarks_and_exact_item_metadata',len(bookmarks)==2 and found.get(bookmarks.get('cwm_quick_slot_2'))==['hat_ball'] and found.get(bookmarks.get('cwm_quick_slot_3'))==['rock'])
+        positions={}
+        def layout(value):
+            if isinstance(value,dict):
+                rank=value.get('item_vars',{}).get('cwm_inventory_position')
+                if rank is not None:positions[value.get('typeid')]=int(float(rank))
+                for child in value.values():layout(child)
+            elif isinstance(value,list):
+                for child in value:layout(child)
+        layout(native['player'])
+        check('pristine_core_retains_optional_grid_order',0<positions.get('rock',0)<positions.get('bat',0))
     (out / 'summary.json').write_text(json.dumps(dict(checks=checks, native_save=str(output)), indent=2)+'\n')
 
 
