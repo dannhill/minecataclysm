@@ -136,7 +136,7 @@ index b6ae675..9e33201 100644
  		/*
  			Local player handling
 diff --git a/src/client/game.cpp b/src/client/game.cpp
-index 27b5833..6e2b8a8 100644
+index 27b5833..9eb50a9 100644
 --- a/src/client/game.cpp
 +++ b/src/client/game.cpp
 @@ -8,6 +8,7 @@
@@ -269,7 +269,16 @@ index 27b5833..6e2b8a8 100644
  		dropSelectedItem(isKeyDown(KeyType::SNEAK));
  	} else if (wasKeyDown(KeyType::AUTOFORWARD)) {
  		toggleAutoforward();
-@@ -2083,7 +2147,8 @@ void Game::processKeyInput()
+@@ -2063,6 +2127,8 @@ void Game::processKeyInput()
+ 	} else if (wasKeyDown(KeyType::INVENTORY)) {
+ 		openInventory();
+ 	} else if (input->cancelPressed()) {
++		if (cdda_client::CddaBridge::getInstance().dismissInventoryWork())
++			return;
+ #ifdef __ANDROID__
+ 		m_android_chat_open = false;
+ #endif
+@@ -2083,7 +2149,8 @@ void Game::processKeyInput()
  	} else if (wasKeyDown(KeyType::FREEMOVE)) {
  		toggleFreeMove();
  	} else if (wasKeyDown(KeyType::JUMP)) {
@@ -279,7 +288,7 @@ index 27b5833..6e2b8a8 100644
  	} else if (wasKeyDown(KeyType::PITCHMOVE)) {
  		togglePitchMove();
  	} else if (wasKeyDown(KeyType::FASTMOVE)) {
-@@ -2154,9 +2219,17 @@ void Game::processKeyInput()
+@@ -2154,9 +2221,17 @@ void Game::processKeyInput()
  	} else if (wasKeyDown(KeyType::ZOOM)) {
  		checkZoomEnabled();
  	} else if (wasKeyDown(KeyType::QUICKTUNE_NEXT)) {
@@ -299,7 +308,7 @@ index 27b5833..6e2b8a8 100644
  	} else if (wasKeyDown(KeyType::QUICKTUNE_INC)) {
  		quicktune->inc();
  	} else if (wasKeyDown(KeyType::QUICKTUNE_DEC)) {
-@@ -2178,6 +2251,9 @@ void Game::processItemSelection(u16 *new_playeritem)
+@@ -2178,6 +2253,9 @@ void Game::processItemSelection(u16 *new_playeritem)
  	LocalPlayer *player = client->getEnv().getLocalPlayer();
  
  	*new_playeritem = player->getWieldIndex();
@@ -309,7 +318,7 @@ index 27b5833..6e2b8a8 100644
  	u16 max_item = player->getMaxHotbarItemcount();
  	if (max_item == 0)
  		return;
-@@ -2238,6 +2314,18 @@ void Game::dropSelectedItem(bool single_item)
+@@ -2238,6 +2316,18 @@ void Game::dropSelectedItem(bool single_item)
  
  void Game::openInventory()
  {
@@ -328,7 +337,7 @@ index 27b5833..6e2b8a8 100644
  	/*
  	 * Don't permit to open inventory is CAO or player doesn't exists.
  	 * This prevent showing an empty inventory at player load
-@@ -2737,8 +2825,83 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
+@@ -2737,8 +2827,83 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
  		control.aux1 = control.aux1 ^ true;
  	}
  
@@ -412,7 +421,7 @@ index 27b5833..6e2b8a8 100644
  	//tt.stop();
  }
  
-@@ -2784,6 +2947,63 @@ inline void Game::step(f32 dtime)
+@@ -2784,6 +2949,63 @@ inline void Game::step(f32 dtime)
  
  	if (!m_is_paused)
  		client->step(dtime);
@@ -476,7 +485,7 @@ index 27b5833..6e2b8a8 100644
  }
  
  static void pauseNodeAnimation(PausedNodesList &paused, scene::ISceneNode *node) {
-@@ -3246,6 +3466,7 @@ void Game::updateCamera(f32 dtime)
+@@ -3246,6 +3468,7 @@ void Game::updateCamera(f32 dtime)
  	tool_reload_ratio = MYMIN(tool_reload_ratio, 1.0);
  	camera->update(player, dtime, tool_reload_ratio);
  	camera->step(dtime);
@@ -484,7 +493,7 @@ index 27b5833..6e2b8a8 100644
  
  	f32 camera_fov = camera->getFovMax();
  	v3s16 camera_offset = camera->getOffset();
-@@ -3262,6 +3483,7 @@ void Game::updateCamera(f32 dtime)
+@@ -3262,6 +3485,7 @@ void Game::updateCamera(f32 dtime)
  		if (m_camera_offset_changed) {
  			client->updateCameraOffset(camera_offset);
  			client->getEnv().updateCameraOffset(camera_offset);
@@ -492,7 +501,7 @@ index 27b5833..6e2b8a8 100644
  
  			if (clouds)
  				clouds->updateCameraOffset(camera_offset);
-@@ -3314,6 +3536,8 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
+@@ -3314,6 +3538,8 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
  
  	const ItemDefinition &selected_def = selected_item.getDefinition(itemdef_manager);
  	f32 d = getToolRange(selected_item, hand_item, itemdef_manager);
@@ -501,7 +510,7 @@ index 27b5833..6e2b8a8 100644
  
  	core::line3d<f32> shootline;
  
-@@ -3365,6 +3589,41 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
+@@ -3365,6 +3591,41 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
  	// but the halo rendering code is already inefficient so there's no point in optimizing it here
  	hud->updateSelectionMesh(camera_offset);
  
@@ -543,7 +552,7 @@ index 27b5833..6e2b8a8 100644
  	// Allow digging again if button is not pressed
  	if (runData.digging_blocked && !isKeyDown(KeyType::DIG))
  		runData.digging_blocked = false;
-@@ -4319,7 +4578,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
+@@ -4319,7 +4580,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
  	/*
  		Fog
  	*/
