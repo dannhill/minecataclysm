@@ -132,6 +132,10 @@ def main():
             time.sleep(.05)
         raise RuntimeError('GUI condition not reached; inspect trace/logs')
     def xdo(*argv):
+        # Xvfb without a WM has no _NET_ACTIVE_WINDOW support. Direct focus
+        # is sufficient for the real client on this isolated display.
+        if os.environ.get('CWM_GUI_NO_WM') == '1' and argv[0] == 'windowactivate':
+            argv = ('windowfocus', *argv[1:])
         subprocess.run(['xdotool', *argv], check=True, capture_output=True, timeout=5)
     def tap(key, sneak=False):
         if sneak:
