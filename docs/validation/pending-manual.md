@@ -1,7 +1,8 @@
 # Validazioni manuali del playable core
 
-Stato corrente: **7 punti pendenti**: quattro ricontrolli mirati UI/mapping e
-tre verifiche eccezionali UX-02 non effettivamente provate. Il
+Stato corrente: **14 punti pendenti**: quattro ricontrolli mirati UI/mapping,
+tre verifiche eccezionali UX-02 non effettivamente provate, quattro UX-03 e
+tre ritocchi UI/pausa. Nessun test richiesto oggi. Il
 [riscontro aggiornato ed errata corrige](../source/core-ux-validation-2026-10-09.md)
 accetta 1–4 di tiro/ricarica, quantità/trasferimenti, UX-01 e UX-02 (16 nuovi
 PASS), oltre ai precedenti 16 di inventario, consumo, medicazioni e crafting.
@@ -9,7 +10,7 @@ I PASS UX-02 attestano il flusso ordinario osservato: non morte/IPC/decisioni
 non provati. Il deposito delle munizioni annidate nel sacchetto rimane una
 segnalazione da investigare nonostante il PASS generale sui trasferimenti.
 Non serve eseguire test ora. I bug nuovi sono nel registro del riscontro;
-le correzioni future avranno ricontrolli alla consegna, non PASS anticipati.
+UX-03 e le correzioni mirate hanno ricontrolli nuovi sotto, non PASS anticipati.
 Le vecchie checklist VALIDATE sotto conservano la cronologia; non attestano queste nuove fette.
 
 L'utente il 2026-10-08 ha eseguito e approvato tutti i quattro punti di
@@ -328,7 +329,8 @@ attuale resta provvisorio.
    non lo avvia senza il pulsante Riprendi.
 
 4. **Mapping aggiornato**: nella demo consumo la mela deve avere la sua
-   icona; nella demo crafting le bende improvvisate usano il proxy di cuoio
+   icona, l’acqua pulita una goccia (non una mela) e la mela marcia una tinta
+   diversa più un segnale `!`, mantenendo nome/stato nativi; nella demo crafting le bende improvvisate usano il proxy di cuoio
    scelto nel batch. Tooltip/nome devono indicare sempre il vero oggetto CDDA.
    Zaino e mazza possono ancora usare il fallback: non tutti i record hanno
    un asset pronto. Nessun cambiamento atteso a quantità, tempi o salvataggi.
@@ -420,3 +422,56 @@ di errore: non chiedere di terminare processi della partita personale.
 3. **IPC**: nella fixture di recupero isolata, perdita e ripristino della
    connessione non riaprono una vecchia selezione e non duplicano il lavoro.
    Nessun input di gioco parte mentre manca lo stato autorevole completo.
+
+
+## UX-03 — Hotbar assegnabile e persistente — PENDING (4), quando puoi
+
+Disponibile con I anche nel normale `./start.sh`: movimento continuo 4×
+predefinito. `./equipment-demo.sh --fresh` crea una copia isolata con mazza,
+zaino, cappello e sassi. Gli slot inizialmente vuoti sono riferimenti rapidi,
+non tasche nuove. Non occorre ripetere i PASS inventario/equipaggiamento.
+
+1. **Assegna e svuota**: I → clic su mazza nella griglia → clic sullo slot 1
+   in basso → **Assegna allo slot 1**. Ripeti con cappello nello slot 2 e
+   sasso nel 3. Svuota lo slot 1: la mazza resta nella mano/inventario.
+   Fuori da I, icone coerenti con l'inventario; selezione **oro**, mano reale
+   **azzurra**. L'oggetto in mano compare anche nel riquadro separato a destra
+   quando non è assegnato a uno slot.
+2. **Seleziona e usa**: rotella oppure 1–9 selezionano senza equipaggiare.
+   **3, poi G** richiedono Impugna del sasso; scegli esplicitamente dove
+   riporre la mazza. **2, poi G** indossano il cappello, un nuovo G lo toglie.
+   Tempo/costi sono nativi; G dal mondo non forza il ritorno automatico a I.
+   In I puoi scegliere le altre azioni con i pulsanti del dettaglio.
+3. **Pausa, lavoro e perdita**: F7 → G non usa né accoda; riprendendo non
+   parte un'azione ritardata. G durante un'attività non accoda altre azioni.
+   Deposita un oggetto assegnato usando I → Quantità e trasferimenti: il
+   riferimento scompare; raccoglierlo di nuovo non lo riassegna da solo.
+   Nella demo consumo puoi assegnare una mela: G mangia la precisa mela
+   scelta; quando consumata, il riferimento non passa a una mela omonima.
+4. **Persistenza**: lascia cappello/sasso assegnati e almeno uno indossato o
+   impugnato; esci e rilancia `./equipment-demo.sh` senza `--fresh`. I e HUD
+   devono conservare gli stessi oggetti, non i primi della nuova lista.
+   Svuotare/riassegnare deve restare coerente al riavvio, senza duplicazioni.
+
+## Ricontrolli UX-03 — PENDING (3), rinviabili
+
+1. **Ricerca**: I mostra da subito il campo vuoto. Digitare prima di cliccarlo
+   non scrive nel campo. Clic sinistro sul campo abilita digitazione e cambia
+   colore del testo; Cerca/Invio filtra. Clic su uno slot o sullo sfondo lascia
+   il focus: altri tasti non si aggiungono alla ricerca. Esc mentre scrivi
+   lascia prima il campo; un nuovo Esc chiude I.
+2. **Nuvole e pausa**: in una scena con cielo visibile e nuvole abilitate,
+   controlla che nuvole, acqua e oggetti rotanti si fermino in F7 e in H/I;
+   alla ripresa tornano a muoversi. Non serve attendere meteo diverso.
+3. **Quantità ed errori**: `./transfer-demo.sh --fresh`, I → Quantità e
+   trasferimenti: etichetta Quantità e frecce pagina non si sovrappongono.
+   Inserire la mazza nella bottiglia deve lasciare il rifiuto ben visibile,
+   conservando la mazza. Per depositare munizioni dal sacchetto, seleziona
+   **la voce delle munizioni nella lista di sinistra**, verifica il percorso
+   della sorgente nei dettagli, inserisci quantità positiva e premi Deposita.
+   Selezionare il sacchetto deposita invece il contenitore con i contenuti.
+
+Le verifiche automatiche su renderer e core di riferimento sono registrate
+nel [report UX-03](../fixes/interactive-quickbar.md); non costituiscono PASS
+manuali. Lingua inglese/italiano WIP, mira RMB, UV/rig, animazioni e suoni
+restano nel piano e non fanno parte di questa checklist.

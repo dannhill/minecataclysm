@@ -1,0 +1,422 @@
+{
+  "scope": "UX-03 persistent exact-item hotbar and targeted presentation repairs; not global M5.5 or full SAVE-001 conformance",
+  "date": "2026-10-09",
+  "status": "scoped verification PASS; manual acceptance PENDING",
+  "source_commit": "8bc9631d01df4151905fe13ef4adfcf1b474e9e9",
+  "runtime_protocol": "2.17",
+  "captured_sources": {
+    "cdda": {
+      "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+      "tree_sha256": "92c74544c7871ceb7bf2a02e97fbc5e44cb785f202854dc3745cabad319b6ee7",
+      "patch_sha256": "bf4ebb02d15adb829f7ab39c058950af4f5b6b11db1787358c7aefbe830b8eae",
+      "file_count": 8587
+    },
+    "luanti": {
+      "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
+      "tree_sha256": "2433199afb17da6b72b55e017b9d5de4d4a715c4ca876a2cc7784c23b6f4f2fd",
+      "patch_sha256": "6c83b561c696d42e4e126b5be6e82e3b708449ab0687280f2e7cf8ed87c9384b",
+      "file_count": 2260
+    },
+    "mineclonia": {
+      "commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+      "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "file_count": 9359
+    }
+  },
+  "installed_binaries": {
+    "cdda/build/src/cdda-server": {
+      "sha256": "f0e113a1c3aaa9eef99992e723e3e83c83d6ed566f1fe45024d1d6d6dab35cd2",
+      "previous_sha256": "d8374e48f03a945365dea8558fa7dd6b2854deeb7ee41757aff612292601061b",
+      "rollback": "artifacts/ux03-quickbar-20261009/cdda-previous-runtime"
+    },
+    "luanti/bin/luanti": {
+      "sha256": "154b4b7f39c40aeb5becb9ed8eee8880c7eebf63c957c988056757458b6bb78e",
+      "previous_sha256": "a528a85a6912718bb626265c34e4d8040c5291b18d109196f560cd8f18ebc3ee",
+      "rollback": "artifacts/ux03-quickbar-20261009/luanti-previous-runtime"
+    }
+  },
+  "install_receipt": "artifacts/ux03-quickbar-20261009/install.json",
+  "environment": {
+    "platform": "Linux-7.0.11-76070011-generic-x86_64-with-glibc2.35",
+    "os": "Pop!_OS 22.04 LTS",
+    "compiler": "c++ (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0",
+    "gui": "private Xvfb 1280x800; Mesa/llvmpipe; xdotool; actual Luanti renderer and transparent CWM relay; isolated cloned fixtures only"
+  },
+  "build_mode": "incremental builds following completed source reconstruction refresh; retained caches; no cold build claimed",
+  "build_commands": [
+    "cmake --build cdda/build --target cdda-server cata_test -j3",
+    "cmake --build luanti/build -j3",
+    "cmake --build build/protocol -j3"
+  ],
+  "verification": {
+    "native": {
+      "status": "PASS",
+      "cases": 171,
+      "assertions": 185788,
+      "filter": "[cwm],[pickup],[item],[reload]",
+      "seed": 42,
+      "log": "artifacts/ux03-quickbar-20261009/tests-native-final.log",
+      "command": "cdda/build/tests/cata_test '[cwm],[pickup],[item],[reload]' --rng-seed 42 --user-dir=<isolated artifact user directory>"
+    },
+    "protocol": {
+      "status": "PASS",
+      "tests": 10,
+      "log": "artifacts/ux03-quickbar-20261009/tests-protocol-final.log",
+      "command": "ctest --test-dir build/protocol --output-on-failure"
+    },
+    "luanti": {
+      "status": "PASS",
+      "tests": 308,
+      "modules": 47,
+      "catch_assertions": 648,
+      "catch_cases": 4,
+      "log": "artifacts/ux03-quickbar-20261009/tests-luanti-delivery.log",
+      "command": "luanti/bin/luanti --run-unittests"
+    },
+    "source_replay": {
+      "status": "PASS",
+      "receipt": "artifacts/ux03-quickbar-20261009/source-replay-delivery.json",
+      "command": "python3 tools/verify_captured_sources.py --receipt <receipt.json>",
+      "note": "Historical patch whitespace warnings preserved; replay content/modes pass"
+    },
+    "gui": [
+      {
+        "name": "quickbar-current",
+        "status": "PASS",
+        "phase": "reconstructed",
+        "code_commit": "a8ace00088e988ac47a57e24a81c41dabc8a45ea",
+        "luanti_sha256": "2ab4df9f6a74273ad309378e25655e077d876a44a227c84f42d72ee088283a39",
+        "checks": 28,
+        "results": {
+          "actual_start_ready": true,
+          "native_inventory_opened": true,
+          "normal_launcher_defaults_to_continuous_4x": true,
+          "fresh_quickbar_has_no_implicit_first_nine_items": true,
+          "search_initially_visible_without_keyboard_focus": true,
+          "click_focus_enables_search": true,
+          "background_click_disables_search_keyboard_input": true,
+          "slot_1_references_exact_native_bat": true,
+          "slot_2_references_exact_native_hat_ball": true,
+          "slot_3_references_exact_native_rock": true,
+          "assignment_preserves_native_time_and_hand": true,
+          "clear_removes_reference_without_removing_item": true,
+          "slot_selection_does_not_equip_or_use": true,
+          "quick_wield_retains_native_disposal_choice": true,
+          "quick_wield_preserves_binding_and_pays_native_time": true,
+          "quick_clothing_uses_native_wear": true,
+          "same_frame_slot_and_use_targets_new_selection": true,
+          "world_quick_use_does_not_force_inventory": true,
+          "paused_quick_use_is_not_sent": true,
+          "paused_quick_key_does_not_replay_on_resume": true,
+          "reconnect_restores_native_shortcut_identities": true,
+          "quickbar_changes_leave_native_contents_intact": true,
+          "byte_relay_completed_without_errors": true,
+          "equipment_save_readable_by_pristine_native_core": true,
+          "canonical_save_has_each_fixture_item_once": true,
+          "canonical_save_records_selected_rock_as_weapon": true,
+          "canonical_save_records_backpack_worn": true,
+          "pristine_core_retains_optional_bookmarks_and_exact_item_metadata": true
+        },
+        "receipt": "artifacts/ux03-quickbar-20261009/quickbar-current/checks.json",
+        "receipt_sha256": "2c27cd3fd72ce66e26db14d1c149b2cc13002f8782f01ced861eb0a885c74771",
+        "log": "artifacts/ux03-quickbar-20261009/gui-quickbar-current.log",
+        "log_sha256": "04180e960875a792b315606aa92d57eecd1ceb7d7763cb5946d669e6a3e17859"
+      },
+      {
+        "name": "quickbar-reload",
+        "status": "PASS",
+        "phase": "reconstructed",
+        "code_commit": "a8ace00088e988ac47a57e24a81c41dabc8a45ea",
+        "luanti_sha256": "2ab4df9f6a74273ad309378e25655e077d876a44a227c84f42d72ee088283a39",
+        "checks": 12,
+        "results": {
+          "actual_start_ready": true,
+          "native_inventory_opened": true,
+          "normal_launcher_defaults_to_continuous_4x": true,
+          "actual_reload_restores_bookmarks_not_inventory_order": true,
+          "reloaded_items_use_exact_saved_binding_ids": true,
+          "quickbar_changes_leave_native_contents_intact": true,
+          "byte_relay_completed_without_errors": true,
+          "equipment_save_readable_by_pristine_native_core": true,
+          "canonical_save_has_each_fixture_item_once": true,
+          "canonical_save_records_selected_rock_as_weapon": true,
+          "canonical_save_records_backpack_worn": true,
+          "pristine_core_retains_optional_bookmarks_and_exact_item_metadata": true
+        },
+        "receipt": "artifacts/ux03-quickbar-20261009/quickbar-reload/checks.json",
+        "receipt_sha256": "53017b858d83a51e243db23a98e27b27faefcacd77f15441ab380de3fb2d1eb4",
+        "log": "artifacts/ux03-quickbar-20261009/gui-quickbar-reload.log",
+        "log_sha256": "ed654fdc8d9bcefada8461c1cea019a4e1580b86332c8a9135b09358b383396b"
+      },
+      {
+        "name": "transfer-current",
+        "status": "PASS",
+        "phase": "reconstructed",
+        "code_commit": "a8ace00088e988ac47a57e24a81c41dabc8a45ea",
+        "luanti_sha256": "2ab4df9f6a74273ad309378e25655e077d876a44a227c84f42d72ee088283a39",
+        "checks": 31,
+        "results": {
+          "actual_start_ready": true,
+          "fixture_supplies_native_ammo_and_container": true,
+          "reading_and_movement_in_menu_change_no_time_or_position": true,
+          "excess_quantity_remains_in_menu_without_command": true,
+          "insert_uses_paid_native_activity": true,
+          "menu_freezes_native_work_and_time": true,
+          "native_cancel_keeps_all_thirty_rounds": true,
+          "paid_insert_returns_to_same_transfer_panel": true,
+          "native_transfer_splits_exact_seven": true,
+          "native_transfer_leaves_twenty_three": true,
+          "native_provenance_identifies_destination": true,
+          "partial_drop_preserves_four_in_nested_container": true,
+          "loaded_container_dropped_as_one_native_object": true,
+          "only_twenty_three_rounds_remain_owned": true,
+          "native_size_rejection_preserves_bat": true,
+          "manual_pause_blocks_transfer_without_queuing": true,
+          "closing_transfer_menu_preserves_manual_pause": true,
+          "resume_does_not_replay_rejected_transfer": true,
+          "reconnect_closes_stale_item_handles": true,
+          "reconnect_replays_no_transfer": true,
+          "resync_restores_native_twenty_three_rounds": true,
+          "actual_runtime_survives": true,
+          "byte_relay_completed_without_errors": true,
+          "transfer_save_readable_by_pristine_native_core": true,
+          "canonical_total_ammo_conserved": true,
+          "canonical_bag_exists_once": true,
+          "canonical_bat_and_bottle_survive": true,
+          "canonical_owned_ammo_is_twenty_three": true,
+          "canonical_dropped_container_keeps_four_rounds": true,
+          "canonical_ground_receives_three_loose_rounds": true,
+          "canonical_position_unchanged": true
+        },
+        "receipt": "artifacts/ux03-quickbar-20261009/transfer-current/checks.json",
+        "receipt_sha256": "7fa3701cc23af503edbf3b4c907a2c015db367e265ce1888e13d39236dcfa956",
+        "log": "artifacts/ux03-quickbar-20261009/gui-transfer-current.log",
+        "log_sha256": "f0c3f125730ec948894302a80c3b1009f745f5aeabc98a8db89174d9dcc33312"
+      },
+      {
+        "name": "sequential-current",
+        "status": "PASS",
+        "phase": "reconstructed",
+        "code_commit": "a8ace00088e988ac47a57e24a81c41dabc8a45ea",
+        "luanti_sha256": "2ab4df9f6a74273ad309378e25655e077d876a44a227c84f42d72ee088283a39",
+        "checks": 26,
+        "results": {
+          "actual_start_ready": true,
+          "native_inventory_opened": true,
+          "automatic_return_0": true,
+          "wear_completes_before_return": true,
+          "return_preserves_search_view": true,
+          "automatic_return_1": true,
+          "takeoff_completes_before_return": true,
+          "sequential_operations_advance_native_time": true,
+          "native_stow_choice_precedes_return": true,
+          "automatic_return_2": true,
+          "third_operation_uses_fresh_native_binding": true,
+          "escape_opts_out_without_reopening": true,
+          "escape_does_not_undo_native_wear": true,
+          "manual_pause_takes_precedence": true,
+          "manual_resume_does_not_force_inventory": true,
+          "disconnect_is_after_native_mutation_before_paid_return": true,
+          "reconnect_discards_pending_return": true,
+          "reconnect_retains_canonical_equipment": true,
+          "actual_wire_separates_ack_from_paid_completion": true,
+          "all_three_returns_reference_paid_authoritative_revision": true,
+          "work_panel_is_visible_without_modal_pause": true,
+          "byte_relay_completed_without_errors": true,
+          "equipment_save_readable_by_pristine_native_core": true,
+          "canonical_save_has_each_fixture_item_once": true,
+          "canonical_save_records_selected_rock_as_weapon": true,
+          "canonical_save_records_backpack_worn": true
+        },
+        "receipt": "artifacts/ux03-quickbar-20261009/sequential-current/checks.json",
+        "receipt_sha256": "b2e7cb8dc8164010d49e4a3586fb465674ac2f007838d92bd92aa479a8e0f8a5",
+        "log": "artifacts/ux03-quickbar-20261009/gui-sequential-current.log",
+        "log_sha256": "e4e6725f11805f7cd5fc2ee5e821bd66209bb62f58811efcf44448b8ffecd0ae"
+      },
+      {
+        "name": "consumption-delivery",
+        "status": "PASS",
+        "phase": "reconstructed",
+        "code_commit": "8bc9631d01df4151905fe13ef4adfcf1b474e9e9",
+        "luanti_sha256": "154b4b7f39c40aeb5becb9ed8eee8880c7eebf63c957c988056757458b6bb78e",
+        "checks": 37,
+        "results": {
+          "actual_start_ready": true,
+          "native_inventory_opened": true,
+          "food_and_drink_native_actions_and_duration": true,
+          "liquid_nested_in_native_bottle": true,
+          "non_food_cannot_be_consumed": true,
+          "rotten_food_has_native_warning_without_consumption": true,
+          "spoilage_badge_uses_native_state": true,
+          "inventory_query_remains_readonly_and_paused": true,
+          "nonmodal_work_text_is_drawn_above_hud_not_covered_by_debug": true,
+          "native_progress_announced_before_serving_removed": true,
+          "movement_during_meal_is_not_deferred": true,
+          "started_meal_keeps_item_until_native_finish": true,
+          "menu_freezes_native_consumption_progress": true,
+          "cancel_reaches_busy_actor_immediately": true,
+          "cancel_preserves_food_and_quantity": true,
+          "resumed_meal_has_new_cancellation_token": true,
+          "meal_automatically_returns_only_after_native_settlement": true,
+          "meal_consumes_exactly_one_native_serving": true,
+          "drink_automatically_returns_after_native_cost": true,
+          "drink_consumes_one_charge_not_bottle": true,
+          "native_decision_precedes_automatic_return": true,
+          "declined_native_choice_safely_returns": true,
+          "declining_native_warning_preserves_rotten_food": true,
+          "declining_native_warning_clears_activity": true,
+          "paused_consume_click_not_queued": true,
+          "unpause_does_not_execute_rejected_consume": true,
+          "real_reconnect_invalidates_old_consumption_selection": true,
+          "resync_restores_actual_remaining_water": true,
+          "actual_runtime_survives_consumption": true,
+          "byte_relay_completed_without_errors": true,
+          "consumption_save_readable_by_pristine_native_core": true,
+          "canonical_consumption_items_never_duplicated": true,
+          "canonical_water_has_three_native_charges": true,
+          "canonical_bottle_and_rock_remain_owned": true,
+          "canonical_rotten_apple_was_not_consumed": true,
+          "canonical_food_contains_exactly_one_remaining_fresh_serving": true,
+          "native_digestion_received_food_and_water": true
+        },
+        "receipt": "artifacts/ux03-quickbar-20261009/consumption-delivery/checks.json",
+        "receipt_sha256": "3f65800208fb76596e7e01a203b3cfdacfb1614851277bcb81c6fe96ba5be3f2",
+        "log": "artifacts/ux03-quickbar-20261009/gui-consumption-delivery.log",
+        "log_sha256": "2a35791223a221b0394056579ccf923fc7306903992e8e96b66f1f9b3d0ade27"
+      },
+      {
+        "name": "quickbar-installed",
+        "status": "PASS",
+        "phase": "installed",
+        "code_commit": "8bc9631d01df4151905fe13ef4adfcf1b474e9e9",
+        "luanti_sha256": "154b4b7f39c40aeb5becb9ed8eee8880c7eebf63c957c988056757458b6bb78e",
+        "checks": 28,
+        "results": {
+          "actual_start_ready": true,
+          "native_inventory_opened": true,
+          "normal_launcher_defaults_to_continuous_4x": true,
+          "fresh_quickbar_has_no_implicit_first_nine_items": true,
+          "search_initially_visible_without_keyboard_focus": true,
+          "click_focus_enables_search": true,
+          "background_click_disables_search_keyboard_input": true,
+          "slot_1_references_exact_native_bat": true,
+          "slot_2_references_exact_native_hat_ball": true,
+          "slot_3_references_exact_native_rock": true,
+          "assignment_preserves_native_time_and_hand": true,
+          "clear_removes_reference_without_removing_item": true,
+          "slot_selection_does_not_equip_or_use": true,
+          "quick_wield_retains_native_disposal_choice": true,
+          "quick_wield_preserves_binding_and_pays_native_time": true,
+          "quick_clothing_uses_native_wear": true,
+          "same_frame_slot_and_use_targets_new_selection": true,
+          "world_quick_use_does_not_force_inventory": true,
+          "paused_quick_use_is_not_sent": true,
+          "paused_quick_key_does_not_replay_on_resume": true,
+          "reconnect_restores_native_shortcut_identities": true,
+          "quickbar_changes_leave_native_contents_intact": true,
+          "byte_relay_completed_without_errors": true,
+          "equipment_save_readable_by_pristine_native_core": true,
+          "canonical_save_has_each_fixture_item_once": true,
+          "canonical_save_records_selected_rock_as_weapon": true,
+          "canonical_save_records_backpack_worn": true,
+          "pristine_core_retains_optional_bookmarks_and_exact_item_metadata": true
+        },
+        "receipt": "artifacts/ux03-quickbar-20261009/quickbar-installed/checks.json",
+        "receipt_sha256": "2c27cd3fd72ce66e26db14d1c149b2cc13002f8782f01ced861eb0a885c74771",
+        "log": "artifacts/ux03-quickbar-20261009/gui-quickbar-installed.log",
+        "log_sha256": "04180e960875a792b315606aa92d57eecd1ceb7d7763cb5946d669e6a3e17859"
+      },
+      {
+        "name": "quickbar-reload-installed",
+        "status": "PASS",
+        "phase": "installed",
+        "code_commit": "8bc9631d01df4151905fe13ef4adfcf1b474e9e9",
+        "luanti_sha256": "154b4b7f39c40aeb5becb9ed8eee8880c7eebf63c957c988056757458b6bb78e",
+        "checks": 12,
+        "results": {
+          "actual_start_ready": true,
+          "native_inventory_opened": true,
+          "normal_launcher_defaults_to_continuous_4x": true,
+          "actual_reload_restores_bookmarks_not_inventory_order": true,
+          "reloaded_items_use_exact_saved_binding_ids": true,
+          "quickbar_changes_leave_native_contents_intact": true,
+          "byte_relay_completed_without_errors": true,
+          "equipment_save_readable_by_pristine_native_core": true,
+          "canonical_save_has_each_fixture_item_once": true,
+          "canonical_save_records_selected_rock_as_weapon": true,
+          "canonical_save_records_backpack_worn": true,
+          "pristine_core_retains_optional_bookmarks_and_exact_item_metadata": true
+        },
+        "receipt": "artifacts/ux03-quickbar-20261009/quickbar-reload-installed/checks.json",
+        "receipt_sha256": "53017b858d83a51e243db23a98e27b27faefcacd77f15441ab380de3fb2d1eb4",
+        "log": "artifacts/ux03-quickbar-20261009/gui-quickbar-reload-installed.log",
+        "log_sha256": "ed654fdc8d9bcefada8461c1cea019a4e1580b86332c8a9135b09358b383396b"
+      }
+    ],
+    "gui_checks_final_binary": 77,
+    "gui_checks_prior_same_gameplay": 97
+  },
+  "native_reader": {
+    "path": "artifacts/inventory-feedback-20261009/native-save-reader",
+    "sha256": "d65889a6cf0c36db31d493bba915a89bc7424d60f0ddb9800992fd0d4f39958a",
+    "scope": "Pinned native reader independently loads canonical worlds and confirms optional values/item_vars, actual item counts/roles; not full upstream-client SAVE-001 proof"
+  },
+  "failed_attempts": [
+    {
+      "log": "artifacts/ux03-quickbar-20261009/gui-quickbar-reconstructed.log",
+      "reason": "Real GUI initial editbox autofocus and unescaped tooltip separator; corrected before final verification"
+    },
+    {
+      "log": "artifacts/ux03-quickbar-20261009/build-cdda.log",
+      "reason": "New test fixture used incorrect native API return/method; fixture corrected"
+    },
+    {
+      "log": "artifacts/ux03-quickbar-20261009/tests-protocol.log",
+      "reason": "New protocol fixture omitted required player; fixed without weakening validation"
+    },
+    {
+      "log": "artifacts/ux03-quickbar-20261009/tests-native.log",
+      "reason": "Two new exact-instance fixtures accidentally merged charge-counted rocks; replaced with nonmerging hats while retaining strict assertions"
+    },
+    {
+      "log": "artifacts/ux03-quickbar-20261009/gui-consumption-current.log",
+      "reason": "Spoilage decoration intercepted item-button click; repeated attempt consumption-rendered confirmed it was not readiness timing; decoration moved below button in production"
+    }
+  ],
+  "mapping_scope": {
+    "generated_batches_changed": false,
+    "local_override": "game/mods/cdda_items/local_water_mapping.lua",
+    "only_type": "water_clean",
+    "texture": "cdda_status_water.png"
+  },
+  "manual_backlog": {
+    "path": "docs/validation/pending-manual.md",
+    "pending": 14,
+    "new_quickbar": 4,
+    "new_targeted": 3,
+    "previous": 7
+  },
+  "not_delivered": [
+    "English default / Italian WIP setting and complete text plumbing",
+    "held RMB aiming and context priority",
+    "actual wielded 3D model/recoil, rigs/UV, mob animations/audio",
+    "rich native confirmations/medical UI",
+    "recent/favorite crafting",
+    "anatomical equipment grouping and persistent selection continuity",
+    "external containers and selected-quantity pickup",
+    "full SAVE-001 / global architectural conformance"
+  ],
+  "artifacts": {
+    "artifacts/ux03-quickbar-20261009/tests-native-final.log": "b34aa95a0f7c8b12b3a293d66f8f2330f9ca54a9d22647e55686f02a82bcf8ec",
+    "artifacts/ux03-quickbar-20261009/tests-protocol-final.log": "9b8f8ad8a0feef997109f98db240dd7186a11a4630866166ada9196caee7b13d",
+    "artifacts/ux03-quickbar-20261009/tests-luanti-delivery.log": "7ebf7611d6e1c1aee63c5ececf6ffe01cc569f8ce0774a2586d3b3c57a48f346",
+    "artifacts/ux03-quickbar-20261009/build-cdda-final.log": "2f2089bea772df17c8f8dac97fa9786582e47cca4854adcc56a58cd8c4cf61f0",
+    "artifacts/ux03-quickbar-20261009/build-luanti-spoilage-layer.log": "8a96b1ad400f73a3def6cf1fd9a0e55fe74edf69b4ab9a2bd439c8605fd76cf0",
+    "artifacts/ux03-quickbar-20261009/build-protocol-tests.log": "03f7760c34c0363fe807c1e543de2213ea04b5ec9f146b63099997443d98bac1",
+    "artifacts/ux03-quickbar-20261009/source-replay-delivery.json": "894716d94e9f27ff688d48d67dcba0c71d50f26cc1354897fdf190e30b37021f",
+    "artifacts/ux03-quickbar-20261009/refresh-spoilage-layer.json": "29c61b9b9cf703670f9d11bd887285152eaff76955882ef9f9d16e2316cd74e3",
+    "artifacts/ux03-quickbar-20261009/install.json": "ac16578636c11f6b8c71f4ee9fef1db23bef12d88b0584115fda23736530a4a6",
+    "artifacts/ux03-quickbar-20261009/run-gui.py": "ff779329660a0ac1900e986c49531bbd815df84ad16b42d2db6bf7c9a749ef98"
+  }
+}

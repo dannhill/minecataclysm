@@ -5,6 +5,13 @@ tiro, trasferimenti, UX-01 e UX-02. [Riscontro e limiti](../source/core-ux-valid
 Sorgente di produzione invariata rispetto a `048ca366ee9a2ee888b69a6d3c5b098517a4f67d`;
 CWM 2.16 e coppia runtime già installata. I bug nuovi non sono ancora corretti.
 
+Questo recap conserva lo stato **precedente alla consegna UX-03**. La hotbar,
+le correzioni mirate e il default continuo 4× sono ora disponibili in CWM 2.17;
+[stato corrente](../../IMPLEMENTATION_STATUS.md) e
+[consegna UX-03](../fixes/interactive-quickbar.md) descrivono evidenze e limiti.
+Non si ricalibrano le percentuali solo per un task: la prossima rivalutazione
+seguirà contenitori esterni e i riscontri manuali rimasti.
+
 ## Come leggere le stime
 
 Stime ingegneristiche di lavoro, non percentuali misurate di codice o test.

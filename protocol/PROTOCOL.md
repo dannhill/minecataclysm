@@ -6,10 +6,38 @@ captured implementation; it does not approve its gaps. The executable schema
 is [cwm.fbs](cwm.fbs). Audit findings and evidence are in
 [M5.5](../docs/audits/M5.5.md).
 
-The current runtime requires **CWM 2.16**. This breaks the old negotiation
+The current runtime requires **CWM 2.17**. This breaks the old negotiation
 contract; schema fields and union members are appended without changing the
 existing FlatBuffers offsets. Both executables must be rebuilt together.
 The historical coverage table below is retained as audit evidence.
+
+CWM 2.17 appends `QuickbarBindRequest` (41), `QuickbarUseRequest` (42),
+`WorldSnapshot.quick_slots`, `InventoryEntry.quick_slot/rotten` and owned-item
+category/wielded/rotten presentation fields. Nine quick slots are references
+to actual owned items, not additional storage. Binding uses a current inventory
+view/item plus the expected previous binding; clearing requires zero view/item.
+It changes optional UI metadata only, without native move costs or time advance.
+Each binding has a unique 32-character lowercase hexadecimal identity, exported
+with the item's native action eligibility, worn/wielded and spoilage state.
+Queries retain ephemeral IDs; those IDs are never saved as shortcuts.
+
+Use requests carry slot, exact binding and an EquipmentAction. Admission and
+execution resolve the same actually-owned native instance and validate the
+action; rebound/lost/ambiguous identities reject rather than select a namesake.
+The existing native equipment/consume/treatment branches and InventoryWorkState
+own costs and completion. Paused/busy uses do not queue for later replay.
+Both messages have bounded ledger signatures and at-most-once outcomes.
+Snapshot validators reject malformed slot count/order, duplicate or invalid
+identities, forbidden action bits and contradictory item roles.
+
+Bindings persist as optional native avatar `values` (`cwm_quick_slot_1`–`_9`)
+and item `item_vars` (`cwm_quick_identity`). No mandatory save field or
+Luanti structure is added. Integrated native stacking ignores this reserved UI
+key; splitting keeps it on the original portion and clears it on the new one.
+Loss/consumption/merge ambiguity clears a reference instead of guessing a
+replacement. The scoped pristine reader retains these optional keys; this is
+not full SAVE-001 certification or proof of upstream gameplay parity.
+[Implementation and evidence](../docs/fixes/interactive-quickbar.md).
 
 CWM 2.16 appends WorldSnapshot.inventory_work (InventoryWorkState): a nonzero
 command identity and native settled flag. completed_command_id still identifies

@@ -1,40 +1,44 @@
 # Implementation status
 
-Latest manual acceptance (2026-10-09): ranged/reload, owned transfers, UX-01
-and UX-02 all four checklist points declared PASS. The user's errata confirms
-UX-01 has four tests. UX-02 exceptional death/IPC/native-screen cases were
-not actually tested; nested ammunition deposit was not understood/performed.
-Keep these qualifications distinct from normal-flow acceptance. The backlog
-now has **7 PENDING**: four existing UI/mapping rechecks and three exceptional
-UX-02 probes. [Feedback](docs/source/core-ux-validation-2026-10-09.md).
-New bugs/preferences are recorded, **not yet fixed**: HUD icons/wield highlight,
-assignable/removable hotbar, visible unfocused search, quantity/error layout,
-water_clean-only mapping repair, held RMB aim, pause clouds, rig/animation/audio
-and clearer work feedback. English default / Italian WIP and normal start.sh
-integration are required. The launcher currently needs CDDA_CONTINUOUS=1 to
-enable the accepted continuous 4x mode; its default remains action-driven.
-Next scoped implementation: UX-03 and related UI repairs. The
-[recap and rough estimates](docs/progress/core-outlook-2026-10-09.md) distinguish
-the minimum core from the complete approved feature scope; no runtime changes
-or new verification are claimed by this documentation update.
+Current scoped delivery (2026-10-09): **UX-03 interactive persistent hotbar**,
+CWM **2.17**. Nine explicitly assigned/removable references are independent of
+inventory ordering/capacity. Wheel/numbers select without equipping; **G** requests
+the eligible native operation and pays access/work costs. Actual hand and selected
+slot have different HUD markers; unassigned wielded items remain visible separately.
+Native optional UI metadata preserves exact-instance bindings through wield/wear,
+save/load and reconnect, without saving ephemeral inventory-query IDs. Lost,
+consumed or ambiguous references clear instead of following a namesake.
+[Report and receipts](docs/fixes/interactive-quickbar.md).
 
-Current scoped delivery (2026-10-09): **UX-02 sequential inventory actions**, verified and installed for start.sh.
-One explicit operation closes the modal browser while native work/time runs;
-a compact non-modal indicator displays operation/progress. The browser returns
-only after CDDA confirms paid completion, preserving page/filter/search and
-transfer view. Fresh native queries clear object/destination selection.
-Esc opts out without refund/cancel; I pauses for consultation/native interruption.
-Manual/threat pause suppresses return, decisions defer it, death/recovery discards
-stale intent. CWM **2.16** distinguishes early result from paid inventory work;
-native activity debits share the real-time clock. Canonical save format unchanged.
-[Report/evidence](docs/fixes/inventory-work.md). Four new manual points bring the
-usual backlog to **20 PENDING at delivery**, superseded by the latest acceptance
-above; none required today. UX-01 layout remains available.
+Targeted repairs: visible initially unfocused search, click-to-focus/blur,
+quantity layout, prominent native rejection, contextual color-tag sanitation,
+water_clean-only icon override and native spoilage cue. Generated item batches
+are unchanged. Clouds share the paused visual clock. Normal start.sh defaults to
+the accepted continuous **4x** mode; explicit ordinary/comparison options remain.
+Both reconstructed 2.17 runtimes are installed together with previous-pair copies;
+actual installed save/reload checks and exact hashes are in the delivery receipts.
+English default / Italian WIP, held RMB aiming, real wielded rig/UV/animations,
+audio and richer native dialogs remain scheduled, not delivered by this slice.
 
-Body-region clothing grouping/encumbrance and stable selection continuity still
-need typed native exports. Next scheduled task: **UX-03 interactive hotbar**,
-selection distinct from native wielding and all access/use costs retained.
-[Detailed plan](docs/design/inventory-and-native-dialogs.md).
+Latest manual acceptance: ranged/reload, owned transfers, UX-01 and ordinary
+UX-02 each four PASS, with the errata preserved. Death/IPC/native decisions were
+not actually tested, and nested ammunition deposit was not performed/understood.
+Automatic transfer checks demonstrate partial nested deposit but do not replace
+that manual observation. [Feedback](docs/source/core-ux-validation-2026-10-09.md).
+The backlog is now **14 PENDING**: previous four UI/mapping rechecks and three
+exceptional UX-02 probes, plus four UX-03 and three focused UI/pause checks.
+No new manual acceptance is inferred and no testing is required from the user now.
+[Backlog](docs/validation/pending-manual.md).
+
+UX-02 paid completion/automatic return remains available, verified in equipment,
+consumption and transfer regressions. G from the world does not force I open.
+I during a native activity is consultation/pause; closing it resumes the actor,
+whereas Interrompi requests native cancellation. The original equipment fixture
+wears only a backpack; it does not contain an unseen full outfit.
+Body-region clothing/encumbrance, persistent selection across queries and
+nearby external containers/selected-quantity collection still need dedicated
+semantic interfaces. Language/aim feedback are the next controls/presentation
+repairs; external containers remain the next essential inventory extension.
 The broader M5.5 gate remains historical FAILED and full SAVE-001 stays OPEN.
 
 Previous scoped follow-up (2026-10-09): inventory feedback fixes and synchronization

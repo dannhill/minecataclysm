@@ -4,10 +4,11 @@ Riscontro: [16 PASS e richieste del 2026-10-09](../source/inventory-ui-feedback-
 Stato: **layout UX-01 e azioni consecutive UX-02 consegnati e accettati**
 nei quattro punti ciascuno con il
 [riscontro successivo ed errata corrige](../source/core-ux-validation-2026-10-09.md).
-Eccezioni morte/IPC/decisioni non provate restano separate. UX-03–05 e le
-estensioni anatomiche/identità restano pianificati. Nuove preferenze non ancora
-implementate: ricerca visibile senza focus, hotbar assegnabile/rimuovibile e
-mano evidenziata anche nell'HUD; feedback di lavoro/errori più evidente.
+Eccezioni morte/IPC/decisioni non provate restano separate. **UX-03 consegnata**:
+ricerca visibile senza focus, hotbar assegnabile/rimuovibile, mano evidenziata
+nell'HUD e feedback/errori migliorati. UX-04–05, raggruppamento anatomico e
+continuità della selezione tra query restano pianificati.
+[Consegna UX-03](../fixes/interactive-quickbar.md).
 
 ## Studio dei sorgenti e vincoli effettivi
 
@@ -48,8 +49,8 @@ scorrevoli, categorie/fallback espliciti. Pagina/filtro/ricerca sono conservati
 nella sessione; selezione sempre azzerata su nuova query/reconnect, senza
 indovinare identità omonime. [Report ed evidenze](../fixes/inventory-ui.md).
 Quattro prove accettate nel [backlog](../validation/pending-manual.md).
-La ricerca su richiesta è il comportamento consegnato, da aggiornare alla
-nuova preferenza visibile/senza focus nel prossimo intervento.
+La ricerca su richiesta era il comportamento UX-01; UX-03 lo sostituisce
+con campo sempre visibile, inizialmente senza focus e attivato su clic.
 
 Restano nel piano i requisiti sotto per copertura anatomica/impedimento,
 identità stabile tra azioni e scorciatoie configurabili sugli oggetti.
@@ -72,8 +73,7 @@ insieme alla hotbar, senza equipaggiamento gratuito.
 - Ricerca visibile all'apertura senza focus. Clic sinistro sul campo abilita
   digitazione e cambia colore; clic altrove disabilita digitazione. Esc prima
   lascia la ricerca e poi chiude I. Nessun focus tastiera rubato all'apertura.
-  Filtri compatti: Tutti, Equipaggiati, Contenitori. Richiesta aggiornata:
-  questo comportamento deve ancora sostituire la ricerca nascosta consegnata.
+  Filtri compatti: Tutti, Equipaggiati, Contenitori. Richiesta aggiornata implementata in UX-03, con prova nel renderer.
 - Slot della mano chiaramente evidenziato con l'oggetto **davvero impugnato**.
   Vestiti per zona del corpo, con conteggio e apertura degli strati multipli;
   niente falsa equivalenza “testa = un solo casco”.
@@ -138,7 +138,18 @@ ritorno automatico e mette in pausa; chiudere I riprende l'actor senza
 cancellarlo. Rendere visibile la differenza tra consultazione e Interrompi,
 insieme all'operazione Indossa/Togli, nel prossimo task di feedback.
 
-## UX-03 — Hotbar interattiva
+## UX-03 — Hotbar interattiva (consegnata, accettazione grafica pendente)
+
+Fetta attuale: assegnazione/rimozione in I; rotella/1–9 selezionano e G usa,
+senza chiudere/aprire I automaticamente quando l'azione parte dal mondo.
+Priorità nativa disponibile: Togli per indossati; altrimenti Mangia/Bevi,
+Indossa, Medica, Impugna, Riponi, Togli. I conserva pulsanti espliciti per
+scegliere un'altra azione. Selezione oro e mano azzurra sono distinte;
+la mano compare anche senza collegamento rapido. G è riconfigurabile.
+Metadati opzionali `values`/`item_vars` salvano l'identità nativa precisa;
+assegnare/svuotare non consuma tempo. Perdita/consumo/ambiguità invalidano;
+split conserva il riferimento sulla porzione originale, non sulla nuova.
+Verifica mirata in [report/evidenze](../fixes/interactive-quickbar.md).
 
 Nove riferimenti rapidi, non nove nuove tasche. Rotella/numeri selezionano
 un riferimento; **selezione grafica** e **oggetto impugnato** hanno indicatori
@@ -156,8 +167,8 @@ lavoro. Non assegnare il clic destro contemporaneamente a consumare e aprire
 una porta senza una priorità esplicita. Pulsante/shortcut di uso riconfigurabile
 prima del confronto. I riferimenti si invalidano quando l'oggetto è perso,
 consumato o depositato; non riassegnare silenziosamente a un oggetto omonimo.
-Per persistenti assegnazioni servono identificatori canonici o metadati UI
-separati e validati al load: gli ID CWM della vista non sono persistenti.
+Le assegnazioni persistenti usano metadati UI canonici opzionali validati al
+load: gli ID CWM della vista non sono persistenti.
 
 Verifica: selezione contro mano reale, consumabili/vestiti/arma, perdita del
 riferimento, costi, busy/pause, nessun replay, salvataggio e riconnessione.
@@ -199,14 +210,15 @@ raddoppiano il risultato, ricetta diventata indisponibile resta spiegata.
 
 ## Sequenza successiva e backlog
 
-1. Correzioni mirate → ricontrolli nel backlog, nessun test obbligatorio oggi.
-2. UX-01, poi UX-02: leggibilità e azioni consecutive prima di aggiungere
-   altra complessità all'inventario attuale.
-3. UX-04 con UI medica e UX-05; UX-03 come fetta nativa distinta con i costi
-   verificati, dopo stabilità della gestione delle azioni.
+1. UX-01/02/03 e correzioni mirate consegnati; ricontrolli nel backlog,
+   senza test obbligatori oggi né PASS grafici anticipati di UX-03.
+2. Lingua inglese/italiano WIP e mira RMB con priorità contestuali esplicite;
+   feedback dell'arma/operazioni e nuovi dialoghi restano task distinti.
+3. UX-04 con UI medica e UX-05 recenti/preferiti; per ogni adattamento
+   conservare costi nativi e significato delle informazioni osservabili.
 4. Contenitori esterni vicini e raccolta con quantità selezionate restano
-   essenziali, usando poi questi componenti. La roadmap M6/M7 e le fondazioni
-   non vengono sostituite da un progetto separato di UI.
+   la prossima estensione essenziale dell'inventario. La roadmap M6/M7 e le
+   fondazioni non vengono sostituite da un progetto separato di UI.
 
 Per ogni fetta consegnata aggiungere solo le nuove prove necessarie a
 [validazioni manuali](../validation/pending-manual.md), mantenendo separati
