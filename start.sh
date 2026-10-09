@@ -10,7 +10,7 @@ CDDA_CHARACTER="${CDDA_CHARACTER:-}"
 LUANTI_WORLD="${LUANTI_WORLD:-$PROJECT_DIR/worlds/cdda-presentation}"
 LOG_DIR="${LOG_DIR:-$PROJECT_DIR/artifacts/runtime/$(date -u +%Y%m%dT%H%M%SZ)-$$}"
 # Accepted product mode. Explicit 0 retains the ordinary native-turn comparison.
-CDDA_CONTINUOUS="${CDDA_CONTINUOUS:-1}"
+CDDA_CONTINUOUS="${CDDA_CONTINUOUS:-$(if [[ "${CDDA_REALTIME:-0}" == 1 ]]; then printf 0; else printf 1; fi)}"
 
 for binary in "$CDDA_BIN" "$LUANTI_BIN"; do
     if [[ ! -x "$binary" ]]; then

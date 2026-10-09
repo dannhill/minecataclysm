@@ -14,7 +14,9 @@ std::vector<uint8_t> world(int defect) {
             occupied ? "rock" : "", occupied || defect == 5 ? "Stone" : "", "",
             0, false, occupied && defect == 6, occupied && defect == 6, defect == 7 ? 128 : 0, false));
     }
-    auto actors = f.CreateVector(std::vector<flatbuffers::Offset<EntityState>>{});
+    Vec3f position(0,0,0);
+    auto player = CreateEntityState(f, 1, EntityType::PLAYER, 0, &position);
+    auto actors = f.CreateVector(std::vector{player});
     auto vehicles = f.CreateVector(std::vector<flatbuffers::Offset<VehicleState>>{});
     auto fields = f.CreateVector(std::vector<flatbuffers::Offset<FieldState>>{});
     auto quick = f.CreateVector(slots); Coord3i origin(0,0,0);

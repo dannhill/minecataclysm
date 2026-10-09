@@ -55,7 +55,7 @@ def main():
                CDDA_CHARACTER='Audit Survivor', LUANTI_WORLD=str(session / 'luanti'),
                LUANTI_CONFIG=str(config))
     env.pop('CDDA_TERRAIN_DEMO', None)
-    env.pop('CDDA_CONTINUOUS', None)
+    env['CDDA_CONTINUOUS'] = '0' # Historical grid/actor fixtures explicitly retain their comparison mode.
     if args.continuous:
         env['CDDA_CONTINUOUS'] = '1'
     if args.realtime:

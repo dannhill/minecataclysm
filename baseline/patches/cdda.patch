@@ -4593,10 +4593,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..c9e2e28
+index 0000000..f94a5f1
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,1665 @@
+@@ -0,0 +1,1667 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "move_mode.h"
@@ -6163,12 +6163,12 @@ index 0000000..c9e2e28
 +    clear_avatar(); clear_map();
 +    avatar& u = get_avatar();
 +    REQUIRE(u.wear_item(item(itype_id("backpack_hiking"), calendar::turn)));
-+    auto* first = &u.i_add(item(itype_id("rock"), calendar::turn));
-+    auto* second = &u.i_add(item(itype_id("rock"), calendar::turn));
++    auto* first = u.i_add(item(itype_id("rock"), calendar::turn)).get_item();
++    auto* second = u.i_add(item(itype_id("rock"), calendar::turn)).get_item();
 +    REQUIRE(first != second);
 +    cwm::CwmServer server("unused-test-socket");
 +    cwm::CwmServerTestAccess::ready(server);
-+    const auto view = cwm::CwmServerTestAccess::query(server);
++    const auto view = cwm::CwmServerTestAccess::inventory(server);
 +    const auto first_id = cwm::CwmServerTestAccess::item_id(server,*first);
 +    const auto second_id = cwm::CwmServerTestAccess::item_id(server,*second);
 +    const int moves = u.moves; const auto now = calendar::turn;
@@ -6204,15 +6204,15 @@ index 0000000..c9e2e28
 +{
 +    clear_avatar(); clear_map(); avatar& u=get_avatar();
 +    REQUIRE(u.wear_item(item(itype_id("backpack_hiking"),calendar::turn)));
-+    auto& first=u.i_add(item(itype_id("rock"),calendar::turn));
-+    auto& second=u.i_add(item(itype_id("hat_ball"),calendar::turn));
++    auto first=u.i_add(item(itype_id("rock"),calendar::turn));
++    auto second=u.i_add(item(itype_id("hat_ball"),calendar::turn));
 +    cwm::CwmServer server("unused-test-socket");cwm::CwmServerTestAccess::ready(server);
-+    auto view=cwm::CwmServerTestAccess::query(server);
-+    auto id=cwm::CwmServerTestAccess::item_id(server,first);
++    auto view=cwm::CwmServerTestAccess::inventory(server);
++    auto id=cwm::CwmServerTestAccess::item_id(server,*first);
 +    cwm::CwmServerTestAccess::quick_bind(server,1,view,id,"",1);
 +    auto token=u.get_value(cwm::Hotbar::slot_key(1));
 +    SECTION("stale view cannot replace shortcut") {
-+        cwm::CwmServerTestAccess::query(server);
++        cwm::CwmServerTestAccess::inventory(server);
 +        cwm::CwmServerTestAccess::quick_bind(server,1,view,id,token,2);
 +        CHECK(u.get_value(cwm::Hotbar::slot_key(1))==token);
 +    }
@@ -6225,15 +6225,15 @@ index 0000000..c9e2e28
 +    SECTION("rebinding after admission invalidates execution") {
 +        cwm::CwmServerTestAccess::quick_use(server,1,token,0,2);
 +        REQUIRE(server.has_queued_action());
-+        cwm::CwmServerTestAccess::quick_bind(server,1,view,cwm::CwmServerTestAccess::item_id(server,second),token,3);
++        cwm::CwmServerTestAccess::quick_bind(server,1,view,cwm::CwmServerTestAccess::item_id(server,*second),token,3);
 +        REQUIRE(u.get_value(cwm::Hotbar::slot_key(1))!=token);
 +        CHECK_FALSE(cwm::CwmServerTestAccess::execute(server));CHECK_FALSE(u.get_wielded_item());
 +    }
 +    SECTION("clear changes UI only, stale clear cannot clear a new assignment") {
 +        const int moves=u.moves;
 +        cwm::CwmServerTestAccess::quick_bind(server,1,0,0,token,2);
-+        CHECK(u.get_value(cwm::Hotbar::slot_key(1)).empty());CHECK(u.has_item(first));CHECK(u.moves==moves);
-+        cwm::CwmServerTestAccess::quick_bind(server,1,view,cwm::CwmServerTestAccess::item_id(server,second),"",3);
++        CHECK(u.get_value(cwm::Hotbar::slot_key(1)).empty());CHECK(u.has_item(*first));CHECK(u.moves==moves);
++        cwm::CwmServerTestAccess::quick_bind(server,1,view,cwm::CwmServerTestAccess::item_id(server,*second),"",3);
 +        const auto fresh=u.get_value(cwm::Hotbar::slot_key(1));REQUIRE(!fresh.empty());
 +        cwm::CwmServerTestAccess::quick_bind(server,1,0,0,token,4);
 +        CHECK(u.get_value(cwm::Hotbar::slot_key(1))==fresh);
@@ -6244,7 +6244,8 @@ index 0000000..c9e2e28
 +{
 +    clear_avatar();clear_map();avatar& u=get_avatar();
 +    REQUIRE(u.wear_item(item(itype_id("backpack_hiking"),calendar::turn)));
-+    auto& ammo=u.i_add(item(itype_id("9mm"),calendar::turn,30));
++    auto ammo_location=u.i_add(item(itype_id("9mm"),calendar::turn,30));
++    item& ammo=*ammo_location;
 +    REQUIRE(cwm::Hotbar::bind(u,1,item_location(u,&ammo),"").empty());
 +    const auto token=ammo.get_var(cwm::Hotbar::item_key);
 +    item plain(ammo);plain.erase_var(cwm::Hotbar::item_key);
@@ -6257,7 +6258,8 @@ index 0000000..c9e2e28
 +    item loaded;loaded.deserialize(json_loader::from_string(saved.str()).get_object());
 +    CHECK(loaded.get_var(cwm::Hotbar::item_key)==token);CHECK(loaded.charges==23);
 +    // Cloning native instances can copy metadata; an ambiguous binding is cleared.
-+    auto& rock=u.i_add(item(itype_id("rock"),calendar::turn));
++    auto rock_location=u.i_add(item(itype_id("rock"),calendar::turn));
++    item& rock=*rock_location;
 +    REQUIRE(cwm::Hotbar::bind(u,2,item_location(u,&rock),"").empty());
 +    item clone(rock);u.i_add(clone);cwm::Hotbar::refresh(u);
 +    CHECK(u.get_value(cwm::Hotbar::slot_key(2)).empty());
