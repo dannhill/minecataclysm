@@ -76,6 +76,9 @@ struct AvatarStatusBuilder;
 struct WorldSnapshot;
 struct WorldSnapshotBuilder;
 
+struct InventoryWorkState;
+struct InventoryWorkStateBuilder;
+
 struct SimulationState;
 struct SimulationStateBuilder;
 
@@ -2642,7 +2645,8 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_CRAFTING = 48,
     VT_RANGED_WEAPON = 50,
     VT_RELOAD = 52,
-    VT_ITEM_TRANSFER = 54
+    VT_ITEM_TRANSFER = 54,
+    VT_INVENTORY_WORK = 56
   };
   uint64_t world_revision() const {
     return GetField<uint64_t>(VT_WORLD_REVISION, 0);
@@ -2800,6 +2804,12 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   CDDA::CWM::ItemTransferState *mutable_item_transfer() {
     return GetPointer<CDDA::CWM::ItemTransferState *>(VT_ITEM_TRANSFER);
   }
+  const CDDA::CWM::InventoryWorkState *inventory_work() const {
+    return GetPointer<const CDDA::CWM::InventoryWorkState *>(VT_INVENTORY_WORK);
+  }
+  CDDA::CWM::InventoryWorkState *mutable_inventory_work() {
+    return GetPointer<CDDA::CWM::InventoryWorkState *>(VT_INVENTORY_WORK);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint64_t>(verifier, VT_WORLD_REVISION, 8) &&
@@ -2854,6 +2864,8 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyTable(reload()) &&
            VerifyOffset(verifier, VT_ITEM_TRANSFER) &&
            verifier.VerifyTable(item_transfer()) &&
+           VerifyOffset(verifier, VT_INVENTORY_WORK) &&
+           verifier.VerifyTable(inventory_work()) &&
            verifier.EndTable();
   }
 };
@@ -2940,6 +2952,9 @@ struct WorldSnapshotBuilder {
   void add_item_transfer(::flatbuffers::Offset<CDDA::CWM::ItemTransferState> item_transfer) {
     fbb_.AddOffset(WorldSnapshot::VT_ITEM_TRANSFER, item_transfer);
   }
+  void add_inventory_work(::flatbuffers::Offset<CDDA::CWM::InventoryWorkState> inventory_work) {
+    fbb_.AddOffset(WorldSnapshot::VT_INVENTORY_WORK, inventory_work);
+  }
   explicit WorldSnapshotBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -2978,7 +2993,8 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshot(
     ::flatbuffers::Offset<CDDA::CWM::CraftingState> crafting = 0,
     ::flatbuffers::Offset<CDDA::CWM::RangedWeaponState> ranged_weapon = 0,
     ::flatbuffers::Offset<CDDA::CWM::ReloadState> reload = 0,
-    ::flatbuffers::Offset<CDDA::CWM::ItemTransferState> item_transfer = 0) {
+    ::flatbuffers::Offset<CDDA::CWM::ItemTransferState> item_transfer = 0,
+    ::flatbuffers::Offset<CDDA::CWM::InventoryWorkState> inventory_work = 0) {
   WorldSnapshotBuilder builder_(_fbb);
   builder_.add_completed_command_id(completed_command_id);
   builder_.add_resync_id(resync_id);
@@ -2986,6 +3002,7 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshot(
   builder_.add_base_revision(base_revision);
   builder_.add_simulation_time_seconds(simulation_time_seconds);
   builder_.add_world_revision(world_revision);
+  builder_.add_inventory_work(inventory_work);
   builder_.add_item_transfer(item_transfer);
   builder_.add_reload(reload);
   builder_.add_ranged_weapon(ranged_weapon);
@@ -3036,7 +3053,8 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshotDirect(
     ::flatbuffers::Offset<CDDA::CWM::CraftingState> crafting = 0,
     ::flatbuffers::Offset<CDDA::CWM::RangedWeaponState> ranged_weapon = 0,
     ::flatbuffers::Offset<CDDA::CWM::ReloadState> reload = 0,
-    ::flatbuffers::Offset<CDDA::CWM::ItemTransferState> item_transfer = 0) {
+    ::flatbuffers::Offset<CDDA::CWM::ItemTransferState> item_transfer = 0,
+    ::flatbuffers::Offset<CDDA::CWM::InventoryWorkState> inventory_work = 0) {
   auto chunks__ = chunks ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::ChunkSnapshot>>(*chunks) : 0;
   auto entities__ = entities ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::EntityState>>(*entities) : 0;
   auto vehicles__ = vehicles ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::VehicleState>>(*vehicles) : 0;
@@ -3073,7 +3091,65 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshotDirect(
       crafting,
       ranged_weapon,
       reload,
-      item_transfer);
+      item_transfer,
+      inventory_work);
+}
+
+struct InventoryWorkState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef InventoryWorkStateBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_COMMAND_ID = 4,
+    VT_SETTLED = 6
+  };
+  uint64_t command_id() const {
+    return GetField<uint64_t>(VT_COMMAND_ID, 0);
+  }
+  bool mutate_command_id(uint64_t _command_id = 0) {
+    return SetField<uint64_t>(VT_COMMAND_ID, _command_id, 0);
+  }
+  bool settled() const {
+    return GetField<uint8_t>(VT_SETTLED, 0) != 0;
+  }
+  bool mutate_settled(bool _settled = 0) {
+    return SetField<uint8_t>(VT_SETTLED, static_cast<uint8_t>(_settled), 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_COMMAND_ID, 8) &&
+           VerifyField<uint8_t>(verifier, VT_SETTLED, 1) &&
+           verifier.EndTable();
+  }
+};
+
+struct InventoryWorkStateBuilder {
+  typedef InventoryWorkState Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_command_id(uint64_t command_id) {
+    fbb_.AddElement<uint64_t>(InventoryWorkState::VT_COMMAND_ID, command_id, 0);
+  }
+  void add_settled(bool settled) {
+    fbb_.AddElement<uint8_t>(InventoryWorkState::VT_SETTLED, static_cast<uint8_t>(settled), 0);
+  }
+  explicit InventoryWorkStateBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<InventoryWorkState> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<InventoryWorkState>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<InventoryWorkState> CreateInventoryWorkState(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t command_id = 0,
+    bool settled = false) {
+  InventoryWorkStateBuilder builder_(_fbb);
+  builder_.add_command_id(command_id);
+  builder_.add_settled(settled);
+  return builder_.Finish();
 }
 
 struct SimulationState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {

@@ -547,7 +547,7 @@ index 52b63dc..ad5585d 100644
  
  enum class craft_flags : int {
 diff --git a/src/do_turn.cpp b/src/do_turn.cpp
-index 2455a6f..25c923d 100644
+index 2455a6f..7d02353 100644
 --- a/src/do_turn.cpp
 +++ b/src/do_turn.cpp
 @@ -120,14 +120,21 @@ bool cleanup_at_end()
@@ -605,7 +605,7 @@ index 2455a6f..25c923d 100644
          }
          if( g->gamemode ) {
              g->gamemode = std::make_unique<special_game>(); // null gamemode or something..
-@@ -400,6 +414,54 @@ void overmap_npc_move()
+@@ -400,6 +414,59 @@ void overmap_npc_move()
  
  // MAIN GAME LOOP
  // Returns true if game is over (death, saved, quit, etc)
@@ -616,6 +616,7 @@ index 2455a6f..25c923d 100644
 +const std::function<bool()> *external_action = nullptr;
 +const external_choice_provider *external_choice = nullptr;
 +const std::function<bool()> *external_world_gate = nullptr;
++const std::function<void(int, int)> *external_activity_cost = nullptr;
 +bool external_phase_finished = false;
 +}
 +
@@ -636,23 +637,27 @@ index 2455a6f..25c923d 100644
 +
 +bool do_turn_with_action( const std::function<bool()> &action,
 +                         const external_choice_provider &choice,
-+                         const std::function<bool()> &world_gate )
++                         const std::function<bool()> &world_gate,
++                         const std::function<void(int, int)> &activity_cost )
 +{
 +    struct restore_input {
 +        const std::function<bool()> *previous;
 +        const external_choice_provider *previous_choice;
 +        const std::function<bool()> *previous_gate;
++        const std::function<void(int, int)> *previous_cost;
 +        bool previous_finished;
 +        ~restore_input() {
 +            external_action = previous;
 +            external_choice = previous_choice;
 +            external_world_gate = previous_gate;
++            external_activity_cost = previous_cost;
 +            external_phase_finished = previous_finished;
 +        }
-+    } restore{ external_action, external_choice, external_world_gate, external_phase_finished };
++    } restore{ external_action, external_choice, external_world_gate, external_activity_cost, external_phase_finished };
 +    external_action = &action;
 +    external_choice = &choice;
 +    external_world_gate = &world_gate;
++    external_activity_cost = &activity_cost;
 +    external_phase_finished = false;
 +    return do_turn();
 +}
@@ -660,7 +665,19 @@ index 2455a6f..25c923d 100644
  bool do_turn()
  {
      if( g->is_game_over() ) {
-@@ -533,7 +595,7 @@ bool do_turn()
+@@ -486,7 +553,11 @@ bool do_turn()
+ 
+     g->perhaps_add_random_npc( /* ignore_spawn_timers_and_rates = */ false );
+     while( u.moves > 0 && u.activity ) {
++        const int before = u.moves, speed = u.get_speed();
+         u.activity.do_turn( u );
++        if( external_activity_cost && *external_activity_cost ) {
++            ( *external_activity_cost )( std::max( 0, before - u.moves ), speed );
++        }
+     }
+     // FIXME: hack needed due to the legacy code in advanced_inventory::move_all_items()
+     if( !u.activity ) {
+@@ -533,7 +604,7 @@ bool do_turn()
                      g->queue_screenshot = false;
                  }
  
@@ -669,7 +686,7 @@ index 2455a6f..25c923d 100644
                      ++g->moves_since_last_save;
                      u.action_taken();
                  }
-@@ -542,6 +604,10 @@ bool do_turn()
+@@ -542,11 +613,19 @@ bool do_turn()
                      return turn_handler::cleanup_at_end();
                  }
  
@@ -680,7 +697,16 @@ index 2455a6f..25c923d 100644
                  if( g->uquit == QUIT_WATCH ) {
                      break;
                  }
-@@ -578,6 +644,10 @@ bool do_turn()
+                 while( u.moves > 0 && u.activity ) {
++                    const int before = u.moves, speed = u.get_speed();
+                     u.activity.do_turn( u );
++                    if( external_activity_cost && *external_activity_cost ) {
++                        ( *external_activity_cost )( std::max( 0, before - u.moves ), speed );
++                    }
+                 }
+             }
+             // Reset displayed sound markers now that the turn is over.
+@@ -578,6 +657,10 @@ bool do_turn()
          }
      }
  
@@ -692,10 +718,10 @@ index 2455a6f..25c923d 100644
          // Still have a view offset, but might not be driving anymore,
          // or the option has been deactivated,
 diff --git a/src/do_turn.h b/src/do_turn.h
-index 6ebdaa7..205549f 100644
+index 6ebdaa7..ba65968 100644
 --- a/src/do_turn.h
 +++ b/src/do_turn.h
-@@ -2,8 +2,22 @@
+@@ -2,8 +2,23 @@
  #ifndef CATA_SRC_DO_TURN_H
  #define CATA_SRC_DO_TURN_H
  
@@ -710,7 +736,8 @@ index 6ebdaa7..205549f 100644
 +                                 const std::vector<std::string> & )>;
 +bool do_turn_with_action( const std::function<bool()> &action,
 +                         const external_choice_provider &choice = {},
-+                         const std::function<bool()> &world_gate = {} );
++                         const std::function<bool()> &world_gate = {},
++                         const std::function<void(int, int)> &activity_cost = {} );
 +// End this native player phase without discarding remaining move credit.
 +void finish_external_action_phase();
 +bool external_ui_active();
@@ -2125,10 +2152,10 @@ index 0000000..1a0308e
 +}
 diff --git a/src/cwm/cwm_map_exporter.cpp b/src/cwm/cwm_map_exporter.cpp
 new file mode 100644
-index 0000000..d582732
+index 0000000..8d6a9a8
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.cpp
-@@ -0,0 +1,635 @@
+@@ -0,0 +1,637 @@
 +#include "cwm_motion.h"
 +// CDDA CWM Map & Entity Exporter Implementation
 +// Licensed under Apache-2.0
@@ -2315,7 +2342,7 @@ index 0000000..d582732
 +    bool include_chunks,
 +    ProjectionCache* cache, cdda::cwm::Identity identity,
 +    uint64_t base_revision, uint64_t state_id, uint64_t resync_id,
-+    uint64_t completed_command_id, const ClockView* clock, uint64_t activity_token, uint64_t weapon_token
++    uint64_t completed_command_id, const ClockView* clock, uint64_t activity_token, uint64_t weapon_token, uint64_t inventory_work_command, bool inventory_work_settled
 +) {
 +    cdda::cwm::MessageBuilder builder(sequence_num, world_rev, identity);
 +    auto& fbb = builder.builder();
@@ -2702,6 +2729,8 @@ index 0000000..d582732
 +        CDDA::CWM::CreateItemTransferState(fbb, activity_token, std::max(0, u.activity.moves_total),
 +            std::clamp(u.activity.moves_left, 0, std::max(0, u.activity.moves_total)), u.activity.id() == activity_id("ACT_INSERT_ITEM")) :
 +        flatbuffers::Offset<CDDA::CWM::ItemTransferState>{};
++    const auto inventory_work = inventory_work_command ? CDDA::CWM::CreateInventoryWorkState(
++        fbb, inventory_work_command, inventory_work_settled) : flatbuffers::Offset<CDDA::CWM::InventoryWorkState>{};
 +    auto world_snap = CDDA::CWM::CreateWorldSnapshot(
 +        fbb,
 +        world_rev,
@@ -2715,7 +2744,7 @@ index 0000000..d582732
 +        g.safe_mode == SAFE_MODE_STOP || u.has_effect(efftype_id("laserlocked")) ||
 +            (clock && (clock->pause_reasons & 4)),
 +        include_chunks, base_revision, state_id, resync_id, completed_command_id,
-+        spawned_vec, removed_vec, clock_state, ground_items_vec, owned_items_vec, avatar_status, consumption, first_aid, crafting, ranged, reload, transfer
++        spawned_vec, removed_vec, clock_state, ground_items_vec, owned_items_vec, avatar_status, consumption, first_aid, crafting, ranged, reload, transfer, inventory_work
 +    );
 +
 +    return builder.finish_message(CDDA::CWM::Payload::WorldSnapshot, world_snap.Union());
@@ -2766,10 +2795,10 @@ index 0000000..d582732
 +} // namespace cwm
 diff --git a/src/cwm/cwm_map_exporter.h b/src/cwm/cwm_map_exporter.h
 new file mode 100644
-index 0000000..c68aca2
+index 0000000..9ff67ca
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.h
-@@ -0,0 +1,65 @@
+@@ -0,0 +1,66 @@
 +// CDDA CWM Map & Entity Exporter
 +// Licensed under Apache-2.0
 +#pragma once
@@ -2814,7 +2843,8 @@ index 0000000..c68aca2
 +        cdda::cwm::Identity identity = {},
 +        uint64_t base_revision = 0, uint64_t state_id = 1,
 +        uint64_t resync_id = 0, uint64_t completed_command_id = 0,
-+        const ClockView* clock = nullptr, uint64_t activity_token = 0, uint64_t weapon_token = 0
++        const ClockView* clock = nullptr, uint64_t activity_token = 0, uint64_t weapon_token = 0,
++        uint64_t inventory_work_command = 0, bool inventory_work_settled = false
 +    );
 +
 +    static std::vector<uint8_t> export_tile_delta(
@@ -2946,10 +2976,10 @@ index 0000000..43d3a08
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..1a010e9
+index 0000000..5f62025
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,950 @@
+@@ -0,0 +1,977 @@
 +#include "cwm_motion.h"
 +// CDDA CWM IPC Server Implementation
 +// Licensed under Apache-2.0
@@ -3036,6 +3066,7 @@ index 0000000..1a010e9
 +}
 +
 +void CwmServer::cancel_connection() {
++    inventory_work_command_ = 0; inventory_work_settled_ = false;
 +    inventory_selection_.clear();
 +    held_direction_ = 0; intent_x_ = intent_y_ = 0; menu_pause_ = false;
 +    motion_sample_ = clock_.elapsed();
@@ -3075,15 +3106,24 @@ index 0000000..1a010e9
 +    activity_total_ = u.activity.moves_total; activity_remaining_ = u.activity.moves_left;
 +}
 +
++bool CwmServer::refresh_inventory_work(const avatar& u) {
++    if (!inventory_work_command_ || inventory_work_settled_ || u.activity ||
++        u.moves <= 0 || u.is_dead_state() || (realtime_ && !clock_.action_due())) return false;
++    inventory_work_settled_ = true;
++    return true;
++}
++
 +void CwmServer::send_state(avatar& u, map& m, game& g, bool full, uint64_t completed) {
 +    if (!has_active_client() || !negotiated_ || rejecting_) return;
 +    refresh_activity(u);
++    if (refresh_inventory_work(u)) ++world_revision_;
 +    const auto state_id = next_state_++;
 +    const CwmMapExporter::ClockView clock{realtime_, pause_reasons(g),
 +        static_cast<float>(clock_.scale()), motion_seconds_, continuous_};
 +    auto snapshot = CwmMapExporter::export_world_snapshot(sequence_counter_, world_revision_,
 +                    u, m, g, full, &projection_cache_, identity_, sent_revision_, state_id,
-+                    resync_id_, completed, realtime_ ? &clock : nullptr, activity_token_, ranged_selection_.refresh(u));
++                    resync_id_, completed, realtime_ ? &clock : nullptr, activity_token_, ranged_selection_.refresh(u),
++                    inventory_work_command_, inventory_work_settled_);
 +    const bool is_full = CDDA::CWM::GetCwmMessage(snapshot.data())->payload_as_WorldSnapshot()->full();
 +    if (emit(snapshot)) {
 +        snapshot_sent_ = true;
@@ -3096,6 +3136,7 @@ index 0000000..1a010e9
 +}
 +
 +void CwmServer::reset_world(avatar& u, map& m, game& g, uint64_t request_id) {
++    inventory_work_command_ = 0; inventory_work_settled_ = false;
 +    inventory_selection_.clear(); ranged_selection_.clear();
 +    if (realtime_) drop_realtime_input(u, m, g);
 +    resync_id_ = request_id;
@@ -3172,6 +3213,7 @@ index 0000000..1a010e9
 +    clock_.sample(cdda::cwm::SimulationClock::Wall::now(), pause_reasons(g) == 0);
 +    update(u, m, g);
 +    clock_.sample(cdda::cwm::SimulationClock::Wall::now(), pause_reasons(g) == 0);
++    if (refresh_inventory_work(u)) { ++world_revision_; send_state(u, m, g); }
 +    if (continuous_ && (pause_reasons(g) || (!intent_x_ && !intent_y_) || !clock_.action_due()))
 +        motion_sample_ = clock_.elapsed();
 +}
@@ -3276,7 +3318,9 @@ index 0000000..1a010e9
 +            const int before = u.moves;
 +            const int speed = u.get_speed();
 +            const bool acted = execute(command, u, m, g);
-+            motion_seconds_ = static_cast<float>(std::clamp(clock_.charge_action(before-u.moves, speed), .05, 60.));
++            const double duration = command.equipment_action >= 0 || command.transfer_action >= 0 ?
++                clock_.charge_work(before-u.moves, speed) : clock_.charge_action(before-u.moves, speed);
++            motion_seconds_ = static_cast<float>(std::clamp(duration, .05, 60.));
 +            if (!acted && !command.id) held_direction_ = 0;
 +            if (result_) {
 +                if (command.id) send_result(*result_, u, m, g);
@@ -3348,7 +3392,9 @@ index 0000000..1a010e9
 +        return false;
 +    }, [&](const std::string& text, const std::vector<std::string>& choices) {
 +        return ask_decision(text, choices, u, m, g, keep_running);
-+    }, realtime_ ? std::function<bool()>([&]() { return pace_world(u, m, g, keep_running); }) : std::function<bool()>{});
++    }, realtime_ ? std::function<bool()>([&]() { return pace_world(u, m, g, keep_running); }) : std::function<bool()>{}, [&](int moves, int speed) {
++        if (realtime_) clock_.charge_work(moves, speed);
++    });
 +    if (!ended) {
 +        if (realtime_) clock_.complete_tick();
 +        ++world_revision_;
@@ -3403,6 +3449,16 @@ index 0000000..1a010e9
 +}
 +
 +bool CwmServer::execute(const Command& command, avatar& u, map& m, game& g) {
++    const bool was_busy = bool(u.activity);
++    const bool acted = execute_native(command, u, m, g);
++    // A rejected request during someone else's work cannot replace its identity.
++    if (!was_busy && (command.equipment_action >= 0 || command.transfer_action >= 0)) {
++        inventory_work_command_ = command.id; inventory_work_settled_ = false;
++    }
++    return acted;
++}
++
++bool CwmServer::execute_native(const Command& command, avatar& u, map& m, game& g) {
 +    const int before_moves = u.moves;
 +    bool accepted = false;
 +    if (command.ranged_action < 0) ranged_selection_.end_aim();
@@ -3738,6 +3794,7 @@ index 0000000..1a010e9
 +            u.activity.is_interruptible() && (!realtime_ || !pause_reasons(g));
 +        if (valid) {
 +            u.cancel_activity(); // Native interruption/backlog rules, no refund.
++            inventory_work_command_ = id; inventory_work_settled_ = false;
 +            activity_token_ = 0; inventory_selection_.clear(); crafting_selection_.clear(); ++world_revision_;
 +        }
 +        send_result({id, valid, valid ? "" : "Attivita conclusa, cambiata o gioco in pausa."}, u, m, g);
@@ -3902,10 +3959,10 @@ index 0000000..1a010e9
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.h b/src/cwm/cwm_server.h
 new file mode 100644
-index 0000000..872ead8
+index 0000000..fe3e450
 --- /dev/null
 +++ b/src/cwm/cwm_server.h
-@@ -0,0 +1,144 @@
+@@ -0,0 +1,148 @@
 +// CDDA CWM IPC Server
 +// Licensed under Apache-2.0
 +#pragma once
@@ -3985,6 +4042,9 @@ index 0000000..872ead8
 +    uint64_t next_state_{1}, awaiting_state_{0}, resync_id_{0};
 +    bool negotiated_{false}, ready_{false}, rejecting_{false};
 +    InventorySelection inventory_selection_;
++    uint64_t inventory_work_command_{0};
++    bool inventory_work_settled_{false};
++    bool refresh_inventory_work(const avatar& u);
 +    uint64_t next_activity_token_{1}, activity_token_{0};
 +    int activity_total_{0}, activity_remaining_{0};
 +    std::string activity_kind_;
@@ -4043,6 +4103,7 @@ index 0000000..872ead8
 +    void send_decision();
 +    void cancel_connection();
 +    bool execute(const Command& command, avatar& u, map& m, game& g);
++    bool execute_native(const Command& command, avatar& u, map& m, game& g);
 +    int ask_decision(const std::string& text, const std::vector<std::string>& choices,
 +                     avatar& u, map& m, game& g, const std::function<bool()>& keep_running);
 +
@@ -4360,10 +4421,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..35240f2
+index 0000000..12fb508
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,1480 @@
+@@ -0,0 +1,1546 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "move_mode.h"
@@ -4500,6 +4561,17 @@ index 0000000..35240f2
 +        server.commands_.pop_front();
 +        return server.execute( command, get_avatar(), get_map(), *g );
 +    }
++    static void charge_work(CwmServer& server, int moves, int speed) {
++        server.clock_.charge_work(moves, speed);
++    }
++    static void sample_work(CwmServer& server, double seconds) {
++        const auto now = cdda::cwm::SimulationClock::Wall::time_point{} +
++            std::chrono::duration_cast<cdda::cwm::SimulationClock::Wall::duration>(std::chrono::duration<double>(seconds));
++        server.clock_.sample(now, true);
++    }
++    static bool settle(CwmServer& server) { return server.refresh_inventory_work(get_avatar()); }
++    static uint64_t work_id(const CwmServer& server) { return server.inventory_work_command_; }
++    static bool work_settled(const CwmServer& server) { return server.inventory_work_settled_; }
 +    static bool accepted( const CwmServer &server ) {
 +        REQUIRE( server.result_ );
 +        return server.result_->accepted;
@@ -5843,6 +5915,61 @@ index 0000000..35240f2
 +        return accept ? 0 : 1;
 +    });
 +    CHECK(questions == (automatic ? 0 : 1));
++}
++
++
++TEST_CASE("cwm_inventory_completion_requires_paid_cost_and_native_credit", "[cwm][equipment][work]")
++{
++    clear_avatar(); clear_map(); avatar& u = get_avatar();
++    u.setpos(tripoint(60,60,0));
++    REQUIRE(u.wear_item(item(itype_id("backpack_hiking"))));
++    auto hat = u.i_add(item(itype_id("hat_ball"))); REQUIRE(hat);
++    cwm::CwmServer server("/unused-inventory-work"); cwm::CwmServerTestAccess::ready(server);
++    const auto view = cwm::CwmServerTestAccess::inventory(server);
++    const int initial = GENERATE(1,1000); u.moves = initial;
++    cwm::CwmServerTestAccess::equipment(server, view, cwm::CwmServerTestAccess::item_id(server,*hat),2);
++    REQUIRE(cwm::CwmServerTestAccess::execute(server));
++    REQUIRE(cwm::CwmServerTestAccess::accepted(server));
++    const int debit = initial-u.moves; REQUIRE(debit>0);
++    server.enable_realtime(); cwm::CwmServerTestAccess::sample_work(server,0);
++    cwm::CwmServerTestAccess::charge_work(server,debit,u.get_speed());
++    cwm::CwmServerTestAccess::complete(server); // The early ACK is deliberately not settlement.
++    CHECK(cwm::CwmServerTestAccess::work_id(server)==1);
++    CHECK_FALSE(cwm::CwmServerTestAccess::settle(server));
++    CHECK_FALSE(cwm::CwmServerTestAccess::work_settled(server));
++    for(int n=1;n<=400;++n) cwm::CwmServerTestAccess::sample_work(server,n*.25);
++    if(initial==1) {
++        REQUIRE(u.moves<=0); CHECK_FALSE(cwm::CwmServerTestAccess::settle(server));
++        for(int n=0;n<100 && u.moves<=0;++n) u.process_turn(); // Canonical credit recovery, no overwrite.
++        REQUIRE(u.moves>0);
++    }
++    CHECK(cwm::CwmServerTestAccess::settle(server));
++    CHECK(cwm::CwmServerTestAccess::work_settled(server));
++    CHECK_FALSE(cwm::CwmServerTestAccess::settle(server));
++    cwm::CwmServerTestAccess::cancel(server); CHECK(cwm::CwmServerTestAccess::work_id(server)==0);
++}
++
++TEST_CASE("cwm_inventory_interruption_keeps_paid_actor_cost", "[cwm][consumption][work]")
++{
++    clear_avatar(); clear_map(); avatar& u=get_avatar(); u.setpos(tripoint(60,60,0));
++    REQUIRE(u.wear_item(item(itype_id("backpack_hiking"))));
++    auto apple=u.i_add(item(itype_id("apple"))); REQUIRE(apple); u.moves=1000;
++    cwm::CwmServer server("/unused-interrupted-work"); cwm::CwmServerTestAccess::ready(server);
++    const auto view=cwm::CwmServerTestAccess::inventory(server);
++    cwm::CwmServerTestAccess::equipment(server,view,cwm::CwmServerTestAccess::item_id(server,*apple),4);
++    REQUIRE(cwm::CwmServerTestAccess::execute(server)); REQUIRE(u.activity);
++    cwm::CwmServerTestAccess::complete(server);
++    const auto token=cwm::CwmServerTestAccess::consumption(server); REQUIRE(token);
++    CHECK_FALSE(cwm::CwmServerTestAccess::settle(server));
++    u.moves=10; const int before=u.moves; u.activity.do_turn(u); REQUIRE(u.activity);
++    const int debit=before-u.moves; REQUIRE(debit>0);
++    cwm::CwmServerTestAccess::sample_work(server,0); cwm::CwmServerTestAccess::charge_work(server,debit,u.get_speed());
++    cwm::CwmServerTestAccess::interrupt(server,token,2); REQUIRE_FALSE(u.activity);
++    CHECK(cwm::CwmServerTestAccess::work_id(server)==2);
++    server.enable_realtime(); CHECK_FALSE(cwm::CwmServerTestAccess::settle(server));
++    for(int n=1;n<=40;++n)cwm::CwmServerTestAccess::sample_work(server,n*.25);
++    while(u.moves<=0)u.process_turn();
++    CHECK(cwm::CwmServerTestAccess::settle(server)); CHECK(apple);
 +}
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644

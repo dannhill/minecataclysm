@@ -404,8 +404,19 @@ class WorldSnapshot(object):
             return obj
         return None
 
+    # WorldSnapshot
+    def InventoryWork(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(56))
+        if o != 0:
+            x = self._tab.Indirect(o + self._tab.Pos)
+            from CDDA.CWM.InventoryWorkState import InventoryWorkState
+            obj = InventoryWorkState()
+            obj.Init(self._tab.Bytes, x)
+            return obj
+        return None
+
 def WorldSnapshotStart(builder):
-    builder.StartObject(26)
+    builder.StartObject(27)
 
 def Start(builder):
     WorldSnapshotStart(builder)
@@ -619,6 +630,12 @@ def WorldSnapshotAddItemTransfer(builder, itemTransfer):
 
 def AddItemTransfer(builder, itemTransfer):
     WorldSnapshotAddItemTransfer(builder, itemTransfer)
+
+def WorldSnapshotAddInventoryWork(builder, inventoryWork):
+    builder.PrependUOffsetTRelativeSlot(26, flatbuffers.number_types.UOffsetTFlags.py_type(inventoryWork), 0)
+
+def AddInventoryWork(builder, inventoryWork):
+    WorldSnapshotAddInventoryWork(builder, inventoryWork)
 
 def WorldSnapshotEnd(builder):
     return builder.EndObject()

@@ -80,6 +80,7 @@ inline bool valid_world(const CDDA::CWM::WorldSnapshot* world) {
         world->vehicles()->size() > 8192 || world->fields()->size() > 65536) return false;
     if (world->full() && (!world->chunks() || !world->chunks()->size() || world->chunks()->size() > 1024)) return false;
     if (!world->full() && world->chunks() && world->chunks()->size()) return false;
+    if (world->inventory_work() && !world->inventory_work()->command_id()) return false;
     const auto valid_items = [](const auto* items) {
         if (!items || items->size() > 8192) return false;
         uint32_t index = 0;

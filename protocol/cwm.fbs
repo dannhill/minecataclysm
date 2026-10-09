@@ -219,6 +219,13 @@ table WorldSnapshot {
     ranged_weapon: RangedWeaponState;
     reload: ReloadState;
     item_transfer: ItemTransferState;
+    // Native completion after activity, move debt and paced cost are paid.
+    inventory_work: InventoryWorkState;
+}
+
+table InventoryWorkState {
+    command_id: uint64;
+    settled: bool;
 }
 
 table SimulationState {

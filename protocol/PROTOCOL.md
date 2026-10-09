@@ -6,10 +6,21 @@ captured implementation; it does not approve its gaps. The executable schema
 is [cwm.fbs](cwm.fbs). Audit findings and evidence are in
 [M5.5](../docs/audits/M5.5.md).
 
-The current runtime requires **CWM 2.15**. This breaks the old negotiation
+The current runtime requires **CWM 2.16**. This breaks the old negotiation
 contract; schema fields and union members are appended without changing the
 existing FlatBuffers offsets. Both executables must be rebuilt together.
 The historical coverage table below is retained as audit evidence.
+
+CWM 2.16 appends WorldSnapshot.inventory_work (InventoryWorkState): a nonzero
+command identity and native settled flag. completed_command_id still identifies
+the first result publication, not paid completion. Inventory execution and valid
+native interruption replace the work identity; busy rejections do not replace
+an active operation. Settled requires no native actor, positive recovered native
+move credit and, in real time, a paid coordinator deadline. Native ACT_* move
+debits are observed on the owning thread and paced on the same clock, including
+the final partial turn and interruption; no inventory UI duration is invented.
+Disconnect/reset clears this ephemeral correlation, never the canonical actor.
+All new identity fields are semantically validated before projection.
 
 CWM 2.15 appends ItemTransferRequest (39), CancelItemTransferRequest (40),
 InventoryEntry.transfer_reason/container and WorldSnapshot.item_transfer;

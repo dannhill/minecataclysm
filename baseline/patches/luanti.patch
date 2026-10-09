@@ -1165,10 +1165,10 @@ index 0000000..2214cd4
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..77e12a6
+index 0000000..5c6265f
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,2430 @@
+@@ -0,0 +1,2515 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
@@ -1348,6 +1348,17 @@ index 0000000..77e12a6
 +    }
 +    std::optional<uint64_t> queued_cancel_activity_;
 +
++    uint64_t inventory_work_command_{0}, native_work_command_{0};
++    bool inventory_work_settled_{false}, native_work_settled_{false}, inventory_work_rejected_{false};
++    bool inventory_return_armed_{false}, inventory_return_requested_{false};
++    std::wstring inventory_work_label_;
++    std::string inventory_work_error_;
++    irr::gui::IGUIStaticText* inventory_work_text_{nullptr};
++
++    void dismiss_inventory_work() {
++        inventory_work_command_ = 0; inventory_return_requested_ = inventory_return_armed_ = false;
++        inventory_work_settled_ = inventory_work_rejected_ = false; inventory_work_error_.clear();
++    }
 +    bool equipment_open_{false}, equipment_close_{false}, equipment_dirty_{false};
 +    uint64_t next_inventory_query_{1}, inventory_query_{0}, equipment_sent_{0};
 +    uint32_t equipment_selected_{0};
@@ -1372,6 +1383,7 @@ index 0000000..77e12a6
 +            equipment_search_open_, equipment_details_open_, equipment_worn_page_, equipment_focus_search_);
 +    }
 +    void cancel_equipment() {
++        dismiss_inventory_work(); native_work_command_ = 0; native_work_settled_ = false;
 +        queued_crafting_.reset(); crafting_query_ = 0; crafting_view_ = {};
 +        crafting_close_ = crafting_open_;
 +        queued_cancel_activity_.reset(); activity_token_ = 0; weapon_token_ = 0; reloading_ = false;
@@ -1391,6 +1403,7 @@ index 0000000..77e12a6
 +    void flush_equipment() {
 +        if (!queued_equipment_ && !queued_cancel_activity_ && !queued_crafting_ && !queued_transfer_) return;
 +        if (!session_.ready() || !player_ready_ || metrics_.pending_decision || (metrics_.pause_reasons & uint32_t(1 | 4 | 16))) {
++            dismiss_inventory_work();
 +            queued_equipment_.reset(); queued_cancel_activity_.reset(); queued_crafting_.reset(); queued_transfer_.reset();
 +            item_hint_ = L"Equipaggiamento annullato: gioco in pausa o selezione scaduta.";
 +            item_hint_until_ = std::chrono::steady_clock::now() + std::chrono::seconds(4);
@@ -1406,6 +1419,16 @@ index 0000000..77e12a6
 +                static_cast<CDDA::CWM::EquipmentAction>(queued_equipment_->action));
 +        if (!connection_->send_message(bytes.data(), bytes.size())) { cancel_equipment(); return; }
 +        const bool craft = queued_crafting_.has_value(), transfer = queued_transfer_.has_value();
++        if (inventory_return_armed_) {
++            inventory_work_command_ = id; inventory_work_settled_ = inventory_work_rejected_ = false;
++            inventory_return_requested_ = true; inventory_return_armed_ = false; inventory_work_error_.clear();
++            if (cancel) inventory_work_label_ = L"Interruzione dell’attivita";
++            else if (transfer) inventory_work_label_ = queued_transfer_->action ? L"Riponi nel contenitore" : L"Deposita a terra";
++            else {
++                const std::array<const wchar_t*,6> labels{{L"Impugna", L"Riponi", L"Indossa", L"Togli", L"Mangia / bevi", L"Medica"}};
++                inventory_work_label_ = labels[queued_equipment_->action];
++            }
++        }
 +        queued_equipment_.reset(); queued_cancel_activity_.reset(); queued_crafting_.reset(); queued_transfer_.reset();
 +        if (cancel) ++cancel_activity_sent_; else if (craft) ++crafting_sent_; else if (transfer) ++transfers_sent_; else ++equipment_sent_;
 +        pending_move_ = id; move_acked_ = false; sent_move_ = std::chrono::steady_clock::now();
@@ -2174,6 +2197,13 @@ index 0000000..77e12a6
 +                    break;
 +                }
 +                metrics_.safety_stop = snap->safety_stop();
++                const auto* native_work = snap->inventory_work();
++                native_work_command_ = native_work ? native_work->command_id() : 0;
++                native_work_settled_ = native_work && native_work->settled();
++                if (inventory_work_command_ && native_work_command_ == inventory_work_command_)
++                    inventory_work_settled_ = native_work_settled_;
++                else if (inventory_work_rejected_ && snap->completed_command_id() == inventory_work_command_)
++                    inventory_work_settled_ = true; // Admission rejection has no native debit.
 +                const auto* consumption = snap->consumption();
 +                const uint64_t previous_consumption = activity_token_;
 +                const auto* transfer = snap->item_transfer(); transferring_ = transfer != nullptr;
@@ -2386,6 +2416,8 @@ index 0000000..77e12a6
 +                metrics_.continuous_motion = snap->clock() && snap->clock()->continuous_motion();
 +                metrics_.pause_reasons = snap->clock() ? snap->clock()->pause_reasons() : 0;
 +                metrics_.time_scale = snap->clock() ? snap->clock()->time_scale() : 1.f;
++                if (metrics_.safety_stop || (metrics_.pause_reasons & uint32_t(1 | 4 | 8)))
++                    inventory_return_requested_ = false;
 +                // Recovery-only is a transport/full-state pause, not an
 +                // authoritative input cancellation.  Preserve the last
 +                // actually-sent continuous vector so camera changes and the
@@ -2473,6 +2505,7 @@ index 0000000..77e12a6
 +                if (!session_.commit(*snap, *connection_)) { connection_->close(); return; }
 +                metrics_.current_revision = session_.revision;
 +                player_ready_ = session_.ready() && entities_.count(1) != 0;
++                if (!player_ready_ || entities_.at(1).hp_percent == 0) dismiss_inventory_work();
 +                metrics_.projection_ms = std::chrono::duration<float, std::milli>(
 +                    std::chrono::steady_clock::now() - projection_started).count();
 +                // ACK can arrive before simulation ends. Unlock only when its
@@ -2499,6 +2532,10 @@ index 0000000..77e12a6
 +            case CDDA::CWM::Payload::CommandAck: {
 +                const auto* ack = msg->payload_as_CommandAck();
 +                if (ack) {
++                    if (ack->command_id() == inventory_work_command_ && !ack->accepted()) {
++                        inventory_work_rejected_ = true;
++                        inventory_work_error_ = ack->error_message() ? decisionPlainText(ack->error_message()->str()) : "Azione non riuscita.";
++                    }
 +                    if (ack->command_id() == last_attack_command_) last_attack_result_ = ack->accepted() ? 1 : 0;
 +                    if (ack->command_id() == posture_command_ && !ack->accepted())
 +                        posture_input_.reject(requested_posture_);
@@ -2674,7 +2711,7 @@ index 0000000..77e12a6
 +    std::string trace_path;
 +    if (g_settings->getNoEx("cwm_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->trace_.open(trace_path);
-+        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog,ipc_connected,ipc_input,ipc_output,ipc_read_bytes,ipc_write_bytes,ipc_frames,ipc_dispatch_bytes,ipc_read_calls,ipc_write_calls,session_state,input_ready,session_id,player_id,connection_id,sequence,resync_count,entity_cache,vehicle_cache,scene_origin_x,scene_origin_y,simulation_time,realtime,pause_reasons,time_scale,sent_intent,continuous_motion,intent_x,intent_y,ipc_latency_ms,projection_ms,ground_tiles,owned_items,ground_container,ground_hover,queued_pickup,ground_visual_nodes,ground_hover_items,ground_target_items,ground_target_visual_nodes,ground_target_first_type,status_available,body_form,survival_visible,status_stamina,status_head,status_arm_l,combat_hover,attacks_sent,attack_target,attack_target_hp,attack_result,player_state_flags,player_eye_offset,visual_animation_time,visual_animation_delta,ground_item_rotation,status_hunger_level,status_thirst_level,status_fatigue_level,status_pain_level,hud_images_active,equipment_form,inventory_view,inventory_entries,equipment_selected,equipment_sent,pending_decision,consumption_token,consumption_total,consumption_remaining,cancel_consumption_sent,first_aid_token,first_aid_total,first_aid_remaining,crafting_form,crafting_view,crafting_selected,crafting_sent,crafting_token,crafting_progress,weapon_token,weapon_ammo,weapon_recoil,aim_sent,fire_sent,reload_sent,reload_token,reload_total,reload_remaining,transfer_form,transfers_sent,transfer_token,transfer_total,transfer_remaining\n";
++        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog,ipc_connected,ipc_input,ipc_output,ipc_read_bytes,ipc_write_bytes,ipc_frames,ipc_dispatch_bytes,ipc_read_calls,ipc_write_calls,session_state,input_ready,session_id,player_id,connection_id,sequence,resync_count,entity_cache,vehicle_cache,scene_origin_x,scene_origin_y,simulation_time,realtime,pause_reasons,time_scale,sent_intent,continuous_motion,intent_x,intent_y,ipc_latency_ms,projection_ms,ground_tiles,owned_items,ground_container,ground_hover,queued_pickup,ground_visual_nodes,ground_hover_items,ground_target_items,ground_target_visual_nodes,ground_target_first_type,status_available,body_form,survival_visible,status_stamina,status_head,status_arm_l,combat_hover,attacks_sent,attack_target,attack_target_hp,attack_result,player_state_flags,player_eye_offset,visual_animation_time,visual_animation_delta,ground_item_rotation,status_hunger_level,status_thirst_level,status_fatigue_level,status_pain_level,hud_images_active,equipment_form,inventory_view,inventory_entries,equipment_selected,equipment_sent,pending_decision,consumption_token,consumption_total,consumption_remaining,cancel_consumption_sent,first_aid_token,first_aid_total,first_aid_remaining,crafting_form,crafting_view,crafting_selected,crafting_sent,crafting_token,crafting_progress,weapon_token,weapon_ammo,weapon_recoil,aim_sent,fire_sent,reload_sent,reload_token,reload_total,reload_remaining,transfer_form,transfers_sent,transfer_token,transfer_total,transfer_remaining,inventory_work_command,native_work_command,native_work_settled,inventory_return,inventory_work_visible,equipment_page,equipment_filter,equipment_search_open\n";
 +    }
 +    if (g_settings->getNoEx("cwm_entity_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->entity_trace_.open(trace_path);
@@ -2694,6 +2731,7 @@ index 0000000..77e12a6
 +        if (pimpl_->safety_text_) pimpl_->safety_text_->remove();
 +        if (pimpl_->decision_text_) pimpl_->decision_text_->remove();
 +        if (pimpl_->posture_text_) pimpl_->posture_text_->remove();
++        if (pimpl_->inventory_work_text_) pimpl_->inventory_work_text_->remove();
 +        if (pimpl_->vertical_text_) pimpl_->vertical_text_->remove();
 +        if (pimpl_->terrain_text_) pimpl_->terrain_text_->remove();
 +        for (auto& [id, ent] : pimpl_->entities_) if (ent.scene_node)
@@ -2851,13 +2889,31 @@ index 0000000..77e12a6
 +        << ',' << (pimpl_->reloading_ ? pimpl_->activity_remaining_ : 0)
 +        << ',' << pimpl_->transfer_form_ << ',' << pimpl_->transfers_sent_
 +        << ',' << (pimpl_->transferring_ ? pimpl_->activity_token_ : 0) << ',' << (pimpl_->transferring_ ? pimpl_->activity_total_ : 0)
-+        << ',' << (pimpl_->transferring_ ? pimpl_->activity_remaining_ : 0) << '\n';
++        << ',' << (pimpl_->transferring_ ? pimpl_->activity_remaining_ : 0)
++        << ',' << pimpl_->inventory_work_command_ << ',' << pimpl_->native_work_command_ << ',' << pimpl_->native_work_settled_
++        << ',' << pimpl_->inventory_return_requested_ << ',' << (pimpl_->inventory_work_text_ && pimpl_->inventory_work_text_->isVisible())
++        << ',' << pimpl_->equipment_page_ << ',' << pimpl_->equipment_filter_ << ',' << pimpl_->equipment_search_open_ << '\n';
 +    pimpl_->trace_.flush();
 +}
 +
 +void CddaBridge::update(float dtime) {
 +    if (pimpl_) {
 +        pimpl_->update(dtime);
++        auto& i = *pimpl_;
++        if (i.inventory_work_command_ && i.inventory_work_settled_ && !i.pending_move_ &&
++            i.session_.ready() && i.player_ready_ && !i.metrics_.pending_decision && !i.metrics_.pause_reasons &&
++            !i.activity_token_ && i.sent_menu_pause_ != 1 && !i.equipment_open_ && !i.crafting_open_ &&
++            !i.body_form_open_ && !i.ground_container_open_) {
++            const bool returning = i.inventory_return_requested_;
++            const auto error = i.inventory_work_error_;
++            i.dismiss_inventory_work();
++            if (returning) {
++                i.equipment_open_ = i.equipment_dirty_ = true; i.equipment_close_ = false;
++                setMenuPause(true);
++                if (!i.query_inventory()) i.equipment_view_.error = "Inventario non disponibile: riprova.";
++                i.equipment_notice_ = error;
++            }
++        }
 +    }
 +}
 +
@@ -3105,6 +3161,7 @@ index 0000000..77e12a6
 +}
 +
 +void CddaBridge::toggleSimulationPause() {
++    if (pimpl_) pimpl_->inventory_return_requested_ = false;
 +    if (pimpl_) pimpl_->send_clock_control(pimpl_->metrics_.pause_reasons & 1 ?
 +        CDDA::CWM::SimulationControl::RESUME : CDDA::CWM::SimulationControl::PAUSE);
 +}
@@ -3178,10 +3235,20 @@ index 0000000..77e12a6
 +    pimpl_->crafting_dirty_ = false; return pimpl_->crafting_form();
 +}
 +
++bool CddaBridge::dismissInventoryWork() {
++    if (!pimpl_ || (!pimpl_->inventory_work_command_ && !pimpl_->inventory_return_armed_)) return false;
++    if (pimpl_->inventory_return_armed_) {
++        pimpl_->queued_equipment_.reset(); pimpl_->queued_transfer_.reset(); pimpl_->queued_cancel_activity_.reset();
++    }
++    pimpl_->dismiss_inventory_work();
++    return true;
++}
++
 +std::string CddaBridge::openEquipmentInventory() {
 +    if (!pimpl_ || !pimpl_->session_.ready() || !pimpl_->player_ready_ || pimpl_->pending_move_ ||
 +        pimpl_->body_form_open_ || pimpl_->crafting_open_ || pimpl_->ground_container_open_ || pimpl_->metrics_.pending_decision) return {};
 +    auto& i = *pimpl_;
++    i.dismiss_inventory_work();
 +    i.equipment_open_ = true; i.equipment_close_ = false; i.transfer_form_ = false;
 +    i.equipment_search_open_ = i.equipment_focus_search_ = false;
 +    setMenuPause(true);
@@ -3193,6 +3260,7 @@ index 0000000..77e12a6
 +    if (!pimpl_ || !pimpl_->equipment_open_) return;
 +    auto& i = *pimpl_;
 +    if (fields.count("quit")) {
++        i.dismiss_inventory_work();
 +        i.equipment_open_ = i.equipment_close_ = i.equipment_dirty_ = false;
 +        i.inventory_query_ = 0; i.equipment_view_ = {};
 +        return;
@@ -3200,7 +3268,7 @@ index 0000000..77e12a6
 +    if (fields.count("cancel_consume") && i.activity_token_) {
 +        if (i.metrics_.pause_reasons & ~uint32_t(2)) i.equipment_notice_ = "Riprendi il gioco prima di interrompere.";
 +        else if (!i.session_.ready() || i.pending_move_) i.equipment_notice_ = "Attendi lo stato aggiornato.";
-+        else { i.queued_cancel_activity_ = i.activity_token_; i.equipment_close_ = true; return; }
++        else { i.queued_cancel_activity_ = i.activity_token_; i.inventory_return_armed_ = true; i.equipment_close_ = true; return; }
 +        i.equipment_dirty_ = true; return;
 +    }
 +    if (fields.count("transfers") || fields.count("back")) {
@@ -3243,7 +3311,7 @@ index 0000000..77e12a6
 +            else {
 +                i.queued_transfer_ = Impl::QueuedTransfer{i.equipment_view_.view, selected->id,
 +                    insert ? i.transfer_destination_ : 0, i.transfer_quantity_, insert ? 1 : 0};
-+                i.equipment_close_ = true; return;
++                i.inventory_return_armed_ = true; i.equipment_close_ = true; return;
 +            }
 +        }
 +        i.equipment_dirty_ = true; return;
@@ -3291,7 +3359,7 @@ index 0000000..77e12a6
 +            else if (!i.session_.ready() || i.pending_move_) i.equipment_notice_ = "Attendi lo stato aggiornato e riapri l'inventario.";
 +            else {
 +                i.queued_equipment_ = Impl::QueuedEquipment{i.equipment_view_.view, selected->id, action};
-+                i.equipment_close_ = true;
++                i.inventory_return_armed_ = true; i.equipment_close_ = true;
 +                return;
 +            }
 +        }
@@ -3349,6 +3417,23 @@ index 0000000..77e12a6
 +        pimpl_->posture_text_->setOverrideColor(irr::video::SColor(255, 240, 245, 238));
 +        pimpl_->posture_text_->setBackgroundColor(irr::video::SColor(220, 24, 35, 34));
 +    }
++    if (!pimpl_->inventory_work_text_) {
++        pimpl_->inventory_work_text_ = guienv->addStaticText(L"", irr::core::rect<irr::s32>(), false, true, nullptr, -1, true);
++        pimpl_->inventory_work_text_->setOverrideColor(irr::video::SColor(255, 240, 245, 238));
++        pimpl_->inventory_work_text_->setBackgroundColor(irr::video::SColor(200, 24, 35, 34));
++        pimpl_->inventory_work_text_->setEnabled(false); // Overlay never captures input.
++    }
++    const int work_left = std::max(10, (int(screen.Width) - 420) / 2);
++    pimpl_->inventory_work_text_->setRelativePosition(irr::core::rect<irr::s32>(work_left, 20, work_left + 420, 76));
++    std::wstring work_text = pimpl_->inventory_work_label_;
++    if (pimpl_->activity_total_ > 0) work_text += L"  " + std::to_wstring(
++        std::clamp(100 - int(100.0 * pimpl_->activity_remaining_ / pimpl_->activity_total_), 0, 100)) + L"%";
++    else work_text += pimpl_->inventory_work_settled_ ? L" — conclusa" : L" — in corso";
++    work_text += L"\nI: consulta / interrompi · Esc: resta nel mondo";
++    pimpl_->inventory_work_text_->setText(work_text.c_str());
++    pimpl_->inventory_work_text_->setVisible(pimpl_->inventory_work_command_ && pimpl_->session_.ready() &&
++        !pimpl_->equipment_open_ && !pimpl_->crafting_open_ && !pimpl_->body_form_open_ &&
++        !pimpl_->ground_container_open_ && !pimpl_->metrics_.pending_decision);
 +    const int posture_left = screen.Width >= 1000 ? 420 : 10;
 +    const int posture_top = screen.Width >= 1000 ? 105 : 160;
 +    pimpl_->posture_text_->setRelativePosition(irr::core::rect<irr::s32>(posture_left, posture_top,
@@ -3601,10 +3686,10 @@ index 0000000..77e12a6
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.h b/src/cdda/cdda_bridge.h
 new file mode 100644
-index 0000000..89c7754
+index 0000000..a644c52
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.h
-@@ -0,0 +1,159 @@
+@@ -0,0 +1,161 @@
 +// Luanti C++ CWM Presentation Bridge
 +// Licensed under Apache-2.0
 +#pragma once
@@ -3720,6 +3805,8 @@ index 0000000..89c7754
 +    void craftingFields(const std::unordered_map<std::string, std::string>& fields);
 +    bool takeCraftingClose();
 +    std::string takeCraftingUpdate();
++    // Esc abandons the return intent, not the native activity/cost.
++    bool dismissInventoryWork();
 +    std::string openEquipmentInventory();
 +    void equipmentInventoryFields(const std::unordered_map<std::string, std::string>& fields);
 +    bool takeEquipmentInventoryClose();

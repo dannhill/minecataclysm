@@ -31,5 +31,18 @@ int main() {
     a.sample(t(1),false); a.sample(t(60),true); CHECK(!a.action_due());
     for(int i=1;i<=3;++i)a.sample(t(60+i*.2),true);
     CHECK(a.action_due()); CHECK(!a.tick_due());
+    // Native actors consume credit before publishing completion. Their exact
+    // debit remains payable after interruption, including sub-turn final work.
+    SimulationClock work; work.sample(t(0),true);
+    CHECK(work.charge_work(0,100)==0); CHECK(work.action_due());
+    CHECK(work.charge_work(40,100)==.4); CHECK(!work.action_due());
+    work.sample(t(.25),true); CHECK(!work.action_due());
+    work.sample(t(.4),true); CHECK(work.action_due());
+    work.charge_work(250,100); CHECK(!work.action_due());
+    work.sample(t(.4),false); work.sample(t(90),false); work.sample(t(90.1),true);
+    CHECK(!work.action_due());
+    for(int i=1;i<=9;++i) work.sample(t(90.1+i*.25),true);
+    CHECK(!work.action_due()); work.sample(t(92.6),true); CHECK(work.action_due());
+    CHECK(work.charge_work(-100,100)==0); CHECK(work.action_due());
     std::cout<<"Clock invariants PASS ("<<checks<<" checks)\n";
 }
