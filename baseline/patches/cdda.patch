@@ -1534,10 +1534,10 @@ index 0000000..d8898b7
 +} // namespace cwm
 diff --git a/src/cwm/cwm_hotbar.h b/src/cwm/cwm_hotbar.h
 new file mode 100644
-index 0000000..66dd6b0
+index 0000000..8ce7ba8
 --- /dev/null
 +++ b/src/cwm/cwm_hotbar.h
-@@ -0,0 +1,89 @@
+@@ -0,0 +1,92 @@
 +#pragma once
 +#include "cwm_inventory.h"
 +#include "cwm/cwm_session.hpp"
@@ -1577,8 +1577,11 @@ index 0000000..66dd6b0
 +        return found;
 +    }
 +    static std::array<item_location, 9> refresh(avatar& u) {
-+        const auto found = owned(u);
 +        std::array<item_location, 9> slots;
++        bool populated = false;
++        for (unsigned n = 1; n <= 9; ++n) populated |= !u.get_value(slot_key(n)).empty();
++        if (!populated) return slots;
++        const auto found = owned(u);
 +        std::set<std::string> used;
 +        for (unsigned n = 1; n <= 9; ++n) {
 +            const auto id = u.get_value(slot_key(n));
@@ -4593,7 +4596,7 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..f94a5f1
+index 0000000..69e4599
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
 @@ -0,0 +1,1667 @@
@@ -6163,8 +6166,8 @@ index 0000000..f94a5f1
 +    clear_avatar(); clear_map();
 +    avatar& u = get_avatar();
 +    REQUIRE(u.wear_item(item(itype_id("backpack_hiking"), calendar::turn)));
-+    auto* first = u.i_add(item(itype_id("rock"), calendar::turn)).get_item();
-+    auto* second = u.i_add(item(itype_id("rock"), calendar::turn)).get_item();
++    auto* first = u.i_add(item(itype_id("hat_ball"), calendar::turn)).get_item();
++    auto* second = u.i_add(item(itype_id("hat_ball"), calendar::turn)).get_item();
 +    REQUIRE(first != second);
 +    cwm::CwmServer server("unused-test-socket");
 +    cwm::CwmServerTestAccess::ready(server);
@@ -6195,7 +6198,7 @@ index 0000000..f94a5f1
 +    CHECK(u.get_value(cwm::Hotbar::slot_key(1)).empty());
 +    u.i_add(removed);
 +    CHECK_FALSE(cwm::Hotbar::resolve(u,1,binding));
-+    // A different rock is never silently substituted for the original binding.
++    // A different hat is never silently substituted for the original binding.
 +    CHECK(u.has_item(*second));
 +    CHECK(second_id != first_id);
 +}
@@ -6258,7 +6261,7 @@ index 0000000..f94a5f1
 +    item loaded;loaded.deserialize(json_loader::from_string(saved.str()).get_object());
 +    CHECK(loaded.get_var(cwm::Hotbar::item_key)==token);CHECK(loaded.charges==23);
 +    // Cloning native instances can copy metadata; an ambiguous binding is cleared.
-+    auto rock_location=u.i_add(item(itype_id("rock"),calendar::turn));
++    auto rock_location=u.i_add(item(itype_id("hat_ball"),calendar::turn));
 +    item& rock=*rock_location;
 +    REQUIRE(cwm::Hotbar::bind(u,2,item_location(u,&rock),"").empty());
 +    item clone(rock);u.i_add(clone);cwm::Hotbar::refresh(u);

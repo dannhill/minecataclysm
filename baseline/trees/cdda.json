@@ -37327,7 +37327,7 @@
   {
     "path": "src/cwm/cwm_hotbar.h",
     "mode": "100644",
-    "sha256": "45f8dc5d3bc8068f342b45e777e25d9298bd726ccdbc0b48a1c03489566c738f"
+    "sha256": "a1e3d62498c94afa42800b99cceafb4ffd1726a88dd84dcf340d52e4931ef440"
   },
   {
     "path": "src/cwm/cwm_inventory.h",
@@ -40897,7 +40897,7 @@
   {
     "path": "tests/cwm_pickup_test.cpp",
     "mode": "100644",
-    "sha256": "739b56e328ad29ce91355aa2ca514b8401f03348a2ef1061c39f7907e65035a1"
+    "sha256": "8eb4a05ea8831e180a2f8b5d700358b34fd4d1df6b00bab51be415fa1df78a50"
   },
   {
     "path": "tests/cwm_projection_test.cpp",
