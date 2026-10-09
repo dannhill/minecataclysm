@@ -284,7 +284,12 @@ def main():
                 if not args.action_driven:
                     wait(lambda r: int(r['consumption_token']) > 0)
                     progress = latest();token = progress['consumption_token']
-                    if args.automatic_return:shot('work-panel.png')
+                    if args.automatic_return:
+                        shot('work-panel.png')
+                        image=Image.open(out/'work-panel.png').convert('RGB')
+                        work_left=max(10,(image.width-420)//2);work_top=max(165,image.height-270)
+                        panel=image.crop((work_left,work_top,work_left+420,work_top+56))
+                        check('nonmodal_work_text_is_drawn_above_hud_not_covered_by_debug',sum(min(rgb)>180 and max(rgb)-min(rgb)<30 for rgb in panel.getdata())>100)
                     check('native_progress_announced_before_serving_removed', int(progress['consumption_total']) == first.ConsumeMoves() and int(progress['consumption_remaining']) > 0)
                     xdo('keydown','w');time.sleep(.5);xdo('keyup','w');time.sleep(.3)
                     check('movement_during_meal_is_not_deferred', latest()['target_x'] == progress['target_x'] and latest()['target_z'] == progress['target_z'])

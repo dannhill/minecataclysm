@@ -1174,10 +1174,10 @@ index 0000000..2214cd4
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..5c6265f
+index 0000000..71d029b
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,2515 @@
+@@ -0,0 +1,2516 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
@@ -3433,7 +3433,8 @@ index 0000000..5c6265f
 +        pimpl_->inventory_work_text_->setEnabled(false); // Overlay never captures input.
 +    }
 +    const int work_left = std::max(10, (int(screen.Width) - 420) / 2);
-+    pimpl_->inventory_work_text_->setRelativePosition(irr::core::rect<irr::s32>(work_left, 20, work_left + 420, 76));
++    const int work_top = std::max(165, int(screen.Height) - 270);
++    pimpl_->inventory_work_text_->setRelativePosition(irr::core::rect<irr::s32>(work_left, work_top, work_left + 420, work_top + 56));
 +    std::wstring work_text = pimpl_->inventory_work_label_;
 +    if (pimpl_->activity_total_ > 0) work_text += L"  " + std::to_wstring(
 +        std::clamp(100 - int(100.0 * pimpl_->activity_remaining_ / pimpl_->activity_total_), 0, 100)) + L"%";
