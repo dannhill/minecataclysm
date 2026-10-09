@@ -284,7 +284,7 @@ def main():
                 check('batch_query_updates_native_duration',view.Batch()==2 and e.ExpectedMoves()>=3200)
                 start();choose(approve=True)
                 if not args.action_driven:
-                    wait(lambda r:int(r['crafting_token'])>0);r=latest();token=r['crafting_token']
+                    r=wait(lambda r:int(r['crafting_token'])>0 and 0<int(r['crafting_progress'])<10000000);token=r['crafting_token']
                     check('native_craft_counter_is_not_meal_or_firstaid_timer',0<int(r['crafting_progress'])<10000000 and int(r['consumption_token'])==0 and int(r['first_aid_token'])==0)
                     xdo('keydown','w');time.sleep(.45);xdo('keyup','w')
                     check('crafting_does_not_queue_held_movement',latest()['target_x']==r['target_x'] and latest()['target_z']==r['target_z'])
