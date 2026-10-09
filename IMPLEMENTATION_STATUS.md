@@ -1,18 +1,27 @@
 # Implementation status
 
-Latest manual feedback: **UX-03 focused rechecks 1–3 PASS** (search, pause
-clouds, quantity/errors). **Hotbar 1 FAIL**, ergonomics: remove Assign/Clear
-and provide drag-and-drop throughout the inventory and its subviews;
-**hotbar 2–4 untested**. [Exact feedback](docs/source/ux03-drag-feedback-2026-10-09.md).
-The backlog is now **11 open = 10 PENDING + 1 FAIL**, including the previous
-four UI/mapping and three UX-02 exception probes. Existing PASS remain accepted.
-**Next step: UX-03D complete inventory drag-and-drop**, before language/aim.
-[Source-based plan](docs/design/inventory-drag-and-drop.md).
-This feedback/planning update changes no production runtime; the installed
-CWM 2.17 still uses the rejected Assign/Clear interaction. Historical scoped
-verification below is not user acceptance of that interaction.
+Current scoped delivery: **UX-03D inventory drag-and-drop**, CWM **2.18**.
+Assign/Clear buttons are removed. Grid, quick slots, hand, worn-item pages,
+owned-container icons/rows and explicit Ground zone use semantic drag input.
+Short click still selects; Esc/outside release cancels. Quick-slot swaps are
+atomic and grid ordering persists on actual native items as optional UI
+metadata. Equipment/transfers still execute paid native actions and decisions,
+then return only after authoritative completion. Both reconstructed runtimes
+are installed for normal start.sh (accepted continuous 4x), with rollback copies.
+[Report and scoped receipts](docs/fixes/inventory-drag-and-drop.md).
 
-Current scoped delivery (2026-10-09): **UX-03 interactive persistent hotbar**,
+Latest manual feedback: **UX-03 focused rechecks 1–3 PASS** (search, pause
+clouds, quantity/errors). **Hotbar 1 FAIL** was the rejected Assign/Clear
+interaction; [exact feedback](docs/source/ux03-drag-feedback-2026-10-09.md).
+It now has a replacement drag recheck PENDING; **2–4 are still untested**.
+Backlog **13 PENDING**: four hotbar, two new equipment/container drag checks
+and the previous seven UI/UX-02 exceptions. Existing PASS remain accepted;
+automation does not infer manual acceptance. No user testing required today.
+**Next scheduled step: product language (English default, Italian WIP),
+then held RMB aim/context priority**. External containers remain the next
+essential inventory extension. [Design](docs/design/inventory-drag-and-drop.md).
+
+Previous scoped delivery (2026-10-09): **UX-03 interactive persistent hotbar**,
 CWM **2.17**. Nine explicitly assigned/removable references are independent of
 inventory ordering/capacity. Wheel/numbers select without equipping; **G** requests
 the eligible native operation and pays access/work costs. Actual hand and selected
@@ -27,8 +36,8 @@ quantity layout, prominent native rejection, contextual color-tag sanitation,
 water_clean-only icon override and native spoilage cue. Generated item batches
 are unchanged. Clouds share the paused visual clock. Normal start.sh defaults to
 the accepted continuous **4x** mode; explicit ordinary/comparison options remain.
-Both reconstructed 2.17 runtimes are installed together with previous-pair copies;
-actual installed save/reload checks and exact hashes are in the delivery receipts.
+The earlier 2.17 delivery installed both runtimes with previous-pair copies;
+its installed save/reload checks and exact hashes remain in historical receipts.
 English default / Italian WIP, held RMB aiming, real wielded rig/UV/animations,
 audio and richer native dialogs remain scheduled, not delivered by this slice.
 
@@ -50,7 +59,7 @@ whereas Interrompi requests native cancellation. The original equipment fixture
 wears only a backpack; it does not contain an unseen full outfit.
 Body-region clothing/encumbrance, persistent selection across queries and
 nearby external containers/selected-quantity collection still need dedicated
-semantic interfaces. Complete inventory drag-and-drop now precedes language/aim feedback;
+semantic interfaces. Complete inventory drag-and-drop is delivered; language/aim feedback follows;
 external containers remain the next essential inventory extension.
 The broader M5.5 gate remains historical FAILED and full SAVE-001 stays OPEN.
 

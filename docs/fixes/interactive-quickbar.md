@@ -5,8 +5,9 @@ Consegna del 2026-10-09, CWM **2.17**. Accettazione grafica dell'utente
 SAVE-001 completo resta OPEN. **Riscontro successivo:** Ricontrolli UX-03
 1–3 PASS; hotbar 1 FAIL ergonomico, 2–4 non provati. La richiesta
 [drag-and-drop completo](../design/inventory-drag-and-drop.md) sostituirà il
-flusso Assegna/Svuota; non è ancora implementata. Il contatore 14 sotto e le
-ricevute descrivono la consegna, il backlog attuale ha 11 elementi aperti.
+flusso Assegna/Svuota; ora è implementata e installata in
+[UX-03D/CWM 2.18](inventory-drag-and-drop.md). Il contatore 14 sotto e le
+ricevute descrivono la consegna storica, il backlog attuale ha 13 PENDING.
 Identità sorgenti, binari, comandi, ambiente e
 ricevute: [evidenze esatte](interactive-quickbar-evidence.json).
 

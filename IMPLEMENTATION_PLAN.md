@@ -31,17 +31,26 @@ separa le fetta giocabili dalle parti ancora pianificate.
 
 [Riscontro registrato](docs/source/ux03-drag-feedback-2026-10-09.md):
 Ricontrolli UX-03 **1–3 PASS**; hotbar **1 FAIL** per ergonomia,
-**2–4 non provati**. Il backlog corrente è **11 aperti: 10 PENDING + 1 FAIL**.
+**2–4 non provati**. Il backlog alla ricezione era **11 aperti: 10 PENDING + 1 FAIL**.
 I contatori sotto descrivono le consegne precedenti.
 
-Prossimo task **UX-03D**, prima di lingua/mira: rimuovere Assegna/Svuota e
+**UX-03D consegnata**, prima di lingua/mira: rimossi Assegna/Svuota e
 adattare a drag-and-drop griglia, hotbar, mano, indossati e sottoviste dei
 contenitori, conservando raccolta e costi nativi. Il gesto su mano/vestiti/
 contenitori richiede un'azione CDDA; disposizione grafica/riferimenti non
 creano tasche nuove. Scambio slot coerente, quantità esplicite, annullamento
 ed errori leggibili; nessuna identità dedotta dal nome e nessuna mutazione
 Luanti di gameplay. [Piano operativo dai sorgenti](docs/design/inventory-drag-and-drop.md).
-Solo pianificato in questa turnazione; runtime CWM 2.17 invariato.
+Ora CWM **2.18**, con entrambi i runtime installati nel normale start.sh.
+Il riordino usa ranghi compatti opzionali sugli oggetti nativi, non capacità
+o tasche nuove; una casella vuota porta l'oggetto alla fine, senza buchi
+persistenti. Scambio hotbar atomico con verifica di entrambe le identità.
+[Consegna ed evidenze](docs/fixes/inventory-drag-and-drop.md).
+Backlog **13 PENDING**: ricontrollo DND di 1, hotbar 2–4, due nuove prove
+mano/indossati e contenitori, sette precedenti. Nessun PASS manuale dedotto.
+Prossimo intervento previsto: lingua inglese/italiano WIP, poi mira con RMB
+mantenuto e priorità contestuali; contenitori esterni restano la successiva
+estensione essenziale dell'inventario. M5.5/SAVE-001 restano separati.
 
 ## Riscontro inventario/interfacce — 2026-10-09
 

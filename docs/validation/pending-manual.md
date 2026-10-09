@@ -1,14 +1,16 @@
 # Validazioni manuali del playable core
 
-Stato corrente: **11 punti aperti = 10 PENDING + 1 FAIL**. Il
+Stato corrente: **13 punti PENDING**, senza richiedere prove oggi. Il
 [riscontro UX-03 più recente](../source/ux03-drag-feedback-2026-10-09.md)
-valida **Ricontrolli UX-03 1–3 PASS**; la checklist hotbar ha **1 FAIL**
-per il flusso Assegna/Svuota e **2–4 PENDING**, non ancora provati.
+valida **Ricontrolli UX-03 1–3 PASS**. Il precedente **hotbar 1 FAIL**
+per Assegna/Svuota viene ora sostituito da un **ricontrollo DND PENDING**;
+**2–4 restano PENDING**, non ancora provati. Non si deduce un PASS dal fix.
 Restano quattro vecchi ricontrolli UI/mapping e tre eccezioni UX-02.
-La richiesta di drag-and-drop completo è ora il
-[prossimo intervento pianificato](../design/inventory-drag-and-drop.md),
-non una correzione già installata. Nessun test nuovo da fare ora: il
-ricontrollo del FAIL sarà riscritto alla consegna della nuova interazione.
+Il [drag-and-drop UX-03D](../fixes/inventory-drag-and-drop.md) è installato
+nel normale start.sh: quattro punti hotbar (incluso il ricontrollo di 1),
+due nuovi per mano/indossati e contenitori, più i sette vecchi punti pendenti.
+Gli altri PASS restano accettati; le verifiche automatiche non sostituiscono
+il tuo giudizio sui nuovi gesti. Puoi eseguire queste prove in seguito.
 
 Il [riscontro precedente ed errata corrige](../source/core-ux-validation-2026-10-09.md)
 accetta 1–4 di tiro/ricarica, quantità/trasferimenti, UX-01 e UX-02 (16 PASS),
@@ -429,22 +431,27 @@ di errore: non chiedere di terminare processi della partita personale.
    Nessun input di gioco parte mentre manca lo stato autorevole completo.
 
 
-## UX-03 — Hotbar assegnabile e persistente — 1 FAIL; 2–4 PENDING
+## UX-03 — Hotbar con drag-and-drop — 1 RICONTROLLO PENDING; 2–4 PENDING
 
-**1 FAIL di ergonomia**, segnalato dall'utente: eliminare Assegna/Svuota e
-rendere drag-and-drop tutte le parti dell'inventario. I punti **2–4 non sono
-ancora testati**. La prova 1 sotto descrive il flusso rifiutato e resta come
-cronologia, senza chiedere di ripeterla. Il nuovo ricontrollo arriverà con
-UX-03D; questa versione a pulsanti è ancora quella installata.
+Il precedente punto **1 FAIL di ergonomia** riguarda la versione a pulsanti
+CWM 2.17, conservata nel [riscontro](../source/ux03-drag-feedback-2026-10-09.md)
+e nel [report storico](../fixes/interactive-quickbar.md). UX-03D/CWM 2.18
+rimuove quei due pulsanti e riscrive soltanto la prova 1. **2–4 sono ancora
+non testati**; la disposizione della griglia viene ora compresa nella prova 4.
 
 Disponibile con I anche nel normale `./start.sh`: movimento continuo 4×
 predefinito. `./equipment-demo.sh --fresh` crea una copia isolata con mazza,
 zaino, cappello e sassi. Gli slot inizialmente vuoti sono riferimenti rapidi,
 non tasche nuove. Non occorre ripetere i PASS inventario/equipaggiamento.
 
-1. **Assegna e svuota**: I → clic su mazza nella griglia → clic sullo slot 1
-   in basso → **Assegna allo slot 1**. Ripeti con cappello nello slot 2 e
-   sasso nel 3. Svuota lo slot 1: la mazza resta nella mano/inventario.
+1. **Trascina, scambia, rimuovi**: I non deve mostrare Assegna/Svuota.
+   Trascina mazza, cappello e un sasso dalla griglia negli slot 1, 2, 3:
+   le istanze assegnate lasciano la griglia principale, senza copie o perdita.
+   Trascina 2 su 3: i riferimenti devono scambiarsi; ripeti per ripristinarli.
+   Trascina la mazza dallo slot 1 su una casella vuota della griglia:
+   scompare solo il riferimento rapido, la mazza resta in mano/posseduta.
+   Prova Esc durante un gesto e rilascio fuori dal menu: nessun deposito.
+   Un clic breve continua a selezionare/aprire i dettagli.
    Fuori da I, icone coerenti con l'inventario; selezione **oro**, mano reale
    **azzurra**. L'oggetto in mano compare anche nel riquadro separato a destra
    quando non è assegnato a uno slot.
@@ -462,7 +469,33 @@ non tasche nuove. Non occorre ripetere i PASS inventario/equipaggiamento.
 4. **Persistenza**: lascia cappello/sasso assegnati e almeno uno indossato o
    impugnato; esci e rilancia `./equipment-demo.sh` senza `--fresh`. I e HUD
    devono conservare gli stessi oggetti, non i primi della nuova lista.
-   Svuotare/riassegnare deve restare coerente al riavvio, senza duplicazioni.
+   Prima di uscire riordina anche due oggetti non assegnati nella griglia:
+   trascina uno su un altro per inserirlo prima; su uno spazio vuoto lo porti
+   alla fine. Al riavvio l'ordine resta. Non è una griglia con buchi salvati,
+   né uno spostamento fra tasche. Rimozione/riassegnazione rimangono coerenti,
+   senza duplicazioni.
+
+## UX-03D — Mano, indossati e contenitori — PENDING (2), rinviabili
+
+1. **Equipaggiamento col gesto**: `./equipment-demo.sh --fresh`, I.
+   Trascina il cappello dalla griglia in uno spazio Indossati, poi dal
+   pannello Indossati a una casella vuota della griglia: Indossa/Togli nativi,
+   tempo che scorre durante l'azione e ritorno a I soltanto dopo il costo.
+   Trascina la mazza dal riquadro In mano alla griglia; prova Annulla sulla
+   scelta CDDA, poi ripeti scegliendo dove riporla. Trascina un sasso in mano.
+   In F7 il gesto fisico è rifiutato senza esecuzione ritardata alla ripresa.
+   Riordinare/assegnare riferimenti rimane una scelta grafica gratuita.
+2. **Contenitori e Terra**: `./transfer-demo.sh --fresh`, I → Quantità e
+   trasferimenti. Seleziona le 30 munizioni, imposta 7 e trascinale sulla
+   riga del sacchetto: al termine 7 dentro, 23 nella sorgente originale.
+   Seleziona la voce delle munizioni annidate (non il sacchetto), imposta 3
+   e trascina su **Terra**: 4 restano dentro. Trascinare poi il sacchetto su
+   Terra deve depositarlo con il contenuto. La mazza sulla bottiglia mostra
+   un rifiuto evidente e conserva la mazza. Fuori dal menu/Esc annullano;
+   deposito solo sulla zona esplicita Terra. Nel pannello principale puoi
+   trascinare un oggetto trasferibile sull'icona di un contenitore, senza
+   aprire questa sottovista; per quantità precise usa il pannello avanzato.
+   Le destinazioni evidenziate restano soggette alla verifica di capacità CDDA.
 
 ## Ricontrolli UX-03 — VALIDATA: 1–3 PASS
 

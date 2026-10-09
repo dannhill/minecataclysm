@@ -1,0 +1,448 @@
+{
+  "scope": "UX-03D inventory drag-and-drop; not full SAVE-001 or M5.5 conformance",
+  "date": "2026-10-09",
+  "status": "scoped automated verification PASS; manual acceptance PENDING",
+  "source_commit": "4124f24c1c9597b744203aef4a8def4ec36ab201",
+  "build_source_commit": "65ec1e1948197b4ac616ddaa215b1d6f26c6d691",
+  "post_build_changes": "Root GUI test fixtures and protocol documentation only; production forks, schema and generated/runtime protocol sources unchanged since build",
+  "runtime_protocol": "2.18",
+  "captured_sources": {
+    "cdda": {
+      "url": "https://github.com/CleverRaven/Cataclysm-DDA.git",
+      "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+      "shallow": true,
+      "patch": "baseline/patches/cdda.patch",
+      "patch_sha256": "13b32c49e20d225c76c4f20eb16064810d28c466528be9554eb643a2e65aea0d",
+      "tree_inventory": "baseline/trees/cdda.json",
+      "tree_sha256": "641a6b817ed27b97fe53cbd3fa83bd73afda014405ae79fd8f1d5ea710717aaf",
+      "file_count": 8587,
+      "original_status": " M src/CMakeLists.txt\n M src/avatar.cpp\n M src/avatar_action.cpp\n M src/avatar_action.h\n M src/character.cpp\n M src/character_body.cpp\n M src/character_inventory.cpp\n M src/craft_command.cpp\n M src/craft_command.h\n M src/crafting.cpp\n M src/crafting.h\n M src/do_turn.cpp\n M src/do_turn.h\n M src/game.cpp\n M src/game.h\n M src/handle_action.cpp\n M src/iexamine.cpp\n M src/item.cpp\n M src/iuse_actor.cpp\n M src/melee.cpp\n M src/output.cpp\n M src/pickup.cpp\n M src/ranged.cpp\n M src/ranged.h\n M src/recipe.cpp\n M src/recipe.h\n M src/ui.cpp\n M tests/CMakeLists.txt\n M tests/test_main.cpp\n?? src/cwm/cwm_crafting.h\n?? src/cwm/cwm_hotbar.h\n?? src/cwm/cwm_inventory.h\n?? src/cwm/cwm_main.cpp\n?? src/cwm/cwm_map_exporter.cpp\n?? src/cwm/cwm_map_exporter.h\n?? src/cwm/cwm_ranged.h\n?? src/cwm/cwm_server.cpp\n?? src/cwm/cwm_server.h\n?? src/cwm/cwm_status_gauges.h\n?? src/cwm_motion.cpp\n?? src/cwm_motion.h\n?? src/safe_mode_actions.h\n?? tests/cwm_pickup_test.cpp\n?? tests/cwm_projection_test.cpp\n?? tests/cwm_runtime_test.cpp\n"
+    },
+    "luanti": {
+      "url": "https://github.com/luanti-org/luanti.git",
+      "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
+      "shallow": true,
+      "patch": "baseline/patches/luanti.patch",
+      "patch_sha256": "07526ed2b6f93e9bb3f38adf9c7be4bac63e2e03286c76f45b4c8ae4e4aa7f93",
+      "tree_inventory": "baseline/trees/luanti.json",
+      "tree_sha256": "19aa4636167042eb3bfc2d5b8bbe9758ae03418b50d19ee8e9bc45dd9ffbf91a",
+      "file_count": 2260,
+      "original_status": " M builtin/settingtypes.txt\n M src/CMakeLists.txt\n M src/client/CMakeLists.txt\n M src/client/client.cpp\n M src/client/clientenvironment.cpp\n M src/client/game.cpp\n M src/client/hud.cpp\n M src/client/inputhandler.cpp\n M src/client/keys.h\n M src/client/mesh_generator_thread.cpp\n M src/client/mesh_generator_thread.h\n M src/defaultsettings.cpp\n M src/gui/guiFormSpecMenu.cpp\n M src/gui/guiFormSpecMenu.h\n M src/gui/guiScene.cpp\n M src/network/clientpackethandler.cpp\n M src/server/player_sao.cpp\n M src/unittest/test_mapblock.cpp\n?? src/cdda/avatar_status.h\n?? src/cdda/cdda_bridge.cpp\n?? src/cdda/cdda_bridge.h\n?? src/cdda/crafting_inventory.h\n?? src/cdda/decision_text.h\n?? src/cdda/equipment_inventory.h\n?? src/cdda/ground_item_formspec.h\n?? src/cdda/ground_item_projection.h\n?? src/cdda/ground_item_visual.h\n?? src/cdda/posture_input.h\n?? src/cdda/quickbar.h\n"
+    },
+    "mineclonia": {
+      "url": "https://github.com/mark-wiemer/mineclonia.git",
+      "commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+      "shallow": true,
+      "patch": "baseline/patches/mineclonia.patch",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree_inventory": "baseline/trees/mineclonia.json",
+      "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36",
+      "file_count": 9359,
+      "original_status": ""
+    }
+  },
+  "installed_binaries": {
+    "cdda/build/src/cdda-server": {
+      "sha256": "bffbb91d60e480ec084215a144cafe6f96e767a52b73e756e0856616f7c7dbb6",
+      "previous_sha256": "f0e113a1c3aaa9eef99992e723e3e83c83d6ed566f1fe45024d1d6d6dab35cd2",
+      "rollback": "artifacts/ux03-drag-20261009/cdda-previous-runtime"
+    },
+    "luanti/bin/luanti": {
+      "sha256": "3a890d7de31b9a7803e5c03fc10ec957fec48d6a451a3cffa9e236ff1347efdd",
+      "previous_sha256": "154b4b7f39c40aeb5becb9ed8eee8880c7eebf63c957c988056757458b6bb78e",
+      "rollback": "artifacts/ux03-drag-20261009/luanti-previous-runtime"
+    }
+  },
+  "install_receipt": "artifacts/ux03-drag-20261009/install.json",
+  "environment": {
+    "platform": "Linux-7.0.11-76070011-generic-x86_64-with-glibc2.35",
+    "os": "Pop!_OS 22.04 LTS",
+    "compiler": "GCC 11.4.0",
+    "gui": "private Xvfb 1280x800, -noreset; Mesa software renderer; xdotool; actual Luanti renderer; byte-transparent CWM relay; isolated cloned fixtures"
+  },
+  "build_mode": "incremental reconstruction refresh, caches retained; not a cold or clean build",
+  "build_commands": [
+    "cmake --build cdda/build --target cdda-server cata_test -j3",
+    "cmake --build luanti/build -j3",
+    "cmake --build build/protocol -j3"
+  ],
+  "verification": {
+    "native": {
+      "status": "PASS",
+      "cases": 173,
+      "assertions": 185813,
+      "filter": "[cwm],[pickup],[item],[reload]",
+      "seed": 42,
+      "log": "artifacts/ux03-drag-20261009/tests-native-final.log",
+      "command": "build/tests/cata_test '[cwm],[pickup],[item],[reload]' --rng-seed 42 --user-dir=<isolated artifact directory>",
+      "workdir": "<reconstructed workspace>/cdda"
+    },
+    "protocol": {
+      "status": "PASS",
+      "tests": 10,
+      "command": "ctest --test-dir build/protocol --output-on-failure"
+    },
+    "luanti": {
+      "status": "PASS",
+      "tests": 308,
+      "modules": 47,
+      "catch_cases": 4,
+      "catch_assertions": 648,
+      "command": "luanti/bin/luanti --run-unittests"
+    },
+    "source_replay": {
+      "status": "PASS",
+      "receipt": "artifacts/ux03-drag-20261009/source-replay.json",
+      "note": "Captured production manifests unchanged by subsequent root test/documentation commits"
+    },
+    "gui": [
+      {
+        "name": "quickbar-reconstructed",
+        "phase": "reconstructed",
+        "status": "PASS",
+        "source_commit": "65ec1e1948197b4ac616ddaa215b1d6f26c6d691",
+        "checks": 31,
+        "results": {
+          "actual_start_ready": true,
+          "native_inventory_opened": true,
+          "normal_launcher_defaults_to_continuous_4x": true,
+          "fresh_quickbar_has_no_implicit_first_nine_items": true,
+          "search_initially_visible_without_keyboard_focus": true,
+          "click_focus_enables_search": true,
+          "background_click_disables_search_keyboard_input": true,
+          "escape_cancels_drag_without_closing_or_mutating": true,
+          "drag_grid_order_is_persistent_native_ui_metadata": true,
+          "slot_1_references_exact_native_bat": true,
+          "slot_2_references_exact_native_hat_ball": true,
+          "slot_3_references_exact_native_rock": true,
+          "assignment_preserves_native_time_and_hand": true,
+          "drag_occupied_hotbar_swaps_both_exact_instances_atomically": true,
+          "clear_removes_reference_without_removing_item": true,
+          "slot_selection_does_not_equip_or_use": true,
+          "quick_wield_retains_native_disposal_choice": true,
+          "quick_wield_preserves_binding_and_pays_native_time": true,
+          "quick_clothing_uses_native_wear": true,
+          "same_frame_slot_and_use_targets_new_selection": true,
+          "world_quick_use_does_not_force_inventory": true,
+          "paused_quick_use_is_not_sent": true,
+          "paused_quick_key_does_not_replay_on_resume": true,
+          "reconnect_restores_native_shortcut_identities": true,
+          "quickbar_changes_leave_native_contents_intact": true,
+          "byte_relay_completed_without_errors": true,
+          "equipment_save_readable_by_pristine_native_core": true,
+          "canonical_save_has_each_fixture_item_once": true,
+          "canonical_save_records_selected_rock_as_weapon": true,
+          "canonical_save_records_backpack_worn": true,
+          "pristine_core_retains_optional_bookmarks_and_exact_item_metadata": true
+        },
+        "receipt": "artifacts/ux03-drag-20261009/quickbar-reconstructed/checks.json",
+        "receipt_sha256": "da903569300a65df3baf49a010dd3d756a398223ad35a9f3c13f7ccdefeb0c06",
+        "log": "artifacts/ux03-drag-20261009/gui-quickbar-reconstructed.log",
+        "log_sha256": "2db9f383d3ba738f83a21235360f78c24558d3a435cd2a3c64635a8b03a9648c"
+      },
+      {
+        "name": "physical-final",
+        "phase": "reconstructed",
+        "status": "PASS",
+        "source_commit": "ca337b7bf5268ef15468d3912b323869fad6a522",
+        "checks": 12,
+        "results": {
+          "actual_start_ready": true,
+          "native_inventory_opened": true,
+          "drag_into_wear_area_runs_native_wear": true,
+          "drag_worn_to_grid_runs_native_takeoff": true,
+          "drag_hand_to_grid_runs_native_stow": true,
+          "drag_into_hand_runs_native_wield": true,
+          "physical_drags_pay_native_time": true,
+          "byte_relay_completed_without_errors": true,
+          "equipment_save_readable_by_pristine_native_core": true,
+          "canonical_save_has_each_fixture_item_once": true,
+          "canonical_save_records_selected_rock_as_weapon": true,
+          "canonical_save_records_backpack_worn": true
+        },
+        "receipt": "artifacts/ux03-drag-20261009/physical-final/checks.json",
+        "receipt_sha256": "d613f9a8ce52a9448eeed808b3590b4d264ab8af41df2c97b57681a9df9e1f4a",
+        "log": "artifacts/ux03-drag-20261009/gui-physical-final.log",
+        "log_sha256": "9f7db57ba05e46880ad8080313da2d34605573a1a9a9ed693b59b960361d53e2"
+      },
+      {
+        "name": "transfer-rendered",
+        "phase": "reconstructed",
+        "status": "PASS",
+        "source_commit": "78826913896f5a5772a2104f266c384cc7355ae2",
+        "checks": 31,
+        "results": {
+          "actual_start_ready": true,
+          "fixture_supplies_native_ammo_and_container": true,
+          "reading_and_movement_in_menu_change_no_time_or_position": true,
+          "excess_quantity_remains_in_menu_without_command": true,
+          "insert_uses_paid_native_activity": true,
+          "menu_freezes_native_work_and_time": true,
+          "native_cancel_keeps_all_thirty_rounds": true,
+          "paid_insert_returns_to_same_transfer_panel": true,
+          "native_transfer_splits_exact_seven": true,
+          "native_transfer_leaves_twenty_three": true,
+          "native_provenance_identifies_destination": true,
+          "partial_drop_preserves_four_in_nested_container": true,
+          "loaded_container_dropped_as_one_native_object": true,
+          "only_twenty_three_rounds_remain_owned": true,
+          "native_size_rejection_preserves_bat": true,
+          "manual_pause_blocks_transfer_without_queuing": true,
+          "closing_transfer_menu_preserves_manual_pause": true,
+          "resume_does_not_replay_rejected_transfer": true,
+          "reconnect_closes_stale_item_handles": true,
+          "reconnect_replays_no_transfer": true,
+          "resync_restores_native_twenty_three_rounds": true,
+          "actual_runtime_survives": true,
+          "byte_relay_completed_without_errors": true,
+          "transfer_save_readable_by_pristine_native_core": true,
+          "canonical_total_ammo_conserved": true,
+          "canonical_bag_exists_once": true,
+          "canonical_bat_and_bottle_survive": true,
+          "canonical_owned_ammo_is_twenty_three": true,
+          "canonical_dropped_container_keeps_four_rounds": true,
+          "canonical_ground_receives_three_loose_rounds": true,
+          "canonical_position_unchanged": true
+        },
+        "receipt": "artifacts/ux03-drag-20261009/transfer-rendered/checks.json",
+        "receipt_sha256": "7fa3701cc23af503edbf3b4c907a2c015db367e265ce1888e13d39236dcfa956",
+        "log": "artifacts/ux03-drag-20261009/gui-transfer-rendered.log",
+        "log_sha256": "f0c3f125730ec948894302a80c3b1009f745f5aeabc98a8db89174d9dcc33312"
+      },
+      {
+        "name": "consumption-regression",
+        "phase": "reconstructed",
+        "status": "PASS",
+        "source_commit": "ca337b7bf5268ef15468d3912b323869fad6a522",
+        "checks": 37,
+        "results": {
+          "actual_start_ready": true,
+          "native_inventory_opened": true,
+          "food_and_drink_native_actions_and_duration": true,
+          "liquid_nested_in_native_bottle": true,
+          "non_food_cannot_be_consumed": true,
+          "rotten_food_has_native_warning_without_consumption": true,
+          "spoilage_badge_uses_native_state": true,
+          "inventory_query_remains_readonly_and_paused": true,
+          "nonmodal_work_text_is_drawn_above_hud_not_covered_by_debug": true,
+          "native_progress_announced_before_serving_removed": true,
+          "movement_during_meal_is_not_deferred": true,
+          "started_meal_keeps_item_until_native_finish": true,
+          "menu_freezes_native_consumption_progress": true,
+          "cancel_reaches_busy_actor_immediately": true,
+          "cancel_preserves_food_and_quantity": true,
+          "resumed_meal_has_new_cancellation_token": true,
+          "meal_automatically_returns_only_after_native_settlement": true,
+          "meal_consumes_exactly_one_native_serving": true,
+          "drink_automatically_returns_after_native_cost": true,
+          "drink_consumes_one_charge_not_bottle": true,
+          "native_decision_precedes_automatic_return": true,
+          "declined_native_choice_safely_returns": true,
+          "declining_native_warning_preserves_rotten_food": true,
+          "declining_native_warning_clears_activity": true,
+          "paused_consume_click_not_queued": true,
+          "unpause_does_not_execute_rejected_consume": true,
+          "real_reconnect_invalidates_old_consumption_selection": true,
+          "resync_restores_actual_remaining_water": true,
+          "actual_runtime_survives_consumption": true,
+          "byte_relay_completed_without_errors": true,
+          "consumption_save_readable_by_pristine_native_core": true,
+          "canonical_consumption_items_never_duplicated": true,
+          "canonical_water_has_three_native_charges": true,
+          "canonical_bottle_and_rock_remain_owned": true,
+          "canonical_rotten_apple_was_not_consumed": true,
+          "canonical_food_contains_exactly_one_remaining_fresh_serving": true,
+          "native_digestion_received_food_and_water": true
+        },
+        "receipt": "artifacts/ux03-drag-20261009/consumption-regression/checks.json",
+        "receipt_sha256": "3f65800208fb76596e7e01a203b3cfdacfb1614851277bcb81c6fe96ba5be3f2",
+        "log": "artifacts/ux03-drag-20261009/gui-consumption-regression.log",
+        "log_sha256": "2a35791223a221b0394056579ccf923fc7306903992e8e96b66f1f9b3d0ade27"
+      },
+      {
+        "name": "quickbar-installed",
+        "phase": "installed",
+        "status": "PASS",
+        "source_commit": "4124f24c1c9597b744203aef4a8def4ec36ab201",
+        "checks": 33,
+        "results": {
+          "actual_start_ready": true,
+          "native_inventory_opened": true,
+          "normal_launcher_defaults_to_continuous_4x": true,
+          "fresh_quickbar_has_no_implicit_first_nine_items": true,
+          "search_initially_visible_without_keyboard_focus": true,
+          "click_focus_enables_search": true,
+          "background_click_disables_search_keyboard_input": true,
+          "escape_cancels_drag_without_closing_or_mutating": true,
+          "outside_release_cancels_without_ground_drop": true,
+          "drag_grid_order_is_persistent_native_ui_metadata": true,
+          "slot_1_references_exact_native_bat": true,
+          "slot_2_references_exact_native_hat_ball": true,
+          "slot_3_references_exact_native_rock": true,
+          "assignment_preserves_native_time_and_hand": true,
+          "drag_occupied_hotbar_swaps_both_exact_instances_atomically": true,
+          "clear_removes_reference_without_removing_item": true,
+          "slot_selection_does_not_equip_or_use": true,
+          "quick_wield_retains_native_disposal_choice": true,
+          "quick_wield_preserves_binding_and_pays_native_time": true,
+          "quick_clothing_uses_native_wear": true,
+          "same_frame_slot_and_use_targets_new_selection": true,
+          "world_quick_use_does_not_force_inventory": true,
+          "paused_quick_use_is_not_sent": true,
+          "paused_quick_key_does_not_replay_on_resume": true,
+          "reconnect_restores_native_shortcut_identities": true,
+          "quickbar_changes_leave_native_contents_intact": true,
+          "byte_relay_completed_without_errors": true,
+          "equipment_save_readable_by_pristine_native_core": true,
+          "canonical_save_has_each_fixture_item_once": true,
+          "canonical_save_records_selected_rock_as_weapon": true,
+          "canonical_save_records_backpack_worn": true,
+          "pristine_core_retains_optional_bookmarks_and_exact_item_metadata": true,
+          "pristine_core_retains_optional_grid_order": true
+        },
+        "receipt": "artifacts/ux03-drag-20261009/quickbar-installed/checks.json",
+        "receipt_sha256": "d5a94ced1dd760c069685cc068403144ea09cb1ae11d6832aa33ded95a8f27f1",
+        "log": "artifacts/ux03-drag-20261009/gui-quickbar-installed.log",
+        "log_sha256": "39adae4bbd70caa6b38b2beb937e5ec9d3fdabc3ef47b3c5e56c57fa6190052b"
+      },
+      {
+        "name": "quickbar-reloaded-installed",
+        "phase": "installed",
+        "status": "PASS",
+        "source_commit": "4124f24c1c9597b744203aef4a8def4ec36ab201",
+        "checks": 14,
+        "results": {
+          "actual_start_ready": true,
+          "native_inventory_opened": true,
+          "normal_launcher_defaults_to_continuous_4x": true,
+          "actual_reload_restores_bookmarks_not_inventory_order": true,
+          "reloaded_items_use_exact_saved_binding_ids": true,
+          "actual_reload_retains_grid_order_on_exact_instances": true,
+          "quickbar_changes_leave_native_contents_intact": true,
+          "byte_relay_completed_without_errors": true,
+          "equipment_save_readable_by_pristine_native_core": true,
+          "canonical_save_has_each_fixture_item_once": true,
+          "canonical_save_records_selected_rock_as_weapon": true,
+          "canonical_save_records_backpack_worn": true,
+          "pristine_core_retains_optional_bookmarks_and_exact_item_metadata": true,
+          "pristine_core_retains_optional_grid_order": true
+        },
+        "receipt": "artifacts/ux03-drag-20261009/quickbar-reloaded-installed/checks.json",
+        "receipt_sha256": "a23f298e4461ed8495fd8f308c7db294eb3f391602dd1056a5d68d41044f7ccc",
+        "log": "artifacts/ux03-drag-20261009/gui-quickbar-reloaded-installed.log",
+        "log_sha256": "f8c3b50ce34373fb379a45ee73b0c58e2bebbcf56889d80d3084e544e1ad8460"
+      }
+    ],
+    "gui_checks": 158,
+    "baseline_check": {
+      "status": "PASS",
+      "log": "artifacts/ux03-drag-20261009/baseline-check.log",
+      "command": "python3 tools/takeover_baseline.py check"
+    },
+    "gui_reproduce": {
+      "harness": "artifacts/ux03-drag-20261009/run-gui.py",
+      "examples": [
+        "python3 artifacts/ux03-drag-20261009/run-gui.py equipment_gui_test.py artifacts/native-equipment-20261008/fixture/user <new-case> --drag-equipment",
+        "python3 artifacts/ux03-drag-20261009/run-gui.py transfer_gui_test.py artifacts/native-transfer-20261009/fixture/user <new-case> --automatic-return",
+        "CWM_TEST_INSTALLED=1 python3 artifacts/ux03-drag-20261009/run-gui.py equipment_gui_test.py artifacts/native-equipment-20261008/fixture/user <new-case> --quickbar",
+        "CWM_TEST_INSTALLED=1 python3 artifacts/ux03-drag-20261009/run-gui.py equipment_gui_test.py artifacts/ux03-drag-20261009/quickbar-installed/user <new-case> --quickbar-resume"
+      ]
+    }
+  },
+  "native_reader": {
+    "path": "artifacts/inventory-feedback-20261009/native-save-reader",
+    "sha256": "d65889a6cf0c36db31d493bba915a89bc7424d60f0ddb9800992fd0d4f39958a",
+    "scope": "Pinned native independent canonical world reader, not full standard-client SAVE-001 proof"
+  },
+  "direct_inspection": [
+    "Grid container icon and advanced destination row resolve the same current native container and INSERT branch; main-icon manual recheck retained",
+    "CWM_EQUIPMENT-only drag controller leaves existing CWM ground pickup mirror controller untouched",
+    "GUI regeneration cancels pointer drag; bridge rejects stale view/recovery/pending activity and native ledger bounds outcomes",
+    "Wire contains semantic current item/slot identities, never widget names, pixel rectangles or Luanti inventory structures"
+  ],
+  "failed_attempts": [
+    {
+      "log": "artifacts/ux03-drag-20261009/build-cdda.log",
+      "reason": "Initial native build: double/int clamp and generated mutators absent; corrected before final build",
+      "sha256": "d8190ee91c2a2b93404a6ef86505b70bca70366d3525379104e99f8644366adf"
+    },
+    {
+      "log": "artifacts/ux03-drag-20261009/build-luanti.log",
+      "reason": "Initial client build: Luanti forbids std::stoi macro; replaced with bounded digit parsing",
+      "sha256": "e25ae227dcc91dd61243f8a3c8aa51823d97e22f35bf4a5a4160ee369bc4539a"
+    },
+    {
+      "log": "artifacts/ux03-drag-20261009/build-protocol.log",
+      "reason": "FlatBuffers regeneration omitted --gen-mutable, required by existing tests; regenerated correctly",
+      "sha256": "f49c71178ed9d9b9d719cdc10d6dc8f30d7967e4f76328b34355768c53dbe27c"
+    },
+    {
+      "log": "artifacts/ux03-drag-20261009/tests-native.log",
+      "reason": "Test was invoked from workspace root instead of cdda; missing data path, repeated in correct directory",
+      "sha256": "b98b8803ced1f9b878d0bf6660f6dae2df79d2fca46af371875b7277fb48cc20"
+    },
+    {
+      "log": "artifacts/ux03-drag-20261009/gui-physical-reconstructed.log",
+      "reason": "Xvfb reset rewrote closed displayfd pipe before game readiness; private harness corrected with -noreset",
+      "sha256": "bc80e62677bf566e33e5879ea40ea7e0b85a24c254b407745bb10fca79b9b2dc"
+    },
+    {
+      "log": "artifacts/ux03-drag-20261009/gui-physical-rendered.log",
+      "reason": "Same display reset reproduced despite high fd; failure retained",
+      "sha256": "bc80e62677bf566e33e5879ea40ea7e0b85a24c254b407745bb10fca79b9b2dc"
+    },
+    {
+      "log": "artifacts/ux03-drag-20261009/gui-physical-noreset.log",
+      "reason": "Fixture assumed fixed worn order and dragged backpack instead of hat; test follows actual current native worn entries",
+      "sha256": "7e2efa254d55d7ebd272fd7d42bbc7c7c98646ae31c1a33b557b53addb990500"
+    },
+    {
+      "log": "artifacts/ux03-drag-20261009/gui-quickbar-final.log",
+      "reason": "Canonical fixture keyed ranks by type and conflated two distinct rocks; corrected to exact fixture uid, installed full repeat passes",
+      "sha256": "24caaf8983fa045a457f8ee4b3a1e13de1571cae65bb5f5c498507c2f2358c52"
+    }
+  ],
+  "manual_backlog": {
+    "path": "docs/validation/pending-manual.md",
+    "pending": 13,
+    "hotbar": 4,
+    "new_equipment_container_drag": 2,
+    "previous": 7,
+    "history": "UX-03 point 1 FAIL replaced with drag recheck PENDING; focused rechecks 1-3 remain user PASS; hotbar 2-4 untested"
+  },
+  "limits": [
+    "Compact order, no saved empty grid holes or new physical capacity",
+    "Green target is known eligibility, final capacity/conditions remain native",
+    "External containers/cargo, seals/fluid handling, manual pockets, selected-quantity pickup, batch moves remain future slices",
+    "English default/Italian WIP, held RMB aiming, actual wield rigs/UV, creature animation/audio, rich native dialogs remain scheduled",
+    "M5.5 historical FAILED, complete SAVE-001 OPEN"
+  ],
+  "artifacts": {
+    "artifacts/ux03-drag-20261009/tests-native-final.log": "de4ce181bff61fefd0fab5728a070a1dc84c89b6b4643cf915b8f99e9f6f34b0",
+    "artifacts/ux03-drag-20261009/tests-protocol.log": "7abf03c0afffa558bd65b4da38097c294d1dc81df09b8b5ad489fcca58d35b43",
+    "artifacts/ux03-drag-20261009/tests-luanti.log": "db4a18589ea31347d090a40f2748228f5d1af7aa17ac48eee3b4965c6a9c2471",
+    "artifacts/ux03-drag-20261009/build-cdda-final.log": "9c3b2bae1d3a41866bfdedade983175319485175322d99c60a278b095fef5cca",
+    "artifacts/ux03-drag-20261009/build-luanti-final.log": "58b928b79c0e262bcba58475f5f46babf594ed43426a92580d3c3328e20dbe1a",
+    "artifacts/ux03-drag-20261009/build-protocol-final.log": "834b949665a0eea11d4bd441e01a665c6a03cfe5860aa198006573cc58804975",
+    "artifacts/ux03-drag-20261009/source-replay.json": "e95d8e6c781eaf1e89c6a606ffaeea3f41db8d2eb346efeefce08fae6d6e7d2c",
+    "artifacts/ux03-drag-20261009/refresh-delivery-source.json": "5cc7229661f8a688d16ab1217558dbd4fdc429160a73973a7485519d48847109",
+    "artifacts/ux03-drag-20261009/install.json": "3664d06f8d5cb6d4aeec1f1a5126f9cdf48b350ffe4a23e36f5ab4a6b45996a9",
+    "artifacts/ux03-drag-20261009/install-pair.py": "926142574a308ac3fece36fce7ec932dd0705b6c970bdaf51dd45630e885457b",
+    "artifacts/ux03-drag-20261009/run-gui.py": "1b4b2f879a0ac5646c6a1a36e6b610164fd797fd50740765c30fc710fc3ded44",
+    "artifacts/ux03-drag-20261009/preinstall-canonical-position.json": "20e4c18feca23f96feed596fe7ce64590957b368867f5310ec76e24fdc89dbfc",
+    "artifacts/ux03-drag-20261009/quickbar-installed/assigned-quickbar.png": "c6daac66211262aafa355f2d76d10101a4e24990144d221a54507f9f7c04ceb7",
+    "artifacts/ux03-drag-20261009/quickbar-installed/drag-ghost-and-target.png": "e26c6d62c9ffdbe538a7c1558af37a496f785b88487db41118b4f528f2edb673",
+    "artifacts/ux03-drag-20261009/quickbar-installed/hud-selected-hand.png": "4ede34c9e699f2667dff4f570c4184bbf9eaa335096224340813d136e1de45a2",
+    "artifacts/ux03-drag-20261009/quickbar-installed/inventory.png": "e266febddb36a449ccdcdc57d5f6f4ace45df0695f93cf2f1abfd1e7a3ce9d43",
+    "artifacts/ux03-drag-20261009/quickbar-reloaded-installed/inventory.png": "bda67fb000fed35dbb8334ce7a0458b8b67c0c6eabd3457f42be4a2b93f03c63",
+    "artifacts/ux03-drag-20261009/quickbar-reloaded-installed/reloaded-shortcuts.png": "23788ecec6771b5ee9a9a030a68cd3cbb4adb7f7749d5fc75e7ef2a357dfde88",
+    "artifacts/ux03-drag-20261009/physical-final/drag-final-equipment.png": "b83e5ae3fd50b00a57a190f2a45c717322463e295b0cc60ed70db8bc7b6b28cb",
+    "artifacts/ux03-drag-20261009/physical-final/drag-paid-return.png": "b83e5ae3fd50b00a57a190f2a45c717322463e295b0cc60ed70db8bc7b6b28cb",
+    "artifacts/ux03-drag-20261009/physical-final/inventory.png": "de41574e0c7b7ac43d110c51dff06a2b50bf35dea18cd950f69fec52a5b7c062",
+    "artifacts/ux03-drag-20261009/transfer-rendered/inventory.png": "bcae1ce3c096f589ad8074194f57a9aa95dd753872308e2dbdcf38b300b279a3",
+    "artifacts/ux03-drag-20261009/transfer-rendered/transfer-automatic-return.png": "21ca1c7812032e7b09d1fa16ef83cecde6282a1053b2a8232d0a55c1a898c0c2",
+    "artifacts/ux03-drag-20261009/transfer-rendered/transfer-paused.png": "ecd8c935c3a487d7bc4d494ad8a85300c8e91accb793319055d1638ed7d06b66",
+    "artifacts/ux03-drag-20261009/transfer-rendered/transfer-selected.png": "a7bc89bbc17ceb25f2c1d620e2fa731f13a387f9c608e4839cc17afc13f14e61",
+    "artifacts/ux03-drag-20261009/baseline-check.log": "d8b5d125584d4602c06d406b3a38f032c51b8e5e5bab980f19046689b46f7f77"
+  }
+}

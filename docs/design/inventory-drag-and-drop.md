@@ -1,12 +1,13 @@
 # UX-03D — Inventario con drag-and-drop completo
 
-Stato: **PLANNED**, successivo al [FAIL ergonomico UX-03](../source/ux03-drag-feedback-2026-10-09.md).
-La produzione resta CWM 2.17 con il flusso a pulsanti già consegnato.
-Questa revisione è il prossimo intervento, prima di lingua/mira. Non basta
-aggiungere drag-and-drop ai nove slot inferiori: coprire tutto l'inventario I,
-le sue sottoviste e conservare il trascinamento della raccolta.
+Stato: **IMPLEMENTED / accettazione manuale PENDING**, CWM **2.18**.
+Successivo al [FAIL ergonomico UX-03](../source/ux03-drag-feedback-2026-10-09.md),
+rimuove Assegna/Svuota e copre griglia, hotbar, mano, indossati, contenitori
+posseduti e Terra; conserva la raccolta già consegnata. Entrambi i runtime
+sono installati per il normale start.sh. [Report ed evidenze](../fixes/inventory-drag-and-drop.md).
+Lingua/mira seguono questa consegna; non vengono implicitamente incluse.
 
-## Base effettiva letta
+## Base letta prima della revisione
 
 | Sorgente | Situazione attuale | Conseguenza |
 |---|---|---|
@@ -39,11 +40,15 @@ indossati descrivono ruoli reali, con riferimenti riconoscibili alla stessa
 istanza. La vista avanzata delle sorgenti resta completa, inclusi contenuti
 annidati: non nasconderli quando una borsa è impugnata.
 
-Una disposizione persistente della griglia necessita identità stabili anche
-per gli oggetti non assegnati: l'ID effimero della query non basta. Definire
-questa continuità prima di promettere riordino conservato dopo nuove query,
-azioni o reload; non ricostruire l'identità dal nome/tipo. Riutilizzare/estendere
-metadati UI opzionali e verificarne stacking, split, perdita e load.
+La disposizione ora persiste come `item_vars.cwm_inventory_position` sulla
+reale istanza CDDA: query effimere non vengono salvate. I ranghi interi 1–2048
+sono compatti; un drop su oggetto non contenitore inserisce prima, uno su
+spazio vuoto sposta alla fine. Non si salvano buchi o coordinate di caselle.
+Wield/wear/copie native conservano il metadato; lo stacking integrato lo ignora
+e lo split lo mantiene solo sulla porzione originale. Identità/tasche reali
+vengono verificate prima di aggiornare tutti i ranghi. Due oggetti omonimi
+mantengono ordini distinti; un cambio di nome/tipo non è una ricerca d'identità.
+Il reader nativo indipendente e il reload reale verificano la continuità.
 
 ## Interazione e validazioni
 
@@ -75,21 +80,23 @@ metadati UI opzionali e verificarne stacking, split, perdita e load.
 
 ## Consegna e backlog
 
-Implementazione interna in ordine: controller unico dei gesti e layout;
-hotbar assegnazione/rimozione/swap e griglia; mano/indossati; contenitori,
-Terra/quantità e regressione raccolta. Consegna coerente dal normale start.sh,
-senza dichiarare finita la richiesta dopo la sola hotbar.
+Controller CWM locale con soglia di 6 pixel e cancellazione alla rigenerazione
+della GUI. Il gesto invia al bridge vista e nomi locali delle zone; il bridge
+li risolve in identità native correnti. Sul filo: QuickbarBind/Swap,
+InventoryArrange, Equipment o ItemTransfer. Nessun IMoveAction gameplay.
+Swap confronta entrambi i token attesi e cambia i due slot atomicamente;
+riordino e riferimenti sono metadati gratuiti, azioni fisiche restano CDDA.
 
-Verifiche automatiche: drag reale nel renderer, annullamento, target occupato,
-query invalidata/IPC, scambio atomico, scelta sulla mano piena, costi/pausa,
-strati, quantità parziali, contenitore annidato/ciclo/capacità, save/load e
-assenza di duplicazioni. Ricostruire/catturare le modifiche e installare i
-runtime coerenti solo dopo verifica. Non basta un test Python del protocollo.
+Renderer verificato con gesti reali per riordino, hotbar, mano/indossati,
+righe contenitore, Terra e quantità parziali; Esc/rilascio esterno, conferme,
+costi/pausa, rifiuto per capacità, recovery e salvataggi. Le destinazioni
+sulle icone dei contenitori del pannello principale condividono il percorso
+semantico verificato e sono incluse nel nuovo ricontrollo manuale. La raccolta
+mantiene il controller specchio preesistente; quello nuovo è limitato alla
+formspec CWM_EQUIPMENT. [Ricevute riproducibili](../fixes/inventory-drag-and-drop-evidence.json).
 
-Alla consegna, sostituire la prova a pulsanti **1 FAIL** con un ricontrollo
-drag-and-drop e aggiungere soltanto le nuove prove necessarie per mano,
-indossati e contenitori. I punti hotbar 2–4 restano non testati; i tre
-ricontrolli appena accettati restano PASS, salvo modifiche che richiedano una
-regressione mirata. Gli altri elementi del [backlog](../validation/pending-manual.md)
-restano invariati. Nessuna nuova prova eseguibile viene richiesta in questa
-turnazione di pianificazione.
+Il backlog ha **13 PENDING**: ricontrollo drag di hotbar 1 (precedente FAIL
+conservato come storia), hotbar 2–4 ancora non provati, due nuove prove per
+mano/indossati e contenitori, sette vecchi punti. Ricontrolli UX-03 1–3 restano
+PASS. Nessuna prova viene richiesta ora. Contenitori esterni, sigilli/fluidi,
+quantità selezionate del pickup e batch moves richiedono interfacce dedicate.

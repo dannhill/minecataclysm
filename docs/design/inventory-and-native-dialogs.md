@@ -10,9 +10,11 @@ nell'HUD e feedback/errori migliorati. UX-04–05, raggruppamento anatomico e
 continuità della selezione tra query restano pianificati.
 [Consegna UX-03](../fixes/interactive-quickbar.md).
 Il riscontro successivo valida Ricontrolli UX-03 1–3, ma **rifiuta il flusso
-hotbar a pulsanti (1 FAIL)**; 2–4 non provati. Prossimo task:
+hotbar a pulsanti (1 FAIL)**; 2–4 non provati. Ora consegnato:
 [UX-03D drag-and-drop completo](inventory-drag-and-drop.md), che sostituisce
 Assegna/Svuota e coinvolge tutte le sezioni, prima di lingua/mira.
+[Report e prove](../fixes/inventory-drag-and-drop.md); accettazione del nuovo
+gesto PENDING, backlog a 13 punti. I tre ricontrolli restano PASS.
 
 ## Studio dei sorgenti e vincoli effettivi
 
