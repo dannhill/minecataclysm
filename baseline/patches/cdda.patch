@@ -1008,7 +1008,7 @@ index 38b1d71..e5b7a12 100644
      if( get_option<bool>( "ANDROID_NATIVE_UI" ) ) {
          JNIEnv *env = ( JNIEnv * )SDL_AndroidGetJNIEnv();
 diff --git a/src/pickup.cpp b/src/pickup.cpp
-index 183628b..c1d3bf8 100644
+index 183628b..a767b51 100644
 --- a/src/pickup.cpp
 +++ b/src/pickup.cpp
 @@ -23,6 +23,7 @@
@@ -1069,10 +1069,11 @@ index 183628b..c1d3bf8 100644
      if( answer == "YES" ) {
          u.set_value( "THIEF_MODE", "THIEF_STEAL" );
          u.set_value( "THIEF_MODE_KEEP", "NO" );
-@@ -260,6 +288,16 @@ static bool pick_one_up( item_location &loc, int quantity, bool &got_water, bool
+@@ -259,7 +287,17 @@ static bool pick_one_up( item_location &loc, int quantity, bool &got_water, bool
+     } else if( !player_character.can_pickWeight_partial( newit, false ) ||
                 !player_character.can_stash_partial( newit, false ) ) {
          option = CANCEL;
-         stash_successful = false;
+-        stash_successful = false;
 +        // A pointed manual pickup must explain a capacity rejection. Offer
 +        // explicit native wielding rather than silently losing the intention;
 +        // auto-pickup never asks or changes equipment on its own.
@@ -1083,6 +1084,7 @@ index 183628b..c1d3bf8 100644
 +            option = handle_problematic_pickup( newit, explain );
 +            did_prompt = true;
 +        }
++        if( option == CANCEL ) stash_successful = false;
      } else {
          option = STASH;
      }

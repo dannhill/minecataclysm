@@ -232,7 +232,8 @@ isolati; K apre il catalogo CDDA. Non serve completare le altre checklist.
    riprende il lavoro salvato e lo completa una sola volta. Se cambi stanza/
    materiali, una ricetta senza requisiti deve spiegare perché non è avviabile.
 
-Accettazione grafica/usabilità dell'utente ancora pendente. Questa prima fetta
+Checklist 1–4 accettata dall’utente il 2026-10-09; il badge R segnalato
+ha un ricontrollo separato. Questa prima fetta
 non include ricette liquide, sottoprodotti, pratica, preferiti di ricette,
 collegamenti di sottoricette, selezione della singola istanza fra oggetti
 identici né accelerazione automatica delle attività lunghe: restano nel piano.

@@ -290,7 +290,11 @@ def main():
                     wait(lambda r:int(r['crafting_form'])==0 and int(r['crafting_token'])==0 and int(r['pending_move'])==0)
                     view=open_crafting();view=search();e=select_recipe(view,True)
                     check('interrupted_work_is_native_resumable_item',e.Resume() and e.Progress()==int(frozen))
-                    shot('incomplete-work.png');start()
+                    shot('incomplete-work.png')
+                    sent = latest()['crafting_sent']; index = e.Id() - 1
+                    click(.5+(index%6)*1.18+.825,2.7+(index//6)*1.12+.225)
+                    check('resume_badge_selects_without_starting_work',latest()['crafting_sent']==sent and int(latest()['crafting_selected'])==e.Id() and int(latest()['crafting_form'])==1)
+                    start()
                     # Wielded craft resumes without a material/confirmation prompt.
                     wait(lambda r:int(r['pending_move'])==0)
                     check('resumed_work_has_fresh_token',latest()['crafting_token']!=token)
