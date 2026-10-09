@@ -1,8 +1,9 @@
 # Validazioni manuali del playable core
 
-Stato corrente: **16 punti pendenti**: quattro tiro/ricarica, quattro
+Stato corrente: **20 punti pendenti**: quattro tiro/ricarica, quattro
 quantita/deposito/trasferimenti, quattro ricontrolli mirati UI/mapping e
-quattro del nuovo inventario UX-01. Non serve eseguirli ora. Il riscontro del 2026-10-09 accetta tutti i
+quattro del nuovo inventario UX-01 e quattro delle azioni consecutive UX-02.
+Non serve eseguirli ora. Il riscontro del 2026-10-09 accetta tutti i
 16 punti inventario, cibo/bevande, medicazioni e crafting. I bug segnalati
 restano separati dall'accettazione delle checklist, con ricontrolli mirati
 aggiunti sotto quando le correzioni sono consegnate.
@@ -356,8 +357,42 @@ Nessun test richiesto oggi; non serve ripetere i 16 vecchi PASS.
    nel pannello a destra e i vincoli nativi valgono sempre. **F7** blocca le
    azioni senza eseguirle alla ripresa. Esci/rientra: equipaggiamento e
    contenuti conservati. La barra inferiore seleziona soltanto: switch rapido
-   e ritorno automatico all'inventario dopo un'azione sono step successivi.
+   è ancora un passo successivo; il ritorno automatico è ora coperto da UX-02.
 
 La sagoma non riproduce ancora i vestiti reali e l'elenco degli indossati
 non è ancora raggruppato per parte del corpo. Le coperture/impedimenti
 richiedono dati CWM tipizzati; non vengono dedotti dal nome dei vestiti.
+
+
+## UX-02 — Azioni consecutive con costi nativi — PENDING (4), quando puoi
+
+Disponibile in I nel gioco normale e nelle demo isolate; non serve provarlo
+oggi. Una singola azione esplicita lascia scorrere il mondo, poi riapre la
+vista dell'inventario. Pagina/filtro/ricerca restano; oggetto e destinazione
+vanno riselezionati perché le vecchie identità native sono scadute.
+
+1. `./equipment-demo.sh --fresh`: I → Cerca `cap` → seleziona cappello →
+   **Indossa**. Durante il lavoro appare un indicatore compatto; al termine
+   I torna automaticamente, mantenendo la ricerca. Seleziona di nuovo il
+   cappello → **Togli**; poi un sasso → **Impugna**, scegliendo esplicitamente
+   come riporre la mazza nel dialogo nativo. Tutte e tre le azioni devono
+   finire davvero prima del ritorno; consultare I continua a fermare il tempo.
+2. `./consumption-demo.sh --fresh`: mangia una mela. L'indicatore mostra
+   progresso e il mondo continua. **I** durante il pasto mette in pausa;
+   **Interrompi** segue la cancellazione nativa, conserva il cibo non ancora
+   consumato e torna a I dopo il costo già pagato. Ripeti lasciando finire:
+   una sola porzione consumata e ritorno automatico. Prova l'acqua e annulla
+   l'avviso della mela marcia: nessuna scelta automatica né oggetto consumato.
+3. `./transfer-demo.sh --fresh`: I → **Quantità e trasferimenti**, deposita
+   poche munizioni oppure inseriscile nella borsa. Alla fine deve tornare
+   questo pannello, con quantità/contenuti reali aggiornati e selezioni
+   azzerate. Nella demo equipaggiamento puoi usare F8 per rallentare a 0,5×:
+   **Esc durante il lavoro** lascia il mondo aperto senza annullare l'azione;
+   F7 blocca il tempo e, dopo la ripresa, non forza I. Le minacce e le
+   decisioni native hanno precedenza sull'inventario.
+4. Esci/rientra dalla demo senza `--fresh`: arma, vestiti, cibo e trasferimenti
+   completati rimangono nel save nativo. Se esci mentre un'attività lunga è
+   ferma in I, il lavoro resta nativo e può riprendere: nessuna duplicazione,
+   nessun ritorno automatico a una vecchia selezione della sessione precedente.
+   In caso di morte o perdita/recupero IPC, la vecchia intenzione di ritorno
+   viene scartata; le schermate native restano prioritarie.

@@ -91,9 +91,9 @@ strati multipli, oggetti annidati, identità invalidata, tooltip/ricerca/focus,
 nessuna mutazione o avanzamento del tempo per la sola consultazione.
 Serve prova grafica dell'utente alla consegna; gli attuali 16 PASS non la coprono.
 
-## UX-02 — Azioni consecutive con costi reali
+## UX-02 — Azioni consecutive con costi reali (implementata; accettazione manuale pendente)
 
-Flusso proposto: **consulta in pausa → conferma una sola azione → pannello
+Flusso implementato: **consulta in pausa → conferma una sola azione → pannello
 compatto non modale durante il lavoro → ritorno alla stessa vista al termine**.
 Il mondo e le creature avanzano mentre si indossa, ripone, mangia o trasferisce.
 Non serve ripremere I per la successiva azione; nessun batch invisibile.
@@ -114,6 +114,16 @@ Una GUI modale mantenuta aperta senza questo adattamento fermerebbe l'actor.
 Verifica: più azioni successive, costo/calendario nativo, minaccia durante
 lavoro, cancel, reconnect, uscita e save/load. Non aggiungere ritardi inventati
 alla modalità scandita dalle azioni solo per ottenere un'animazione.
+
+Fetta UX-02: CWM 2.16 esporta `InventoryWorkState` separato dal primo ACK.
+Il runtime osserva l’addebito dei due cicli nativi ACT_* e conserva il debito
+anche al cancel; la riapertura richiede completamento, credito nativo recuperato
+e scadenza del tempo già addebitato. Esc rinuncia al ritorno senza cancellare
+l'actor; I consente consultazione/Interrompi. Pausa manuale/minaccia disattivano
+il ritorno, decisioni lo sospendono; morte/reconnect/resync lo scartano.
+Pagina/filtro/ricerca e pannello trasferimenti sono mantenuti, ma gli ID di
+oggetto/destinazione sono azzerati a ogni query: identità stabile resta aperta.
+[Report UX-02](../fixes/inventory-work.md) e quattro nuove prove nel backlog.
 
 ## UX-03 — Hotbar interattiva
 

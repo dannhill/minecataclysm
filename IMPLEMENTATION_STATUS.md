@@ -1,20 +1,22 @@
 # Implementation status
 
-Current scoped delivery (2026-10-09): **UX-01 inventory layout**, verified and installed
-in start.sh: Mineclonia 9×3 grid, paginated native worn items, actual wielded
-hand, distinct read-only 9×1 row, optional search and progressive object/pocket
-cards. Search opens only on request; Escape leaves search before closing I.
-Page/filter/search survive reopening; fresh queries invalidate item selection.
-Mapped/proxy art remains separate from explicit category/unknown placeholders.
-[Report/evidence](docs/fixes/inventory-ui.md). Four new manual points are in the
-usual backlog, now **16 PENDING**; none required today. Existing 16 gameplay
-PASS remain historical, not approval of the new layout.
+Current scoped delivery (2026-10-09): **UX-02 sequential inventory actions**.
+One explicit operation closes the modal browser while native work/time runs;
+a compact non-modal indicator displays operation/progress. The browser returns
+only after CDDA confirms paid completion, preserving page/filter/search and
+transfer view. Fresh native queries clear object/destination selection.
+Esc opts out without refund/cancel; I pauses for consultation/native interruption.
+Manual/threat pause suppresses return, decisions defer it, death/recovery discards
+stale intent. CWM **2.16** distinguishes early result from paid inventory work;
+native activity debits share the real-time clock. Canonical save format unchanged.
+[Report/evidence](docs/fixes/inventory-work.md). Four new manual points bring the
+usual backlog to **20 PENDING**; none required today. Earlier gameplay PASS
+remain historical, not acceptance of the new UI. UX-01 layout remains available.
 
-Body-region clothing grouping/encumbrance needs typed native exports; hover
-shortcuts and stable selection continuity remain planned. Next scheduled task:
-**UX-02**, sequential actions with paid native time and safe return to browsing.
+Body-region clothing grouping/encumbrance and stable selection continuity still
+need typed native exports. Next scheduled task: **UX-03 interactive hotbar**,
+selection distinct from native wielding and all access/use costs retained.
 [Detailed plan](docs/design/inventory-and-native-dialogs.md).
-CWM remains 2.15 and native gameplay/canonical serialization unchanged.
 The broader M5.5 gate remains historical FAILED and full SAVE-001 stays OPEN.
 
 Previous scoped follow-up (2026-10-09): inventory feedback fixes and synchronization

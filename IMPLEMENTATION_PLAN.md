@@ -37,7 +37,9 @@ prioritizza: layout Mineclonia 9×3 con ricerca su richiesta, dettagli
 progressivi e strati; azioni consecutive con tempo nativo e ritorno alla stessa
 vista; conferme visive/medicina; ricette recenti/preferite/frequenti; hotbar
 interattiva con selezione distinta dalla mano reale. Sono task UX-01–05. Il layout UX-01 è ora consegnato, ma non ancora graficamente approvato;
-gli altri task restano pianificati. Prossimo passo UX-02; contenitori esterni e raccolta quantitativa
+UX-02 è implementato: azioni consecutive, indicatore non modale e ritorno
+solo dopo il costo nativo pagato (CWM 2.16). Accettazione grafica pendente
+nel backlog, ora 20 punti. Prossimo passo UX-03, hotbar interattiva; contenitori esterni e raccolta quantitativa
 restano essenziali e riusano questi componenti. Costi/decisioni/capacità
 rimangono nativi. Le nuove prove manuali saranno aggiunte alla consegna.
 Su ulteriore richiesta sono sincronizzati i **27 batch di produzione** attuali:

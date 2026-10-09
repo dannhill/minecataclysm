@@ -284,6 +284,7 @@ def main():
                 if not args.action_driven:
                     wait(lambda r: int(r['consumption_token']) > 0)
                     progress = latest();token = progress['consumption_token']
+                    if args.automatic_return:shot('work-panel.png')
                     check('native_progress_announced_before_serving_removed', int(progress['consumption_total']) == first.ConsumeMoves() and int(progress['consumption_remaining']) > 0)
                     xdo('keydown','w');time.sleep(.5);xdo('keyup','w');time.sleep(.3)
                     check('movement_during_meal_is_not_deferred', latest()['target_x'] == progress['target_x'] and latest()['target_z'] == progress['target_z'])
