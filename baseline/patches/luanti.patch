@@ -809,7 +809,7 @@ index 5d6b891..48c0d59 100644
  		g_settings->getFlagStr("anticheat_flags", flagdesc_anticheat, nullptr);
  
 diff --git a/src/unittest/test_mapblock.cpp b/src/unittest/test_mapblock.cpp
-index 7f3f860..657c056 100644
+index 7f3f860..7856d68 100644
 --- a/src/unittest/test_mapblock.cpp
 +++ b/src/unittest/test_mapblock.cpp
 @@ -10,6 +10,16 @@
@@ -878,7 +878,7 @@ index 7f3f860..657c056 100644
 +    EquipmentPocket pocket; pocket.owner = 1; pocket.name = "Main"; view.pockets.push_back(pocket);
 +    UASSERTEQ(size_t, equipmentFilter(view,"pack / main",0).size(), 39);
 +    UASSERTEQ(size_t, equipmentFilter(view,"",1).size(), 1);
-+    UASSERTEQ(std::string, view.source(2), "Pack / Main");
++    UASSERTEQ(std::string, view.source(2), "Indossato > Pack / Main");
 +    const auto form = equipmentForm(view,1,39,"",0,"",[](const auto&) { return "known:rock"; });
 +    UASSERT(form.find(";item_28;") != std::string::npos);
 +    UASSERT(form.find(";item_27;") == std::string::npos);
@@ -3867,10 +3867,10 @@ index 0000000..8a266d4
 +} // namespace cdda_client
 diff --git a/src/cdda/equipment_inventory.h b/src/cdda/equipment_inventory.h
 new file mode 100644
-index 0000000..94f56c7
+index 0000000..de99375
 --- /dev/null
 +++ b/src/cdda/equipment_inventory.h
-@@ -0,0 +1,294 @@
+@@ -0,0 +1,296 @@
 +#pragma once
 +#include "avatar_status.h"
 +#include "cwm/cwm_generated.h"
@@ -3935,6 +3935,8 @@ index 0000000..94f56c7
 +                name += " / " + (p.name.empty() ? "tasca " + std::to_string(p.index + 1) : p.name);
 +            out = name + (out.empty() ? "" : " > " + out); e = parent;
 +        }
++        if (e && !e->parent && (e->worn || e->wielded))
++            out = std::string(e->worn ? "Indossato" : "In mano") + " > " + out;
 +        return out;
 +    }
 +};
