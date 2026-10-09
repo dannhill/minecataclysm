@@ -26,6 +26,7 @@ def main():
     for name in ('workspace', 'fixture', 'native-reader', 'artifacts'):
         parser.add_argument('--' + name, type=Path, required=True)
     parser.add_argument('--action-driven', action='store_true', help='Verify ordinary start.sh mode without the real-time scheduler')
+    parser.add_argument('--automatic-return', action='store_true', help='Verify native actor UX-02 return instead of opting out')
     parser.add_argument('--resume-only', action='store_true')
     parser.add_argument('--save-active', action='store_true')
     parser.add_argument('--resume-active', action='store_true')
@@ -216,6 +217,8 @@ def main():
                 assert options and options[-1] in ('Cancel','No') and len(options) <= 9, options
                 return str(len(options))
             def open_inventory():
+                if int(latest()['equipment_form']) == 1 and int(latest()['inventory_view']) > 0:
+                    return views()[-1]
                 tap('i')
                 wait(lambda r: int(r['equipment_form']) == 1 and int(r['inventory_view']) > 0)
                 return views()[-1]
@@ -238,9 +241,12 @@ def main():
             def action(number):
                 sent = int(latest()['equipment_sent'])
                 click(12.325 + (number % 2)*2.2, 8.15 + (number // 2)*.75)
-                wait(lambda r: int(r['equipment_form']) == 0 and int(r['equipment_sent']) == sent+1)
+                wait(lambda r: int(r['equipment_sent']) == sent+1)
+                if not args.automatic_return:
+                    tap('Escape')  # Legacy suite opts out; dedicated UX-02 run uses the default return.
+                wait(lambda r: int(r['equipment_form']) == 0)
             def finish_action():
-                wait(lambda r: int(r['pending_move']) == 0 and int(r['pause_reasons']) == 0)
+                wait(lambda r: int(r['pending_move']) == 0 and (int(r['pause_reasons']) == 0 or (int(r['equipment_form']) == 1 and int(r['native_work_settled']) == 1)))
             def item(v, name):
                 return next(e for e in entries(v) if e.TypeId().decode() == name)
             def food(v):
@@ -284,7 +290,7 @@ def main():
                     check('menu_freezes_native_consumption_progress', latest()['consumption_remaining'] == frozen)
                     shot('cancel-consumption.png')
                     click(13.4,10.35)
-                    wait(lambda r: int(r['cancel_consumption_sent']) == 1 and int(r['equipment_form']) == 0)
+                    wait(lambda r: int(r['cancel_consumption_sent']) == 1)
                     finish_action();wait(lambda r: int(r['consumption_token']) == 0)
                     check('cancel_reaches_busy_actor_immediately', True)
                     view = open_inventory()
@@ -293,16 +299,29 @@ def main():
                     wait(lambda r: int(r['consumption_token']) > 0)
                     check('resumed_meal_has_new_cancellation_token', latest()['consumption_token'] != token)
                 wait(lambda r: int(r['consumption_token']) == 0,timeout=30)
+                if args.automatic_return:
+                    wait(lambda r:int(r['equipment_form'])==1 and int(r['inventory_view'])>0 and int(r['native_work_settled'])==1)
+                    check('meal_automatically_returns_only_after_native_settlement',True)
+                    shot('meal-automatic-return.png')
                 view = open_inventory()
                 fresh_now = sum(max(1,e.Charges()) for e in entries(view) if e.TypeId() == b'apple' and not e.ConsumeWarning())
                 check('meal_consumes_exactly_one_native_serving', fresh_now == 1)
                 select_item(item(view,'water_clean'));action(4);finish_action()
                 wait(lambda r: int(r['consumption_token']) == 0,timeout=20)
                 view = open_inventory()
+                if args.automatic_return:
+                    wait(lambda r:int(r['equipment_form'])==1 and int(r['inventory_view'])>0 and int(r['native_work_settled'])==1)
+                    view=views()[-1]
+                    check('drink_automatically_returns_after_native_cost',True)
                 check('drink_consumes_one_charge_not_bottle', item(view,'water_clean').Charges() == 3 and item(view,'bottle_twoliter') is not None)
                 selected = rotten(view);select_item(selected);shot('rotten-warning.png')
                 action(4);wait(lambda r: int(r['pending_decision']) > 0)
-                shot('native-food-warning.png');tap(cancel_choice());finish_action()
+                shot('native-food-warning.png')
+                if args.automatic_return:check('native_decision_precedes_automatic_return',int(latest()['equipment_form'])==0)
+                tap(cancel_choice());finish_action()
+                if args.automatic_return:
+                    wait(lambda r:int(r['equipment_form'])==1 and int(r['inventory_view'])>0 and int(r['native_work_settled'])==1)
+                    check('declined_native_choice_safely_returns',True)
                 view = open_inventory()
                 check('declining_native_warning_preserves_rotten_food', rotten(view).Charges() == selected.Charges())
                 check('declining_native_warning_clears_activity', int(latest()['consumption_token']) == 0)

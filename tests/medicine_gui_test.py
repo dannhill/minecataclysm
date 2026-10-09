@@ -216,6 +216,8 @@ def main():
                 assert options and options[-1] in ('Cancel','No') and len(options) <= 9, options
                 return str(len(options))
             def open_inventory():
+                if int(latest()['equipment_form']) == 1 and int(latest()['inventory_view']) > 0:
+                    return views()[-1]
                 tap('i')
                 wait(lambda r: int(r['equipment_form']) == 1 and int(r['inventory_view']) > 0)
                 return views()[-1]
@@ -238,9 +240,11 @@ def main():
             def action(number):
                 sent = int(latest()['equipment_sent'])
                 click(12.325 + (number % 2)*2.2, 8.15 + (number // 2)*.75)
-                wait(lambda r: int(r['equipment_form']) == 0 and int(r['equipment_sent']) == sent+1)
+                wait(lambda r: int(r['equipment_sent']) == sent+1)
+                tap('Escape')  # Explicitly opt out of UX-02 return; this suite tests native mechanics.
+                wait(lambda r: int(r['equipment_form']) == 0)
             def finish_action():
-                wait(lambda r: int(r['pending_move']) == 0 and int(r['pause_reasons']) == 0)
+                wait(lambda r: int(r['pending_move']) == 0 and (int(r['pause_reasons']) == 0 or (int(r['equipment_form']) == 1 and int(r['native_work_settled']) == 1)))
             def item(v, name):
                 return next(e for e in entries(v) if e.TypeId().decode() == name)
             def food(v):
@@ -300,7 +304,7 @@ def main():
                     view=open_inventory();check('bandage_is_consumed_at_finish_not_start',len(bandages(view))==3)
                     frozen=latest()['first_aid_remaining'];time.sleep(.7);check('menu_freezes_native_firstaid',latest()['first_aid_remaining']==frozen)
                     shot('firstaid-pause.png');click(13.4,10.35)
-                    wait(lambda r:int(r['cancel_consumption_sent'])==1 and int(r['equipment_form'])==0);finish_action()
+                    wait(lambda r:int(r['cancel_consumption_sent'])==1);finish_action()
                     wait(lambda r:int(r['first_aid_token'])==0)
                     view=open_inventory();check('explicit_cancel_preserves_bandage',len(bandages(view))==3)
                     select_item(bandages(view)[0]);action(5);choose('left arm');wait(lambda r:int(r['first_aid_token'])>0)

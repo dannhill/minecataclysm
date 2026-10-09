@@ -27,6 +27,7 @@ def main():
         parser.add_argument('--' + name, type=Path, required=True)
     parser.add_argument('--action-driven', action='store_true', help='Verify ordinary start.sh mode without the real-time scheduler')
     parser.add_argument('--resume-only', action='store_true')
+    parser.add_argument('--sequential', action='store_true', help='Exercise UX-02 paid completion and automatic return')
     parser.add_argument('--presentation-only', action='store_true', help='Exercise paging, layering and search without gameplay mutations')
     args = parser.parse_args()
     ws, out = args.workspace.resolve(), args.artifacts.resolve()
@@ -209,6 +210,8 @@ def main():
                 assert options and options[-1] == 'Cancel' and len(options) <= 9, options
                 return str(len(options))
             def open_inventory():
+                if int(latest()['equipment_form']) == 1 and int(latest()['inventory_view']) > 0:
+                    return views()[-1]
                 tap('i')
                 wait(lambda r: int(r['equipment_form']) == 1 and int(r['inventory_view']) > 0)
                 return views()[-1]
@@ -231,12 +234,91 @@ def main():
             def action(number):
                 sent = int(latest()['equipment_sent'])
                 click(12.325 + (number % 2)*2.2, 8.15 + (number // 2)*.75)
-                wait(lambda r: int(r['equipment_form']) == 0 and int(r['equipment_sent']) == sent+1)
+                wait(lambda r: int(r['equipment_sent']) == sent+1)
+                tap('Escape')  # Explicitly opt out of UX-02 return; this suite tests native mechanics.
+                wait(lambda r: int(r['equipment_form']) == 0)
             def finish_action():
                 wait(lambda r: int(r['pending_move']) == 0 and int(r['pause_reasons']) == 0)
             def item(v, name):
                 return next(e for e in entries(v) if e.TypeId().decode() == name)
-            if args.presentation_only:
+            if args.sequential:
+                import struct
+                from CDDA.CWM.WorldSnapshot import WorldSnapshot
+                from CDDA.CWM.SimulationControlRequest import SimulationControlRequest
+                from CDDA.CWM.EquipmentRequest import EquipmentRequest
+                def packets(filename):
+                    buf=(out/filename).read_bytes();offset=0;found=[]
+                    while offset+4<=len(buf):
+                        n=struct.unpack('>I',buf[offset:offset+4])[0];offset+=4
+                        if offset+n>len(buf):break
+                        msg=CwmMessage.GetRootAs(buf[offset:offset+n]);offset+=n;found.append(msg)
+                    return found
+                def paid_return(number):
+                    sent=int(latest()['equipment_sent']);old_view=latest()['inventory_view']
+                    click(12.325+(number%2)*2.2,8.15+(number//2)*.75)
+                    wait(lambda r:int(r['equipment_sent'])==sent+1)
+                    wait(lambda r:int(r['equipment_form'])==1 and int(r['inventory_view'])>0 and r['inventory_view']!=old_view,timeout=25)
+                    check('automatic_return_'+str(sent),int(latest()['native_work_settled'])==1 and int(latest()['equipment_selected'])==0)
+                    return views()[-1]
+                start_time=int(latest()['simulation_time'])
+                # Select a native filtered item; keep the optional search open across work.
+                click(4.9,4.95);xdo('type','--clearmodifiers','cap');click(6.5,4.95)
+                hat=item(view,'hat_ball');click(1.025,5.975);wait(lambda r:int(r['equipment_selected'])==hat.Id())
+                view=paid_return(2);check('wear_completes_before_return',item(view,'hat_ball').Worn())
+                check('return_preserves_search_view',int(latest()['equipment_search_open'])==1)
+                shot('automatic-return-search.png')
+                click(1.025,5.975);wait(lambda r:int(r['equipment_selected'])==item(view,'hat_ball').Id())
+                view=paid_return(3);check('takeoff_completes_before_return',not item(view,'hat_ball').Worn())
+                check('sequential_operations_advance_native_time',args.action_driven or int(latest()['simulation_time'])>start_time)
+                # Leave nested search, clear its applied filter, then act on a distinct object.
+                tap('Escape');click(8.5,4.95)
+                select_item(item(view,'rock'));view=paid_return(0)
+                check('third_operation_uses_fresh_native_binding',item(view,'rock').Wielded())
+                shot('automatic-return-grid.png')
+                if not args.action_driven:
+                    tap('Escape');wait(lambda r:int(r['equipment_form'])==0)
+                    tap('F8');wait(lambda r:float(r['time_scale'])==.5)
+                    view=open_inventory()
+                    # Esc affects UI return only; the already-paid/native mutation survives.
+                    select_item(item(view,'hat_ball'));sent=int(latest()['equipment_sent'])
+                    click(12.325,8.9);wait(lambda r:int(r['equipment_sent'])==sent+1)
+                    tap('Escape');wait(lambda r:int(r['equipment_form'])==0 and int(r['inventory_work_command'])==0)
+                    time.sleep(1.3);check('escape_opts_out_without_reopening',int(latest()['equipment_form'])==0)
+                    view=open_inventory();check('escape_does_not_undo_native_wear',item(view,'hat_ball').Worn())
+                    # Manual pause must suppress automatic return after a paid short action.
+                    select_item(item(view,'hat_ball'));sent=int(latest()['equipment_sent'])
+                    click(14.525,8.9);wait(lambda r:int(r['equipment_sent'])==sent+1)
+                    tap('F7');wait(lambda r:int(r['pause_reasons'])&1)
+                    paused=latest()['simulation_time'];time.sleep(.8)
+                    check('manual_pause_takes_precedence',latest()['simulation_time']==paused and int(latest()['equipment_form'])==0)
+                    tap('F7');wait(lambda r:int(r['pause_reasons'])==0);time.sleep(1)
+                    check('manual_resume_does_not_force_inventory',int(latest()['equipment_form'])==0)
+                    # Actual connection loss during pending return must drop its stale intent.
+                    view=open_inventory();select_item(item(view,'hat_ball'));sent=int(latest()['equipment_sent']);connection_id=latest()['connection_id']
+                    click(12.325,8.9);wait(lambda r:int(r['equipment_sent'])==sent+1);drop.set()
+                    wait(lambda r:r['connection_id']!=connection_id and int(r['input_ready'])==1,timeout=25)
+                    check('reconnect_discards_pending_return',int(latest()['equipment_form'])==0 and int(latest()['inventory_work_command'])==0)
+                    view=open_inventory();check('reconnect_retains_canonical_equipment',item(view,'rock').Wielded() and item(view,'hat_ball').Worn())
+                tap('Escape');wait(lambda r:int(r['equipment_form'])==0)
+                server_packets=packets('server-wire.bin');client_packets=packets('client-wire.bin')
+                paid={};early=set();operations=[];opens=[]
+                for msg in server_packets:
+                    if msg.PayloadType()!=Payload.WorldSnapshot:continue
+                    state=WorldSnapshot();state.Init(msg.Payload().Bytes,msg.Payload().Pos);work=state.InventoryWork()
+                    if work:
+                        if work.Settled():paid.setdefault(work.CommandId(),state.WorldRevision())
+                        else:early.add(work.CommandId())
+                for msg in client_packets:
+                    if msg.PayloadType()==Payload.EquipmentRequest:
+                        req=EquipmentRequest();req.Init(msg.Payload().Bytes,msg.Payload().Pos);operations.append(req.CommandId())
+                    if msg.PayloadType()==Payload.SimulationControlRequest:
+                        req=SimulationControlRequest();req.Init(msg.Payload().Bytes,msg.Payload().Pos)
+                        if req.Action()==3:opens.append(msg.WorldRevision())
+                check('actual_wire_separates_ack_from_paid_completion',args.action_driven or all(id in early and id in paid for id in operations[:3]))
+                check('all_three_returns_reference_paid_authoritative_revision',args.action_driven or all(any(rev>=paid[id] for rev in opens) for id in operations[:3]))
+                work_rows=[r for r in rows() if int(r.get('inventory_work_visible',0))]
+                check('work_panel_is_visible_without_modal_pause',args.action_driven or any(int(r['pause_reasons'])==0 and int(r['equipment_form'])==0 for r in work_rows))
+            elif args.presentation_only:
                 es = entries(view)
                 image = Image.open(out / 'inventory.png').convert('RGB')
                 region = image.crop((round(origin_x+2.05*unit),round(origin_y+1.55*unit),round(origin_x+4.35*unit),round(origin_y+4.45*unit)))

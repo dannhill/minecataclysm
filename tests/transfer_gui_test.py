@@ -209,6 +209,8 @@ def main():
                 assert options and options[-1] == 'Cancel' and len(options) <= 9, options
                 return str(len(options))
             def open_inventory():
+                if int(latest()['equipment_form']) == 1 and int(latest()['inventory_view']) > 0:
+                    return views()[-1]
                 tap('i')
                 wait(lambda r: int(r['equipment_form']) == 1 and int(r['inventory_view']) > 0)
                 return views()[-1]
@@ -240,7 +242,9 @@ def main():
             def action(insert):
                 sent=int(latest()['transfers_sent'])
                 click(11.75 if insert else 4.65,9.97)
-                wait(lambda r:int(r['equipment_form'])==0 and int(r['transfers_sent'])==sent+1)
+                wait(lambda r:int(r['transfers_sent'])==sent+1)
+                tap('Escape')  # Opt out of return for this explicit-I mechanism suite.
+                wait(lambda r:int(r['equipment_form'])==0)
             def finish():wait(lambda r:int(r['pending_move'])==0 and int(r['transfer_token'])==0,timeout=20)
             if args.resume_only:
                 wait(lambda r:int(r['transfer_token'])>0)

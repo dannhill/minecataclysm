@@ -2152,7 +2152,7 @@ index 0000000..1a0308e
 +}
 diff --git a/src/cwm/cwm_map_exporter.cpp b/src/cwm/cwm_map_exporter.cpp
 new file mode 100644
-index 0000000..8d6a9a8
+index 0000000..6e95e11
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.cpp
 @@ -0,0 +1,637 @@
@@ -2544,7 +2544,7 @@ index 0000000..8d6a9a8
 +            &pos,
 +            0.0f,
 +            0,
-+            100,
++            u.is_dead_state() ? 0 : 100,
 +            player_name,
 +            true,
 +            player_flags
@@ -6706,10 +6706,10 @@ index 0000000..d45e687
 +}
 diff --git a/tests/cwm_runtime_test.cpp b/tests/cwm_runtime_test.cpp
 new file mode 100644
-index 0000000..e02b089
+index 0000000..f9f7b99
 --- /dev/null
 +++ b/tests/cwm_runtime_test.cpp
-@@ -0,0 +1,470 @@
+@@ -0,0 +1,490 @@
 +#include "cwm_motion.h"
 +#include "cata_catch.h"
 +#include "avatar.h"
@@ -7179,4 +7179,24 @@ index 0000000..e02b089
 +    CHECK( u.pos() == pos ); CHECK( u.get_stamina() == 0 );
 +    CHECK( u.is_walking() ); CHECK( u.has_effect( efftype_id( "winded" ) ) );
 +    CHECK_FALSE( u.can_switch_to( move_mode_id( "run" ) ) );
++}
++
++
++TEST_CASE("cwm_activity_cost_observer_covers_both_native_phases_and_is_scoped", "[cwm][runtime][work]")
++{
++    const override_option no_autosave("AUTOSAVE","false");
++    const override_option no_random_npc("NPC_SPAWNTIME","0");
++    prepare_runtime(); avatar& u=get_avatar();
++    const bool preexisting=GENERATE(false,true);
++    bool assigned=preexisting; int observed=0, observations=0;
++    if(assigned)u.assign_activity(activity_id("ACT_WAIT"),300);
++    REQUIRE_FALSE(do_turn_with_action([&]() {
++        if(!assigned) { assigned=true;u.assign_activity(activity_id("ACT_WAIT"),300);return true; }
++        finish_external_action_phase();return false;
++    },{},[&]() {
++        CHECK(observed==100-u.moves); CHECK(observations>0); CHECK(observed>0); return true;
++    },[&](int moves,int speed) { CHECK(moves>=0);CHECK(speed>0);observed+=moves;++observations; }));
++    const int previous=observed;
++    REQUIRE_FALSE(do_turn_with_action([&]() {finish_external_action_phase();return false;}));
++    CHECK(observed==previous); // Provider cannot escape its scoped canonical turn.
 +}
