@@ -41,6 +41,12 @@ non feature già consegnate o graficamente approvate. Dopo i fix mirati,
 **prossimo passo UX-01**, poi UX-02; contenitori esterni e raccolta quantitativa
 restano essenziali e riusano questi componenti. Costi/decisioni/capacità
 rimangono nativi. Le nuove prove manuali saranno aggiunte alla consegna.
+Su ulteriore richiesta sono sincronizzati i **27 batch di produzione** attuali:
+1.080 record, 396 rappresentazioni runtime e 89 texture attribuite. Il
+[report mapping](docs/fixes/item-mapping-2026-10-09.md) distingue proxy pronti,
+asset non supportati, no-match e varianti procedurali ancora da realizzare.
+La mappatura resta una corsia indipendente dal gameplay; i nuovi test mirati
+UI/mapping sono nel consueto backlog (12 pendenti dopo i 16 PASS).
 
 ## Prodotto e autorità
 

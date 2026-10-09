@@ -1,5 +1,28 @@
 # Implementation status
 
+Current scoped follow-up (2026-10-09): inventory feedback fixes and synchronization
+of all **27 production item batches**. Native capacity pickup now explains a
+rejection and offers explicitly validated native wielding/Cancel; auto-pickup
+never changes equipment. Decision prompts/choices strip terminal color tags
+without losing symbols/text. Craft resume R stays inside its slot and only
+selects, without starting work. CWM stays 2.15; canonical save rules unchanged.
+User accepted **16 manual points** (equipment, consumption, medicine, crafting).
+Ranged/reload and transfer checklists remain pending; four focused UI/mapping
+rechecks bring the usual backlog to **12**, no tests required from the user today.
+Both reconstructed runtimes are installed with rollback copies. Scope/evidence:
+[inventory feedback](docs/fixes/inventory-feedback-2026-10-09.md).
+Mapping: 1,080 records, 396 runtime representations, 89 attributed textures;
+105 selected but unsupported assets and 579 no-match records use fallback.
+[Mapping report](docs/fixes/item-mapping-2026-10-09.md). Procedural variants
+recommended in batches are not implemented by synchronization.
+Next: **UX-01**, familiar Mineclonia inventory layout, optional search and
+progressive detail; then sequential paid native actions, improved confirmations,
+recipe history and interactive hotbar. [Detailed source-based plan](docs/design/inventory-and-native-dialogs.md).
+The broader M5.5 gate remains historical FAILED and full SAVE-001 stays OPEN.
+
+The transfer delivery below is historical; its 24-pending counter describes
+acceptance before the latest user feedback, superseded by the current backlog.
+
 Current delivery: [native quantities, drop and owned-container transfers](docs/fixes/native-transfer.md),
 CWM 2.15. I → Quantita e trasferimenti offers a read-only pair of panels,
 positive partial charge quantities, current-tile ground deposit and an explicitly
