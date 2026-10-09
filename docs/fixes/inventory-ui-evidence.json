@@ -1,0 +1,256 @@
+{
+  "scope": "UX-01 layout/progressive details; manual acceptance pending; M5.5 FAILED and full SAVE-001 OPEN unchanged",
+  "build_commit": "2d51b0a9ce2df7efb0ea0468cc00aa03e164929f",
+  "integration_commit": "0c33fbe34f80b6edea39419b7544563e39b97fd5",
+  "protocol": "2.15",
+  "source_manifest": {
+    "format_version": 1,
+    "repositories": {
+      "cdda": {
+        "url": "https://github.com/CleverRaven/Cataclysm-DDA.git",
+        "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+        "shallow": true,
+        "patch": "baseline/patches/cdda.patch",
+        "patch_sha256": "11363eaf96143f515a0a2eacd6a53329c76c3bc1c20d337233be218c8af63f50",
+        "tree_inventory": "baseline/trees/cdda.json",
+        "tree_sha256": "aa6db1265473c709f01c2f6df92193ecb870619b46ac9232477c3698efb7b471",
+        "file_count": 8586,
+        "original_status": " M src/CMakeLists.txt\n M src/avatar.cpp\n M src/avatar_action.cpp\n M src/avatar_action.h\n M src/character.cpp\n M src/character_body.cpp\n M src/character_inventory.cpp\n M src/craft_command.cpp\n M src/craft_command.h\n M src/crafting.cpp\n M src/crafting.h\n M src/do_turn.cpp\n M src/do_turn.h\n M src/game.cpp\n M src/game.h\n M src/handle_action.cpp\n M src/iexamine.cpp\n M src/iuse_actor.cpp\n M src/melee.cpp\n M src/output.cpp\n M src/pickup.cpp\n M src/ranged.cpp\n M src/ranged.h\n M src/recipe.cpp\n M src/recipe.h\n M src/ui.cpp\n M tests/CMakeLists.txt\n M tests/test_main.cpp\n?? src/cwm/cwm_crafting.h\n?? src/cwm/cwm_inventory.h\n?? src/cwm/cwm_main.cpp\n?? src/cwm/cwm_map_exporter.cpp\n?? src/cwm/cwm_map_exporter.h\n?? src/cwm/cwm_ranged.h\n?? src/cwm/cwm_server.cpp\n?? src/cwm/cwm_server.h\n?? src/cwm/cwm_status_gauges.h\n?? src/cwm_motion.cpp\n?? src/cwm_motion.h\n?? src/safe_mode_actions.h\n?? tests/cwm_pickup_test.cpp\n?? tests/cwm_projection_test.cpp\n?? tests/cwm_runtime_test.cpp\n"
+      },
+      "luanti": {
+        "url": "https://github.com/luanti-org/luanti.git",
+        "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
+        "shallow": true,
+        "patch": "baseline/patches/luanti.patch",
+        "patch_sha256": "f03931b26270524007744891344ae530c4b5c0c8e81b02a578c334c6b4aad596",
+        "tree_inventory": "baseline/trees/luanti.json",
+        "tree_sha256": "8ec2d997daea4bcdd4e2c37acf67751988d8a1b95dfad27d4e0211cac2cf6398",
+        "file_count": 2259,
+        "original_status": " M builtin/settingtypes.txt\n M src/CMakeLists.txt\n M src/client/CMakeLists.txt\n M src/client/client.cpp\n M src/client/clientenvironment.cpp\n M src/client/game.cpp\n M src/client/hud.cpp\n M src/client/inputhandler.cpp\n M src/client/keys.h\n M src/client/mesh_generator_thread.cpp\n M src/client/mesh_generator_thread.h\n M src/defaultsettings.cpp\n M src/gui/guiFormSpecMenu.cpp\n M src/gui/guiScene.cpp\n M src/network/clientpackethandler.cpp\n M src/server/player_sao.cpp\n M src/unittest/test_mapblock.cpp\n?? src/cdda/avatar_status.h\n?? src/cdda/cdda_bridge.cpp\n?? src/cdda/cdda_bridge.h\n?? src/cdda/crafting_inventory.h\n?? src/cdda/decision_text.h\n?? src/cdda/equipment_inventory.h\n?? src/cdda/ground_item_formspec.h\n?? src/cdda/ground_item_projection.h\n?? src/cdda/ground_item_visual.h\n?? src/cdda/posture_input.h\n"
+      },
+      "mineclonia": {
+        "url": "https://github.com/mark-wiemer/mineclonia.git",
+        "commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+        "shallow": true,
+        "patch": "baseline/patches/mineclonia.patch",
+        "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "tree_inventory": "baseline/trees/mineclonia.json",
+        "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36",
+        "file_count": 9359,
+        "original_status": ""
+      }
+    }
+  },
+  "environment": {
+    "display": "Private Xvfb, 1280x800x24",
+    "renderer": "Mesa llvmpipe OpenGL 4.5",
+    "input": "xdotool",
+    "os": "Pop!OS 22.04",
+    "build": "Incremental reconstruction, caches retained; build after completed refresh"
+  },
+  "unit_tests": {
+    "modules": 47,
+    "individual_tests": 308,
+    "catch_assertions": 648,
+    "catch_cases": 4,
+    "status": "PASS"
+  },
+  "renderer_runs": [
+    {
+      "name": "equipment-verified",
+      "source_commit": "cab1b88d3513eef8bf62d8b5a0e34a7044fc22ba",
+      "luanti_sha256": "f44689ed7307229709b56e5660ff989dc9e0af6fb5431f21cb21b16e2939259a",
+      "stage": "before final preview texture",
+      "checks": 30,
+      "status": "PASS",
+      "artifacts": {
+        "artifacts/ux01-inventory-20261009/equipment-verified/relay-errors.json": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "artifacts/ux01-inventory-20261009/equipment-verified/checks.json": "8def5472774cebca8476e227115479463e9704f52f992a6f99e6a1e84e1fee50",
+        "artifacts/ux01-inventory-20261009/equipment-verified/camera.csv": "1d8ec5779c69b5f5eaf02c355a276656a0bec4cd59e3f4e5a1cfa02243f2d640",
+        "artifacts/ux01-inventory-20261009/equipment-verified/summary.json": "457060426b37eaf48104cba4b6584a7d1175047023b984174c50b8f8ac6d4e91",
+        "artifacts/ux01-inventory-20261009/equipment-verified/hat-details.png": "2e73db700f97a20a30c1f469be624741e9d3a2d0570051b0d6b7340580f4c014",
+        "artifacts/ux01-inventory-20261009/equipment-verified/server-wire.bin": "a1d0496e7d7f2ebae38d8d0fb88e7f958b1de40eb1a3aafb7308a057501ae242",
+        "artifacts/ux01-inventory-20261009/equipment-verified/native.json": "eb0fe808f2c73d2a8b9dbd68de615b26e5b41230725961bc8cf28d91fa805a34",
+        "artifacts/ux01-inventory-20261009/equipment-verified/inventory.png": "230fb51d3eb426b732470507bf97a9eb5e4ecfdfdfd1e1dfb37cbdb71d71791f",
+        "artifacts/ux01-inventory-20261009/equipment-verified/client-wire.bin": "c4d5612c39ba7e6ffc59044d87fce3f0ccd1c8a139066261e45f8ff0fd2fc81a",
+        "artifacts/ux01-inventory-20261009/equipment-verified/native-stow-choice.png": "11fbdb748ef2642d48d3daf0ce4a9e9d8b9181303071865471a2c0081bfc9f5f",
+        "artifacts/ux01-inventory-20261009/equipment-verified/search-filter.png": "85cb8bfa9080ee1f0e698b7e4912a480e7c1e82d8a7290b5f935f9b953b520f7"
+      }
+    },
+    {
+      "name": "medicine-verified",
+      "source_commit": "cab1b88d3513eef8bf62d8b5a0e34a7044fc22ba",
+      "luanti_sha256": "f44689ed7307229709b56e5660ff989dc9e0af6fb5431f21cb21b16e2939259a",
+      "stage": "before final preview texture",
+      "checks": 33,
+      "status": "PASS",
+      "artifacts": {
+        "artifacts/ux01-inventory-20261009/medicine-verified/relay-errors.json": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "artifacts/ux01-inventory-20261009/medicine-verified/body-choice.png": "2175969e59f8505895ee34694db89436d4cc28b0546947130d4ab6d705f0bd39",
+        "artifacts/ux01-inventory-20261009/medicine-verified/checks.json": "7b0cef1633cf32aa562aa5007ed02a70333fd91c88cdd94ef056dfb32a08fbbf",
+        "artifacts/ux01-inventory-20261009/medicine-verified/camera.csv": "75b9f9e05e443cd9579904b91cde6e6ca9f49820b5a3095d94e45d094bf1d2f4",
+        "artifacts/ux01-inventory-20261009/medicine-verified/summary.json": "d23239f63cfff409b5891b3235a070fb4917262d45952e606b1f121593895a15",
+        "artifacts/ux01-inventory-20261009/medicine-verified/treated-body.png": "c4fde6a0fe3d696687d16bafa51e7564b7517c783dba27c18e19388de0355abf",
+        "artifacts/ux01-inventory-20261009/medicine-verified/server-wire.bin": "204c9c9d2f59ced7ebd55829cab1ab683548d6e038e3f812a1708c3fac75073f",
+        "artifacts/ux01-inventory-20261009/medicine-verified/medicine-detail.png": "3d15a3369d4f11c2926bbf1e5d702da09e70e003449b7f57dc8d2637a5e4eefd",
+        "artifacts/ux01-inventory-20261009/medicine-verified/native.json": "fbe11725c7ab1316401c5dd3a2abf3b9bbc3477c16fd1fa749376f3133f01166",
+        "artifacts/ux01-inventory-20261009/medicine-verified/inventory.png": "e76704f3dd5703b20bc1d024b7e61ded6eb2d33131a00b783f42d71e42ba4ebf",
+        "artifacts/ux01-inventory-20261009/medicine-verified/firstaid-pause.png": "2ef0aa0883b160f23567b73ca1d158302f7636500a1e55f58c8b66f4a6353fcc",
+        "artifacts/ux01-inventory-20261009/medicine-verified/client-wire.bin": "e4b379350d4ff29aab4053ded748714e58e9b51b0169a847a7d580cde741e741",
+        "artifacts/ux01-inventory-20261009/medicine-verified/confirmation.png": "b1b3a87802ff24ae63e990ec03de2d272d5ac7d506a3bac30da7962ee8f6933d"
+      }
+    },
+    {
+      "name": "consumption-delivery",
+      "source_commit": "2df6880f276704e06383a9ec8a7e16800567ef90",
+      "luanti_sha256": "8d1abf435b1c511e5d92e33cf6ec39413bd1acab1525f9a8cf65a847454428bb",
+      "stage": "before summary/provenance/preview polish",
+      "checks": 31,
+      "status": "PASS",
+      "artifacts": {
+        "artifacts/ux01-inventory-20261009/consumption-delivery/native-food-warning.png": "75748bb2b9e6607b0d80b38b413261ca3783182fda8931172fc81955a72a7793",
+        "artifacts/ux01-inventory-20261009/consumption-delivery/relay-errors.json": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "artifacts/ux01-inventory-20261009/consumption-delivery/rotten-warning.png": "51b6e972302be96ca597de22c538ebcbeb5f5efce5c668c74aab71e43b085a00",
+        "artifacts/ux01-inventory-20261009/consumption-delivery/checks.json": "6f97f23ec5d7e394f986153de84f2cd5a53e4999d026c807d12cb1a12edb2f7e",
+        "artifacts/ux01-inventory-20261009/consumption-delivery/camera.csv": "a7d25d87808662df6092f62de248a7fce6dcac5a81a39a34c30c1dfeb2b9b339",
+        "artifacts/ux01-inventory-20261009/consumption-delivery/summary.json": "d75b98de5797326d9dc91d5fd2c5f8d0b7afb6a7533ee470d4c0a213e13b3656",
+        "artifacts/ux01-inventory-20261009/consumption-delivery/server-wire.bin": "2266b633b743d4b3ea601f9b37cece6918a38b4e33822da906b8245becafb29c",
+        "artifacts/ux01-inventory-20261009/consumption-delivery/cancel-consumption.png": "7fb63020334b9724e1f340d682667492b75a8b450b23e7bb66815ae39a20092c",
+        "artifacts/ux01-inventory-20261009/consumption-delivery/food-detail.png": "d363981a6fd0f755a4a13b91957529737af6559cd0bed1b35fb407da61f85289",
+        "artifacts/ux01-inventory-20261009/consumption-delivery/native.json": "792135d5d2b114f6d22e85c52e7cbc16d4fbdd125dac22fe9df221050118f3af",
+        "artifacts/ux01-inventory-20261009/consumption-delivery/inventory.png": "5cf042b3c632995db513251fc7c0602c21dbde4cda2445ec300db45b563064a8",
+        "artifacts/ux01-inventory-20261009/consumption-delivery/client-wire.bin": "4a9aaa9476e11facc5537f4ad02a54024e6387cbb2f5f47dd62c812fbfa00ea3"
+      }
+    },
+    {
+      "name": "pages-final",
+      "source_commit": "2d51b0a9ce2df7efb0ea0468cc00aa03e164929f",
+      "luanti_sha256": "c04505366583fb7075a426eb01ea4e4fecd0e8a5e534624976bba2c7267cf1c9",
+      "stage": "final source",
+      "checks": 21,
+      "status": "PASS",
+      "artifacts": {
+        "artifacts/ux01-inventory-20261009/pages-final/optional-search.png": "6bc8f6efcfcb44b6c98dce0c24539486e39ad191496903edb70fa9ae4d53c2d5",
+        "artifacts/ux01-inventory-20261009/pages-final/refresh-page-two.png": "93c4055e49390c307c83603ee5c2d7303a666ce10a49f10e242b80e7dd19213d",
+        "artifacts/ux01-inventory-20261009/pages-final/relay-errors.json": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "artifacts/ux01-inventory-20261009/pages-final/checks.json": "52666d938b197627f608e386ab54a38d91eca258d2c4871bbe57ecb97ad421b0",
+        "artifacts/ux01-inventory-20261009/pages-final/camera.csv": "2fa63fc7ab6e52a33e758b63f7fb884b72771890670f7a8f00fbb3391b256c6a",
+        "artifacts/ux01-inventory-20261009/pages-final/summary.json": "3515746b7a72276b2b6320e672bb869f45ffb334c407b200291e323020717d57",
+        "artifacts/ux01-inventory-20261009/pages-final/expanded-container.png": "775cdd2581e167daf959ca1877203b0b6728b12a7a252fc3d1bf0e4d218966f2",
+        "artifacts/ux01-inventory-20261009/pages-final/server-wire.bin": "1588e98eea7ab37731868b5ceaddb33071a711ffb5f8938afe00300c5e24352f",
+        "artifacts/ux01-inventory-20261009/pages-final/native.json": "bcfa181aef4a56175e8c4229bce9c683a1ff21333c767bcf7b1176ebf33b86b1",
+        "artifacts/ux01-inventory-20261009/pages-final/page-two.png": "177cd94225f61d2e68c11deb6ec1989335ab8ebf5a1bbca4cc74cb4e788acc1e",
+        "artifacts/ux01-inventory-20261009/pages-final/inventory.png": "4939a636b7c406dbf97dd0dec840d222fa306cd1862a77c2e26a1e1aa59835d0",
+        "artifacts/ux01-inventory-20261009/pages-final/client-wire.bin": "4a1401eea0be1e55769bfd4af6d0943aafd29401d2d5728c5cba32744bc6b305",
+        "artifacts/ux01-inventory-20261009/pages-final/container-filter.png": "f765a9fbd98267fb0c1810b37ae78b1b2c82550ad86775ad23a1911cc79e0f7a",
+        "artifacts/ux01-inventory-20261009/pages-final/layer-page-two.png": "d8575f3e47228f318d89d1fc6f51ba3c6831135acb5501d6622729b75fe83a54",
+        "artifacts/ux01-inventory-20261009/pages-final/compact-container.png": "1b041269fc2dcfcef32a027a9919315b71b51220e09aad4ececcbe12f7bef004"
+      }
+    },
+    {
+      "name": "ranged-final",
+      "source_commit": "2d51b0a9ce2df7efb0ea0468cc00aa03e164929f",
+      "luanti_sha256": "c04505366583fb7075a426eb01ea4e4fecd0e8a5e534624976bba2c7267cf1c9",
+      "stage": "final source",
+      "checks": 31,
+      "status": "PASS",
+      "artifacts": {
+        "artifacts/ux01-inventory-20261009/ranged-final/relay-errors.json": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "artifacts/ux01-inventory-20261009/ranged-final/reload-complete.png": "14680d255d818ad522d7488d998dcad4ec7949b45396d40902dd7d31e2833a28",
+        "artifacts/ux01-inventory-20261009/ranged-final/checks.json": "000850fce4a5a214a730e2b7c3da9dc59998108a06d02dd011bbe79fbd64a0cc",
+        "artifacts/ux01-inventory-20261009/ranged-final/camera.csv": "3a08ba606934d5d5dcbb45f9ef66a20750b91cecc8cd917fdcabef32241dab4b",
+        "artifacts/ux01-inventory-20261009/ranged-final/summary.json": "de4cc80a68f2d1bd8335fc63deaf074d7f313059ab182aa63a651f221040b84d",
+        "artifacts/ux01-inventory-20261009/ranged-final/aimed.png": "474b8cbb2a87da8ec2383a9f276a84e0a9cb83c7dc32b860a6a2c579d36951ce",
+        "artifacts/ux01-inventory-20261009/ranged-final/reload-paused.png": "05beb020388ea84e6cdd011e667d7ee125e883a61107e25373d715e7b1648392",
+        "artifacts/ux01-inventory-20261009/ranged-final/ammo-choices.png": "95b2c47d3743113f92c9d66537e603bd42603eea7c556e09e995db675f2dec4b",
+        "artifacts/ux01-inventory-20261009/ranged-final/server-wire.bin": "346e664836979e372702286375e68fdc4a99624db17b42d2492403ca533ce05f",
+        "artifacts/ux01-inventory-20261009/ranged-final/native.json": "cce68f9d087c49c830ec35621559a25cf1702ff97c3cc52c8cda2dc0adcf5873",
+        "artifacts/ux01-inventory-20261009/ranged-final/pointed-target.png": "1171400a034946ad25099619572df1155c22d764b5e879d7cb7da2d1ce5959cd",
+        "artifacts/ux01-inventory-20261009/ranged-final/client-wire.bin": "ddb923263187765ff0dd785d53188d9069e1e96e3af5cac46fe818ccb5697175",
+        "artifacts/ux01-inventory-20261009/ranged-final/reload-confirmation.png": "f4c974545087baaa8c46acdabbee90efa2ca27cf16b239186af09c83d46757c4"
+      }
+    },
+    {
+      "name": "transfer-verified",
+      "source_commit": "0c33fbe34f80b6edea39419b7544563e39b97fd5",
+      "luanti_sha256": "c04505366583fb7075a426eb01ea4e4fecd0e8a5e534624976bba2c7267cf1c9",
+      "stage": "final source; corrected cancel-button test coordinates",
+      "checks": 30,
+      "status": "PASS",
+      "artifacts": {
+        "artifacts/ux01-inventory-20261009/transfer-verified/transfer-paused.png": "04b58697ed312c6166afb91606dccf198c4791b0d00e46e50177607e7498506d",
+        "artifacts/ux01-inventory-20261009/transfer-verified/relay-errors.json": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "artifacts/ux01-inventory-20261009/transfer-verified/checks.json": "53cd0d98e35c08ae09667f64288c025a4dc50fc6f49b216256c97510d8d9cfd2",
+        "artifacts/ux01-inventory-20261009/transfer-verified/camera.csv": "2f7a9b8eecb72cd9c5dddaff779b058c1999ca3cebd322d644c538983fc78812",
+        "artifacts/ux01-inventory-20261009/transfer-verified/summary.json": "48b1326e1e9647f327195bd4cb8731fc8d274b231937cdbf30412d7a8a8a405d",
+        "artifacts/ux01-inventory-20261009/transfer-verified/transfer-selected.png": "596e8f12368dd592b2c54e41e2a3323e19f05013b542d6165737da104a8f29b0",
+        "artifacts/ux01-inventory-20261009/transfer-verified/server-wire.bin": "59e3168370fbe3ec1c91fd811f99cb965759355a95a0c80273592908a591e3ce",
+        "artifacts/ux01-inventory-20261009/transfer-verified/native.json": "7e385ac5fbece27ce267fddfa7b75feb2ece6d6a6e9e3c2eb577c2e5fa85a09c",
+        "artifacts/ux01-inventory-20261009/transfer-verified/inventory.png": "9616914cc8c798b8e6039172d8042185b22d8e2801684b1e304e5ef54ad91fb1",
+        "artifacts/ux01-inventory-20261009/transfer-verified/client-wire.bin": "997d2ef3b1c11e91ddd90f78da77d8ab22d906c7998954eb541b87093071cd4c"
+      }
+    },
+    {
+      "name": "equipment-installed",
+      "source_commit": "0c33fbe34f80b6edea39419b7544563e39b97fd5",
+      "luanti_sha256": "c04505366583fb7075a426eb01ea4e4fecd0e8a5e534624976bba2c7267cf1c9",
+      "stage": "installed final runtime",
+      "checks": 30,
+      "status": "PASS",
+      "artifacts": {
+        "artifacts/ux01-inventory-20261009/equipment-installed/relay-errors.json": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "artifacts/ux01-inventory-20261009/equipment-installed/checks.json": "8def5472774cebca8476e227115479463e9704f52f992a6f99e6a1e84e1fee50",
+        "artifacts/ux01-inventory-20261009/equipment-installed/camera.csv": "e89b3654b5e828ab64eec2a1144e53a997672c3238fab4c7a47a1632ea594116",
+        "artifacts/ux01-inventory-20261009/equipment-installed/summary.json": "0335ee1797c50788ff850879a83ec59bfb51129931bac03b442b32507a1f02e8",
+        "artifacts/ux01-inventory-20261009/equipment-installed/hat-details.png": "514828adb39277b121dda8eff760a683d0fadcdc0e09d79303eefe1123160453",
+        "artifacts/ux01-inventory-20261009/equipment-installed/server-wire.bin": "32852984d46071cbc63c778b2bfb2b6c63628d41e3bab92174b49bf322512d7e",
+        "artifacts/ux01-inventory-20261009/equipment-installed/native.json": "6eb505f4d9e54a702558e40517d81ec294cdd4acd7086a2e934fc99ff7fea31e",
+        "artifacts/ux01-inventory-20261009/equipment-installed/inventory.png": "2e0241209e84c45134406c8cc52f8365c26af7d9e819ee5e5240cad256f8300f",
+        "artifacts/ux01-inventory-20261009/equipment-installed/client-wire.bin": "4b003f5845341bf73d818b101efd2f0739a2ebbc960a4abec6090210a1e11fbb",
+        "artifacts/ux01-inventory-20261009/equipment-installed/native-stow-choice.png": "9ba9d52fc64270e02330ddb59eeed95f263685f4e91931746ffe54934cf7b5fa",
+        "artifacts/ux01-inventory-20261009/equipment-installed/search-filter.png": "e0c13080b67930b63999acaca211a0c311c8e579b051b84d666404cb05e2d3fe"
+      }
+    }
+  ],
+  "checks_total": 206,
+  "final_runtime_checks": 112,
+  "installation": {
+    "source_commit": "2d51b0a9ce2df7efb0ea0468cc00aa03e164929f",
+    "installation_commit": "0c33fbe34f80b6edea39419b7544563e39b97fd5",
+    "source": "/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/luanti/bin/luanti",
+    "installed": "/home/dannhill/Projects/cdda-mineclonia/luanti/bin/luanti",
+    "sha256": "c04505366583fb7075a426eb01ea4e4fecd0e8a5e534624976bba2c7267cf1c9",
+    "backup": "/home/dannhill/Projects/cdda-mineclonia/artifacts/ux01-inventory-20261009/luanti-previous-runtime",
+    "backup_sha256": "f91ae6f903986ce7975d61bb97df526613fb7384143fd007a62aa01bf9cec274",
+    "cdda": {
+      "path": "/home/dannhill/Projects/cdda-mineclonia/cdda/build/src/cdda-server",
+      "sha256": "bf1898dbd1ec43072506962c46cb575443583a9d95fcc861d6cc308add7721d8",
+      "unchanged": true
+    },
+    "protocol": "2.15"
+  },
+  "receipts": {
+    "artifacts/ux01-inventory-20261009/build-preview.log": "b8929c3bfb548307f6894ec47e81ffe8b6169aefbd686cdfb5be466adf079267",
+    "artifacts/ux01-inventory-20261009/source-replay-release.json": "dd12b50a272d3c6ef203354d734b09b46158d30625ad0989e617095f989c77d2",
+    "artifacts/ux01-inventory-20261009/refresh-preview.json": "2e5048c35ce2661178359af382185aee4e83f8aa029c70abe0c9dc178c3431f3",
+    "artifacts/ux01-inventory-20261009/unittests-final-source.log": "d5aae6145d13a2fa4dcca3377a4a9158a798895c862637134c42f298c63cdf56",
+    "artifacts/ux01-inventory-20261009/reader-build.json": "83b48fb0847d8e2e1bed60ec9d55de428567c0d65f0676752690281f234d7c2b",
+    "artifacts/ux01-inventory-20261009/fixture/before.json": "57ba075c26c38fb9974cf0d1a46ba27aa4e662ab03d6168b7fa7af49555fa84b",
+    "artifacts/ux01-inventory-20261009/install.json": "63796c8627ec80c2004f60e607880a7bdb819aafc702b0ca80dbac02f0654213"
+  },
+  "excluded_preliminary_runs": {
+    "equipment-final": "Port 30000 conflict; fixed explicit --port in isolated GUI drivers",
+    "consumption-final": "Same port conflict",
+    "transfer-final": "Obsolete automated click coordinate for the new inventory cancel button; harness fixed, full transfer-verified PASS",
+    "initial reader build": "Fixture-only wear_item missing arguments; corrected before fixture creation",
+    "category build overlap": "Compile began before source refresh ended and read prior header; excluded and rebuilt after completed refresh",
+    "first preview build": "Unsupported Irrlicht material Lighting member; compile caught it and corrected source was rebuilt"
+  },
+  "limitations": [
+    "Native garment body coverage/encumbrance not exported: paginated worn list, not anatomy grouping",
+    "Quick row selection only, configurable hover shortcuts and safe cross-query selection continuity remain planned",
+    "Actions still close I; sequential paid actions are UX-02",
+    "Mapping art can be a proxy; unknown category uses question mark",
+    "94 checks in three precursor GUI sessions are separately identified; 112 checks in four sessions use installed final runtime hash"
+  ]
+}

@@ -34,9 +34,10 @@ immagini di categoria da asset già estratti; categorie sconosciute mostrano
 proxy. Il nome CDDA rimane leggibile: un'icona di spada per WEAPONS non
 trasforma una mazza in spada. Nessuna nuova texture o meccanica Mineclonia.
 
-La scena dell'anteprima GUI esclude la nebbia del mondo, e assegna una texture trasparente al secondo materiale Armor del modello,
-che prima copriva la pelle con una sagoma grigia. La camera e la nebbia del mondo non
-cambiano. L'anteprima è statica durante la consultazione.
+La scena dell'anteprima GUI esclude la nebbia del mondo e assegna una
+texture trasparente al secondo materiale Armor del modello, che prima
+copriva la pelle con una sagoma grigia. La camera e la nebbia del mondo
+non cambiano. L'anteprima è statica durante la consultazione.
 
 ## Confini della fetta e seguito
 
@@ -62,6 +63,19 @@ seguono il [piano UI](../design/inventory-and-native-dialogs.md).
 ## Verifica riproducibile
 
 Fonte ed esatti risultati nel [receipt](inventory-ui-evidence.json).
+**PASS**: Luanti 308 test / 47 moduli, più 648 asserzioni Catch2 / 4 casi;
+ricostruzione indipendente delle sorgenti; 206 controlli in sette sessioni
+GUI con ricarica dei save nel core pristine. Di questi, **112 in quattro
+sessioni** usano l'hash del binario finale (paging, tiro, trasferimenti e
+intera regressione equipaggiamento dopo installazione); 94 in tre sessioni
+precedenti verificano equipaggiamento/consumo/medicina prima degli ultimi
+ritocchi grafici. Il receipt distingue sorgenti e hash senza presentarli
+come un'unica suite del binario finale.
+
+Binario Luanti installato: `c04505366583fb7075a426eb01ea4e4fecd0e8a5e534624976bba2c7267cf1c9`.
+CDDA resta `bf1898dbd1ec43072506962c46cb575443583a9d95fcc861d6cc308add7721d8`.
+Rollback Luanti: `artifacts/ux01-inventory-20261009/luanti-previous-runtime`.
+[Anteprima dal runtime installato](../../artifacts/ux01-inventory-20261009/equipment-installed/inventory.png).
 Artefatti locali: `artifacts/ux01-inventory-20261009/`.
 Ricostruzione incrementale con cache, non clean build fredda. Pin CDDA/Luanti/
 Mineclonia invariati; cattura completa in `baseline/manifest.json`.
@@ -91,7 +105,8 @@ Le prove coprono apertura/ricerca/Esc, filtri/pagine, molteplici indossati,
 consultazione senza comandi né avanzamento, native azioni e invalidazione su
 reconnect. Test positivi separati dai tentativi preliminari conservati:
 conflitto di porta dei primi due test simultanei, firma errata nella sola
-fixture, firma materiale GUI non supportata intercettata dal compilatore,
+fixture, membro materiale GUI non supportato intercettato dal compilatore,
+coordinata obsoleta del pulsante Annulla nel driver trasferimenti,
 e build sovrapposta a un refresh. Quest'ultima è stata esclusa e
 sostituita da build dopo refresh completo con verifica delle stringhe/asset
 e della resa effettiva del nuovo binario. Nessuno di questi tentativi vale

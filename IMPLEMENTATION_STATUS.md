@@ -1,7 +1,7 @@
 # Implementation status
 
-Current scoped delivery (2026-10-09): **UX-01 inventory layout**, verification in progress
-before installation in start.sh: Mineclonia 9×3 grid, paginated native worn items, actual wielded
+Current scoped delivery (2026-10-09): **UX-01 inventory layout**, verified and installed
+in start.sh: Mineclonia 9×3 grid, paginated native worn items, actual wielded
 hand, distinct read-only 9×1 row, optional search and progressive object/pocket
 cards. Search opens only on request; Escape leaves search before closing I.
 Page/filter/search survive reopening; fresh queries invalidate item selection.
