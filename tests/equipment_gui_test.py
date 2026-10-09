@@ -273,7 +273,7 @@ def main():
                 shot('automatic-return-search.png')
                 click(1.025,5.975);wait(lambda r:int(r['equipment_selected'])==item(view,'hat_ball').Id())
                 view=paid_return(3);check('takeoff_completes_before_return',not item(view,'hat_ball').Worn())
-                check('sequential_operations_advance_native_time',args.action_driven or int(latest()['simulation_time'])>start_time)
+                check('sequential_operations_advance_native_time',int(latest()['simulation_time'])>start_time)
                 # Leave nested search, clear its applied filter, then act on a distinct object.
                 tap('Escape');click(8.5,4.95)
                 select_item(item(view,'rock'));view=paid_return(0)
@@ -326,10 +326,13 @@ def main():
                         if req.Action()==3:
                             opens.append(msg.WorldRevision())
                             if active_operation:first_return.setdefault(active_operation,msg.WorldRevision())
-                check('actual_wire_separates_ack_from_paid_completion',args.action_driven or all(id in early and id in paid for id in operations[:3]))
-                check('all_three_returns_reference_paid_authoritative_revision',args.action_driven or all(first_return.get(id,0)>=paid[id] for id in operations[:3]))
-                work_rows=[r for r in rows() if int(r.get('inventory_work_visible',0))]
-                check('work_panel_is_visible_without_modal_pause',args.action_driven or any(int(r['pause_reasons'])==0 and int(r['equipment_form'])==0 for r in work_rows))
+                if args.action_driven:
+                    check('each_native_operation_has_settled_state',all(id in paid for id in operations[:3]))
+                else:
+                    check('actual_wire_separates_ack_from_paid_completion',all(id in early and id in paid for id in operations[:3]))
+                    check('all_three_returns_reference_paid_authoritative_revision',all(first_return.get(id,0)>=paid[id] for id in operations[:3]))
+                    work_rows=[r for r in rows() if int(r.get('inventory_work_visible',0))]
+                    check('work_panel_is_visible_without_modal_pause',any(int(r['pause_reasons'])==0 and int(r['equipment_form'])==0 for r in work_rows))
             elif args.presentation_only:
                 es = entries(view)
                 image = Image.open(out / 'inventory.png').convert('RGB')
