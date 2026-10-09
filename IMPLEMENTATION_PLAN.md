@@ -36,9 +36,8 @@ Il [piano UI basato sui sorgenti](docs/design/inventory-and-native-dialogs.md)
 prioritizza: layout Mineclonia 9×3 con ricerca su richiesta, dettagli
 progressivi e strati; azioni consecutive con tempo nativo e ritorno alla stessa
 vista; conferme visive/medicina; ricette recenti/preferite/frequenti; hotbar
-interattiva con selezione distinta dalla mano reale. Sono task UX-01–05,
-non feature già consegnate o graficamente approvate. Dopo i fix mirati,
-**prossimo passo UX-01**, poi UX-02; contenitori esterni e raccolta quantitativa
+interattiva con selezione distinta dalla mano reale. Sono task UX-01–05. Il layout UX-01 è ora consegnato, ma non ancora graficamente approvato;
+gli altri task restano pianificati. Prossimo passo UX-02; contenitori esterni e raccolta quantitativa
 restano essenziali e riusano questi componenti. Costi/decisioni/capacità
 rimangono nativi. Le nuove prove manuali saranno aggiunte alla consegna.
 Su ulteriore richiesta sono sincronizzati i **27 batch di produzione** attuali:

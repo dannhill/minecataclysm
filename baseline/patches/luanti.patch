@@ -718,17 +718,16 @@ index ed1c300..60534fe 100644
  		doPause = false;
  		acceptInput(quit_mode_cancel);
 diff --git a/src/gui/guiScene.cpp b/src/gui/guiScene.cpp
-index f30c4f3..08b60c4 100644
+index f30c4f3..74e7a6a 100644
 --- a/src/gui/guiScene.cpp
 +++ b/src/gui/guiScene.cpp
-@@ -55,7 +55,9 @@ void GUIScene::setTexture(u32 idx, video::ITexture *texture)
+@@ -55,7 +55,8 @@ void GUIScene::setTexture(u32 idx, video::ITexture *texture)
  	material.MaterialType = video::EMT_TRANSPARENT_ALPHA_CHANNEL;
  	material.MaterialTypeParam = 0.5f;
  	material.TextureLayers[0].Texture = texture;
 -	material.FogEnable = true;
-+	// UI previews have their own scene; world fog/light must not hide them.
++	// UI previews have their own scene; world fog must not hide them.
 +	material.FogEnable = false;
-+	material.Lighting = false;
  	material.TextureLayers[0].MinFilter = video::ETMINF_NEAREST_MIPMAP_NEAREST;
  	material.TextureLayers[0].MagFilter = video::ETMAGF_NEAREST;
  	material.BackfaceCulling = false;

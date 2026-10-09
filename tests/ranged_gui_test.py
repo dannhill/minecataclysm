@@ -225,8 +225,9 @@ def main():
             def cancel_reload():
                 shot('reload-paused.png')
                 from PIL import Image
-                width,height=Image.open(out/'reload-paused.png').size;unit=height*.075
-                x=(width-16*unit)/2+11.75*unit;y=(height-11*unit)/2+2.2*unit
+                from formspec_geometry import geometry
+                ox,oy,unit=geometry(out/'reload-paused.png')
+                x=ox+13.4*unit;y=oy+10.35*unit
                 xdo('mousemove','--window',window,str(round(x)),str(round(y)));xdo('click','1')
                 wait(lambda r:int(r['equipment_form'])==0 and int(r['reload_token'])==0 and int(r['pending_move'])==0)
             if args.resume_only:

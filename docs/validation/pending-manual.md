@@ -1,7 +1,8 @@
 # Validazioni manuali del playable core
 
-Stato corrente: **12 punti pendenti**: quattro tiro/ricarica, quattro
-quantita/deposito/trasferimenti e quattro ricontrolli mirati UI/mapping. Il riscontro del 2026-10-09 accetta tutti i
+Stato corrente: **16 punti pendenti**: quattro tiro/ricarica, quattro
+quantita/deposito/trasferimenti, quattro ricontrolli mirati UI/mapping e
+quattro del nuovo inventario UX-01. Non serve eseguirli ora. Il riscontro del 2026-10-09 accetta tutti i
 16 punti inventario, cibo/bevande, medicazioni e crafting. I bug segnalati
 restano separati dall'accettazione delle checklist, con ricontrolli mirati
 aggiunti sotto quando le correzioni sono consegnate.
@@ -324,4 +325,39 @@ attuale resta provvisorio.
    Zaino e mazza possono ancora usare il fallback: non tutti i record hanno
    un asset pronto. Nessun cambiamento atteso a quantità, tempi o salvataggi.
 
-I futuri UX-01–05 avranno checklist proprie soltanto quando consegnati.
+Le revisioni successive UX-02–05 avranno checklist proprie alla consegna.
+
+
+## UX-01 — Nuovo inventario Mineclonia — PENDING (4), quando puoi
+
+Il nuovo layout è disponibile anche con **I** nel gioco normale. Le prove
+precedenti attestano le meccaniche, non l'accettazione di questa interfaccia.
+Nessun test richiesto oggi; non serve ripetere i 16 vecchi PASS.
+
+1. `./equipment-demo.sh --fresh`: **I** mostra griglia 9×3, mano vera,
+   indossati e fila inferiore distinta. La ricerca non è attiva all'apertura:
+   clic **Cerca...**, digita `cap`, poi **Cerca**/Invio. Primo **Esc** lascia
+   la ricerca mantenendo inventario/tempo fermi; secondo Esc torna al gioco.
+   Non equipaggi niente con un semplice clic sulle icone.
+2. Seleziona lo zaino: scheda breve leggibile, **Tasche e dettagli...** apre
+   capacità, contenuti e costi nella zona scorrevole; **Meno dettagli** riduce.
+   Prova Tutti/Equipaggiati/Contenitori e selezione da mano/indossati/barra.
+   Tooltip distinguono icone di categoria e mapping/proxy, col nome CDDA vero.
+   I contenuti dello zaino rimangono nell'inventario anche quando lo impugni:
+   la provenienza dice **In mano > zaino > tasca**. Non sono copie aggiuntive.
+3. `./equipment-demo.sh --pages --fresh`: scena isolata di stress con 52
+   oggetti e 12 indossati (strati predisposti dalla fixture debug, non
+   ottenuti eludendo le normali regole Indossa). Usa entrambe le coppie di
+   frecce, seleziona un oggetto di pagina 2, chiudi/riapri I e **Aggiorna**.
+   Pagina/filtro/ricerca restano; la selezione viene azzerata nelle nuove viste
+   per non riusare ID scaduti. Cerca `bandana` e controlla nomi e leggibilità.
+4. Nella demo normale seleziona cappello → **Indossa**, poi **Togli**;
+   mazza → **Riponi** (anche Annulla), sasso → **Impugna**. I pulsanti restano
+   nel pannello a destra e i vincoli nativi valgono sempre. **F7** blocca le
+   azioni senza eseguirle alla ripresa. Esci/rientra: equipaggiamento e
+   contenuti conservati. La barra inferiore seleziona soltanto: switch rapido
+   e ritorno automatico all'inventario dopo un'azione sono step successivi.
+
+La sagoma non riproduce ancora i vestiti reali e l'elenco degli indossati
+non è ancora raggruppato per parte del corpo. Le coperture/impedimenti
+richiedono dati CWM tipizzati; non vengono dedotti dal nome dei vestiti.

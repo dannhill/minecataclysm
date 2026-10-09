@@ -35,7 +35,29 @@ Mineclonia contribuisce il linguaggio grafico, non la sua simulazione: non
 si importano crafting 2×2, inventario a capacità fissa, drag-and-drop locale,
 armature limitate a un pezzo per slot o equipaggiamento senza costo.
 
-## UX-01 — Inventario familiare e dettagli progressivi (prossimo passo)
+## UX-01 — Inventario familiare e dettagli progressivi (layout consegnato; accettazione grafica pendente)
+
+
+Fetta implementata: layout 9×3/9×1, mano autorevole, tutti gli indossati
+paginati, ricerca su richiesta con Esc annidato, scheda breve e dettagli
+scorrevoli, categorie/fallback espliciti. Pagina/filtro/ricerca sono conservati
+nella sessione; selezione sempre azzerata su nuova query/reconnect, senza
+indovinare identità omonime. [Report ed evidenze](../fixes/inventory-ui.md).
+Quattro nuove prove sono nel [backlog](../validation/pending-manual.md).
+
+Restano nel piano i requisiti sotto per copertura anatomica/impedimento,
+identità stabile tra azioni e scorciatoie configurabili sugli oggetti.
+L'attuale CWM 2.15 non esporta copertura o impedimento degli indossati:
+serve estensione semantica verificata, riusabile anche da UX-04. La sagoma
+è una guida visiva, non un modello dei vestiti indossati. Gli asset di
+categoria sono mostrati solo quando il mapping manca; le categorie non
+riconosciute usano `?`. L'icona mappata è dichiarata tale, senza garantire
+che sia un modello fedele (può essere un proxy del batch).
+
+La scelta attuale del clic sinistro è selezione + pulsanti espliciti,
+come proposta predefinita della domanda facoltativa rimasta senza risposta.
+Toggle impugna/riponi e shortcut al passaggio del mouse restano da adattare
+insieme alla hotbar, senza equipaggiamento gratuito.
 
 - Finestra compatta: personaggio/equipaggiamento in alto, griglia **9×3** in
   basso, fila rapida **9×1** distinta. Asset di slot/sfondo già disponibili.

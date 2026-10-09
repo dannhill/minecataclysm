@@ -1,6 +1,23 @@
 # Implementation status
 
-Current scoped follow-up (2026-10-09): inventory feedback fixes and synchronization
+Current scoped delivery (2026-10-09): **UX-01 inventory layout**, verification in progress
+before installation in start.sh: Mineclonia 9×3 grid, paginated native worn items, actual wielded
+hand, distinct read-only 9×1 row, optional search and progressive object/pocket
+cards. Search opens only on request; Escape leaves search before closing I.
+Page/filter/search survive reopening; fresh queries invalidate item selection.
+Mapped/proxy art remains separate from explicit category/unknown placeholders.
+[Report/evidence](docs/fixes/inventory-ui.md). Four new manual points are in the
+usual backlog, now **16 PENDING**; none required today. Existing 16 gameplay
+PASS remain historical, not approval of the new layout.
+
+Body-region clothing grouping/encumbrance needs typed native exports; hover
+shortcuts and stable selection continuity remain planned. Next scheduled task:
+**UX-02**, sequential actions with paid native time and safe return to browsing.
+[Detailed plan](docs/design/inventory-and-native-dialogs.md).
+CWM remains 2.15 and native gameplay/canonical serialization unchanged.
+The broader M5.5 gate remains historical FAILED and full SAVE-001 stays OPEN.
+
+Previous scoped follow-up (2026-10-09): inventory feedback fixes and synchronization
 of all **27 production item batches**. Native capacity pickup now explains a
 rejection and offers explicitly validated native wielding/Cancel; auto-pickup
 never changes equipment. Decision prompts/choices strip terminal color tags
@@ -15,8 +32,8 @@ Mapping: 1,080 records, 396 runtime representations, 89 attributed textures;
 105 selected but unsupported assets and 579 no-match records use fallback.
 [Mapping report](docs/fixes/item-mapping-2026-10-09.md). Procedural variants
 recommended in batches are not implemented by synchronization.
-Next: **UX-01**, familiar Mineclonia inventory layout, optional search and
-progressive detail; then sequential paid native actions, improved confirmations,
+The UX-01 layout above supersedes that delivery’s next-step recommendation.
+Remaining steps: sequential paid native actions, improved confirmations,
 recipe history and interactive hotbar. [Detailed source-based plan](docs/design/inventory-and-native-dialogs.md).
 The broader M5.5 gate remains historical FAILED and full SAVE-001 stays OPEN.
 
