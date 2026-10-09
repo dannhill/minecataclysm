@@ -1,5 +1,17 @@
 # Implementation status
 
+Latest manual feedback: **UX-03 focused rechecks 1–3 PASS** (search, pause
+clouds, quantity/errors). **Hotbar 1 FAIL**, ergonomics: remove Assign/Clear
+and provide drag-and-drop throughout the inventory and its subviews;
+**hotbar 2–4 untested**. [Exact feedback](docs/source/ux03-drag-feedback-2026-10-09.md).
+The backlog is now **11 open = 10 PENDING + 1 FAIL**, including the previous
+four UI/mapping and three UX-02 exception probes. Existing PASS remain accepted.
+**Next step: UX-03D complete inventory drag-and-drop**, before language/aim.
+[Source-based plan](docs/design/inventory-drag-and-drop.md).
+This feedback/planning update changes no production runtime; the installed
+CWM 2.17 still uses the rejected Assign/Clear interaction. Historical scoped
+verification below is not user acceptance of that interaction.
+
 Current scoped delivery (2026-10-09): **UX-03 interactive persistent hotbar**,
 CWM **2.17**. Nine explicitly assigned/removable references are independent of
 inventory ordering/capacity. Wheel/numbers select without equipping; **G** requests
@@ -20,14 +32,15 @@ actual installed save/reload checks and exact hashes are in the delivery receipt
 English default / Italian WIP, held RMB aiming, real wielded rig/UV/animations,
 audio and richer native dialogs remain scheduled, not delivered by this slice.
 
-Latest manual acceptance: ranged/reload, owned transfers, UX-01 and ordinary
+Earlier manual acceptance: ranged/reload, owned transfers, UX-01 and ordinary
 UX-02 each four PASS, with the errata preserved. Death/IPC/native decisions were
 not actually tested, and nested ammunition deposit was not performed/understood.
-Automatic transfer checks demonstrate partial nested deposit but do not replace
-that manual observation. [Feedback](docs/source/core-ux-validation-2026-10-09.md).
-The backlog is now **14 PENDING**: previous four UI/mapping rechecks and three
-exceptional UX-02 probes, plus four UX-03 and three focused UI/pause checks.
-No new manual acceptance is inferred and no testing is required from the user now.
+Automatic transfer checks demonstrated partial nested deposit; the latest
+focused UX-03 point 3 is now accepted. Preserve the earlier qualification
+as history, not as a new failure. [Earlier feedback](docs/source/core-ux-validation-2026-10-09.md).
+The delivery initially had **14 PENDING**. The latest feedback above
+accepts three focused rechecks and rejects hotbar point 1; remaining
+points are retained without inferring acceptance. No testing is required now.
 [Backlog](docs/validation/pending-manual.md).
 
 UX-02 paid completion/automatic return remains available, verified in equipment,
@@ -37,8 +50,8 @@ whereas Interrompi requests native cancellation. The original equipment fixture
 wears only a backpack; it does not contain an unseen full outfit.
 Body-region clothing/encumbrance, persistent selection across queries and
 nearby external containers/selected-quantity collection still need dedicated
-semantic interfaces. Language/aim feedback are the next controls/presentation
-repairs; external containers remain the next essential inventory extension.
+semantic interfaces. Complete inventory drag-and-drop now precedes language/aim feedback;
+external containers remain the next essential inventory extension.
 The broader M5.5 gate remains historical FAILED and full SAVE-001 stays OPEN.
 
 Previous scoped follow-up (2026-10-09): inventory feedback fixes and synchronization

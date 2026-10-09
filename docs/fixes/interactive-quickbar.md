@@ -2,7 +2,12 @@
 
 Consegna del 2026-10-09, CWM **2.17**. Accettazione grafica dell'utente
 **PENDING**, separata dalle verifiche automatiche. M5.5 resta storico FAILED;
-SAVE-001 completo resta OPEN. Identità sorgenti, binari, comandi, ambiente e
+SAVE-001 completo resta OPEN. **Riscontro successivo:** Ricontrolli UX-03
+1–3 PASS; hotbar 1 FAIL ergonomico, 2–4 non provati. La richiesta
+[drag-and-drop completo](../design/inventory-drag-and-drop.md) sostituirà il
+flusso Assegna/Svuota; non è ancora implementata. Il contatore 14 sotto e le
+ricevute descrivono la consegna, il backlog attuale ha 11 elementi aperti.
+Identità sorgenti, binari, comandi, ambiente e
 ricevute: [evidenze esatte](interactive-quickbar-evidence.json).
 
 ## Comportamento disponibile

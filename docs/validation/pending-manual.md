@@ -1,17 +1,22 @@
 # Validazioni manuali del playable core
 
-Stato corrente: **14 punti pendenti**: quattro ricontrolli mirati UI/mapping,
-tre verifiche eccezionali UX-02 non effettivamente provate, quattro UX-03 e
-tre ritocchi UI/pausa. Nessun test richiesto oggi. Il
-[riscontro aggiornato ed errata corrige](../source/core-ux-validation-2026-10-09.md)
-accetta 1–4 di tiro/ricarica, quantità/trasferimenti, UX-01 e UX-02 (16 nuovi
-PASS), oltre ai precedenti 16 di inventario, consumo, medicazioni e crafting.
+Stato corrente: **11 punti aperti = 10 PENDING + 1 FAIL**. Il
+[riscontro UX-03 più recente](../source/ux03-drag-feedback-2026-10-09.md)
+valida **Ricontrolli UX-03 1–3 PASS**; la checklist hotbar ha **1 FAIL**
+per il flusso Assegna/Svuota e **2–4 PENDING**, non ancora provati.
+Restano quattro vecchi ricontrolli UI/mapping e tre eccezioni UX-02.
+La richiesta di drag-and-drop completo è ora il
+[prossimo intervento pianificato](../design/inventory-drag-and-drop.md),
+non una correzione già installata. Nessun test nuovo da fare ora: il
+ricontrollo del FAIL sarà riscritto alla consegna della nuova interazione.
+
+Il [riscontro precedente ed errata corrige](../source/core-ux-validation-2026-10-09.md)
+accetta 1–4 di tiro/ricarica, quantità/trasferimenti, UX-01 e UX-02 (16 PASS),
+oltre ai precedenti 16 di inventario, consumo, medicazioni e crafting.
 I PASS UX-02 attestano il flusso ordinario osservato: non morte/IPC/decisioni
-non provati. Il deposito delle munizioni annidate nel sacchetto rimane una
-segnalazione da investigare nonostante il PASS generale sui trasferimenti.
-Non serve eseguire test ora. I bug nuovi sono nel registro del riscontro;
-UX-03 e le correzioni mirate hanno ricontrolli nuovi sotto, non PASS anticipati.
-Le vecchie checklist VALIDATE sotto conservano la cronologia; non attestano queste nuove fette.
+non provati. Il deposito delle munizioni annidate nel sacchetto segnalato
+prima è compreso nel nuovo Ricontrollo UX-03 3 PASS; ciò non chiude gli altri
+ricontrolli storici. Le checklist sotto conservano versioni e cronologia.
 
 L'utente il 2026-10-08 ha eseguito e approvato tutti i quattro punti di
 ciascuna delle quattro checklist. Il [riscontro](../source/playable-core-feedback-2026-10-08.md)
@@ -424,7 +429,13 @@ di errore: non chiedere di terminare processi della partita personale.
    Nessun input di gioco parte mentre manca lo stato autorevole completo.
 
 
-## UX-03 — Hotbar assegnabile e persistente — PENDING (4), quando puoi
+## UX-03 — Hotbar assegnabile e persistente — 1 FAIL; 2–4 PENDING
+
+**1 FAIL di ergonomia**, segnalato dall'utente: eliminare Assegna/Svuota e
+rendere drag-and-drop tutte le parti dell'inventario. I punti **2–4 non sono
+ancora testati**. La prova 1 sotto descrive il flusso rifiutato e resta come
+cronologia, senza chiedere di ripeterla. Il nuovo ricontrollo arriverà con
+UX-03D; questa versione a pulsanti è ancora quella installata.
 
 Disponibile con I anche nel normale `./start.sh`: movimento continuo 4×
 predefinito. `./equipment-demo.sh --fresh` crea una copia isolata con mazza,
@@ -453,7 +464,10 @@ non tasche nuove. Non occorre ripetere i PASS inventario/equipaggiamento.
    devono conservare gli stessi oggetti, non i primi della nuova lista.
    Svuotare/riassegnare deve restare coerente al riavvio, senza duplicazioni.
 
-## Ricontrolli UX-03 — PENDING (3), rinviabili
+## Ricontrolli UX-03 — VALIDATA: 1–3 PASS
+
+Accettati dall’utente nel riscontro più recente. Conservati sotto per
+cronologia; non serve ripeterli per il solo FAIL ergonomico della hotbar.
 
 1. **Ricerca**: I mostra da subito il campo vuoto. Digitare prima di cliccarlo
    non scrive nel campo. Clic sinistro sul campo abilita digitazione e cambia

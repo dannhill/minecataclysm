@@ -9,6 +9,10 @@ ricerca visibile senza focus, hotbar assegnabile/rimuovibile, mano evidenziata
 nell'HUD e feedback/errori migliorati. UX-04–05, raggruppamento anatomico e
 continuità della selezione tra query restano pianificati.
 [Consegna UX-03](../fixes/interactive-quickbar.md).
+Il riscontro successivo valida Ricontrolli UX-03 1–3, ma **rifiuta il flusso
+hotbar a pulsanti (1 FAIL)**; 2–4 non provati. Prossimo task:
+[UX-03D drag-and-drop completo](inventory-drag-and-drop.md), che sostituisce
+Assegna/Svuota e coinvolge tutte le sezioni, prima di lingua/mira.
 
 ## Studio dei sorgenti e vincoli effettivi
 
@@ -138,7 +142,7 @@ ritorno automatico e mette in pausa; chiudere I riprende l'actor senza
 cancellarlo. Rendere visibile la differenza tra consultazione e Interrompi,
 insieme all'operazione Indossa/Togli, nel prossimo task di feedback.
 
-## UX-03 — Hotbar interattiva (consegnata, accettazione grafica pendente)
+## UX-03 — Hotbar interattiva (consegnata; ergonomia 1 FAIL, 2–4 pendenti)
 
 Fetta attuale: assegnazione/rimozione in I; rotella/1–9 selezionano e G usa,
 senza chiudere/aprire I automaticamente quando l'azione parte dal mondo.
@@ -210,8 +214,9 @@ raddoppiano il risultato, ricetta diventata indisponibile resta spiegata.
 
 ## Sequenza successiva e backlog
 
-1. UX-01/02/03 e correzioni mirate consegnati; ricontrolli nel backlog,
-   senza test obbligatori oggi né PASS grafici anticipati di UX-03.
+1. UX-03D drag-and-drop completo: risolvere il FAIL UX-03, con mano,
+   indossati, hotbar, griglia e contenitori. Ricontrolli 1–3 già PASS;
+   test non provati ed eccezioni restano nel backlog, senza obblighi oggi.
 2. Lingua inglese/italiano WIP e mira RMB con priorità contestuali esplicite;
    feedback dell'arma/operazioni e nuovi dialoghi restano task distinti.
 3. UX-04 con UI medica e UX-05 recenti/preferiti; per ogni adattamento

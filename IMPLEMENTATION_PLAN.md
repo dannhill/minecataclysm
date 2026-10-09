@@ -27,13 +27,29 @@ nuove regole biologiche. H conserva i dettagli. Dopo questo ritocco proseguire
 senza nuovo gate estetico. Il [resoconto corrente](docs/progress/2026-10-08.md)
 separa le fetta giocabili dalle parti ancora pianificate.
 
+## Nuovo riscontro UX-03 — drag-and-drop completo
+
+[Riscontro registrato](docs/source/ux03-drag-feedback-2026-10-09.md):
+Ricontrolli UX-03 **1–3 PASS**; hotbar **1 FAIL** per ergonomia,
+**2–4 non provati**. Il backlog corrente è **11 aperti: 10 PENDING + 1 FAIL**.
+I contatori sotto descrivono le consegne precedenti.
+
+Prossimo task **UX-03D**, prima di lingua/mira: rimuovere Assegna/Svuota e
+adattare a drag-and-drop griglia, hotbar, mano, indossati e sottoviste dei
+contenitori, conservando raccolta e costi nativi. Il gesto su mano/vestiti/
+contenitori richiede un'azione CDDA; disposizione grafica/riferimenti non
+creano tasche nuove. Scambio slot coerente, quantità esplicite, annullamento
+ed errori leggibili; nessuna identità dedotta dal nome e nessuna mutazione
+Luanti di gameplay. [Piano operativo dai sorgenti](docs/design/inventory-drag-and-drop.md).
+Solo pianificato in questa turnazione; runtime CWM 2.17 invariato.
+
 ## Riscontro inventario/interfacce — 2026-10-09
 
 Il [riscontro successivo con errata corrige](docs/source/core-ux-validation-2026-10-09.md)
 accetta anche tiro/ricarica, trasferimenti, UX-01 e UX-02: quattro punti per
 checklist. Eccezioni UX-02 non provate e deposito annidato non riuscito
-restano espliciti; il backlog alla ricezione era **7 PENDING**, ora **14**
-con i ricontrolli UX-03 e UI aggiunti alla consegna. Le descrizioni della
+restano espliciti; il backlog alla ricezione era **7 PENDING**, diventati **14**
+con i ricontrolli UX-03 e UI aggiunti alla consegna precedente. Le descrizioni della
 consegna sotto conservano la cronologia e i vecchi conteggi.
 UX-03 consegnata (CWM 2.17): hotbar assegnabile/rimuovibile con icone HUD corrette,
 mano evidenziata, ricerca **visibile ma senza focus**, quantità/errori
