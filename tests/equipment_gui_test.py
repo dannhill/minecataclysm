@@ -301,7 +301,7 @@ def main():
                     view=open_inventory();check('reconnect_retains_canonical_equipment',item(view,'rock').Wielded() and item(view,'hat_ball').Worn())
                 tap('Escape');wait(lambda r:int(r['equipment_form'])==0)
                 server_packets=packets('server-wire.bin');client_packets=packets('client-wire.bin')
-                paid={};early=set();operations=[];opens=[]
+                paid={};early=set();operations=[];opens=[];first_return={};active_operation=0
                 for msg in server_packets:
                     if msg.PayloadType()!=Payload.WorldSnapshot:continue
                     state=WorldSnapshot();state.Init(msg.Payload().Bytes,msg.Payload().Pos);work=state.InventoryWork()
@@ -310,12 +310,14 @@ def main():
                         else:early.add(work.CommandId())
                 for msg in client_packets:
                     if msg.PayloadType()==Payload.EquipmentRequest:
-                        req=EquipmentRequest();req.Init(msg.Payload().Bytes,msg.Payload().Pos);operations.append(req.CommandId())
+                        req=EquipmentRequest();req.Init(msg.Payload().Bytes,msg.Payload().Pos);operations.append(req.CommandId());active_operation=req.CommandId()
                     if msg.PayloadType()==Payload.SimulationControlRequest:
                         req=SimulationControlRequest();req.Init(msg.Payload().Bytes,msg.Payload().Pos)
-                        if req.Action()==3:opens.append(msg.WorldRevision())
+                        if req.Action()==3:
+                            opens.append(msg.WorldRevision())
+                            if active_operation:first_return.setdefault(active_operation,msg.WorldRevision())
                 check('actual_wire_separates_ack_from_paid_completion',args.action_driven or all(id in early and id in paid for id in operations[:3]))
-                check('all_three_returns_reference_paid_authoritative_revision',args.action_driven or all(any(rev>=paid[id] for rev in opens) for id in operations[:3]))
+                check('all_three_returns_reference_paid_authoritative_revision',args.action_driven or all(first_return.get(id,0)>=paid[id] for id in operations[:3]))
                 work_rows=[r for r in rows() if int(r.get('inventory_work_visible',0))]
                 check('work_panel_is_visible_without_modal_pause',args.action_driven or any(int(r['pause_reasons'])==0 and int(r['equipment_form'])==0 for r in work_rows))
             elif args.presentation_only:
