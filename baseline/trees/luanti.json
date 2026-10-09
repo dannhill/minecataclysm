@@ -7237,7 +7237,7 @@
   {
     "path": "src/cdda/cdda_bridge.cpp",
     "mode": "100644",
-    "sha256": "980f3f01e620fe8fd84e1aa4a0cfc2e7ccfa836513b53f687dec5e40108f9c32"
+    "sha256": "db48ef8fbdc6a1fdc9078eae400efb3b49a535976c0c9c35c98b31953e142938"
   },
   {
     "path": "src/cdda/cdda_bridge.h",
@@ -7257,7 +7257,7 @@
   {
     "path": "src/cdda/equipment_inventory.h",
     "mode": "100644",
-    "sha256": "fca6ca3ba2ecf2c6e523ddc9754aae1b085c699be22cd2abe9bdb84b87371056"
+    "sha256": "6e3a508c94dd4b2dc90cd0ca0244796ac8daffd33b4adc72d76748528719b69e"
   },
   {
     "path": "src/cdda/ground_item_formspec.h",
@@ -8377,12 +8377,12 @@
   {
     "path": "src/gui/guiFormSpecMenu.cpp",
     "mode": "100644",
-    "sha256": "1122abb85e62fea9c13cced3b492b5c6c9ecba08394ace16a3691fe2f8d68b38"
+    "sha256": "bfab20f7601668049bb09a80cacfeb3ea7fec3eee4e855ff7c7d8d1fd70daa31"
   },
   {
     "path": "src/gui/guiFormSpecMenu.h",
     "mode": "100644",
-    "sha256": "3caf2847af85f9c1069707c8c8d2a3eb1486af4584d663cbb2964f158bda841b"
+    "sha256": "25c2364763da1ceb5e6b348b709056ad9e99259bb3b52790393c2cf7b6e550cd"
   },
   {
     "path": "src/gui/guiHyperText.cpp",

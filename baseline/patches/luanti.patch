@@ -751,7 +751,7 @@ index 7758c96..135b8b9 100644
  	settings->setDefault("keymap_toggle_update_camera", "KEY_F4");
  #else
 diff --git a/src/gui/guiFormSpecMenu.cpp b/src/gui/guiFormSpecMenu.cpp
-index ed1c300..952cf39 100644
+index ed1c300..75c849c 100644
 --- a/src/gui/guiFormSpecMenu.cpp
 +++ b/src/gui/guiFormSpecMenu.cpp
 @@ -169,6 +169,10 @@ void GUIFormSpecMenu::removeTooltip()
@@ -765,7 +765,153 @@ index ed1c300..952cf39 100644
  	// Set initial focus according to following order of precedence:
  	// 1. first empty editbox
  	// 2. first editbox
-@@ -3907,6 +3911,16 @@ bool GUIFormSpecMenu::preprocessEvent(const SEvent& event)
+@@ -2922,6 +2926,25 @@ void GUIFormSpecMenu::parseElement(parserData* data, const std::string &element)
+ 	// They remain here due to bool flags, for now
+ 	data->type = type;
+ 
++    if (m_text_dst && m_text_dst->m_formname == "CWM_EQUIPMENT") {
++        if (type == "cwm_inventory") {
++            const auto p = split(description, ';');
++            if (p.size() == 2) {
++                m_cwm_drag_view = strtoull(p[0].c_str(), nullptr, 10);
++                m_cwm_drag_selected = strtoul(p[1].c_str(), nullptr, 10);
++            }
++            return;
++        }
++        if (type == "cwm_drag") {
++            const auto p = split(description, ';');
++            if ((p.size() == 4 || p.size() == 6) && m_cwm_drag_zones.size() < 128)
++                m_cwm_drag_zones.push_back({p[0], unescape_string(p[2]),
++                    (uint32_t)strtoul(p[1].c_str(), nullptr, 10), p[3] == "1",
++                    p.size() == 6 ? (unsigned)strtoul(p[4].c_str(), nullptr, 10) : 0,
++                    p.size() == 6 ? (unsigned)strtoul(p[5].c_str(), nullptr, 10) : 0});
++            return;
++        }
++    }
+ 	auto it = element_parsers.find(type);
+ 	if (it != element_parsers.end()) {
+ 		it->second(this, data, description);
+@@ -2989,6 +3012,9 @@ void GUIFormSpecMenu::regenerateGui(v2u32 screensize)
+ 	m_tables.clear();
+ 	m_checkboxes.clear();
+ 	m_scrollbars.clear();
++    m_cwm_drag_zones.clear(); m_cwm_drag_view = 0; m_cwm_drag_selected = 0;
++    if (m_cwm_drag_source) m_cwm_drag_cancelled = true;
++    m_cwm_drag_source.reset(); m_cwm_drag_active = false;
+ 	m_fields.clear();
+ 	m_tooltips.clear();
+ 	m_tooltip_rects.clear();
+@@ -3577,6 +3603,7 @@ void GUIFormSpecMenu::drawMenu()
+ 		Draw dragged item stack
+ 	*/
+ 	drawSelectedItem();
++    drawCwmDrag();
+ 
+ 	skin->setFont(old_font);
+ }
+@@ -3900,6 +3927,101 @@ void GUIFormSpecMenu::acceptInput(FormspecQuitMode quitmode)
+ 	}
+ }
+ 
++std::optional<size_t> GUIFormSpecMenu::cwmDragZoneAt(v2s32 point) const
++{
++    for (size_t n = 0; n < m_cwm_drag_zones.size(); ++n)
++        for (const auto &field : m_fields) if (field.fname == m_cwm_drag_zones[n].name) {
++            auto *e = getElementFromId(field.fid, true);
++            if (e && e->getAbsoluteClippingRect().isPointInside(point)) return n;
++        }
++    return {};
++}
++
++bool GUIFormSpecMenu::cwmDragEvent(const SEvent &event)
++{
++    if (!m_text_dst || m_text_dst->m_formname != "CWM_EQUIPMENT") return false;
++    if (event.EventType == EET_KEY_INPUT_EVENT && event.KeyInput.PressedDown &&
++            (event.KeyInput.Key == KEY_ESCAPE ||
++             (m_client && KeyPress(event.KeyInput) == getKeySetting("keymap_inventory"))) && m_cwm_drag_source) {
++        m_cwm_drag_source.reset(); m_cwm_drag_active = false; m_cwm_drag_cancelled = true;
++        return true;
++    }
++    if (event.EventType != EET_MOUSE_INPUT_EVENT) return false;
++    const v2s32 point(event.MouseInput.X, event.MouseInput.Y);
++    if (event.MouseInput.Event == EMIE_LMOUSE_PRESSED_DOWN) {
++        m_cwm_drag_cancelled = false;
++        const auto at = cwmDragZoneAt(point);
++        if (at && m_cwm_drag_zones[*at].item) {
++            m_cwm_drag_source = at; m_cwm_drag_start = point;
++            m_cwm_drag_active = false; Environment->setFocus(this); return true;
++        }
++    }
++    if (event.MouseInput.Event == EMIE_MOUSE_MOVED && m_cwm_drag_source) {
++        m_pointer = point;
++        m_cwm_drag_active |= (point - m_cwm_drag_start).getLengthSQ() >= 36;
++        return true;
++    }
++    if (event.MouseInput.Event == EMIE_LMOUSE_LEFT_UP) {
++        if (m_cwm_drag_cancelled) { m_cwm_drag_cancelled = false; return true; }
++        if (!m_cwm_drag_source) return false;
++        const auto source = m_cwm_drag_zones[*m_cwm_drag_source];
++        const auto at = cwmDragZoneAt(point);
++        const bool dragging = m_cwm_drag_active;
++        m_cwm_drag_source.reset(); m_cwm_drag_active = false;
++        if (!dragging) {
++            if (at && m_cwm_drag_zones[*at].name == source.name)
++                m_text_dst->gotText({{source.name, "true"}});
++        } else if (at && m_cwm_drag_zones[*at].name != source.name) {
++            StringMap fields{{"drag_from", source.name}, {"drag_to", m_cwm_drag_zones[*at].name},
++                {"drag_view", std::to_string(m_cwm_drag_view)}};
++            if (source.item == m_cwm_drag_selected)
++                for (const auto &f : m_fields) if (f.fname == "quantity") {
++                    auto *e = getElementFromId(f.fid, true);
++                    if (e) fields["quantity"] = wide_to_utf8(e->getText());
++                }
++            m_text_dst->gotText(fields);
++        }
++        return true;
++    }
++    return false;
++}
++
++bool GUIFormSpecMenu::cwmDragAllowed(const CwmDragZone &source, const CwmDragZone &target) const
++{
++    if (source.name == target.name) return true;
++    if (target.name.rfind("quickslot_", 0) == 0) return true;
++    if (target.name.rfind("hand_", 0) == 0) return source.actions & 1;
++    if (target.name.rfind("worn_", 0) == 0 || target.name.rfind("wear_empty_", 0) == 0) return source.actions & 4;
++    if (target.name == "drag_ground" || (target.flags & 1)) return (source.flags & 2) && source.item != target.item;
++    if (source.name.rfind("hand_", 0) == 0) return source.actions & 2;
++    if (source.name.rfind("worn_", 0) == 0) return source.actions & 8;
++    return true; // Grid placement or bookmark removal only.
++}
++
++void GUIFormSpecMenu::drawCwmDrag()
++{
++    if (!m_cwm_drag_source || !m_cwm_drag_active || !m_client) return;
++    auto *driver = Environment->getVideoDriver();
++    const auto at = cwmDragZoneAt(m_pointer);
++    if (at) for (const auto &f : m_fields) if (f.fname == m_cwm_drag_zones[*at].name) {
++        if (auto *e = getElementFromId(f.fid, true))
++            driver->draw2DRectangle(cwmDragAllowed(m_cwm_drag_zones[*m_cwm_drag_source], m_cwm_drag_zones[*at]) ?
++                video::SColor(100, 60, 190, 110) : video::SColor(100, 210, 65, 50), e->getAbsoluteClippingRect());
++    }
++    if (at && !cwmDragAllowed(m_cwm_drag_zones[*m_cwm_drag_source], m_cwm_drag_zones[*at]))
++        m_font->draw(L"Destinazione non disponibile", core::rect<s32>(m_pointer.X + 28, m_pointer.Y + 24,
++            m_pointer.X + 330, m_pointer.Y + 50), video::SColor(255, 240, 100, 80));
++    const auto &source = m_cwm_drag_zones[*m_cwm_drag_source];
++    const core::rect<s32> rect(m_pointer.X - 24, m_pointer.Y - 24, m_pointer.X + 24, m_pointer.Y + 24);
++    if (!source.texture) {
++        drawItemStack(driver, m_font, ItemStack(source.visual, 1, 0, m_client->getItemDefManager()),
++            rect, nullptr, m_client, IT_ROT_DRAGGED);
++    } else if (auto *texture = m_tsrc->getTexture(source.visual)) {
++        const auto size = texture->getOriginalSize();
++        driver->draw2DImage(texture, rect, core::rect<s32>(0, 0, size.Width, size.Height), nullptr, nullptr, true);
++    }
++}
++
+ bool GUIFormSpecMenu::preprocessEvent(const SEvent& event)
+ {
+ 	// This must be done first so that GUIModalMenu can set m_pointer_type
+@@ -3907,6 +4029,18 @@ bool GUIFormSpecMenu::preprocessEvent(const SEvent& event)
  	if (GUIModalMenu::preprocessEvent(event))
  		return true;
  
@@ -779,10 +925,12 @@ index ed1c300..952cf39 100644
 +        }
 +    }
 +
++    if (cwmDragEvent(event)) return true;
++
  	// The IGUITabControl renders visually using the skin's selected
  	// font, which we override for the duration of form drawing,
  	// but computes tab hotspots based on how it would have rendered
-@@ -3990,6 +4004,15 @@ bool GUIFormSpecMenu::preprocessEvent(const SEvent& event)
+@@ -3990,6 +4124,15 @@ bool GUIFormSpecMenu::preprocessEvent(const SEvent& event)
  
  void GUIFormSpecMenu::tryClose()
  {
@@ -798,7 +946,15 @@ index ed1c300..952cf39 100644
  	if (m_allowclose) {
  		doPause = false;
  		acceptInput(quit_mode_cancel);
-@@ -4757,6 +4780,14 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
+@@ -4001,6 +4144,7 @@ void GUIFormSpecMenu::tryClose()
+ 
+ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
+ {
++    if (event.EventType == EET_KEY_INPUT_EVENT && cwmDragEvent(event)) return true;
+ 	if (event.EventType==EET_KEY_INPUT_EVENT) {
+ 		KeyPress kp(event.KeyInput);
+ 		if (event.KeyInput.PressedDown && (
+@@ -4757,6 +4901,14 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
  	}
  
  	if (event.EventType == EET_GUI_EVENT) {
@@ -813,6 +969,31 @@ index ed1c300..952cf39 100644
  		if (event.GUIEvent.EventType == gui::EGET_TAB_CHANGED
  				&& isVisible()) {
  			// find the element that was clicked
+diff --git a/src/gui/guiFormSpecMenu.h b/src/gui/guiFormSpecMenu.h
+index 5c3fcd8..c8a1054 100644
+--- a/src/gui/guiFormSpecMenu.h
++++ b/src/gui/guiFormSpecMenu.h
+@@ -334,6 +334,20 @@ class GUIFormSpecMenu : public GUIModalMenu
+ 	std::unordered_map<std::string, bool> field_enter_after_edit;
+ 	std::unordered_map<std::string, bool> field_close_on_enter;
+ 	std::unordered_map<std::string, bool> m_dropdown_index_event;
++    struct CwmDragZone {
++        std::string name, visual;
++        uint32_t item{}; bool texture{}; unsigned actions{}, flags{};
++    };
++    std::vector<CwmDragZone> m_cwm_drag_zones;
++    uint64_t m_cwm_drag_view{};
++    uint32_t m_cwm_drag_selected{};
++    std::optional<size_t> m_cwm_drag_source;
++    v2s32 m_cwm_drag_start;
++    bool m_cwm_drag_active{false}, m_cwm_drag_cancelled{false};
++    bool cwmDragEvent(const SEvent &event);
++    void drawCwmDrag();
++    bool cwmDragAllowed(const CwmDragZone &source, const CwmDragZone &target) const;
++    std::optional<size_t> cwmDragZoneAt(v2s32 point) const;
+ 	std::vector<FieldSpec> m_fields;
+ 	std::vector<std::pair<FieldSpec, GUITable *>> m_tables;
+ 	std::vector<std::pair<FieldSpec, gui::IGUICheckBox *>> m_checkboxes;
 diff --git a/src/gui/guiScene.cpp b/src/gui/guiScene.cpp
 index f30c4f3..74e7a6a 100644
 --- a/src/gui/guiScene.cpp
@@ -1261,10 +1442,10 @@ index 0000000..2214cd4
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..c65d4f0
+index 0000000..84073f7
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,2600 @@
+@@ -0,0 +1,2678 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
@@ -2644,7 +2825,7 @@ index 0000000..c65d4f0
 +                const auto* ack = msg->payload_as_CommandAck();
 +                if (ack && ack->command_id() == quick_bind_command_) {
 +                    quick_bind_refresh_ = true;
-+                    equipment_notice_ = ack->accepted() ? "Collegamento rapido aggiornato." : decisionPlainText(ack->error_message()->str());
++                    equipment_notice_ = ack->accepted() ? "Disposizione aggiornata." : decisionPlainText(ack->error_message()->str());
 +                }
 +                if (ack) {
 +                    if (ack->command_id() == inventory_work_command_ && !ack->accepted()) {
@@ -3416,6 +3597,81 @@ index 0000000..c65d4f0
 +        i.inventory_query_ = 0; i.equipment_view_ = {};
 +        return;
 +    }
++    if (fields.count("drag_from") && fields.count("drag_to")) {
++        i.equipment_dirty_ = true;
++        const auto from = fields.at("drag_from"), to = fields.at("drag_to");
++        const auto number = [](const std::string &key, const std::string &prefix) -> unsigned {
++            if (key.rfind(prefix, 0) != 0) return 0;
++            const auto tail = key.substr(prefix.size());
++            if (tail.empty() || tail.size() > 4 || !std::all_of(tail.begin(), tail.end(), [](unsigned char c) { return std::isdigit(c); })) return 0;
++            return std::stoul(tail);
++        };
++        const auto entry_for = [&](const std::string &key) -> const EquipmentEntry* {
++            if (key.rfind("quickslot_", 0) == 0) {
++                const auto slot = number(key, "quickslot_");
++                for (const auto &e : i.equipment_view_.entries) if (slot && e.quick_slot == slot) return &e;
++                return nullptr;
++            }
++            for (const auto *prefix : {"item_", "hand_", "worn_", "destination_"})
++                if (key.rfind(prefix, 0) == 0) return i.equipment_view_.entry(number(key, prefix));
++            return nullptr;
++        };
++        const auto *source = entry_for(from), *destination = entry_for(to);
++        if (!fields.count("drag_view") || fields.at("drag_view") != std::to_string(i.equipment_view_.view) ||
++            !i.session_.ready() || i.pending_move_ || i.metrics_.pending_decision || !source) {
++            i.equipment_notice_ = "Vista cambiata: riprova il trascinamento."; return;
++        }
++        i.equipment_selected_ = source->id;
++        const unsigned from_slot = number(from, "quickslot_"), to_slot = number(to, "quickslot_");
++        const bool grid = to.rfind("grid_", 0) == 0 || (to.rfind("item_", 0) == 0 && destination && !destination->container);
++        if (to_slot || (from_slot && grid) || (grid && from.rfind("item_", 0) == 0)) {
++            auto wire = i.session_.builder(); const auto id = i.session_.next_command++;
++            std::vector<uint8_t> bytes;
++            if (to_slot > 9 || from_slot > 9) return;
++            if (to_slot) {
++                i.quick_slot_ = to_slot;
++                bytes = from_slot ? wire.build_quickbar_swap(id, from_slot, to_slot,
++                    i.quick_slots_[from_slot-1].binding, i.quick_slots_[to_slot-1].binding) :
++                    wire.build_quickbar_bind(id, to_slot, i.equipment_view_.view, source->id, i.quick_slots_[to_slot-1].binding);
++            } else if (from_slot) {
++                bytes = wire.build_quickbar_bind(id, from_slot, 0, 0, i.quick_slots_[from_slot-1].binding);
++            } else {
++                bytes = wire.build_inventory_arrange(id, i.equipment_view_.view, source->id, destination ? destination->id : 0);
++            }
++            if (i.connection_->send_message(bytes.data(), bytes.size())) {
++                i.quick_bind_command_ = i.pending_move_ = id; i.move_acked_ = false;
++                i.sent_move_ = std::chrono::steady_clock::now();
++            }
++            return;
++        }
++        if (i.activity_token_ || (i.metrics_.pause_reasons & ~uint32_t(2))) {
++            i.equipment_notice_ = "Riprendi o interrompi il lavoro prima di spostare oggetti."; return;
++        }
++        int action = -1;
++        if (to.rfind("hand_", 0) == 0) action = 0;
++        else if (to.rfind("worn_", 0) == 0 || to.rfind("wear_empty_", 0) == 0) action = 2;
++        else if (grid && from.rfind("hand_", 0) == 0) action = 1;
++        else if (grid && from.rfind("worn_", 0) == 0) action = 3;
++        if (action >= 0) {
++            if (!(source->actions & (1 << action))) { i.equipment_notice_ = source->reasons[action]; return; }
++            i.queued_equipment_ = Impl::QueuedEquipment{i.equipment_view_.view, source->id, action};
++        } else if (to == "drag_ground" || (destination && destination->container)) {
++            int quantity = source->counted ? source->charges : 1;
++            if (fields.count("quantity")) {
++                const auto &text = fields.at("quantity");
++                if (text.empty() || text.size() > 9 || !std::all_of(text.begin(), text.end(), [](unsigned char c) { return std::isdigit(c); })) quantity = 0;
++                else quantity = std::stoi(text);
++            }
++            if (!source->transfer_reason.empty()) { i.equipment_notice_ = source->transfer_reason; return; }
++            if (quantity <= 0 || quantity > (source->counted ? source->charges : 1)) {
++                i.equipment_notice_ = "Quantita non valida."; return;
++            }
++            i.queued_transfer_ = Impl::QueuedTransfer{i.equipment_view_.view, source->id,
++                to == "drag_ground" ? 0 : destination->id, quantity, to == "drag_ground" ? 0 : 1};
++        } else { i.equipment_notice_ = "Destinazione non disponibile."; return; }
++        i.inventory_return_armed_ = true; i.equipment_close_ = true;
++        return;
++    }
 +    if (fields.count("cancel_consume") && i.activity_token_) {
 +        if (i.metrics_.pause_reasons & ~uint32_t(2)) i.equipment_notice_ = "Riprendi il gioco prima di interrompere.";
 +        else if (!i.session_.ready() || i.pending_move_) i.equipment_notice_ = "Attendi lo stato aggiornato.";
@@ -3495,7 +3751,7 @@ index 0000000..c65d4f0
 +            i.equipment_filter_ = value;
 +        }
 +    }
-+    const auto ids = equipmentFilter(i.equipment_view_, i.equipment_search_, i.equipment_filter_);
++    const auto ids = equipmentGridIds(i.equipment_view_, i.equipment_search_, i.equipment_filter_);
 +    if (fields.count("prev") && i.equipment_page_) --i.equipment_page_;
 +    if (fields.count("next") && (i.equipment_page_ + 1) * equipmentPageSize < ids.size()) ++i.equipment_page_;
 +    for (const auto id : ids) if (fields.count("item_" + std::to_string(id))) i.equipment_selected_ = id;
@@ -3503,7 +3759,10 @@ index 0000000..c65d4f0
 +        if ((e.wielded && fields.count("hand_" + std::to_string(e.id))) ||
 +            (e.worn && fields.count("worn_" + std::to_string(e.id))) ||
 +            fields.count("quick_" + std::to_string(e.id))) i.equipment_selected_ = e.id;
-+    for (unsigned n = 1; n <= 9; ++n) if (fields.count("quickslot_" + std::to_string(n))) i.quick_slot_ = n;
++    for (unsigned n = 1; n <= 9; ++n) if (fields.count("quickslot_" + std::to_string(n))) {
++        i.quick_slot_ = n;
++        for (const auto &e : i.equipment_view_.entries) if (e.quick_slot == n) i.equipment_selected_ = e.id;
++    }
 +    if (fields.count("quick_bind") || fields.count("quick_clear")) {
 +        const bool clear = fields.count("quick_clear");
 +        const auto* selected = i.equipment_view_.entry(i.equipment_selected_);
@@ -4137,10 +4396,10 @@ index 0000000..8a266d4
 +} // namespace cdda_client
 diff --git a/src/cdda/equipment_inventory.h b/src/cdda/equipment_inventory.h
 new file mode 100644
-index 0000000..d6020a2
+index 0000000..e2c1a67
 --- /dev/null
 +++ b/src/cdda/equipment_inventory.h
-@@ -0,0 +1,305 @@
+@@ -0,0 +1,331 @@
 +#pragma once
 +#include "avatar_status.h"
 +#include "cwm/cwm_generated.h"
@@ -4163,7 +4422,7 @@ index 0000000..d6020a2
 +    std::array<std::string, 6> reasons;
 +    int consume_moves{}; std::string consume_label, consume_warning;
 +    std::string transfer_reason; bool container{};
-+    unsigned quick_slot{}; bool rotten{};
++    unsigned quick_slot{}; bool rotten{}; uint32_t ui_order{};
 +};
 +struct EquipmentPocket {
 +    uint32_t owner{}, index{}; std::string name;
@@ -4184,7 +4443,7 @@ index 0000000..d6020a2
 +        for (const auto* e : *source.entries()) {
 +            EquipmentEntry entry{e->id(), e->parent_id(), e->pocket_index(),
 +                e->type_id()->str(), e->name()->str(), e->category()->str(), e->charges(), e->access_moves(),
-+                e->count_by_charges(), e->worn(), e->wielded(), e->weight_grams(), e->volume_ml(), e->length_mm(), e->actions(), {}, e->consume_moves(), e->consume_label()->str(), e->consume_warning()->str(), e->transfer_reason()->str(), e->container(), e->quick_slot(), e->rotten()};
++                e->count_by_charges(), e->worn(), e->wielded(), e->weight_grams(), e->volume_ml(), e->length_mm(), e->actions(), {}, e->consume_moves(), e->consume_label()->str(), e->consume_warning()->str(), e->transfer_reason()->str(), e->container(), e->quick_slot(), e->rotten(), e->ui_order()};
 +            for (unsigned i = 0; i < 6; ++i) entry.reasons[i] = e->reasons()->Get(i)->str();
 +            entries.push_back(std::move(entry));
 +        }
@@ -4252,6 +4511,23 @@ index 0000000..d6020a2
 +    if (category == "books" || category == "manuals" || category == "maps") return "default_book.png";
 +    return "cdda_status_unknown.png";
 +}
++inline std::vector<uint32_t> equipmentGridIds(const EquipmentView& view, const std::string& search, int filter) {
++    auto ids = equipmentFilter(view, search, filter);
++    ids.erase(std::remove_if(ids.begin(), ids.end(), [&](unsigned id) { return view.entry(id)->quick_slot != 0; }), ids.end());
++    std::stable_sort(ids.begin(), ids.end(), [&](unsigned a, unsigned b) {
++        const auto x = view.entry(a)->ui_order, y = view.entry(b)->ui_order;
++        return (x ? x : 4096 + a) < (y ? y : 4096 + b);
++    });
++    return ids;
++}
++inline std::string equipmentDrag(const std::string& name, const EquipmentEntry* e,
++        const std::function<std::string(const std::string&)>& icon) {
++    const auto visual = e ? icon(e->type) : std::string{};
++    const bool generic = visual.empty() || visual == "cdda_items:fallback_generic";
++    return "cwm_drag[" + name + ";" + std::to_string(e ? e->id : 0) + ";" +
++        statusEscape(e ? (generic ? equipmentCategoryIcon(*e) : visual) : "") + ";" + (generic ? "1" : "0") + ";" + std::to_string(e ? e->actions : 0) + ";" +
++        std::to_string(e ? (e->container ? 1 : 0) | (e->transfer_reason.empty() ? 2 : 0) : 0) + "]";
++}
 +inline constexpr size_t equipmentPageSize = 27;
 +inline std::string equipmentForm(const EquipmentView& view, size_t page, uint32_t selected,
 +        const std::string& search, int filter, const std::string& notice,
@@ -4274,12 +4550,17 @@ index 0000000..d6020a2
 +    if (!view.view) return f + "label[0.5,2.2;" + statusEscape(view.error.empty() ? "Lettura inventario..." : view.error) + "]";
 +    f += "label[0.5,1.05;Peso " + equipmentAmount(view.weight) + " / " + equipmentAmount(view.weight_capacity) +
 +        " kg   Spazio " + equipmentAmount(view.volume) + " / " + equipmentAmount(view.volume_capacity) + " L]";
++    f += "cwm_inventory[" + std::to_string(view.view) + ";" + std::to_string(selected) + "]";
 +    // Every slot is a read-only projection/selection button, never a Luanti
 +    // inventory list: native layered clothing and capacity have no slot limit.
 +    auto slot = [&](double x, double y, const EquipmentEntry* e, const std::string& key, bool hand = false) {
 +        const auto position = std::to_string(x) + "," + std::to_string(y);
 +        f += "image[" + position + ";1.05,1.05;mcl_formspec_itemslot.png]";
-+        if (!e) return;
++        f += equipmentDrag(key, e, icon);
++        if (!e) {
++            f += "button[" + position + ";1.05,1.05;" + key + ";]";
++            return;
++        }
 +        if (hand) f += "box[" + position + ";1.05,1.05;#4CA5C080]";
 +        if (selected == e->id) f += "box[" + position + ";1.05,1.05;#E8CF5790]";
 +        const auto visual = icon(e->type);
@@ -4299,7 +4580,7 @@ index 0000000..d6020a2
 +        if (e.worn) worn.push_back(e.id);
 +    }
 +    f += "label[0.5,1.6;In mano]";
-+    slot(.5,2.05,hand,hand ? "hand_" + std::to_string(hand->id) : "",true);
++    slot(.5,2.05,hand,"hand_" + std::to_string(hand ? hand->id : 0),true);
 +    if (!hand) f += "tooltip[0.5,2.05;1.05,1.05;Mani libere]";
 +    f += "model[2.05,1.55;2.3,2.9;avatar;character.b3d;mcl_skins_character_1.png,blank.png;0,180;false;false;0,0]"
 +        "tooltip[2.05,1.55;2.3,2.9;Sagoma di riferimento. Gli indossati reali sono a destra.]"
@@ -4309,21 +4590,21 @@ index 0000000..d6020a2
 +    for (size_t n = 0; n < 10; ++n) {
 +        const size_t i = worn_page * 10 + n;
 +        const auto* e = i < worn.size() ? view.entry(worn[i]) : nullptr;
-+        slot(4.7 + (n % 5) * 1.2, 2.05 + (n / 5) * 1.15, e, e ? "worn_" + std::to_string(e->id) : "");
++        slot(4.7 + (n % 5) * 1.2, 2.05 + (n / 5) * 1.15, e, e ? "worn_" + std::to_string(e->id) : "wear_empty_" + std::to_string(n));
 +    }
 +    if (worn_pages > 1) f += "button[8.05,1.3;0.65,0.6;worn_prev;<]label[8.85,1.6;" + std::to_string(worn_page + 1) + "/" +
 +        std::to_string(worn_pages) + "]button[10.15,1.3;0.65,0.6;worn_next;>]";
-+    const auto ids = equipmentFilter(view, search, filter);
++    const auto ids = equipmentGridIds(view, search, filter);
 +    f += "label[3.1,0.4;" + std::to_string(view.entries.size()) + " oggetti   -   " + std::to_string(ids.size()) + " nel filtro]";
 +    const size_t pages = std::max<size_t>(1, (ids.size() + equipmentPageSize - 1) / equipmentPageSize);
 +    page = std::min(page, pages - 1);
 +    for (size_t n = 0; n < equipmentPageSize; ++n) {
 +        const size_t i = page * equipmentPageSize + n;
 +        const auto* e = i < ids.size() ? view.entry(ids[i]) : nullptr;
-+        slot(.5 + (n % 9) * 1.15, 5.45 + (n / 9) * 1.15, e, e ? "item_" + std::to_string(e->id) : "");
++        slot(.5 + (n % 9) * 1.15, 5.45 + (n / 9) * 1.15, e, e ? "item_" + std::to_string(e->id) : "grid_" + std::to_string(n));
 +    }
-+    f += "button[0.5,8.95;3.1,0.5;quick_bind;Assegna allo slot " + std::to_string(quick_slot) + "]"
-+        "button[3.8,8.95;2.8,0.5;quick_clear;Svuota slot]button[7.05,8.95;0.8,0.5;prev;<]label[8.05,9.2;" +
++    f += "button[0.5,8.95;6.1,0.5;drag_ground;Terra: trascina qui per depositare]"
++        "cwm_drag[drag_ground;0;;1]button[7.05,8.95;0.8,0.5;prev;<]label[8.05,9.2;" +
 +        std::to_string(page + 1) + " / " + std::to_string(pages) + "]button[9.95,8.95;0.8,0.5;next;>]";
 +    // Slots are explicit bookmarks, independent of full inventory order.
 +    for (unsigned n = 1; n <= 9; ++n) {
@@ -4332,9 +4613,9 @@ index 0000000..d6020a2
 +        const double x = .5 + (n - 1) * 1.15;
 +        slot(x,9.5,e,"quickslot_" + std::to_string(n), e && e->wielded);
 +        if (n == quick_slot) f += "box[" + std::to_string(x) + ",9.5;1.05,0.06;#E8CF57FF]";
-+        if (!e) f += "button[" + std::to_string(x) + ",9.5;1.05,1.05;quickslot_" + std::to_string(n) + ";" + std::to_string(n) + "]";
++
 +        f += "tooltip[quickslot_" + std::to_string(n) + ";Slot " + std::to_string(n) +
-+            ": clic seleziona lo slot. Assegna aggiunge l'oggetto scelto. Svuota rimuove solo il collegamento.]";
++            ": trascina un oggetto qui. Trascina nella griglia per togliere il riferimento.]";
 +    }
 +    if (const auto* e = view.entry(selected)) {
 +        const auto visual = icon(e->type);
@@ -4402,6 +4683,7 @@ index 0000000..d6020a2
 +        "label[0.5,1.2;Oggetto da spostare]label[8,1.2;Contenitore posseduto di destinazione]";
 +    if (activity_token) f += "button[8,1.65;7.5,0.6;cancel_consume;Interrompi attivita]";
 +    if (!view.view) return f + "label[0.5,2.2;" + statusEscape(view.error.empty() ? "Lettura inventario nativo..." : view.error) + "]";
++    f += "cwm_inventory[" + std::to_string(view.view) + ";" + std::to_string(source) + "]";
 +    const auto ids = equipmentFilter(view, "", 0);
 +    const size_t pages = std::max<size_t>(1, (ids.size() + 35) / 36);
 +    page = std::min(page, pages - 1);
@@ -4410,6 +4692,7 @@ index 0000000..d6020a2
 +        const auto x = std::to_string(.5 + (n % 6) * 1.18), y = std::to_string(2.7 + ((n % 36) / 6) * 1.0);
 +        if (source == e.id) f += "box[" + x + "," + y + ";1.05,1.0;#E8CF5790]";
 +        f += "item_image_button[" + x + "," + y + ";1.05,1.0;" + statusEscape(icon(e.type)) + ";item_" + std::to_string(e.id) + ";]";
++        f += equipmentDrag("item_" + std::to_string(e.id), &e, icon);
 +        f += "tooltip[item_" + std::to_string(e.id) + ";" + statusEscape(e.name + "\n" + view.source(e.id) + "\n" + e.transfer_reason) + "]";
 +    }
 +    std::vector<uint32_t> containers;
@@ -4421,6 +4704,7 @@ index 0000000..d6020a2
 +        const auto y = std::to_string(2.6 + (n % 12) * .42);
 +        f += "button[8," + y + ";7.5,0.4;destination_" + std::to_string(e.id) + ";" +
 +            statusEscape((destination == e.id ? "> " : "") + e.name) + "]";
++        f += equipmentDrag("destination_" + std::to_string(e.id), &e, icon);
 +        std::string detail = view.source(e.id);
 +        for (const auto& pocket : view.pockets) if (pocket.owner == e.id) {
 +            detail += "\n" + (pocket.name.empty() ? "Tasca " + std::to_string(pocket.index + 1) : pocket.name) +
@@ -4432,11 +4716,12 @@ index 0000000..d6020a2
 +    }
 +    f += "button[0.5,8.8;1.2,0.6;prev;<]label[2,9.1;" + std::to_string(page + 1) + " / " + std::to_string(pages) + "]button[5.8,8.8;1.2,0.6;next;>]";
 +    f += "button[8,8.8;1.2,0.6;dest_prev;<]label[9.5,9.1;" + std::to_string(destination_page + 1) + " / " + std::to_string(destination_pages) + "]button[14.3,8.8;1.2,0.6;dest_next;>]";
++    if (!source) f += "button[2.3,9.65;4.7,0.65;drag_ground;Terra: trascina qui]cwm_drag[drag_ground;0;;1]";
 +    if (const auto* e = view.entry(source)) {
 +        f += "label[0.5,1.75;" + statusEscape(e->name) + "]label[0.5,2.15;" + statusEscape("Disponibili: " + std::to_string(e->counted ? e->charges : 1)) + "]";
 +        f += "label[0.5,9.55;Quantita]field[0.5,9.8;1.5,0.55;quantity;;" + std::to_string(quantity) + "]field_close_on_enter[quantity;false]";
 +        if (e->transfer_reason.empty() && !activity_token) {
-+            f += "button[2.3,9.65;4.7,0.65;drop;Deposita a terra]";
++            f += "button[2.3,9.65;4.7,0.65;drag_ground;Terra: trascina qui]cwm_drag[drag_ground;0;;1]";
 +            if (destination) f += "button[8,9.65;7.5,0.65;insert;Trasferisci nel contenitore]";
 +        }
 +    }

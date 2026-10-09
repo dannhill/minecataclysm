@@ -46,3 +46,5 @@ class Payload(object):
     CancelItemTransferRequest = 40
     QuickbarBindRequest = 41
     QuickbarUseRequest = 42
+    QuickbarSwapRequest = 43
+    InventoryArrangeRequest = 44

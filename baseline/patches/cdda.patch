@@ -957,24 +957,25 @@ index e2e738d..e3ed1a6 100644
      creature_tracker &creatures = get_creature_tracker();
      if( g->climb_down_menu_pick( examp, cmenu.ret ) ) {
 diff --git a/src/item.cpp b/src/item.cpp
-index 9c51213..b358120 100644
+index 9c51213..ec81aed 100644
 --- a/src/item.cpp
 +++ b/src/item.cpp
-@@ -918,6 +918,8 @@ item item::split( int qty )
+@@ -918,6 +918,9 @@ item item::split( int qty )
      }
      item res = *this;
      res.charges = qty;
 +    // A split portion is a new UI identity; the remaining native stack keeps its shortcut.
 +    res.erase_var( "cwm_quick_identity" );
++    res.erase_var( "cwm_inventory_position" );
      charges -= qty;
      return res;
  }
-@@ -1495,7 +1497,7 @@ bool item::stacks_with( const item &rhs, bool check_components, bool combine_liq
+@@ -1495,7 +1498,7 @@ bool item::stacks_with( const item &rhs, bool check_components, bool combine_liq
      }
      // Guns that differ only by dirt/shot_counter can still stack,
      // but other item_vars such as label/note will prevent stacking
 -    static const std::set<std::string> ignore_keys = { "dirt", "shot_counter", "spawn_location_omt" };
-+    static const std::set<std::string> ignore_keys = { "dirt", "shot_counter", "spawn_location_omt", "cwm_quick_identity" };
++    static const std::set<std::string> ignore_keys = { "dirt", "shot_counter", "spawn_location_omt", "cwm_quick_identity", "cwm_inventory_position" };
      if( !map_equal_ignoring_keys( item_vars, rhs.item_vars, ignore_keys ) ) {
          return false;
      }
@@ -1534,10 +1535,10 @@ index 0000000..d8898b7
 +} // namespace cwm
 diff --git a/src/cwm/cwm_hotbar.h b/src/cwm/cwm_hotbar.h
 new file mode 100644
-index 0000000..8ce7ba8
+index 0000000..0866007
 --- /dev/null
 +++ b/src/cwm/cwm_hotbar.h
-@@ -0,0 +1,92 @@
+@@ -0,0 +1,105 @@
 +#pragma once
 +#include "cwm_inventory.h"
 +#include "cwm/cwm_session.hpp"
@@ -1604,6 +1605,19 @@ index 0000000..8ce7ba8
 +        if (u.get_value(slot_key(slot)) != expected) return {};
 +        return slots[slot - 1];
 +    }
++    static std::string swap(avatar& u, unsigned source, unsigned target,
++            const std::string& expected_source, const std::string& expected_target) {
++        if (source < 1 || source > 9 || target < 1 || target > 9 || source == target)
++            return "Invalid quick slots.";
++        refresh(u);
++        if (!valid_identity(expected_source) || u.get_value(slot_key(source)) != expected_source ||
++            u.get_value(slot_key(target)) != expected_target)
++            return "Quick slots changed: refresh the inventory.";
++        if (expected_target.empty()) u.remove_value(slot_key(source));
++        else u.set_value(slot_key(source), expected_target);
++        u.set_value(slot_key(target), expected_source);
++        return {};
++    }
 +    static std::string bind(avatar& u, unsigned slot, item_location location, const std::string& expected) {
 +        if (slot < 1 || slot > 9) return "Invalid quick slot.";
 +        refresh(u);
@@ -1632,10 +1646,10 @@ index 0000000..8ce7ba8
 +} // namespace cwm
 diff --git a/src/cwm/cwm_inventory.h b/src/cwm/cwm_inventory.h
 new file mode 100644
-index 0000000..8c4664b
+index 0000000..5651398
 --- /dev/null
 +++ b/src/cwm/cwm_inventory.h
-@@ -0,0 +1,234 @@
+@@ -0,0 +1,253 @@
 +#pragma once
 +#include <algorithm>
 +#include <array>
@@ -1751,6 +1765,25 @@ index 0000000..8c4664b
 +        auto error = validate_binding(u, view, id);
 +        return error.empty() ? action_error(u, target(id), action) : error;
 +    }
++    std::string arrange(avatar& u, uint64_t view, uint32_t source, uint32_t before) {
++        auto error = validate_binding(u, view, source); if (!error.empty()) return error;
++        if (before) { error = validate_binding(u, view, before); if (!error.empty()) return error; }
++        if (source == before) return {};
++        std::vector<uint32_t> order;
++        for (unsigned n = 1; n <= bindings_.size(); ++n) {
++            error = validate_binding(u, view, n); if (!error.empty()) return error;
++            order.push_back(n);
++        }
++        std::stable_sort(order.begin(), order.end(), [&](unsigned a, unsigned b) {
++            const int x = target(a)->get_var("cwm_inventory_position", 0);
++            const int y = target(b)->get_var("cwm_inventory_position", 0);
++            return (x > 0 ? x : 4096 + int(a)) < (y > 0 ? y : 4096 + int(b));
++        });
++        order.erase(std::find(order.begin(), order.end(), source));
++        order.insert(before ? std::find(order.begin(), order.end(), before) : order.end(), source);
++        for (unsigned n = 0; n < order.size(); ++n) target(order[n])->set_var("cwm_inventory_position", int(n + 1));
++        return {}; // UI placement only, not native pocket movement.
++    }
 +    static std::string transfer_source_error(avatar& u, item_location location) {
 +        if (!location || !location.held_by(u) || !u.has_item(*location)) return "Oggetto non piu posseduto.";
 +        if (u.activity) return "Interrompi prima l'attivita in corso.";
@@ -1843,7 +1876,7 @@ index 0000000..8c4664b
 +                    units::to_gram<int64_t>(it->weight()), units::to_milliliter<int64_t>(it->volume()),
 +                    units::to_millimeter<int64_t>(it->length()), access, actions, &reasons, consume_moves, consume_label, remove_color_tags(warning).c_str(), transfer_source_error(u, location).c_str(),
 +                    std::any_of(container_pockets.begin(), container_pockets.end(),
-+                        [](const auto* p) { return p->is_type(pocket_type::CONTAINER); }), quick_slot, it->rotten()));
++                        [](const auto* p) { return p->is_type(pocket_type::CONTAINER); }), quick_slot, it->rotten(), std::clamp(it->get_var("cwm_inventory_position", 0), 0, 2048)));
 +                bindings_.push_back({location, ancestors, it->typeId().str(), it->charges,
 +                                     it->count_by_charges(), worn, wielded});
 +                ids[it] = id;
@@ -3118,10 +3151,10 @@ index 0000000..43d3a08
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..1bbaa05
+index 0000000..32f44bc
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,1008 @@
+@@ -0,0 +1,1031 @@
 +#include "cwm_motion.h"
 +// CDDA CWM IPC Server Implementation
 +// Licensed under Apache-2.0
@@ -3895,6 +3928,18 @@ index 0000000..1bbaa05
 +            std::to_string(request->destination_id()) + ":" + std::to_string(int(request->action()));
 +    } else if (const auto* request = msg->payload_as_CancelItemTransferRequest()) {
 +        id = request->command_id(); signature = "cancel-item-transfer:" + std::to_string(request->activity_token());
++    } else if (const auto* request = msg->payload_as_QuickbarSwapRequest()) {
++        if (!request->expected_source() || !request->expected_target() ||
++            request->expected_source()->size() != 32 || request->expected_target()->size() > 32 ||
++            !Hotbar::valid_identity(request->expected_source()->str()) ||
++            (request->expected_target()->size() && !Hotbar::valid_identity(request->expected_target()->str()))) {
++            server_->client()->close(); return;
++        }
++        id = request->command_id(); signature = "quick-swap:" + std::to_string(request->source_slot()) + ":" +
++            std::to_string(request->target_slot()) + ":" + request->expected_source()->str() + ":" + request->expected_target()->str();
++    } else if (const auto* request = msg->payload_as_InventoryArrangeRequest()) {
++        id = request->command_id(); signature = "inventory-arrange:" + std::to_string(request->view_id()) + ":" +
++            std::to_string(request->item_id()) + ":" + std::to_string(request->before_item_id());
 +    } else if (const auto* request = msg->payload_as_QuickbarBindRequest()) {
 +        if (!request->expected_binding_id() || request->expected_binding_id()->size() > 32 ||
 +            (request->expected_binding_id()->size() && !Hotbar::valid_identity(request->expected_binding_id()->str()))) { server_->client()->close(); return; }
@@ -3936,6 +3981,17 @@ index 0000000..1bbaa05
 +    }
 +    if (status == Status::Expired) { send_result({id, false, "Command identity expired"}, u, m, g); return; }
 +    if (status != Status::Fresh) { server_->client()->close(); return; }
++    if (const auto* request = msg->payload_as_QuickbarSwapRequest()) {
++        const auto error = Hotbar::swap(u, request->source_slot(), request->target_slot(),
++            request->expected_source()->str(), request->expected_target()->str());
++        if (error.empty()) ++world_revision_;
++        send_result({id, error.empty(), error}, u, m, g); return;
++    }
++    if (const auto* request = msg->payload_as_InventoryArrangeRequest()) {
++        const auto error = inventory_selection_.arrange(u, request->view_id(), request->item_id(), request->before_item_id());
++        if (error.empty()) ++world_revision_;
++        send_result({id, error.empty(), error}, u, m, g); return;
++    }
 +    if (const auto* request = msg->payload_as_QuickbarBindRequest()) {
 +        auto error = request->slot() < 1 || request->slot() > 9 ? std::string("Invalid quick slot.") : std::string{};
 +        item_location location;
@@ -4596,10 +4652,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..69e4599
+index 0000000..eb2a6cf
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,1667 @@
+@@ -0,0 +1,1719 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "move_mode.h"
@@ -4697,6 +4753,17 @@ index 0000000..69e4599
 +                           const std::string& expected, uint64_t id) {
 +        cdda::cwm::MessageBuilder wire(server.received_sequence_+1,1,server.identity_);
 +        const auto bytes=wire.build_quickbar_bind(id,slot,view,item,expected);
++        server.handle_client_message(bytes.data(),bytes.size(),get_avatar(),get_map(),*g);
++    }
++    static void quick_swap(CwmServer& server, unsigned source, unsigned target,
++            const std::string& a, const std::string& b, uint64_t id) {
++        cdda::cwm::MessageBuilder wire(server.received_sequence_+1,1,server.identity_);
++        const auto bytes=wire.build_quickbar_swap(id,source,target,a,b);
++        server.handle_client_message(bytes.data(),bytes.size(),get_avatar(),get_map(),*g);
++    }
++    static void arrange(CwmServer& server, uint64_t view, unsigned source, unsigned before, uint64_t id) {
++        cdda::cwm::MessageBuilder wire(server.received_sequence_+1,1,server.identity_);
++        const auto bytes=wire.build_inventory_arrange(id,view,source,before);
 +        server.handle_client_message(bytes.data(),bytes.size(),get_avatar(),get_map(),*g);
 +    }
 +    static void quick_use(CwmServer& server, unsigned slot, const std::string& expected, int action, uint64_t id) {
@@ -6266,6 +6333,47 @@ index 0000000..69e4599
 +    REQUIRE(cwm::Hotbar::bind(u,2,item_location(u,&rock),"").empty());
 +    item clone(rock);u.i_add(clone);cwm::Hotbar::refresh(u);
 +    CHECK(u.get_value(cwm::Hotbar::slot_key(2)).empty());
++}
++
++TEST_CASE("cwm_drag_quick_swap_is_atomic_and_replay_safe", "[cwm][quickbar]") {
++    clear_avatar(); clear_map(); auto& u=get_avatar();
++    REQUIRE(u.wear_item(item(itype_id("backpack_hiking"))));
++    auto a=u.i_add(item(itype_id("hat_ball"))), b=u.i_add(item(itype_id("hat_ball")));
++    REQUIRE(a); REQUIRE(b);
++    cwm::CwmServer server("/unused-drag-swap"); cwm::CwmServerTestAccess::ready(server);
++    auto view=cwm::CwmServerTestAccess::inventory(server);
++    cwm::CwmServerTestAccess::quick_bind(server,1,view,cwm::CwmServerTestAccess::item_id(server,*a),"",1);
++    cwm::CwmServerTestAccess::quick_bind(server,2,view,cwm::CwmServerTestAccess::item_id(server,*b),"",2);
++    const auto x=u.get_value(cwm::Hotbar::slot_key(1)), y=u.get_value(cwm::Hotbar::slot_key(2));
++    const int moves=u.moves; const auto time=calendar::turn;
++    cwm::CwmServerTestAccess::quick_swap(server,1,2,x,"",3);
++    CHECK(u.get_value(cwm::Hotbar::slot_key(1))==x); CHECK(u.get_value(cwm::Hotbar::slot_key(2))==y);
++    cwm::CwmServerTestAccess::quick_swap(server,1,2,x,y,4);
++    CHECK(u.get_value(cwm::Hotbar::slot_key(1))==y); CHECK(u.get_value(cwm::Hotbar::slot_key(2))==x);
++    cwm::CwmServerTestAccess::quick_swap(server,1,2,x,y,4);
++    CHECK(u.get_value(cwm::Hotbar::slot_key(1))==y); CHECK(u.get_value(cwm::Hotbar::slot_key(2))==x);
++    cwm::CwmServerTestAccess::quick_swap(server,2,3,x,"",5);
++    CHECK(u.get_value(cwm::Hotbar::slot_key(2)).empty()); CHECK(u.get_value(cwm::Hotbar::slot_key(3))==x);
++    CHECK(u.moves==moves); CHECK(calendar::turn==time); CHECK_FALSE(u.activity);
++}
++TEST_CASE("cwm_grid_order_is_native_optional_metadata_not_pocket_movement", "[cwm][quickbar][item]") {
++    clear_avatar(); clear_map(); auto& u=get_avatar();
++    REQUIRE(u.wear_item(item(itype_id("backpack_hiking"))));
++    auto a=u.i_add(item(itype_id("hat_ball"))), b=u.i_add(item(itype_id("bandana")));
++    REQUIRE(a); REQUIRE(b);
++    cwm::CwmServer server("/unused-drag-order"); cwm::CwmServerTestAccess::ready(server);
++    auto view=cwm::CwmServerTestAccess::inventory(server);
++    const auto a_id=cwm::CwmServerTestAccess::item_id(server,*a), b_id=cwm::CwmServerTestAccess::item_id(server,*b);
++    const auto parents=u.parents(*a); const int moves=u.moves; const auto time=calendar::turn;
++    cwm::CwmServerTestAccess::arrange(server,view,a_id,b_id,1);
++    CHECK(a->get_var("cwm_inventory_position",0) < b->get_var("cwm_inventory_position",0));
++    cwm::CwmServerTestAccess::arrange(server,view+99,b_id,a_id,2);
++    CHECK(a->get_var("cwm_inventory_position",0) < b->get_var("cwm_inventory_position",0));
++    CHECK(u.parents(*a)==parents); CHECK(u.moves==moves); CHECK(calendar::turn==time);
++    item rock(itype_id("rock")), other(rock); rock.set_var("cwm_inventory_position",4);
++    CHECK(rock.stacks_with(other));
++    rock.charges=7; auto portion=rock.split(2);
++    CHECK(rock.get_var("cwm_inventory_position",0)==4); CHECK(portion.get_var("cwm_inventory_position",0)==0);
 +}
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644

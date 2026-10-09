@@ -11,7 +11,7 @@
 namespace cdda::cwm {
 
 constexpr uint16_t PROTOCOL_VERSION_MAJOR = 2;
-constexpr uint16_t PROTOCOL_VERSION_MINOR = 17;
+constexpr uint16_t PROTOCOL_VERSION_MINOR = 18;
 
 struct Identity { uint64_t session{0}, player{0}, connection{0}; };
 
@@ -30,6 +30,16 @@ public:
         return fbb_;
     }
 
+    std::vector<uint8_t> build_quickbar_swap(uint64_t id, uint8_t source, uint8_t target,
+            const std::string& expected_source, const std::string& expected_target) {
+        auto p = CDDA::CWM::CreateQuickbarSwapRequestDirect(fbb_, id, source, target,
+            expected_source.c_str(), expected_target.c_str());
+        return finish_message(CDDA::CWM::Payload::QuickbarSwapRequest, p.Union());
+    }
+    std::vector<uint8_t> build_inventory_arrange(uint64_t id, uint64_t view, uint32_t item, uint32_t before) {
+        auto p = CDDA::CWM::CreateInventoryArrangeRequest(fbb_, id, view, item, before);
+        return finish_message(CDDA::CWM::Payload::InventoryArrangeRequest, p.Union());
+    }
     std::vector<uint8_t> build_quickbar_bind(uint64_t id, uint8_t slot, uint64_t view, uint32_t item,
                                            const std::string& expected) {
         const auto request = CDDA::CWM::CreateQuickbarBindRequestDirect(fbb_, id, slot, view, item, expected.c_str());

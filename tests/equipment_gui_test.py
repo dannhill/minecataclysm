@@ -232,9 +232,28 @@ def main():
             def entries(v):
                 return [v.Entries(n) for n in range(v.EntriesLength())]
             def select_item(e):
-                index = e.Id() - 1
-                click(1.025 + (index % 9)*1.15, 5.975 + ((index % 27) // 9)*1.15)
+                if e.QuickSlot():
+                    click(1.025+(e.QuickSlot()-1)*1.15,10.025)
+                else:
+                    visible=[view.Entries(n) for n in range(view.EntriesLength()) if not view.Entries(n).QuickSlot()]
+                    visible.sort(key=lambda x:x.UiOrder() or 4096+x.Id())
+                    index=next(n for n,x in enumerate(visible) if x.Id()==e.Id())
+                    click(1.025 + (index % 9)*1.15, 5.975 + ((index % 27) // 9)*1.15)
                 wait(lambda r: int(r['equipment_selected']) == e.Id())
+            def drag(source,target,cancel=False):
+                def move(xy):
+                    xdo('mousemove','--window',window,str(round(origin_x+xy[0]*unit)),str(round(origin_y+xy[1]*unit)))
+                move(source);xdo('mousedown','1');time.sleep(.15)
+                for n in range(1,8):
+                    move((source[0]+(target[0]-source[0])*n/7,source[1]+(target[1]-source[1])*n/7));time.sleep(.04)
+                if cancel:tap('Escape')
+                xdo('mouseup','1');time.sleep(.4)
+            def cell(e):
+                if e.QuickSlot():return (1.025+(e.QuickSlot()-1)*1.15,10.025)
+                visible=[view.Entries(n) for n in range(view.EntriesLength()) if not view.Entries(n).QuickSlot()]
+                visible.sort(key=lambda x:x.UiOrder() or 4096+x.Id())
+                index=next(n for n,x in enumerate(visible) if x.Id()==e.Id())
+                return (1.025+(index%9)*1.15,5.975+((index%27)//9)*1.15)
             def action(number):
                 sent = int(latest()['equipment_sent'])
                 click(12.325 + (number % 2)*2.2, 8.15 + (number // 2)*.75)
@@ -261,11 +280,9 @@ def main():
                     return states()[-1].QuickSlots(n-1)
                 def bind(type_id,n):
                     nonlocal view
-                    chosen=item(view,type_id);select_item(chosen)
-                    click(1.025+(n-1)*1.15,10.025)
-                    wait(lambda r:int(r['quick_slot'])==n)
+                    chosen=item(view,type_id)
                     old=int(latest()['quick_bind_command']);old_view=latest()['inventory_view']
-                    click(2.05,9.2)
+                    drag(cell(chosen),(1.025+(n-1)*1.15,10.025))
                     wait(lambda r:int(r['quick_bind_command'])>old)
                     wait(lambda r:int(r['pending_move'])==0 and int(r['inventory_view'])>0 and r['inventory_view']!=old_view)
                     view=views()[-1]
@@ -286,11 +303,28 @@ def main():
                     check('background_click_disables_search_keyboard_input',True)
                     click(7.7,4.95)
                     paused=latest()['simulation_time']
+                    old=latest()['inventory_view']
+                    rock=item(view,'rock');bat=item(view,'bat')
+                    drag(cell(rock),cell(bat),cancel=True)
+                    check('escape_cancels_drag_without_closing_or_mutating',latest()['inventory_view']==old and int(latest()['equipment_form'])==1 and int(latest()['pending_move'])==0)
+                    old_view=latest()['inventory_view']
+                    drag(cell(rock),cell(bat))
+                    wait(lambda r:int(r['pending_move'])==0 and int(r['inventory_view'])>0 and r['inventory_view']!=old_view)
+                    view=views()[-1]
+                    check('drag_grid_order_is_persistent_native_ui_metadata',item(view,'rock').UiOrder()<item(view,'bat').UiOrder() and latest()['simulation_time']==paused)
                     bind('bat',1);bind('hat_ball',2);bind('rock',3)
                     check('assignment_preserves_native_time_and_hand',latest()['simulation_time']==paused and slot(1).Wielded() and not slot(3).Wielded())
+                    old_view=latest()['inventory_view'];a=slot(2).BindingId();b=slot(3).BindingId()
+                    drag((2.175,10.025),(3.325,10.025))
+                    wait(lambda r:int(r['pending_move'])==0 and int(r['inventory_view'])>0 and r['inventory_view']!=old_view)
+                    view=views()[-1]
+                    check('drag_occupied_hotbar_swaps_both_exact_instances_atomically',slot(2).BindingId()==b and slot(3).BindingId()==a)
+                    old_view=latest()['inventory_view'];drag((2.175,10.025),(3.325,10.025))
+                    wait(lambda r:int(r['pending_move'])==0 and int(r['inventory_view'])>0 and r['inventory_view']!=old_view)
+                    view=views()[-1]
                     shot('assigned-quickbar.png')
                     # Clear a bookmark, preserving its real item and the real hand.
-                    click(1.025,10.025);old_view=latest()['inventory_view'];click(5.2,9.2)
+                    old_view=latest()['inventory_view'];drag((1.025,10.025),(10.225,8.275))
                     wait(lambda r:int(r['pending_move'])==0 and r['inventory_view']!=old_view and int(r['inventory_view'])>0)
                     view=views()[-1]
                     check('clear_removes_reference_without_removing_item',not slot(1).BindingId() and item(view,'bat').Wielded() and int(latest()['quick_count'])==2)

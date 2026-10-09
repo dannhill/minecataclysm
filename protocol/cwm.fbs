@@ -332,6 +332,7 @@ table InventoryEntry {
     container: bool;
     quick_slot: uint8;
     rotten: bool;
+    ui_order: uint32;
 }
 table InventoryPocket {
     owner_id: uint32;
@@ -378,6 +379,13 @@ table QuickSlot {
 table QuickbarBindRequest {
     command_id: uint64; slot: uint8; view_id: uint64; item_id: uint32;
     expected_binding_id: string;
+}
+table QuickbarSwapRequest {
+    command_id: uint64; source_slot: uint8; target_slot: uint8;
+    expected_source: string; expected_target: string;
+}
+table InventoryArrangeRequest {
+    command_id: uint64; view_id: uint64; item_id: uint32; before_item_id: uint32;
 }
 table QuickbarUseRequest {
     command_id: uint64; slot: uint8; binding_id: string; action: EquipmentAction;
@@ -483,6 +491,8 @@ union Payload {
     ,CancelItemTransferRequest
     ,QuickbarBindRequest
     ,QuickbarUseRequest
+    ,QuickbarSwapRequest
+    ,InventoryArrangeRequest
 }
 
 table CwmMessage {

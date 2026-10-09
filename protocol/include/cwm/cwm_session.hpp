@@ -35,7 +35,7 @@ inline bool valid_inventory(const CDDA::CWM::InventoryView* view) {
         if (!entry || entry->id() != ++id || entry->parent_id() >= id || entry->pocket_index() < -1 ||
             (!entry->parent_id() && entry->pocket_index() != -1) ||
             (entry->parent_id() && (entry->worn() || entry->wielded())) ||
-            (entry->worn() && entry->wielded()) || (entry->actions() & ~63) || entry->quick_slot() > 9 ||
+            (entry->worn() && entry->wielded()) || (entry->actions() & ~63) || entry->quick_slot() > 9 || entry->ui_order() > 2048 ||
             entry->weight_grams() < 0 || entry->volume_ml() < 0 || entry->length_mm() < 0 || entry->access_moves() < 0 ||
             !text(entry->type_id(), 1024, false) || !text(entry->name(), 16384, false) || !text(entry->category(), 1024) ||
             !entry->reasons() || entry->reasons()->size() != 6 || entry->consume_moves() < 0 ||

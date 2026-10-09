@@ -148,6 +148,12 @@ struct QuickSlotBuilder;
 struct QuickbarBindRequest;
 struct QuickbarBindRequestBuilder;
 
+struct QuickbarSwapRequest;
+struct QuickbarSwapRequestBuilder;
+
+struct InventoryArrangeRequest;
+struct InventoryArrangeRequestBuilder;
+
 struct QuickbarUseRequest;
 struct QuickbarUseRequestBuilder;
 
@@ -576,11 +582,13 @@ enum class Payload : uint8_t {
   CancelItemTransferRequest = 40,
   QuickbarBindRequest = 41,
   QuickbarUseRequest = 42,
+  QuickbarSwapRequest = 43,
+  InventoryArrangeRequest = 44,
   MIN = NONE,
-  MAX = QuickbarUseRequest
+  MAX = InventoryArrangeRequest
 };
 
-inline const Payload (&EnumValuesPayload())[43] {
+inline const Payload (&EnumValuesPayload())[45] {
   static const Payload values[] = {
     Payload::NONE,
     Payload::HelloRequest,
@@ -624,13 +632,15 @@ inline const Payload (&EnumValuesPayload())[43] {
     Payload::ItemTransferRequest,
     Payload::CancelItemTransferRequest,
     Payload::QuickbarBindRequest,
-    Payload::QuickbarUseRequest
+    Payload::QuickbarUseRequest,
+    Payload::QuickbarSwapRequest,
+    Payload::InventoryArrangeRequest
   };
   return values;
 }
 
 inline const char * const *EnumNamesPayload() {
-  static const char * const names[44] = {
+  static const char * const names[46] = {
     "NONE",
     "HelloRequest",
     "HelloResponse",
@@ -674,13 +684,15 @@ inline const char * const *EnumNamesPayload() {
     "CancelItemTransferRequest",
     "QuickbarBindRequest",
     "QuickbarUseRequest",
+    "QuickbarSwapRequest",
+    "InventoryArrangeRequest",
     nullptr
   };
   return names;
 }
 
 inline const char *EnumNamePayload(Payload e) {
-  if (::flatbuffers::IsOutRange(e, Payload::NONE, Payload::QuickbarUseRequest)) return "";
+  if (::flatbuffers::IsOutRange(e, Payload::NONE, Payload::InventoryArrangeRequest)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesPayload()[index];
 }
@@ -857,6 +869,14 @@ template<> struct PayloadTraits<CDDA::CWM::QuickbarUseRequest> {
   static const Payload enum_value = Payload::QuickbarUseRequest;
 };
 
+template<> struct PayloadTraits<CDDA::CWM::QuickbarSwapRequest> {
+  static const Payload enum_value = Payload::QuickbarSwapRequest;
+};
+
+template<> struct PayloadTraits<CDDA::CWM::InventoryArrangeRequest> {
+  static const Payload enum_value = Payload::InventoryArrangeRequest;
+};
+
 bool VerifyPayload(::flatbuffers::Verifier &verifier, const void *obj, Payload type);
 bool VerifyPayloadVector(::flatbuffers::Verifier &verifier, const ::flatbuffers::Vector<::flatbuffers::Offset<void>> *values, const ::flatbuffers::Vector<Payload> *types);
 
@@ -880,20 +900,11 @@ FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(4) Coord3i FLATBUFFERS_FINAL_CLASS {
   int32_t x() const {
     return ::flatbuffers::EndianScalar(x_);
   }
-  void mutate_x(int32_t _x) {
-    ::flatbuffers::WriteScalar(&x_, _x);
-  }
   int32_t y() const {
     return ::flatbuffers::EndianScalar(y_);
   }
-  void mutate_y(int32_t _y) {
-    ::flatbuffers::WriteScalar(&y_, _y);
-  }
   int32_t z() const {
     return ::flatbuffers::EndianScalar(z_);
-  }
-  void mutate_z(int32_t _z) {
-    ::flatbuffers::WriteScalar(&z_, _z);
   }
 };
 FLATBUFFERS_STRUCT_END(Coord3i, 12);
@@ -918,20 +929,11 @@ FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(4) Vec3f FLATBUFFERS_FINAL_CLASS {
   float x() const {
     return ::flatbuffers::EndianScalar(x_);
   }
-  void mutate_x(float _x) {
-    ::flatbuffers::WriteScalar(&x_, _x);
-  }
   float y() const {
     return ::flatbuffers::EndianScalar(y_);
   }
-  void mutate_y(float _y) {
-    ::flatbuffers::WriteScalar(&y_, _y);
-  }
   float z() const {
     return ::flatbuffers::EndianScalar(z_);
-  }
-  void mutate_z(float _z) {
-    ::flatbuffers::WriteScalar(&z_, _z);
   }
 };
 FLATBUFFERS_STRUCT_END(Vec3f, 12);
@@ -959,26 +961,14 @@ FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(4) CwmBlock FLATBUFFERS_FINAL_CLASS {
   uint32_t state_flags() const {
     return ::flatbuffers::EndianScalar(state_flags_);
   }
-  void mutate_state_flags(uint32_t _state_flags) {
-    ::flatbuffers::WriteScalar(&state_flags_, _state_flags);
-  }
   uint16_t material_id() const {
     return ::flatbuffers::EndianScalar(material_id_);
-  }
-  void mutate_material_id(uint16_t _material_id) {
-    ::flatbuffers::WriteScalar(&material_id_, _material_id);
   }
   uint8_t light_level() const {
     return ::flatbuffers::EndianScalar(light_level_);
   }
-  void mutate_light_level(uint8_t _light_level) {
-    ::flatbuffers::WriteScalar(&light_level_, _light_level);
-  }
   uint8_t orientation() const {
     return ::flatbuffers::EndianScalar(orientation_);
-  }
-  void mutate_orientation(uint8_t _orientation) {
-    ::flatbuffers::WriteScalar(&orientation_, _orientation);
   }
 };
 FLATBUFFERS_STRUCT_END(CwmBlock, 8);
@@ -994,26 +984,14 @@ struct HelloRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint16_t protocol_version_major() const {
     return GetField<uint16_t>(VT_PROTOCOL_VERSION_MAJOR, 0);
   }
-  bool mutate_protocol_version_major(uint16_t _protocol_version_major = 0) {
-    return SetField<uint16_t>(VT_PROTOCOL_VERSION_MAJOR, _protocol_version_major, 0);
-  }
   uint16_t protocol_version_minor() const {
     return GetField<uint16_t>(VT_PROTOCOL_VERSION_MINOR, 0);
-  }
-  bool mutate_protocol_version_minor(uint16_t _protocol_version_minor = 0) {
-    return SetField<uint16_t>(VT_PROTOCOL_VERSION_MINOR, _protocol_version_minor, 0);
   }
   const ::flatbuffers::String *build_id() const {
     return GetPointer<const ::flatbuffers::String *>(VT_BUILD_ID);
   }
-  ::flatbuffers::String *mutable_build_id() {
-    return GetPointer<::flatbuffers::String *>(VT_BUILD_ID);
-  }
   uint64_t client_id() const {
     return GetField<uint64_t>(VT_CLIENT_ID, 0);
-  }
-  bool mutate_client_id(uint64_t _client_id = 0) {
-    return SetField<uint64_t>(VT_CLIENT_ID, _client_id, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -1095,38 +1073,20 @@ struct HelloResponse FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint16_t protocol_version_major() const {
     return GetField<uint16_t>(VT_PROTOCOL_VERSION_MAJOR, 0);
   }
-  bool mutate_protocol_version_major(uint16_t _protocol_version_major = 0) {
-    return SetField<uint16_t>(VT_PROTOCOL_VERSION_MAJOR, _protocol_version_major, 0);
-  }
   uint16_t protocol_version_minor() const {
     return GetField<uint16_t>(VT_PROTOCOL_VERSION_MINOR, 0);
-  }
-  bool mutate_protocol_version_minor(uint16_t _protocol_version_minor = 0) {
-    return SetField<uint16_t>(VT_PROTOCOL_VERSION_MINOR, _protocol_version_minor, 0);
   }
   const ::flatbuffers::String *server_build_id() const {
     return GetPointer<const ::flatbuffers::String *>(VT_SERVER_BUILD_ID);
   }
-  ::flatbuffers::String *mutable_server_build_id() {
-    return GetPointer<::flatbuffers::String *>(VT_SERVER_BUILD_ID);
-  }
   bool accepted() const {
     return GetField<uint8_t>(VT_ACCEPTED, 0) != 0;
-  }
-  bool mutate_accepted(bool _accepted = 0) {
-    return SetField<uint8_t>(VT_ACCEPTED, static_cast<uint8_t>(_accepted), 0);
   }
   const ::flatbuffers::String *reject_reason() const {
     return GetPointer<const ::flatbuffers::String *>(VT_REJECT_REASON);
   }
-  ::flatbuffers::String *mutable_reject_reason() {
-    return GetPointer<::flatbuffers::String *>(VT_REJECT_REASON);
-  }
   uint64_t next_command_id() const {
     return GetField<uint64_t>(VT_NEXT_COMMAND_ID, 0);
-  }
-  bool mutate_next_command_id(uint64_t _next_command_id = 0) {
-    return SetField<uint64_t>(VT_NEXT_COMMAND_ID, _next_command_id, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -1221,9 +1181,6 @@ struct Heartbeat FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint64_t timestamp_ms() const {
     return GetField<uint64_t>(VT_TIMESTAMP_MS, 0);
   }
-  bool mutate_timestamp_ms(uint64_t _timestamp_ms = 0) {
-    return SetField<uint64_t>(VT_TIMESTAMP_MS, _timestamp_ms, 0);
-  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint64_t>(verifier, VT_TIMESTAMP_MS, 8) &&
@@ -1266,14 +1223,8 @@ struct HeartbeatAck FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint64_t timestamp_ms() const {
     return GetField<uint64_t>(VT_TIMESTAMP_MS, 0);
   }
-  bool mutate_timestamp_ms(uint64_t _timestamp_ms = 0) {
-    return SetField<uint64_t>(VT_TIMESTAMP_MS, _timestamp_ms, 0);
-  }
   uint64_t server_time_ms() const {
     return GetField<uint64_t>(VT_SERVER_TIME_MS, 0);
-  }
-  bool mutate_server_time_ms(uint64_t _server_time_ms = 0) {
-    return SetField<uint64_t>(VT_SERVER_TIME_MS, _server_time_ms, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -1328,44 +1279,23 @@ struct ChunkSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   int32_t chunk_x() const {
     return GetField<int32_t>(VT_CHUNK_X, 0);
   }
-  bool mutate_chunk_x(int32_t _chunk_x = 0) {
-    return SetField<int32_t>(VT_CHUNK_X, _chunk_x, 0);
-  }
   int32_t chunk_y() const {
     return GetField<int32_t>(VT_CHUNK_Y, 0);
-  }
-  bool mutate_chunk_y(int32_t _chunk_y = 0) {
-    return SetField<int32_t>(VT_CHUNK_Y, _chunk_y, 0);
   }
   int32_t chunk_z() const {
     return GetField<int32_t>(VT_CHUNK_Z, 0);
   }
-  bool mutate_chunk_z(int32_t _chunk_z = 0) {
-    return SetField<int32_t>(VT_CHUNK_Z, _chunk_z, 0);
-  }
   uint8_t size_x() const {
     return GetField<uint8_t>(VT_SIZE_X, 0);
-  }
-  bool mutate_size_x(uint8_t _size_x = 0) {
-    return SetField<uint8_t>(VT_SIZE_X, _size_x, 0);
   }
   uint8_t size_y() const {
     return GetField<uint8_t>(VT_SIZE_Y, 0);
   }
-  bool mutate_size_y(uint8_t _size_y = 0) {
-    return SetField<uint8_t>(VT_SIZE_Y, _size_y, 0);
-  }
   uint8_t size_z() const {
     return GetField<uint8_t>(VT_SIZE_Z, 0);
   }
-  bool mutate_size_z(uint8_t _size_z = 0) {
-    return SetField<uint8_t>(VT_SIZE_Z, _size_z, 0);
-  }
   const ::flatbuffers::Vector<const CDDA::CWM::CwmBlock *> *blocks() const {
     return GetPointer<const ::flatbuffers::Vector<const CDDA::CWM::CwmBlock *> *>(VT_BLOCKS);
-  }
-  ::flatbuffers::Vector<const CDDA::CWM::CwmBlock *> *mutable_blocks() {
-    return GetPointer<::flatbuffers::Vector<const CDDA::CWM::CwmBlock *> *>(VT_BLOCKS);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -1467,14 +1397,8 @@ struct TileDelta FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const CDDA::CWM::Coord3i *coord() const {
     return GetStruct<const CDDA::CWM::Coord3i *>(VT_COORD);
   }
-  CDDA::CWM::Coord3i *mutable_coord() {
-    return GetStruct<CDDA::CWM::Coord3i *>(VT_COORD);
-  }
   const CDDA::CWM::CwmBlock *block() const {
     return GetStruct<const CDDA::CWM::CwmBlock *>(VT_BLOCK);
-  }
-  CDDA::CWM::CwmBlock *mutable_block() {
-    return GetStruct<CDDA::CWM::CwmBlock *>(VT_BLOCK);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -1530,50 +1454,26 @@ struct GroundItemState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint32_t stack_index() const {
     return GetField<uint32_t>(VT_STACK_INDEX, 0);
   }
-  bool mutate_stack_index(uint32_t _stack_index = 0) {
-    return SetField<uint32_t>(VT_STACK_INDEX, _stack_index, 0);
-  }
   const ::flatbuffers::String *type_id() const {
     return GetPointer<const ::flatbuffers::String *>(VT_TYPE_ID);
-  }
-  ::flatbuffers::String *mutable_type_id() {
-    return GetPointer<::flatbuffers::String *>(VT_TYPE_ID);
   }
   const ::flatbuffers::String *name() const {
     return GetPointer<const ::flatbuffers::String *>(VT_NAME);
   }
-  ::flatbuffers::String *mutable_name() {
-    return GetPointer<::flatbuffers::String *>(VT_NAME);
-  }
   int32_t charges() const {
     return GetField<int32_t>(VT_CHARGES, 0);
-  }
-  bool mutate_charges(int32_t _charges = 0) {
-    return SetField<int32_t>(VT_CHARGES, _charges, 0);
   }
   bool count_by_charges() const {
     return GetField<uint8_t>(VT_COUNT_BY_CHARGES, 0) != 0;
   }
-  bool mutate_count_by_charges(bool _count_by_charges = 0) {
-    return SetField<uint8_t>(VT_COUNT_BY_CHARGES, static_cast<uint8_t>(_count_by_charges), 0);
-  }
   const ::flatbuffers::String *category() const {
     return GetPointer<const ::flatbuffers::String *>(VT_CATEGORY);
-  }
-  ::flatbuffers::String *mutable_category() {
-    return GetPointer<::flatbuffers::String *>(VT_CATEGORY);
   }
   bool wielded() const {
     return GetField<uint8_t>(VT_WIELDED, 0) != 0;
   }
-  bool mutate_wielded(bool _wielded = 0) {
-    return SetField<uint8_t>(VT_WIELDED, static_cast<uint8_t>(_wielded), 0);
-  }
   bool rotten() const {
     return GetField<uint8_t>(VT_ROTTEN, 0) != 0;
-  }
-  bool mutate_rotten(bool _rotten = 0) {
-    return SetField<uint8_t>(VT_ROTTEN, static_cast<uint8_t>(_rotten), 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -1687,14 +1587,8 @@ struct GroundItemTileState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Tabl
   const CDDA::CWM::Coord3i *coord() const {
     return GetStruct<const CDDA::CWM::Coord3i *>(VT_COORD);
   }
-  CDDA::CWM::Coord3i *mutable_coord() {
-    return GetStruct<CDDA::CWM::Coord3i *>(VT_COORD);
-  }
   const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::GroundItemState>> *items() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::GroundItemState>> *>(VT_ITEMS);
-  }
-  ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::GroundItemState>> *mutable_items() {
-    return GetPointer<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::GroundItemState>> *>(VT_ITEMS);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -1766,68 +1660,35 @@ struct EntityState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint64_t id() const {
     return GetField<uint64_t>(VT_ID, 0);
   }
-  bool mutate_id(uint64_t _id = 0) {
-    return SetField<uint64_t>(VT_ID, _id, 0);
-  }
   CDDA::CWM::EntityType type() const {
     return static_cast<CDDA::CWM::EntityType>(GetField<int8_t>(VT_TYPE, 0));
-  }
-  bool mutate_type(CDDA::CWM::EntityType _type = static_cast<CDDA::CWM::EntityType>(0)) {
-    return SetField<int8_t>(VT_TYPE, static_cast<int8_t>(_type), 0);
   }
   const ::flatbuffers::String *type_id() const {
     return GetPointer<const ::flatbuffers::String *>(VT_TYPE_ID);
   }
-  ::flatbuffers::String *mutable_type_id() {
-    return GetPointer<::flatbuffers::String *>(VT_TYPE_ID);
-  }
   const CDDA::CWM::Vec3f *pos() const {
     return GetStruct<const CDDA::CWM::Vec3f *>(VT_POS);
-  }
-  CDDA::CWM::Vec3f *mutable_pos() {
-    return GetStruct<CDDA::CWM::Vec3f *>(VT_POS);
   }
   float rotation() const {
     return GetField<float>(VT_ROTATION, 0.0f);
   }
-  bool mutate_rotation(float _rotation = 0.0f) {
-    return SetField<float>(VT_ROTATION, _rotation, 0.0f);
-  }
   uint16_t animation_hint() const {
     return GetField<uint16_t>(VT_ANIMATION_HINT, 0);
-  }
-  bool mutate_animation_hint(uint16_t _animation_hint = 0) {
-    return SetField<uint16_t>(VT_ANIMATION_HINT, _animation_hint, 0);
   }
   uint8_t hp_percent() const {
     return GetField<uint8_t>(VT_HP_PERCENT, 0);
   }
-  bool mutate_hp_percent(uint8_t _hp_percent = 0) {
-    return SetField<uint8_t>(VT_HP_PERCENT, _hp_percent, 0);
-  }
   const ::flatbuffers::String *name() const {
     return GetPointer<const ::flatbuffers::String *>(VT_NAME);
-  }
-  ::flatbuffers::String *mutable_name() {
-    return GetPointer<::flatbuffers::String *>(VT_NAME);
   }
   bool perceived() const {
     return GetField<uint8_t>(VT_PERCEIVED, 1) != 0;
   }
-  bool mutate_perceived(bool _perceived = 1) {
-    return SetField<uint8_t>(VT_PERCEIVED, static_cast<uint8_t>(_perceived), 1);
-  }
   uint32_t state_flags() const {
     return GetField<uint32_t>(VT_STATE_FLAGS, 0);
   }
-  bool mutate_state_flags(uint32_t _state_flags = 0) {
-    return SetField<uint32_t>(VT_STATE_FLAGS, _state_flags, 0);
-  }
   float motion_seconds() const {
     return GetField<float>(VT_MOTION_SECONDS, 0.2f);
-  }
-  bool mutate_motion_seconds(float _motion_seconds = 0.2f) {
-    return SetField<float>(VT_MOTION_SECONDS, _motion_seconds, 0.2f);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -1962,9 +1823,6 @@ struct EntitySpawned FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const CDDA::CWM::EntityState *state() const {
     return GetPointer<const CDDA::CWM::EntityState *>(VT_STATE);
   }
-  CDDA::CWM::EntityState *mutable_state() {
-    return GetPointer<CDDA::CWM::EntityState *>(VT_STATE);
-  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_STATE) &&
@@ -2006,9 +1864,6 @@ struct EntityRemoved FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   };
   uint64_t id() const {
     return GetField<uint64_t>(VT_ID, 0);
-  }
-  bool mutate_id(uint64_t _id = 0) {
-    return SetField<uint64_t>(VT_ID, _id, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -2054,26 +1909,14 @@ struct VehicleComponentState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Ta
   const ::flatbuffers::String *part_id() const {
     return GetPointer<const ::flatbuffers::String *>(VT_PART_ID);
   }
-  ::flatbuffers::String *mutable_part_id() {
-    return GetPointer<::flatbuffers::String *>(VT_PART_ID);
-  }
   const CDDA::CWM::Vec3f *offset() const {
     return GetStruct<const CDDA::CWM::Vec3f *>(VT_OFFSET);
-  }
-  CDDA::CWM::Vec3f *mutable_offset() {
-    return GetStruct<CDDA::CWM::Vec3f *>(VT_OFFSET);
   }
   bool broken() const {
     return GetField<uint8_t>(VT_BROKEN, 0) != 0;
   }
-  bool mutate_broken(bool _broken = 0) {
-    return SetField<uint8_t>(VT_BROKEN, static_cast<uint8_t>(_broken), 0);
-  }
   bool open() const {
     return GetField<uint8_t>(VT_OPEN, 0) != 0;
-  }
-  bool mutate_open(bool _open = 0) {
-    return SetField<uint8_t>(VT_OPEN, static_cast<uint8_t>(_open), 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -2155,38 +1998,20 @@ struct VehicleState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint64_t id() const {
     return GetField<uint64_t>(VT_ID, 0);
   }
-  bool mutate_id(uint64_t _id = 0) {
-    return SetField<uint64_t>(VT_ID, _id, 0);
-  }
   const ::flatbuffers::String *name() const {
     return GetPointer<const ::flatbuffers::String *>(VT_NAME);
-  }
-  ::flatbuffers::String *mutable_name() {
-    return GetPointer<::flatbuffers::String *>(VT_NAME);
   }
   const CDDA::CWM::Vec3f *pivot() const {
     return GetStruct<const CDDA::CWM::Vec3f *>(VT_PIVOT);
   }
-  CDDA::CWM::Vec3f *mutable_pivot() {
-    return GetStruct<CDDA::CWM::Vec3f *>(VT_PIVOT);
-  }
   float rotation() const {
     return GetField<float>(VT_ROTATION, 0.0f);
-  }
-  bool mutate_rotation(float _rotation = 0.0f) {
-    return SetField<float>(VT_ROTATION, _rotation, 0.0f);
   }
   const CDDA::CWM::Vec3f *velocity() const {
     return GetStruct<const CDDA::CWM::Vec3f *>(VT_VELOCITY);
   }
-  CDDA::CWM::Vec3f *mutable_velocity() {
-    return GetStruct<CDDA::CWM::Vec3f *>(VT_VELOCITY);
-  }
   const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::VehicleComponentState>> *components() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::VehicleComponentState>> *>(VT_COMPONENTS);
-  }
-  ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::VehicleComponentState>> *mutable_components() {
-    return GetPointer<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::VehicleComponentState>> *>(VT_COMPONENTS);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -2285,26 +2110,14 @@ struct FieldState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const CDDA::CWM::Coord3i *coord() const {
     return GetStruct<const CDDA::CWM::Coord3i *>(VT_COORD);
   }
-  CDDA::CWM::Coord3i *mutable_coord() {
-    return GetStruct<CDDA::CWM::Coord3i *>(VT_COORD);
-  }
   uint16_t field_type_id() const {
     return GetField<uint16_t>(VT_FIELD_TYPE_ID, 0);
-  }
-  bool mutate_field_type_id(uint16_t _field_type_id = 0) {
-    return SetField<uint16_t>(VT_FIELD_TYPE_ID, _field_type_id, 0);
   }
   uint8_t density() const {
     return GetField<uint8_t>(VT_DENSITY, 0);
   }
-  bool mutate_density(uint8_t _density = 0) {
-    return SetField<uint8_t>(VT_DENSITY, _density, 0);
-  }
   uint32_t age() const {
     return GetField<uint32_t>(VT_AGE, 0);
-  }
-  bool mutate_age(uint32_t _age = 0) {
-    return SetField<uint32_t>(VT_AGE, _age, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -2369,32 +2182,17 @@ struct StatusValue FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::String *id() const {
     return GetPointer<const ::flatbuffers::String *>(VT_ID);
   }
-  ::flatbuffers::String *mutable_id() {
-    return GetPointer<::flatbuffers::String *>(VT_ID);
-  }
   const ::flatbuffers::String *label() const {
     return GetPointer<const ::flatbuffers::String *>(VT_LABEL);
-  }
-  ::flatbuffers::String *mutable_label() {
-    return GetPointer<::flatbuffers::String *>(VT_LABEL);
   }
   const ::flatbuffers::String *text() const {
     return GetPointer<const ::flatbuffers::String *>(VT_TEXT);
   }
-  ::flatbuffers::String *mutable_text() {
-    return GetPointer<::flatbuffers::String *>(VT_TEXT);
-  }
   const ::flatbuffers::String *color() const {
     return GetPointer<const ::flatbuffers::String *>(VT_COLOR);
   }
-  ::flatbuffers::String *mutable_color() {
-    return GetPointer<::flatbuffers::String *>(VT_COLOR);
-  }
   int8_t perceived_level() const {
     return GetField<int8_t>(VT_PERCEIVED_LEVEL, -1);
-  }
-  bool mutate_perceived_level(int8_t _perceived_level = -1) {
-    return SetField<int8_t>(VT_PERCEIVED_LEVEL, _perceived_level, -1);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -2489,32 +2287,17 @@ struct BodyPartStatus FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::String *id() const {
     return GetPointer<const ::flatbuffers::String *>(VT_ID);
   }
-  ::flatbuffers::String *mutable_id() {
-    return GetPointer<::flatbuffers::String *>(VT_ID);
-  }
   const ::flatbuffers::String *label() const {
     return GetPointer<const ::flatbuffers::String *>(VT_LABEL);
-  }
-  ::flatbuffers::String *mutable_label() {
-    return GetPointer<::flatbuffers::String *>(VT_LABEL);
   }
   const CDDA::CWM::StatusValue *health() const {
     return GetPointer<const CDDA::CWM::StatusValue *>(VT_HEALTH);
   }
-  CDDA::CWM::StatusValue *mutable_health() {
-    return GetPointer<CDDA::CWM::StatusValue *>(VT_HEALTH);
-  }
   const CDDA::CWM::StatusValue *temperature() const {
     return GetPointer<const CDDA::CWM::StatusValue *>(VT_TEMPERATURE);
   }
-  CDDA::CWM::StatusValue *mutable_temperature() {
-    return GetPointer<CDDA::CWM::StatusValue *>(VT_TEMPERATURE);
-  }
   const ::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *conditions() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *>(VT_CONDITIONS);
-  }
-  ::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *mutable_conditions() {
-    return GetPointer<::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *>(VT_CONDITIONS);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -2608,20 +2391,11 @@ struct AvatarStatus FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const CDDA::CWM::StatusValue *stamina() const {
     return GetPointer<const CDDA::CWM::StatusValue *>(VT_STAMINA);
   }
-  CDDA::CWM::StatusValue *mutable_stamina() {
-    return GetPointer<CDDA::CWM::StatusValue *>(VT_STAMINA);
-  }
   const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::StatusValue>> *needs() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::StatusValue>> *>(VT_NEEDS);
   }
-  ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::StatusValue>> *mutable_needs() {
-    return GetPointer<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::StatusValue>> *>(VT_NEEDS);
-  }
   const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::BodyPartStatus>> *body_parts() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::BodyPartStatus>> *>(VT_BODY_PARTS);
-  }
-  ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::BodyPartStatus>> *mutable_body_parts() {
-    return GetPointer<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::BodyPartStatus>> *>(VT_BODY_PARTS);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -2722,170 +2496,86 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint64_t world_revision() const {
     return GetField<uint64_t>(VT_WORLD_REVISION, 0);
   }
-  bool mutate_world_revision(uint64_t _world_revision = 0) {
-    return SetField<uint64_t>(VT_WORLD_REVISION, _world_revision, 0);
-  }
   const CDDA::CWM::Coord3i *origin() const {
     return GetStruct<const CDDA::CWM::Coord3i *>(VT_ORIGIN);
-  }
-  CDDA::CWM::Coord3i *mutable_origin() {
-    return GetStruct<CDDA::CWM::Coord3i *>(VT_ORIGIN);
   }
   uint64_t simulation_time_seconds() const {
     return GetField<uint64_t>(VT_SIMULATION_TIME_SECONDS, 0);
   }
-  bool mutate_simulation_time_seconds(uint64_t _simulation_time_seconds = 0) {
-    return SetField<uint64_t>(VT_SIMULATION_TIME_SECONDS, _simulation_time_seconds, 0);
-  }
   const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::ChunkSnapshot>> *chunks() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::ChunkSnapshot>> *>(VT_CHUNKS);
-  }
-  ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::ChunkSnapshot>> *mutable_chunks() {
-    return GetPointer<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::ChunkSnapshot>> *>(VT_CHUNKS);
   }
   const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::EntityState>> *entities() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::EntityState>> *>(VT_ENTITIES);
   }
-  ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::EntityState>> *mutable_entities() {
-    return GetPointer<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::EntityState>> *>(VT_ENTITIES);
-  }
   const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::VehicleState>> *vehicles() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::VehicleState>> *>(VT_VEHICLES);
-  }
-  ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::VehicleState>> *mutable_vehicles() {
-    return GetPointer<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::VehicleState>> *>(VT_VEHICLES);
   }
   const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::FieldState>> *fields() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::FieldState>> *>(VT_FIELDS);
   }
-  ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::FieldState>> *mutable_fields() {
-    return GetPointer<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::FieldState>> *>(VT_FIELDS);
-  }
   const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::TileDelta>> *tiles() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::TileDelta>> *>(VT_TILES);
-  }
-  ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::TileDelta>> *mutable_tiles() {
-    return GetPointer<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::TileDelta>> *>(VT_TILES);
   }
   bool safety_stop() const {
     return GetField<uint8_t>(VT_SAFETY_STOP, 0) != 0;
   }
-  bool mutate_safety_stop(bool _safety_stop = 0) {
-    return SetField<uint8_t>(VT_SAFETY_STOP, static_cast<uint8_t>(_safety_stop), 0);
-  }
   bool full() const {
     return GetField<uint8_t>(VT_FULL, 0) != 0;
-  }
-  bool mutate_full(bool _full = 0) {
-    return SetField<uint8_t>(VT_FULL, static_cast<uint8_t>(_full), 0);
   }
   uint64_t base_revision() const {
     return GetField<uint64_t>(VT_BASE_REVISION, 0);
   }
-  bool mutate_base_revision(uint64_t _base_revision = 0) {
-    return SetField<uint64_t>(VT_BASE_REVISION, _base_revision, 0);
-  }
   uint64_t state_id() const {
     return GetField<uint64_t>(VT_STATE_ID, 0);
-  }
-  bool mutate_state_id(uint64_t _state_id = 0) {
-    return SetField<uint64_t>(VT_STATE_ID, _state_id, 0);
   }
   uint64_t resync_id() const {
     return GetField<uint64_t>(VT_RESYNC_ID, 0);
   }
-  bool mutate_resync_id(uint64_t _resync_id = 0) {
-    return SetField<uint64_t>(VT_RESYNC_ID, _resync_id, 0);
-  }
   uint64_t completed_command_id() const {
     return GetField<uint64_t>(VT_COMPLETED_COMMAND_ID, 0);
-  }
-  bool mutate_completed_command_id(uint64_t _completed_command_id = 0) {
-    return SetField<uint64_t>(VT_COMPLETED_COMMAND_ID, _completed_command_id, 0);
   }
   const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::EntitySpawned>> *spawned() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::EntitySpawned>> *>(VT_SPAWNED);
   }
-  ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::EntitySpawned>> *mutable_spawned() {
-    return GetPointer<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::EntitySpawned>> *>(VT_SPAWNED);
-  }
   const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::EntityRemoved>> *removed() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::EntityRemoved>> *>(VT_REMOVED);
-  }
-  ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::EntityRemoved>> *mutable_removed() {
-    return GetPointer<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::EntityRemoved>> *>(VT_REMOVED);
   }
   const CDDA::CWM::SimulationState *clock() const {
     return GetPointer<const CDDA::CWM::SimulationState *>(VT_CLOCK);
   }
-  CDDA::CWM::SimulationState *mutable_clock() {
-    return GetPointer<CDDA::CWM::SimulationState *>(VT_CLOCK);
-  }
   const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::GroundItemTileState>> *ground_item_tiles() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::GroundItemTileState>> *>(VT_GROUND_ITEM_TILES);
-  }
-  ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::GroundItemTileState>> *mutable_ground_item_tiles() {
-    return GetPointer<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::GroundItemTileState>> *>(VT_GROUND_ITEM_TILES);
   }
   const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::GroundItemState>> *owned_items() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::GroundItemState>> *>(VT_OWNED_ITEMS);
   }
-  ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::GroundItemState>> *mutable_owned_items() {
-    return GetPointer<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::GroundItemState>> *>(VT_OWNED_ITEMS);
-  }
   const CDDA::CWM::AvatarStatus *avatar_status() const {
     return GetPointer<const CDDA::CWM::AvatarStatus *>(VT_AVATAR_STATUS);
-  }
-  CDDA::CWM::AvatarStatus *mutable_avatar_status() {
-    return GetPointer<CDDA::CWM::AvatarStatus *>(VT_AVATAR_STATUS);
   }
   const CDDA::CWM::ConsumptionState *consumption() const {
     return GetPointer<const CDDA::CWM::ConsumptionState *>(VT_CONSUMPTION);
   }
-  CDDA::CWM::ConsumptionState *mutable_consumption() {
-    return GetPointer<CDDA::CWM::ConsumptionState *>(VT_CONSUMPTION);
-  }
   const CDDA::CWM::FirstAidState *first_aid() const {
     return GetPointer<const CDDA::CWM::FirstAidState *>(VT_FIRST_AID);
-  }
-  CDDA::CWM::FirstAidState *mutable_first_aid() {
-    return GetPointer<CDDA::CWM::FirstAidState *>(VT_FIRST_AID);
   }
   const CDDA::CWM::CraftingState *crafting() const {
     return GetPointer<const CDDA::CWM::CraftingState *>(VT_CRAFTING);
   }
-  CDDA::CWM::CraftingState *mutable_crafting() {
-    return GetPointer<CDDA::CWM::CraftingState *>(VT_CRAFTING);
-  }
   const CDDA::CWM::RangedWeaponState *ranged_weapon() const {
     return GetPointer<const CDDA::CWM::RangedWeaponState *>(VT_RANGED_WEAPON);
-  }
-  CDDA::CWM::RangedWeaponState *mutable_ranged_weapon() {
-    return GetPointer<CDDA::CWM::RangedWeaponState *>(VT_RANGED_WEAPON);
   }
   const CDDA::CWM::ReloadState *reload() const {
     return GetPointer<const CDDA::CWM::ReloadState *>(VT_RELOAD);
   }
-  CDDA::CWM::ReloadState *mutable_reload() {
-    return GetPointer<CDDA::CWM::ReloadState *>(VT_RELOAD);
-  }
   const CDDA::CWM::ItemTransferState *item_transfer() const {
     return GetPointer<const CDDA::CWM::ItemTransferState *>(VT_ITEM_TRANSFER);
-  }
-  CDDA::CWM::ItemTransferState *mutable_item_transfer() {
-    return GetPointer<CDDA::CWM::ItemTransferState *>(VT_ITEM_TRANSFER);
   }
   const CDDA::CWM::InventoryWorkState *inventory_work() const {
     return GetPointer<const CDDA::CWM::InventoryWorkState *>(VT_INVENTORY_WORK);
   }
-  CDDA::CWM::InventoryWorkState *mutable_inventory_work() {
-    return GetPointer<CDDA::CWM::InventoryWorkState *>(VT_INVENTORY_WORK);
-  }
   const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::QuickSlot>> *quick_slots() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::QuickSlot>> *>(VT_QUICK_SLOTS);
-  }
-  ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::QuickSlot>> *mutable_quick_slots() {
-    return GetPointer<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::QuickSlot>> *>(VT_QUICK_SLOTS);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -3192,14 +2882,8 @@ struct InventoryWorkState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table
   uint64_t command_id() const {
     return GetField<uint64_t>(VT_COMMAND_ID, 0);
   }
-  bool mutate_command_id(uint64_t _command_id = 0) {
-    return SetField<uint64_t>(VT_COMMAND_ID, _command_id, 0);
-  }
   bool settled() const {
     return GetField<uint8_t>(VT_SETTLED, 0) != 0;
-  }
-  bool mutate_settled(bool _settled = 0) {
-    return SetField<uint8_t>(VT_SETTLED, static_cast<uint8_t>(_settled), 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -3251,26 +2935,14 @@ struct SimulationState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   bool realtime() const {
     return GetField<uint8_t>(VT_REALTIME, 0) != 0;
   }
-  bool mutate_realtime(bool _realtime = 0) {
-    return SetField<uint8_t>(VT_REALTIME, static_cast<uint8_t>(_realtime), 0);
-  }
   uint32_t pause_reasons() const {
     return GetField<uint32_t>(VT_PAUSE_REASONS, 0);
-  }
-  bool mutate_pause_reasons(uint32_t _pause_reasons = 0) {
-    return SetField<uint32_t>(VT_PAUSE_REASONS, _pause_reasons, 0);
   }
   float time_scale() const {
     return GetField<float>(VT_TIME_SCALE, 1.0f);
   }
-  bool mutate_time_scale(float _time_scale = 1.0f) {
-    return SetField<float>(VT_TIME_SCALE, _time_scale, 1.0f);
-  }
   bool continuous_motion() const {
     return GetField<uint8_t>(VT_CONTINUOUS_MOTION, 0) != 0;
-  }
-  bool mutate_continuous_motion(bool _continuous_motion = 0) {
-    return SetField<uint8_t>(VT_CONTINUOUS_MOTION, static_cast<uint8_t>(_continuous_motion), 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -3333,20 +3005,11 @@ struct SimulationControlRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers:
   uint64_t command_id() const {
     return GetField<uint64_t>(VT_COMMAND_ID, 0);
   }
-  bool mutate_command_id(uint64_t _command_id = 0) {
-    return SetField<uint64_t>(VT_COMMAND_ID, _command_id, 0);
-  }
   CDDA::CWM::SimulationControl action() const {
     return static_cast<CDDA::CWM::SimulationControl>(GetField<int8_t>(VT_ACTION, 0));
   }
-  bool mutate_action(CDDA::CWM::SimulationControl _action = static_cast<CDDA::CWM::SimulationControl>(0)) {
-    return SetField<int8_t>(VT_ACTION, static_cast<int8_t>(_action), 0);
-  }
   float time_scale() const {
     return GetField<float>(VT_TIME_SCALE, 1.0f);
-  }
-  bool mutate_time_scale(float _time_scale = 1.0f) {
-    return SetField<float>(VT_TIME_SCALE, _time_scale, 1.0f);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -3402,14 +3065,8 @@ struct MovementIntentRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Ta
   uint64_t command_id() const {
     return GetField<uint64_t>(VT_COMMAND_ID, 0);
   }
-  bool mutate_command_id(uint64_t _command_id = 0) {
-    return SetField<uint64_t>(VT_COMMAND_ID, _command_id, 0);
-  }
   CDDA::CWM::MoveDirection direction() const {
     return static_cast<CDDA::CWM::MoveDirection>(GetField<int8_t>(VT_DIRECTION, 0));
-  }
-  bool mutate_direction(CDDA::CWM::MoveDirection _direction = static_cast<CDDA::CWM::MoveDirection>(0)) {
-    return SetField<int8_t>(VT_DIRECTION, static_cast<int8_t>(_direction), 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -3460,20 +3117,11 @@ struct ContinuousIntentRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::
   uint64_t command_id() const {
     return GetField<uint64_t>(VT_COMMAND_ID, 0);
   }
-  bool mutate_command_id(uint64_t _command_id = 0) {
-    return SetField<uint64_t>(VT_COMMAND_ID, _command_id, 0);
-  }
   float x() const {
     return GetField<float>(VT_X, 0.0f);
   }
-  bool mutate_x(float _x = 0.0f) {
-    return SetField<float>(VT_X, _x, 0.0f);
-  }
   float y() const {
     return GetField<float>(VT_Y, 0.0f);
-  }
-  bool mutate_y(float _y = 0.0f) {
-    return SetField<float>(VT_Y, _y, 0.0f);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -3529,14 +3177,8 @@ struct MoveRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint64_t command_id() const {
     return GetField<uint64_t>(VT_COMMAND_ID, 0);
   }
-  bool mutate_command_id(uint64_t _command_id = 0) {
-    return SetField<uint64_t>(VT_COMMAND_ID, _command_id, 0);
-  }
   CDDA::CWM::MoveDirection direction() const {
     return static_cast<CDDA::CWM::MoveDirection>(GetField<int8_t>(VT_DIRECTION, 0));
-  }
-  bool mutate_direction(CDDA::CWM::MoveDirection _direction = static_cast<CDDA::CWM::MoveDirection>(0)) {
-    return SetField<int8_t>(VT_DIRECTION, static_cast<int8_t>(_direction), 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -3591,44 +3233,23 @@ struct InteractRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint64_t command_id() const {
     return GetField<uint64_t>(VT_COMMAND_ID, 0);
   }
-  bool mutate_command_id(uint64_t _command_id = 0) {
-    return SetField<uint64_t>(VT_COMMAND_ID, _command_id, 0);
-  }
   const CDDA::CWM::Coord3i *target_coord() const {
     return GetStruct<const CDDA::CWM::Coord3i *>(VT_TARGET_COORD);
-  }
-  CDDA::CWM::Coord3i *mutable_target_coord() {
-    return GetStruct<CDDA::CWM::Coord3i *>(VT_TARGET_COORD);
   }
   CDDA::CWM::InteractAction action() const {
     return static_cast<CDDA::CWM::InteractAction>(GetField<int8_t>(VT_ACTION, 0));
   }
-  bool mutate_action(CDDA::CWM::InteractAction _action = static_cast<CDDA::CWM::InteractAction>(0)) {
-    return SetField<int8_t>(VT_ACTION, static_cast<int8_t>(_action), 0);
-  }
   uint32_t pickup_stack_index() const {
     return GetField<uint32_t>(VT_PICKUP_STACK_INDEX, 0);
-  }
-  bool mutate_pickup_stack_index(uint32_t _pickup_stack_index = 0) {
-    return SetField<uint32_t>(VT_PICKUP_STACK_INDEX, _pickup_stack_index, 0);
   }
   const ::flatbuffers::String *pickup_type_id() const {
     return GetPointer<const ::flatbuffers::String *>(VT_PICKUP_TYPE_ID);
   }
-  ::flatbuffers::String *mutable_pickup_type_id() {
-    return GetPointer<::flatbuffers::String *>(VT_PICKUP_TYPE_ID);
-  }
   int32_t pickup_charges() const {
     return GetField<int32_t>(VT_PICKUP_CHARGES, 0);
   }
-  bool mutate_pickup_charges(int32_t _pickup_charges = 0) {
-    return SetField<int32_t>(VT_PICKUP_CHARGES, _pickup_charges, 0);
-  }
   bool pickup_count_by_charges() const {
     return GetField<uint8_t>(VT_PICKUP_COUNT_BY_CHARGES, 0) != 0;
-  }
-  bool mutate_pickup_count_by_charges(bool _pickup_count_by_charges = 0) {
-    return SetField<uint8_t>(VT_PICKUP_COUNT_BY_CHARGES, static_cast<uint8_t>(_pickup_count_by_charges), 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -3730,14 +3351,8 @@ struct MovementModeRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Tabl
   uint64_t command_id() const {
     return GetField<uint64_t>(VT_COMMAND_ID, 0);
   }
-  bool mutate_command_id(uint64_t _command_id = 0) {
-    return SetField<uint64_t>(VT_COMMAND_ID, _command_id, 0);
-  }
   CDDA::CWM::MovementMode mode() const {
     return static_cast<CDDA::CWM::MovementMode>(GetField<int8_t>(VT_MODE, 0));
-  }
-  bool mutate_mode(CDDA::CWM::MovementMode _mode = static_cast<CDDA::CWM::MovementMode>(0)) {
-    return SetField<int8_t>(VT_MODE, static_cast<int8_t>(_mode), 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -3788,20 +3403,11 @@ struct ConsumptionState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint64_t token() const {
     return GetField<uint64_t>(VT_TOKEN, 0);
   }
-  bool mutate_token(uint64_t _token = 0) {
-    return SetField<uint64_t>(VT_TOKEN, _token, 0);
-  }
   int32_t total_moves() const {
     return GetField<int32_t>(VT_TOTAL_MOVES, 0);
   }
-  bool mutate_total_moves(int32_t _total_moves = 0) {
-    return SetField<int32_t>(VT_TOTAL_MOVES, _total_moves, 0);
-  }
   int32_t remaining_moves() const {
     return GetField<int32_t>(VT_REMAINING_MOVES, 0);
-  }
-  bool mutate_remaining_moves(int32_t _remaining_moves = 0) {
-    return SetField<int32_t>(VT_REMAINING_MOVES, _remaining_moves, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -3857,14 +3463,8 @@ struct CancelConsumptionRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers:
   uint64_t command_id() const {
     return GetField<uint64_t>(VT_COMMAND_ID, 0);
   }
-  bool mutate_command_id(uint64_t _command_id = 0) {
-    return SetField<uint64_t>(VT_COMMAND_ID, _command_id, 0);
-  }
   uint64_t activity_token() const {
     return GetField<uint64_t>(VT_ACTIVITY_TOKEN, 0);
-  }
-  bool mutate_activity_token(uint64_t _activity_token = 0) {
-    return SetField<uint64_t>(VT_ACTIVITY_TOKEN, _activity_token, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -3915,20 +3515,11 @@ struct FirstAidState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint64_t token() const {
     return GetField<uint64_t>(VT_TOKEN, 0);
   }
-  bool mutate_token(uint64_t _token = 0) {
-    return SetField<uint64_t>(VT_TOKEN, _token, 0);
-  }
   int32_t total_moves() const {
     return GetField<int32_t>(VT_TOTAL_MOVES, 0);
   }
-  bool mutate_total_moves(int32_t _total_moves = 0) {
-    return SetField<int32_t>(VT_TOTAL_MOVES, _total_moves, 0);
-  }
   int32_t remaining_moves() const {
     return GetField<int32_t>(VT_REMAINING_MOVES, 0);
-  }
-  bool mutate_remaining_moves(int32_t _remaining_moves = 0) {
-    return SetField<int32_t>(VT_REMAINING_MOVES, _remaining_moves, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -3984,14 +3575,8 @@ struct CancelFirstAidRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Ta
   uint64_t command_id() const {
     return GetField<uint64_t>(VT_COMMAND_ID, 0);
   }
-  bool mutate_command_id(uint64_t _command_id = 0) {
-    return SetField<uint64_t>(VT_COMMAND_ID, _command_id, 0);
-  }
   uint64_t activity_token() const {
     return GetField<uint64_t>(VT_ACTIVITY_TOKEN, 0);
-  }
-  bool mutate_activity_token(uint64_t _activity_token = 0) {
-    return SetField<uint64_t>(VT_ACTIVITY_TOKEN, _activity_token, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -4041,14 +3626,8 @@ struct CraftingState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint64_t token() const {
     return GetField<uint64_t>(VT_TOKEN, 0);
   }
-  bool mutate_token(uint64_t _token = 0) {
-    return SetField<uint64_t>(VT_TOKEN, _token, 0);
-  }
   int32_t progress() const {
     return GetField<int32_t>(VT_PROGRESS, 0);
-  }
-  bool mutate_progress(int32_t _progress = 0) {
-    return SetField<int32_t>(VT_PROGRESS, _progress, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -4098,14 +3677,8 @@ struct CancelCraftingRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Ta
   uint64_t command_id() const {
     return GetField<uint64_t>(VT_COMMAND_ID, 0);
   }
-  bool mutate_command_id(uint64_t _command_id = 0) {
-    return SetField<uint64_t>(VT_COMMAND_ID, _command_id, 0);
-  }
   uint64_t activity_token() const {
     return GetField<uint64_t>(VT_ACTIVITY_TOKEN, 0);
-  }
-  bool mutate_activity_token(uint64_t _activity_token = 0) {
-    return SetField<uint64_t>(VT_ACTIVITY_TOKEN, _activity_token, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -4156,20 +3729,11 @@ struct CraftingQueryRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Tab
   uint64_t query_id() const {
     return GetField<uint64_t>(VT_QUERY_ID, 0);
   }
-  bool mutate_query_id(uint64_t _query_id = 0) {
-    return SetField<uint64_t>(VT_QUERY_ID, _query_id, 0);
-  }
   const ::flatbuffers::String *search() const {
     return GetPointer<const ::flatbuffers::String *>(VT_SEARCH);
   }
-  ::flatbuffers::String *mutable_search() {
-    return GetPointer<::flatbuffers::String *>(VT_SEARCH);
-  }
   uint32_t batch() const {
     return GetField<uint32_t>(VT_BATCH, 1);
-  }
-  bool mutate_batch(uint32_t _batch = 1) {
-    return SetField<uint32_t>(VT_BATCH, _batch, 1);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -4246,56 +3810,29 @@ struct CraftingEntry FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint32_t id() const {
     return GetField<uint32_t>(VT_ID, 0);
   }
-  bool mutate_id(uint32_t _id = 0) {
-    return SetField<uint32_t>(VT_ID, _id, 0);
-  }
   const ::flatbuffers::String *recipe_id() const {
     return GetPointer<const ::flatbuffers::String *>(VT_RECIPE_ID);
-  }
-  ::flatbuffers::String *mutable_recipe_id() {
-    return GetPointer<::flatbuffers::String *>(VT_RECIPE_ID);
   }
   const ::flatbuffers::String *result_type() const {
     return GetPointer<const ::flatbuffers::String *>(VT_RESULT_TYPE);
   }
-  ::flatbuffers::String *mutable_result_type() {
-    return GetPointer<::flatbuffers::String *>(VT_RESULT_TYPE);
-  }
   const ::flatbuffers::String *name() const {
     return GetPointer<const ::flatbuffers::String *>(VT_NAME);
-  }
-  ::flatbuffers::String *mutable_name() {
-    return GetPointer<::flatbuffers::String *>(VT_NAME);
   }
   const ::flatbuffers::String *requirements() const {
     return GetPointer<const ::flatbuffers::String *>(VT_REQUIREMENTS);
   }
-  ::flatbuffers::String *mutable_requirements() {
-    return GetPointer<::flatbuffers::String *>(VT_REQUIREMENTS);
-  }
   const ::flatbuffers::String *reason() const {
     return GetPointer<const ::flatbuffers::String *>(VT_REASON);
-  }
-  ::flatbuffers::String *mutable_reason() {
-    return GetPointer<::flatbuffers::String *>(VT_REASON);
   }
   int64_t expected_moves() const {
     return GetField<int64_t>(VT_EXPECTED_MOVES, 0);
   }
-  bool mutate_expected_moves(int64_t _expected_moves = 0) {
-    return SetField<int64_t>(VT_EXPECTED_MOVES, _expected_moves, 0);
-  }
   bool resume() const {
     return GetField<uint8_t>(VT_RESUME, 0) != 0;
   }
-  bool mutate_resume(bool _resume = 0) {
-    return SetField<uint8_t>(VT_RESUME, static_cast<uint8_t>(_resume), 0);
-  }
   int32_t progress() const {
     return GetField<int32_t>(VT_PROGRESS, 0);
-  }
-  bool mutate_progress(int32_t _progress = 0) {
-    return SetField<int32_t>(VT_PROGRESS, _progress, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -4425,38 +3962,20 @@ struct CraftingView FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint64_t query_id() const {
     return GetField<uint64_t>(VT_QUERY_ID, 0);
   }
-  bool mutate_query_id(uint64_t _query_id = 0) {
-    return SetField<uint64_t>(VT_QUERY_ID, _query_id, 0);
-  }
   uint64_t view_id() const {
     return GetField<uint64_t>(VT_VIEW_ID, 0);
-  }
-  bool mutate_view_id(uint64_t _view_id = 0) {
-    return SetField<uint64_t>(VT_VIEW_ID, _view_id, 0);
   }
   uint32_t batch() const {
     return GetField<uint32_t>(VT_BATCH, 1);
   }
-  bool mutate_batch(uint32_t _batch = 1) {
-    return SetField<uint32_t>(VT_BATCH, _batch, 1);
-  }
   const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::CraftingEntry>> *entries() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::CraftingEntry>> *>(VT_ENTRIES);
-  }
-  ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::CraftingEntry>> *mutable_entries() {
-    return GetPointer<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::CraftingEntry>> *>(VT_ENTRIES);
   }
   bool truncated() const {
     return GetField<uint8_t>(VT_TRUNCATED, 0) != 0;
   }
-  bool mutate_truncated(bool _truncated = 0) {
-    return SetField<uint8_t>(VT_TRUNCATED, static_cast<uint8_t>(_truncated), 0);
-  }
   const ::flatbuffers::String *error() const {
     return GetPointer<const ::flatbuffers::String *>(VT_ERROR);
-  }
-  ::flatbuffers::String *mutable_error() {
-    return GetPointer<::flatbuffers::String *>(VT_ERROR);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -4554,20 +4073,11 @@ struct CraftingRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint64_t command_id() const {
     return GetField<uint64_t>(VT_COMMAND_ID, 0);
   }
-  bool mutate_command_id(uint64_t _command_id = 0) {
-    return SetField<uint64_t>(VT_COMMAND_ID, _command_id, 0);
-  }
   uint64_t view_id() const {
     return GetField<uint64_t>(VT_VIEW_ID, 0);
   }
-  bool mutate_view_id(uint64_t _view_id = 0) {
-    return SetField<uint64_t>(VT_VIEW_ID, _view_id, 0);
-  }
   uint32_t entry_id() const {
     return GetField<uint32_t>(VT_ENTRY_ID, 0);
-  }
-  bool mutate_entry_id(uint32_t _entry_id = 0) {
-    return SetField<uint32_t>(VT_ENTRY_ID, _entry_id, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -4621,9 +4131,6 @@ struct InventoryQueryRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Ta
   };
   uint64_t query_id() const {
     return GetField<uint64_t>(VT_QUERY_ID, 0);
-  }
-  bool mutate_query_id(uint64_t _query_id = 0) {
-    return SetField<uint64_t>(VT_QUERY_ID, _query_id, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -4683,145 +4190,80 @@ struct InventoryEntry FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_TRANSFER_REASON = 42,
     VT_CONTAINER = 44,
     VT_QUICK_SLOT = 46,
-    VT_ROTTEN = 48
+    VT_ROTTEN = 48,
+    VT_UI_ORDER = 50
   };
   uint32_t id() const {
     return GetField<uint32_t>(VT_ID, 0);
   }
-  bool mutate_id(uint32_t _id = 0) {
-    return SetField<uint32_t>(VT_ID, _id, 0);
-  }
   uint32_t parent_id() const {
     return GetField<uint32_t>(VT_PARENT_ID, 0);
-  }
-  bool mutate_parent_id(uint32_t _parent_id = 0) {
-    return SetField<uint32_t>(VT_PARENT_ID, _parent_id, 0);
   }
   int32_t pocket_index() const {
     return GetField<int32_t>(VT_POCKET_INDEX, -1);
   }
-  bool mutate_pocket_index(int32_t _pocket_index = -1) {
-    return SetField<int32_t>(VT_POCKET_INDEX, _pocket_index, -1);
-  }
   const ::flatbuffers::String *type_id() const {
     return GetPointer<const ::flatbuffers::String *>(VT_TYPE_ID);
-  }
-  ::flatbuffers::String *mutable_type_id() {
-    return GetPointer<::flatbuffers::String *>(VT_TYPE_ID);
   }
   const ::flatbuffers::String *name() const {
     return GetPointer<const ::flatbuffers::String *>(VT_NAME);
   }
-  ::flatbuffers::String *mutable_name() {
-    return GetPointer<::flatbuffers::String *>(VT_NAME);
-  }
   const ::flatbuffers::String *category() const {
     return GetPointer<const ::flatbuffers::String *>(VT_CATEGORY);
-  }
-  ::flatbuffers::String *mutable_category() {
-    return GetPointer<::flatbuffers::String *>(VT_CATEGORY);
   }
   int32_t charges() const {
     return GetField<int32_t>(VT_CHARGES, 0);
   }
-  bool mutate_charges(int32_t _charges = 0) {
-    return SetField<int32_t>(VT_CHARGES, _charges, 0);
-  }
   bool count_by_charges() const {
     return GetField<uint8_t>(VT_COUNT_BY_CHARGES, 0) != 0;
-  }
-  bool mutate_count_by_charges(bool _count_by_charges = 0) {
-    return SetField<uint8_t>(VT_COUNT_BY_CHARGES, static_cast<uint8_t>(_count_by_charges), 0);
   }
   bool worn() const {
     return GetField<uint8_t>(VT_WORN, 0) != 0;
   }
-  bool mutate_worn(bool _worn = 0) {
-    return SetField<uint8_t>(VT_WORN, static_cast<uint8_t>(_worn), 0);
-  }
   bool wielded() const {
     return GetField<uint8_t>(VT_WIELDED, 0) != 0;
-  }
-  bool mutate_wielded(bool _wielded = 0) {
-    return SetField<uint8_t>(VT_WIELDED, static_cast<uint8_t>(_wielded), 0);
   }
   int64_t weight_grams() const {
     return GetField<int64_t>(VT_WEIGHT_GRAMS, 0);
   }
-  bool mutate_weight_grams(int64_t _weight_grams = 0) {
-    return SetField<int64_t>(VT_WEIGHT_GRAMS, _weight_grams, 0);
-  }
   int64_t volume_ml() const {
     return GetField<int64_t>(VT_VOLUME_ML, 0);
-  }
-  bool mutate_volume_ml(int64_t _volume_ml = 0) {
-    return SetField<int64_t>(VT_VOLUME_ML, _volume_ml, 0);
   }
   int64_t length_mm() const {
     return GetField<int64_t>(VT_LENGTH_MM, 0);
   }
-  bool mutate_length_mm(int64_t _length_mm = 0) {
-    return SetField<int64_t>(VT_LENGTH_MM, _length_mm, 0);
-  }
   int32_t access_moves() const {
     return GetField<int32_t>(VT_ACCESS_MOVES, 0);
-  }
-  bool mutate_access_moves(int32_t _access_moves = 0) {
-    return SetField<int32_t>(VT_ACCESS_MOVES, _access_moves, 0);
   }
   uint8_t actions() const {
     return GetField<uint8_t>(VT_ACTIONS, 0);
   }
-  bool mutate_actions(uint8_t _actions = 0) {
-    return SetField<uint8_t>(VT_ACTIONS, _actions, 0);
-  }
   const ::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *reasons() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *>(VT_REASONS);
-  }
-  ::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *mutable_reasons() {
-    return GetPointer<::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *>(VT_REASONS);
   }
   int32_t consume_moves() const {
     return GetField<int32_t>(VT_CONSUME_MOVES, 0);
   }
-  bool mutate_consume_moves(int32_t _consume_moves = 0) {
-    return SetField<int32_t>(VT_CONSUME_MOVES, _consume_moves, 0);
-  }
   const ::flatbuffers::String *consume_label() const {
     return GetPointer<const ::flatbuffers::String *>(VT_CONSUME_LABEL);
-  }
-  ::flatbuffers::String *mutable_consume_label() {
-    return GetPointer<::flatbuffers::String *>(VT_CONSUME_LABEL);
   }
   const ::flatbuffers::String *consume_warning() const {
     return GetPointer<const ::flatbuffers::String *>(VT_CONSUME_WARNING);
   }
-  ::flatbuffers::String *mutable_consume_warning() {
-    return GetPointer<::flatbuffers::String *>(VT_CONSUME_WARNING);
-  }
   const ::flatbuffers::String *transfer_reason() const {
     return GetPointer<const ::flatbuffers::String *>(VT_TRANSFER_REASON);
-  }
-  ::flatbuffers::String *mutable_transfer_reason() {
-    return GetPointer<::flatbuffers::String *>(VT_TRANSFER_REASON);
   }
   bool container() const {
     return GetField<uint8_t>(VT_CONTAINER, 0) != 0;
   }
-  bool mutate_container(bool _container = 0) {
-    return SetField<uint8_t>(VT_CONTAINER, static_cast<uint8_t>(_container), 0);
-  }
   uint8_t quick_slot() const {
     return GetField<uint8_t>(VT_QUICK_SLOT, 0);
-  }
-  bool mutate_quick_slot(uint8_t _quick_slot = 0) {
-    return SetField<uint8_t>(VT_QUICK_SLOT, _quick_slot, 0);
   }
   bool rotten() const {
     return GetField<uint8_t>(VT_ROTTEN, 0) != 0;
   }
-  bool mutate_rotten(bool _rotten = 0) {
-    return SetField<uint8_t>(VT_ROTTEN, static_cast<uint8_t>(_rotten), 0);
+  uint32_t ui_order() const {
+    return GetField<uint32_t>(VT_UI_ORDER, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -4856,6 +4298,7 @@ struct InventoryEntry FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyField<uint8_t>(verifier, VT_CONTAINER, 1) &&
            VerifyField<uint8_t>(verifier, VT_QUICK_SLOT, 1) &&
            VerifyField<uint8_t>(verifier, VT_ROTTEN, 1) &&
+           VerifyField<uint32_t>(verifier, VT_UI_ORDER, 4) &&
            verifier.EndTable();
   }
 };
@@ -4933,6 +4376,9 @@ struct InventoryEntryBuilder {
   void add_rotten(bool rotten) {
     fbb_.AddElement<uint8_t>(InventoryEntry::VT_ROTTEN, static_cast<uint8_t>(rotten), 0);
   }
+  void add_ui_order(uint32_t ui_order) {
+    fbb_.AddElement<uint32_t>(InventoryEntry::VT_UI_ORDER, ui_order, 0);
+  }
   explicit InventoryEntryBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -4968,11 +4414,13 @@ inline ::flatbuffers::Offset<InventoryEntry> CreateInventoryEntry(
     ::flatbuffers::Offset<::flatbuffers::String> transfer_reason = 0,
     bool container = false,
     uint8_t quick_slot = 0,
-    bool rotten = false) {
+    bool rotten = false,
+    uint32_t ui_order = 0) {
   InventoryEntryBuilder builder_(_fbb);
   builder_.add_length_mm(length_mm);
   builder_.add_volume_ml(volume_ml);
   builder_.add_weight_grams(weight_grams);
+  builder_.add_ui_order(ui_order);
   builder_.add_transfer_reason(transfer_reason);
   builder_.add_consume_warning(consume_warning);
   builder_.add_consume_label(consume_label);
@@ -5020,7 +4468,8 @@ inline ::flatbuffers::Offset<InventoryEntry> CreateInventoryEntryDirect(
     const char *transfer_reason = nullptr,
     bool container = false,
     uint8_t quick_slot = 0,
-    bool rotten = false) {
+    bool rotten = false,
+    uint32_t ui_order = 0) {
   auto type_id__ = type_id ? _fbb.CreateString(type_id) : 0;
   auto name__ = name ? _fbb.CreateString(name) : 0;
   auto category__ = category ? _fbb.CreateString(category) : 0;
@@ -5052,7 +4501,8 @@ inline ::flatbuffers::Offset<InventoryEntry> CreateInventoryEntryDirect(
       transfer_reason__,
       container,
       quick_slot,
-      rotten);
+      rotten,
+      ui_order);
 }
 
 struct InventoryPocket FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -5074,74 +4524,38 @@ struct InventoryPocket FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint32_t owner_id() const {
     return GetField<uint32_t>(VT_OWNER_ID, 0);
   }
-  bool mutate_owner_id(uint32_t _owner_id = 0) {
-    return SetField<uint32_t>(VT_OWNER_ID, _owner_id, 0);
-  }
   uint32_t index() const {
     return GetField<uint32_t>(VT_INDEX, 0);
-  }
-  bool mutate_index(uint32_t _index = 0) {
-    return SetField<uint32_t>(VT_INDEX, _index, 0);
   }
   const ::flatbuffers::String *name() const {
     return GetPointer<const ::flatbuffers::String *>(VT_NAME);
   }
-  ::flatbuffers::String *mutable_name() {
-    return GetPointer<::flatbuffers::String *>(VT_NAME);
-  }
   int64_t capacity_ml() const {
     return GetField<int64_t>(VT_CAPACITY_ML, 0);
-  }
-  bool mutate_capacity_ml(int64_t _capacity_ml = 0) {
-    return SetField<int64_t>(VT_CAPACITY_ML, _capacity_ml, 0);
   }
   int64_t remaining_ml() const {
     return GetField<int64_t>(VT_REMAINING_ML, 0);
   }
-  bool mutate_remaining_ml(int64_t _remaining_ml = 0) {
-    return SetField<int64_t>(VT_REMAINING_ML, _remaining_ml, 0);
-  }
   int64_t capacity_grams() const {
     return GetField<int64_t>(VT_CAPACITY_GRAMS, 0);
-  }
-  bool mutate_capacity_grams(int64_t _capacity_grams = 0) {
-    return SetField<int64_t>(VT_CAPACITY_GRAMS, _capacity_grams, 0);
   }
   int64_t remaining_grams() const {
     return GetField<int64_t>(VT_REMAINING_GRAMS, 0);
   }
-  bool mutate_remaining_grams(int64_t _remaining_grams = 0) {
-    return SetField<int64_t>(VT_REMAINING_GRAMS, _remaining_grams, 0);
-  }
   int64_t max_length_mm() const {
     return GetField<int64_t>(VT_MAX_LENGTH_MM, 0);
-  }
-  bool mutate_max_length_mm(int64_t _max_length_mm = 0) {
-    return SetField<int64_t>(VT_MAX_LENGTH_MM, _max_length_mm, 0);
   }
   int32_t access_moves() const {
     return GetField<int32_t>(VT_ACCESS_MOVES, 0);
   }
-  bool mutate_access_moves(int32_t _access_moves = 0) {
-    return SetField<int32_t>(VT_ACCESS_MOVES, _access_moves, 0);
-  }
   bool sealed() const {
     return GetField<uint8_t>(VT_SEALED, 0) != 0;
-  }
-  bool mutate_sealed(bool _sealed = 0) {
-    return SetField<uint8_t>(VT_SEALED, static_cast<uint8_t>(_sealed), 0);
   }
   bool rigid() const {
     return GetField<uint8_t>(VT_RIGID, 0) != 0;
   }
-  bool mutate_rigid(bool _rigid = 0) {
-    return SetField<uint8_t>(VT_RIGID, static_cast<uint8_t>(_rigid), 0);
-  }
   bool watertight() const {
     return GetField<uint8_t>(VT_WATERTIGHT, 0) != 0;
-  }
-  bool mutate_watertight(bool _watertight = 0) {
-    return SetField<uint8_t>(VT_WATERTIGHT, static_cast<uint8_t>(_watertight), 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -5291,62 +4705,32 @@ struct InventoryView FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint64_t query_id() const {
     return GetField<uint64_t>(VT_QUERY_ID, 0);
   }
-  bool mutate_query_id(uint64_t _query_id = 0) {
-    return SetField<uint64_t>(VT_QUERY_ID, _query_id, 0);
-  }
   uint64_t view_id() const {
     return GetField<uint64_t>(VT_VIEW_ID, 0);
-  }
-  bool mutate_view_id(uint64_t _view_id = 0) {
-    return SetField<uint64_t>(VT_VIEW_ID, _view_id, 0);
   }
   const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::InventoryEntry>> *entries() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::InventoryEntry>> *>(VT_ENTRIES);
   }
-  ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::InventoryEntry>> *mutable_entries() {
-    return GetPointer<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::InventoryEntry>> *>(VT_ENTRIES);
-  }
   const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::InventoryPocket>> *pockets() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::InventoryPocket>> *>(VT_POCKETS);
-  }
-  ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::InventoryPocket>> *mutable_pockets() {
-    return GetPointer<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::InventoryPocket>> *>(VT_POCKETS);
   }
   bool truncated() const {
     return GetField<uint8_t>(VT_TRUNCATED, 0) != 0;
   }
-  bool mutate_truncated(bool _truncated = 0) {
-    return SetField<uint8_t>(VT_TRUNCATED, static_cast<uint8_t>(_truncated), 0);
-  }
   const ::flatbuffers::String *error() const {
     return GetPointer<const ::flatbuffers::String *>(VT_ERROR);
-  }
-  ::flatbuffers::String *mutable_error() {
-    return GetPointer<::flatbuffers::String *>(VT_ERROR);
   }
   int64_t weight_grams() const {
     return GetField<int64_t>(VT_WEIGHT_GRAMS, 0);
   }
-  bool mutate_weight_grams(int64_t _weight_grams = 0) {
-    return SetField<int64_t>(VT_WEIGHT_GRAMS, _weight_grams, 0);
-  }
   int64_t weight_capacity_grams() const {
     return GetField<int64_t>(VT_WEIGHT_CAPACITY_GRAMS, 0);
-  }
-  bool mutate_weight_capacity_grams(int64_t _weight_capacity_grams = 0) {
-    return SetField<int64_t>(VT_WEIGHT_CAPACITY_GRAMS, _weight_capacity_grams, 0);
   }
   int64_t volume_ml() const {
     return GetField<int64_t>(VT_VOLUME_ML, 0);
   }
-  bool mutate_volume_ml(int64_t _volume_ml = 0) {
-    return SetField<int64_t>(VT_VOLUME_ML, _volume_ml, 0);
-  }
   int64_t volume_capacity_ml() const {
     return GetField<int64_t>(VT_VOLUME_CAPACITY_ML, 0);
-  }
-  bool mutate_volume_capacity_ml(int64_t _volume_capacity_ml = 0) {
-    return SetField<int64_t>(VT_VOLUME_CAPACITY_ML, _volume_capacity_ml, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -5487,68 +4871,35 @@ struct QuickSlot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint8_t slot() const {
     return GetField<uint8_t>(VT_SLOT, 0);
   }
-  bool mutate_slot(uint8_t _slot = 0) {
-    return SetField<uint8_t>(VT_SLOT, _slot, 0);
-  }
   const ::flatbuffers::String *binding_id() const {
     return GetPointer<const ::flatbuffers::String *>(VT_BINDING_ID);
-  }
-  ::flatbuffers::String *mutable_binding_id() {
-    return GetPointer<::flatbuffers::String *>(VT_BINDING_ID);
   }
   const ::flatbuffers::String *type_id() const {
     return GetPointer<const ::flatbuffers::String *>(VT_TYPE_ID);
   }
-  ::flatbuffers::String *mutable_type_id() {
-    return GetPointer<::flatbuffers::String *>(VT_TYPE_ID);
-  }
   const ::flatbuffers::String *name() const {
     return GetPointer<const ::flatbuffers::String *>(VT_NAME);
-  }
-  ::flatbuffers::String *mutable_name() {
-    return GetPointer<::flatbuffers::String *>(VT_NAME);
   }
   const ::flatbuffers::String *category() const {
     return GetPointer<const ::flatbuffers::String *>(VT_CATEGORY);
   }
-  ::flatbuffers::String *mutable_category() {
-    return GetPointer<::flatbuffers::String *>(VT_CATEGORY);
-  }
   int32_t charges() const {
     return GetField<int32_t>(VT_CHARGES, 0);
-  }
-  bool mutate_charges(int32_t _charges = 0) {
-    return SetField<int32_t>(VT_CHARGES, _charges, 0);
   }
   bool count_by_charges() const {
     return GetField<uint8_t>(VT_COUNT_BY_CHARGES, 0) != 0;
   }
-  bool mutate_count_by_charges(bool _count_by_charges = 0) {
-    return SetField<uint8_t>(VT_COUNT_BY_CHARGES, static_cast<uint8_t>(_count_by_charges), 0);
-  }
   bool worn() const {
     return GetField<uint8_t>(VT_WORN, 0) != 0;
-  }
-  bool mutate_worn(bool _worn = 0) {
-    return SetField<uint8_t>(VT_WORN, static_cast<uint8_t>(_worn), 0);
   }
   bool wielded() const {
     return GetField<uint8_t>(VT_WIELDED, 0) != 0;
   }
-  bool mutate_wielded(bool _wielded = 0) {
-    return SetField<uint8_t>(VT_WIELDED, static_cast<uint8_t>(_wielded), 0);
-  }
   uint8_t actions() const {
     return GetField<uint8_t>(VT_ACTIONS, 0);
   }
-  bool mutate_actions(uint8_t _actions = 0) {
-    return SetField<uint8_t>(VT_ACTIONS, _actions, 0);
-  }
   bool rotten() const {
     return GetField<uint8_t>(VT_ROTTEN, 0) != 0;
-  }
-  bool mutate_rotten(bool _rotten = 0) {
-    return SetField<uint8_t>(VT_ROTTEN, static_cast<uint8_t>(_rotten), 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -5691,32 +5042,17 @@ struct QuickbarBindRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Tabl
   uint64_t command_id() const {
     return GetField<uint64_t>(VT_COMMAND_ID, 0);
   }
-  bool mutate_command_id(uint64_t _command_id = 0) {
-    return SetField<uint64_t>(VT_COMMAND_ID, _command_id, 0);
-  }
   uint8_t slot() const {
     return GetField<uint8_t>(VT_SLOT, 0);
-  }
-  bool mutate_slot(uint8_t _slot = 0) {
-    return SetField<uint8_t>(VT_SLOT, _slot, 0);
   }
   uint64_t view_id() const {
     return GetField<uint64_t>(VT_VIEW_ID, 0);
   }
-  bool mutate_view_id(uint64_t _view_id = 0) {
-    return SetField<uint64_t>(VT_VIEW_ID, _view_id, 0);
-  }
   uint32_t item_id() const {
     return GetField<uint32_t>(VT_ITEM_ID, 0);
   }
-  bool mutate_item_id(uint32_t _item_id = 0) {
-    return SetField<uint32_t>(VT_ITEM_ID, _item_id, 0);
-  }
   const ::flatbuffers::String *expected_binding_id() const {
     return GetPointer<const ::flatbuffers::String *>(VT_EXPECTED_BINDING_ID);
-  }
-  ::flatbuffers::String *mutable_expected_binding_id() {
-    return GetPointer<::flatbuffers::String *>(VT_EXPECTED_BINDING_ID);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -5793,6 +5129,178 @@ inline ::flatbuffers::Offset<QuickbarBindRequest> CreateQuickbarBindRequestDirec
       expected_binding_id__);
 }
 
+struct QuickbarSwapRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef QuickbarSwapRequestBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_COMMAND_ID = 4,
+    VT_SOURCE_SLOT = 6,
+    VT_TARGET_SLOT = 8,
+    VT_EXPECTED_SOURCE = 10,
+    VT_EXPECTED_TARGET = 12
+  };
+  uint64_t command_id() const {
+    return GetField<uint64_t>(VT_COMMAND_ID, 0);
+  }
+  uint8_t source_slot() const {
+    return GetField<uint8_t>(VT_SOURCE_SLOT, 0);
+  }
+  uint8_t target_slot() const {
+    return GetField<uint8_t>(VT_TARGET_SLOT, 0);
+  }
+  const ::flatbuffers::String *expected_source() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_EXPECTED_SOURCE);
+  }
+  const ::flatbuffers::String *expected_target() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_EXPECTED_TARGET);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_COMMAND_ID, 8) &&
+           VerifyField<uint8_t>(verifier, VT_SOURCE_SLOT, 1) &&
+           VerifyField<uint8_t>(verifier, VT_TARGET_SLOT, 1) &&
+           VerifyOffset(verifier, VT_EXPECTED_SOURCE) &&
+           verifier.VerifyString(expected_source()) &&
+           VerifyOffset(verifier, VT_EXPECTED_TARGET) &&
+           verifier.VerifyString(expected_target()) &&
+           verifier.EndTable();
+  }
+};
+
+struct QuickbarSwapRequestBuilder {
+  typedef QuickbarSwapRequest Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_command_id(uint64_t command_id) {
+    fbb_.AddElement<uint64_t>(QuickbarSwapRequest::VT_COMMAND_ID, command_id, 0);
+  }
+  void add_source_slot(uint8_t source_slot) {
+    fbb_.AddElement<uint8_t>(QuickbarSwapRequest::VT_SOURCE_SLOT, source_slot, 0);
+  }
+  void add_target_slot(uint8_t target_slot) {
+    fbb_.AddElement<uint8_t>(QuickbarSwapRequest::VT_TARGET_SLOT, target_slot, 0);
+  }
+  void add_expected_source(::flatbuffers::Offset<::flatbuffers::String> expected_source) {
+    fbb_.AddOffset(QuickbarSwapRequest::VT_EXPECTED_SOURCE, expected_source);
+  }
+  void add_expected_target(::flatbuffers::Offset<::flatbuffers::String> expected_target) {
+    fbb_.AddOffset(QuickbarSwapRequest::VT_EXPECTED_TARGET, expected_target);
+  }
+  explicit QuickbarSwapRequestBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<QuickbarSwapRequest> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<QuickbarSwapRequest>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<QuickbarSwapRequest> CreateQuickbarSwapRequest(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t command_id = 0,
+    uint8_t source_slot = 0,
+    uint8_t target_slot = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> expected_source = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> expected_target = 0) {
+  QuickbarSwapRequestBuilder builder_(_fbb);
+  builder_.add_command_id(command_id);
+  builder_.add_expected_target(expected_target);
+  builder_.add_expected_source(expected_source);
+  builder_.add_target_slot(target_slot);
+  builder_.add_source_slot(source_slot);
+  return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<QuickbarSwapRequest> CreateQuickbarSwapRequestDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t command_id = 0,
+    uint8_t source_slot = 0,
+    uint8_t target_slot = 0,
+    const char *expected_source = nullptr,
+    const char *expected_target = nullptr) {
+  auto expected_source__ = expected_source ? _fbb.CreateString(expected_source) : 0;
+  auto expected_target__ = expected_target ? _fbb.CreateString(expected_target) : 0;
+  return CDDA::CWM::CreateQuickbarSwapRequest(
+      _fbb,
+      command_id,
+      source_slot,
+      target_slot,
+      expected_source__,
+      expected_target__);
+}
+
+struct InventoryArrangeRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef InventoryArrangeRequestBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_COMMAND_ID = 4,
+    VT_VIEW_ID = 6,
+    VT_ITEM_ID = 8,
+    VT_BEFORE_ITEM_ID = 10
+  };
+  uint64_t command_id() const {
+    return GetField<uint64_t>(VT_COMMAND_ID, 0);
+  }
+  uint64_t view_id() const {
+    return GetField<uint64_t>(VT_VIEW_ID, 0);
+  }
+  uint32_t item_id() const {
+    return GetField<uint32_t>(VT_ITEM_ID, 0);
+  }
+  uint32_t before_item_id() const {
+    return GetField<uint32_t>(VT_BEFORE_ITEM_ID, 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_COMMAND_ID, 8) &&
+           VerifyField<uint64_t>(verifier, VT_VIEW_ID, 8) &&
+           VerifyField<uint32_t>(verifier, VT_ITEM_ID, 4) &&
+           VerifyField<uint32_t>(verifier, VT_BEFORE_ITEM_ID, 4) &&
+           verifier.EndTable();
+  }
+};
+
+struct InventoryArrangeRequestBuilder {
+  typedef InventoryArrangeRequest Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_command_id(uint64_t command_id) {
+    fbb_.AddElement<uint64_t>(InventoryArrangeRequest::VT_COMMAND_ID, command_id, 0);
+  }
+  void add_view_id(uint64_t view_id) {
+    fbb_.AddElement<uint64_t>(InventoryArrangeRequest::VT_VIEW_ID, view_id, 0);
+  }
+  void add_item_id(uint32_t item_id) {
+    fbb_.AddElement<uint32_t>(InventoryArrangeRequest::VT_ITEM_ID, item_id, 0);
+  }
+  void add_before_item_id(uint32_t before_item_id) {
+    fbb_.AddElement<uint32_t>(InventoryArrangeRequest::VT_BEFORE_ITEM_ID, before_item_id, 0);
+  }
+  explicit InventoryArrangeRequestBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<InventoryArrangeRequest> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<InventoryArrangeRequest>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<InventoryArrangeRequest> CreateInventoryArrangeRequest(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t command_id = 0,
+    uint64_t view_id = 0,
+    uint32_t item_id = 0,
+    uint32_t before_item_id = 0) {
+  InventoryArrangeRequestBuilder builder_(_fbb);
+  builder_.add_view_id(view_id);
+  builder_.add_command_id(command_id);
+  builder_.add_before_item_id(before_item_id);
+  builder_.add_item_id(item_id);
+  return builder_.Finish();
+}
+
 struct QuickbarUseRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef QuickbarUseRequestBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
@@ -5804,26 +5312,14 @@ struct QuickbarUseRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table
   uint64_t command_id() const {
     return GetField<uint64_t>(VT_COMMAND_ID, 0);
   }
-  bool mutate_command_id(uint64_t _command_id = 0) {
-    return SetField<uint64_t>(VT_COMMAND_ID, _command_id, 0);
-  }
   uint8_t slot() const {
     return GetField<uint8_t>(VT_SLOT, 0);
-  }
-  bool mutate_slot(uint8_t _slot = 0) {
-    return SetField<uint8_t>(VT_SLOT, _slot, 0);
   }
   const ::flatbuffers::String *binding_id() const {
     return GetPointer<const ::flatbuffers::String *>(VT_BINDING_ID);
   }
-  ::flatbuffers::String *mutable_binding_id() {
-    return GetPointer<::flatbuffers::String *>(VT_BINDING_ID);
-  }
   CDDA::CWM::EquipmentAction action() const {
     return static_cast<CDDA::CWM::EquipmentAction>(GetField<int8_t>(VT_ACTION, 0));
-  }
-  bool mutate_action(CDDA::CWM::EquipmentAction _action = static_cast<CDDA::CWM::EquipmentAction>(0)) {
-    return SetField<int8_t>(VT_ACTION, static_cast<int8_t>(_action), 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -5903,26 +5399,14 @@ struct EquipmentRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint64_t command_id() const {
     return GetField<uint64_t>(VT_COMMAND_ID, 0);
   }
-  bool mutate_command_id(uint64_t _command_id = 0) {
-    return SetField<uint64_t>(VT_COMMAND_ID, _command_id, 0);
-  }
   uint64_t view_id() const {
     return GetField<uint64_t>(VT_VIEW_ID, 0);
-  }
-  bool mutate_view_id(uint64_t _view_id = 0) {
-    return SetField<uint64_t>(VT_VIEW_ID, _view_id, 0);
   }
   uint32_t item_id() const {
     return GetField<uint32_t>(VT_ITEM_ID, 0);
   }
-  bool mutate_item_id(uint32_t _item_id = 0) {
-    return SetField<uint32_t>(VT_ITEM_ID, _item_id, 0);
-  }
   CDDA::CWM::EquipmentAction action() const {
     return static_cast<CDDA::CWM::EquipmentAction>(GetField<int8_t>(VT_ACTION, 0));
-  }
-  bool mutate_action(CDDA::CWM::EquipmentAction _action = static_cast<CDDA::CWM::EquipmentAction>(0)) {
-    return SetField<int8_t>(VT_ACTION, static_cast<int8_t>(_action), 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -5988,38 +5472,20 @@ struct ItemTransferRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Tabl
   uint64_t command_id() const {
     return GetField<uint64_t>(VT_COMMAND_ID, 0);
   }
-  bool mutate_command_id(uint64_t _command_id = 0) {
-    return SetField<uint64_t>(VT_COMMAND_ID, _command_id, 0);
-  }
   uint64_t view_id() const {
     return GetField<uint64_t>(VT_VIEW_ID, 0);
-  }
-  bool mutate_view_id(uint64_t _view_id = 0) {
-    return SetField<uint64_t>(VT_VIEW_ID, _view_id, 0);
   }
   uint32_t item_id() const {
     return GetField<uint32_t>(VT_ITEM_ID, 0);
   }
-  bool mutate_item_id(uint32_t _item_id = 0) {
-    return SetField<uint32_t>(VT_ITEM_ID, _item_id, 0);
-  }
   int32_t quantity() const {
     return GetField<int32_t>(VT_QUANTITY, 0);
-  }
-  bool mutate_quantity(int32_t _quantity = 0) {
-    return SetField<int32_t>(VT_QUANTITY, _quantity, 0);
   }
   uint32_t destination_id() const {
     return GetField<uint32_t>(VT_DESTINATION_ID, 0);
   }
-  bool mutate_destination_id(uint32_t _destination_id = 0) {
-    return SetField<uint32_t>(VT_DESTINATION_ID, _destination_id, 0);
-  }
   CDDA::CWM::ItemTransferAction action() const {
     return static_cast<CDDA::CWM::ItemTransferAction>(GetField<int8_t>(VT_ACTION, 0));
-  }
-  bool mutate_action(CDDA::CWM::ItemTransferAction _action = static_cast<CDDA::CWM::ItemTransferAction>(0)) {
-    return SetField<int8_t>(VT_ACTION, static_cast<int8_t>(_action), 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -6095,26 +5561,14 @@ struct ItemTransferState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table 
   uint64_t token() const {
     return GetField<uint64_t>(VT_TOKEN, 0);
   }
-  bool mutate_token(uint64_t _token = 0) {
-    return SetField<uint64_t>(VT_TOKEN, _token, 0);
-  }
   int32_t total_moves() const {
     return GetField<int32_t>(VT_TOTAL_MOVES, 0);
-  }
-  bool mutate_total_moves(int32_t _total_moves = 0) {
-    return SetField<int32_t>(VT_TOTAL_MOVES, _total_moves, 0);
   }
   int32_t remaining_moves() const {
     return GetField<int32_t>(VT_REMAINING_MOVES, 0);
   }
-  bool mutate_remaining_moves(int32_t _remaining_moves = 0) {
-    return SetField<int32_t>(VT_REMAINING_MOVES, _remaining_moves, 0);
-  }
   bool inserting() const {
     return GetField<uint8_t>(VT_INSERTING, 0) != 0;
-  }
-  bool mutate_inserting(bool _inserting = 0) {
-    return SetField<uint8_t>(VT_INSERTING, static_cast<uint8_t>(_inserting), 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -6176,14 +5630,8 @@ struct CancelItemTransferRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers
   uint64_t command_id() const {
     return GetField<uint64_t>(VT_COMMAND_ID, 0);
   }
-  bool mutate_command_id(uint64_t _command_id = 0) {
-    return SetField<uint64_t>(VT_COMMAND_ID, _command_id, 0);
-  }
   uint64_t activity_token() const {
     return GetField<uint64_t>(VT_ACTIVITY_TOKEN, 0);
-  }
-  bool mutate_activity_token(uint64_t _activity_token = 0) {
-    return SetField<uint64_t>(VT_ACTIVITY_TOKEN, _activity_token, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -6235,26 +5683,14 @@ struct RangedRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint64_t command_id() const {
     return GetField<uint64_t>(VT_COMMAND_ID, 0);
   }
-  bool mutate_command_id(uint64_t _command_id = 0) {
-    return SetField<uint64_t>(VT_COMMAND_ID, _command_id, 0);
-  }
   uint64_t weapon_token() const {
     return GetField<uint64_t>(VT_WEAPON_TOKEN, 0);
-  }
-  bool mutate_weapon_token(uint64_t _weapon_token = 0) {
-    return SetField<uint64_t>(VT_WEAPON_TOKEN, _weapon_token, 0);
   }
   uint64_t target_entity_id() const {
     return GetField<uint64_t>(VT_TARGET_ENTITY_ID, 0);
   }
-  bool mutate_target_entity_id(uint64_t _target_entity_id = 0) {
-    return SetField<uint64_t>(VT_TARGET_ENTITY_ID, _target_entity_id, 0);
-  }
   CDDA::CWM::RangedAction action() const {
     return static_cast<CDDA::CWM::RangedAction>(GetField<int8_t>(VT_ACTION, 0));
-  }
-  bool mutate_action(CDDA::CWM::RangedAction _action = static_cast<CDDA::CWM::RangedAction>(0)) {
-    return SetField<int8_t>(VT_ACTION, static_cast<int8_t>(_action), 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -6321,44 +5757,23 @@ struct RangedWeaponState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table 
   uint64_t token() const {
     return GetField<uint64_t>(VT_TOKEN, 0);
   }
-  bool mutate_token(uint64_t _token = 0) {
-    return SetField<uint64_t>(VT_TOKEN, _token, 0);
-  }
   const ::flatbuffers::String *name() const {
     return GetPointer<const ::flatbuffers::String *>(VT_NAME);
-  }
-  ::flatbuffers::String *mutable_name() {
-    return GetPointer<::flatbuffers::String *>(VT_NAME);
   }
   int32_t ammo() const {
     return GetField<int32_t>(VT_AMMO, 0);
   }
-  bool mutate_ammo(int32_t _ammo = 0) {
-    return SetField<int32_t>(VT_AMMO, _ammo, 0);
-  }
   int32_t range() const {
     return GetField<int32_t>(VT_RANGE, 0);
-  }
-  bool mutate_range(int32_t _range = 0) {
-    return SetField<int32_t>(VT_RANGE, _range, 0);
   }
   double recoil() const {
     return GetField<double>(VT_RECOIL, 0.0);
   }
-  bool mutate_recoil(double _recoil = 0.0) {
-    return SetField<double>(VT_RECOIL, _recoil, 0.0);
-  }
   const ::flatbuffers::String *reason() const {
     return GetPointer<const ::flatbuffers::String *>(VT_REASON);
   }
-  ::flatbuffers::String *mutable_reason() {
-    return GetPointer<::flatbuffers::String *>(VT_REASON);
-  }
   bool can_reload() const {
     return GetField<uint8_t>(VT_CAN_RELOAD, 0) != 0;
-  }
-  bool mutate_can_reload(bool _can_reload = 0) {
-    return SetField<uint8_t>(VT_CAN_RELOAD, static_cast<uint8_t>(_can_reload), 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -6463,20 +5878,11 @@ struct ReloadState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint64_t token() const {
     return GetField<uint64_t>(VT_TOKEN, 0);
   }
-  bool mutate_token(uint64_t _token = 0) {
-    return SetField<uint64_t>(VT_TOKEN, _token, 0);
-  }
   int32_t total_moves() const {
     return GetField<int32_t>(VT_TOTAL_MOVES, 0);
   }
-  bool mutate_total_moves(int32_t _total_moves = 0) {
-    return SetField<int32_t>(VT_TOTAL_MOVES, _total_moves, 0);
-  }
   int32_t remaining_moves() const {
     return GetField<int32_t>(VT_REMAINING_MOVES, 0);
-  }
-  bool mutate_remaining_moves(int32_t _remaining_moves = 0) {
-    return SetField<int32_t>(VT_REMAINING_MOVES, _remaining_moves, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -6532,14 +5938,8 @@ struct CancelReloadRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Tabl
   uint64_t command_id() const {
     return GetField<uint64_t>(VT_COMMAND_ID, 0);
   }
-  bool mutate_command_id(uint64_t _command_id = 0) {
-    return SetField<uint64_t>(VT_COMMAND_ID, _command_id, 0);
-  }
   uint64_t activity_token() const {
     return GetField<uint64_t>(VT_ACTIVITY_TOKEN, 0);
-  }
-  bool mutate_activity_token(uint64_t _activity_token = 0) {
-    return SetField<uint64_t>(VT_ACTIVITY_TOKEN, _activity_token, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -6589,14 +5989,8 @@ struct AttackRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint64_t command_id() const {
     return GetField<uint64_t>(VT_COMMAND_ID, 0);
   }
-  bool mutate_command_id(uint64_t _command_id = 0) {
-    return SetField<uint64_t>(VT_COMMAND_ID, _command_id, 0);
-  }
   uint64_t target_entity_id() const {
     return GetField<uint64_t>(VT_TARGET_ENTITY_ID, 0);
-  }
-  bool mutate_target_entity_id(uint64_t _target_entity_id = 0) {
-    return SetField<uint64_t>(VT_TARGET_ENTITY_ID, _target_entity_id, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -6648,26 +6042,14 @@ struct CommandAck FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint64_t command_id() const {
     return GetField<uint64_t>(VT_COMMAND_ID, 0);
   }
-  bool mutate_command_id(uint64_t _command_id = 0) {
-    return SetField<uint64_t>(VT_COMMAND_ID, _command_id, 0);
-  }
   bool accepted() const {
     return GetField<uint8_t>(VT_ACCEPTED, 0) != 0;
-  }
-  bool mutate_accepted(bool _accepted = 0) {
-    return SetField<uint8_t>(VT_ACCEPTED, static_cast<uint8_t>(_accepted), 0);
   }
   const ::flatbuffers::String *error_message() const {
     return GetPointer<const ::flatbuffers::String *>(VT_ERROR_MESSAGE);
   }
-  ::flatbuffers::String *mutable_error_message() {
-    return GetPointer<::flatbuffers::String *>(VT_ERROR_MESSAGE);
-  }
   uint64_t result_revision() const {
     return GetField<uint64_t>(VT_RESULT_REVISION, 0);
-  }
-  bool mutate_result_revision(uint64_t _result_revision = 0) {
-    return SetField<uint64_t>(VT_RESULT_REVISION, _result_revision, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -6747,26 +6129,14 @@ struct TimeEvent FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint64_t world_revision() const {
     return GetField<uint64_t>(VT_WORLD_REVISION, 0);
   }
-  bool mutate_world_revision(uint64_t _world_revision = 0) {
-    return SetField<uint64_t>(VT_WORLD_REVISION, _world_revision, 0);
-  }
   uint64_t simulation_time() const {
     return GetField<uint64_t>(VT_SIMULATION_TIME, 0);
-  }
-  bool mutate_simulation_time(uint64_t _simulation_time = 0) {
-    return SetField<uint64_t>(VT_SIMULATION_TIME, _simulation_time, 0);
   }
   bool time_jump() const {
     return GetField<uint8_t>(VT_TIME_JUMP, 0) != 0;
   }
-  bool mutate_time_jump(bool _time_jump = 0) {
-    return SetField<uint8_t>(VT_TIME_JUMP, static_cast<uint8_t>(_time_jump), 0);
-  }
   bool simulation_busy() const {
     return GetField<uint8_t>(VT_SIMULATION_BUSY, 0) != 0;
-  }
-  bool mutate_simulation_busy(bool _simulation_busy = 0) {
-    return SetField<uint8_t>(VT_SIMULATION_BUSY, static_cast<uint8_t>(_simulation_busy), 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -6827,9 +6197,6 @@ struct AcknowledgeThreatRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers:
   uint64_t command_id() const {
     return GetField<uint64_t>(VT_COMMAND_ID, 0);
   }
-  bool mutate_command_id(uint64_t _command_id = 0) {
-    return SetField<uint64_t>(VT_COMMAND_ID, _command_id, 0);
-  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint64_t>(verifier, VT_COMMAND_ID, 8) &&
@@ -6873,20 +6240,11 @@ struct DecisionPrompt FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint64_t decision_id() const {
     return GetField<uint64_t>(VT_DECISION_ID, 0);
   }
-  bool mutate_decision_id(uint64_t _decision_id = 0) {
-    return SetField<uint64_t>(VT_DECISION_ID, _decision_id, 0);
-  }
   const ::flatbuffers::String *text() const {
     return GetPointer<const ::flatbuffers::String *>(VT_TEXT);
   }
-  ::flatbuffers::String *mutable_text() {
-    return GetPointer<::flatbuffers::String *>(VT_TEXT);
-  }
   const ::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *choices() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *>(VT_CHOICES);
-  }
-  ::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *mutable_choices() {
-    return GetPointer<::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *>(VT_CHOICES);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -6959,14 +6317,8 @@ struct DecisionResponse FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint64_t decision_id() const {
     return GetField<uint64_t>(VT_DECISION_ID, 0);
   }
-  bool mutate_decision_id(uint64_t _decision_id = 0) {
-    return SetField<uint64_t>(VT_DECISION_ID, _decision_id, 0);
-  }
   uint16_t choice() const {
     return GetField<uint16_t>(VT_CHOICE, 0);
-  }
-  bool mutate_choice(uint16_t _choice = 0) {
-    return SetField<uint16_t>(VT_CHOICE, _choice, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -7015,9 +6367,6 @@ struct ResyncRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint64_t request_id() const {
     return GetField<uint64_t>(VT_REQUEST_ID, 0);
   }
-  bool mutate_request_id(uint64_t _request_id = 0) {
-    return SetField<uint64_t>(VT_REQUEST_ID, _request_id, 0);
-  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint64_t>(verifier, VT_REQUEST_ID, 8) &&
@@ -7059,9 +6408,6 @@ struct WorldReset FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint64_t request_id() const {
     return GetField<uint64_t>(VT_REQUEST_ID, 0);
   }
-  bool mutate_request_id(uint64_t _request_id = 0) {
-    return SetField<uint64_t>(VT_REQUEST_ID, _request_id, 0);
-  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint64_t>(verifier, VT_REQUEST_ID, 8) &&
@@ -7102,9 +6448,6 @@ struct SnapshotAck FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   };
   uint64_t state_id() const {
     return GetField<uint64_t>(VT_STATE_ID, 0);
-  }
-  bool mutate_state_id(uint64_t _state_id = 0) {
-    return SetField<uint64_t>(VT_STATE_ID, _state_id, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -7154,20 +6497,11 @@ struct CwmMessage FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint64_t sequence_number() const {
     return GetField<uint64_t>(VT_SEQUENCE_NUMBER, 0);
   }
-  bool mutate_sequence_number(uint64_t _sequence_number = 0) {
-    return SetField<uint64_t>(VT_SEQUENCE_NUMBER, _sequence_number, 0);
-  }
   uint64_t world_revision() const {
     return GetField<uint64_t>(VT_WORLD_REVISION, 0);
   }
-  bool mutate_world_revision(uint64_t _world_revision = 0) {
-    return SetField<uint64_t>(VT_WORLD_REVISION, _world_revision, 0);
-  }
   uint64_t timestamp_ms() const {
     return GetField<uint64_t>(VT_TIMESTAMP_MS, 0);
-  }
-  bool mutate_timestamp_ms(uint64_t _timestamp_ms = 0) {
-    return SetField<uint64_t>(VT_TIMESTAMP_MS, _timestamp_ms, 0);
   }
   CDDA::CWM::Payload payload_type() const {
     return static_cast<CDDA::CWM::Payload>(GetField<uint8_t>(VT_PAYLOAD_TYPE, 0));
@@ -7302,26 +6636,20 @@ struct CwmMessage FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const CDDA::CWM::QuickbarUseRequest *payload_as_QuickbarUseRequest() const {
     return payload_type() == CDDA::CWM::Payload::QuickbarUseRequest ? static_cast<const CDDA::CWM::QuickbarUseRequest *>(payload()) : nullptr;
   }
-  void *mutable_payload() {
-    return GetPointer<void *>(VT_PAYLOAD);
+  const CDDA::CWM::QuickbarSwapRequest *payload_as_QuickbarSwapRequest() const {
+    return payload_type() == CDDA::CWM::Payload::QuickbarSwapRequest ? static_cast<const CDDA::CWM::QuickbarSwapRequest *>(payload()) : nullptr;
+  }
+  const CDDA::CWM::InventoryArrangeRequest *payload_as_InventoryArrangeRequest() const {
+    return payload_type() == CDDA::CWM::Payload::InventoryArrangeRequest ? static_cast<const CDDA::CWM::InventoryArrangeRequest *>(payload()) : nullptr;
   }
   uint64_t session_id() const {
     return GetField<uint64_t>(VT_SESSION_ID, 0);
   }
-  bool mutate_session_id(uint64_t _session_id = 0) {
-    return SetField<uint64_t>(VT_SESSION_ID, _session_id, 0);
-  }
   uint64_t player_id() const {
     return GetField<uint64_t>(VT_PLAYER_ID, 0);
   }
-  bool mutate_player_id(uint64_t _player_id = 0) {
-    return SetField<uint64_t>(VT_PLAYER_ID, _player_id, 0);
-  }
   uint64_t connection_id() const {
     return GetField<uint64_t>(VT_CONNECTION_ID, 0);
-  }
-  bool mutate_connection_id(uint64_t _connection_id = 0) {
-    return SetField<uint64_t>(VT_CONNECTION_ID, _connection_id, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -7504,6 +6832,14 @@ template<> inline const CDDA::CWM::QuickbarBindRequest *CwmMessage::payload_as<C
 
 template<> inline const CDDA::CWM::QuickbarUseRequest *CwmMessage::payload_as<CDDA::CWM::QuickbarUseRequest>() const {
   return payload_as_QuickbarUseRequest();
+}
+
+template<> inline const CDDA::CWM::QuickbarSwapRequest *CwmMessage::payload_as<CDDA::CWM::QuickbarSwapRequest>() const {
+  return payload_as_QuickbarSwapRequest();
+}
+
+template<> inline const CDDA::CWM::InventoryArrangeRequest *CwmMessage::payload_as<CDDA::CWM::InventoryArrangeRequest>() const {
+  return payload_as_InventoryArrangeRequest();
 }
 
 struct CwmMessageBuilder {
@@ -7740,6 +7076,14 @@ inline bool VerifyPayload(::flatbuffers::Verifier &verifier, const void *obj, Pa
       auto ptr = reinterpret_cast<const CDDA::CWM::QuickbarUseRequest *>(obj);
       return verifier.VerifyTable(ptr);
     }
+    case Payload::QuickbarSwapRequest: {
+      auto ptr = reinterpret_cast<const CDDA::CWM::QuickbarSwapRequest *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::InventoryArrangeRequest: {
+      auto ptr = reinterpret_cast<const CDDA::CWM::InventoryArrangeRequest *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
     default: return true;
   }
 }
@@ -7762,14 +7106,6 @@ inline const CDDA::CWM::CwmMessage *GetCwmMessage(const void *buf) {
 
 inline const CDDA::CWM::CwmMessage *GetSizePrefixedCwmMessage(const void *buf) {
   return ::flatbuffers::GetSizePrefixedRoot<CDDA::CWM::CwmMessage>(buf);
-}
-
-inline CwmMessage *GetMutableCwmMessage(void *buf) {
-  return ::flatbuffers::GetMutableRoot<CwmMessage>(buf);
-}
-
-inline CDDA::CWM::CwmMessage *GetMutableSizePrefixedCwmMessage(void *buf) {
-  return ::flatbuffers::GetMutableSizePrefixedRoot<CDDA::CWM::CwmMessage>(buf);
 }
 
 inline bool VerifyCwmMessageBuffer(

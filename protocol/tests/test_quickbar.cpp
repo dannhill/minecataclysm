@@ -42,5 +42,11 @@ int main() {
     const auto* command = GetCwmMessage(use.data())->payload_as_QuickbarUseRequest();
     CHECK(command && command->command_id() == 10 && command->slot() == 3 &&
           command->binding_id()->str() == identity && command->action() == EquipmentAction::CONSUME);
+    const auto swap = wire.build_quickbar_swap(11, 2, 3, identity, "");
+    const auto* change = GetCwmMessage(swap.data())->payload_as_QuickbarSwapRequest();
+    CHECK(change && change->source_slot() == 2 && change->target_slot() == 3 && change->expected_source()->str() == identity && change->expected_target()->str().empty());
+    const auto arrange = wire.build_inventory_arrange(12, 23, 8, 4);
+    const auto* order = GetCwmMessage(arrange.data())->payload_as_InventoryArrangeRequest();
+    CHECK(order && order->command_id() == 12 && order->view_id() == 23 && order->item_id() == 8 && order->before_item_id() == 4);
     std::cout << "Quickbar identity, bounds, uniqueness, empty-slot semantics and commands PASS\n";
 }
