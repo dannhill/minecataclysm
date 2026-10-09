@@ -1,7 +1,8 @@
 # Inventario, hotbar e dialoghi nativi — proposta di attuazione
 
 Riscontro: [16 PASS e richieste del 2026-10-09](../source/inventory-ui-feedback-2026-10-09.md).
-Stato: **pianificato**, salvo le tre correzioni mirate documentate separatamente.
+Stato: **layout UX-01 e azioni consecutive UX-02 consegnati**; accettazione
+grafica pendente. UX-03–05 e le estensioni anatomiche/identità restano pianificati.
 L'interfaccia attuale non è la versione definitiva. Nessuna approvazione
 estetica della nuova proposta viene dedotta dai PASS delle meccaniche.
 
