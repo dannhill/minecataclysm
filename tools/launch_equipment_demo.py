@@ -12,10 +12,11 @@ import tempfile
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--fresh', action='store_true')
+    parser.add_argument('--pages', action='store_true', help='Native stress fixture for inventory and layered-clothing pagination')
     args, client_args = parser.parse_known_args()
     root = Path(__file__).resolve().parents[1]
-    fixture = root / 'artifacts/native-equipment-20261008/fixture'
-    directory = root / 'artifacts/equipment-demo'
+    fixture = root / ('artifacts/ux01-inventory-20261009/fixture' if args.pages else 'artifacts/native-equipment-20261008/fixture')
+    directory = root / ('artifacts/inventory-pages-demo' if args.pages else 'artifacts/equipment-demo')
     directory.mkdir(parents=True, exist_ok=True)
     pointer = directory / 'last-session'
     if pointer.exists() and not args.fresh:
@@ -42,6 +43,7 @@ def main():
     env.pop('CDDA_TERRAIN_DEMO', None)
     print('Prova inventario/equipaggiamento isolata:', session, flush=True)
     print('I: inventario nativo e tasche; clic sulle icone per dettagli e azioni.', flush=True)
+    if args.pages: print('Scena di stress: oltre 27 oggetti e oltre 10 indossati; gli strati sono predisposti dalla fixture debug.', flush=True)
     print('Mazza impugnata, zaino indossato; cappello, bandana e due sassi nelle tasche.', flush=True)
     print('Impugna/Riponi/Indossa/Togli usano CDDA; le scelte native si confermano con i numeri.', flush=True)
     print('F7: pausa. Le azioni richiedono la ripresa; leggere resta possibile.', flush=True)

@@ -1151,7 +1151,7 @@ index 0000000..2214cd4
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..6f26508
+index 0000000..77e12a6
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
 @@ -0,0 +1,2430 @@
@@ -3169,7 +3169,7 @@ index 0000000..6f26508
 +        pimpl_->body_form_open_ || pimpl_->crafting_open_ || pimpl_->ground_container_open_ || pimpl_->metrics_.pending_decision) return {};
 +    auto& i = *pimpl_;
 +    i.equipment_open_ = true; i.equipment_close_ = false; i.transfer_form_ = false;
-+    i.equipment_focus_search_ = i.equipment_search_open_;
++    i.equipment_search_open_ = i.equipment_focus_search_ = false;
 +    setMenuPause(true);
 +    if (!i.query_inventory()) i.equipment_view_.error = "Inventario non disponibile: riprova.";
 +    return i.equipment_form();

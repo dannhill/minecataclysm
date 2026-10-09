@@ -164,7 +164,7 @@ def main():
         time.sleep(.4)
     window = None
     with (out / 'launcher.log').open('w') as log:
-        proc = subprocess.Popen([str(ws / 'start.sh'), '--go', '--name', 'body_tester', '--info'],
+        proc = subprocess.Popen([str(ws / 'start.sh'), '--go', '--name', 'body_tester', '--port', str(port), '--info'],
                                 env=env, stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
         try:
             deadline = time.monotonic() + 85

@@ -104,7 +104,7 @@ def main():
             if shutting_down.is_set(): expected_shutdown_errors.append(str(error))
             else: relay_errors.append(str(error))
         except Exception as error:
-            relay_errors.append(str(error))
+            if not stop.is_set(): relay_errors.append(str(error))
     relay_thread = threading.Thread(target=relay, daemon=True)
     relay_thread.start()
     wrapper = out / 'client-relay.py'
@@ -132,6 +132,8 @@ def main():
             time.sleep(.05)
         raise RuntimeError('GUI condition not reached; inspect trace/logs')
     def xdo(*argv):
+        if os.environ.get('CWM_GUI_NO_WM') == '1' and argv[0] == 'windowactivate':
+            argv = ('windowfocus', *argv[1:])
         subprocess.run(['xdotool', *argv], check=True, capture_output=True, timeout=5)
     def tap(key, sneak=False):
         if sneak:
@@ -162,7 +164,7 @@ def main():
         time.sleep(.4)
     window = None
     with (out / 'launcher.log').open('w') as log:
-        proc = subprocess.Popen([str(ws / 'start.sh'), '--go', '--name', 'body_tester', '--info'],
+        proc = subprocess.Popen([str(ws / 'start.sh'), '--go', '--name', 'body_tester', '--port', str(port), '--info'],
                                 env=env, stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
         try:
             deadline = time.monotonic() + 85
@@ -298,6 +300,7 @@ def main():
             shutting_down.set() # Resets caused by our SIGTERM are expected only after this boundary.
             subprocess.run(['xdotool', 'keyup', 'w', 'f'], capture_output=True)
             subprocess.run(['xdotool', 'mouseup', '1'], capture_output=True)
+            stop.set()
             if proc.poll() is None:
                 os.killpg(proc.pid, signal.SIGTERM)
                 try:
