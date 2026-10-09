@@ -774,10 +774,10 @@ index 5d6b891..48c0d59 100644
  		g_settings->getFlagStr("anticheat_flags", flagdesc_anticheat, nullptr);
  
 diff --git a/src/unittest/test_mapblock.cpp b/src/unittest/test_mapblock.cpp
-index 7f3f860..7cfa527 100644
+index 7f3f860..875d35a 100644
 --- a/src/unittest/test_mapblock.cpp
 +++ b/src/unittest/test_mapblock.cpp
-@@ -10,6 +10,15 @@
+@@ -10,6 +10,16 @@
  #include "serialization.h"
  #include "noise.h"
  #include "inventory.h"
@@ -789,11 +789,12 @@ index 7f3f860..7cfa527 100644
 +#include "cdda/avatar_status.h"
 +#include "cdda/posture_input.h"
 +#include "cdda/equipment_inventory.h"
++#include "cdda/decision_text.h"
 +#endif
  
  class TestMapBlock : public TestBase
  {
-@@ -32,7 +41,15 @@ class TestMapBlock : public TestBase
+@@ -32,7 +42,15 @@ class TestMapBlock : public TestBase
  	void testLoad20(IGameDef *gamedef);
  
  	// Tests loading a non-standard MapBlock
@@ -810,7 +811,7 @@ index 7f3f860..7cfa527 100644
  };
  
  static TestMapBlock g_test_instance;
-@@ -44,9 +61,179 @@ void TestMapBlock::runTests(IGameDef *gamedef)
+@@ -44,9 +62,182 @@ void TestMapBlock::runTests(IGameDef *gamedef)
  	TEST(testSave29, gamedef);
  	TEST(testLoad29, gamedef);
  	TEST(testLoad20, gamedef);
@@ -870,6 +871,9 @@ index 7f3f860..7cfa527 100644
 +    status.needs.push_back({"thirst", "Sete", "x];button[0,0;1,1;inject;click", "c_red"});
 +    status.parts.push_back({"arm_l", "left;arm", {"health", "Salute", "||...", "c_yellow"},
 +        {"temperature", "Temperatura", "Comfortable", "c_white"}});
++    UASSERTEQ(std::string, decisionPlainText("<color_c_green>++</color> hiking backpack >"), "++ hiking backpack >");
++    UASSERTEQ(std::string, decisionPlainText("<color_red>HP <color_c_green>é</color></color> < 3"), "HP é < 3");
++    UASSERTEQ(std::string, decisionPlainText("<color_>x <color_red unfinished <unknown>"), "<color_>x <color_red unfinished <unknown>");
 +    const auto form = avatarStatusForm(status);
 +    UASSERT(form.find("x\\]\\;button\\[") != std::string::npos);
 +    UASSERT(form.find(";inject;click") == std::string::npos);
@@ -1120,10 +1124,10 @@ index 0000000..2214cd4
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..1dec830
+index 0000000..edcc91b
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,2400 @@
+@@ -0,0 +1,2401 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
@@ -1133,6 +1137,7 @@ index 0000000..1dec830
 +#include "ground_item_formspec.h"
 +#include "equipment_inventory.h"
 +#include "crafting_inventory.h"
++#include "decision_text.h"
 +#include "avatar_status.h"
 +#include "posture_input.h"
 +#include <IGUIImage.h>
@@ -2468,11 +2473,11 @@ index 0000000..1dec830
 +                    prompt->choices()->size() > 9) break;
 +                metrics_.pending_decision = prompt->decision_id();
 +                metrics_.decision_choices = prompt->choices()->size();
-+                decision_body_ = utf8_to_wide(prompt->text()->str()) + L"\n\n";
++                decision_body_ = utf8_to_wide(decisionPlainText(prompt->text()->str())) + L"\n\n";
 +                for (size_t i = 0; i < prompt->choices()->size(); ++i)
 +                    decision_body_ += std::to_wstring(i + 1) + L". " +
-+                        utf8_to_wide(prompt->choices()->Get(i)->str()) + L"\n";
-+                decision_body_ += L"\nPress the corresponding number to choose.";
++                        utf8_to_wide(decisionPlainText(prompt->choices()->Get(i)->str())) + L"\n";
++                decision_body_ += L"\nPremi il numero corrispondente per scegliere.";
 +                break;
 +            }
 +
@@ -3691,10 +3696,10 @@ index 0000000..89c7754
 +} // namespace cdda_client
 diff --git a/src/cdda/crafting_inventory.h b/src/cdda/crafting_inventory.h
 new file mode 100644
-index 0000000..a5935f0
+index 0000000..c216263
 --- /dev/null
 +++ b/src/cdda/crafting_inventory.h
-@@ -0,0 +1,56 @@
+@@ -0,0 +1,63 @@
 +#pragma once
 +#include "equipment_inventory.h"
 +namespace cdda_client {
@@ -3737,7 +3742,14 @@ index 0000000..a5935f0
 +        if (e.id==selected) f += "box["+x+","+y+";1.05,1.05;#E8CF5790]";
 +        f += "item_image_button["+x+","+y+";1.05,1.05;"+statusEscape(icon(e.type))+";recipe_"+std::to_string(e.id)+";]";
 +        f += "tooltip[recipe_"+std::to_string(e.id)+";"+statusEscape(e.name+"\n"+(e.reason.empty() ? "Disponibile" : e.reason))+"]";
-+        if (e.resume) f += "label["+x+","+y+";R]";
++        if (e.resume) {
++            const auto bx = std::to_string(.5+(n%6)*1.18+.65);
++            const auto by = std::to_string(2.7+(n/6)*1.12+.05);
++            const auto badge = "recipe_" + std::to_string(e.id);
++            f += "style["+badge+";textcolor=#FFFFFF;border=false;bgimg=;bgimg_pressed=;bgcolor=#276040]";
++            f += "button["+bx+","+by+";0.35,0.35;"+badge+";R]";
++            f += "tooltip["+badge+";Lavoro incompleto: riprendi dalla ricetta selezionata.]";
++        }
 +    }
 +    f += "button[0.5,9.7;1.5,0.65;prev;<]button[6,9.7;1.5,0.65;next;>]label[2.2,10;"+std::to_string(page+1)+" / "+std::to_string(pages)+"]";
 +    if (const auto* e=view.entry(selected)) {
@@ -3749,6 +3761,37 @@ index 0000000..a5935f0
 +    f += "label[8,10;"+statusEscape(notice.substr(0,160))+"]";
 +    if (view.truncated) f += "label[0.5,2.1;Troppi risultati: restringi la ricerca.]";
 +    return f;
++}
++} // namespace cdda_client
+diff --git a/src/cdda/decision_text.h b/src/cdda/decision_text.h
+new file mode 100644
+index 0000000..8a266d4
+--- /dev/null
++++ b/src/cdda/decision_text.h
+@@ -0,0 +1,25 @@
++#pragma once
++#include <string>
++#include <string_view>
++namespace cdda_client {
++// CDDA terminal colour tags have no meaning to Irrlicht static text.
++// Preserve symbols, UTF-8 and literal angle brackets; remove only tag syntax.
++inline std::string decisionPlainText(std::string_view source) {
++    std::string text;
++    for (size_t i = 0; i < source.size();) {
++        if (source.substr(i, 8) == "</color>") { i += 8; continue; }
++        if (source.substr(i, 7) == "<color_") {
++            const auto end = source.find('>', i + 7);
++            bool tag = end != source.npos && end > i + 7;
++            if (tag) for (size_t n = i + 7; n < end; ++n) {
++                const char c = source[n];
++                if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
++                      (c >= '0' && c <= '9') || c == '_')) { tag = false; break; }
++            }
++            if (tag) { i = end + 1; continue; }
++        }
++        text += source[i++];
++    }
++    return text;
 +}
 +} // namespace cdda_client
 diff --git a/src/cdda/equipment_inventory.h b/src/cdda/equipment_inventory.h

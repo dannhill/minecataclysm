@@ -1008,7 +1008,7 @@ index 38b1d71..e5b7a12 100644
      if( get_option<bool>( "ANDROID_NATIVE_UI" ) ) {
          JNIEnv *env = ( JNIEnv * )SDL_AndroidGetJNIEnv();
 diff --git a/src/pickup.cpp b/src/pickup.cpp
-index 183628b..9a64f94 100644
+index 183628b..c1d3bf8 100644
 --- a/src/pickup.cpp
 +++ b/src/pickup.cpp
 @@ -23,6 +23,7 @@
@@ -1026,7 +1026,7 @@ index 183628b..9a64f94 100644
 +    if( external_ui_active() ) {
 +        std::vector<std::string> labels;
 +        std::vector<pickup_answer> actions;
-+        if( it.is_bucket_nonempty() ) {
++        if( u.can_wield( it ).success() ) {
 +            labels.push_back( string_format( _( "Wield %s" ), it.display_name() ) );
 +            actions.push_back( WIELD );
 +            // Spilling enters the native liquid destination picker, which has
@@ -1069,6 +1069,23 @@ index 183628b..9a64f94 100644
      if( answer == "YES" ) {
          u.set_value( "THIEF_MODE", "THIEF_STEAL" );
          u.set_value( "THIEF_MODE_KEEP", "NO" );
+@@ -260,6 +288,16 @@ static bool pick_one_up( item_location &loc, int quantity, bool &got_water, bool
+                !player_character.can_stash_partial( newit, false ) ) {
+         option = CANCEL;
+         stash_successful = false;
++        // A pointed manual pickup must explain a capacity rejection. Offer
++        // explicit native wielding rather than silently losing the intention;
++        // auto-pickup never asks or changes equipment on its own.
++        if( external_ui_active() && !autopickup ) {
++            const std::string explain = string_format(
++                _( "Cannot store %s in your pockets (capacity, length or carrying weight)." ),
++                newit.display_name() );
++            option = handle_problematic_pickup( newit, explain );
++            did_prompt = true;
++        }
+     } else {
+         option = STASH;
+     }
 diff --git a/src/ranged.cpp b/src/ranged.cpp
 index 6973ff1..c4eaffb 100644
 --- a/src/ranged.cpp
@@ -4341,10 +4358,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..a9dcf21
+index 0000000..eebaac1
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,1422 @@
+@@ -0,0 +1,1464 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "move_mode.h"
@@ -5766,6 +5783,48 @@ index 0000000..a9dcf21
 +        CHECK_FALSE(cwm::CwmServerTestAccess::execute(server));CHECK_FALSE(cwm::CwmServerTestAccess::accepted(server));
 +    }
 +    CHECK_FALSE(u.activity);CHECK(u.moves==1000);
++}
++
++TEST_CASE("cwm_manual_capacity_pickup_is_explicit_and_auto_pickup_never_wields", "[cwm][pickup]") {
++    clear_avatar(); clear_map();
++    auto& u = get_avatar(); auto& m = get_map();
++    u.setpos(tripoint(60,60,0));
++    item bat(itype_id("bat")); bat.set_var("uid", "recover-capacity");
++    auto& ground = m.add_item(u.pos(), bat);
++    REQUIRE_FALSE(u.can_stash_partial(ground, false));
++    REQUIRE(u.can_wield(ground).success());
++    bool accept = false, automatic = false;
++    SECTION("cancel") {}
++    SECTION("explicit wield") { accept = true; }
++    SECTION("automatic pickup does not equip") { automatic = true; }
++    int questions = 0;
++    do_turn_with_action([&]() {
++        std::vector<item_location> targets{item_location(map_cursor(u.pos()), &ground)};
++        std::vector<int> quantities{0}; bool stash = true;
++        Pickup::pick_info info;
++        u.moves = 1000;
++        Pickup::do_pickup(targets, quantities, automatic, stash, info);
++        if (accept) {
++            REQUIRE(u.get_wielded_item());
++            CHECK(u.get_wielded_item()->get_var("uid") == "recover-capacity");
++            CHECK(m.i_at(u.pos()).empty());
++            CHECK(u.moves < 1000);
++        } else {
++            CHECK_FALSE(u.get_wielded_item());
++            REQUIRE(m.i_at(u.pos()).size() == 1);
++            CHECK(m.i_at(u.pos()).begin()->get_var("uid") == "recover-capacity");
++            CHECK(u.moves == 1000);
++        }
++        u.pause(); return true;
++    }, [&](const std::string& text, const std::vector<std::string>& choices) {
++        ++questions;
++        CHECK(text.find("Cannot store") != std::string::npos);
++        REQUIRE(choices.size() == 2);
++        CHECK(choices[0].find("Wield") != std::string::npos);
++        CHECK(choices.back() == "Cancel");
++        return accept ? 0 : 1;
++    });
++    CHECK(questions == (automatic ? 0 : 1));
 +}
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644

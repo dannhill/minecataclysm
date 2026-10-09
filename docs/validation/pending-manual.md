@@ -1,8 +1,10 @@
 # Validazioni manuali del playable core
 
-Stato corrente: **24 punti pendenti**, quattro inventario/equipaggiamento,
-quattro cibo/bevande, quattro medicazioni, quattro crafting, quattro tiro/ricarica
-e quattro quantita/deposito/trasferimenti.
+Stato corrente: **8 punti pendenti**: quattro tiro/ricarica e quattro
+quantita/deposito/trasferimenti. Il riscontro del 2026-10-09 accetta tutti i
+16 punti inventario, cibo/bevande, medicazioni e crafting. I bug segnalati
+restano separati dall'accettazione delle checklist, con ricontrolli mirati
+aggiunti sotto quando le correzioni sono consegnate.
 Le vecchie checklist VALIDATE sotto conservano la cronologia; non attestano queste nuove fette.
 
 L'utente il 2026-10-08 ha eseguito e approvato tutti i quattro punti di
@@ -40,7 +42,7 @@ assetato/stanco, testa e braccio sinistro feriti; nessun pickup necessario.
    iniziali. Attendi e prova WASD: tempo/personaggio restano fermi.
    **Esc** o **Torna al gioco** chiude e riprende la modalità precedente.
 3. Metti in pausa con **F7**, apri H e richiudi: il gioco deve restare in pausa
-   finché premi di nuovo F7. La lettura non deve curare o raccogliere oggetti.
+   finché premi di nuovo F7. Consultare la scheda H non cura né raccoglie oggetti.
 4. Esci e rilancia `./body-demo.sh` senza `--fresh`: posizione e condizioni
    sono quelle del save CDDA; la scheda torna consultabile.
 
@@ -120,10 +122,9 @@ validata. L’utente richiede di proseguire dopo questo ritocco senza attendere
 un’ulteriore validazione estetica. Non si deduce un PASS manuale del nuovo HUD.
 Eventuali osservazioni potranno essere raccolte durante le prossime feature.
 
-## Inventario ed equipaggiamento — DA PROVARE, rinviato su richiesta
+## Inventario ed equipaggiamento — VALIDATA: 1–4 PASS
 
-L'utente non puo testare ora (2026-10-08); queste prove restano pendenti.
-Non costituiscono un blocco tecnico per la consegna di questa fetta.
+Accettata dall'utente il 2026-10-09; restano i bug descritti nel riscontro corrente.
 Avvio dalla directory del progetto: `./equipment-demo.sh --fresh`.
 Copia isolata: mazza impugnata, zaino indossato; cappello, bandana e due
 sassi nelle tasche. `I` apre l'inventario anche nel gioco normale.
@@ -151,17 +152,16 @@ tasche sigillate e hotbar interattiva vengono dopo: non sono implementati
 in questa prima fetta. [Dettagli e verifica tecnica](../fixes/native-equipment.md).
 
 
-## Cibo e bevande nativi — DA PROVARE, rinviato su richiesta
+## Cibo e bevande nativi — VALIDATA: 1–4 PASS
 
-La checklist inventario/equipaggiamento sopra rimane pendente. Non si
-trasformano le verifiche automatiche in accettazione grafica dell'utente.
+Accettata dall’utente il 2026-10-09 insieme alla checklist inventario.
 Avvio isolato: `./consumption-demo.sh --fresh`. Zaino gia fornito dal core
 nativo con due mele fresche, una marcia, una bottiglia con quattro porzioni
 d'acqua pulita e un sasso. La stessa funzione e disponibile con I nel gioco.
 
 1. **I**, scegli una mela fresca: dettagli e **Mangia**; scegli l'acqua nella
-   bottiglia: **Bevi**. Il sasso non deve offrire Consuma. Leggere mantiene
-   tempo/personaggio fermi. Mangia/Bevi chiudono il menu e avviano un consumo
+   bottiglia: **Bevi**. Il sasso non deve offrire Consuma. Consultare i dettagli del menu mantiene
+   tempo/personaggio fermi (non si tratta della lettura di libri). Mangia/Bevi chiudono il menu e avviano un consumo
    con indicazione di progresso; una sola porzione si toglie alla fine.
 2. Durante una mela premi **I**: il progresso si ferma col menu; **Interrompi
    consumo** torna al gioco, conservando la porzione non ancora consumata.
@@ -183,9 +183,9 @@ quantita e travasare richiedono le prossime fette. Le icone mancanti restano
 fallback con nomi CDDA. [Dettagli tecnici](../fixes/native-consumption.md).
 
 
-## Medicazioni native — DA PROVARE, aggiunte al backlog
+## Medicazioni native — VALIDATA: 1–4 PASS
 
-Gli otto punti inventario/consumo restano pendenti. Avvio isolato:
+Inventario/consumo e queste medicazioni sono accettati il 2026-10-09. Avvio isolato:
 `./medicine-demo.sh --fresh`. Braccio sinistro e torso feriti; nello zaino
 ci sono tre bende, una salvietta disinfettante e una benda sporca. Non serve
 raccogliere o mangiare nulla. La funzione e disponibile anche con **I** nel gioco.
@@ -213,7 +213,7 @@ NPC, chirurgia e avvio parte→oggetto dalla scheda H restano successivi.
 [Dettagli tecnici](../fixes/native-medicine.md). Accettazione manuale non dedotta.
 
 
-## Crafting guidato — PENDING, rinviato su richiesta dell'utente
+## Crafting guidato — VALIDATA: 1–4 PASS
 
 Dalla directory del progetto: `./crafting-demo.sh --fresh`. Scena e salvataggio
 isolati; K apre il catalogo CDDA. Non serve completare le altre checklist.

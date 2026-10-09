@@ -7237,7 +7237,7 @@
   {
     "path": "src/cdda/cdda_bridge.cpp",
     "mode": "100644",
-    "sha256": "7ef62ebb51d9ec15ad27c3451c253bb3262ee14bf2b85db25c7ec783722a190a"
+    "sha256": "7be246f292cad6bd313b6879622f2ab678df69e0468ccc86e14bbe4fb723d016"
   },
   {
     "path": "src/cdda/cdda_bridge.h",
@@ -7247,7 +7247,12 @@
   {
     "path": "src/cdda/crafting_inventory.h",
     "mode": "100644",
-    "sha256": "04efa1dddc7f325a937f557490d5abc777a2a9ff186cbb7f3f2e99c042755cfb"
+    "sha256": "a33c0da52ff48552f6ec0307590def5cce626e89a2ce7e6a761c8fcdfff2e37f"
+  },
+  {
+    "path": "src/cdda/decision_text.h",
+    "mode": "100644",
+    "sha256": "cb45c3662956827b4574bba412186b66a54ca7d8f31e5764f5b7a78db4f272fe"
   },
   {
     "path": "src/cdda/equipment_inventory.h",
@@ -10317,7 +10322,7 @@
   {
     "path": "src/unittest/test_mapblock.cpp",
     "mode": "100644",
-    "sha256": "ee357b3c2ea5d7911cd4dbe67eb6862293e55c3a37960d0f7bc54d01b3ed0853"
+    "sha256": "3f0668b5650c921cc16980f0e925e2e65e9dd6fe7f7514ef2a9e638025ad3b84"
   },
   {
     "path": "src/unittest/test_mapnode.cpp",
