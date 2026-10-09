@@ -717,6 +717,21 @@ index ed1c300..60534fe 100644
  	if (m_allowclose) {
  		doPause = false;
  		acceptInput(quit_mode_cancel);
+diff --git a/src/gui/guiScene.cpp b/src/gui/guiScene.cpp
+index f30c4f3..08b60c4 100644
+--- a/src/gui/guiScene.cpp
++++ b/src/gui/guiScene.cpp
+@@ -55,7 +55,9 @@ void GUIScene::setTexture(u32 idx, video::ITexture *texture)
+ 	material.MaterialType = video::EMT_TRANSPARENT_ALPHA_CHANNEL;
+ 	material.MaterialTypeParam = 0.5f;
+ 	material.TextureLayers[0].Texture = texture;
+-	material.FogEnable = true;
++	// UI previews have their own scene; world fog/light must not hide them.
++	material.FogEnable = false;
++	material.Lighting = false;
+ 	material.TextureLayers[0].MinFilter = video::ETMINF_NEAREST_MIPMAP_NEAREST;
+ 	material.TextureLayers[0].MagFilter = video::ETMAGF_NEAREST;
+ 	material.BackfaceCulling = false;
 diff --git a/src/network/clientpackethandler.cpp b/src/network/clientpackethandler.cpp
 index 9f987cc..005fbfb 100644
 --- a/src/network/clientpackethandler.cpp
@@ -3852,7 +3867,7 @@ index 0000000..8a266d4
 +} // namespace cdda_client
 diff --git a/src/cdda/equipment_inventory.h b/src/cdda/equipment_inventory.h
 new file mode 100644
-index 0000000..b87c61f
+index 0000000..94f56c7
 --- /dev/null
 +++ b/src/cdda/equipment_inventory.h
 @@ -0,0 +1,294 @@
@@ -3979,8 +3994,8 @@ index 0000000..b87c61f
 +        "style_type[image_button;border=false;bgimg=;bgimg_pressed=]box[11.05,1.75;0.025,8.75;#77777770]";
 +    if (search_open) {
 +        f += "field[0.5,4.65;5.2,0.6;search;;" + statusEscape(search) + "]field_close_on_enter[search;false]"
-+            "button[5.85,4.65;1.3,0.6;find;Cerca]button[7.35,4.65;1.3,0.6;search_back;Fine]"
-+            "dropdown[8.85,4.65;1.95,0.6;filter;Tutti,Equipaggiati,Contenitori;" + std::to_string(filter + 1) + "]";
++            "button[5.85,4.65;1.3,0.6;find;Cerca]button[7.3,4.65;0.95,0.6;search_back;Fine]"
++            "dropdown[8.4,4.65;2.4,0.6;filter;Tutti,Equipaggiati,Contenitori;" + std::to_string(filter + 1) + "]";
 +        if (focus_search) f += "set_focus[search;true]";
 +    } else {
 +        f += "dropdown[0.5,4.65;3,0.6;filter;Tutti,Equipaggiati,Contenitori;" + std::to_string(filter + 1) + "]"
@@ -4002,7 +4017,7 @@ index 0000000..b87c61f
 +        const bool generic = visual.empty() || visual == "cdda_items:fallback_generic";
 +        f += std::string(generic ? "image_button[" : "item_image_button[") + position + ";1.05,1.05;" +
 +            statusEscape(generic ? equipmentCategoryIcon(*e) : visual) + ";" + key + ";]";
-+        if (e->counted) f += "label[" + std::to_string(x + .08) + "," + std::to_string(y + .87) + ";" + std::to_string(e->charges) + "]";
++        if (e->counted && e->charges != 1) f += "label[" + std::to_string(x + .08) + "," + std::to_string(y + .87) + ";" + std::to_string(e->charges) + "]";
 +        f += "tooltip[" + key + ";" + statusEscape(e->name + (e->counted ? " x" + std::to_string(e->charges) : "") +
 +            "\n" + view.source(e->id) + (generic ? "\nIcona di categoria / segnaposto" : "\nIcona dal mapping (puo essere un proxy)") + "\nClic: seleziona. Le azioni sono nel pannello a destra.") + "]";
 +    };
@@ -4057,11 +4072,11 @@ index 0000000..b87c61f
 +        };
 +        f += "hypertext[12.55,1.9;2.95,1.05;;" + statusEscape("<global color=#323232 size=16><b>" + equipmentMarkup(e->name) + "</b>") + "]";
 +        std::string detail = "<style color=#25647A><b>" + role + "</b></style>" +
-+            (e->counted ? "   x" + std::to_string(e->charges) : "") + "\n" + equipmentMarkup(e->category) + "\n\n" +
-+            "<b>Peso</b>  " + equipmentAmount(e->weight) + " kg\n<b>Volume</b>  " + equipmentAmount(e->volume) + " L\n\n" +
++            (e->counted ? "   x" + std::to_string(e->charges) : "") + "\n" + equipmentMarkup(e->category) + "\n" +
++            "<b>" + equipmentAmount(e->weight) + " kg   /   " + equipmentAmount(e->volume) + " L</b>\n" +
 +            "<style color=#25647A><b>Provenienza</b></style>\n" + equipmentMarkup(view.source(e->id));
 +        const auto pocket_count = std::count_if(view.pockets.begin(),view.pockets.end(),[&](const auto& p) { return p.owner == selected; });
-+        if (pocket_count) detail += "\n\n<b>Tasche</b>  " + std::to_string(pocket_count) + " (vedi dettagli)";
++        if (pocket_count) detail += "\n<b>Tasche</b>  " + std::to_string(pocket_count) + " (vedi dettagli)";
 +        if (!e->consume_warning.empty()) detail += "\n\n<style color=#963F25><b>Avviso</b></style>\n" + equipmentMarkup(e->consume_warning);
 +        if (details_open) {
 +            detail += "\n\n<b>Dettagli nativi</b>\nLunghezza " + std::to_string(e->length) + " mm\nAccesso " + std::to_string(e->access) + " mosse";
@@ -4086,7 +4101,7 @@ index 0000000..b87c61f
 +                f += "button[" + position + ";1.95,0.6;" + key + ";" + statusEscape(names[i]) + "]";
 +                if (i == 3) f += "tooltip[" + key + ";Se manca spazio CDDA puo impugnare o depositare l'oggetto con i contenuti.]";
 +            } else {
-+                f += "style_type[label;textcolor=#777777]label[" + position + ";" + statusEscape(names[i]) + "]style_type[label;textcolor=#323232]"
++                f += "style_type[label;textcolor=#777777]label[" + std::to_string(11.45 + (i % 2) * 2.2) + "," + std::to_string(8.15 + (i / 2) * .75) + ";" + statusEscape(names[i]) + "]style_type[label;textcolor=#323232]"
 +                    "tooltip[" + position + ";1.95,0.6;" + statusEscape(names[i] + ": " + e->reasons[i]) + "]";
 +            }
 +        }

@@ -7257,7 +7257,7 @@
   {
     "path": "src/cdda/equipment_inventory.h",
     "mode": "100644",
-    "sha256": "155622fea9f9f1aca8b819fef5119053fa52bc6eefa4599026e1bf8c8081a8b1"
+    "sha256": "494cdafef2c00035960ac19f0b122a4f2a500343558085cd3e1f471c3d8c00bc"
   },
   {
     "path": "src/cdda/ground_item_formspec.h",
@@ -8457,7 +8457,7 @@
   {
     "path": "src/gui/guiScene.cpp",
     "mode": "100644",
-    "sha256": "2036f8aeb14ab3f45bf2245d0707c5cb1749fe6d53ae492acc1484815797ddde"
+    "sha256": "2c2879f306ff809afba0ae6a6b79234d677de5cb2e9fd79c48e0259ec1b00005"
   },
   {
     "path": "src/gui/guiScene.h",
