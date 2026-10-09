@@ -1,7 +1,7 @@
 # Validazioni manuali del playable core
 
-Stato corrente: **8 punti pendenti**: quattro tiro/ricarica e quattro
-quantita/deposito/trasferimenti. Il riscontro del 2026-10-09 accetta tutti i
+Stato corrente: **11 punti pendenti**: quattro tiro/ricarica, quattro
+quantita/deposito/trasferimenti e tre ricontrolli mirati del riscontro UI. Il riscontro del 2026-10-09 accetta tutti i
 16 punti inventario, cibo/bevande, medicazioni e crafting. I bug segnalati
 restano separati dall'accettazione delle checklist, con ricontrolli mirati
 aggiunti sotto quando le correzioni sono consegnate.
@@ -210,7 +210,7 @@ raccogliere o mangiare nulla. La funzione e disponibile anche con **I** nel gioc
 Questa fetta copre gli oggetti esterni non commestibili con attore heal:
 bende, salviette e analoghi. Farmaci ingeribili, antisettici liquidi, cura di
 NPC, chirurgia e avvio parte→oggetto dalla scheda H restano successivi.
-[Dettagli tecnici](../fixes/native-medicine.md). Accettazione manuale non dedotta.
+[Dettagli tecnici](../fixes/native-medicine.md). Checklist 1–4 accettata dall’utente il 2026-10-09; nuove correzioni da ricontrollare.
 
 
 ## Crafting guidato — VALIDATA: 1–4 PASS
@@ -296,3 +296,25 @@ il personaggio; contenitori esterni e scelta della singola tasca vengono dopo.
 
 Accettazione grafica/usabilita ancora pendente; i test automatici non la
 sostituiscono. [Dettagli tecnici](../fixes/native-transfer.md).
+
+
+## Ricontrolli mirati del riscontro UI — PENDING (3), quando puoi
+
+I 16 PASS precedenti restano acquisiti. Non occorre ripeterli né fare queste
+prove oggi. La revisione completa dell'interfaccia è pianificata: il layout
+attuale resta provvisorio.
+
+1. **Tag colore**: `./equipment-demo.sh --fresh`, I → mazza → Riponi:
+   nome dello zaino leggibile, senza `<color_...>`/`</color>`. Stesso controllo
+   quando appare una conferma nel consumo. Simboli `++` e testo conservati.
+2. **Recupero depositati**: I → Quantità e trasferimenti → deposita un
+   piccolo oggetto; tasto destro lo raccoglie se entra nelle tasche.
+   Prova anche una mazza/zaino che non entra: compare una spiegazione e
+   scelta esplicita Impugna/Annulla (se impugnabile). Annulla conserva
+   l'oggetto; Impugna lo recupera con i costi nativi. Uno zaino recuperato
+   mantiene i suoi contenuti. Esci/rientra: nessuna copia o perdita.
+3. **Badge crafting**: interrompi un lavoro in `./crafting-demo.sh --fresh`;
+   K mostra R interamente dentro lo slot. Clic sul badge seleziona il lavoro,
+   non lo avvia senza il pulsante Riprendi.
+
+I futuri UX-01–05 avranno checklist proprie soltanto quando consegnati.

@@ -47,6 +47,7 @@ int main(int argc, const char *argv[]) {
     bool create_crafting = false;
     bool create_ranged = false;
     bool create_transfer = false;
+    bool create_recovery = false;
     bool create_body = false;
     bool create_combat = false;
     bool create_posture = false;
@@ -55,6 +56,7 @@ int main(int argc, const char *argv[]) {
     for (int i = 1; i < argc; ++i) {
         std::string arg(argv[i]);
         if (arg == "--create") create = true;
+        else if (arg == "--create-recovery") { create = true; create_recovery = true; create_posture = true; }
         else if (arg == "--create-transfer") { create = true; create_transfer = true; create_posture = true; }
         else if (arg == "--create-ranged") { create = true; create_ranged = true; create_posture = true; }
         else if (arg == "--create-crafting") { create = true; create_crafting = true; create_posture = true; }
@@ -355,6 +357,12 @@ int main(int argc, const char *argv[]) {
             dirty.set_var("uid", "medicine-dirty"); u.i_add(dirty);
             item rock(itype_id("rock"), calendar::turn); rock.set_var("uid", "medicine-rock"); u.i_add(rock);
             u.moves = 100; g->set_safe_mode(SAFE_MODE_OFF);
+        }
+        if (create_recovery) {
+            u.remove_weapon(); u.clear_worn(); m.i_clear(u.pos());
+            item bat(itype_id("bat"),calendar::turn);bat.set_var("uid","transfer-bat");
+            if (u.can_stash_partial(bat, false) || !u.wield(bat)) return 29;
+            u.moves=100;g->set_safe_mode(SAFE_MODE_OFF);
         }
         if (create_transfer) {
             u.remove_weapon();

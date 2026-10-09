@@ -4358,10 +4358,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..eebaac1
+index 0000000..34ff229
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,1464 @@
+@@ -0,0 +1,1466 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "move_mode.h"
@@ -5798,6 +5798,8 @@ index 0000000..eebaac1
 +    SECTION("explicit wield") { accept = true; }
 +    SECTION("automatic pickup does not equip") { automatic = true; }
 +    int questions = 0;
++    u.moves = 1000; g->uquit = QUIT_NO; g->new_game = false;
++    g->set_safe_mode(SAFE_MODE_OFF);
 +    do_turn_with_action([&]() {
 +        std::vector<item_location> targets{item_location(map_cursor(u.pos()), &ground)};
 +        std::vector<int> quantities{0}; bool stash = true;

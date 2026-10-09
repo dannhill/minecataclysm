@@ -27,6 +27,21 @@ nuove regole biologiche. H conserva i dettagli. Dopo questo ritocco proseguire
 senza nuovo gate estetico. Il [resoconto corrente](docs/progress/2026-10-08.md)
 separa le fetta giocabili dalle parti ancora pianificate.
 
+## Riscontro inventario/interfacce — 2026-10-09
+
+L'utente accetta 16 punti inventario/equipaggiamento, consumo, medicazioni e
+crafting; restano tiro/ricarica e quantità/contenitori. I bug e le richieste
+sono nel [riscontro](docs/source/inventory-ui-feedback-2026-10-09.md).
+Il [piano UI basato sui sorgenti](docs/design/inventory-and-native-dialogs.md)
+prioritizza: layout Mineclonia 9×3 con ricerca su richiesta, dettagli
+progressivi e strati; azioni consecutive con tempo nativo e ritorno alla stessa
+vista; conferme visive/medicina; ricette recenti/preferite/frequenti; hotbar
+interattiva con selezione distinta dalla mano reale. Sono task UX-01–05,
+non feature già consegnate o graficamente approvate. Dopo i fix mirati,
+**prossimo passo UX-01**, poi UX-02; contenitori esterni e raccolta quantitativa
+restano essenziali e riusano questi componenti. Costi/decisioni/capacità
+rimangono nativi. Le nuove prove manuali saranno aggiunte alla consegna.
+
 ## Prodotto e autorità
 
 Profondità CDDA completa, interfacce guidate e dettagli manuali progressivi.
@@ -296,8 +311,9 @@ Luanti autorevole. CWM 2.15, [limiti e prove](docs/fixes/native-transfer.md);
 quattro nuovi manuali nel backlog, **24 PENDING**, senza dedurre PASS.
 Questa fetta non completa l'inventario profondo: contenitori esterni/cargo,
 quantita di raccolta, scelta della singola tasca, liquidi/sigilli e trasferimenti
-multipli restano successivi. Prossima fetta essenziale: accesso ai contenitori
-esterni vicini e raccolta con quantita selezionate. Attivita estese restano
+multipli restano successivi. La precedente priorità contenitori esterni/raccolta
+quantitativa è aggiornata dal riscontro UI del 2026-10-09: prima UX-01/02, poi
+accesso ai contenitori esterni e quantità. Attivita estese restano
 nella sequenza; nessuna validazione grafica pendente e promossa a PASS.
 
 
