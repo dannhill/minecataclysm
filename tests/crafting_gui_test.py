@@ -214,8 +214,8 @@ def main():
                 return catalog()
             view=open_crafting();check('native_crafting_catalog_opened',True);shot('catalog.png')
             from PIL import Image
-            width,height=Image.open(out/'catalog.png').size;unit=height*.075
-            origin_x,origin_y=(width-16*unit)/2,(height-11*unit)/2
+            from formspec_geometry import geometry
+            origin_x,origin_y,unit=geometry(out/'catalog.png')
             def click(x,y):
                 xdo('mousemove','--window',window,str(round(origin_x+x*unit)),str(round(origin_y+y*unit)))
                 xdo('click','1');time.sleep(.3)

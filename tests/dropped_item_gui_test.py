@@ -218,9 +218,8 @@ def main():
             view = open_inventory()
             shot('inventory.png')
             from PIL import Image
-            width,height=Image.open(out/'inventory.png').size
-            unit=height*.075
-            ox,oy=(width-16*unit)/2,(height-11*unit)/2
+            from formspec_geometry import geometry
+            ox,oy,unit=geometry(out/'inventory.png')
             def click(x,y):
                 xdo('mousemove','--window',window,str(round(ox+x*unit)),str(round(oy+y*unit)))
                 xdo('click','1');time.sleep(.25)
