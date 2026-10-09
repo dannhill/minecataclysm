@@ -697,6 +697,26 @@ index 7758c96..cce4b34 100644
  #ifndef NDEBUG
  	settings->setDefault("keymap_toggle_update_camera", "KEY_F4");
  #else
+diff --git a/src/gui/guiFormSpecMenu.cpp b/src/gui/guiFormSpecMenu.cpp
+index ed1c300..60534fe 100644
+--- a/src/gui/guiFormSpecMenu.cpp
++++ b/src/gui/guiFormSpecMenu.cpp
+@@ -3990,6 +3990,15 @@ bool GUIFormSpecMenu::preprocessEvent(const SEvent& event)
+ 
+ void GUIFormSpecMenu::tryClose()
+ {
++    // The equipment search is a nested view. Escape/Inventory first returns
++    // to its grid without dropping the modal pause or firing native actions.
++    if (m_text_dst && m_text_dst->m_formname == "CWM_EQUIPMENT" &&
++            std::any_of(m_fields.begin(), m_fields.end(), [](const auto& field) {
++                return field.fname == "search";
++            })) {
++        m_text_dst->gotText(StringMap{{"search_back", "true"}});
++        return;
++    }
+ 	if (m_allowclose) {
+ 		doPause = false;
+ 		acceptInput(quit_mode_cancel);
 diff --git a/src/network/clientpackethandler.cpp b/src/network/clientpackethandler.cpp
 index 9f987cc..005fbfb 100644
 --- a/src/network/clientpackethandler.cpp
@@ -774,7 +794,7 @@ index 5d6b891..48c0d59 100644
  		g_settings->getFlagStr("anticheat_flags", flagdesc_anticheat, nullptr);
  
 diff --git a/src/unittest/test_mapblock.cpp b/src/unittest/test_mapblock.cpp
-index 7f3f860..875d35a 100644
+index 7f3f860..657c056 100644
 --- a/src/unittest/test_mapblock.cpp
 +++ b/src/unittest/test_mapblock.cpp
 @@ -10,6 +10,16 @@
@@ -811,7 +831,7 @@ index 7f3f860..875d35a 100644
  };
  
  static TestMapBlock g_test_instance;
-@@ -44,9 +62,182 @@ void TestMapBlock::runTests(IGameDef *gamedef)
+@@ -44,9 +62,189 @@ void TestMapBlock::runTests(IGameDef *gamedef)
  	TEST(testSave29, gamedef);
  	TEST(testLoad29, gamedef);
  	TEST(testLoad20, gamedef);
@@ -832,7 +852,7 @@ index 7f3f860..875d35a 100644
 +{
 +    using namespace cdda_client;
 +    EquipmentView view; view.view = 1;
-+    EquipmentEntry pack; pack.id = 1; pack.name = "Pack"; pack.worn = true;
++    EquipmentEntry pack; pack.id = 1; pack.name = "Pack"; pack.worn = true; pack.container = true;
 +    view.entries.push_back(pack);
 +    for (uint32_t id = 2; id <= 40; ++id) {
 +        EquipmentEntry child; child.id = id; child.parent = 1; child.pocket = 0;
@@ -841,15 +861,22 @@ index 7f3f860..875d35a 100644
 +        view.entries.push_back(child);
 +    }
 +    EquipmentPocket pocket; pocket.owner = 1; pocket.name = "Main"; view.pockets.push_back(pocket);
-+    UASSERTEQ(size_t, equipmentFilter(view,"pack / main",3).size(), 39);
-+    UASSERTEQ(size_t, equipmentFilter(view,"",2).size(), 1);
++    UASSERTEQ(size_t, equipmentFilter(view,"pack / main",0).size(), 39);
++    UASSERTEQ(size_t, equipmentFilter(view,"",1).size(), 1);
 +    UASSERTEQ(std::string, view.source(2), "Pack / Main");
 +    const auto form = equipmentForm(view,1,39,"",0,"",[](const auto&) { return "known:rock"; });
-+    UASSERT(form.find(";item_37;") != std::string::npos);
-+    UASSERT(form.find(";item_36;") == std::string::npos);
++    UASSERT(form.find(";item_28;") != std::string::npos);
++    UASSERT(form.find(";item_27;") == std::string::npos);
 +    UASSERT(form.find(";action_0;") != std::string::npos);
 +    UASSERT(form.find(";action_2;") == std::string::npos);
 +    UASSERT(form.find("rock\\]\\;button\\[") != std::string::npos);
++    UASSERT(form.find(";search;;") == std::string::npos);
++    UASSERT(form.find("set_focus[search") == std::string::npos);
++    UASSERT(form.find(";worn_1;") != std::string::npos);
++    UASSERT(form.find(";details;") != std::string::npos);
++    UASSERT(form.find("lunghezza max") == std::string::npos);
++    UASSERTEQ(size_t, equipmentFilter(view,"",2).size(), 1);
++    UASSERTEQ(std::string, equipmentMarkup("<action name=inject>\\"), "\\<action name=inject\\>\\\\");
 +    UASSERT(form.find("list[") == std::string::npos);
 +    UASSERT(form.find(";inject;click") == std::string::npos);
 +    view.entries[1].actions |= 16;
@@ -1124,10 +1151,10 @@ index 0000000..2214cd4
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..edcc91b
+index 0000000..6f26508
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,2401 @@
+@@ -0,0 +1,2430 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
@@ -1310,8 +1337,10 @@ index 0000000..edcc91b
 +    bool equipment_open_{false}, equipment_close_{false}, equipment_dirty_{false};
 +    uint64_t next_inventory_query_{1}, inventory_query_{0}, equipment_sent_{0};
 +    uint32_t equipment_selected_{0};
-+    size_t equipment_page_{0};
++    size_t equipment_page_{0}, equipment_saved_page_{0};
 +    int equipment_filter_{0};
++    bool equipment_search_open_{false}, equipment_details_open_{false}, equipment_focus_search_{false};
++    size_t equipment_worn_page_{0};
 +    std::string equipment_search_, equipment_notice_;
 +    struct QueuedEquipment { uint64_t view; uint32_t item; int action; };
 +    std::optional<QueuedEquipment> queued_equipment_;
@@ -1325,7 +1354,8 @@ index 0000000..edcc91b
 +        if (transfer_form_) return transferForm(equipment_view_, equipment_page_, equipment_selected_, transfer_destination_,
 +            destination_page_, transfer_quantity_, equipment_notice_, [&](const auto& type) { return ground_item_visual_name(type); }, activity_token_);
 +        return equipmentForm(equipment_view_, equipment_page_, equipment_selected_, equipment_search_,
-+            equipment_filter_, equipment_notice_, [&](const auto& type) { return ground_item_visual_name(type); }, activity_token_, first_aid_, crafting_, reloading_, transferring_);
++            equipment_filter_, equipment_notice_, [&](const auto& type) { return ground_item_visual_name(type); }, activity_token_, first_aid_, crafting_, reloading_, transferring_,
++            equipment_search_open_, equipment_details_open_, equipment_worn_page_, equipment_focus_search_);
 +    }
 +    void cancel_equipment() {
 +        queued_crafting_.reset(); crafting_query_ = 0; crafting_view_ = {};
@@ -1340,7 +1370,7 @@ index 0000000..edcc91b
 +        auto wire = session_.builder();
 +        inventory_query_ = next_inventory_query_++;
 +        const auto bytes = wire.build_inventory_query(inventory_query_);
-+        equipment_view_ = {}; equipment_selected_ = 0; equipment_page_ = 0; transfer_destination_ = 0; destination_page_ = 0; transfer_quantity_ = 1;
++        equipment_view_ = {}; equipment_selected_ = 0; transfer_destination_ = 0; destination_page_ = 0; transfer_quantity_ = 1;
 +        equipment_notice_.clear(); equipment_dirty_ = true;
 +        return connection_->send_message(bytes.data(), bytes.size());
 +    }
@@ -2105,7 +2135,11 @@ index 0000000..edcc91b
 +            case CDDA::CWM::Payload::InventoryView: {
 +                const auto* view = msg->payload_as_InventoryView();
 +                if (equipment_open_ && view->query_id() == inventory_query_) {
-+                    equipment_view_.read(*view); equipment_dirty_ = true;
++                    equipment_view_.read(*view);
++                    const size_t count = transfer_form_ ? equipment_view_.entries.size() : equipmentFilter(equipment_view_, equipment_search_, equipment_filter_).size();
++                    const size_t page_size = transfer_form_ ? 36 : equipmentPageSize;
++                    equipment_page_ = std::min(equipment_page_, count ? (count - 1) / page_size : 0);
++                    equipment_dirty_ = true;
 +                }
 +                break;
 +            }
@@ -3135,7 +3169,7 @@ index 0000000..edcc91b
 +        pimpl_->body_form_open_ || pimpl_->crafting_open_ || pimpl_->ground_container_open_ || pimpl_->metrics_.pending_decision) return {};
 +    auto& i = *pimpl_;
 +    i.equipment_open_ = true; i.equipment_close_ = false; i.transfer_form_ = false;
-+    i.equipment_search_.clear(); i.equipment_filter_ = 0;
++    i.equipment_focus_search_ = i.equipment_search_open_;
 +    setMenuPause(true);
 +    if (!i.query_inventory()) i.equipment_view_.error = "Inventario non disponibile: riprova.";
 +    return i.equipment_form();
@@ -3156,7 +3190,10 @@ index 0000000..edcc91b
 +        i.equipment_dirty_ = true; return;
 +    }
 +    if (fields.count("transfers") || fields.count("back")) {
-+        i.transfer_form_ = fields.count("transfers"); i.equipment_page_ = 0;
++        if (fields.count("transfers")) {
++            i.equipment_saved_page_ = i.equipment_page_; i.equipment_page_ = 0;
++        } else i.equipment_page_ = i.equipment_saved_page_;
++        i.transfer_form_ = fields.count("transfers");
 +        i.transfer_destination_ = 0; i.destination_page_ = 0; i.transfer_quantity_ = 1;
 +        i.equipment_dirty_ = true; return;
 +    }
@@ -3197,6 +3234,19 @@ index 0000000..edcc91b
 +        }
 +        i.equipment_dirty_ = true; return;
 +    }
++    if (fields.count("search_open")) {
++        i.equipment_search_open_ = i.equipment_focus_search_ = true;
++        i.equipment_dirty_ = true; return;
++    }
++    if (fields.count("search_back")) {
++        i.equipment_search_open_ = i.equipment_focus_search_ = false;
++        i.equipment_dirty_ = true; return;
++    }
++    if (fields.count("search_clear")) { i.equipment_search_.clear(); i.equipment_page_ = 0; }
++    if (fields.count("details")) i.equipment_details_open_ = !i.equipment_details_open_;
++    if (fields.count("worn_prev") && i.equipment_worn_page_) --i.equipment_worn_page_;
++    const auto worn_count = std::count_if(i.equipment_view_.entries.begin(), i.equipment_view_.entries.end(), [](const auto& e) { return e.worn; });
++    if (fields.count("worn_next") && (i.equipment_worn_page_ + 1) * 10 < size_t(worn_count)) ++i.equipment_worn_page_;
 +    if (fields.count("find") || fields.count("key_enter_field")) {
 +        const auto search = fields.find("search");
 +        if (search != fields.end()) i.equipment_search_ = search->second.substr(0, 256);
@@ -3204,7 +3254,7 @@ index 0000000..edcc91b
 +    }
 +    const auto filter = fields.find("filter");
 +    if (filter != fields.end()) {
-+        const std::array<std::string,4> names{{"Tutti", "Impugnati", "Indossati", "Nelle tasche"}};
++        const std::array<std::string,3> names{{"Tutti", "Equipaggiati", "Contenitori"}};
 +        const auto found = std::find(names.begin(), names.end(), filter->second);
 +        if (found != names.end()) {
 +            const int value = found - names.begin();
@@ -3214,8 +3264,12 @@ index 0000000..edcc91b
 +    }
 +    const auto ids = equipmentFilter(i.equipment_view_, i.equipment_search_, i.equipment_filter_);
 +    if (fields.count("prev") && i.equipment_page_) --i.equipment_page_;
-+    if (fields.count("next") && (i.equipment_page_ + 1) * 36 < ids.size()) ++i.equipment_page_;
++    if (fields.count("next") && (i.equipment_page_ + 1) * equipmentPageSize < ids.size()) ++i.equipment_page_;
 +    for (const auto id : ids) if (fields.count("item_" + std::to_string(id))) i.equipment_selected_ = id;
++    for (const auto& e : i.equipment_view_.entries)
++        if ((e.wielded && fields.count("hand_" + std::to_string(e.id))) ||
++            (e.worn && fields.count("worn_" + std::to_string(e.id))) ||
++            fields.count("quick_" + std::to_string(e.id))) i.equipment_selected_ = e.id;
 +    if (const auto* selected = i.equipment_view_.entry(i.equipment_selected_)) {
 +        for (int action = 0; action < 6; ++action) if (fields.count("action_" + std::to_string(action))) {
 +            if (!(selected->actions & (1 << action))) i.equipment_notice_ = selected->reasons[action];
@@ -3238,7 +3292,9 @@ index 0000000..edcc91b
 +std::string CddaBridge::takeEquipmentInventoryUpdate() {
 +    if (!pimpl_ || !pimpl_->equipment_open_ || !pimpl_->equipment_dirty_) return {};
 +    pimpl_->equipment_dirty_ = false;
-+    return pimpl_->equipment_form();
++    const auto form = pimpl_->equipment_form();
++    pimpl_->equipment_focus_search_ = false;
++    return form;
 +}
 +
 +std::string CddaBridge::openBodyStatus() {
@@ -3796,10 +3852,10 @@ index 0000000..8a266d4
 +} // namespace cdda_client
 diff --git a/src/cdda/equipment_inventory.h b/src/cdda/equipment_inventory.h
 new file mode 100644
-index 0000000..b4e6d3e
+index 0000000..a90e235
 --- /dev/null
 +++ b/src/cdda/equipment_inventory.h
-@@ -0,0 +1,199 @@
+@@ -0,0 +1,273 @@
 +#pragma once
 +#include "avatar_status.h"
 +#include "cwm/cwm_generated.h"
@@ -3875,7 +3931,7 @@ index 0000000..b4e6d3e
 +    std::vector<uint32_t> ids;
 +    const auto needle = equipmentLower(search);
 +    for (const auto& e : view.entries) {
-+        if ((filter == 1 && !e.wielded) || (filter == 2 && !e.worn) || (filter == 3 && !e.parent)) continue;
++        if ((filter == 1 && !e.wielded && !e.worn) || (filter == 2 && !e.container)) continue;
 +        if (!needle.empty() && equipmentLower(e.name + " " + e.category + " " + view.source(e.id)).find(needle) == std::string::npos) continue;
 +        ids.push_back(e.id);
 +    }
@@ -3885,63 +3941,137 @@ index 0000000..b4e6d3e
 +    std::ostringstream out; out << std::fixed << std::setprecision(2) << milliunits / 1000.0;
 +    return out.str();
 +}
++// Escape text for the hypertext parser BEFORE formspec escaping. Native names
++// must never become markup/actions (nor formspec elements).
++inline std::string equipmentMarkup(const std::string& text) {
++    std::string out;
++    for (const char c : text) {
++        if (c == '<' || c == '>' || c == '\\') out += '\\';
++        out += c;
++    }
++    return out;
++}
++inline constexpr size_t equipmentPageSize = 27;
 +inline std::string equipmentForm(const EquipmentView& view, size_t page, uint32_t selected,
 +        const std::string& search, int filter, const std::string& notice,
-+        const std::function<std::string(const std::string&)>& icon, uint64_t consumption_token = 0, bool first_aid = false, bool crafting = false, bool reloading = false, bool transferring = false) {
++        const std::function<std::string(const std::string&)>& icon, uint64_t consumption_token = 0,
++        bool first_aid = false, bool crafting = false, bool reloading = false, bool transferring = false,
++        bool search_open = false, bool details_open = false, size_t worn_page = 0, bool focus_search = false) {
 +    std::string f = "formspec_version[4]size[16,11]no_prepend[]bgcolor[#00000000]"
 +        "background9[0,0;16,11;mcl_base_textures_background9.png;false;7]"
-+        "style_type[label;textcolor=#323232]"
++        "style_type[label;textcolor=#323232]style_type[textarea;textcolor=#323232]"
 +        "style_type[button;border=false;bgimg=mcl_inventory_button9.png;bgimg_pressed=mcl_inventory_button9_pressed.png;bgimg_middle=2,2]"
-+        "label[0.4,0.4;Inventario ed equipaggiamento]button[11.6,0.2;3.9,0.6;transfers;Quantita e trasferimenti]"
-+        "field[0.4,1;5.6,0.65;search;;" + statusEscape(search) + "]field_close_on_enter[search;false]"
-+        "button[6.1,1;1.6,0.65;find;Cerca]dropdown[8,1;3.3,0.65;filter;Tutti,Impugnati,Indossati,Nelle tasche;" + std::to_string(filter + 1) + "]"
-+        "button[11.6,1;1.8,0.65;refresh;Aggiorna]button_exit[13.7,1;1.8,0.65;close;Chiudi]";
-+    if (consumption_token) f += "button[8,1.9;7.5,0.6;cancel_consume;" + std::string(transferring ? "Interrompi trasferimento" : crafting ? "Interrompi crafting" : first_aid ? "Interrompi trattamento" : reloading ? "Interrompi ricarica" : "Interrompi consumo") + "]";
-+    if (!view.view) return f + "label[0.5,2.2;" + statusEscape(view.error.empty() ? "Lettura inventario nativo..." : view.error) + "]";
-+    f += "label[0.5,2;Peso " + equipmentAmount(view.weight) + " / " + equipmentAmount(view.weight_capacity) +
-+        " kg - Volume " + equipmentAmount(view.volume) + " / " + equipmentAmount(view.volume_capacity) + " L]";
-+    const auto ids = equipmentFilter(view, search, filter);
-+    const size_t pages = std::max<size_t>(1, (ids.size() + 35) / 36);
-+    page = std::min(page, pages - 1);
-+    for (size_t i = page * 36; i < std::min(ids.size(), (page + 1) * 36); ++i) {
-+        const auto& e = *view.entry(ids[i]);
-+        const auto offset = i % 36;
-+        const auto x = std::to_string(.5 + (offset % 6) * 1.18), y = std::to_string(2.7 + (offset / 6) * 1.12);
-+        const std::string button = "item_" + std::to_string(e.id);
-+        f += "image[" + x + "," + y + ";1.05,1.05;mcl_formspec_itemslot.png]";
-+        if (selected == e.id) f += "box[" + x + "," + y + ";1.05,1.05;#E8CF5790]";
-+        f += "item_image_button[" + x + "," + y + ";1.05,1.05;" + statusEscape(icon(e.type)) + ";" + button + ";]";
-+        f += "tooltip[" + button + ";" + statusEscape(e.name + (e.counted ? " (" + std::to_string(e.charges) + ")" : "") + "\n" + view.source(e.id)) + "]";
++        "label[0.5,0.4;Inventario]button[11.6,0.2;3.9,0.6;transfers;Quantita e trasferimenti]"
++        "button[11.3,0.95;2.1,0.6;refresh;Aggiorna]button_exit[13.7,0.95;1.8,0.6;close;Chiudi]"
++        "box[11.05,1.75;0.025,8.75;#77777770]";
++    if (search_open) {
++        f += "field[0.5,4.65;5.2,0.6;search;;" + statusEscape(search) + "]field_close_on_enter[search;false]"
++            "button[5.85,4.65;1.3,0.6;find;Cerca]button[7.35,4.65;1.3,0.6;search_back;Fine]"
++            "dropdown[8.85,4.65;1.95,0.6;filter;Tutti,Equipaggiati,Contenitori;" + std::to_string(filter + 1) + "]";
++        if (focus_search) f += "set_focus[search;true]";
++    } else {
++        f += "dropdown[0.5,4.65;3,0.6;filter;Tutti,Equipaggiati,Contenitori;" + std::to_string(filter + 1) + "]"
++            "button[3.7,4.65;2.4,0.6;search_open;Cerca...]";
++        if (!search.empty()) f += "button[6.3,4.65;4.5,0.6;search_clear;Rimuovi ricerca]";
 +    }
-+    f += "button[0.5,9.65;1.4,0.6;prev;<]label[2.15,9.95;" + std::to_string(page + 1) + " / " + std::to_string(pages) +
-+        "]button[5.65,9.65;1.4,0.6;next;>]";
++    if (!view.view) return f + "label[0.5,2.2;" + statusEscape(view.error.empty() ? "Lettura inventario..." : view.error) + "]";
++    f += "label[0.5,1.05;Peso " + equipmentAmount(view.weight) + " / " + equipmentAmount(view.weight_capacity) +
++        " kg   Spazio " + equipmentAmount(view.volume) + " / " + equipmentAmount(view.volume_capacity) + " L]";
++    // Every slot is a read-only projection/selection button, never a Luanti
++    // inventory list: native layered clothing and capacity have no slot limit.
++    auto slot = [&](double x, double y, const EquipmentEntry* e, const std::string& key, bool hand = false) {
++        const auto position = std::to_string(x) + "," + std::to_string(y);
++        f += "image[" + position + ";1.05,1.05;mcl_formspec_itemslot.png]";
++        if (!e) return;
++        if (hand) f += "box[" + position + ";1.05,1.05;#4CA5C080]";
++        if (selected == e->id) f += "box[" + position + ";1.05,1.05;#E8CF5790]";
++        f += "item_image_button[" + position + ";1.05,1.05;" + statusEscape(icon(e->type)) + ";" + key + ";]";
++        if (e->counted) f += "label[" + std::to_string(x + .08) + "," + std::to_string(y + .87) + ";" + std::to_string(e->charges) + "]";
++        f += "tooltip[" + key + ";" + statusEscape(e->name + (e->counted ? " x" + std::to_string(e->charges) : "") +
++            "\n" + view.source(e->id) + "\nClic: seleziona. Le azioni sono nel pannello a destra.") + "]";
++    };
++    const EquipmentEntry* hand = nullptr;
++    std::vector<uint32_t> worn;
++    for (const auto& e : view.entries) {
++        if (e.wielded) hand = &e;
++        if (e.worn) worn.push_back(e.id);
++    }
++    f += "label[0.5,1.6;In mano]";
++    slot(.5,2.05,hand,hand ? "hand_" + std::to_string(hand->id) : "",true);
++    if (!hand) f += "tooltip[0.5,2.05;1.05,1.05;Mani libere]";
++    f += "model[2.05,1.55;2.3,2.9;avatar;character.b3d;character.png;0,180;false;false;0,0]"
++        "tooltip[2.05,1.55;2.3,2.9;Sagoma di riferimento. Gli indossati reali sono a destra.]"
++        "label[4.7,1.6;Indossati (" + std::to_string(worn.size()) + ")]";
++    const auto worn_pages = std::max<size_t>(1, (worn.size() + 9) / 10);
++    worn_page = std::min(worn_page, worn_pages - 1);
++    for (size_t n = 0; n < 10; ++n) {
++        const size_t i = worn_page * 10 + n;
++        const auto* e = i < worn.size() ? view.entry(worn[i]) : nullptr;
++        slot(4.7 + (n % 5) * 1.2, 2.05 + (n / 5) * 1.15, e, e ? "worn_" + std::to_string(e->id) : "");
++    }
++    if (worn_pages > 1) f += "button[8.05,1.3;0.65,0.6;worn_prev;<]label[8.85,1.6;" + std::to_string(worn_page + 1) + "/" +
++        std::to_string(worn_pages) + "]button[10.15,1.3;0.65,0.6;worn_next;>]";
++    const auto ids = equipmentFilter(view, search, filter);
++    const size_t pages = std::max<size_t>(1, (ids.size() + equipmentPageSize - 1) / equipmentPageSize);
++    page = std::min(page, pages - 1);
++    for (size_t n = 0; n < equipmentPageSize; ++n) {
++        const size_t i = page * equipmentPageSize + n;
++        const auto* e = i < ids.size() ? view.entry(ids[i]) : nullptr;
++        slot(.5 + (n % 9) * 1.15, 5.45 + (n / 9) * 1.15, e, e ? "item_" + std::to_string(e->id) : "");
++    }
++    f += "label[0.5,9.15;Barra oggetti (vista)]button[7.05,8.95;0.8,0.5;prev;<]label[8.05,9.2;" +
++        std::to_string(page + 1) + " / " + std::to_string(pages) + "]button[9.95,8.95;0.8,0.5;next;>]";
++    // Same native visit order as the owned-items HUD. This row does not bind
++    // quick actions or grant capacity, and does not hide nested possessions.
++    for (size_t n = 0; n < 9; ++n) {
++        const auto* e = n < view.entries.size() ? &view.entries[n] : nullptr;
++        slot(.5 + n * 1.15,9.5,e,e ? "quick_" + std::to_string(e->id) : "");
++    }
 +    if (const auto* e = view.entry(selected)) {
-+        std::string detail = e->name + "\n" + e->category + "\n" + view.source(e->id) + "\n" +
-+            equipmentAmount(e->weight) + " kg / " + equipmentAmount(e->volume) + " L / " +
-+            std::to_string(e->length) + " mm\nAccesso nativo: " + std::to_string(e->access) + " mosse";
-+        if (e->consume_moves > 0) detail += "\n" + e->consume_label + ": " + std::to_string(e->consume_moves) +
-+            " mosse native (una porzione; il ritmo dipende dalla velocita del tempo).";
-+        if (!e->consume_warning.empty()) detail += "\nAvviso CDDA: " + e->consume_warning;
-+        if (e->counted) detail += "\nQuantita: " + std::to_string(e->charges);
-+        for (const auto& p : view.pockets) if (p.owner == selected) {
-+            detail += "\n" + (p.name.empty() ? "Tasca " + std::to_string(p.index + 1) : p.name) +
-+                ": " + equipmentAmount(p.remaining) + " / " + equipmentAmount(p.capacity) + " L liberi; " +
-+                equipmentAmount(p.weight_remaining) + " / " + equipmentAmount(p.weight_capacity) + " kg liberi" +
-+                "; lunghezza max " + std::to_string(p.length) + " mm; accesso " + std::to_string(p.access) + " mosse" +
-+                (p.sealed ? "; sigillata" : "") + (p.rigid ? "; rigida" : "") + (p.watertight ? "; stagna" : "");
++        f += "item_image[11.35,1.9;1.05,1.05;" + statusEscape(icon(e->type)) + "]";
++        const std::string role = e->wielded ? "In mano" : e->worn ? "Indossato" : e->parent ? "Nelle tasche" : "Inventario";
++        auto rich = [&](double y, double height, const std::string& text) {
++            f += "hypertext[11.35," + std::to_string(y) + ";4.15," + std::to_string(height) + ";;" +
++                statusEscape("<global color=#323232 size=16>" + text) + "]";
++        };
++        f += "hypertext[12.55,1.9;2.95,1.05;;" + statusEscape("<global color=#323232 size=16><b>" + equipmentMarkup(e->name) + "</b>") + "]";
++        std::string detail = "<style color=#25647A><b>" + role + "</b></style>" +
++            (e->counted ? "   x" + std::to_string(e->charges) : "") + "\n" + equipmentMarkup(e->category) + "\n\n" +
++            "<b>Peso</b>  " + equipmentAmount(e->weight) + " kg\n<b>Volume</b>  " + equipmentAmount(e->volume) + " L\n\n" +
++            "<style color=#25647A><b>Provenienza</b></style>\n" + equipmentMarkup(view.source(e->id));
++        const auto pocket_count = std::count_if(view.pockets.begin(),view.pockets.end(),[&](const auto& p) { return p.owner == selected; });
++        if (pocket_count) detail += "\n\n<b>Tasche</b>  " + std::to_string(pocket_count) + " (vedi dettagli)";
++        if (!e->consume_warning.empty()) detail += "\n\n<style color=#963F25><b>Avviso</b></style>\n" + equipmentMarkup(e->consume_warning);
++        if (details_open) {
++            detail += "\n\n<b>Dettagli nativi</b>\nLunghezza " + std::to_string(e->length) + " mm\nAccesso " + std::to_string(e->access) + " mosse";
++            if (e->consume_moves) detail += "\n" + equipmentMarkup(e->consume_label) + ": " + std::to_string(e->consume_moves) + " mosse / porzione";
++            for (const auto& p : view.pockets) if (p.owner == selected) {
++                detail += "\n\n<style color=#25647A><b>" + equipmentMarkup(p.name.empty() ? "Tasca " + std::to_string(p.index + 1) : p.name) +
++                    "</b></style>\nSpazio libero " + equipmentAmount(p.remaining) + " / " + equipmentAmount(p.capacity) +
++                    " L\nPeso libero " + equipmentAmount(p.weight_remaining) + " / " + equipmentAmount(p.weight_capacity) +
++                    " kg\nLunghezza max " + std::to_string(p.length) + " mm\nAccesso " + std::to_string(p.access) + " mosse" +
++                    (p.sealed ? "\nSigillata" : "") + (p.rigid ? "\nRigida" : "") + (p.watertight ? "\nStagna" : "");
++                for (const auto& child : view.entries) if (child.parent == selected && child.pocket == int(p.index))
++                    detail += "\n  - " + equipmentMarkup(child.name) + (child.counted ? " x" + std::to_string(child.charges) : "");
++            }
 +        }
-+        f += "textarea[8,2.6;7.5,5.1;;;" + statusEscape(detail) + "]";
++        rich(3.15,4.0,detail);
++        f += "button[11.35,7.2;4.15,0.5;details;" + std::string(details_open ? "Meno dettagli" : "Tasche e dettagli...") + "]";
 +        const std::array<std::string,6> names{{"Impugna", "Riponi", "Indossa", "Togli", e->consume_label.empty() ? "Consuma" : e->consume_label, "Medica..."}};
 +        for (unsigned i = 0; i < 6; ++i) {
-+            const auto x = std::to_string(8 + (i % 2) * 3.8), y = std::to_string(7.95 + (i / 2) * .85);
++            const auto position = std::to_string(11.35 + (i % 2) * 2.2) + "," + std::to_string(7.85 + (i / 2) * .75);
 +            const auto key = "action_" + std::to_string(i);
-+            if (i == 3) f += "tooltip[" + key + ";CDDA ripone l'oggetto tolto: se manca spazio puo impugnarlo o lasciarlo a terra con i suoi contenuti.]";
-+            // Unavailable actions have no clickable field. Their native reason remains inspectable.
-+            if (e->actions & (1 << i)) f += "button[" + x + "," + y + ";3.4,0.65;" + key + ";" + names[i] + "]";
-+            else f += "label[" + x + "," + y + ";" + names[i] + " (non disponibile)]tooltip[" + x + "," + y + ";3.4,0.65;" + statusEscape(e->reasons[i]) + "]";
++            if (e->actions & (1 << i)) {
++                f += "button[" + position + ";1.95,0.6;" + key + ";" + statusEscape(names[i]) + "]";
++                if (i == 3) f += "tooltip[" + key + ";Se manca spazio CDDA puo impugnare o depositare l'oggetto con i contenuti.]";
++            } else {
++                f += "style_type[label;textcolor=#777777]label[" + position + ";" + statusEscape(names[i]) + "]style_type[label;textcolor=#323232]"
++                    "tooltip[" + position + ";1.95,0.6;" + statusEscape(names[i] + ": " + e->reasons[i]) + "]";
++            }
 +        }
-+    } else f += "label[8,3;Seleziona un oggetto per i dettagli e le azioni.]";
-+    f += "label[0.5,10.65;" + statusEscape(notice.empty() ? (view.truncated ? "Vista limitata: parte dei contenuti non mostrata." : "Le azioni usano tempi e vincoli CDDA. Nessun equipaggiamento istantaneo.") : notice) + "]";
++    } else f += "textarea[11.35,3.1;4.15,2.4;;;Seleziona un oggetto.\n\nClic sulle icone: solo selezione.\nLe azioni disponibili appaiono qui.]";
++    if (consumption_token) f += "button[11.35,10.1;4.15,0.5;cancel_consume;" + std::string(transferring ? "Interrompi trasferimento" : crafting ? "Interrompi crafting" : first_aid ? "Interrompi trattamento" : reloading ? "Interrompi ricarica" : "Interrompi consumo") + "]";
++    f += "label[0.5,10.8;" + statusEscape(notice.empty() ? (view.truncated ? "Vista limitata: parte dei contenuti non mostrata." : "") : notice) + "]";
 +    return f;
 +}
 +// A read-only pair of panels; destinations are real owned container identities.

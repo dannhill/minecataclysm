@@ -104,7 +104,7 @@ def main():
             if shutting_down.is_set(): expected_shutdown_errors.append(str(error))
             else: relay_errors.append(str(error))
         except Exception as error:
-            relay_errors.append(str(error))
+            if not stop.is_set(): relay_errors.append(str(error))
     relay_thread = threading.Thread(target=relay, daemon=True)
     relay_thread.start()
     wrapper = out / 'client-relay.py'
@@ -132,6 +132,8 @@ def main():
             time.sleep(.05)
         raise RuntimeError('GUI condition not reached; inspect trace/logs')
     def xdo(*argv):
+        if os.environ.get('CWM_GUI_NO_WM') == '1' and argv[0] == 'windowactivate':
+            argv = ('windowfocus', *argv[1:])
         subprocess.run(['xdotool', *argv], check=True, capture_output=True, timeout=5)
     def tap(key, sneak=False):
         if sneak:
@@ -222,8 +224,8 @@ def main():
             shot('inventory.png')
             from PIL import Image
             width, height = Image.open(out / 'inventory.png').size
-            unit = height * .075
-            origin_x, origin_y = (width - 16 * unit) / 2, (height - 11 * unit) / 2
+            from formspec_geometry import geometry
+            origin_x, origin_y, unit = geometry(out / 'inventory.png')
             def click(x, y):
                 xdo('mousemove','--window',window,str(round(origin_x+x*unit)),str(round(origin_y+y*unit)))
                 xdo('click','1'); time.sleep(.3)
@@ -231,11 +233,11 @@ def main():
                 return [v.Entries(n) for n in range(v.EntriesLength())]
             def select_item(e):
                 index = e.Id() - 1
-                click(1.025 + (index % 6)*1.18, 3.225 + (index // 6)*1.12)
+                click(1.025 + (index % 9)*1.15, 5.975 + ((index % 27) // 9)*1.15)
                 wait(lambda r: int(r['equipment_selected']) == e.Id())
             def action(number):
                 sent = int(latest()['equipment_sent'])
-                click(9.7 + (number % 2)*3.8, 8.275 + (number // 2)*.85)
+                click(12.325 + (number % 2)*2.2, 8.15 + (number // 2)*.75)
                 wait(lambda r: int(r['equipment_form']) == 0 and int(r['equipment_sent']) == sent+1)
             def finish_action():
                 wait(lambda r: int(r['pending_move']) == 0 and int(r['pause_reasons']) == 0)
@@ -297,7 +299,7 @@ def main():
                     wait(lambda r:int(r['first_aid_remaining'])<int(progress['first_aid_remaining']))
                     view=open_inventory();check('bandage_is_consumed_at_finish_not_start',len(bandages(view))==3)
                     frozen=latest()['first_aid_remaining'];time.sleep(.7);check('menu_freezes_native_firstaid',latest()['first_aid_remaining']==frozen)
-                    shot('firstaid-pause.png');click(11.5,2.2)
+                    shot('firstaid-pause.png');click(13.4,10.35)
                     wait(lambda r:int(r['cancel_consumption_sent'])==1 and int(r['equipment_form'])==0);finish_action()
                     wait(lambda r:int(r['first_aid_token'])==0)
                     view=open_inventory();check('explicit_cancel_preserves_bandage',len(bandages(view))==3)
@@ -311,7 +313,7 @@ def main():
                 tap('Escape');wait(lambda r:int(r['equipment_form'])==0)
                 if not args.action_driven:
                     tap('F7');wait(lambda r:int(r['pause_reasons'])==1)
-                    view=open_inventory();select_item(bandages(view)[0]);sent=latest()['equipment_sent'];click(13.5,9.975);time.sleep(.5)
+                    view=open_inventory();select_item(bandages(view)[0]);sent=latest()['equipment_sent'];click(14.525,9.65);time.sleep(.5)
                     check('manually_paused_healing_click_never_queued',latest()['equipment_sent']==sent and int(latest()['equipment_form'])==1)
                     tap('Escape');wait(lambda r:int(r['equipment_form'])==0);tap('F7');wait(lambda r:int(r['pause_reasons'])==0)
                     check('unpausing_does_not_start_rejected_healing',latest()['equipment_sent']==sent and int(latest()['first_aid_token'])==0)
@@ -345,6 +347,7 @@ def main():
         finally:
             shutting_down.set() # Resets caused by our SIGTERM are expected only after this boundary.
             subprocess.run(['xdotool', 'keyup', 'w'], capture_output=True)
+            stop.set()
             if proc.poll() is None:
                 os.killpg(proc.pid, signal.SIGTERM)
                 try:
