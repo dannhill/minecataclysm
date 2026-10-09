@@ -27,6 +27,7 @@ def main():
         parser.add_argument('--' + name, type=Path, required=True)
     parser.add_argument('--action-driven', action='store_true', help='Verify ordinary start.sh mode without the real-time scheduler')
     parser.add_argument('--resume-only', action='store_true')
+    parser.add_argument('--automatic-return', action='store_true', help='Verify UX-02 returns to the transfer panel')
     parser.add_argument('--save-active', action='store_true')
     args = parser.parse_args()
     ws, out = args.workspace.resolve(), args.artifacts.resolve()
@@ -231,6 +232,7 @@ def main():
             def item(v, name, parent=None):
                 return next(e for e in entries(v) if e.TypeId().decode() == name and (parent is None or e.ParentId() == parent))
             def transfer_panel():
+                if int(latest()['transfer_form'])==1:return
                 click(13.5,.5);wait(lambda r:int(r['transfer_form'])==1)
             def select_item(e):
                 index=e.Id()-1
@@ -247,8 +249,9 @@ def main():
                 sent=int(latest()['transfers_sent'])
                 click(11.75 if insert else 4.65,9.97)
                 wait(lambda r:int(r['transfers_sent'])==sent+1)
-                tap('Escape')  # Opt out of return for this explicit-I mechanism suite.
-                wait(lambda r:int(r['equipment_form'])==0)
+                if not args.automatic_return:
+                    tap('Escape')  # Legacy mechanism tests explicitly opt out.
+                    wait(lambda r:int(r['equipment_form'])==0)
             def finish():wait(lambda r:int(r['pending_move'])==0 and int(r['transfer_token'])==0,timeout=20)
             if args.resume_only:
                 wait(lambda r:int(r['transfer_token'])>0)
@@ -284,11 +287,15 @@ def main():
                         check('actual_runtime_survives',proc.poll() is None)
                     else:
                         cancelled=int(latest()['cancel_consumption_sent']);click(13.4,10.35)
-                        wait(lambda r:int(r['equipment_form'])==0 and int(r['cancel_consumption_sent'])==cancelled+1)
+                        wait(lambda r:int(r['cancel_consumption_sent'])==cancelled+1)
                         finish();view=open_inventory();check('native_cancel_keeps_all_thirty_rounds',item(view,'9mm').Charges()==30)
                 if not args.save_active:
                     transfer_panel();select_item(item(view,'9mm'));destination(view,item(view,'bag_plastic'));quantity(7);action(True);finish()
-                    view=open_inventory();bag=item(view,'bag_plastic');nested=item(view,'9mm',bag.Id())
+                    view=open_inventory()
+                    if args.automatic_return:
+                        check('paid_insert_returns_to_same_transfer_panel',int(latest()['transfer_form'])==1 and int(latest()['native_work_settled'])==1 and int(latest()['equipment_selected'])==0)
+                        shot('transfer-automatic-return.png')
+                    bag=item(view,'bag_plastic');nested=item(view,'9mm',bag.Id())
                     check('native_transfer_splits_exact_seven',nested.Charges()==7)
                     check('native_transfer_leaves_twenty_three',sum(e.Charges() for e in entries(view) if e.TypeId().decode()=='9mm' and e.ParentId()!=bag.Id())==23)
                     check('native_provenance_identifies_destination',nested.PocketIndex()>=0)
