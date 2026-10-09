@@ -4137,10 +4137,10 @@ index 0000000..8a266d4
 +} // namespace cdda_client
 diff --git a/src/cdda/equipment_inventory.h b/src/cdda/equipment_inventory.h
 new file mode 100644
-index 0000000..00f2b80
+index 0000000..d6020a2
 --- /dev/null
 +++ b/src/cdda/equipment_inventory.h
-@@ -0,0 +1,304 @@
+@@ -0,0 +1,305 @@
 +#pragma once
 +#include "avatar_status.h"
 +#include "cwm/cwm_generated.h"
@@ -4284,9 +4284,10 @@ index 0000000..00f2b80
 +        if (selected == e->id) f += "box[" + position + ";1.05,1.05;#E8CF5790]";
 +        const auto visual = icon(e->type);
 +        const bool generic = visual.empty() || visual == "cdda_items:fallback_generic";
++        // Decoration must remain below the button: a box above it eats clicks.
++        if (e->rotten) f += "box[" + position + ";1.05,1.05;#66732250]label[" + std::to_string(x + .8) + "," + std::to_string(y + .18) + ";!]";
 +        f += std::string(generic ? "image_button[" : "item_image_button[") + position + ";1.05,1.05;" +
 +            statusEscape(generic ? equipmentCategoryIcon(*e) : visual) + ";" + key + ";]";
-+        if (e->rotten) f += "box[" + position + ";1.05,1.05;#66732250]label[" + std::to_string(x + .8) + "," + std::to_string(y + .18) + ";!]";
 +        if (e->counted && e->charges != 1) f += "label[" + std::to_string(x + .08) + "," + std::to_string(y + .87) + ";" + std::to_string(e->charges) + "]";
 +        f += "tooltip[" + key + ";" + statusEscape(e->name + (e->counted ? " x" + std::to_string(e->charges) : "") +
 +            "\n" + view.source(e->id) + (generic ? "\nIcona di categoria / segnaposto" : "\nIcona dal mapping (puo essere un proxy)") + "\nClic: seleziona. Le azioni sono nel pannello a destra.") + "]";

@@ -275,6 +275,7 @@ def main():
                 check('liquid_nested_in_native_bottle', item(view,'water_clean').ParentId() == item(view,'bottle_twoliter').Id())
                 check('non_food_cannot_be_consumed', not item(view,'rock').Actions() & 16)
                 check('rotten_food_has_native_warning_without_consumption', bool(rotten(view).ConsumeWarning()) and rotten(view).Actions() & 16)
+                check('spoilage_badge_uses_native_state', rotten(view).Rotten() and not food(view).Rotten())
                 first = food(view)
                 fresh_id, fresh_charges = first.Id(), first.Charges()
                 stopped = latest()['simulation_time'];time.sleep(.7)
@@ -324,6 +325,9 @@ def main():
                     view=views()[-1]
                     check('drink_automatically_returns_after_native_cost',True)
                 check('drink_consumes_one_charge_not_bottle', item(view,'water_clean').Charges() == 3 and item(view,'bottle_twoliter') is not None)
+                # Bridge readiness precedes installation of the returned formspec.
+                # Wait for its rendered frame before sending the next mouse click.
+                shot('drink-automatic-return.png')
                 selected = rotten(view);select_item(selected);shot('rotten-warning.png')
                 action(4);wait(lambda r: int(r['pending_decision']) > 0)
                 shot('native-food-warning.png')
