@@ -664,12 +664,15 @@ def main():
         def layout(value):
             if isinstance(value,dict):
                 rank=value.get('item_vars',{}).get('cwm_inventory_position')
-                if rank is not None:positions[value.get('typeid')]=int(float(rank))
+                # Fixture uid identifies the exact instance; two native rocks
+                # deliberately have different positions and must not overwrite
+                # each other in a dictionary keyed by item type.
+                if rank is not None:positions[value.get('item_vars',{}).get('uid')]=int(float(rank))
                 for child in value.values():layout(child)
             elif isinstance(value,list):
                 for child in value:layout(child)
         layout(native['player'])
-        check('pristine_core_retains_optional_grid_order',0<positions.get('rock',0)<positions.get('bat',0))
+        check('pristine_core_retains_optional_grid_order',0<positions.get('equipment-rock-0',0)<positions.get('equipment-bat',0)<positions.get('equipment-rock-1',0))
     (out / 'summary.json').write_text(json.dumps(dict(checks=checks, native_save=str(output)), indent=2)+'\n')
 
 
