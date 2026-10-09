@@ -736,10 +736,21 @@ index 7758c96..135b8b9 100644
  	settings->setDefault("keymap_toggle_update_camera", "KEY_F4");
  #else
 diff --git a/src/gui/guiFormSpecMenu.cpp b/src/gui/guiFormSpecMenu.cpp
-index ed1c300..bb3cc18 100644
+index ed1c300..952cf39 100644
 --- a/src/gui/guiFormSpecMenu.cpp
 +++ b/src/gui/guiFormSpecMenu.cpp
-@@ -3907,6 +3907,16 @@ bool GUIFormSpecMenu::preprocessEvent(const SEvent& event)
+@@ -169,6 +169,10 @@ void GUIFormSpecMenu::removeTooltip()
+ 
+ void GUIFormSpecMenu::setInitialFocus()
+ {
++    if (m_text_dst && m_text_dst->m_formname == "CWM_EQUIPMENT") {
++        Environment->setFocus(this);
++        return; // Visible search must never acquire initial keyboard focus.
++    }
+ 	// Set initial focus according to following order of precedence:
+ 	// 1. first empty editbox
+ 	// 2. first editbox
+@@ -3907,6 +3911,16 @@ bool GUIFormSpecMenu::preprocessEvent(const SEvent& event)
  	if (GUIModalMenu::preprocessEvent(event))
  		return true;
  
@@ -756,7 +767,7 @@ index ed1c300..bb3cc18 100644
  	// The IGUITabControl renders visually using the skin's selected
  	// font, which we override for the duration of form drawing,
  	// but computes tab hotspots based on how it would have rendered
-@@ -3990,6 +4000,15 @@ bool GUIFormSpecMenu::preprocessEvent(const SEvent& event)
+@@ -3990,6 +4004,15 @@ bool GUIFormSpecMenu::preprocessEvent(const SEvent& event)
  
  void GUIFormSpecMenu::tryClose()
  {
@@ -772,7 +783,7 @@ index ed1c300..bb3cc18 100644
  	if (m_allowclose) {
  		doPause = false;
  		acceptInput(quit_mode_cancel);
-@@ -4757,6 +4776,14 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
+@@ -4757,6 +4780,14 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
  	}
  
  	if (event.EventType == EET_GUI_EVENT) {
@@ -4109,7 +4120,7 @@ index 0000000..8a266d4
 +} // namespace cdda_client
 diff --git a/src/cdda/equipment_inventory.h b/src/cdda/equipment_inventory.h
 new file mode 100644
-index 0000000..1248eee
+index 0000000..00f2b80
 --- /dev/null
 +++ b/src/cdda/equipment_inventory.h
 @@ -0,0 +1,304 @@
@@ -4305,7 +4316,7 @@ index 0000000..1248eee
 +        if (n == quick_slot) f += "box[" + std::to_string(x) + ",9.5;1.05,0.06;#E8CF57FF]";
 +        if (!e) f += "button[" + std::to_string(x) + ",9.5;1.05,1.05;quickslot_" + std::to_string(n) + ";" + std::to_string(n) + "]";
 +        f += "tooltip[quickslot_" + std::to_string(n) + ";Slot " + std::to_string(n) +
-+            ": clic seleziona lo slot. Assegna aggiunge l'oggetto scelto; Svuota rimuove solo il collegamento.]";
++            ": clic seleziona lo slot. Assegna aggiunge l'oggetto scelto. Svuota rimuove solo il collegamento.]";
 +    }
 +    if (const auto* e = view.entry(selected)) {
 +        const auto visual = icon(e->type);
