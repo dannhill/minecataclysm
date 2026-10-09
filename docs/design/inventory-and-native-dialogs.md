@@ -34,6 +34,9 @@ armature limitate a un pezzo per slot o equipaggiamento senza costo.
 - Slot della mano chiaramente evidenziato con l'oggetto **davvero impugnato**.
   Vestiti per zona del corpo, con conteggio e apertura degli strati multipli;
   niente falsa equivalenza “testa = un solo casco”.
+- Verificare il mapping delle icone CDDA agli asset estratti: distinguere
+  icone reali, placeholder di categoria e fallback generico, con nomi sempre
+  disponibili. Non presentare un cubo generico come modello definitivo.
 - Selezione apre una scheda breve: icona/nome, quantità, ruolo, sorgente,
   massa/volume e azioni consentite. Stato con colore e simbolo + testo,
   mai solo colore. Dettagli espandibili per lunghezza, costo d'accesso,

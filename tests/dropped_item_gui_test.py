@@ -28,6 +28,7 @@ def main():
     parser.add_argument('--action-driven', action='store_true', help='Verify ordinary start.sh mode without the real-time scheduler')
     parser.add_argument('--resume-only', action='store_true')
     parser.add_argument('--save-active', action='store_true')
+    parser.add_argument('--normal-capacity', action='store_true', help='Use a fixture with storage and verify ordinary pickup')
     args = parser.parse_args()
     ws, out = args.workspace.resolve(), args.artifacts.resolve()
     out.mkdir(parents=True, exist_ok=False)
@@ -232,18 +233,22 @@ def main():
             wait(lambda r:int(r['ground_hover'])==1)
             shot('dropped-bat.png')
             xdo('click','3')
-            wait(lambda r:int(r['pending_decision'])>0)
-            check('oversize_pickup_offers_explicit_native_choice',True)
-            shot('pickup-choice.png')
-            tap('2')  # Cancel is the final non-destructive choice.
-            wait(lambda r:int(r['pending_decision'])==0 and int(r['pending_move'])==0)
-            check('cancel_keeps_bat_on_ground',int(latest()['ground_target_items'])==1)
-            xdo('click','3');wait(lambda r:int(r['pending_decision'])>0)
-            tap('1')  # Explicit wield, never implicit equipment replacement.
-            wait(lambda r:int(r['pending_decision'])==0 and int(r['pending_move'])==0 and int(r['ground_target_items'])==0)
+            if not args.normal_capacity:
+                wait(lambda r:int(r['pending_decision'])>0)
+                check('oversize_pickup_offers_explicit_native_choice',True)
+                shot('pickup-choice.png')
+                tap('2')  # Cancel is the final non-destructive choice.
+                wait(lambda r:int(r['pending_decision'])==0 and int(r['pending_move'])==0)
+                check('cancel_keeps_bat_on_ground',int(latest()['ground_target_items'])==1)
+                xdo('click','3');wait(lambda r:int(r['pending_decision'])>0)
+                tap('1')  # Explicit wield, never implicit equipment replacement.
+                wait(lambda r:int(r['pending_decision'])==0 and int(r['pending_move'])==0 and int(r['ground_target_items'])==0)
+            else:
+                wait(lambda r:int(r['pending_move'])==0 and int(r['ground_target_items'])==0)
+                check('available_pocket_collects_without_confirmation',int(latest()['pending_decision'])==0)
             view=open_inventory()
             bat=next(view.Entries(n) for n in range(view.EntriesLength()) if view.Entries(n).TypeId()==b'bat')
-            check('recovered_bat_is_native_wielded_item',bat.Wielded())
+            check('recovered_bat_has_correct_native_role',bool(bat.Wielded()) == (not args.normal_capacity))
             shot('recovered-bat.png')
             tap('Escape')
             check('actual_runtime_survives',proc.poll() is None)
@@ -277,7 +282,8 @@ def main():
         if isinstance(value,list): return [i for child in value for i in marked(child,uid)]
         return []
     check('canonical_recovered_bat_exists_once',len(marked(state['player'],'transfer-bat'))==1 and not marked(state['ground_items'],'transfer-bat'))
-    check('canonical_hand_contains_recovered_bat',state['player']['weapon']['item_vars']['uid']=='transfer-bat')
+    if not args.normal_capacity:
+        check('canonical_hand_contains_recovered_bat',state['player']['weapon']['item_vars']['uid']=='transfer-bat')
     check('canonical_position_unchanged',state['player_abs']==[60,60,0])
 
 if __name__=='__main__': main()

@@ -4360,10 +4360,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..34ff229
+index 0000000..35240f2
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,1466 @@
+@@ -0,0 +1,1480 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "move_mode.h"
@@ -5795,10 +5795,17 @@ index 0000000..34ff229
 +    auto& ground = m.add_item(u.pos(), bat);
 +    REQUIRE_FALSE(u.can_stash_partial(ground, false));
 +    REQUIRE(u.can_wield(ground).success());
-+    bool accept = false, automatic = false;
++    bool accept = false, automatic = false, loaded = false;
 +    SECTION("cancel") {}
 +    SECTION("explicit wield") { accept = true; }
 +    SECTION("automatic pickup does not equip") { automatic = true; }
++    SECTION("loaded backpack wield keeps contents") { accept = true; loaded = true; }
++    SECTION("loaded backpack cancel keeps contents") { loaded = true; }
++    if (loaded) {
++        ground = item(itype_id("backpack_hiking")); ground.set_var("uid", "recover-capacity");
++        REQUIRE(ground.fill_with(item(itype_id("9mm"), calendar::turn, 1), 7) == 7);
++        REQUIRE_FALSE(u.can_stash_partial(ground, false));
++    }
 +    int questions = 0;
 +    u.moves = 1000; g->uquit = QUIT_NO; g->new_game = false;
 +    g->set_safe_mode(SAFE_MODE_OFF);
@@ -5808,6 +5815,7 @@ index 0000000..34ff229
 +        Pickup::pick_info info;
 +        u.moves = 1000;
 +        Pickup::do_pickup(targets, quantities, automatic, stash, info);
++        CHECK(stash == accept);
 +        if (accept) {
 +            REQUIRE(u.get_wielded_item());
 +            CHECK(u.get_wielded_item()->get_var("uid") == "recover-capacity");
@@ -5818,6 +5826,12 @@ index 0000000..34ff229
 +            REQUIRE(m.i_at(u.pos()).size() == 1);
 +            CHECK(m.i_at(u.pos()).begin()->get_var("uid") == "recover-capacity");
 +            CHECK(u.moves == 1000);
++        }
++        if (loaded) {
++            const item& bag = accept ? *u.get_wielded_item() : *m.i_at(u.pos()).begin();
++            int rounds = 0;
++            for (const auto* child : bag.all_items_top()) if (child->typeId() == itype_id("9mm")) rounds += child->charges;
++            CHECK(rounds == 7);
 +        }
 +        u.pause(); return true;
 +    }, [&](const std::string& text, const std::vector<std::string>& choices) {
