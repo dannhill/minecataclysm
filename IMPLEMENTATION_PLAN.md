@@ -29,6 +29,25 @@ separa le fetta giocabili dalle parti ancora pianificate.
 
 ## Riscontro inventario/interfacce — 2026-10-09
 
+Il [riscontro successivo con errata corrige](docs/source/core-ux-validation-2026-10-09.md)
+accetta anche tiro/ricarica, trasferimenti, UX-01 e UX-02: quattro punti per
+checklist. Eccezioni UX-02 non provate e deposito annidato non riuscito
+restano espliciti; il backlog corrente è **7 PENDING**. Le descrizioni della
+consegna sotto conservano la cronologia e i vecchi conteggi.
+Nuova priorità UX-03: hotbar assegnabile/rimuovibile con icone HUD corrette,
+mano evidenziata, ricerca **visibile ma senza focus**, quantità/errori
+leggibili e correzione del solo `water_clean`. Non riscrivere il mapping.
+Poi mira RMB mantenuto, arma/rinculo, rig/UV/animazioni e audio autorevole,
+nuvole ferme in pausa e operazioni Indossa/Togli più comprensibili.
+Lingua del prodotto: inglese di default, italiano (WIP) selezionabile con
+fallback; applicarla anche al testo nativo e alle nuove UI. Ogni consegna
+deve essere installata nel normale `start.sh`, con verifica su save isolati;
+rendere esplicito e predefinito il continuo 4× accettato, conservando opzioni
+per confronti tecnici. Il launcher attuale lo abilita solo da variabile env.
+[Recap e stime per traguardo](docs/progress/core-outlook-2026-10-09.md).
+
+Cronologia precedente alla nuova accettazione:
+
 L'utente accetta 16 punti inventario/equipaggiamento, consumo, medicazioni e
 crafting; restano tiro/ricarica e quantità/contenitori. I bug e le richieste
 sono nel [riscontro](docs/source/inventory-ui-feedback-2026-10-09.md).

@@ -1,5 +1,23 @@
 # Implementation status
 
+Latest manual acceptance (2026-10-09): ranged/reload, owned transfers, UX-01
+and UX-02 all four checklist points declared PASS. The user's errata confirms
+UX-01 has four tests. UX-02 exceptional death/IPC/native-screen cases were
+not actually tested; nested ammunition deposit was not understood/performed.
+Keep these qualifications distinct from normal-flow acceptance. The backlog
+now has **7 PENDING**: four existing UI/mapping rechecks and three exceptional
+UX-02 probes. [Feedback](docs/source/core-ux-validation-2026-10-09.md).
+New bugs/preferences are recorded, **not yet fixed**: HUD icons/wield highlight,
+assignable/removable hotbar, visible unfocused search, quantity/error layout,
+water_clean-only mapping repair, held RMB aim, pause clouds, rig/animation/audio
+and clearer work feedback. English default / Italian WIP and normal start.sh
+integration are required. The launcher currently needs CDDA_CONTINUOUS=1 to
+enable the accepted continuous 4x mode; its default remains action-driven.
+Next scoped implementation: UX-03 and related UI repairs. The
+[recap and rough estimates](docs/progress/core-outlook-2026-10-09.md) distinguish
+the minimum core from the complete approved feature scope; no runtime changes
+or new verification are claimed by this documentation update.
+
 Current scoped delivery (2026-10-09): **UX-02 sequential inventory actions**, verified and installed for start.sh.
 One explicit operation closes the modal browser while native work/time runs;
 a compact non-modal indicator displays operation/progress. The browser returns
@@ -10,8 +28,8 @@ Manual/threat pause suppresses return, decisions defer it, death/recovery discar
 stale intent. CWM **2.16** distinguishes early result from paid inventory work;
 native activity debits share the real-time clock. Canonical save format unchanged.
 [Report/evidence](docs/fixes/inventory-work.md). Four new manual points bring the
-usual backlog to **20 PENDING**; none required today. Earlier gameplay PASS
-remain historical, not acceptance of the new UI. UX-01 layout remains available.
+usual backlog to **20 PENDING at delivery**, superseded by the latest acceptance
+above; none required today. UX-01 layout remains available.
 
 Body-region clothing grouping/encumbrance and stable selection continuity still
 need typed native exports. Next scheduled task: **UX-03 interactive hotbar**,

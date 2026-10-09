@@ -1,12 +1,15 @@
 # Validazioni manuali del playable core
 
-Stato corrente: **20 punti pendenti**: quattro tiro/ricarica, quattro
-quantita/deposito/trasferimenti, quattro ricontrolli mirati UI/mapping e
-quattro del nuovo inventario UX-01 e quattro delle azioni consecutive UX-02.
-Non serve eseguirli ora. Il riscontro del 2026-10-09 accetta tutti i
-16 punti inventario, cibo/bevande, medicazioni e crafting. I bug segnalati
-restano separati dall'accettazione delle checklist, con ricontrolli mirati
-aggiunti sotto quando le correzioni sono consegnate.
+Stato corrente: **7 punti pendenti**: quattro ricontrolli mirati UI/mapping e
+tre verifiche eccezionali UX-02 non effettivamente provate. Il
+[riscontro aggiornato ed errata corrige](../source/core-ux-validation-2026-10-09.md)
+accetta 1–4 di tiro/ricarica, quantità/trasferimenti, UX-01 e UX-02 (16 nuovi
+PASS), oltre ai precedenti 16 di inventario, consumo, medicazioni e crafting.
+I PASS UX-02 attestano il flusso ordinario osservato: non morte/IPC/decisioni
+non provati. Il deposito delle munizioni annidate nel sacchetto rimane una
+segnalazione da investigare nonostante il PASS generale sui trasferimenti.
+Non serve eseguire test ora. I bug nuovi sono nel registro del riscontro;
+le correzioni future avranno ricontrolli alla consegna, non PASS anticipati.
 Le vecchie checklist VALIDATE sotto conservano la cronologia; non attestano queste nuove fette.
 
 L'utente il 2026-10-08 ha eseguito e approvato tutti i quattro punti di
@@ -240,7 +243,7 @@ non include ricette liquide, sottoprodotti, pratica, preferiti di ricette,
 collegamenti di sottoricette, selezione della singola istanza fra oggetti
 identici né accelerazione automatica delle attività lunghe: restano nel piano.
 
-## Tiro, mira e ricarica — PENDING, rinviato su richiesta
+## Tiro, mira e ricarica — VALIDATA: 1–4 PASS
 
 Avvio isolato: `./ranged-demo.sh --fresh`. Pistola già impugnata con tre
 colpi; trenta munizioni 9mm nello zaino, variante FMJ compatibile e munizioni
@@ -266,10 +269,12 @@ sulla destra. Nessuna raccolta/equipaggiamento obbligatorio.
 Questa prima fetta copre armi da fuoco impugnate e modalità balistica corrente,
 bersagli ostili percepiti e ricarica nativa. Mirino libero, tiro deliberato su
 neutrali, archi/carica-e-spara, armi montate/veicoli e cambio modalità restano
-nel piano. Accettazione manuale non dedotta dai test tecnici.
+nel piano. Accettata dall'utente il 2026-10-09; nuvole, arma/audio e feedback
+del rinculo restano segnalazioni aperte. RMB mantenuto è la nuova richiesta,
+non il comportamento di F descritto dalla versione validata qui sopra.
 
 
-## Quantita, deposito e contenitori posseduti — PENDING, rinviato su richiesta
+## Quantita, deposito e contenitori posseduti — VALIDATA: 1–4 PASS, con riserva sul deposito annidato
 
 Avvio isolato: `./transfer-demo.sh --fresh`. Trenta munizioni 9mm, sacchetto
 vuoto, bottiglia vuota, mazza e sasso gia nello zaino. Non serve raccogliere,
@@ -297,8 +302,10 @@ il personaggio; contenitori esterni e scelta della singola tasca vengono dopo.
    e sposta le 7 una sola volta. Per rifare la scena usa --fresh, che crea
    una nuova copia isolata e conserva le sessioni demo precedenti.
 
-Accettazione grafica/usabilita ancora pendente; i test automatici non la
-sostituiscono. [Dettagli tecnici](../fixes/native-transfer.md).
+L'utente dichiara 1–4 PASS il 2026-10-09, ma non è riuscito a depositare le
+munizioni direttamente dal sacchetto: quel sottocaso resta da ricontrollare.
+Quantità sovrapposta, tag hint ed errori poco visibili rimangono bug aperti.
+[Dettagli tecnici](../fixes/native-transfer.md).
 
 
 ## Ricontrolli mirati del riscontro UI e mapping — PENDING (4), quando puoi
@@ -329,11 +336,12 @@ attuale resta provvisorio.
 Le revisioni successive UX-02–05 avranno checklist proprie alla consegna.
 
 
-## UX-01 — Nuovo inventario Mineclonia — PENDING (4), quando puoi
+## UX-01 — Nuovo inventario Mineclonia — VALIDATA: 1–4 PASS
 
-Il nuovo layout è disponibile anche con **I** nel gioco normale. Le prove
-precedenti attestano le meccaniche, non l'accettazione di questa interfaccia.
-Nessun test richiesto oggi; non serve ripetere i 16 vecchi PASS.
+Il nuovo layout è disponibile anche con **I** nel gioco normale. Tutti i
+quattro test accettati con errata corrige del 2026-10-09. La ricerca su
+richiesta descritta sotto è storica: l'utente ora la vuole visibile ma senza
+focus, attivata su clic e disattivata cliccando altrove. Modifica pianificata.
 
 1. `./equipment-demo.sh --fresh`: **I** mostra griglia 9×3, mano vera,
    indossati e fila inferiore distinta. La ricerca non è attiva all'apertura:
@@ -364,10 +372,11 @@ non è ancora raggruppato per parte del corpo. Le coperture/impedimenti
 richiedono dati CWM tipizzati; non vengono dedotti dal nome dei vestiti.
 
 
-## UX-02 — Azioni consecutive con costi nativi — PENDING (4), quando puoi
+## UX-02 — Azioni consecutive con costi nativi — VALIDATA: 1–4 PASS dichiarati, eccezioni separate
 
-Disponibile in I nel gioco normale e nelle demo isolate; non serve provarlo
-oggi. Una singola azione esplicita lascia scorrere il mondo, poi riapre la
+Accettazione del flusso ordinario dichiarata dall'utente il 2026-10-09.
+Morte/IPC/schermate native non effettivamente provati: vedere prove separate
+sotto. Una singola azione esplicita lascia scorrere il mondo, poi riapre la
 vista dell'inventario. Pagina/filtro/ricerca restano; oggetto e destinazione
 vanno riselezionati perché le vecchie identità native sono scadute.
 
@@ -396,3 +405,18 @@ vanno riselezionati perché le vecchie identità native sono scadute.
    nessun ritorno automatico a una vecchia selezione della sessione precedente.
    In caso di morte o perdita/recupero IPC, la vecchia intenzione di ritorno
    viene scartata; le schermate native restano prioritarie.
+
+## UX-02 — Eccezioni non provate — PENDING (3), rinviabili
+
+Nessun obbligo di eseguirle oggi; non ripetere i flussi ordinari già accettati.
+L'agente deve predisporre scene/istruzioni controllate prima di proporre prove
+di errore: non chiedere di terminare processi della partita personale.
+
+1. **Minaccia e decisione nativa**: durante un lavoro, un avviso o una domanda
+   CDDA ha precedenza sul ritorno a I. Il menu non risponde da solo né riparte
+   senza la scelta esplicita; la minaccia mantiene la pausa prevista.
+2. **Morte**: nella demo di combattimento isolata, morte durante il lavoro
+   mostra la UI nativa; il vecchio inventario non riappare sopra la morte.
+3. **IPC**: nella fixture di recupero isolata, perdita e ripristino della
+   connessione non riaprono una vecchia selezione e non duplicano il lavoro.
+   Nessun input di gioco parte mentre manca lo stato autorevole completo.

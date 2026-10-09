@@ -1,10 +1,13 @@
 # Inventario, hotbar e dialoghi nativi — proposta di attuazione
 
 Riscontro: [16 PASS e richieste del 2026-10-09](../source/inventory-ui-feedback-2026-10-09.md).
-Stato: **layout UX-01 e azioni consecutive UX-02 consegnati**; accettazione
-grafica pendente. UX-03–05 e le estensioni anatomiche/identità restano pianificati.
-L'interfaccia attuale non è la versione definitiva. Nessuna approvazione
-estetica della nuova proposta viene dedotta dai PASS delle meccaniche.
+Stato: **layout UX-01 e azioni consecutive UX-02 consegnati e accettati**
+nei quattro punti ciascuno con il
+[riscontro successivo ed errata corrige](../source/core-ux-validation-2026-10-09.md).
+Eccezioni morte/IPC/decisioni non provate restano separate. UX-03–05 e le
+estensioni anatomiche/identità restano pianificati. Nuove preferenze non ancora
+implementate: ricerca visibile senza focus, hotbar assegnabile/rimuovibile e
+mano evidenziata anche nell'HUD; feedback di lavoro/errori più evidente.
 
 ## Studio dei sorgenti e vincoli effettivi
 
@@ -36,7 +39,7 @@ Mineclonia contribuisce il linguaggio grafico, non la sua simulazione: non
 si importano crafting 2×2, inventario a capacità fissa, drag-and-drop locale,
 armature limitate a un pezzo per slot o equipaggiamento senza costo.
 
-## UX-01 — Inventario familiare e dettagli progressivi (layout consegnato; accettazione grafica pendente)
+## UX-01 — Inventario familiare e dettagli progressivi (layout consegnato e accettato)
 
 
 Fetta implementata: layout 9×3/9×1, mano autorevole, tutti gli indossati
@@ -44,7 +47,9 @@ paginati, ricerca su richiesta con Esc annidato, scheda breve e dettagli
 scorrevoli, categorie/fallback espliciti. Pagina/filtro/ricerca sono conservati
 nella sessione; selezione sempre azzerata su nuova query/reconnect, senza
 indovinare identità omonime. [Report ed evidenze](../fixes/inventory-ui.md).
-Quattro nuove prove sono nel [backlog](../validation/pending-manual.md).
+Quattro prove accettate nel [backlog](../validation/pending-manual.md).
+La ricerca su richiesta è il comportamento consegnato, da aggiornare alla
+nuova preferenza visibile/senza focus nel prossimo intervento.
 
 Restano nel piano i requisiti sotto per copertura anatomica/impedimento,
 identità stabile tra azioni e scorciatoie configurabili sugli oggetti.
@@ -64,9 +69,11 @@ insieme alla hotbar, senza equipaggiamento gratuito.
   basso, fila rapida **9×1** distinta. Asset di slot/sfondo già disponibili.
   Oltre 27 oggetti: frecce/pagine, indicatore del totale e categoria. I 27
   riquadri sono una pagina, non un limite di possesso.
-- Ricerca nascosta dietro lente/Cerca: clic apre e mette a fuoco il campo;
-  Esc prima lascia la ricerca e poi chiude I. Nessun focus tastiera rubato
-  all'apertura. Filtri compatti: Tutti, Equipaggiati, Contenitori.
+- Ricerca visibile all'apertura senza focus. Clic sinistro sul campo abilita
+  digitazione e cambia colore; clic altrove disabilita digitazione. Esc prima
+  lascia la ricerca e poi chiude I. Nessun focus tastiera rubato all'apertura.
+  Filtri compatti: Tutti, Equipaggiati, Contenitori. Richiesta aggiornata:
+  questo comportamento deve ancora sostituire la ricerca nascosta consegnata.
 - Slot della mano chiaramente evidenziato con l'oggetto **davvero impugnato**.
   Vestiti per zona del corpo, con conteggio e apertura degli strati multipli;
   niente falsa equivalenza “testa = un solo casco”.
@@ -90,9 +97,10 @@ insieme alla hotbar, senza equipaggiamento gratuito.
 Verifica: inventario oltre una pagina, zaino indossato/impugnato/depositato,
 strati multipli, oggetti annidati, identità invalidata, tooltip/ricerca/focus,
 nessuna mutazione o avanzamento del tempo per la sola consultazione.
-Serve prova grafica dell'utente alla consegna; gli attuali 16 PASS non la coprono.
+Le quattro prove UX-01 sono ora accettate; le nuove modifiche avranno solo
+ricontrolli mirati alla consegna, senza ripetere i vecchi PASS.
 
-## UX-02 — Azioni consecutive con costi reali (implementata; accettazione manuale pendente)
+## UX-02 — Azioni consecutive con costi reali (implementata e accettata; eccezioni pendenti)
 
 Flusso implementato: **consulta in pausa → conferma una sola azione → pannello
 compatto non modale durante il lavoro → ritorno alla stessa vista al termine**.
@@ -124,7 +132,11 @@ l'actor; I consente consultazione/Interrompi. Pausa manuale/minaccia disattivano
 il ritorno, decisioni lo sospendono; morte/reconnect/resync lo scartano.
 Pagina/filtro/ricerca e pannello trasferimenti sono mantenuti, ma gli ID di
 oggetto/destinazione sono azzerati a ogni query: identità stabile resta aperta.
-[Report UX-02](../fixes/inventory-work.md) e quattro nuove prove nel backlog.
+[Report UX-02](../fixes/inventory-work.md): quattro punti dichiarati PASS.
+Nel backlog rimangono solo le eccezioni non provate. I manuale scarta il
+ritorno automatico e mette in pausa; chiudere I riprende l'actor senza
+cancellarlo. Rendere visibile la differenza tra consultazione e Interrompi,
+insieme all'operazione Indossa/Togli, nel prossimo task di feedback.
 
 ## UX-03 — Hotbar interattiva
 
@@ -132,6 +144,11 @@ Nove riferimenti rapidi, non nove nuove tasche. Rotella/numeri selezionano
 un riferimento; **selezione grafica** e **oggetto impugnato** hanno indicatori
 diversi. Selezionare non altera CDDA. L'azione pertinente (Impugna, Usa,
 Mangia/Bevi, Indossa, Riponi) invia il comando nativo e paga l'accesso reale.
+
+Assegnazione e rimozione esplicite, senza duplicare automaticamente i primi
+nove oggetti dell'inventario. Stesse icone della GUI I anche nell'HUD normale;
+evidenziare lì l'oggetto realmente in mano, distinguendolo dalla selezione.
+Le icone marce usano stato nativo e segnale grafico, non inferenze dal nome.
 
 Possibile equip automatico su cambio slot è un'opzione da confrontare, non
 un cambio istantaneo: una sola intenzione, niente coda di cambi durante il
