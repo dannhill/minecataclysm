@@ -3866,7 +3866,7 @@ index 0000000..8a266d4
 +} // namespace cdda_client
 diff --git a/src/cdda/equipment_inventory.h b/src/cdda/equipment_inventory.h
 new file mode 100644
-index 0000000..de99375
+index 0000000..0be9a4c
 --- /dev/null
 +++ b/src/cdda/equipment_inventory.h
 @@ -0,0 +1,296 @@
@@ -4031,7 +4031,7 @@ index 0000000..de99375
 +    f += "label[0.5,1.6;In mano]";
 +    slot(.5,2.05,hand,hand ? "hand_" + std::to_string(hand->id) : "",true);
 +    if (!hand) f += "tooltip[0.5,2.05;1.05,1.05;Mani libere]";
-+    f += "model[2.05,1.55;2.3,2.9;avatar;character.b3d;mcl_skins_character_1.png;0,180;false;false;0,0]"
++    f += "model[2.05,1.55;2.3,2.9;avatar;character.b3d;mcl_skins_character_1.png,blank.png;0,180;false;false;0,0]"
 +        "tooltip[2.05,1.55;2.3,2.9;Sagoma di riferimento. Gli indossati reali sono a destra.]"
 +        "label[4.7,1.6;Indossati (" + std::to_string(worn.size()) + ")]";
 +    const auto worn_pages = std::max<size_t>(1, (worn.size() + 9) / 10);

@@ -238,6 +238,9 @@ def main():
                 return next(e for e in entries(v) if e.TypeId().decode() == name)
             if args.presentation_only:
                 es = entries(view)
+                image = Image.open(out / 'inventory.png').convert('RGB')
+                region = image.crop((round(origin_x+2.05*unit),round(origin_y+1.55*unit),round(origin_x+4.35*unit),round(origin_y+4.45*unit)))
+                check('model_preview_has_visible_skin_not_untextured_armor',sum(max(rgb)-min(rgb)>20 for rgb in region.getdata())>300)
                 check('native_fixture_exceeds_grid_and_worn_pages',len(es)>27 and sum(e.Worn() for e in es)>10)
                 paused=latest();sent=paused['equipment_sent']
                 click(10.35,9.2);select_item(es[27]);shot('page-two.png')

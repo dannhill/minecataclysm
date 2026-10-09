@@ -34,8 +34,8 @@ immagini di categoria da asset già estratti; categorie sconosciute mostrano
 proxy. Il nome CDDA rimane leggibile: un'icona di spada per WEAPONS non
 trasforma una mazza in spada. Nessuna nuova texture o meccanica Mineclonia.
 
-La scena dell'anteprima GUI esclude la nebbia del mondo, che nascondevano
-completamente la sagoma durante il test. La camera e la nebbia del mondo non
+La scena dell'anteprima GUI esclude la nebbia del mondo, e assegna una texture trasparente al secondo materiale Armor del modello,
+che prima copriva la pelle con una sagoma grigia. La camera e la nebbia del mondo non
 cambiano. L'anteprima è statica durante la consultazione.
 
 ## Confini della fetta e seguito

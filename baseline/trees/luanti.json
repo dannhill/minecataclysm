@@ -7257,7 +7257,7 @@
   {
     "path": "src/cdda/equipment_inventory.h",
     "mode": "100644",
-    "sha256": "6e4ee7660abb2f8c6ae0df33175b493cce7b0d59944fb8c5b40e3619354e09e5"
+    "sha256": "8458e1aa0a5a227fc259254c178206fcfa1c7bf37e1539375c5a633a5dd951b7"
   },
   {
     "path": "src/cdda/ground_item_formspec.h",
