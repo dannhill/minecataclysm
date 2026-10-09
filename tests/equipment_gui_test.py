@@ -376,7 +376,9 @@ def main():
                     shot('drag-paid-return.png');view=views()[-1]
                 paid_drag(cell(item(view,'hat_ball')),(6.425,2.575))
                 check('drag_into_wear_area_runs_native_wear',item(view,'hat_ball').Worn())
-                paid_drag((6.425,2.575),(10.225,8.275))
+                worn=[e for e in entries(view) if e.Worn()]
+                index=next(n for n,e in enumerate(worn) if e.TypeId()==b'hat_ball')
+                paid_drag((5.225+(index%5)*1.2,2.575+(index//5)*1.15),(10.225,8.275))
                 check('drag_worn_to_grid_runs_native_takeoff',not item(view,'hat_ball').Worn())
                 paid_drag((1.025,2.575),(10.225,8.275),decision=True)
                 check('drag_hand_to_grid_runs_native_stow',not any(view.Entries(n).Wielded() for n in range(view.EntriesLength())))

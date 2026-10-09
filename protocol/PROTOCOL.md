@@ -6,10 +6,33 @@ captured implementation; it does not approve its gaps. The executable schema
 is [cwm.fbs](cwm.fbs). Audit findings and evidence are in
 [M5.5](../docs/audits/M5.5.md).
 
-The current runtime requires **CWM 2.17**. This breaks the old negotiation
+The current runtime requires **CWM 2.18**. This breaks the old negotiation
 contract; schema fields and union members are appended without changing the
 existing FlatBuffers offsets. Both executables must be rebuilt together.
 The historical coverage table below is retained as audit evidence.
+
+CWM 2.18 appends `QuickbarSwapRequest` (43), `InventoryArrangeRequest` (44)
+and `InventoryEntry.ui_order`. Swap compares both exact expected bindings
+and changes the two slots atomically on the native owner thread; a stale
+source or destination rejects the whole operation. An empty target means
+move, not duplicate. Arrangement validates the current owned-item view and
+every binding, then inserts the source before another current item (zero
+means end). Both requests have bounded ledger signatures/at-most-once results;
+they change UI metadata only, without movement, activity or time costs.
+
+Optional native item `item_vars.cwm_inventory_position` holds a positive
+integer rank up to 2048. Missing/malformed ranks export zero. It follows the
+actual native instance through moves/copies and save/load, not ephemeral
+query IDs. Native stacking ignores this reserved UI key; splitting retains
+it only on the original portion. The rank is a compact visual order, not
+an extra pocket, capacity limit or persistent empty-slot coordinate.
+
+Drag input stays inside Luanti's GUI. The bridge resolves current view/item
+identities and sends these semantic requests or existing EquipmentRequest /
+ItemTransferRequest. No widget name, pixel rectangle, GUI event or Luanti
+inventory mutation is introduced into the wire contract. Native equipment
+and transfer requests continue to pay CDDA costs and retain its choices.
+[Implementation and evidence](../docs/fixes/inventory-drag-and-drop.md).
 
 CWM 2.17 appends `QuickbarBindRequest` (41), `QuickbarUseRequest` (42),
 `WorldSnapshot.quick_slots`, `InventoryEntry.quick_slot/rotten` and owned-item
