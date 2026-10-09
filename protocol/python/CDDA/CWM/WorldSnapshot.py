@@ -415,8 +415,33 @@ class WorldSnapshot(object):
             return obj
         return None
 
+    # WorldSnapshot
+    def QuickSlots(self, j):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(58))
+        if o != 0:
+            x = self._tab.Vector(o)
+            x += flatbuffers.number_types.UOffsetTFlags.py_type(j) * 4
+            x = self._tab.Indirect(x)
+            from CDDA.CWM.QuickSlot import QuickSlot
+            obj = QuickSlot()
+            obj.Init(self._tab.Bytes, x)
+            return obj
+        return None
+
+    # WorldSnapshot
+    def QuickSlotsLength(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(58))
+        if o != 0:
+            return self._tab.VectorLen(o)
+        return 0
+
+    # WorldSnapshot
+    def QuickSlotsIsNone(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(58))
+        return o == 0
+
 def WorldSnapshotStart(builder):
-    builder.StartObject(27)
+    builder.StartObject(28)
 
 def Start(builder):
     WorldSnapshotStart(builder)
@@ -636,6 +661,18 @@ def WorldSnapshotAddInventoryWork(builder, inventoryWork):
 
 def AddInventoryWork(builder, inventoryWork):
     WorldSnapshotAddInventoryWork(builder, inventoryWork)
+
+def WorldSnapshotAddQuickSlots(builder, quickSlots):
+    builder.PrependUOffsetTRelativeSlot(27, flatbuffers.number_types.UOffsetTFlags.py_type(quickSlots), 0)
+
+def AddQuickSlots(builder, quickSlots):
+    WorldSnapshotAddQuickSlots(builder, quickSlots)
+
+def WorldSnapshotStartQuickSlotsVector(builder, numElems):
+    return builder.StartVector(4, numElems, 4)
+
+def StartQuickSlotsVector(builder, numElems):
+    return WorldSnapshotStartQuickSlotsVector(builder, numElems)
 
 def WorldSnapshotEnd(builder):
     return builder.EndObject()

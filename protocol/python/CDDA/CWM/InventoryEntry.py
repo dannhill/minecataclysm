@@ -184,8 +184,22 @@ class InventoryEntry(object):
             return bool(self._tab.Get(flatbuffers.number_types.BoolFlags, o + self._tab.Pos))
         return False
 
+    # InventoryEntry
+    def QuickSlot(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(46))
+        if o != 0:
+            return self._tab.Get(flatbuffers.number_types.Uint8Flags, o + self._tab.Pos)
+        return 0
+
+    # InventoryEntry
+    def Rotten(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(48))
+        if o != 0:
+            return bool(self._tab.Get(flatbuffers.number_types.BoolFlags, o + self._tab.Pos))
+        return False
+
 def InventoryEntryStart(builder):
-    builder.StartObject(21)
+    builder.StartObject(23)
 
 def Start(builder):
     InventoryEntryStart(builder)
@@ -321,6 +335,18 @@ def InventoryEntryAddContainer(builder, container):
 
 def AddContainer(builder, container):
     InventoryEntryAddContainer(builder, container)
+
+def InventoryEntryAddQuickSlot(builder, quickSlot):
+    builder.PrependUint8Slot(21, quickSlot, 0)
+
+def AddQuickSlot(builder, quickSlot):
+    InventoryEntryAddQuickSlot(builder, quickSlot)
+
+def InventoryEntryAddRotten(builder, rotten):
+    builder.PrependBoolSlot(22, rotten, 0)
+
+def AddRotten(builder, rotten):
+    InventoryEntryAddRotten(builder, rotten)
 
 def InventoryEntryEnd(builder):
     return builder.EndObject()

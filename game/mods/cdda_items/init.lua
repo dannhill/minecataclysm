@@ -17,6 +17,8 @@ if f then
     dofile(generated)
 end
 
+dofile(minetest.get_modpath("cdda_items") .. "/local_water_mapping.lua")
+
 function cdda_items.resolve_visual(cdda_id)
     return cdda_items.visual_by_cdda_id[cdda_id] or "cdda_items:fallback_generic"
 end

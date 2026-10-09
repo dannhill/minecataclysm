@@ -59,8 +59,29 @@ class GroundItemState(object):
             return bool(self._tab.Get(flatbuffers.number_types.BoolFlags, o + self._tab.Pos))
         return False
 
+    # GroundItemState
+    def Category(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(14))
+        if o != 0:
+            return self._tab.String(o + self._tab.Pos)
+        return None
+
+    # GroundItemState
+    def Wielded(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(16))
+        if o != 0:
+            return bool(self._tab.Get(flatbuffers.number_types.BoolFlags, o + self._tab.Pos))
+        return False
+
+    # GroundItemState
+    def Rotten(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(18))
+        if o != 0:
+            return bool(self._tab.Get(flatbuffers.number_types.BoolFlags, o + self._tab.Pos))
+        return False
+
 def GroundItemStateStart(builder):
-    builder.StartObject(5)
+    builder.StartObject(8)
 
 def Start(builder):
     GroundItemStateStart(builder)
@@ -94,6 +115,24 @@ def GroundItemStateAddCountByCharges(builder, countByCharges):
 
 def AddCountByCharges(builder, countByCharges):
     GroundItemStateAddCountByCharges(builder, countByCharges)
+
+def GroundItemStateAddCategory(builder, category):
+    builder.PrependUOffsetTRelativeSlot(5, flatbuffers.number_types.UOffsetTFlags.py_type(category), 0)
+
+def AddCategory(builder, category):
+    GroundItemStateAddCategory(builder, category)
+
+def GroundItemStateAddWielded(builder, wielded):
+    builder.PrependBoolSlot(6, wielded, 0)
+
+def AddWielded(builder, wielded):
+    GroundItemStateAddWielded(builder, wielded)
+
+def GroundItemStateAddRotten(builder, rotten):
+    builder.PrependBoolSlot(7, rotten, 0)
+
+def AddRotten(builder, rotten):
+    GroundItemStateAddRotten(builder, rotten)
 
 def GroundItemStateEnd(builder):
     return builder.EndObject()

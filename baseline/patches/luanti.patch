@@ -1,8 +1,8 @@
 diff --git a/builtin/settingtypes.txt b/builtin/settingtypes.txt
-index 728eaf4..329f08e 100644
+index 728eaf4..5cc64d6 100644
 --- a/builtin/settingtypes.txt
 +++ b/builtin/settingtypes.txt
-@@ -2557,3 +2557,16 @@ keymap_increase_viewing_range_min (View range increase key) key +
+@@ -2557,3 +2557,17 @@ keymap_increase_viewing_range_min (View range increase key) key +
  
  #    Key for decreasing the viewing range.
  keymap_decrease_viewing_range_min (View range decrease key) key -
@@ -19,6 +19,7 @@ index 728eaf4..329f08e 100644
 +
 +keymap_cdda_aim (CDDA held native aim) key KEY_KEY_F
 +keymap_cdda_reload (CDDA native reload) key KEY_KEY_R
++keymap_cdda_quick_use (CDDA selected quick slot: use or equip) key KEY_KEY_G
 diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
 index 65e5ab6..a8494d2 100644
 --- a/src/CMakeLists.txt
@@ -136,7 +137,7 @@ index b6ae675..9e33201 100644
  		/*
  			Local player handling
 diff --git a/src/client/game.cpp b/src/client/game.cpp
-index 27b5833..9eb50a9 100644
+index 27b5833..aa868b2 100644
 --- a/src/client/game.cpp
 +++ b/src/client/game.cpp
 @@ -8,6 +8,7 @@
@@ -244,12 +245,14 @@ index 27b5833..9eb50a9 100644
  	delete client;
  	client = nullptr;
  	delete soundmaker;
-@@ -2053,7 +2101,23 @@ void Game::processUserInput(f32 dtime)
+@@ -2053,7 +2101,25 @@ void Game::processUserInput(f32 dtime)
  
  void Game::processKeyInput()
  {
 -	if (wasKeyDown(KeyType::DROP)) {
-+    if (wasKeyDown(KeyType::CDDA_CRAFTING) && cdda_client::CddaBridge::getInstance().ownsPlayer(client)) {
++    if (wasKeyDown(KeyType::CDDA_QUICK_USE) && cdda_client::CddaBridge::getInstance().ownsPlayer(client)) {
++        cdda_client::CddaBridge::getInstance().useQuickSlot();
++    } else if (wasKeyDown(KeyType::CDDA_CRAFTING) && cdda_client::CddaBridge::getInstance().ownsPlayer(client)) {
 +        const auto form = cdda_client::CddaBridge::getInstance().openCrafting();
 +        if (!form.empty()) {
 +            auto *&formspec = m_game_ui->updateFormspec("CWM_CRAFTING");
@@ -269,7 +272,7 @@ index 27b5833..9eb50a9 100644
  		dropSelectedItem(isKeyDown(KeyType::SNEAK));
  	} else if (wasKeyDown(KeyType::AUTOFORWARD)) {
  		toggleAutoforward();
-@@ -2063,6 +2127,8 @@ void Game::processKeyInput()
+@@ -2063,6 +2129,8 @@ void Game::processKeyInput()
  	} else if (wasKeyDown(KeyType::INVENTORY)) {
  		openInventory();
  	} else if (input->cancelPressed()) {
@@ -278,7 +281,7 @@ index 27b5833..9eb50a9 100644
  #ifdef __ANDROID__
  		m_android_chat_open = false;
  #endif
-@@ -2083,7 +2149,8 @@ void Game::processKeyInput()
+@@ -2083,7 +2151,8 @@ void Game::processKeyInput()
  	} else if (wasKeyDown(KeyType::FREEMOVE)) {
  		toggleFreeMove();
  	} else if (wasKeyDown(KeyType::JUMP)) {
@@ -288,7 +291,7 @@ index 27b5833..9eb50a9 100644
  	} else if (wasKeyDown(KeyType::PITCHMOVE)) {
  		togglePitchMove();
  	} else if (wasKeyDown(KeyType::FASTMOVE)) {
-@@ -2154,9 +2221,17 @@ void Game::processKeyInput()
+@@ -2154,9 +2223,17 @@ void Game::processKeyInput()
  	} else if (wasKeyDown(KeyType::ZOOM)) {
  		checkZoomEnabled();
  	} else if (wasKeyDown(KeyType::QUICKTUNE_NEXT)) {
@@ -308,17 +311,30 @@ index 27b5833..9eb50a9 100644
  	} else if (wasKeyDown(KeyType::QUICKTUNE_INC)) {
  		quicktune->inc();
  	} else if (wasKeyDown(KeyType::QUICKTUNE_DEC)) {
-@@ -2178,6 +2253,9 @@ void Game::processItemSelection(u16 *new_playeritem)
+@@ -2178,6 +2255,22 @@ void Game::processItemSelection(u16 *new_playeritem)
  	LocalPlayer *player = client->getEnv().getLocalPlayer();
  
  	*new_playeritem = player->getWieldIndex();
 +	if (cdda_client::CddaBridge::getInstance().ownsPlayer(client) &&
 +			cdda_client::CddaBridge::getInstance().getMetrics().pending_decision)
 +		return; // Number keys belong to the authoritative decision, not the hotbar.
++
++    auto& bridge = cdda_client::CddaBridge::getInstance();
++    if (bridge.ownsPlayer(client)) {
++        int slot = bridge.quickSlot();
++        const auto wheel = input->getMouseWheel();
++        const int direction = m_enable_hotbar_mouse_wheel ? wheel * (m_invert_hotbar_mouse_wheel ? -1 : 1) : 0;
++        if (direction < 0 || wasKeyDown(KeyType::HOTBAR_NEXT)) slot = slot % 9 + 1;
++        else if (direction > 0 || wasKeyDown(KeyType::HOTBAR_PREV)) slot = (slot + 7) % 9 + 1;
++        for (unsigned n = 0; n < 9; ++n)
++            if (wasKeyDown((GameKeyType)(KeyType::SLOT_1 + n))) slot = n + 1;
++        bridge.selectQuickSlot(slot);
++        return; // Never alter the native Luanti wield index for a CDDA bookmark.
++    }
  	u16 max_item = player->getMaxHotbarItemcount();
  	if (max_item == 0)
  		return;
-@@ -2238,6 +2316,18 @@ void Game::dropSelectedItem(bool single_item)
+@@ -2238,6 +2331,18 @@ void Game::dropSelectedItem(bool single_item)
  
  void Game::openInventory()
  {
@@ -337,7 +353,7 @@ index 27b5833..9eb50a9 100644
  	/*
  	 * Don't permit to open inventory is CAO or player doesn't exists.
  	 * This prevent showing an empty inventory at player load
-@@ -2737,8 +2827,83 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
+@@ -2737,8 +2842,83 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
  		control.aux1 = control.aux1 ^ true;
  	}
  
@@ -421,7 +437,7 @@ index 27b5833..9eb50a9 100644
  	//tt.stop();
  }
  
-@@ -2784,6 +2949,63 @@ inline void Game::step(f32 dtime)
+@@ -2784,6 +2964,63 @@ inline void Game::step(f32 dtime)
  
  	if (!m_is_paused)
  		client->step(dtime);
@@ -485,7 +501,7 @@ index 27b5833..9eb50a9 100644
  }
  
  static void pauseNodeAnimation(PausedNodesList &paused, scene::ISceneNode *node) {
-@@ -3246,6 +3468,7 @@ void Game::updateCamera(f32 dtime)
+@@ -3246,6 +3483,7 @@ void Game::updateCamera(f32 dtime)
  	tool_reload_ratio = MYMIN(tool_reload_ratio, 1.0);
  	camera->update(player, dtime, tool_reload_ratio);
  	camera->step(dtime);
@@ -493,7 +509,7 @@ index 27b5833..9eb50a9 100644
  
  	f32 camera_fov = camera->getFovMax();
  	v3s16 camera_offset = camera->getOffset();
-@@ -3262,6 +3485,7 @@ void Game::updateCamera(f32 dtime)
+@@ -3262,6 +3500,7 @@ void Game::updateCamera(f32 dtime)
  		if (m_camera_offset_changed) {
  			client->updateCameraOffset(camera_offset);
  			client->getEnv().updateCameraOffset(camera_offset);
@@ -501,7 +517,7 @@ index 27b5833..9eb50a9 100644
  
  			if (clouds)
  				clouds->updateCameraOffset(camera_offset);
-@@ -3314,6 +3538,8 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
+@@ -3314,6 +3553,8 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
  
  	const ItemDefinition &selected_def = selected_item.getDefinition(itemdef_manager);
  	f32 d = getToolRange(selected_item, hand_item, itemdef_manager);
@@ -510,7 +526,7 @@ index 27b5833..9eb50a9 100644
  
  	core::line3d<f32> shootline;
  
-@@ -3365,6 +3591,41 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
+@@ -3365,6 +3606,41 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
  	// but the halo rendering code is already inefficient so there's no point in optimizing it here
  	hud->updateSelectionMesh(camera_offset);
  
@@ -552,7 +568,17 @@ index 27b5833..9eb50a9 100644
  	// Allow digging again if button is not pressed
  	if (runData.digging_blocked && !isKeyDown(KeyType::DIG))
  		runData.digging_blocked = false;
-@@ -4319,7 +4580,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
+@@ -4247,7 +4523,8 @@ void Game::updateClouds(float dtime)
+ {
+ 	if (this->sky->getCloudsVisible()) {
+ 		this->clouds->setVisible(true);
+-		this->clouds->step(dtime);
++		const auto& bridge = cdda_client::CddaBridge::getInstance();
++        this->clouds->step(bridge.ownsPlayer(client) ? bridge.visualAnimationDelta() : dtime);
+ 		// this->camera->getPosition is not enough for third-person camera.
+ 		v3f camera_node_position = this->camera->getCameraNode()->getPosition();
+ 		v3s16 camera_offset      = this->camera->getOffset();
+@@ -4319,7 +4596,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
  	/*
  		Fog
  	*/
@@ -591,16 +617,17 @@ index 2da9efa..93b5bcd 100644
  		v2s32 pos(floor(e->pos.X * (float) m_screensize.X + 0.5),
  				floor(e->pos.Y * (float) m_screensize.Y + 0.5));
 diff --git a/src/client/inputhandler.cpp b/src/client/inputhandler.cpp
-index 88969f0..a179909 100644
+index 88969f0..be19634 100644
 --- a/src/client/inputhandler.cpp
 +++ b/src/client/inputhandler.cpp
-@@ -63,6 +63,13 @@ void KeyCache::populate()
+@@ -63,6 +63,14 @@ void KeyCache::populate()
  			getKeySetting("keymap_decrease_viewing_range_min");
  	key[KeyType::RANGESELECT] = getKeySetting("keymap_rangeselect");
  	key[KeyType::ZOOM] = getKeySetting("keymap_zoom");
 +	key[KeyType::CDDA_BODY] = getKeySetting("keymap_cdda_body");
 +    key[KeyType::CDDA_AIM] = getKeySetting("keymap_cdda_aim");
 +    key[KeyType::CDDA_RELOAD] = getKeySetting("keymap_cdda_reload");
++    key[KeyType::CDDA_QUICK_USE] = getKeySetting("keymap_cdda_quick_use");
 +    key[KeyType::CDDA_CRAFTING] = getKeySetting("keymap_cdda_crafting");
 +	key[KeyType::CDDA_RUN] = getKeySetting("keymap_cdda_run");
 +	key[KeyType::CDDA_CROUCH] = getKeySetting("keymap_cdda_crouch");
@@ -609,10 +636,10 @@ index 88969f0..a179909 100644
  	key[KeyType::QUICKTUNE_NEXT] = getKeySetting("keymap_quicktune_next");
  	key[KeyType::QUICKTUNE_PREV] = getKeySetting("keymap_quicktune_prev");
 diff --git a/src/client/keys.h b/src/client/keys.h
-index 4bce131..de74875 100644
+index 4bce131..f2c9cbf 100644
 --- a/src/client/keys.h
 +++ b/src/client/keys.h
-@@ -56,6 +56,13 @@ class KeyType
+@@ -56,6 +56,14 @@ class KeyType
  		DECREASE_VIEWING_RANGE,
  		RANGESELECT,
  		ZOOM,
@@ -620,6 +647,7 @@ index 4bce131..de74875 100644
 +        CDDA_CRAFTING,
 +        CDDA_AIM,
 +        CDDA_RELOAD,
++        CDDA_QUICK_USE,
 +		CDDA_RUN,
 +		CDDA_CROUCH,
 +		CDDA_PRONE,
@@ -686,16 +714,17 @@ index d6e2863..239953a 100644
  	std::vector<std::unique_ptr<MeshUpdateWorkerThread>> m_workers;
  };
 diff --git a/src/defaultsettings.cpp b/src/defaultsettings.cpp
-index 7758c96..cce4b34 100644
+index 7758c96..135b8b9 100644
 --- a/src/defaultsettings.cpp
 +++ b/src/defaultsettings.cpp
-@@ -166,6 +166,16 @@ void set_default_settings()
+@@ -166,6 +166,17 @@ void set_default_settings()
  	settings->setDefault("keymap_toggle_hud", "KEY_F1");
  	settings->setDefault("keymap_toggle_chat", "KEY_F2");
  	settings->setDefault("keymap_toggle_fog", "KEY_F3");
 +	settings->setDefault("keymap_cdda_body", "KEY_KEY_H");
 +    settings->setDefault("keymap_cdda_aim", "KEY_KEY_F");
 +    settings->setDefault("keymap_cdda_reload", "KEY_KEY_R");
++    settings->setDefault("keymap_cdda_quick_use", "KEY_KEY_G");
 +    settings->setDefault("keymap_cdda_crafting", "KEY_KEY_K");
 +	settings->setDefault("keymap_cdda_run", "KEY_LCONTROL");
 +	settings->setDefault("keymap_cdda_crouch", "KEY_LSHIFT");
@@ -707,25 +736,57 @@ index 7758c96..cce4b34 100644
  	settings->setDefault("keymap_toggle_update_camera", "KEY_F4");
  #else
 diff --git a/src/gui/guiFormSpecMenu.cpp b/src/gui/guiFormSpecMenu.cpp
-index ed1c300..60534fe 100644
+index ed1c300..bb3cc18 100644
 --- a/src/gui/guiFormSpecMenu.cpp
 +++ b/src/gui/guiFormSpecMenu.cpp
-@@ -3990,6 +3990,15 @@ bool GUIFormSpecMenu::preprocessEvent(const SEvent& event)
+@@ -3907,6 +3907,16 @@ bool GUIFormSpecMenu::preprocessEvent(const SEvent& event)
+ 	if (GUIModalMenu::preprocessEvent(event))
+ 		return true;
+ 
++    if (m_text_dst && m_text_dst->m_formname == "CWM_EQUIPMENT" &&
++        event.EventType == EET_MOUSE_INPUT_EVENT && event.MouseInput.Event == EMIE_LMOUSE_PRESSED_DOWN) {
++        const core::position2d<s32> point(event.MouseInput.X, event.MouseInput.Y);
++        for (const auto& field : m_fields) if (field.fname == "search") {
++            auto* search = getElementFromId(field.fid, true);
++            if (search && Environment->getFocus() == search && !search->getAbsolutePosition().isPointInside(point))
++                Environment->setFocus(this);
++        }
++    }
++
+ 	// The IGUITabControl renders visually using the skin's selected
+ 	// font, which we override for the duration of form drawing,
+ 	// but computes tab hotspots based on how it would have rendered
+@@ -3990,6 +4000,15 @@ bool GUIFormSpecMenu::preprocessEvent(const SEvent& event)
  
  void GUIFormSpecMenu::tryClose()
  {
 +    // The equipment search is a nested view. Escape/Inventory first returns
 +    // to its grid without dropping the modal pause or firing native actions.
-+    if (m_text_dst && m_text_dst->m_formname == "CWM_EQUIPMENT" &&
-+            std::any_of(m_fields.begin(), m_fields.end(), [](const auto& field) {
-+                return field.fname == "search";
-+            })) {
-+        m_text_dst->gotText(StringMap{{"search_back", "true"}});
-+        return;
++    if (m_text_dst && m_text_dst->m_formname == "CWM_EQUIPMENT") {
++        const auto* focused = Environment->getFocus();
++        for (const auto& field : m_fields) if (field.fname == "search" && focused && focused->getID() == field.fid) {
++            Environment->setFocus(this);
++            return; // First Escape blurs; the next closes the inventory.
++        }
 +    }
  	if (m_allowclose) {
  		doPause = false;
  		acceptInput(quit_mode_cancel);
+@@ -4757,6 +4776,14 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
+ 	}
+ 
+ 	if (event.EventType == EET_GUI_EVENT) {
++        if (m_text_dst && m_text_dst->m_formname == "CWM_EQUIPMENT" &&
++            (event.GUIEvent.EventType == gui::EGET_ELEMENT_FOCUSED || event.GUIEvent.EventType == gui::EGET_ELEMENT_FOCUS_LOST)) {
++            for (const auto& field : m_fields) if (field.fname == "search" && event.GUIEvent.Caller->getID() == field.fid) {
++                auto* search = static_cast<gui::IGUIEditBox*>(event.GUIEvent.Caller);
++                search->setOverrideColor(event.GUIEvent.EventType == gui::EGET_ELEMENT_FOCUSED ?
++                    video::SColor(255, 30, 125, 165) : video::SColor(255, 50, 50, 50));
++            }
++        }
+ 		if (event.GUIEvent.EventType == gui::EGET_TAB_CHANGED
+ 				&& isVisible()) {
+ 			// find the element that was clicked
 diff --git a/src/gui/guiScene.cpp b/src/gui/guiScene.cpp
 index f30c4f3..74e7a6a 100644
 --- a/src/gui/guiScene.cpp
@@ -817,7 +878,7 @@ index 5d6b891..48c0d59 100644
  		g_settings->getFlagStr("anticheat_flags", flagdesc_anticheat, nullptr);
  
 diff --git a/src/unittest/test_mapblock.cpp b/src/unittest/test_mapblock.cpp
-index 7f3f860..7856d68 100644
+index 7f3f860..551e5c5 100644
 --- a/src/unittest/test_mapblock.cpp
 +++ b/src/unittest/test_mapblock.cpp
 @@ -10,6 +10,16 @@
@@ -893,7 +954,7 @@ index 7f3f860..7856d68 100644
 +    UASSERT(form.find(";action_0;") != std::string::npos);
 +    UASSERT(form.find(";action_2;") == std::string::npos);
 +    UASSERT(form.find("rock\\]\\;button\\[") != std::string::npos);
-+    UASSERT(form.find(";search;;") == std::string::npos);
++    UASSERT(form.find(";search;;") != std::string::npos);
 +    UASSERT(form.find("set_focus[search") == std::string::npos);
 +    UASSERT(form.find(";worn_1;") != std::string::npos);
 +    UASSERT(form.find(";details;") != std::string::npos);
@@ -1174,10 +1235,10 @@ index 0000000..2214cd4
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..71d029b
+index 0000000..89ff668
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,2516 @@
+@@ -0,0 +1,2598 @@
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
@@ -1186,6 +1247,7 @@ index 0000000..71d029b
 +#include "ground_item_visual.h"
 +#include "ground_item_formspec.h"
 +#include "equipment_inventory.h"
++#include "quickbar.h"
 +#include "crafting_inventory.h"
 +#include "decision_text.h"
 +#include "avatar_status.h"
@@ -1327,6 +1389,9 @@ index 0000000..71d029b
 +    std::chrono::steady_clock::time_point item_hint_until_;
 +    irr::gui::IGUIStaticText* item_hint_text_{nullptr};
 +
++    QuickbarView quick_slots_; unsigned quick_slot_{1};
++    uint64_t quick_bind_command_{0}; bool quick_bind_refresh_{false};
++    uint64_t quick_use_sent_{0};
 +    EquipmentView equipment_view_;
 +    uint64_t activity_token_{0}, cancel_activity_sent_{0};
 +    int activity_total_{0}, activity_remaining_{0};
@@ -1373,7 +1438,7 @@ index 0000000..71d029b
 +    uint32_t equipment_selected_{0};
 +    size_t equipment_page_{0}, equipment_saved_page_{0};
 +    int equipment_filter_{0};
-+    bool equipment_search_open_{false}, equipment_details_open_{false}, equipment_focus_search_{false};
++    bool equipment_search_open_{true}, equipment_details_open_{false}, equipment_focus_search_{false};
 +    size_t equipment_worn_page_{0};
 +    std::string equipment_search_, equipment_notice_;
 +    struct QueuedEquipment { uint64_t view; uint32_t item; int action; };
@@ -1389,10 +1454,11 @@ index 0000000..71d029b
 +            destination_page_, transfer_quantity_, equipment_notice_, [&](const auto& type) { return ground_item_visual_name(type); }, activity_token_);
 +        return equipmentForm(equipment_view_, equipment_page_, equipment_selected_, equipment_search_,
 +            equipment_filter_, equipment_notice_, [&](const auto& type) { return ground_item_visual_name(type); }, activity_token_, first_aid_, crafting_, reloading_, transferring_,
-+            equipment_search_open_, equipment_details_open_, equipment_worn_page_, equipment_focus_search_);
++            equipment_search_open_, equipment_details_open_, equipment_worn_page_, equipment_focus_search_, quick_slot_);
 +    }
 +    void cancel_equipment() {
 +        dismiss_inventory_work(); native_work_command_ = 0; native_work_settled_ = false;
++        quick_slots_ = {}; quick_bind_command_ = 0; quick_bind_refresh_ = false;
 +        queued_crafting_.reset(); crafting_query_ = 0; crafting_view_ = {};
 +        crafting_close_ = crafting_open_;
 +        queued_cancel_activity_.reset(); activity_token_ = 0; weapon_token_ = 0; reloading_ = false;
@@ -1436,6 +1502,7 @@ index 0000000..71d029b
 +            else {
 +                const std::array<const wchar_t*,6> labels{{L"Impugna", L"Riponi", L"Indossa", L"Togli", L"Mangia / bevi", L"Medica"}};
 +                inventory_work_label_ = labels[queued_equipment_->action];
++                if (const auto* selected = equipment_view_.entry(queued_equipment_->item)) inventory_work_label_ += L": " + utf8_to_wide(selected->name);
 +            }
 +        }
 +        queued_equipment_.reset(); queued_cancel_activity_.reset(); queued_crafting_.reset(); queued_transfer_.reset();
@@ -2201,6 +2268,14 @@ index 0000000..71d029b
 +            case CDDA::CWM::Payload::WorldSnapshot: {
 +                std::lock_guard<std::recursive_mutex> lock(CddaBridge::projectionMutex());
 +                const auto* snap = msg->payload_as_WorldSnapshot();
++                quick_slots_ = {};
++                if (snap && snap->quick_slots()) for (const auto* slot : *snap->quick_slots()) {
++                    auto& target = quick_slots_[slot->slot() - 1]; target.binding = slot->binding_id()->str();
++                    target.item.type = slot->type_id()->str(); target.item.name = slot->name()->str();
++                    target.item.category = slot->category()->str(); target.item.charges = slot->charges();
++                    target.item.counted = slot->count_by_charges(); target.item.worn = slot->worn();
++                    target.item.wielded = slot->wielded(); target.item.actions = slot->actions(); target.item.rotten = slot->rotten();
++                }
 +                if (!snap || !snap->origin()) {
 +                    warningstream << "[Luanti-CDDA] Ignoring snapshot without origin" << std::endl;
 +                    break;
@@ -2391,7 +2466,8 @@ index 0000000..71d029b
 +                    owned_items_.clear();
 +                    for (const auto* item : *snap->owned_items())
 +                        owned_items_.push_back({item->stack_index(), item->type_id()->str(),
-+                            item->name()->str(), item->charges(), item->count_by_charges()});
++                            item->name()->str(), item->charges(), item->count_by_charges(),
++                            item->category() ? item->category()->str() : "", item->wielded(), item->rotten()});
 +                    if (ground_container_open_)
 +                        populate_mirror(owned_mirror_, owned_items_, 36);
 +                }
@@ -2540,6 +2616,10 @@ index 0000000..71d029b
 +
 +            case CDDA::CWM::Payload::CommandAck: {
 +                const auto* ack = msg->payload_as_CommandAck();
++                if (ack && ack->command_id() == quick_bind_command_) {
++                    quick_bind_refresh_ = true;
++                    equipment_notice_ = ack->accepted() ? "Collegamento rapido aggiornato." : decisionPlainText(ack->error_message()->str());
++                }
 +                if (ack) {
 +                    if (ack->command_id() == inventory_work_command_ && !ack->accepted()) {
 +                        inventory_work_rejected_ = true;
@@ -2720,7 +2800,7 @@ index 0000000..71d029b
 +    std::string trace_path;
 +    if (g_settings->getNoEx("cwm_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->trace_.open(trace_path);
-+        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog,ipc_connected,ipc_input,ipc_output,ipc_read_bytes,ipc_write_bytes,ipc_frames,ipc_dispatch_bytes,ipc_read_calls,ipc_write_calls,session_state,input_ready,session_id,player_id,connection_id,sequence,resync_count,entity_cache,vehicle_cache,scene_origin_x,scene_origin_y,simulation_time,realtime,pause_reasons,time_scale,sent_intent,continuous_motion,intent_x,intent_y,ipc_latency_ms,projection_ms,ground_tiles,owned_items,ground_container,ground_hover,queued_pickup,ground_visual_nodes,ground_hover_items,ground_target_items,ground_target_visual_nodes,ground_target_first_type,status_available,body_form,survival_visible,status_stamina,status_head,status_arm_l,combat_hover,attacks_sent,attack_target,attack_target_hp,attack_result,player_state_flags,player_eye_offset,visual_animation_time,visual_animation_delta,ground_item_rotation,status_hunger_level,status_thirst_level,status_fatigue_level,status_pain_level,hud_images_active,equipment_form,inventory_view,inventory_entries,equipment_selected,equipment_sent,pending_decision,consumption_token,consumption_total,consumption_remaining,cancel_consumption_sent,first_aid_token,first_aid_total,first_aid_remaining,crafting_form,crafting_view,crafting_selected,crafting_sent,crafting_token,crafting_progress,weapon_token,weapon_ammo,weapon_recoil,aim_sent,fire_sent,reload_sent,reload_token,reload_total,reload_remaining,transfer_form,transfers_sent,transfer_token,transfer_total,transfer_remaining,inventory_work_command,native_work_command,native_work_settled,inventory_return,inventory_work_visible,equipment_page,equipment_filter,equipment_search_open\n";
++        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog,ipc_connected,ipc_input,ipc_output,ipc_read_bytes,ipc_write_bytes,ipc_frames,ipc_dispatch_bytes,ipc_read_calls,ipc_write_calls,session_state,input_ready,session_id,player_id,connection_id,sequence,resync_count,entity_cache,vehicle_cache,scene_origin_x,scene_origin_y,simulation_time,realtime,pause_reasons,time_scale,sent_intent,continuous_motion,intent_x,intent_y,ipc_latency_ms,projection_ms,ground_tiles,owned_items,ground_container,ground_hover,queued_pickup,ground_visual_nodes,ground_hover_items,ground_target_items,ground_target_visual_nodes,ground_target_first_type,status_available,body_form,survival_visible,status_stamina,status_head,status_arm_l,combat_hover,attacks_sent,attack_target,attack_target_hp,attack_result,player_state_flags,player_eye_offset,visual_animation_time,visual_animation_delta,ground_item_rotation,status_hunger_level,status_thirst_level,status_fatigue_level,status_pain_level,hud_images_active,equipment_form,inventory_view,inventory_entries,equipment_selected,equipment_sent,pending_decision,consumption_token,consumption_total,consumption_remaining,cancel_consumption_sent,first_aid_token,first_aid_total,first_aid_remaining,crafting_form,crafting_view,crafting_selected,crafting_sent,crafting_token,crafting_progress,weapon_token,weapon_ammo,weapon_recoil,aim_sent,fire_sent,reload_sent,reload_token,reload_total,reload_remaining,transfer_form,transfers_sent,transfer_token,transfer_total,transfer_remaining,inventory_work_command,native_work_command,native_work_settled,inventory_return,inventory_work_visible,equipment_page,equipment_filter,equipment_search_open,quick_slot,quick_count,quick_wielded,quick_use_sent,quick_bind_command\n";
 +    }
 +    if (g_settings->getNoEx("cwm_entity_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->entity_trace_.open(trace_path);
@@ -2901,13 +2981,22 @@ index 0000000..71d029b
 +        << ',' << (pimpl_->transferring_ ? pimpl_->activity_remaining_ : 0)
 +        << ',' << pimpl_->inventory_work_command_ << ',' << pimpl_->native_work_command_ << ',' << pimpl_->native_work_settled_
 +        << ',' << pimpl_->inventory_return_requested_ << ',' << (pimpl_->inventory_work_text_ && pimpl_->inventory_work_text_->isVisible())
-+        << ',' << pimpl_->equipment_page_ << ',' << pimpl_->equipment_filter_ << ',' << pimpl_->equipment_search_open_ << '\n';
++        << ',' << pimpl_->equipment_page_ << ',' << pimpl_->equipment_filter_ << ',' << pimpl_->equipment_search_open_
++        << ',' << pimpl_->quick_slot_ << ',' << std::count_if(pimpl_->quick_slots_.begin(), pimpl_->quick_slots_.end(), [](const auto& s) { return bool(s); })
++        << ',' << [&]() { for (unsigned n = 0; n < 9; ++n) if (pimpl_->quick_slots_[n].item.wielded) return n + 1; return 0u; }()
++        << ',' << pimpl_->quick_use_sent_ << ',' << pimpl_->quick_bind_command_ << '\n';
 +    pimpl_->trace_.flush();
 +}
 +
 +void CddaBridge::update(float dtime) {
 +    if (pimpl_) {
 +        pimpl_->update(dtime);
++    if (pimpl_ && pimpl_->quick_bind_refresh_ && !pimpl_->pending_move_) {
++        pimpl_->quick_bind_refresh_ = false;
++        if (pimpl_->equipment_open_) {
++            const auto notice = pimpl_->equipment_notice_; pimpl_->query_inventory(); pimpl_->equipment_notice_ = notice;
++        }
++    }
 +        auto& i = *pimpl_;
 +        if (i.inventory_work_command_ && i.inventory_work_settled_ && !i.pending_move_ &&
 +            i.session_.ready() && i.player_ready_ && !i.metrics_.pending_decision && !i.metrics_.pause_reasons &&
@@ -3253,13 +3342,38 @@ index 0000000..71d029b
 +    return true;
 +}
 +
++unsigned CddaBridge::quickSlot() const { return pimpl_ ? pimpl_->quick_slot_ : 1; }
++void CddaBridge::selectQuickSlot(unsigned slot) { if (pimpl_ && slot >= 1 && slot <= 9) pimpl_->quick_slot_ = slot; }
++
++void CddaBridge::useQuickSlot() {
++    if (!pimpl_ || !pimpl_->session_.ready() || !pimpl_->player_ready_) return;
++    auto& i = *pimpl_;
++    const auto& slot = i.quick_slots_[i.quick_slot_ - 1];
++    const auto action = quickDefaultAction(slot.item);
++    if (!slot || action < 0 || i.pending_move_ || i.activity_token_ || (i.inventory_work_command_ && !i.inventory_work_settled_) || i.metrics_.pause_reasons ||
++        i.metrics_.pending_decision || i.equipment_open_ || i.body_form_open_ || i.crafting_open_ || i.ground_container_open_) {
++        i.item_hint_ = !slot ? L"Slot rapido vuoto. Assegna un oggetto con I." : L"Azione non disponibile: riprendi o concludi il lavoro in corso.";
++        i.item_hint_until_ = std::chrono::steady_clock::now() + std::chrono::seconds(4);
++        return; // Never retain a paused/busy key for later execution.
++    }
++    auto wire = i.session_.builder(); const auto id = i.session_.next_command++;
++    const auto bytes = wire.build_quickbar_use(id, i.quick_slot_, slot.binding, static_cast<CDDA::CWM::EquipmentAction>(action));
++    if (!i.connection_->send_message(bytes.data(), bytes.size())) return;
++    i.dismiss_inventory_work();
++    i.inventory_work_command_ = id;
++    const std::array<std::wstring,6> names{{L"Impugna",L"Riponi",L"Indossa",L"Togli",L"Consuma",L"Medica"}};
++    i.inventory_work_label_ = names[action] + L": " + utf8_to_wide(slot.item.name);
++    i.pending_move_ = id; i.move_acked_ = false; i.sent_move_ = std::chrono::steady_clock::now();
++    ++i.quick_use_sent_;
++}
++
 +std::string CddaBridge::openEquipmentInventory() {
 +    if (!pimpl_ || !pimpl_->session_.ready() || !pimpl_->player_ready_ || pimpl_->pending_move_ ||
 +        pimpl_->body_form_open_ || pimpl_->crafting_open_ || pimpl_->ground_container_open_ || pimpl_->metrics_.pending_decision) return {};
 +    auto& i = *pimpl_;
 +    i.dismiss_inventory_work();
 +    i.equipment_open_ = true; i.equipment_close_ = false; i.transfer_form_ = false;
-+    i.equipment_search_open_ = i.equipment_focus_search_ = false;
++    i.equipment_search_open_ = true; i.equipment_focus_search_ = false;
 +    setMenuPause(true);
 +    if (!i.query_inventory()) i.equipment_view_.error = "Inventario non disponibile: riprova.";
 +    return i.equipment_form();
@@ -3361,6 +3475,23 @@ index 0000000..71d029b
 +        if ((e.wielded && fields.count("hand_" + std::to_string(e.id))) ||
 +            (e.worn && fields.count("worn_" + std::to_string(e.id))) ||
 +            fields.count("quick_" + std::to_string(e.id))) i.equipment_selected_ = e.id;
++    for (unsigned n = 1; n <= 9; ++n) if (fields.count("quickslot_" + std::to_string(n))) i.quick_slot_ = n;
++    if (fields.count("quick_bind") || fields.count("quick_clear")) {
++        const bool clear = fields.count("quick_clear");
++        const auto* selected = i.equipment_view_.entry(i.equipment_selected_);
++        if (!i.session_.ready() || i.pending_move_) i.equipment_notice_ = "Attendi lo stato aggiornato.";
++        else if (!clear && !selected) i.equipment_notice_ = "Seleziona prima un oggetto nella griglia.";
++        else {
++            auto wire = i.session_.builder(); const auto id = i.session_.next_command++;
++            const auto bytes = wire.build_quickbar_bind(id, i.quick_slot_, clear ? 0 : i.equipment_view_.view,
++                clear ? 0 : selected->id, i.quick_slots_[i.quick_slot_ - 1].binding);
++            if (i.connection_->send_message(bytes.data(), bytes.size())) {
++                i.quick_bind_command_ = id; i.pending_move_ = id; i.move_acked_ = false;
++                i.sent_move_ = std::chrono::steady_clock::now();
++            }
++        }
++        i.equipment_dirty_ = true; return;
++    }
 +    if (const auto* selected = i.equipment_view_.entry(i.equipment_selected_)) {
 +        for (int action = 0; action < 6; ++action) if (fields.count("action_" + std::to_string(action))) {
 +            if (!(selected->actions & (1 << action))) i.equipment_notice_ = selected->reasons[action];
@@ -3543,22 +3674,33 @@ index 0000000..71d029b
 +                    x, y, px(19), px(19), L"Stamina");
 +        }
 +    }
-+    // Read-only possessions: no Luanti selected-item or free wield operation.
 +    if (pimpl_->possessions_text_) pimpl_->possessions_text_->setVisible(false);
-+    const auto count = pimpl_->owned_items_.size();
-+    for (int i = 0; i < slots; ++i) {
-+        const int x = left + px(i * 44);
-+        std::string tooltip = "Oggetti posseduti (vista)";
-+        if (i == slots - 1 && count > size_t(slots)) tooltip += " +" + std::to_string(count - slots);
-+        image("mcl_formspec_itemslot.png", x, bottom, px(42), px(42), utf8_to_wide(tooltip));
-+        if (size_t(i) >= count) continue;
-+        const auto& owned = pimpl_->owned_items_[i];
-+        const auto name = pimpl_->ground_item_visual_name(owned.type_id);
++    auto icon_texture = [&](const EquipmentEntry& entry) {
++        const auto name = pimpl_->ground_item_visual_name(entry.type);
 +        const auto& def = pimpl_->client_->getItemDefManager()->get(name);
-+        tooltip += "\n" + owned.name;
-+        if (owned.count_by_charges) tooltip += " x" + std::to_string(owned.charges);
-+        image(def.inventory_image.empty() ? "cdda_items_fallback.png" : def.inventory_image,
-+            x + px(4), bottom + px(4), px(34), px(34), utf8_to_wide(tooltip));
++        auto texture = name == "cdda_items:fallback_generic" || def.inventory_image.empty() ? equipmentCategoryIcon(entry) : def.inventory_image;
++        if (entry.rotten) texture += "^[colorize:#667322:110";
++        return texture;
++    };
++    for (int n = 0; n < slots; ++n) {
++        const int x = left + px(n * 44);
++        const auto& slot = pimpl_->quick_slots_[n];
++        const auto selected = pimpl_->quick_slot_ == unsigned(n + 1);
++        const auto background = std::string("mcl_formspec_itemslot.png") +
++            (selected ? "^[colorize:#E8CF57:150" : "");
++        image(background, x, bottom, px(42), px(42), L"Barra rapida: rotella / 1-9. G: usa o equipaggia.");
++        if (!slot) continue;
++        if (slot.item.wielded) image("mcl_formspec_itemslot.png^[colorize:#4CA5C0:200", x + px(3), bottom + px(3), px(36), px(36), L"In mano");
++        image(icon_texture(slot.item), x + px(6), bottom + px(6), px(30), px(30), utf8_to_wide(slot.item.name));
++    }
++    // The real hand remains visible even when its item has no quick shortcut.
++    for (const auto& owned : pimpl_->owned_items_) if (owned.wielded) {
++        EquipmentEntry hand; hand.type = owned.type_id; hand.name = owned.name;
++        hand.category = owned.category; hand.rotten = owned.rotten;
++        const int x = left + px(slots * 44 + 12);
++        image("mcl_formspec_itemslot.png^[colorize:#4CA5C0:200", x, bottom, px(42), px(42), L"Oggetto realmente in mano");
++        image(icon_texture(hand), x + px(4), bottom + px(4), px(34), px(34), utf8_to_wide("In mano: " + hand.name));
++        break;
 +    }
 +
 +    if (!pimpl_->item_hint_text_)
@@ -3573,7 +3715,8 @@ index 0000000..71d029b
 +            consumption_hint = (pimpl_->transferring_ ? L"Trasferimento in corso: " : pimpl_->crafting_ ? L"Crafting in corso: " : pimpl_->first_aid_ ? L"Trattamento in corso: " : pimpl_->reloading_ ? L"Ricarica in corso: " : L"Consumo in corso: ") + std::to_wstring(percent) + L"% - I: interrompi";
 +        }
 +        if (pimpl_->transferring_ && !pimpl_->activity_total_) consumption_hint = L"Deposito nativo in corso - I: interrompi";
-+        pimpl_->item_hint_text_->setText(consumption_hint.empty() ? hint.c_str() : consumption_hint.c_str());
++        const auto plain_hint = utf8_to_wide(decisionPlainText(wide_to_utf8(consumption_hint.empty() ? hint : consumption_hint)));
++        pimpl_->item_hint_text_->setText(plain_hint.c_str());
 +        pimpl_->item_hint_text_->setVisible(pimpl_->session_.ready() &&
 +            !pimpl_->metrics_.pending_decision && !pimpl_->ground_container_open_ && !pimpl_->equipment_open_ && !pimpl_->crafting_open_);
 +    }
@@ -3696,10 +3839,10 @@ index 0000000..71d029b
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.h b/src/cdda/cdda_bridge.h
 new file mode 100644
-index 0000000..a644c52
+index 0000000..ff7d8a8
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.h
-@@ -0,0 +1,161 @@
+@@ -0,0 +1,164 @@
 +// Luanti C++ CWM Presentation Bridge
 +// Licensed under Apache-2.0
 +#pragma once
@@ -3849,6 +3992,9 @@ index 0000000..a644c52
 +        uint16_t decision_choices{0};
 +    };
 +    Metrics getMetrics() const;
++    unsigned quickSlot() const;
++    void selectQuickSlot(unsigned slot);
++    void useQuickSlot();
 +
 +    // F3 Debug Overlay
 +    void renderDebugOverlay(irr::gui::IGUIEnvironment* guienv);
@@ -3963,10 +4109,10 @@ index 0000000..8a266d4
 +} // namespace cdda_client
 diff --git a/src/cdda/equipment_inventory.h b/src/cdda/equipment_inventory.h
 new file mode 100644
-index 0000000..0be9a4c
+index 0000000..1248eee
 --- /dev/null
 +++ b/src/cdda/equipment_inventory.h
-@@ -0,0 +1,296 @@
+@@ -0,0 +1,304 @@
 +#pragma once
 +#include "avatar_status.h"
 +#include "cwm/cwm_generated.h"
@@ -3989,6 +4135,7 @@ index 0000000..0be9a4c
 +    std::array<std::string, 6> reasons;
 +    int consume_moves{}; std::string consume_label, consume_warning;
 +    std::string transfer_reason; bool container{};
++    unsigned quick_slot{}; bool rotten{};
 +};
 +struct EquipmentPocket {
 +    uint32_t owner{}, index{}; std::string name;
@@ -4009,7 +4156,7 @@ index 0000000..0be9a4c
 +        for (const auto* e : *source.entries()) {
 +            EquipmentEntry entry{e->id(), e->parent_id(), e->pocket_index(),
 +                e->type_id()->str(), e->name()->str(), e->category()->str(), e->charges(), e->access_moves(),
-+                e->count_by_charges(), e->worn(), e->wielded(), e->weight_grams(), e->volume_ml(), e->length_mm(), e->actions(), {}, e->consume_moves(), e->consume_label()->str(), e->consume_warning()->str(), e->transfer_reason()->str(), e->container()};
++                e->count_by_charges(), e->worn(), e->wielded(), e->weight_grams(), e->volume_ml(), e->length_mm(), e->actions(), {}, e->consume_moves(), e->consume_label()->str(), e->consume_warning()->str(), e->transfer_reason()->str(), e->container(), e->quick_slot(), e->rotten()};
 +            for (unsigned i = 0; i < 6; ++i) entry.reasons[i] = e->reasons()->Get(i)->str();
 +            entries.push_back(std::move(entry));
 +        }
@@ -4082,7 +4229,8 @@ index 0000000..0be9a4c
 +        const std::string& search, int filter, const std::string& notice,
 +        const std::function<std::string(const std::string&)>& icon, uint64_t consumption_token = 0,
 +        bool first_aid = false, bool crafting = false, bool reloading = false, bool transferring = false,
-+        bool search_open = false, bool details_open = false, size_t worn_page = 0, bool focus_search = false) {
++        bool search_open = false, bool details_open = false, size_t worn_page = 0, bool focus_search = false, unsigned quick_slot = 1) {
++    (void)search_open;
 +    std::string f = "formspec_version[4]size[16,11]no_prepend[]bgcolor[#00000000]"
 +        "background9[0,0;16,11;mcl_base_textures_background9.png;false;7]"
 +        "style_type[label;textcolor=#323232]style_type[textarea;textcolor=#323232]"
@@ -4090,16 +4238,11 @@ index 0000000..0be9a4c
 +        "label[0.5,0.4;Inventario]button[11.6,0.2;3.9,0.6;transfers;Quantita e trasferimenti]"
 +        "button[11.3,0.95;2.1,0.6;refresh;Aggiorna]button_exit[13.7,0.95;1.8,0.6;close;Chiudi]"
 +        "style_type[image_button;border=false;bgimg=;bgimg_pressed=]box[11.05,1.75;0.025,8.75;#77777770]";
-+    if (search_open) {
-+        f += "field[0.5,4.65;5.2,0.6;search;;" + statusEscape(search) + "]field_close_on_enter[search;false]"
-+            "button[5.85,4.65;1.3,0.6;find;Cerca]button[7.3,4.65;0.95,0.6;search_back;Fine]"
-+            "dropdown[8.4,4.65;2.4,0.6;filter;Tutti,Equipaggiati,Contenitori;" + std::to_string(filter + 1) + "]";
-+        if (focus_search) f += "set_focus[search;true]";
-+    } else {
-+        f += "dropdown[0.5,4.65;3,0.6;filter;Tutti,Equipaggiati,Contenitori;" + std::to_string(filter + 1) + "]"
-+            "button[3.7,4.65;2.4,0.6;search_open;Cerca...]";
-+        if (!search.empty()) f += "button[6.3,4.65;4.5,0.6;search_clear;Rimuovi ricerca]";
-+    }
++    f += "field[0.5,4.65;5.2,0.6;search;;" + statusEscape(search) + "]field_close_on_enter[search;false]"
++        "button[5.85,4.65;1.3,0.6;find;Cerca]button[7.3,4.65;0.95,0.6;search_clear;X]"
++        "dropdown[8.4,4.65;2.4,0.6;filter;Tutti,Equipaggiati,Contenitori;" + std::to_string(filter + 1) + "]";
++    f += focus_search ? "set_focus[search;true]" : "set_focus[refresh;false]";
++    f += "tooltip[search;Clic per cercare. Clic altrove o Esc lascia la ricerca.]";
 +    if (!view.view) return f + "label[0.5,2.2;" + statusEscape(view.error.empty() ? "Lettura inventario..." : view.error) + "]";
 +    f += "label[0.5,1.05;Peso " + equipmentAmount(view.weight) + " / " + equipmentAmount(view.weight_capacity) +
 +        " kg   Spazio " + equipmentAmount(view.volume) + " / " + equipmentAmount(view.volume_capacity) + " L]";
@@ -4115,6 +4258,7 @@ index 0000000..0be9a4c
 +        const bool generic = visual.empty() || visual == "cdda_items:fallback_generic";
 +        f += std::string(generic ? "image_button[" : "item_image_button[") + position + ";1.05,1.05;" +
 +            statusEscape(generic ? equipmentCategoryIcon(*e) : visual) + ";" + key + ";]";
++        if (e->rotten) f += "box[" + position + ";1.05,1.05;#66732250]label[" + std::to_string(x + .8) + "," + std::to_string(y + .18) + ";!]";
 +        if (e->counted && e->charges != 1) f += "label[" + std::to_string(x + .08) + "," + std::to_string(y + .87) + ";" + std::to_string(e->charges) + "]";
 +        f += "tooltip[" + key + ";" + statusEscape(e->name + (e->counted ? " x" + std::to_string(e->charges) : "") +
 +            "\n" + view.source(e->id) + (generic ? "\nIcona di categoria / segnaposto" : "\nIcona dal mapping (puo essere un proxy)") + "\nClic: seleziona. Le azioni sono nel pannello a destra.") + "]";
@@ -4149,13 +4293,19 @@ index 0000000..0be9a4c
 +        const auto* e = i < ids.size() ? view.entry(ids[i]) : nullptr;
 +        slot(.5 + (n % 9) * 1.15, 5.45 + (n / 9) * 1.15, e, e ? "item_" + std::to_string(e->id) : "");
 +    }
-+    f += "label[0.5,9.15;Barra oggetti (vista)]button[7.05,8.95;0.8,0.5;prev;<]label[8.05,9.2;" +
++    f += "button[0.5,8.95;3.1,0.5;quick_bind;Assegna allo slot " + std::to_string(quick_slot) + "]"
++        "button[3.8,8.95;2.8,0.5;quick_clear;Svuota slot]button[7.05,8.95;0.8,0.5;prev;<]label[8.05,9.2;" +
 +        std::to_string(page + 1) + " / " + std::to_string(pages) + "]button[9.95,8.95;0.8,0.5;next;>]";
-+    // Same native visit order as the owned-items HUD. This row does not bind
-+    // quick actions or grant capacity, and does not hide nested possessions.
-+    for (size_t n = 0; n < 9; ++n) {
-+        const auto* e = n < view.entries.size() ? &view.entries[n] : nullptr;
-+        slot(.5 + n * 1.15,9.5,e,e ? "quick_" + std::to_string(e->id) : "");
++    // Slots are explicit bookmarks, independent of full inventory order.
++    for (unsigned n = 1; n <= 9; ++n) {
++        const EquipmentEntry* e = nullptr;
++        for (const auto& candidate : view.entries) if (candidate.quick_slot == n) e = &candidate;
++        const double x = .5 + (n - 1) * 1.15;
++        slot(x,9.5,e,"quickslot_" + std::to_string(n), e && e->wielded);
++        if (n == quick_slot) f += "box[" + std::to_string(x) + ",9.5;1.05,0.06;#E8CF57FF]";
++        if (!e) f += "button[" + std::to_string(x) + ",9.5;1.05,1.05;quickslot_" + std::to_string(n) + ";" + std::to_string(n) + "]";
++        f += "tooltip[quickslot_" + std::to_string(n) + ";Slot " + std::to_string(n) +
++            ": clic seleziona lo slot. Assegna aggiunge l'oggetto scelto; Svuota rimuove solo il collegamento.]";
 +    }
 +    if (const auto* e = view.entry(selected)) {
 +        const auto visual = icon(e->type);
@@ -4205,7 +4355,9 @@ index 0000000..0be9a4c
 +        }
 +    } else f += "textarea[11.35,3.1;4.15,2.4;;;Seleziona un oggetto.\n\nClic sulle icone: solo selezione.\nLe azioni disponibili appaiono qui.]";
 +    if (consumption_token) f += "button[11.35,10.1;4.15,0.5;cancel_consume;" + std::string(transferring ? "Interrompi trasferimento" : crafting ? "Interrompi crafting" : first_aid ? "Interrompi trattamento" : reloading ? "Interrompi ricarica" : "Interrompi consumo") + "]";
-+    f += "label[0.5,10.8;" + statusEscape(notice.empty() ? (view.truncated ? "Vista limitata: parte dei contenuti non mostrata." : "") : notice) + "]";
++    if (!notice.empty()) f += "box[0.4,10.57;10.5,0.4;#F2CEAAFF]hypertext[0.5,10.58;10.3,0.4;;" +
++        statusEscape("<global color=#6B2915 size=18><b>" + equipmentMarkup(notice) + "</b>") + "]";
++    else if (view.truncated) f += "label[0.5,10.8;Vista limitata: parte dei contenuti non mostrata.]";
 +    return f;
 +}
 +// A read-only pair of panels; destinations are real owned container identities.
@@ -4253,13 +4405,15 @@ index 0000000..0be9a4c
 +    f += "button[8,8.8;1.2,0.6;dest_prev;<]label[9.5,9.1;" + std::to_string(destination_page + 1) + " / " + std::to_string(destination_pages) + "]button[14.3,8.8;1.2,0.6;dest_next;>]";
 +    if (const auto* e = view.entry(source)) {
 +        f += "label[0.5,1.75;" + statusEscape(e->name) + "]label[0.5,2.15;" + statusEscape("Disponibili: " + std::to_string(e->counted ? e->charges : 1)) + "]";
-+        f += "field[0.5,9.65;1.5,0.65;quantity;Quantita;" + std::to_string(quantity) + "]field_close_on_enter[quantity;false]";
++        f += "label[0.5,9.55;Quantita]field[0.5,9.8;1.5,0.55;quantity;;" + std::to_string(quantity) + "]field_close_on_enter[quantity;false]";
 +        if (e->transfer_reason.empty() && !activity_token) {
 +            f += "button[2.3,9.65;4.7,0.65;drop;Deposita a terra]";
 +            if (destination) f += "button[8,9.65;7.5,0.65;insert;Trasferisci nel contenitore]";
 +        }
 +    }
-+    f += "label[0.5,10.6;" + statusEscape(notice.empty() ? "Scegli quantita e destinazione. CDDA verifica capacita e paga accesso/trasferimento." : notice) + "]";
++    if (!notice.empty()) f += "box[0.4,10.4;15.1,0.5;#F2CEAAFF]hypertext[0.5,10.42;14.9,0.48;;" +
++        statusEscape("<global color=#6B2915 size=18><b>" + equipmentMarkup(notice) + "</b>") + "]";
++    else f += "label[0.5,10.6;Scegli quantita e destinazione. CDDA verifica capacita e paga accesso/trasferimento.]";
 +    return f;
 +}
 +} // namespace cdda_client
@@ -4313,10 +4467,10 @@ index 0000000..3090d83
 +}
 diff --git a/src/cdda/ground_item_projection.h b/src/cdda/ground_item_projection.h
 new file mode 100644
-index 0000000..ecf25ba
+index 0000000..e034236
 --- /dev/null
 +++ b/src/cdda/ground_item_projection.h
-@@ -0,0 +1,63 @@
+@@ -0,0 +1,64 @@
 +#pragma once
 +
 +#include <cstdint>
@@ -4334,6 +4488,7 @@ index 0000000..ecf25ba
 +	std::string name;
 +	int32_t charges{0};
 +	bool count_by_charges{false};
++    std::string category; bool wielded{false}, rotten{false};
 +};
 +
 +class GroundItemProjection {
@@ -4466,4 +4621,26 @@ index 0000000..ca45474
 +        return latched_;
 +    }
 +};
++} // namespace cdda_client
+diff --git a/src/cdda/quickbar.h b/src/cdda/quickbar.h
+new file mode 100644
+index 0000000..5996ded
+--- /dev/null
++++ b/src/cdda/quickbar.h
+@@ -0,0 +1,16 @@
++#pragma once
++#include "equipment_inventory.h"
++namespace cdda_client {
++struct QuickSlotView {
++    std::string binding;
++    EquipmentEntry item;
++    explicit operator bool() const { return !binding.empty(); }
++};
++using QuickbarView = std::array<QuickSlotView, 9>;
++inline int quickDefaultAction(const EquipmentEntry& item) {
++    // Native action availability decides eligibility; selection itself is free.
++    if (item.worn && (item.actions & 8)) return 3;
++    for (int action : {4, 2, 5, 0, 1, 3}) if (item.actions & (1 << action)) return action;
++    return -1;
++}
 +} // namespace cdda_client

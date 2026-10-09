@@ -11,7 +11,7 @@
 namespace cdda::cwm {
 
 constexpr uint16_t PROTOCOL_VERSION_MAJOR = 2;
-constexpr uint16_t PROTOCOL_VERSION_MINOR = 16;
+constexpr uint16_t PROTOCOL_VERSION_MINOR = 17;
 
 struct Identity { uint64_t session{0}, player{0}, connection{0}; };
 
@@ -28,6 +28,17 @@ public:
 
     flatbuffers::FlatBufferBuilder& builder() {
         return fbb_;
+    }
+
+    std::vector<uint8_t> build_quickbar_bind(uint64_t id, uint8_t slot, uint64_t view, uint32_t item,
+                                           const std::string& expected) {
+        const auto request = CDDA::CWM::CreateQuickbarBindRequestDirect(fbb_, id, slot, view, item, expected.c_str());
+        return finish_message(CDDA::CWM::Payload::QuickbarBindRequest, request.Union());
+    }
+    std::vector<uint8_t> build_quickbar_use(uint64_t id, uint8_t slot, const std::string& binding,
+                                          CDDA::CWM::EquipmentAction action) {
+        const auto request = CDDA::CWM::CreateQuickbarUseRequestDirect(fbb_, id, slot, binding.c_str(), action);
+        return finish_message(CDDA::CWM::Payload::QuickbarUseRequest, request.Union());
     }
 
     std::vector<uint8_t> finish_message(CDDA::CWM::Payload payload_type, flatbuffers::Offset<void> payload_offset) {

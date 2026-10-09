@@ -28,6 +28,8 @@ def main():
     parser.add_argument('--action-driven', action='store_true', help='Verify ordinary start.sh mode without the real-time scheduler')
     parser.add_argument('--resume-only', action='store_true')
     parser.add_argument('--sequential', action='store_true', help='Exercise UX-02 paid completion and automatic return')
+    parser.add_argument('--quickbar', action='store_true', help='Verify UX-03 shortcuts, focus, native costs, pause and persistence')
+    parser.add_argument('--quickbar-resume', action='store_true', help='Verify the saved UX-03 shortcut identities after actual reload')
     parser.add_argument('--presentation-only', action='store_true', help='Exercise paging, layering and search without gameplay mutations')
     args = parser.parse_args()
     ws, out = args.workspace.resolve(), args.artifacts.resolve()
@@ -60,8 +62,10 @@ def main():
                LOG_DIR=str(out / 'logs'), CDDA_BIN=str(ws / 'cdda/build/src/cdda-server'),
                LUANTI_BIN=str(ws / 'luanti/bin/luanti'), CDDA_CONTINUOUS='1')
     env.pop('CDDA_TERRAIN_DEMO', None)
+    if args.quickbar or args.quickbar_resume:
+        env.pop('CDDA_CONTINUOUS', None) # Verify the actual launcher default, not a demo override.
     if args.action_driven:
-        env.pop('CDDA_CONTINUOUS', None)
+        env['CDDA_CONTINUOUS'] = '0'
         env.pop('CDDA_REALTIME', None)
     # A byte-transparent local relay lets the real client lose IPC while a
     # selection is queued under manual pause. Gameplay still runs in CDDA.
@@ -241,7 +245,83 @@ def main():
                 wait(lambda r: int(r['pending_move']) == 0 and int(r['pause_reasons']) == 0)
             def item(v, name):
                 return next(e for e in entries(v) if e.TypeId().decode() == name)
-            if args.sequential:
+            if args.quickbar or args.quickbar_resume:
+                import struct
+                from CDDA.CWM.WorldSnapshot import WorldSnapshot
+                def states():
+                    buf=(out/'server-wire.bin').read_bytes();offset=0;found=[]
+                    while offset+4<=len(buf):
+                        n=struct.unpack('>I',buf[offset:offset+4])[0];offset+=4
+                        if offset+n>len(buf):break
+                        msg=CwmMessage.GetRootAs(buf[offset:offset+n]);offset+=n
+                        if msg.PayloadType()==Payload.WorldSnapshot:
+                            s=WorldSnapshot();s.Init(msg.Payload().Bytes,msg.Payload().Pos);found.append(s)
+                    return found
+                def slot(n):
+                    return states()[-1].QuickSlots(n-1)
+                def bind(type_id,n):
+                    nonlocal view
+                    chosen=item(view,type_id);select_item(chosen)
+                    click(1.025+(n-1)*1.15,10.025)
+                    wait(lambda r:int(r['quick_slot'])==n)
+                    old=int(latest()['quick_bind_command']);old_view=latest()['inventory_view']
+                    click(2.05,9.2)
+                    wait(lambda r:int(r['quick_bind_command'])>old)
+                    wait(lambda r:int(r['pending_move'])==0 and int(r['inventory_view'])>0 and r['inventory_view']!=old_view)
+                    view=views()[-1]
+                    check('slot_'+str(n)+'_references_exact_native_'+type_id,slot(n).TypeId()==type_id.encode() and len(slot(n).BindingId())==32)
+                check('normal_launcher_defaults_to_continuous_4x',int(latest()['continuous_motion'])==1 and float(latest()['time_scale'])==4)
+                if args.quickbar:
+                    check('fresh_quickbar_has_no_implicit_first_nine_items',int(latest()['quick_count'])==0)
+                    # A visible field must not capture keyboard input before a click.
+                    xdo('type','--clearmodifiers','cap');click(6.5,4.95)
+                    select_item(item(view,'rock'))
+                    check('search_initially_visible_without_keyboard_focus',True)
+                    click(2,4.95);xdo('type','--clearmodifiers','cap');click(6.5,4.95)
+                    click(1.025,5.975);wait(lambda r:int(r['equipment_selected'])==item(view,'hat_ball').Id())
+                    check('click_focus_enables_search',True)
+                    # Clicking elsewhere must blur even on a non-input background.
+                    click(10.8,4.2);xdo('type','--clearmodifiers','zzzz');click(6.5,4.95)
+                    click(1.025,5.975);wait(lambda r:int(r['equipment_selected'])==item(view,'hat_ball').Id())
+                    check('background_click_disables_search_keyboard_input',True)
+                    click(7.7,4.95)
+                    paused=latest()['simulation_time']
+                    bind('bat',1);bind('hat_ball',2);bind('rock',3)
+                    check('assignment_preserves_native_time_and_hand',latest()['simulation_time']==paused and slot(1).Wielded() and not slot(3).Wielded())
+                    shot('assigned-quickbar.png')
+                    # Clear a bookmark, preserving its real item and the real hand.
+                    click(1.025,10.025);old_view=latest()['inventory_view'];click(5.2,9.2)
+                    wait(lambda r:int(r['pending_move'])==0 and r['inventory_view']!=old_view and int(r['inventory_view'])>0)
+                    view=views()[-1]
+                    check('clear_removes_reference_without_removing_item',not slot(1).BindingId() and item(view,'bat').Wielded() and int(latest()['quick_count'])==2)
+                    tap('Escape');wait(lambda r:int(r['equipment_form'])==0)
+                    before=latest()['quick_use_sent'];tap('3');time.sleep(.5)
+                    check('slot_selection_does_not_equip_or_use',latest()['quick_use_sent']==before and int(latest()['quick_wielded'])==0)
+                    tap('g');wait(lambda r:int(r['pending_decision'])>0)
+                    check('quick_wield_retains_native_disposal_choice',int(latest()['equipment_form'])==0)
+                    tap('1') # Explicit native Store in inventory, no production auto-confirm.
+                    wait(lambda r:int(r['native_work_settled'])==1 and int(r['pending_move'])==0,timeout=25)
+                    check('quick_wield_preserves_binding_and_pays_native_time',slot(3).Wielded() and int(latest()['quick_wielded'])==3 and int(latest()['simulation_time'])>int(paused))
+                    tap('2');tap('g')
+                    wait(lambda r:int(r['native_work_settled'])==1 and int(r['pending_move'])==0 and slot(2).Worn(),timeout=25)
+                    check('quick_clothing_uses_native_wear',slot(2).Worn())
+                    check('world_quick_use_does_not_force_inventory',int(latest()['equipment_form'])==0)
+                    tap('F7');wait(lambda r:int(r['pause_reasons'])&1)
+                    sent=latest()['quick_use_sent'];paused=latest()['simulation_time'];tap('g');time.sleep(.5)
+                    check('paused_quick_use_is_not_sent',latest()['quick_use_sent']==sent and latest()['simulation_time']==paused)
+                    tap('F7');wait(lambda r:int(r['pause_reasons'])==0);time.sleep(.6)
+                    check('paused_quick_key_does_not_replay_on_resume',latest()['quick_use_sent']==sent and slot(2).Worn())
+                    tap('3');shot('hud-selected-hand.png')
+                    connection=latest()['connection_id'];drop.set()
+                    wait(lambda r:r['connection_id']!=connection and int(r['input_ready'])==1,timeout=25)
+                    check('reconnect_restores_native_shortcut_identities',slot(2).Worn() and slot(3).Wielded() and int(latest()['quick_count'])==2)
+                else:
+                    check('actual_reload_restores_bookmarks_not_inventory_order',not slot(1).BindingId() and slot(2).TypeId()==b'hat_ball' and slot(2).Worn() and slot(3).TypeId()==b'rock' and slot(3).Wielded())
+                    check('reloaded_items_use_exact_saved_binding_ids',item(view,'hat_ball').QuickSlot()==2 and item(view,'rock').QuickSlot()==3)
+                    shot('reloaded-shortcuts.png');tap('Escape');wait(lambda r:int(r['equipment_form'])==0)
+                view=open_inventory();check('quickbar_changes_leave_native_contents_intact',view.EntriesLength()==6 and item(view,'backpack_hiking').Worn())
+                # Stop in read-only I before closing the isolated runtime.
+            elif args.sequential:
                 import struct
                 from CDDA.CWM.WorldSnapshot import WorldSnapshot
                 from CDDA.CWM.SimulationControlRequest import SimulationControlRequest
@@ -275,7 +355,7 @@ def main():
                 view=paid_return(3);check('takeoff_completes_before_return',not item(view,'hat_ball').Worn())
                 check('sequential_operations_advance_native_time',int(latest()['simulation_time'])>start_time)
                 # Leave nested search, clear its applied filter, then act on a distinct object.
-                tap('Escape');click(8.5,4.95)
+                click(7.7,4.95)
                 select_item(item(view,'rock'));view=paid_return(0)
                 check('third_operation_uses_fresh_native_binding',item(view,'rock').Wielded())
                 shot('automatic-return-grid.png')
@@ -342,8 +422,8 @@ def main():
                 paused=latest();sent=paused['equipment_sent']
                 click(10.35,9.2);select_item(es[27]);shot('page-two.png')
                 check('page_two_selects_exact_native_identity', int(latest()['equipment_selected'])==es[27].Id())
-                click(1.025,10.025);wait(lambda r:int(r['equipment_selected'])==es[0].Id())
-                check('quick_row_only_selects_existing_identity',latest()['equipment_sent']==sent)
+                click(1.025,10.025);wait(lambda r:int(r['quick_slot'])==1)
+                check('empty_quick_row_does_not_reassign_inventory_items',latest()['equipment_sent']==sent and int(latest()['quick_count'])==0 and int(latest()['equipment_selected'])==es[27].Id())
                 click(10.45,1.6)
                 layer=[e for e in es if e.Worn()][10]
                 click(5.225,2.575);wait(lambda r:int(r['equipment_selected'])==layer.Id())
@@ -361,13 +441,13 @@ def main():
                 filtered=[e for e in es if b'bandana' in e.Name().lower()]
                 click(1.025,5.975);wait(lambda r:int(r['equipment_selected'])==filtered[0].Id())
                 check('explicit_search_focus_selects_native_filtered_item',True);shot('optional-search.png')
-                tap('Escape');time.sleep(.3)
+                click(2,4.95);tap('Escape');time.sleep(.3)
                 check('first_escape_returns_to_grid_with_pause',int(latest()['equipment_form'])==1 and latest()['simulation_time']==paused['simulation_time'])
-                click(8.5,4.95) # Remove the applied search; reset page.
+                click(7.7,4.95) # Remove the applied search; reset page.
                 pack=next(e for e in es if e.TypeId()==b'backpack_hiking')
                 select_item(pack);shot('compact-container.png');click(13.4,7.45);shot('expanded-container.png')
                 check('details_do_not_execute_native_actions',latest()['equipment_sent']==sent)
-                click(1.5,4.95);xdo('key','Home');xdo('key','Down');xdo('key','Down');xdo('key','Return');time.sleep(.3)
+                click(9.5,4.95);xdo('key','Home');xdo('key','Down');xdo('key','Down');xdo('key','Return');time.sleep(.3)
                 click(1.025,5.975);wait(lambda r:int(r['equipment_selected'])==pack.Id())
                 shot('container-filter.png');check('container_filter_keeps_native_container_identity',True)
                 click(13.5,.5);wait(lambda r:int(r['transfer_form'])==1);click(9.7,.5);wait(lambda r:int(r['transfer_form'])==0)
@@ -475,7 +555,7 @@ def main():
             '--datadir', str(ws / 'cdda/data'), '--output', str(output)], stdout=log, stderr=subprocess.STDOUT, timeout=180)
     check('equipment_save_readable_by_pristine_native_core', result.returncode == 0)
     native = json.loads(output.read_text())
-    before = json.loads((args.fixture.parent / ('native.json' if args.resume_only else 'before.json')).read_text())
+    before = json.loads((args.fixture.parent / ('native.json' if args.resume_only or args.quickbar_resume else 'before.json')).read_text())
     def uid_counts(value, counts=None):
         counts = {} if counts is None else counts
         if isinstance(value, dict):
@@ -494,6 +574,27 @@ def main():
         check('actual_reload_preserves_canonical_position', native['player_abs'] == before['player_abs'])
         if args.action_driven:
             check('readonly_reload_inventory_consumes_no_native_time', native['time'] == before['time'])
+    if args.quickbar or args.quickbar_resume:
+        found={}
+        def identities(value):
+            if isinstance(value,dict):
+                token=value.get('item_vars',{}).get('cwm_quick_identity')
+                if token: found.setdefault(token,[]).append(value.get('typeid'))
+                for child in value.values():identities(child)
+            elif isinstance(value,list):
+                for child in value:identities(child)
+        identities(native['player'])
+        def slot_values(value):
+            result={}
+            if isinstance(value,dict):
+                for key,child in value.items():
+                    if key.startswith('cwm_quick_slot_'):result[key]=child
+                    result.update(slot_values(child))
+            elif isinstance(value,list):
+                for child in value:result.update(slot_values(child))
+            return result
+        bookmarks=slot_values(native['player'])
+        check('pristine_core_retains_optional_bookmarks_and_exact_item_metadata',len(bookmarks)==2 and found.get(bookmarks.get('cwm_quick_slot_2'))==['hat_ball'] and found.get(bookmarks.get('cwm_quick_slot_3'))==['rock'])
     (out / 'summary.json').write_text(json.dumps(dict(checks=checks, native_save=str(output)), indent=2)+'\n')
 
 

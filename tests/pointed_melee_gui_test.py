@@ -57,7 +57,7 @@ def main():
                LUANTI_BIN=str(ws / 'luanti/bin/luanti'), CDDA_CONTINUOUS='1')
     env.pop('CDDA_TERRAIN_DEMO', None)
     if args.action_driven:
-        env.pop('CDDA_CONTINUOUS', None)
+        env['CDDA_CONTINUOUS'] = '0'
         env.pop('CDDA_REALTIME', None)
     # A byte-transparent local relay lets the real client lose IPC while a
     # selection is queued under manual pause. Gameplay still runs in CDDA.

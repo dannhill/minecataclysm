@@ -8,6 +8,7 @@
 #include <deque>
 #include <limits>
 #include <random>
+#include <algorithm>
 #include <set>
 #include <string_view>
 #include <tuple>
@@ -34,7 +35,7 @@ inline bool valid_inventory(const CDDA::CWM::InventoryView* view) {
         if (!entry || entry->id() != ++id || entry->parent_id() >= id || entry->pocket_index() < -1 ||
             (!entry->parent_id() && entry->pocket_index() != -1) ||
             (entry->parent_id() && (entry->worn() || entry->wielded())) ||
-            (entry->worn() && entry->wielded()) || (entry->actions() & ~63) ||
+            (entry->worn() && entry->wielded()) || (entry->actions() & ~63) || entry->quick_slot() > 9 ||
             entry->weight_grams() < 0 || entry->volume_ml() < 0 || entry->length_mm() < 0 || entry->access_moves() < 0 ||
             !text(entry->type_id(), 1024, false) || !text(entry->name(), 16384, false) || !text(entry->category(), 1024) ||
             !entry->reasons() || entry->reasons()->size() != 6 || entry->consume_moves() < 0 ||
@@ -81,6 +82,25 @@ inline bool valid_world(const CDDA::CWM::WorldSnapshot* world) {
     if (world->full() && (!world->chunks() || !world->chunks()->size() || world->chunks()->size() > 1024)) return false;
     if (!world->full() && world->chunks() && world->chunks()->size()) return false;
     if (world->inventory_work() && !world->inventory_work()->command_id()) return false;
+    if (const auto* slots = world->quick_slots()) {
+        if (slots->size() != 9) return false;
+        std::set<std::string> identities;
+        unsigned n = 0;
+        for (const auto* slot : *slots) {
+            if (!slot || slot->slot() != ++n || !slot->binding_id() || !slot->type_id() ||
+                !slot->name() || !slot->category() || (slot->actions() & ~63) ||
+                (slot->worn() && slot->wielded()) || slot->type_id()->size() > 1024 ||
+                slot->category()->size() > 1024 || slot->name()->size() > 16384) return false;
+            const auto id = slot->binding_id()->str();
+            if (!id.empty() && (id.size() != 32 || !std::all_of(id.begin(), id.end(), [](char c) {
+                return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f');
+            }) || !identities.insert(id).second || !slot->type_id()->size() || !slot->name()->size())) return false;
+            if (id.empty() && (slot->type_id()->size() || slot->name()->size() || slot->category()->size() ||
+                slot->charges() || slot->count_by_charges() || slot->worn() || slot->wielded() || slot->actions() || slot->rotten())) return false;
+            for (const auto* str : {slot->type_id(), slot->name(), slot->category()})
+                if (str->str().find('\0') != std::string::npos) return false;
+        }
+    }
     const auto valid_items = [](const auto* items) {
         if (!items || items->size() > 8192) return false;
         uint32_t index = 0;

@@ -106,6 +106,9 @@ table GroundItemState {
     name: string;
     charges: int32;
     count_by_charges: bool;
+    category: string;
+    wielded: bool;
+    rotten: bool;
 }
 
 table GroundItemTileState {
@@ -221,6 +224,7 @@ table WorldSnapshot {
     item_transfer: ItemTransferState;
     // Native completion after activity, move debt and paced cost are paid.
     inventory_work: InventoryWorkState;
+    quick_slots: [QuickSlot];
 }
 
 table InventoryWorkState {
@@ -326,6 +330,8 @@ table InventoryEntry {
     consume_warning: string;
     transfer_reason: string;
     container: bool;
+    quick_slot: uint8;
+    rotten: bool;
 }
 table InventoryPocket {
     owner_id: uint32;
@@ -354,6 +360,28 @@ table InventoryView {
     volume_capacity_ml: int64;
 }
 enum EquipmentAction : byte { WIELD = 0, STOW = 1, WEAR = 2, TAKEOFF = 3, CONSUME = 4, TREAT = 5 }
+// Stable native-owned UI bookmarks. Selection never wields an item.
+table QuickSlot {
+    slot: uint8;
+    binding_id: string;
+    type_id: string;
+    name: string;
+    category: string;
+    charges: int32;
+    count_by_charges: bool;
+    worn: bool;
+    wielded: bool;
+    actions: uint8;
+    rotten: bool;
+}
+// item_id=0 clears a slot; otherwise item identity comes from the current view.
+table QuickbarBindRequest {
+    command_id: uint64; slot: uint8; view_id: uint64; item_id: uint32;
+    expected_binding_id: string;
+}
+table QuickbarUseRequest {
+    command_id: uint64; slot: uint8; binding_id: string; action: EquipmentAction;
+}
 table EquipmentRequest {
     command_id: uint64;
     view_id: uint64;
@@ -453,6 +481,8 @@ union Payload {
     ,CancelReloadRequest
     ,ItemTransferRequest
     ,CancelItemTransferRequest
+    ,QuickbarBindRequest
+    ,QuickbarUseRequest
 }
 
 table CwmMessage {

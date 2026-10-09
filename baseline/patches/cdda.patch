@@ -956,6 +956,28 @@ index e2e738d..e3ed1a6 100644
  
      creature_tracker &creatures = get_creature_tracker();
      if( g->climb_down_menu_pick( examp, cmenu.ret ) ) {
+diff --git a/src/item.cpp b/src/item.cpp
+index 9c51213..b358120 100644
+--- a/src/item.cpp
++++ b/src/item.cpp
+@@ -918,6 +918,8 @@ item item::split( int qty )
+     }
+     item res = *this;
+     res.charges = qty;
++    // A split portion is a new UI identity; the remaining native stack keeps its shortcut.
++    res.erase_var( "cwm_quick_identity" );
+     charges -= qty;
+     return res;
+ }
+@@ -1495,7 +1497,7 @@ bool item::stacks_with( const item &rhs, bool check_components, bool combine_liq
+     }
+     // Guns that differ only by dirt/shot_counter can still stack,
+     // but other item_vars such as label/note will prevent stacking
+-    static const std::set<std::string> ignore_keys = { "dirt", "shot_counter", "spawn_location_omt" };
++    static const std::set<std::string> ignore_keys = { "dirt", "shot_counter", "spawn_location_omt", "cwm_quick_identity" };
+     if( !map_equal_ignoring_keys( item_vars, rhs.item_vars, ignore_keys ) ) {
+         return false;
+     }
 diff --git a/src/iuse_actor.cpp b/src/iuse_actor.cpp
 index 248ed42..51a1c39 100644
 --- a/src/iuse_actor.cpp
@@ -1510,12 +1532,107 @@ index 0000000..d8898b7
 +    }
 +};
 +} // namespace cwm
+diff --git a/src/cwm/cwm_hotbar.h b/src/cwm/cwm_hotbar.h
+new file mode 100644
+index 0000000..66dd6b0
+--- /dev/null
++++ b/src/cwm/cwm_hotbar.h
+@@ -0,0 +1,89 @@
++#pragma once
++#include "cwm_inventory.h"
++#include "cwm/cwm_session.hpp"
++#include <array>
++#include <iomanip>
++#include <sstream>
++
++namespace cwm {
++// Optional UI metadata in the canonical native values/item_vars extensions.
++// No inventory capacity, position, charge or gameplay RNG belongs to this class.
++// The reserved item key is ignored for stacking and removed from split portions.
++class Hotbar {
++public:
++    static constexpr const char* item_key = "cwm_quick_identity";
++    static std::string slot_key(unsigned slot) { return "cwm_quick_slot_" + std::to_string(slot); }
++    static bool valid_identity(const std::string& id) {
++        return id.size() == 32 && std::all_of(id.begin(), id.end(), [](char c) {
++            return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f');
++        });
++    }
++    static std::map<std::string, std::vector<item_location>> owned(avatar& u) {
++        std::map<item*, item_location> parents;
++        std::map<std::string, std::vector<item_location>> found;
++        unsigned count = 0;
++        bool truncated = false;
++        u.visit_items([&](item* it, item* parent) {
++            if (++count > 8192) { truncated = true; return VisitResponse::ABORT; }
++            if (parent && !parents.count(parent)) return VisitResponse::SKIP;
++            auto location = parent ? item_location(parents.at(parent), it) : item_location(u, it);
++            parents.emplace(it, location);
++            const auto id = it->get_var(item_key);
++            if (valid_identity(id)) found[id].push_back(location);
++            return VisitResponse::NEXT;
++        });
++        // An incomplete scan cannot certify that an identity is unique.
++        if (truncated) found.clear();
++        return found;
++    }
++    static std::array<item_location, 9> refresh(avatar& u) {
++        const auto found = owned(u);
++        std::array<item_location, 9> slots;
++        std::set<std::string> used;
++        for (unsigned n = 1; n <= 9; ++n) {
++            const auto id = u.get_value(slot_key(n));
++            const auto at = found.find(id);
++            if (valid_identity(id) && at != found.end() && at->second.size() == 1 && used.insert(id).second)
++                slots[n - 1] = at->second.front();
++            else if (!id.empty()) u.remove_value(slot_key(n));
++        }
++        return slots;
++    }
++    static unsigned slot(const avatar& u, const item& it) {
++        const auto id = it.get_var(item_key);
++        if (!valid_identity(id)) return 0;
++        for (unsigned n = 1; n <= 9; ++n) if (u.get_value(slot_key(n)) == id) return n;
++        return 0;
++    }
++    static item_location resolve(avatar& u, unsigned slot, const std::string& expected) {
++        if (slot < 1 || slot > 9 || !valid_identity(expected)) return {};
++        auto slots = refresh(u);
++        if (u.get_value(slot_key(slot)) != expected) return {};
++        return slots[slot - 1];
++    }
++    static std::string bind(avatar& u, unsigned slot, item_location location, const std::string& expected) {
++        if (slot < 1 || slot > 9) return "Invalid quick slot.";
++        refresh(u);
++        if (u.get_value(slot_key(slot)) != expected) return "Quick slot changed: refresh the inventory.";
++        if (!location) { u.remove_value(slot_key(slot)); return {}; }
++        if (!location.held_by(u) || !u.has_item(*location)) return "Item no longer owned.";
++        auto id = location->get_var(item_key);
++        const auto found = owned(u);
++        const auto at = found.find(id);
++        if (!valid_identity(id) || at == found.end() || at->second.size() != 1) {
++            do {
++                std::ostringstream token;
++                token << std::hex << std::setfill('0') << std::setw(16) << cdda::cwm::fresh_identity()
++                      << std::setw(16) << cdda::cwm::fresh_identity();
++                id = token.str();
++            } while (found.count(id));
++            location->set_var(item_key, id);
++        }
++        // Moving the shortcut does not copy its item or reserve another pocket.
++        for (unsigned n = 1; n <= 9; ++n)
++            if (u.get_value(slot_key(n)) == id) u.remove_value(slot_key(n));
++        u.set_value(slot_key(slot), id);
++        return {};
++    }
++};
++} // namespace cwm
 diff --git a/src/cwm/cwm_inventory.h b/src/cwm/cwm_inventory.h
 new file mode 100644
-index 0000000..28cccdd
+index 0000000..8c4664b
 --- /dev/null
 +++ b/src/cwm/cwm_inventory.h
-@@ -0,0 +1,230 @@
+@@ -0,0 +1,234 @@
 +#pragma once
 +#include <algorithm>
 +#include <array>
@@ -1538,7 +1655,7 @@ index 0000000..28cccdd
 +
 +namespace cwm {
 +// Bounded, ephemeral selection view. Native safe item_locations retain identity;
-+// no item UUID, inventory authority or persistence field is invented for the UI.
++// These handles remain ephemeral; separate optional hotbar metadata is canonical.
 +class InventorySelection {
 +    struct Binding {
 +        item_location location;
@@ -1713,13 +1830,17 @@ index 0000000..28cccdd
 +                const int consume_moves = food ? std::max(0, to_moves<int>(u.get_consume_time(*it))) : 0;
 +                const auto warning = food && u.can_eat(*it).success() ? u.will_eat(*it, false).str() : "";
 +                const auto container_pockets = it->get_all_contained_pockets();
++                unsigned quick_slot = 0;
++                const auto quick_identity = it->get_var("cwm_quick_identity");
++                if (quick_identity.size() == 32) for (unsigned n = 1; n <= 9; ++n)
++                    if (u.get_value("cwm_quick_slot_" + std::to_string(n)) == quick_identity) quick_slot = n;
 +                entries.push_back(CDDA::CWM::CreateInventoryEntryDirect(fbb, id, parent_id, pocket_index,
 +                    it->typeId().str().c_str(), remove_color_tags(it->tname()).c_str(), it->get_category_shallow().name().c_str(),
 +                    it->charges, it->count_by_charges(), worn, wielded,
 +                    units::to_gram<int64_t>(it->weight()), units::to_milliliter<int64_t>(it->volume()),
 +                    units::to_millimeter<int64_t>(it->length()), access, actions, &reasons, consume_moves, consume_label, remove_color_tags(warning).c_str(), transfer_source_error(u, location).c_str(),
 +                    std::any_of(container_pockets.begin(), container_pockets.end(),
-+                        [](const auto* p) { return p->is_type(pocket_type::CONTAINER); })));
++                        [](const auto* p) { return p->is_type(pocket_type::CONTAINER); }), quick_slot, it->rotten()));
 +                bindings_.push_back({location, ancestors, it->typeId().str(), it->charges,
 +                                     it->count_by_charges(), worn, wielded});
 +                ids[it] = id;
@@ -2152,10 +2273,10 @@ index 0000000..1a0308e
 +}
 diff --git a/src/cwm/cwm_map_exporter.cpp b/src/cwm/cwm_map_exporter.cpp
 new file mode 100644
-index 0000000..6e95e11
+index 0000000..0af7805
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.cpp
-@@ -0,0 +1,637 @@
+@@ -0,0 +1,655 @@
 +#include "cwm_motion.h"
 +// CDDA CWM Map & Entity Exporter Implementation
 +// Licensed under Apache-2.0
@@ -2163,6 +2284,7 @@ index 0000000..6e95e11
 +#include "cwm_map_exporter.h"
 +#include "cwm_crafting.h"
 +#include "cwm_ranged.h"
++#include "cwm_hotbar.h"
 +#include "cwm_status_gauges.h"
 +#include "cwm/tile_semantics.hpp"
 +#include "mapdata.h"
@@ -2700,10 +2822,27 @@ index 0000000..6e95e11
 +    u.visit_items([&](item* it, item*) {
 +        owned_items.push_back(CDDA::CWM::CreateGroundItemStateDirect(fbb,
 +            static_cast<uint32_t>(owned_items.size()), it->typeId().str().c_str(),
-+            it->tname().c_str(), it->charges, it->count_by_charges()));
++            remove_color_tags(it->tname()).c_str(), it->charges, it->count_by_charges(),
++            it->get_category_shallow().name().c_str(), u.is_wielding(*it), it->rotten()));
 +        return VisitResponse::NEXT;
 +    });
 +    const auto owned_items_vec = fbb.CreateVector(owned_items);
++    std::vector<flatbuffers::Offset<CDDA::CWM::QuickSlot>> quick_slots;
++    const auto quick_items = Hotbar::refresh(const_cast<avatar&>(u));
++    for (unsigned n = 1; n <= 9; ++n) {
++        const auto location = quick_items[n - 1];
++        uint8_t actions = 0;
++        if (location) for (int action = 0; action < 6; ++action)
++            if (InventorySelection::action_error(const_cast<avatar&>(u), location, action).empty()) actions |= 1 << action;
++        quick_slots.push_back(CDDA::CWM::CreateQuickSlotDirect(fbb, n,
++            u.get_value(Hotbar::slot_key(n)).c_str(), location ? location->typeId().str().c_str() : "",
++            location ? remove_color_tags(location->tname()).c_str() : "",
++            location ? location->get_category_shallow().name().c_str() : "",
++            location ? location->charges : 0, location && location->count_by_charges(),
++            location && u.is_worn(*location), location && u.is_wielding(*location), actions,
++            location && location->rotten()));
++    }
++    const auto quick_slots_vec = fbb.CreateVector(quick_slots);
 +    const auto avatar_status = export_avatar_status(fbb, u);
 +
 +    uint64_t sim_seconds = static_cast<uint64_t>(to_turn<int>(calendar::turn));
@@ -2744,7 +2883,7 @@ index 0000000..6e95e11
 +        g.safe_mode == SAFE_MODE_STOP || u.has_effect(efftype_id("laserlocked")) ||
 +            (clock && (clock->pause_reasons & 4)),
 +        include_chunks, base_revision, state_id, resync_id, completed_command_id,
-+        spawned_vec, removed_vec, clock_state, ground_items_vec, owned_items_vec, avatar_status, consumption, first_aid, crafting, ranged, reload, transfer, inventory_work
++        spawned_vec, removed_vec, clock_state, ground_items_vec, owned_items_vec, avatar_status, consumption, first_aid, crafting, ranged, reload, transfer, inventory_work, quick_slots_vec
 +    );
 +
 +    return builder.finish_message(CDDA::CWM::Payload::WorldSnapshot, world_snap.Union());
@@ -2976,15 +3115,16 @@ index 0000000..43d3a08
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..5f62025
+index 0000000..1bbaa05
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,977 @@
+@@ -0,0 +1,1008 @@
 +#include "cwm_motion.h"
 +// CDDA CWM IPC Server Implementation
 +// Licensed under Apache-2.0
 +
 +#include "cwm_server.h"
++#include "cwm_hotbar.h"
 +#include "cwm_map_exporter.h"
 +#include "cwm/ipc_transport.hpp"
 +#include "cwm/cwm_protocol.hpp"
@@ -3057,7 +3197,7 @@ index 0000000..5f62025
 +bool CwmServer::start() { return server_->start(); }
 +void CwmServer::stop() { if (server_) server_->stop(); }
 +bool CwmServer::has_active_client() const { return server_ && server_->has_client(); }
-+bool CwmServer::save_world(game& g) { return g.save(); }
++bool CwmServer::save_world(game& g) { Hotbar::refresh(get_avatar()); return g.save(); }
 +
 +bool CwmServer::emit(const std::vector<uint8_t>& bytes) {
 +    if (!has_active_client() || !server_->client()->send_message(bytes.data(), bytes.size())) return false;
@@ -3116,6 +3256,7 @@ index 0000000..5f62025
 +void CwmServer::send_state(avatar& u, map& m, game& g, bool full, uint64_t completed) {
 +    if (!has_active_client() || !negotiated_ || rejecting_) return;
 +    refresh_activity(u);
++    Hotbar::refresh(u);
 +    if (refresh_inventory_work(u)) ++world_revision_;
 +    const auto state_id = next_state_++;
 +    const CwmMapExporter::ClockView clock{realtime_, pause_reasons(g),
@@ -3510,11 +3651,13 @@ index 0000000..5f62025
 +        if (accepted) ++world_revision_;
 +        return accepted;
 +    } else if (command.equipment_action >= 0) {
-+        auto error = inventory_selection_.validate(u, command.inventory_view,
-+            command.inventory_item, command.equipment_action);
++        auto location = command.quick_slot ? Hotbar::resolve(u, command.quick_slot, command.quick_binding) :
++            (inventory_selection_.validate_binding(u, command.inventory_view, command.inventory_item).empty() ?
++             inventory_selection_.target(command.inventory_item) : item_location{});
++        auto error = command.quick_slot ? (location ? InventorySelection::action_error(u, location, command.equipment_action) : "Quick item lost or slot changed.") :
++            inventory_selection_.validate(u, command.inventory_view, command.inventory_item, command.equipment_action);
 +        if (realtime_ && pause_reasons(g)) error = "Simulation is paused";
 +        if (!error.empty()) { result_ = Result{command.id, false, error}; return false; }
-+        auto location = inventory_selection_.target(command.inventory_item);
 +        inventory_selection_.clear(); // Invalidate every sibling handle before native mutation/choice.
 +        switch (command.equipment_action) {
 +            case 0: accepted = u.wield(location); break;
@@ -3709,6 +3852,7 @@ index 0000000..5f62025
 +        if (!request->query_id()) { server_->client()->close(); return; }
 +        const auto now = std::chrono::steady_clock::now();
 +        cdda::cwm::MessageBuilder reply(sequence_counter_, world_revision_, identity_);
++        Hotbar::refresh(u);
 +        const bool throttled = now < next_inventory_query_;
 +        if (!throttled) next_inventory_query_ = now + std::chrono::milliseconds(100);
 +        emit(inventory_selection_.query(u, request->query_id(), reply,
@@ -3748,6 +3892,15 @@ index 0000000..5f62025
 +            std::to_string(request->destination_id()) + ":" + std::to_string(int(request->action()));
 +    } else if (const auto* request = msg->payload_as_CancelItemTransferRequest()) {
 +        id = request->command_id(); signature = "cancel-item-transfer:" + std::to_string(request->activity_token());
++    } else if (const auto* request = msg->payload_as_QuickbarBindRequest()) {
++        if (!request->expected_binding_id() || request->expected_binding_id()->size() > 32 ||
++            (request->expected_binding_id()->size() && !Hotbar::valid_identity(request->expected_binding_id()->str()))) { server_->client()->close(); return; }
++        id = request->command_id(); signature = "quick-bind:" + std::to_string(request->slot()) + ":" +
++            std::to_string(request->view_id()) + ":" + std::to_string(request->item_id()) + ":" + request->expected_binding_id()->str();
++    } else if (const auto* request = msg->payload_as_QuickbarUseRequest()) {
++        if (!request->binding_id() || !Hotbar::valid_identity(request->binding_id()->str())) { server_->client()->close(); return; }
++        id = request->command_id(); signature = "quick-use:" + std::to_string(request->slot()) + ":" +
++            request->binding_id()->str() + ":" + std::to_string(int(request->action()));
 +    } else if (const auto* request = msg->payload_as_EquipmentRequest()) {
 +        id = request->command_id(); signature = "equipment:" + std::to_string(request->view_id()) +
 +            ":" + std::to_string(request->item_id()) + ":" + std::to_string(int(request->action()));
@@ -3780,6 +3933,18 @@ index 0000000..5f62025
 +    }
 +    if (status == Status::Expired) { send_result({id, false, "Command identity expired"}, u, m, g); return; }
 +    if (status != Status::Fresh) { server_->client()->close(); return; }
++    if (const auto* request = msg->payload_as_QuickbarBindRequest()) {
++        auto error = request->slot() < 1 || request->slot() > 9 ? std::string("Invalid quick slot.") : std::string{};
++        item_location location;
++        if (error.empty() && request->item_id()) {
++            error = inventory_selection_.validate_binding(u, request->view_id(), request->item_id());
++            if (error.empty()) location = inventory_selection_.target(request->item_id());
++        } else if (!request->item_id() && request->view_id()) error = "Clear does not take an inventory view.";
++        if (error.empty()) error = Hotbar::bind(u, request->slot(), location, request->expected_binding_id()->str());
++        if (error.empty()) ++world_revision_;
++        send_result({id, error.empty(), error}, u, m, g);
++        return; // UI assignment has no action, move debit or calendar advancement.
++    }
 +    if (msg->payload_as_CancelConsumptionRequest() || msg->payload_as_CancelFirstAidRequest() || msg->payload_as_CancelCraftingRequest() || msg->payload_as_CancelReloadRequest() || msg->payload_as_CancelItemTransferRequest()) {
 +        const auto* meal = msg->payload_as_CancelConsumptionRequest();
 +        const auto* aid = msg->payload_as_CancelFirstAidRequest();
@@ -3899,6 +4064,11 @@ index 0000000..5f62025
 +        command.transfer_quantity = request->quantity(); command.transfer_destination = request->destination_id(); command.transfer_action = int(request->action());
 +        error = inventory_selection_.validate_transfer(u, command.inventory_view, command.inventory_item,
 +            command.transfer_quantity, command.transfer_destination, command.transfer_action);
++    } else if (const auto* request = msg->payload_as_QuickbarUseRequest()) {
++        command.id = request->command_id(); command.quick_slot = request->slot();
++        command.quick_binding = request->binding_id()->str(); command.equipment_action = int(request->action());
++        auto location = Hotbar::resolve(u, command.quick_slot, command.quick_binding);
++        error = location ? InventorySelection::action_error(u, location, command.equipment_action) : "Quick item lost or slot changed.";
 +    } else if (const auto* request = msg->payload_as_EquipmentRequest()) {
 +        command.id = request->command_id();
 +        command.inventory_view = request->view_id(); command.inventory_item = request->item_id();
@@ -3959,10 +4129,10 @@ index 0000000..5f62025
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.h b/src/cwm/cwm_server.h
 new file mode 100644
-index 0000000..fe3e450
+index 0000000..b9b87be
 --- /dev/null
 +++ b/src/cwm/cwm_server.h
-@@ -0,0 +1,148 @@
+@@ -0,0 +1,150 @@
 +// CDDA CWM IPC Server
 +// Licensed under Apache-2.0
 +#pragma once
@@ -4065,6 +4235,8 @@ index 0000000..fe3e450
 +        uint64_t inventory_view{0};
 +        uint32_t inventory_item{0};
 +        int equipment_action{-1};
++        unsigned quick_slot{0};
++        std::string quick_binding;
 +        int transfer_action{-1}, transfer_quantity{0};
 +        uint32_t transfer_destination{0};
 +        uint64_t crafting_view{0};
@@ -4421,10 +4593,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..12fb508
+index 0000000..c9e2e28
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,1546 @@
+@@ -0,0 +1,1665 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "move_mode.h"
@@ -4453,6 +4625,9 @@ index 0000000..12fb508
 +#include "options_helpers.h"
 +#include "cwm/cwm_map_exporter.h"
 +#include "cwm/cwm_server.h"
++#include "cwm/cwm_hotbar.h"
++#include "json_loader.h"
++#include <sstream>
 +#include "cwm/ipc_transport.hpp"
 +
 +namespace cwm {
@@ -4513,6 +4688,17 @@ index 0000000..12fb508
 +    static void transfer(CwmServer& server, uint64_t view, uint32_t item, int quantity, uint32_t destination, int action, uint64_t id = 1) {
 +        cdda::cwm::MessageBuilder wire(server.received_sequence_+1,1,server.identity_);
 +        auto bytes=wire.build_item_transfer(id,view,item,quantity,destination,static_cast<CDDA::CWM::ItemTransferAction>(action));
++        server.handle_client_message(bytes.data(),bytes.size(),get_avatar(),get_map(),*g);
++    }
++    static void quick_bind(CwmServer& server, unsigned slot, uint64_t view, uint32_t item,
++                           const std::string& expected, uint64_t id) {
++        cdda::cwm::MessageBuilder wire(server.received_sequence_+1,1,server.identity_);
++        const auto bytes=wire.build_quickbar_bind(id,slot,view,item,expected);
++        server.handle_client_message(bytes.data(),bytes.size(),get_avatar(),get_map(),*g);
++    }
++    static void quick_use(CwmServer& server, unsigned slot, const std::string& expected, int action, uint64_t id) {
++        cdda::cwm::MessageBuilder wire(server.received_sequence_+1,1,server.identity_);
++        const auto bytes=wire.build_quickbar_use(id,slot,expected,static_cast<CDDA::CWM::EquipmentAction>(action));
 +        server.handle_client_message(bytes.data(),bytes.size(),get_avatar(),get_map(),*g);
 +    }
 +    static void interrupt_transfer(CwmServer& server, uint64_t token, uint64_t id) {
@@ -5970,6 +6156,111 @@ index 0000000..12fb508
 +    for(int n=1;n<=40;++n)cwm::CwmServerTestAccess::sample_work(server,n*.25);
 +    while(u.moves<=0)u.process_turn();
 +    CHECK(cwm::CwmServerTestAccess::settle(server)); CHECK(apple);
++}
++
++TEST_CASE("cwm_quickbar_bookmarks_pay_native_use_and_never_guess_identity", "[cwm][quickbar]")
++{
++    clear_avatar(); clear_map();
++    avatar& u = get_avatar();
++    REQUIRE(u.wear_item(item(itype_id("backpack_hiking"), calendar::turn)));
++    auto* first = &u.i_add(item(itype_id("rock"), calendar::turn));
++    auto* second = &u.i_add(item(itype_id("rock"), calendar::turn));
++    REQUIRE(first != second);
++    cwm::CwmServer server("unused-test-socket");
++    cwm::CwmServerTestAccess::ready(server);
++    const auto view = cwm::CwmServerTestAccess::query(server);
++    const auto first_id = cwm::CwmServerTestAccess::item_id(server,*first);
++    const auto second_id = cwm::CwmServerTestAccess::item_id(server,*second);
++    const int moves = u.moves; const auto now = calendar::turn;
++    cwm::CwmServerTestAccess::quick_bind(server,1,view,first_id,"",1);
++    const auto binding = u.get_value(cwm::Hotbar::slot_key(1));
++    REQUIRE(cwm::Hotbar::valid_identity(binding));
++    CHECK(u.moves == moves); CHECK(calendar::turn == now); CHECK_FALSE(server.has_queued_action());
++    // Same command identity is replayed rather than generating another bookmark.
++    cwm::CwmServerTestAccess::quick_bind(server,1,view,first_id,"",1);
++    CHECK(u.get_value(cwm::Hotbar::slot_key(1)) == binding);
++    REQUIRE(cwm::Hotbar::resolve(u,1,binding).get_item() == first);
++    u.moves=100;
++    cwm::CwmServerTestAccess::quick_use(server,1,binding,0,2);
++    REQUIRE(server.has_queued_action());
++    REQUIRE(cwm::CwmServerTestAccess::execute(server));
++    REQUIRE(u.get_wielded_item());
++    CHECK(u.get_wielded_item()->get_var(cwm::Hotbar::item_key) == binding);
++    CHECK(u.moves < 100);
++    CHECK(cwm::Hotbar::resolve(u,1,binding).get_item() == u.get_wielded_item().get_item());
++    cwm::CwmServerTestAccess::complete(server);
++    // Removing and then reacquiring a tagged object must not revive its shortcut.
++    item removed = u.remove_weapon();
++    cwm::Hotbar::refresh(u);
++    CHECK(u.get_value(cwm::Hotbar::slot_key(1)).empty());
++    u.i_add(removed);
++    CHECK_FALSE(cwm::Hotbar::resolve(u,1,binding));
++    // A different rock is never silently substituted for the original binding.
++    CHECK(u.has_item(*second));
++    CHECK(second_id != first_id);
++}
++
++TEST_CASE("cwm_quickbar_stale_paused_and_rebound_commands_cannot_act", "[cwm][quickbar]")
++{
++    clear_avatar(); clear_map(); avatar& u=get_avatar();
++    REQUIRE(u.wear_item(item(itype_id("backpack_hiking"),calendar::turn)));
++    auto& first=u.i_add(item(itype_id("rock"),calendar::turn));
++    auto& second=u.i_add(item(itype_id("hat_ball"),calendar::turn));
++    cwm::CwmServer server("unused-test-socket");cwm::CwmServerTestAccess::ready(server);
++    auto view=cwm::CwmServerTestAccess::query(server);
++    auto id=cwm::CwmServerTestAccess::item_id(server,first);
++    cwm::CwmServerTestAccess::quick_bind(server,1,view,id,"",1);
++    auto token=u.get_value(cwm::Hotbar::slot_key(1));
++    SECTION("stale view cannot replace shortcut") {
++        cwm::CwmServerTestAccess::query(server);
++        cwm::CwmServerTestAccess::quick_bind(server,1,view,id,token,2);
++        CHECK(u.get_value(cwm::Hotbar::slot_key(1))==token);
++    }
++    SECTION("paused use is not queued for resume") {
++        server.enable_continuous();cwm::CwmServerTestAccess::pause(server);
++        const int moves=u.moves;
++        cwm::CwmServerTestAccess::quick_use(server,1,token,0,2);
++        CHECK_FALSE(server.has_queued_action());CHECK(u.moves==moves);
++    }
++    SECTION("rebinding after admission invalidates execution") {
++        cwm::CwmServerTestAccess::quick_use(server,1,token,0,2);
++        REQUIRE(server.has_queued_action());
++        cwm::CwmServerTestAccess::quick_bind(server,1,view,cwm::CwmServerTestAccess::item_id(server,second),token,3);
++        REQUIRE(u.get_value(cwm::Hotbar::slot_key(1))!=token);
++        CHECK_FALSE(cwm::CwmServerTestAccess::execute(server));CHECK_FALSE(u.get_wielded_item());
++    }
++    SECTION("clear changes UI only, stale clear cannot clear a new assignment") {
++        const int moves=u.moves;
++        cwm::CwmServerTestAccess::quick_bind(server,1,0,0,token,2);
++        CHECK(u.get_value(cwm::Hotbar::slot_key(1)).empty());CHECK(u.has_item(first));CHECK(u.moves==moves);
++        cwm::CwmServerTestAccess::quick_bind(server,1,view,cwm::CwmServerTestAccess::item_id(server,second),"",3);
++        const auto fresh=u.get_value(cwm::Hotbar::slot_key(1));REQUIRE(!fresh.empty());
++        cwm::CwmServerTestAccess::quick_bind(server,1,0,0,token,4);
++        CHECK(u.get_value(cwm::Hotbar::slot_key(1))==fresh);
++    }
++}
++
++TEST_CASE("cwm_quickbar_metadata_preserves_native_stacking_and_split_semantics", "[cwm][quickbar]")
++{
++    clear_avatar();clear_map();avatar& u=get_avatar();
++    REQUIRE(u.wear_item(item(itype_id("backpack_hiking"),calendar::turn)));
++    auto& ammo=u.i_add(item(itype_id("9mm"),calendar::turn,30));
++    REQUIRE(cwm::Hotbar::bind(u,1,item_location(u,&ammo),"").empty());
++    const auto token=ammo.get_var(cwm::Hotbar::item_key);
++    item plain(ammo);plain.erase_var(cwm::Hotbar::item_key);
++    CHECK(ammo.can_combine(plain));CHECK(ammo.stacks_with(plain));
++    item portion=ammo.split(7);
++    CHECK(portion.charges==7);CHECK(ammo.charges==23);
++    CHECK(portion.get_var(cwm::Hotbar::item_key).empty());CHECK(ammo.get_var(cwm::Hotbar::item_key)==token);
++    CHECK(cwm::Hotbar::resolve(u,1,token).get_item()==&ammo);
++    std::ostringstream saved;JsonOut out(saved);ammo.serialize(out);
++    item loaded;loaded.deserialize(json_loader::from_string(saved.str()).get_object());
++    CHECK(loaded.get_var(cwm::Hotbar::item_key)==token);CHECK(loaded.charges==23);
++    // Cloning native instances can copy metadata; an ambiguous binding is cleared.
++    auto& rock=u.i_add(item(itype_id("rock"),calendar::turn));
++    REQUIRE(cwm::Hotbar::bind(u,2,item_location(u,&rock),"").empty());
++    item clone(rock);u.i_add(clone);cwm::Hotbar::refresh(u);
++    CHECK(u.get_value(cwm::Hotbar::slot_key(2)).empty());
 +}
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644

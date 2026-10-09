@@ -142,6 +142,15 @@ struct InventoryPocketBuilder;
 struct InventoryView;
 struct InventoryViewBuilder;
 
+struct QuickSlot;
+struct QuickSlotBuilder;
+
+struct QuickbarBindRequest;
+struct QuickbarBindRequestBuilder;
+
+struct QuickbarUseRequest;
+struct QuickbarUseRequestBuilder;
+
 struct EquipmentRequest;
 struct EquipmentRequestBuilder;
 
@@ -565,11 +574,13 @@ enum class Payload : uint8_t {
   CancelReloadRequest = 38,
   ItemTransferRequest = 39,
   CancelItemTransferRequest = 40,
+  QuickbarBindRequest = 41,
+  QuickbarUseRequest = 42,
   MIN = NONE,
-  MAX = CancelItemTransferRequest
+  MAX = QuickbarUseRequest
 };
 
-inline const Payload (&EnumValuesPayload())[41] {
+inline const Payload (&EnumValuesPayload())[43] {
   static const Payload values[] = {
     Payload::NONE,
     Payload::HelloRequest,
@@ -611,13 +622,15 @@ inline const Payload (&EnumValuesPayload())[41] {
     Payload::RangedRequest,
     Payload::CancelReloadRequest,
     Payload::ItemTransferRequest,
-    Payload::CancelItemTransferRequest
+    Payload::CancelItemTransferRequest,
+    Payload::QuickbarBindRequest,
+    Payload::QuickbarUseRequest
   };
   return values;
 }
 
 inline const char * const *EnumNamesPayload() {
-  static const char * const names[42] = {
+  static const char * const names[44] = {
     "NONE",
     "HelloRequest",
     "HelloResponse",
@@ -659,13 +672,15 @@ inline const char * const *EnumNamesPayload() {
     "CancelReloadRequest",
     "ItemTransferRequest",
     "CancelItemTransferRequest",
+    "QuickbarBindRequest",
+    "QuickbarUseRequest",
     nullptr
   };
   return names;
 }
 
 inline const char *EnumNamePayload(Payload e) {
-  if (::flatbuffers::IsOutRange(e, Payload::NONE, Payload::CancelItemTransferRequest)) return "";
+  if (::flatbuffers::IsOutRange(e, Payload::NONE, Payload::QuickbarUseRequest)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesPayload()[index];
 }
@@ -832,6 +847,14 @@ template<> struct PayloadTraits<CDDA::CWM::ItemTransferRequest> {
 
 template<> struct PayloadTraits<CDDA::CWM::CancelItemTransferRequest> {
   static const Payload enum_value = Payload::CancelItemTransferRequest;
+};
+
+template<> struct PayloadTraits<CDDA::CWM::QuickbarBindRequest> {
+  static const Payload enum_value = Payload::QuickbarBindRequest;
+};
+
+template<> struct PayloadTraits<CDDA::CWM::QuickbarUseRequest> {
+  static const Payload enum_value = Payload::QuickbarUseRequest;
 };
 
 bool VerifyPayload(::flatbuffers::Verifier &verifier, const void *obj, Payload type);
@@ -1499,7 +1522,10 @@ struct GroundItemState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_TYPE_ID = 6,
     VT_NAME = 8,
     VT_CHARGES = 10,
-    VT_COUNT_BY_CHARGES = 12
+    VT_COUNT_BY_CHARGES = 12,
+    VT_CATEGORY = 14,
+    VT_WIELDED = 16,
+    VT_ROTTEN = 18
   };
   uint32_t stack_index() const {
     return GetField<uint32_t>(VT_STACK_INDEX, 0);
@@ -1531,6 +1557,24 @@ struct GroundItemState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   bool mutate_count_by_charges(bool _count_by_charges = 0) {
     return SetField<uint8_t>(VT_COUNT_BY_CHARGES, static_cast<uint8_t>(_count_by_charges), 0);
   }
+  const ::flatbuffers::String *category() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_CATEGORY);
+  }
+  ::flatbuffers::String *mutable_category() {
+    return GetPointer<::flatbuffers::String *>(VT_CATEGORY);
+  }
+  bool wielded() const {
+    return GetField<uint8_t>(VT_WIELDED, 0) != 0;
+  }
+  bool mutate_wielded(bool _wielded = 0) {
+    return SetField<uint8_t>(VT_WIELDED, static_cast<uint8_t>(_wielded), 0);
+  }
+  bool rotten() const {
+    return GetField<uint8_t>(VT_ROTTEN, 0) != 0;
+  }
+  bool mutate_rotten(bool _rotten = 0) {
+    return SetField<uint8_t>(VT_ROTTEN, static_cast<uint8_t>(_rotten), 0);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_STACK_INDEX, 4) &&
@@ -1540,6 +1584,10 @@ struct GroundItemState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyString(name()) &&
            VerifyField<int32_t>(verifier, VT_CHARGES, 4) &&
            VerifyField<uint8_t>(verifier, VT_COUNT_BY_CHARGES, 1) &&
+           VerifyOffset(verifier, VT_CATEGORY) &&
+           verifier.VerifyString(category()) &&
+           VerifyField<uint8_t>(verifier, VT_WIELDED, 1) &&
+           VerifyField<uint8_t>(verifier, VT_ROTTEN, 1) &&
            verifier.EndTable();
   }
 };
@@ -1563,6 +1611,15 @@ struct GroundItemStateBuilder {
   void add_count_by_charges(bool count_by_charges) {
     fbb_.AddElement<uint8_t>(GroundItemState::VT_COUNT_BY_CHARGES, static_cast<uint8_t>(count_by_charges), 0);
   }
+  void add_category(::flatbuffers::Offset<::flatbuffers::String> category) {
+    fbb_.AddOffset(GroundItemState::VT_CATEGORY, category);
+  }
+  void add_wielded(bool wielded) {
+    fbb_.AddElement<uint8_t>(GroundItemState::VT_WIELDED, static_cast<uint8_t>(wielded), 0);
+  }
+  void add_rotten(bool rotten) {
+    fbb_.AddElement<uint8_t>(GroundItemState::VT_ROTTEN, static_cast<uint8_t>(rotten), 0);
+  }
   explicit GroundItemStateBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -1580,12 +1637,18 @@ inline ::flatbuffers::Offset<GroundItemState> CreateGroundItemState(
     ::flatbuffers::Offset<::flatbuffers::String> type_id = 0,
     ::flatbuffers::Offset<::flatbuffers::String> name = 0,
     int32_t charges = 0,
-    bool count_by_charges = false) {
+    bool count_by_charges = false,
+    ::flatbuffers::Offset<::flatbuffers::String> category = 0,
+    bool wielded = false,
+    bool rotten = false) {
   GroundItemStateBuilder builder_(_fbb);
+  builder_.add_category(category);
   builder_.add_charges(charges);
   builder_.add_name(name);
   builder_.add_type_id(type_id);
   builder_.add_stack_index(stack_index);
+  builder_.add_rotten(rotten);
+  builder_.add_wielded(wielded);
   builder_.add_count_by_charges(count_by_charges);
   return builder_.Finish();
 }
@@ -1596,16 +1659,23 @@ inline ::flatbuffers::Offset<GroundItemState> CreateGroundItemStateDirect(
     const char *type_id = nullptr,
     const char *name = nullptr,
     int32_t charges = 0,
-    bool count_by_charges = false) {
+    bool count_by_charges = false,
+    const char *category = nullptr,
+    bool wielded = false,
+    bool rotten = false) {
   auto type_id__ = type_id ? _fbb.CreateString(type_id) : 0;
   auto name__ = name ? _fbb.CreateString(name) : 0;
+  auto category__ = category ? _fbb.CreateString(category) : 0;
   return CDDA::CWM::CreateGroundItemState(
       _fbb,
       stack_index,
       type_id__,
       name__,
       charges,
-      count_by_charges);
+      count_by_charges,
+      category__,
+      wielded,
+      rotten);
 }
 
 struct GroundItemTileState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -2646,7 +2716,8 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_RANGED_WEAPON = 50,
     VT_RELOAD = 52,
     VT_ITEM_TRANSFER = 54,
-    VT_INVENTORY_WORK = 56
+    VT_INVENTORY_WORK = 56,
+    VT_QUICK_SLOTS = 58
   };
   uint64_t world_revision() const {
     return GetField<uint64_t>(VT_WORLD_REVISION, 0);
@@ -2810,6 +2881,12 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   CDDA::CWM::InventoryWorkState *mutable_inventory_work() {
     return GetPointer<CDDA::CWM::InventoryWorkState *>(VT_INVENTORY_WORK);
   }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::QuickSlot>> *quick_slots() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::QuickSlot>> *>(VT_QUICK_SLOTS);
+  }
+  ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::QuickSlot>> *mutable_quick_slots() {
+    return GetPointer<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::QuickSlot>> *>(VT_QUICK_SLOTS);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint64_t>(verifier, VT_WORLD_REVISION, 8) &&
@@ -2866,6 +2943,9 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyTable(item_transfer()) &&
            VerifyOffset(verifier, VT_INVENTORY_WORK) &&
            verifier.VerifyTable(inventory_work()) &&
+           VerifyOffset(verifier, VT_QUICK_SLOTS) &&
+           verifier.VerifyVector(quick_slots()) &&
+           verifier.VerifyVectorOfTables(quick_slots()) &&
            verifier.EndTable();
   }
 };
@@ -2955,6 +3035,9 @@ struct WorldSnapshotBuilder {
   void add_inventory_work(::flatbuffers::Offset<CDDA::CWM::InventoryWorkState> inventory_work) {
     fbb_.AddOffset(WorldSnapshot::VT_INVENTORY_WORK, inventory_work);
   }
+  void add_quick_slots(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::QuickSlot>>> quick_slots) {
+    fbb_.AddOffset(WorldSnapshot::VT_QUICK_SLOTS, quick_slots);
+  }
   explicit WorldSnapshotBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -2994,7 +3077,8 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshot(
     ::flatbuffers::Offset<CDDA::CWM::RangedWeaponState> ranged_weapon = 0,
     ::flatbuffers::Offset<CDDA::CWM::ReloadState> reload = 0,
     ::flatbuffers::Offset<CDDA::CWM::ItemTransferState> item_transfer = 0,
-    ::flatbuffers::Offset<CDDA::CWM::InventoryWorkState> inventory_work = 0) {
+    ::flatbuffers::Offset<CDDA::CWM::InventoryWorkState> inventory_work = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::QuickSlot>>> quick_slots = 0) {
   WorldSnapshotBuilder builder_(_fbb);
   builder_.add_completed_command_id(completed_command_id);
   builder_.add_resync_id(resync_id);
@@ -3002,6 +3086,7 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshot(
   builder_.add_base_revision(base_revision);
   builder_.add_simulation_time_seconds(simulation_time_seconds);
   builder_.add_world_revision(world_revision);
+  builder_.add_quick_slots(quick_slots);
   builder_.add_inventory_work(inventory_work);
   builder_.add_item_transfer(item_transfer);
   builder_.add_reload(reload);
@@ -3054,7 +3139,8 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshotDirect(
     ::flatbuffers::Offset<CDDA::CWM::RangedWeaponState> ranged_weapon = 0,
     ::flatbuffers::Offset<CDDA::CWM::ReloadState> reload = 0,
     ::flatbuffers::Offset<CDDA::CWM::ItemTransferState> item_transfer = 0,
-    ::flatbuffers::Offset<CDDA::CWM::InventoryWorkState> inventory_work = 0) {
+    ::flatbuffers::Offset<CDDA::CWM::InventoryWorkState> inventory_work = 0,
+    const std::vector<::flatbuffers::Offset<CDDA::CWM::QuickSlot>> *quick_slots = nullptr) {
   auto chunks__ = chunks ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::ChunkSnapshot>>(*chunks) : 0;
   auto entities__ = entities ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::EntityState>>(*entities) : 0;
   auto vehicles__ = vehicles ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::VehicleState>>(*vehicles) : 0;
@@ -3064,6 +3150,7 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshotDirect(
   auto removed__ = removed ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::EntityRemoved>>(*removed) : 0;
   auto ground_item_tiles__ = ground_item_tiles ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::GroundItemTileState>>(*ground_item_tiles) : 0;
   auto owned_items__ = owned_items ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::GroundItemState>>(*owned_items) : 0;
+  auto quick_slots__ = quick_slots ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::QuickSlot>>(*quick_slots) : 0;
   return CDDA::CWM::CreateWorldSnapshot(
       _fbb,
       world_revision,
@@ -3092,7 +3179,8 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshotDirect(
       ranged_weapon,
       reload,
       item_transfer,
-      inventory_work);
+      inventory_work,
+      quick_slots__);
 }
 
 struct InventoryWorkState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -4593,7 +4681,9 @@ struct InventoryEntry FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_CONSUME_LABEL = 38,
     VT_CONSUME_WARNING = 40,
     VT_TRANSFER_REASON = 42,
-    VT_CONTAINER = 44
+    VT_CONTAINER = 44,
+    VT_QUICK_SLOT = 46,
+    VT_ROTTEN = 48
   };
   uint32_t id() const {
     return GetField<uint32_t>(VT_ID, 0);
@@ -4721,6 +4811,18 @@ struct InventoryEntry FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   bool mutate_container(bool _container = 0) {
     return SetField<uint8_t>(VT_CONTAINER, static_cast<uint8_t>(_container), 0);
   }
+  uint8_t quick_slot() const {
+    return GetField<uint8_t>(VT_QUICK_SLOT, 0);
+  }
+  bool mutate_quick_slot(uint8_t _quick_slot = 0) {
+    return SetField<uint8_t>(VT_QUICK_SLOT, _quick_slot, 0);
+  }
+  bool rotten() const {
+    return GetField<uint8_t>(VT_ROTTEN, 0) != 0;
+  }
+  bool mutate_rotten(bool _rotten = 0) {
+    return SetField<uint8_t>(VT_ROTTEN, static_cast<uint8_t>(_rotten), 0);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_ID, 4) &&
@@ -4752,6 +4854,8 @@ struct InventoryEntry FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_TRANSFER_REASON) &&
            verifier.VerifyString(transfer_reason()) &&
            VerifyField<uint8_t>(verifier, VT_CONTAINER, 1) &&
+           VerifyField<uint8_t>(verifier, VT_QUICK_SLOT, 1) &&
+           VerifyField<uint8_t>(verifier, VT_ROTTEN, 1) &&
            verifier.EndTable();
   }
 };
@@ -4823,6 +4927,12 @@ struct InventoryEntryBuilder {
   void add_container(bool container) {
     fbb_.AddElement<uint8_t>(InventoryEntry::VT_CONTAINER, static_cast<uint8_t>(container), 0);
   }
+  void add_quick_slot(uint8_t quick_slot) {
+    fbb_.AddElement<uint8_t>(InventoryEntry::VT_QUICK_SLOT, quick_slot, 0);
+  }
+  void add_rotten(bool rotten) {
+    fbb_.AddElement<uint8_t>(InventoryEntry::VT_ROTTEN, static_cast<uint8_t>(rotten), 0);
+  }
   explicit InventoryEntryBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -4856,7 +4966,9 @@ inline ::flatbuffers::Offset<InventoryEntry> CreateInventoryEntry(
     ::flatbuffers::Offset<::flatbuffers::String> consume_label = 0,
     ::flatbuffers::Offset<::flatbuffers::String> consume_warning = 0,
     ::flatbuffers::Offset<::flatbuffers::String> transfer_reason = 0,
-    bool container = false) {
+    bool container = false,
+    uint8_t quick_slot = 0,
+    bool rotten = false) {
   InventoryEntryBuilder builder_(_fbb);
   builder_.add_length_mm(length_mm);
   builder_.add_volume_ml(volume_ml);
@@ -4874,6 +4986,8 @@ inline ::flatbuffers::Offset<InventoryEntry> CreateInventoryEntry(
   builder_.add_pocket_index(pocket_index);
   builder_.add_parent_id(parent_id);
   builder_.add_id(id);
+  builder_.add_rotten(rotten);
+  builder_.add_quick_slot(quick_slot);
   builder_.add_container(container);
   builder_.add_actions(actions);
   builder_.add_wielded(wielded);
@@ -4904,7 +5018,9 @@ inline ::flatbuffers::Offset<InventoryEntry> CreateInventoryEntryDirect(
     const char *consume_label = nullptr,
     const char *consume_warning = nullptr,
     const char *transfer_reason = nullptr,
-    bool container = false) {
+    bool container = false,
+    uint8_t quick_slot = 0,
+    bool rotten = false) {
   auto type_id__ = type_id ? _fbb.CreateString(type_id) : 0;
   auto name__ = name ? _fbb.CreateString(name) : 0;
   auto category__ = category ? _fbb.CreateString(category) : 0;
@@ -4934,7 +5050,9 @@ inline ::flatbuffers::Offset<InventoryEntry> CreateInventoryEntryDirect(
       consume_label__,
       consume_warning__,
       transfer_reason__,
-      container);
+      container,
+      quick_slot,
+      rotten);
 }
 
 struct InventoryPocket FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -5349,6 +5467,429 @@ inline ::flatbuffers::Offset<InventoryView> CreateInventoryViewDirect(
       weight_capacity_grams,
       volume_ml,
       volume_capacity_ml);
+}
+
+struct QuickSlot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef QuickSlotBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_SLOT = 4,
+    VT_BINDING_ID = 6,
+    VT_TYPE_ID = 8,
+    VT_NAME = 10,
+    VT_CATEGORY = 12,
+    VT_CHARGES = 14,
+    VT_COUNT_BY_CHARGES = 16,
+    VT_WORN = 18,
+    VT_WIELDED = 20,
+    VT_ACTIONS = 22,
+    VT_ROTTEN = 24
+  };
+  uint8_t slot() const {
+    return GetField<uint8_t>(VT_SLOT, 0);
+  }
+  bool mutate_slot(uint8_t _slot = 0) {
+    return SetField<uint8_t>(VT_SLOT, _slot, 0);
+  }
+  const ::flatbuffers::String *binding_id() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_BINDING_ID);
+  }
+  ::flatbuffers::String *mutable_binding_id() {
+    return GetPointer<::flatbuffers::String *>(VT_BINDING_ID);
+  }
+  const ::flatbuffers::String *type_id() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_TYPE_ID);
+  }
+  ::flatbuffers::String *mutable_type_id() {
+    return GetPointer<::flatbuffers::String *>(VT_TYPE_ID);
+  }
+  const ::flatbuffers::String *name() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_NAME);
+  }
+  ::flatbuffers::String *mutable_name() {
+    return GetPointer<::flatbuffers::String *>(VT_NAME);
+  }
+  const ::flatbuffers::String *category() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_CATEGORY);
+  }
+  ::flatbuffers::String *mutable_category() {
+    return GetPointer<::flatbuffers::String *>(VT_CATEGORY);
+  }
+  int32_t charges() const {
+    return GetField<int32_t>(VT_CHARGES, 0);
+  }
+  bool mutate_charges(int32_t _charges = 0) {
+    return SetField<int32_t>(VT_CHARGES, _charges, 0);
+  }
+  bool count_by_charges() const {
+    return GetField<uint8_t>(VT_COUNT_BY_CHARGES, 0) != 0;
+  }
+  bool mutate_count_by_charges(bool _count_by_charges = 0) {
+    return SetField<uint8_t>(VT_COUNT_BY_CHARGES, static_cast<uint8_t>(_count_by_charges), 0);
+  }
+  bool worn() const {
+    return GetField<uint8_t>(VT_WORN, 0) != 0;
+  }
+  bool mutate_worn(bool _worn = 0) {
+    return SetField<uint8_t>(VT_WORN, static_cast<uint8_t>(_worn), 0);
+  }
+  bool wielded() const {
+    return GetField<uint8_t>(VT_WIELDED, 0) != 0;
+  }
+  bool mutate_wielded(bool _wielded = 0) {
+    return SetField<uint8_t>(VT_WIELDED, static_cast<uint8_t>(_wielded), 0);
+  }
+  uint8_t actions() const {
+    return GetField<uint8_t>(VT_ACTIONS, 0);
+  }
+  bool mutate_actions(uint8_t _actions = 0) {
+    return SetField<uint8_t>(VT_ACTIONS, _actions, 0);
+  }
+  bool rotten() const {
+    return GetField<uint8_t>(VT_ROTTEN, 0) != 0;
+  }
+  bool mutate_rotten(bool _rotten = 0) {
+    return SetField<uint8_t>(VT_ROTTEN, static_cast<uint8_t>(_rotten), 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint8_t>(verifier, VT_SLOT, 1) &&
+           VerifyOffset(verifier, VT_BINDING_ID) &&
+           verifier.VerifyString(binding_id()) &&
+           VerifyOffset(verifier, VT_TYPE_ID) &&
+           verifier.VerifyString(type_id()) &&
+           VerifyOffset(verifier, VT_NAME) &&
+           verifier.VerifyString(name()) &&
+           VerifyOffset(verifier, VT_CATEGORY) &&
+           verifier.VerifyString(category()) &&
+           VerifyField<int32_t>(verifier, VT_CHARGES, 4) &&
+           VerifyField<uint8_t>(verifier, VT_COUNT_BY_CHARGES, 1) &&
+           VerifyField<uint8_t>(verifier, VT_WORN, 1) &&
+           VerifyField<uint8_t>(verifier, VT_WIELDED, 1) &&
+           VerifyField<uint8_t>(verifier, VT_ACTIONS, 1) &&
+           VerifyField<uint8_t>(verifier, VT_ROTTEN, 1) &&
+           verifier.EndTable();
+  }
+};
+
+struct QuickSlotBuilder {
+  typedef QuickSlot Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_slot(uint8_t slot) {
+    fbb_.AddElement<uint8_t>(QuickSlot::VT_SLOT, slot, 0);
+  }
+  void add_binding_id(::flatbuffers::Offset<::flatbuffers::String> binding_id) {
+    fbb_.AddOffset(QuickSlot::VT_BINDING_ID, binding_id);
+  }
+  void add_type_id(::flatbuffers::Offset<::flatbuffers::String> type_id) {
+    fbb_.AddOffset(QuickSlot::VT_TYPE_ID, type_id);
+  }
+  void add_name(::flatbuffers::Offset<::flatbuffers::String> name) {
+    fbb_.AddOffset(QuickSlot::VT_NAME, name);
+  }
+  void add_category(::flatbuffers::Offset<::flatbuffers::String> category) {
+    fbb_.AddOffset(QuickSlot::VT_CATEGORY, category);
+  }
+  void add_charges(int32_t charges) {
+    fbb_.AddElement<int32_t>(QuickSlot::VT_CHARGES, charges, 0);
+  }
+  void add_count_by_charges(bool count_by_charges) {
+    fbb_.AddElement<uint8_t>(QuickSlot::VT_COUNT_BY_CHARGES, static_cast<uint8_t>(count_by_charges), 0);
+  }
+  void add_worn(bool worn) {
+    fbb_.AddElement<uint8_t>(QuickSlot::VT_WORN, static_cast<uint8_t>(worn), 0);
+  }
+  void add_wielded(bool wielded) {
+    fbb_.AddElement<uint8_t>(QuickSlot::VT_WIELDED, static_cast<uint8_t>(wielded), 0);
+  }
+  void add_actions(uint8_t actions) {
+    fbb_.AddElement<uint8_t>(QuickSlot::VT_ACTIONS, actions, 0);
+  }
+  void add_rotten(bool rotten) {
+    fbb_.AddElement<uint8_t>(QuickSlot::VT_ROTTEN, static_cast<uint8_t>(rotten), 0);
+  }
+  explicit QuickSlotBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<QuickSlot> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<QuickSlot>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<QuickSlot> CreateQuickSlot(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint8_t slot = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> binding_id = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> type_id = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> name = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> category = 0,
+    int32_t charges = 0,
+    bool count_by_charges = false,
+    bool worn = false,
+    bool wielded = false,
+    uint8_t actions = 0,
+    bool rotten = false) {
+  QuickSlotBuilder builder_(_fbb);
+  builder_.add_charges(charges);
+  builder_.add_category(category);
+  builder_.add_name(name);
+  builder_.add_type_id(type_id);
+  builder_.add_binding_id(binding_id);
+  builder_.add_rotten(rotten);
+  builder_.add_actions(actions);
+  builder_.add_wielded(wielded);
+  builder_.add_worn(worn);
+  builder_.add_count_by_charges(count_by_charges);
+  builder_.add_slot(slot);
+  return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<QuickSlot> CreateQuickSlotDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint8_t slot = 0,
+    const char *binding_id = nullptr,
+    const char *type_id = nullptr,
+    const char *name = nullptr,
+    const char *category = nullptr,
+    int32_t charges = 0,
+    bool count_by_charges = false,
+    bool worn = false,
+    bool wielded = false,
+    uint8_t actions = 0,
+    bool rotten = false) {
+  auto binding_id__ = binding_id ? _fbb.CreateString(binding_id) : 0;
+  auto type_id__ = type_id ? _fbb.CreateString(type_id) : 0;
+  auto name__ = name ? _fbb.CreateString(name) : 0;
+  auto category__ = category ? _fbb.CreateString(category) : 0;
+  return CDDA::CWM::CreateQuickSlot(
+      _fbb,
+      slot,
+      binding_id__,
+      type_id__,
+      name__,
+      category__,
+      charges,
+      count_by_charges,
+      worn,
+      wielded,
+      actions,
+      rotten);
+}
+
+struct QuickbarBindRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef QuickbarBindRequestBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_COMMAND_ID = 4,
+    VT_SLOT = 6,
+    VT_VIEW_ID = 8,
+    VT_ITEM_ID = 10,
+    VT_EXPECTED_BINDING_ID = 12
+  };
+  uint64_t command_id() const {
+    return GetField<uint64_t>(VT_COMMAND_ID, 0);
+  }
+  bool mutate_command_id(uint64_t _command_id = 0) {
+    return SetField<uint64_t>(VT_COMMAND_ID, _command_id, 0);
+  }
+  uint8_t slot() const {
+    return GetField<uint8_t>(VT_SLOT, 0);
+  }
+  bool mutate_slot(uint8_t _slot = 0) {
+    return SetField<uint8_t>(VT_SLOT, _slot, 0);
+  }
+  uint64_t view_id() const {
+    return GetField<uint64_t>(VT_VIEW_ID, 0);
+  }
+  bool mutate_view_id(uint64_t _view_id = 0) {
+    return SetField<uint64_t>(VT_VIEW_ID, _view_id, 0);
+  }
+  uint32_t item_id() const {
+    return GetField<uint32_t>(VT_ITEM_ID, 0);
+  }
+  bool mutate_item_id(uint32_t _item_id = 0) {
+    return SetField<uint32_t>(VT_ITEM_ID, _item_id, 0);
+  }
+  const ::flatbuffers::String *expected_binding_id() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_EXPECTED_BINDING_ID);
+  }
+  ::flatbuffers::String *mutable_expected_binding_id() {
+    return GetPointer<::flatbuffers::String *>(VT_EXPECTED_BINDING_ID);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_COMMAND_ID, 8) &&
+           VerifyField<uint8_t>(verifier, VT_SLOT, 1) &&
+           VerifyField<uint64_t>(verifier, VT_VIEW_ID, 8) &&
+           VerifyField<uint32_t>(verifier, VT_ITEM_ID, 4) &&
+           VerifyOffset(verifier, VT_EXPECTED_BINDING_ID) &&
+           verifier.VerifyString(expected_binding_id()) &&
+           verifier.EndTable();
+  }
+};
+
+struct QuickbarBindRequestBuilder {
+  typedef QuickbarBindRequest Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_command_id(uint64_t command_id) {
+    fbb_.AddElement<uint64_t>(QuickbarBindRequest::VT_COMMAND_ID, command_id, 0);
+  }
+  void add_slot(uint8_t slot) {
+    fbb_.AddElement<uint8_t>(QuickbarBindRequest::VT_SLOT, slot, 0);
+  }
+  void add_view_id(uint64_t view_id) {
+    fbb_.AddElement<uint64_t>(QuickbarBindRequest::VT_VIEW_ID, view_id, 0);
+  }
+  void add_item_id(uint32_t item_id) {
+    fbb_.AddElement<uint32_t>(QuickbarBindRequest::VT_ITEM_ID, item_id, 0);
+  }
+  void add_expected_binding_id(::flatbuffers::Offset<::flatbuffers::String> expected_binding_id) {
+    fbb_.AddOffset(QuickbarBindRequest::VT_EXPECTED_BINDING_ID, expected_binding_id);
+  }
+  explicit QuickbarBindRequestBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<QuickbarBindRequest> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<QuickbarBindRequest>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<QuickbarBindRequest> CreateQuickbarBindRequest(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t command_id = 0,
+    uint8_t slot = 0,
+    uint64_t view_id = 0,
+    uint32_t item_id = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> expected_binding_id = 0) {
+  QuickbarBindRequestBuilder builder_(_fbb);
+  builder_.add_view_id(view_id);
+  builder_.add_command_id(command_id);
+  builder_.add_expected_binding_id(expected_binding_id);
+  builder_.add_item_id(item_id);
+  builder_.add_slot(slot);
+  return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<QuickbarBindRequest> CreateQuickbarBindRequestDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t command_id = 0,
+    uint8_t slot = 0,
+    uint64_t view_id = 0,
+    uint32_t item_id = 0,
+    const char *expected_binding_id = nullptr) {
+  auto expected_binding_id__ = expected_binding_id ? _fbb.CreateString(expected_binding_id) : 0;
+  return CDDA::CWM::CreateQuickbarBindRequest(
+      _fbb,
+      command_id,
+      slot,
+      view_id,
+      item_id,
+      expected_binding_id__);
+}
+
+struct QuickbarUseRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef QuickbarUseRequestBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_COMMAND_ID = 4,
+    VT_SLOT = 6,
+    VT_BINDING_ID = 8,
+    VT_ACTION = 10
+  };
+  uint64_t command_id() const {
+    return GetField<uint64_t>(VT_COMMAND_ID, 0);
+  }
+  bool mutate_command_id(uint64_t _command_id = 0) {
+    return SetField<uint64_t>(VT_COMMAND_ID, _command_id, 0);
+  }
+  uint8_t slot() const {
+    return GetField<uint8_t>(VT_SLOT, 0);
+  }
+  bool mutate_slot(uint8_t _slot = 0) {
+    return SetField<uint8_t>(VT_SLOT, _slot, 0);
+  }
+  const ::flatbuffers::String *binding_id() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_BINDING_ID);
+  }
+  ::flatbuffers::String *mutable_binding_id() {
+    return GetPointer<::flatbuffers::String *>(VT_BINDING_ID);
+  }
+  CDDA::CWM::EquipmentAction action() const {
+    return static_cast<CDDA::CWM::EquipmentAction>(GetField<int8_t>(VT_ACTION, 0));
+  }
+  bool mutate_action(CDDA::CWM::EquipmentAction _action = static_cast<CDDA::CWM::EquipmentAction>(0)) {
+    return SetField<int8_t>(VT_ACTION, static_cast<int8_t>(_action), 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_COMMAND_ID, 8) &&
+           VerifyField<uint8_t>(verifier, VT_SLOT, 1) &&
+           VerifyOffset(verifier, VT_BINDING_ID) &&
+           verifier.VerifyString(binding_id()) &&
+           VerifyField<int8_t>(verifier, VT_ACTION, 1) &&
+           verifier.EndTable();
+  }
+};
+
+struct QuickbarUseRequestBuilder {
+  typedef QuickbarUseRequest Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_command_id(uint64_t command_id) {
+    fbb_.AddElement<uint64_t>(QuickbarUseRequest::VT_COMMAND_ID, command_id, 0);
+  }
+  void add_slot(uint8_t slot) {
+    fbb_.AddElement<uint8_t>(QuickbarUseRequest::VT_SLOT, slot, 0);
+  }
+  void add_binding_id(::flatbuffers::Offset<::flatbuffers::String> binding_id) {
+    fbb_.AddOffset(QuickbarUseRequest::VT_BINDING_ID, binding_id);
+  }
+  void add_action(CDDA::CWM::EquipmentAction action) {
+    fbb_.AddElement<int8_t>(QuickbarUseRequest::VT_ACTION, static_cast<int8_t>(action), 0);
+  }
+  explicit QuickbarUseRequestBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<QuickbarUseRequest> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<QuickbarUseRequest>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<QuickbarUseRequest> CreateQuickbarUseRequest(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t command_id = 0,
+    uint8_t slot = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> binding_id = 0,
+    CDDA::CWM::EquipmentAction action = CDDA::CWM::EquipmentAction::WIELD) {
+  QuickbarUseRequestBuilder builder_(_fbb);
+  builder_.add_command_id(command_id);
+  builder_.add_binding_id(binding_id);
+  builder_.add_action(action);
+  builder_.add_slot(slot);
+  return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<QuickbarUseRequest> CreateQuickbarUseRequestDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t command_id = 0,
+    uint8_t slot = 0,
+    const char *binding_id = nullptr,
+    CDDA::CWM::EquipmentAction action = CDDA::CWM::EquipmentAction::WIELD) {
+  auto binding_id__ = binding_id ? _fbb.CreateString(binding_id) : 0;
+  return CDDA::CWM::CreateQuickbarUseRequest(
+      _fbb,
+      command_id,
+      slot,
+      binding_id__,
+      action);
 }
 
 struct EquipmentRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -6755,6 +7296,12 @@ struct CwmMessage FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const CDDA::CWM::CancelItemTransferRequest *payload_as_CancelItemTransferRequest() const {
     return payload_type() == CDDA::CWM::Payload::CancelItemTransferRequest ? static_cast<const CDDA::CWM::CancelItemTransferRequest *>(payload()) : nullptr;
   }
+  const CDDA::CWM::QuickbarBindRequest *payload_as_QuickbarBindRequest() const {
+    return payload_type() == CDDA::CWM::Payload::QuickbarBindRequest ? static_cast<const CDDA::CWM::QuickbarBindRequest *>(payload()) : nullptr;
+  }
+  const CDDA::CWM::QuickbarUseRequest *payload_as_QuickbarUseRequest() const {
+    return payload_type() == CDDA::CWM::Payload::QuickbarUseRequest ? static_cast<const CDDA::CWM::QuickbarUseRequest *>(payload()) : nullptr;
+  }
   void *mutable_payload() {
     return GetPointer<void *>(VT_PAYLOAD);
   }
@@ -6949,6 +7496,14 @@ template<> inline const CDDA::CWM::ItemTransferRequest *CwmMessage::payload_as<C
 
 template<> inline const CDDA::CWM::CancelItemTransferRequest *CwmMessage::payload_as<CDDA::CWM::CancelItemTransferRequest>() const {
   return payload_as_CancelItemTransferRequest();
+}
+
+template<> inline const CDDA::CWM::QuickbarBindRequest *CwmMessage::payload_as<CDDA::CWM::QuickbarBindRequest>() const {
+  return payload_as_QuickbarBindRequest();
+}
+
+template<> inline const CDDA::CWM::QuickbarUseRequest *CwmMessage::payload_as<CDDA::CWM::QuickbarUseRequest>() const {
+  return payload_as_QuickbarUseRequest();
 }
 
 struct CwmMessageBuilder {
@@ -7175,6 +7730,14 @@ inline bool VerifyPayload(::flatbuffers::Verifier &verifier, const void *obj, Pa
     }
     case Payload::CancelItemTransferRequest: {
       auto ptr = reinterpret_cast<const CDDA::CWM::CancelItemTransferRequest *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::QuickbarBindRequest: {
+      auto ptr = reinterpret_cast<const CDDA::CWM::QuickbarBindRequest *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::QuickbarUseRequest: {
+      auto ptr = reinterpret_cast<const CDDA::CWM::QuickbarUseRequest *>(obj);
       return verifier.VerifyTable(ptr);
     }
     default: return true;
