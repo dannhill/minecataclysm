@@ -257,6 +257,10 @@ def main():
                     sent=int(latest()['equipment_sent']);old_view=latest()['inventory_view']
                     click(12.325+(number%2)*2.2,8.15+(number//2)*.75)
                     wait(lambda r:int(r['equipment_sent'])==sent+1)
+                    if number==0:
+                        wait(lambda r:int(r['pending_decision'])>0)
+                        check('native_stow_choice_precedes_return',int(latest()['equipment_form'])==0)
+                        tap('1') # Fixture explicitly chooses native Store in inventory.
                     wait(lambda r:int(r['equipment_form'])==1 and int(r['inventory_view'])>0 and r['inventory_view']!=old_view,timeout=25)
                     check('automatic_return_'+str(sent),int(latest()['native_work_settled'])==1 and int(latest()['equipment_selected'])==0)
                     return views()[-1]

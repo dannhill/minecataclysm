@@ -209,6 +209,10 @@ def main():
                 assert options and options[-1] == 'Cancel' and len(options) <= 9, options
                 return str(len(options))
             def open_inventory():
+                if int(latest().get('inventory_return',0)) and int(latest()['transfer_token'])==0:
+                    wait(lambda r:int(r['equipment_form'])==1 and int(r['inventory_view'])>0)
+                elif int(latest()['equipment_form'])==1 and int(latest()['inventory_view'])==0:
+                    wait(lambda r:int(r['inventory_view'])>0)
                 if int(latest()['equipment_form']) == 1 and int(latest()['inventory_view']) > 0:
                     return views()[-1]
                 tap('i')
