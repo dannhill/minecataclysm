@@ -275,7 +275,7 @@ def main():
                         check('saved_work_has_not_moved_ammo_early',item(view,'9mm').Charges()==30)
                         check('actual_runtime_survives',proc.poll() is None)
                     else:
-                        cancelled=int(latest()['cancel_consumption_sent']);click(11.75,2.2)
+                        cancelled=int(latest()['cancel_consumption_sent']);click(13.4,10.35)
                         wait(lambda r:int(r['equipment_form'])==0 and int(r['cancel_consumption_sent'])==cancelled+1)
                         finish();view=open_inventory();check('native_cancel_keeps_all_thirty_rounds',item(view,'9mm').Charges()==30)
                 if not args.save_active:
