@@ -1,12 +1,12 @@
 {
   "mineclonia_pin": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
   "report": {
-    "production_batches": 9,
-    "records": 360,
-    "presentation_supported": 88,
-    "mapped_but_fallback": 25,
-    "no_good_match": 247,
-    "copied_textures": 18
+    "production_batches": 27,
+    "records": 1080,
+    "presentation_supported": 396,
+    "mapped_but_fallback": 105,
+    "no_good_match": 579,
+    "copied_textures": 89
   },
   "production_outputs": {
     "batch-0001-output.json": "2725da96028b572f1cc159c9e6be4a8f14112b74caeef24782eba7cabe123cb1",
@@ -17,6 +17,24 @@
     "batch-0006-output.json": "4286fd511b619b95980a120a437fbedbf104c194a74718b6e9b20b2368306fe4",
     "batch-0007-output.json": "3d05c645c61b72787dee5786caebbe09707903935c64cca3dc826c6d1659d87c",
     "batch-0008-output.json": "fd447dcb9c7bcbbef832702d9b98e96ed044a3d0a2a6afcf57ef34708ef7f177",
-    "batch-0009-output.json": "2850a8e05f25105d2ab48593579398e70eadeb25fc54c0574f93e14a67c1b1f7"
+    "batch-0009-output.json": "2850a8e05f25105d2ab48593579398e70eadeb25fc54c0574f93e14a67c1b1f7",
+    "batch-0010-output.json": "a6f3c8dd227af3656e7f705f71893d645f27f15c93a495f912492b8186173524",
+    "batch-0011-output.json": "bc62589d8eac27b02c343ac263cb335b3cc4cb69bd61bd65e50f1f14fdae08d5",
+    "batch-0012-output.json": "6d4c1ea90fbfac49622815bdf68ffed5f152afc9cd3e7ade770976ef3ab2afa1",
+    "batch-0013-output.json": "4cfb3e821f545ca20c46f2354760481cdaee2418142c5df624121a0b8ab66438",
+    "batch-0014-output.json": "119582c4d56ed55fec5b4ebddb2946eef17b07e2eca33f7aeb4ec26c97704aba",
+    "batch-0015-output.json": "758007c9f3b223c3ca0774bed3799a89052a2b0e28fa86a5d8fb00e3569d5346",
+    "batch-0016-output.json": "cc99a5acc3617e45f0914a2e6a0d172a4b1321362daa78df7e94ce7928bc4bdd",
+    "batch-0017-output.json": "744e47d7816c89f167c8b87803d5e4c3b785bab9cb41dc86857955508d068ce5",
+    "batch-0018-output.json": "cdce4555d44c884dd4b8f5933625e92346ce4c6644ae3cc9992b56212ad54711",
+    "batch-0019-output.json": "61b790c1756cc6c67228f6990aac974283e61c2b1f4591d5c8c4f66fbfd09efe",
+    "batch-0020-output.json": "60329e11a171640c3309674c23eba3982c1f1c3138b3e3856ad973d306e61b9a",
+    "batch-0021-output.json": "67c5fb380c1ff04a32027925b0a2634931b9964762ada42ef806443a6ab4d33b",
+    "batch-0022-output.json": "6e2ad2235f695e7c3f2ba99319a7290196390dd3fe20aea3329b411a31993d3d",
+    "batch-0023-output.json": "74721f0ed000b33fbecf0695c44e9fc9863f113d7e6af493eed284a58a94c50e",
+    "batch-0024-output.json": "53f6e770c18ffedf639665489d1e5668534548ea41398ae7406495a0119d3e1e",
+    "batch-0025-output.json": "7ac5ee13968e47b4003200fbe6583e372d65bf57e70351cf0ad90a3a15468aa4",
+    "batch-0026-output.json": "93768d46490ce4be35858a2595c6cd18634f5d9afe3d3f9531c465e6c3221637",
+    "batch-0027-output.json": "0098d290e3d906c2950713675f97928de470f9c3c20544601d14619bd368cfec"
   }
 }

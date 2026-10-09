@@ -1,7 +1,7 @@
 # Validazioni manuali del playable core
 
-Stato corrente: **11 punti pendenti**: quattro tiro/ricarica, quattro
-quantita/deposito/trasferimenti e tre ricontrolli mirati del riscontro UI. Il riscontro del 2026-10-09 accetta tutti i
+Stato corrente: **12 punti pendenti**: quattro tiro/ricarica, quattro
+quantita/deposito/trasferimenti e quattro ricontrolli mirati UI/mapping. Il riscontro del 2026-10-09 accetta tutti i
 16 punti inventario, cibo/bevande, medicazioni e crafting. I bug segnalati
 restano separati dall'accettazione delle checklist, con ricontrolli mirati
 aggiunti sotto quando le correzioni sono consegnate.
@@ -299,7 +299,7 @@ Accettazione grafica/usabilita ancora pendente; i test automatici non la
 sostituiscono. [Dettagli tecnici](../fixes/native-transfer.md).
 
 
-## Ricontrolli mirati del riscontro UI — PENDING (3), quando puoi
+## Ricontrolli mirati del riscontro UI e mapping — PENDING (4), quando puoi
 
 I 16 PASS precedenti restano acquisiti. Non occorre ripeterli né fare queste
 prove oggi. La revisione completa dell'interfaccia è pianificata: il layout
@@ -317,5 +317,11 @@ attuale resta provvisorio.
 3. **Badge crafting**: interrompi un lavoro in `./crafting-demo.sh --fresh`;
    K mostra R interamente dentro lo slot. Clic sul badge seleziona il lavoro,
    non lo avvia senza il pulsante Riprendi.
+
+4. **Mapping aggiornato**: nella demo consumo la mela deve avere la sua
+   icona; nella demo crafting le bende improvvisate usano il proxy di cuoio
+   scelto nel batch. Tooltip/nome devono indicare sempre il vero oggetto CDDA.
+   Zaino e mazza possono ancora usare il fallback: non tutti i record hanno
+   un asset pronto. Nessun cambiamento atteso a quantità, tempi o salvataggi.
 
 I futuri UX-01–05 avranno checklist proprie soltanto quando consegnati.

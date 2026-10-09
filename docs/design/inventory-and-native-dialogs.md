@@ -18,6 +18,19 @@ estetica della nuova proposta viene dedotta dai PASS delle meccaniche.
 | `cdda/src/cwm/cwm_server.cpp`, `ask_decision`; `do_turn` provider esterno | Decisioni temporaneamente rappresentate da testo/scelte numerate; world e input sospesi, annullamento finale sicuro. | Nuova veste grafica senza approvazioni automatiche. Metadati tipizzati per scelte mediche/oggetti, senza dedurre gameplay dal testo. |
 | `cdda/src/recipe_dictionary.cpp`, `recipe_subset::recent`/`favorite`; `craft_command.cpp` | Recenti/preferiti nativi esistono; il comando registra fino a 20 ricette recenti dopo l'avvio del lavoro, non dopo la sola ricerca. | Esporre prima Recenti/Preferiti. Per “più eseguiti” definire conteggio dei completamenti, non delle aperture o dei tentativi. |
 
+La prova del renderer con i precedenti nove batch mostrava molte icone identiche: il fallback attuale
+`game/mods/cdda_items/textures/cdda_items_fallback.png` è una texture grigia
+di pietra, non un simbolo neutro di oggetto sconosciuto. Il mapping generato di quella versione
+non conteneva mazza/zaino/benda della fixture; nei log viene effettivamente
+caricato `cdda_items:fallback_generic`. UX-01 deve distinguere almeno categorie
+con asset appropriati, conservando nomi e fallback espliciti. Non è stato
+riscontrato un nuovo errore di caricamento delle texture in queste prove.
+La successiva sincronizzazione richiesta dall’utente importa i 27 batch
+attuali: 1.080 record e 396 rappresentazioni attive. La benda improvvisata
+ora usa il proxy di cuoio del batch; le modifiche procedurali raccomandate
+non sono applicate da questo import. Zaino e mazza restano fallback per
+assenza di match/asset supportato, rispettivamente.
+
 Mineclonia contribuisce il linguaggio grafico, non la sua simulazione: non
 si importano crafting 2×2, inventario a capacità fissa, drag-and-drop locale,
 armature limitate a un pezzo per slot o equipaggiamento senza costo.

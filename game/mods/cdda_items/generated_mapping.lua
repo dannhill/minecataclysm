@@ -704,3 +704,2467 @@ minetest.register_craftitem("cdda_items:i_def93f27d7943084", {
 })
 cdda_items.visual_by_cdda_id["RobofacCoin"] = "cdda_items:i_def93f27d7943084"
 
+minetest.register_craftitem("cdda_items:i_62f38e244a3fed92", {
+    description = "CDDA visual: SICP",
+    inventory_image = "mcl_books_book_written.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["SICP"] = "cdda_items:i_62f38e244a3fed92"
+
+minetest.register_craftitem("cdda_items:i_e442591a25169ba7", {
+    description = "CDDA visual: ZSG",
+    inventory_image = "mcl_books_book_written.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["ZSG"] = "cdda_items:i_e442591a25169ba7"
+
+minetest.register_craftitem("cdda_items:i_ce57e023a49d6ea1", {
+    description = "CDDA visual: acetic_anhydride",
+    inventory_image = "mcl_honey_honey_bottle.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["acetic_anhydride"] = "cdda_items:i_ce57e023a49d6ea1"
+
+minetest.register_craftitem("cdda_items:i_fa1daf70aa4be3af", {
+    description = "CDDA visual: acid_soaked_hide",
+    inventory_image = "mcl_mobitems_rabbit_hide.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["acid_soaked_hide"] = "cdda_items:i_fa1daf70aa4be3af"
+
+minetest.register_craftitem("cdda_items:i_ceabff4a463b04f8", {
+    description = "CDDA visual: acidbomb",
+    inventory_image = "mcl_potions_potion_overlay.png^[colorize:#87A363:127^mcl_potions_splash_bottle.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["acidbomb"] = "cdda_items:i_ceabff4a463b04f8"
+
+minetest.register_craftitem("cdda_items:i_a49a8cfb13c20e59", {
+    description = "CDDA visual: acidchitin_armor_cow",
+    inventory_image = "mcl_mobitems_diamond_horse_armor.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["acidchitin_armor_cow"] = "cdda_items:i_a49a8cfb13c20e59"
+
+minetest.register_craftitem("cdda_items:i_95a7fbda9baf734f", {
+    description = "CDDA visual: acidchitin_armor_horse",
+    inventory_image = "mcl_mobitems_diamond_horse_armor.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["acidchitin_armor_horse"] = "cdda_items:i_95a7fbda9baf734f"
+
+minetest.register_craftitem("cdda_items:i_28cee590e84c4aec", {
+    description = "CDDA visual: acidchitin_piece",
+    inventory_image = "mcl_pottery_sherds_snort.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["acidchitin_piece"] = "cdda_items:i_28cee590e84c4aec"
+
+minetest.register_craftitem("cdda_items:i_e7db05656e6f1949", {
+    description = "CDDA visual: acorn_roasted",
+    inventory_image = "mcl_cocoas_cocoa_beans.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["acorn_roasted"] = "cdda_items:i_e7db05656e6f1949"
+
+minetest.register_craftitem("cdda_items:i_0e618458551b2c4f", {
+    description = "CDDA visual: acorns",
+    inventory_image = "mcl_farming_melon_seeds.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["acorns"] = "cdda_items:i_0e618458551b2c4f"
+
+minetest.register_craftitem("cdda_items:i_4fd0ac82f3aa6db3", {
+    description = "CDDA visual: acorns_blanched",
+    inventory_image = "mcl_farming_melon_seeds.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["acorns_blanched"] = "cdda_items:i_4fd0ac82f3aa6db3"
+
+minetest.register_craftitem("cdda_items:i_6e988a841fdd46fe", {
+    description = "CDDA visual: acorns_blanching",
+    inventory_image = "mcl_farming_sweet_berry.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["acorns_blanching"] = "cdda_items:i_6e988a841fdd46fe"
+
+minetest.register_craftitem("cdda_items:i_9512f20f2aee0795", {
+    description = "CDDA visual: acorns_cooked",
+    inventory_image = "farming_potato_baked.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["acorns_cooked"] = "cdda_items:i_9512f20f2aee0795"
+
+minetest.register_craftitem("cdda_items:i_55517527dfe133f0", {
+    description = "CDDA visual: adhesive_bandages",
+    inventory_image = "default_paper.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["adhesive_bandages"] = "cdda_items:i_55517527dfe133f0"
+
+minetest.register_craftitem("cdda_items:i_3ddf5b38206ad362", {
+    description = "CDDA visual: adobe_brick",
+    inventory_image = "default_clay_brick.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["adobe_brick"] = "cdda_items:i_3ddf5b38206ad362"
+
+minetest.register_craftitem("cdda_items:i_9beab3028087be0c", {
+    description = "CDDA visual: advanced_ecig",
+    inventory_image = "screwdriver.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["advanced_ecig"] = "cdda_items:i_9beab3028087be0c"
+
+minetest.register_craftitem("cdda_items:i_f65040dd3e5204b7", {
+    description = "CDDA visual: advanced_electronics",
+    inventory_image = "default_book.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["advanced_electronics"] = "cdda_items:i_f65040dd3e5204b7"
+
+minetest.register_craftitem("cdda_items:i_a9a80108cc1c8849", {
+    description = "CDDA visual: airsoft_helmet",
+    inventory_image = "mcl_armor_inv_helmet_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["airsoft_helmet"] = "cdda_items:i_a9a80108cc1c8849"
+
+minetest.register_craftitem("cdda_items:i_93a6612a317713c1", {
+    description = "CDDA visual: akdrum75",
+    inventory_image = "mcl_jukebox_record_13.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["akdrum75"] = "cdda_items:i_93a6612a317713c1"
+
+minetest.register_craftitem("cdda_items:i_a73e85ef109ef412", {
+    description = "CDDA visual: aketon_canvas",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["aketon_canvas"] = "cdda_items:i_a73e85ef109ef412"
+
+minetest.register_craftitem("cdda_items:i_91b4d78df3065535", {
+    description = "CDDA visual: aketon_canvas_vest",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["aketon_canvas_vest"] = "cdda_items:i_91b4d78df3065535"
+
+minetest.register_craftitem("cdda_items:i_833b66abf762af9d", {
+    description = "CDDA visual: aketon_hood_canvas",
+    inventory_image = "mcl_armor_inv_helmet_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["aketon_hood_canvas"] = "cdda_items:i_833b66abf762af9d"
+
+minetest.register_craftitem("cdda_items:i_c8d7af1cde669019", {
+    description = "CDDA visual: aketon_hood_nylon",
+    inventory_image = "mcl_armor_inv_helmet_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["aketon_hood_nylon"] = "cdda_items:i_c8d7af1cde669019"
+
+minetest.register_craftitem("cdda_items:i_bd0bc60ec569b37c", {
+    description = "CDDA visual: aketon_hood_wool",
+    inventory_image = "mcl_armor_inv_helmet_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["aketon_hood_wool"] = "cdda_items:i_bd0bc60ec569b37c"
+
+minetest.register_craftitem("cdda_items:i_d04242ee76a2d780", {
+    description = "CDDA visual: aketon_nylon",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["aketon_nylon"] = "cdda_items:i_d04242ee76a2d780"
+
+minetest.register_craftitem("cdda_items:i_b6865ae8698a151b", {
+    description = "CDDA visual: aketon_nylon_vest",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["aketon_nylon_vest"] = "cdda_items:i_b6865ae8698a151b"
+
+minetest.register_craftitem("cdda_items:i_80ba27a91d77ec61", {
+    description = "CDDA visual: aketon_pants_canvas",
+    inventory_image = "mcl_armor_inv_leggings_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["aketon_pants_canvas"] = "cdda_items:i_80ba27a91d77ec61"
+
+minetest.register_craftitem("cdda_items:i_3921c4c0aedda335", {
+    description = "CDDA visual: aketon_pants_nylon",
+    inventory_image = "mcl_armor_inv_leggings_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["aketon_pants_nylon"] = "cdda_items:i_3921c4c0aedda335"
+
+minetest.register_craftitem("cdda_items:i_8e0da31947014500", {
+    description = "CDDA visual: aketon_pants_wool",
+    inventory_image = "mcl_armor_inv_leggings_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["aketon_pants_wool"] = "cdda_items:i_8e0da31947014500"
+
+minetest.register_craftitem("cdda_items:i_774ae7b77ab254df", {
+    description = "CDDA visual: aketon_wool",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["aketon_wool"] = "cdda_items:i_774ae7b77ab254df"
+
+minetest.register_craftitem("cdda_items:i_198a2ee68b071c02", {
+    description = "CDDA visual: aketon_wool_vest",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["aketon_wool_vest"] = "cdda_items:i_198a2ee68b071c02"
+
+minetest.register_craftitem("cdda_items:i_118cdc1bd1bdf9d4", {
+    description = "CDDA visual: alarmclock",
+    inventory_image = "mcl_clock_clock_00.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["alarmclock"] = "cdda_items:i_118cdc1bd1bdf9d4"
+
+minetest.register_craftitem("cdda_items:i_f90edf347648842a", {
+    description = "CDDA visual: alcohol_wipes",
+    inventory_image = "default_paper.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["alcohol_wipes"] = "cdda_items:i_f90edf347648842a"
+
+minetest.register_craftitem("cdda_items:i_5a15e9958fd0282c", {
+    description = "CDDA visual: alexandrite",
+    inventory_image = "mcl_core_emerald.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["alexandrite"] = "cdda_items:i_5a15e9958fd0282c"
+
+minetest.register_craftitem("cdda_items:i_0a1a4cfa1ed13bc1", {
+    description = "CDDA visual: alexandrite_gold_cufflinks",
+    inventory_image = "mcl_core_gold_nugget.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["alexandrite_gold_cufflinks"] = "cdda_items:i_0a1a4cfa1ed13bc1"
+
+minetest.register_craftitem("cdda_items:i_f123a92736fb10da", {
+    description = "CDDA visual: alexandrite_gold_earring",
+    inventory_image = "mcl_core_gold_nugget.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["alexandrite_gold_earring"] = "cdda_items:i_f123a92736fb10da"
+
+minetest.register_craftitem("cdda_items:i_022b4291b772b6c8", {
+    description = "CDDA visual: alexandrite_platinum_earring",
+    inventory_image = "default_diamond.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["alexandrite_platinum_earring"] = "cdda_items:i_022b4291b772b6c8"
+
+minetest.register_craftitem("cdda_items:i_81d80493b535e158", {
+    description = "CDDA visual: alloy_book",
+    inventory_image = "mcl_books_book_written.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["alloy_book"] = "cdda_items:i_81d80493b535e158"
+
+minetest.register_craftitem("cdda_items:i_ccb8e09375e13de8", {
+    description = "CDDA visual: alloy_sheet",
+    inventory_image = "default_paper.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["alloy_sheet"] = "cdda_items:i_ccb8e09375e13de8"
+
+minetest.register_craftitem("cdda_items:i_ca6d998ca7a3abe2", {
+    description = "CDDA visual: almond",
+    inventory_image = "mcl_cocoas_cocoa_beans.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["almond"] = "cdda_items:i_ca6d998ca7a3abe2"
+
+minetest.register_craftitem("cdda_items:i_aa453e52256a3110", {
+    description = "CDDA visual: almond_milk",
+    inventory_image = "mcl_mobitems_bucket_milk.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["almond_milk"] = "cdda_items:i_aa453e52256a3110"
+
+minetest.register_craftitem("cdda_items:i_259e0bbd06d33c7c", {
+    description = "CDDA visual: almond_pulp",
+    inventory_image = "mcl_bone_meal_bone_meal.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["almond_pulp"] = "cdda_items:i_259e0bbd06d33c7c"
+
+minetest.register_craftitem("cdda_items:i_c6828af303d064ad", {
+    description = "CDDA visual: almond_roasted",
+    inventory_image = "mcl_cocoas_cocoa_beans.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["almond_roasted"] = "cdda_items:i_c6828af303d064ad"
+
+minetest.register_craftitem("cdda_items:i_f51ad98e6a43525a", {
+    description = "CDDA visual: almond_shelled",
+    inventory_image = "mcl_cocoas_cocoa_beans.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["almond_shelled"] = "cdda_items:i_f51ad98e6a43525a"
+
+minetest.register_craftitem("cdda_items:i_7517b80046b3577d", {
+    description = "CDDA visual: altered_apron",
+    inventory_image = "mcl_banners_item_base_48.png^(mcl_banners_item_overlay_48.png^[colorize:#d56791:255)",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["altered_apron"] = "cdda_items:i_7517b80046b3577d"
+
+minetest.register_craftitem("cdda_items:i_3db51cd6bafbdba1", {
+    description = "CDDA visual: altered_jacket",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["altered_jacket"] = "cdda_items:i_3db51cd6bafbdba1"
+
+minetest.register_craftitem("cdda_items:i_c08dbd9b40d0474c", {
+    description = "CDDA visual: altered_keyring",
+    inventory_image = "mcl_vaults_trial_key.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["altered_keyring"] = "cdda_items:i_c08dbd9b40d0474c"
+
+minetest.register_craftitem("cdda_items:i_735b989e832b78a4", {
+    description = "CDDA visual: altered_scissors",
+    inventory_image = "default_tool_shears.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["altered_scissors"] = "cdda_items:i_735b989e832b78a4"
+
+minetest.register_craftitem("cdda_items:i_d4c0a0e402c59b01", {
+    description = "CDDA visual: altered_shirt",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["altered_shirt"] = "cdda_items:i_d4c0a0e402c59b01"
+
+minetest.register_craftitem("cdda_items:i_2f9dea015f1adeee", {
+    description = "CDDA visual: altered_stopwatch",
+    inventory_image = "mcl_clock_clock_00.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["altered_stopwatch"] = "cdda_items:i_2f9dea015f1adeee"
+
+minetest.register_craftitem("cdda_items:i_6337da541af362c8", {
+    description = "CDDA visual: aluminum_boat_hull",
+    inventory_image = "mcl_boats_birch_boat.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["aluminum_boat_hull"] = "cdda_items:i_6337da541af362c8"
+
+minetest.register_craftitem("cdda_items:i_b673dac9818cf1d6", {
+    description = "CDDA visual: aluminum_foil",
+    inventory_image = "default_paper.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["aluminum_foil"] = "cdda_items:i_b673dac9818cf1d6"
+
+minetest.register_craftitem("cdda_items:i_db0a9c937f6a7097", {
+    description = "CDDA visual: amatriciana_pasta",
+    inventory_image = "farming_mushroom_stew.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["amatriciana_pasta"] = "cdda_items:i_db0a9c937f6a7097"
+
+minetest.register_craftitem("cdda_items:i_34ba1ca6803d5d12", {
+    description = "CDDA visual: american_flag",
+    inventory_image = "mcl_banners_item_base_48.png^(mcl_banners_item_overlay_48.png^[colorize:#d0d6d7:255)",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["american_flag"] = "cdda_items:i_34ba1ca6803d5d12"
+
+minetest.register_craftitem("cdda_items:i_7c3083abaf3ffd42", {
+    description = "CDDA visual: amethyst",
+    inventory_image = "mcl_amethyst_amethyst_shard.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["amethyst"] = "cdda_items:i_7c3083abaf3ffd42"
+
+minetest.register_craftitem("cdda_items:i_33bb620cdfc6f29c", {
+    description = "CDDA visual: amethyst_gold_earring",
+    inventory_image = "mcl_amethyst_amethyst_shard.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["amethyst_gold_earring"] = "cdda_items:i_33bb620cdfc6f29c"
+
+minetest.register_craftitem("cdda_items:i_0d7e0ba42fc162b1", {
+    description = "CDDA visual: amethyst_gold_pendant_necklace",
+    inventory_image = "mcl_amethyst_amethyst_shard.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["amethyst_gold_pendant_necklace"] = "cdda_items:i_0d7e0ba42fc162b1"
+
+minetest.register_craftitem("cdda_items:i_f3c11a8f974f8406", {
+    description = "CDDA visual: amethyst_platinum_earring",
+    inventory_image = "mcl_amethyst_amethyst_shard.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["amethyst_platinum_earring"] = "cdda_items:i_f3c11a8f974f8406"
+
+minetest.register_craftitem("cdda_items:i_bd66dcf6004699db", {
+    description = "CDDA visual: amethyst_platinum_pendant_necklace",
+    inventory_image = "mcl_amethyst_amethyst_shard.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["amethyst_platinum_pendant_necklace"] = "cdda_items:i_bd66dcf6004699db"
+
+minetest.register_craftitem("cdda_items:i_4b81103a212e9197", {
+    description = "CDDA visual: amethyst_silver_earring",
+    inventory_image = "mcl_amethyst_amethyst_shard.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["amethyst_silver_earring"] = "cdda_items:i_4b81103a212e9197"
+
+minetest.register_craftitem("cdda_items:i_825893dc9aa230c8", {
+    description = "CDDA visual: amethyst_silver_pendant_necklace",
+    inventory_image = "mcl_amethyst_amethyst_shard.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["amethyst_silver_pendant_necklace"] = "cdda_items:i_825893dc9aa230c8"
+
+minetest.register_craftitem("cdda_items:i_d56ef51441cb7b00", {
+    description = "CDDA visual: ammonia_hydroxide",
+    inventory_image = "mcl_potions_potion_overlay.png^[colorize:#0022FF:127^mcl_potions_splash_bottle.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["ammonia_hydroxide"] = "cdda_items:i_d56ef51441cb7b00"
+
+minetest.register_craftitem("cdda_items:i_474b81b6eca8b076", {
+    description = "CDDA visual: ammonia_liquid",
+    inventory_image = "mcl_potions_potion_overlay.png^[colorize:#0022FF:127^mcl_potions_potion_bottle.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["ammonia_liquid"] = "cdda_items:i_474b81b6eca8b076"
+
+minetest.register_craftitem("cdda_items:i_d369678b5bf2ad9a", {
+    description = "CDDA visual: ampoule",
+    inventory_image = "mcl_potions_potion_overlay.png^[colorize:#FF9900:127^mcl_potions_potion_bottle.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["ampoule"] = "cdda_items:i_d369678b5bf2ad9a"
+
+minetest.register_craftitem("cdda_items:i_6b71dfb59094c987", {
+    description = "CDDA visual: anesthetic",
+    inventory_image = "mcl_potions_potion_overlay.png^[colorize:#87A363:127^mcl_potions_potion_bottle.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["anesthetic"] = "cdda_items:i_6b71dfb59094c987"
+
+minetest.register_craftitem("cdda_items:i_89d13084d0000e30", {
+    description = "CDDA visual: ant_egg",
+    inventory_image = "mcl_throwing_egg.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["ant_egg"] = "cdda_items:i_89d13084d0000e30"
+
+minetest.register_craftitem("cdda_items:i_79a611dbc6a07d30", {
+    description = "CDDA visual: ant_egg_acid",
+    inventory_image = "mcl_throwing_egg.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["ant_egg_acid"] = "cdda_items:i_79a611dbc6a07d30"
+
+minetest.register_craftitem("cdda_items:i_f74a62a458befdbf", {
+    description = "CDDA visual: apple",
+    inventory_image = "default_apple.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["apple"] = "cdda_items:i_f74a62a458befdbf"
+
+minetest.register_craftitem("cdda_items:i_4ca86f4c19aea46b", {
+    description = "CDDA visual: apple_cider",
+    inventory_image = "mcl_honey_honey_bottle.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["apple_cider"] = "cdda_items:i_4ca86f4c19aea46b"
+
+minetest.register_craftitem("cdda_items:i_3eafe00724e1ef3e", {
+    description = "CDDA visual: apple_sugar",
+    inventory_image = "farming_melon.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["apple_sugar"] = "cdda_items:i_3eafe00724e1ef3e"
+
+minetest.register_craftitem("cdda_items:i_2c4ea9426922f60d", {
+    description = "CDDA visual: apricot",
+    inventory_image = "mcl_farming_sweet_berry.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["apricot"] = "cdda_items:i_2c4ea9426922f60d"
+
+minetest.register_craftitem("cdda_items:i_844a964891db2e5f", {
+    description = "CDDA visual: apron_cotton",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["apron_cotton"] = "cdda_items:i_844a964891db2e5f"
+
+minetest.register_craftitem("cdda_items:i_dbd3ad688f5e13f4", {
+    description = "CDDA visual: apron_cut_resistant",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["apron_cut_resistant"] = "cdda_items:i_dbd3ad688f5e13f4"
+
+minetest.register_craftitem("cdda_items:i_33ac4ac779b6dd61", {
+    description = "CDDA visual: apron_leather",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["apron_leather"] = "cdda_items:i_33ac4ac779b6dd61"
+
+minetest.register_craftitem("cdda_items:i_1ef7637f01dc507c", {
+    description = "CDDA visual: apron_plastic",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["apron_plastic"] = "cdda_items:i_1ef7637f01dc507c"
+
+minetest.register_craftitem("cdda_items:i_1f10585263c2e697", {
+    description = "CDDA visual: aquamarine",
+    inventory_image = "mcl_core_emerald.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["aquamarine"] = "cdda_items:i_1f10585263c2e697"
+
+minetest.register_craftitem("cdda_items:i_d524b9637a344da8", {
+    description = "CDDA visual: aquamarine_gold_cufflinks",
+    inventory_image = "mcl_core_gold_nugget.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["aquamarine_gold_cufflinks"] = "cdda_items:i_d524b9637a344da8"
+
+minetest.register_craftitem("cdda_items:i_a3416a893e74ce17", {
+    description = "CDDA visual: aquamarine_gold_earring",
+    inventory_image = "mcl_core_gold_nugget.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["aquamarine_gold_earring"] = "cdda_items:i_a3416a893e74ce17"
+
+minetest.register_craftitem("cdda_items:i_6805430a312b01dc", {
+    description = "CDDA visual: ar10mag_50rd",
+    inventory_image = "mcl_jukebox_record_13.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["ar10mag_50rd"] = "cdda_items:i_6805430a312b01dc"
+
+minetest.register_craftitem("cdda_items:i_55b9b88b8bcd7cfc", {
+    description = "CDDA visual: arduino_experiments",
+    inventory_image = "default_book.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["arduino_experiments"] = "cdda_items:i_55b9b88b8bcd7cfc"
+
+minetest.register_craftitem("cdda_items:i_8aa7533897e02676", {
+    description = "CDDA visual: arisaka_bayonet",
+    inventory_image = "default_tool_steelsword.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["arisaka_bayonet"] = "cdda_items:i_8aa7533897e02676"
+
+minetest.register_craftitem("cdda_items:i_1e26527902f941c5", {
+    description = "CDDA visual: arming_sword",
+    inventory_image = "default_tool_steelsword.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["arming_sword"] = "cdda_items:i_1e26527902f941c5"
+
+minetest.register_craftitem("cdda_items:i_93ddc816f4f5f64f", {
+    description = "CDDA visual: arming_sword_fake",
+    inventory_image = "default_tool_steelsword.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["arming_sword_fake"] = "cdda_items:i_93ddc816f4f5f64f"
+
+minetest.register_craftitem("cdda_items:i_d0e504c4683bd84c", {
+    description = "CDDA visual: arming_sword_inferior",
+    inventory_image = "default_tool_steelsword.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["arming_sword_inferior"] = "cdda_items:i_d0e504c4683bd84c"
+
+minetest.register_craftitem("cdda_items:i_678503296a6a285d", {
+    description = "CDDA visual: armor_acidchitin",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_acidchitin"] = "cdda_items:i_678503296a6a285d"
+
+minetest.register_craftitem("cdda_items:i_189ab7a9899811cb", {
+    description = "CDDA visual: armor_acidchitin_xs",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_acidchitin_xs"] = "cdda_items:i_189ab7a9899811cb"
+
+minetest.register_craftitem("cdda_items:i_21a74264753c2376", {
+    description = "CDDA visual: armor_blarmor",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_blarmor"] = "cdda_items:i_21a74264753c2376"
+
+minetest.register_craftitem("cdda_items:i_4b0648a9f6fd3d76", {
+    description = "CDDA visual: armor_ch_brigandine",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_ch_brigandine"] = "cdda_items:i_4b0648a9f6fd3d76"
+
+minetest.register_craftitem("cdda_items:i_f2b5ff2e3f2979c4", {
+    description = "CDDA visual: armor_ch_brigandine_shoulders",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_ch_brigandine_shoulders"] = "cdda_items:i_f2b5ff2e3f2979c4"
+
+minetest.register_craftitem("cdda_items:i_ba4450e27d685d98", {
+    description = "CDDA visual: armor_ch_brigandine_shoulders_xs",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_ch_brigandine_shoulders_xs"] = "cdda_items:i_ba4450e27d685d98"
+
+minetest.register_craftitem("cdda_items:i_e781140e1249c6ce", {
+    description = "CDDA visual: armor_ch_brigandine_xs",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_ch_brigandine_xs"] = "cdda_items:i_e781140e1249c6ce"
+
+minetest.register_craftitem("cdda_items:i_186acd47e3a77958", {
+    description = "CDDA visual: armor_ch_chestplate",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_ch_chestplate"] = "cdda_items:i_186acd47e3a77958"
+
+minetest.register_craftitem("cdda_items:i_3b0d09acbe4be124", {
+    description = "CDDA visual: armor_ch_coat_brigandine",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_ch_coat_brigandine"] = "cdda_items:i_3b0d09acbe4be124"
+
+minetest.register_craftitem("cdda_items:i_cf2685b372b8c306", {
+    description = "CDDA visual: armor_ch_coat_brigandine_shoulders",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_ch_coat_brigandine_shoulders"] = "cdda_items:i_cf2685b372b8c306"
+
+minetest.register_craftitem("cdda_items:i_8dd286769ca293de", {
+    description = "CDDA visual: armor_ch_coat_brigandine_shoulders_xs",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_ch_coat_brigandine_shoulders_xs"] = "cdda_items:i_8dd286769ca293de"
+
+minetest.register_craftitem("cdda_items:i_f848f730c9bfa538", {
+    description = "CDDA visual: armor_ch_coat_brigandine_xs",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_ch_coat_brigandine_xs"] = "cdda_items:i_f848f730c9bfa538"
+
+minetest.register_craftitem("cdda_items:i_c9a30b2a35e293c0", {
+    description = "CDDA visual: armor_ch_heavy_chestplate",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_ch_heavy_chestplate"] = "cdda_items:i_c9a30b2a35e293c0"
+
+minetest.register_craftitem("cdda_items:i_a57f7bdcb874a993", {
+    description = "CDDA visual: armor_ch_heavy_leg_guard",
+    inventory_image = "mcl_armor_inv_leggings_diamond.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_ch_heavy_leg_guard"] = "cdda_items:i_a57f7bdcb874a993"
+
+minetest.register_craftitem("cdda_items:i_6cd9a8744f59e66a", {
+    description = "CDDA visual: armor_ch_heavyplate",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_ch_heavyplate"] = "cdda_items:i_6cd9a8744f59e66a"
+
+minetest.register_craftitem("cdda_items:i_9db9f3deab02105b", {
+    description = "CDDA visual: armor_ch_leg_guard",
+    inventory_image = "mcl_armor_inv_leggings_diamond.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_ch_leg_guard"] = "cdda_items:i_9db9f3deab02105b"
+
+minetest.register_craftitem("cdda_items:i_123245b4531de745", {
+    description = "CDDA visual: armor_ch_light_chestplate",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_ch_light_chestplate"] = "cdda_items:i_123245b4531de745"
+
+minetest.register_craftitem("cdda_items:i_160d471f6e8a42a0", {
+    description = "CDDA visual: armor_ch_light_leg_guard",
+    inventory_image = "mcl_armor_inv_leggings_chain.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_ch_light_leg_guard"] = "cdda_items:i_160d471f6e8a42a0"
+
+minetest.register_craftitem("cdda_items:i_213c9c359dbd02b7", {
+    description = "CDDA visual: armor_ch_lightplate",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_ch_lightplate"] = "cdda_items:i_213c9c359dbd02b7"
+
+minetest.register_craftitem("cdda_items:i_aa85cc8d8bdd8fa3", {
+    description = "CDDA visual: armor_ch_metal_sheets",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_ch_metal_sheets"] = "cdda_items:i_aa85cc8d8bdd8fa3"
+
+minetest.register_craftitem("cdda_items:i_a2b035d1fddbed7d", {
+    description = "CDDA visual: armor_ch_metal_sheets_chain",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_ch_metal_sheets_chain"] = "cdda_items:i_a2b035d1fddbed7d"
+
+minetest.register_craftitem("cdda_items:i_37c41889a43bcd0d", {
+    description = "CDDA visual: armor_ch_metal_sheets_chain_heavy",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_ch_metal_sheets_chain_heavy"] = "cdda_items:i_37c41889a43bcd0d"
+
+minetest.register_craftitem("cdda_items:i_d8d4124982d70c6b", {
+    description = "CDDA visual: armor_ch_metal_sheets_heavy",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_ch_metal_sheets_heavy"] = "cdda_items:i_d8d4124982d70c6b"
+
+minetest.register_craftitem("cdda_items:i_cec60a4234aa5e29", {
+    description = "CDDA visual: armor_ch_plate",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_ch_plate"] = "cdda_items:i_cec60a4234aa5e29"
+
+minetest.register_craftitem("cdda_items:i_cb9fe9a4424ad88c", {
+    description = "CDDA visual: armor_chitin",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_chitin"] = "cdda_items:i_cb9fe9a4424ad88c"
+
+minetest.register_craftitem("cdda_items:i_c4bd456b7eb230d0", {
+    description = "CDDA visual: armor_chitin_xs",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_chitin_xs"] = "cdda_items:i_c4bd456b7eb230d0"
+
+minetest.register_craftitem("cdda_items:i_807448e9b3297264", {
+    description = "CDDA visual: armor_farmor",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_farmor"] = "cdda_items:i_807448e9b3297264"
+
+minetest.register_craftitem("cdda_items:i_ca6bda0ccb2b6778", {
+    description = "CDDA visual: armor_farmor_xs",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_farmor_xs"] = "cdda_items:i_ca6bda0ccb2b6778"
+
+minetest.register_craftitem("cdda_items:i_13a534e5de49886b", {
+    description = "CDDA visual: armor_faux_farmor",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_faux_farmor"] = "cdda_items:i_13a534e5de49886b"
+
+minetest.register_craftitem("cdda_items:i_3ac20193268c386d", {
+    description = "CDDA visual: armor_faux_farmor_xs",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_faux_farmor_xs"] = "cdda_items:i_3ac20193268c386d"
+
+minetest.register_craftitem("cdda_items:i_7e0a14bb22748998", {
+    description = "CDDA visual: armor_hc_brigandine",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_hc_brigandine"] = "cdda_items:i_7e0a14bb22748998"
+
+minetest.register_craftitem("cdda_items:i_a304437b48959cca", {
+    description = "CDDA visual: armor_hc_brigandine_shoulders",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_hc_brigandine_shoulders"] = "cdda_items:i_a304437b48959cca"
+
+minetest.register_craftitem("cdda_items:i_d94e92d08c319c12", {
+    description = "CDDA visual: armor_hc_brigandine_shoulders_xs",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_hc_brigandine_shoulders_xs"] = "cdda_items:i_d94e92d08c319c12"
+
+minetest.register_craftitem("cdda_items:i_fe03c87f13bee41c", {
+    description = "CDDA visual: armor_hc_brigandine_xs",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_hc_brigandine_xs"] = "cdda_items:i_fe03c87f13bee41c"
+
+minetest.register_craftitem("cdda_items:i_88f4f5c004e35a0e", {
+    description = "CDDA visual: armor_hc_chestplate",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_hc_chestplate"] = "cdda_items:i_88f4f5c004e35a0e"
+
+minetest.register_craftitem("cdda_items:i_5ad8a2795348b15e", {
+    description = "CDDA visual: armor_hc_coat_brigandine",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_hc_coat_brigandine"] = "cdda_items:i_5ad8a2795348b15e"
+
+minetest.register_craftitem("cdda_items:i_42d49b96e70c404c", {
+    description = "CDDA visual: armor_hc_coat_brigandine_shoulders",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_hc_coat_brigandine_shoulders"] = "cdda_items:i_42d49b96e70c404c"
+
+minetest.register_craftitem("cdda_items:i_1e2cd21899a13a90", {
+    description = "CDDA visual: armor_hc_coat_brigandine_shoulders_xs",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_hc_coat_brigandine_shoulders_xs"] = "cdda_items:i_1e2cd21899a13a90"
+
+minetest.register_craftitem("cdda_items:i_efb5cd087d58c8e6", {
+    description = "CDDA visual: armor_hc_coat_brigandine_xs",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_hc_coat_brigandine_xs"] = "cdda_items:i_efb5cd087d58c8e6"
+
+minetest.register_craftitem("cdda_items:i_3f37c7a4ce8e3816", {
+    description = "CDDA visual: armor_hc_heavy_chestplate",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_hc_heavy_chestplate"] = "cdda_items:i_3f37c7a4ce8e3816"
+
+minetest.register_craftitem("cdda_items:i_9eba18cad7e9fd35", {
+    description = "CDDA visual: armor_hc_heavy_leg_guard",
+    inventory_image = "mcl_armor_inv_leggings_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_hc_heavy_leg_guard"] = "cdda_items:i_9eba18cad7e9fd35"
+
+minetest.register_craftitem("cdda_items:i_a5d37dda4c867cfc", {
+    description = "CDDA visual: armor_hc_heavyplate",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_hc_heavyplate"] = "cdda_items:i_a5d37dda4c867cfc"
+
+minetest.register_craftitem("cdda_items:i_15191d7ed3165abd", {
+    description = "CDDA visual: armor_hc_leg_guard",
+    inventory_image = "mcl_armor_inv_leggings_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_hc_leg_guard"] = "cdda_items:i_15191d7ed3165abd"
+
+minetest.register_craftitem("cdda_items:i_8aaaf80afa5348e3", {
+    description = "CDDA visual: armor_hc_light_chestplate",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_hc_light_chestplate"] = "cdda_items:i_8aaaf80afa5348e3"
+
+minetest.register_craftitem("cdda_items:i_505fe4beaf967802", {
+    description = "CDDA visual: armor_hc_light_leg_guard",
+    inventory_image = "mcl_armor_inv_leggings_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_hc_light_leg_guard"] = "cdda_items:i_505fe4beaf967802"
+
+minetest.register_craftitem("cdda_items:i_e60e6768c6502ee9", {
+    description = "CDDA visual: armor_hc_lightplate",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_hc_lightplate"] = "cdda_items:i_e60e6768c6502ee9"
+
+minetest.register_craftitem("cdda_items:i_bf5c3f378918b453", {
+    description = "CDDA visual: armor_hc_plate",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_hc_plate"] = "cdda_items:i_bf5c3f378918b453"
+
+minetest.register_craftitem("cdda_items:i_b0959e5f7eee9508", {
+    description = "CDDA visual: armor_junk_lightplate",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_junk_lightplate"] = "cdda_items:i_b0959e5f7eee9508"
+
+minetest.register_craftitem("cdda_items:i_8890bf634b9fb254", {
+    description = "CDDA visual: armor_junk_plate",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_junk_plate"] = "cdda_items:i_8890bf634b9fb254"
+
+minetest.register_craftitem("cdda_items:i_174dca0a3633e6a3", {
+    description = "CDDA visual: armor_lamellar",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_lamellar"] = "cdda_items:i_174dca0a3633e6a3"
+
+minetest.register_craftitem("cdda_items:i_8449bd0b11a23827", {
+    description = "CDDA visual: armor_lamellar_ch",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_lamellar_ch"] = "cdda_items:i_8449bd0b11a23827"
+
+minetest.register_craftitem("cdda_items:i_844d9e0b11a5ec51", {
+    description = "CDDA visual: armor_lamellar_lc",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_lamellar_lc"] = "cdda_items:i_844d9e0b11a5ec51"
+
+minetest.register_craftitem("cdda_items:i_b4c018be0975886e", {
+    description = "CDDA visual: armor_larmor",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_larmor"] = "cdda_items:i_b4c018be0975886e"
+
+minetest.register_craftitem("cdda_items:i_661dc142bfe4e998", {
+    description = "CDDA visual: armor_larmor_chest",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_larmor_chest"] = "cdda_items:i_661dc142bfe4e998"
+
+minetest.register_craftitem("cdda_items:i_b34b67315d0f041c", {
+    description = "CDDA visual: armor_larmor_chest_xs",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_larmor_chest_xs"] = "cdda_items:i_b34b67315d0f041c"
+
+minetest.register_craftitem("cdda_items:i_892abf8196c263f6", {
+    description = "CDDA visual: armor_larmor_xs",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_larmor_xs"] = "cdda_items:i_892abf8196c263f6"
+
+minetest.register_craftitem("cdda_items:i_f93869b61da013f4", {
+    description = "CDDA visual: armor_lc_brigandine",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_lc_brigandine"] = "cdda_items:i_f93869b61da013f4"
+
+minetest.register_craftitem("cdda_items:i_2b16e577773f26b6", {
+    description = "CDDA visual: armor_lc_brigandine_shoulders",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_lc_brigandine_shoulders"] = "cdda_items:i_2b16e577773f26b6"
+
+minetest.register_craftitem("cdda_items:i_baf939b50f0afc0e", {
+    description = "CDDA visual: armor_lc_brigandine_shoulders_xs",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_lc_brigandine_shoulders_xs"] = "cdda_items:i_baf939b50f0afc0e"
+
+minetest.register_craftitem("cdda_items:i_ebdd6fcb09bb5648", {
+    description = "CDDA visual: armor_lc_brigandine_xs",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_lc_brigandine_xs"] = "cdda_items:i_ebdd6fcb09bb5648"
+
+minetest.register_craftitem("cdda_items:i_eb009236f5e6b28a", {
+    description = "CDDA visual: armor_lc_chestplate",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_lc_chestplate"] = "cdda_items:i_eb009236f5e6b28a"
+
+minetest.register_craftitem("cdda_items:i_456ca100536412ea", {
+    description = "CDDA visual: armor_lc_coat_brigandine",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_lc_coat_brigandine"] = "cdda_items:i_456ca100536412ea"
+
+minetest.register_craftitem("cdda_items:i_349ba9425e7c9fc8", {
+    description = "CDDA visual: armor_lc_coat_brigandine_shoulders",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_lc_coat_brigandine_shoulders"] = "cdda_items:i_349ba9425e7c9fc8"
+
+minetest.register_craftitem("cdda_items:i_4ecec80721d5980c", {
+    description = "CDDA visual: armor_lc_coat_brigandine_shoulders_xs",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_lc_coat_brigandine_shoulders_xs"] = "cdda_items:i_4ecec80721d5980c"
+
+minetest.register_craftitem("cdda_items:i_87c2258cb4e77a72", {
+    description = "CDDA visual: armor_lc_coat_brigandine_xs",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_lc_coat_brigandine_xs"] = "cdda_items:i_87c2258cb4e77a72"
+
+minetest.register_craftitem("cdda_items:i_4f61eb7b5450670a", {
+    description = "CDDA visual: armor_lc_heavy_chestplate",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_lc_heavy_chestplate"] = "cdda_items:i_4f61eb7b5450670a"
+
+minetest.register_craftitem("cdda_items:i_3db32eb897bece11", {
+    description = "CDDA visual: armor_lc_heavy_leg_guard",
+    inventory_image = "mcl_armor_inv_leggings_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_lc_heavy_leg_guard"] = "cdda_items:i_3db32eb897bece11"
+
+minetest.register_craftitem("cdda_items:i_84316f22996b5e78", {
+    description = "CDDA visual: armor_lc_heavyplate",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_lc_heavyplate"] = "cdda_items:i_84316f22996b5e78"
+
+minetest.register_craftitem("cdda_items:i_f4672c74c1e69491", {
+    description = "CDDA visual: armor_lc_leg_guard",
+    inventory_image = "mcl_armor_inv_leggings_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_lc_leg_guard"] = "cdda_items:i_f4672c74c1e69491"
+
+minetest.register_craftitem("cdda_items:i_ba50981d4c9ad7ef", {
+    description = "CDDA visual: armor_lc_light_chestplate",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_lc_light_chestplate"] = "cdda_items:i_ba50981d4c9ad7ef"
+
+minetest.register_craftitem("cdda_items:i_ed6ca3e8370cc966", {
+    description = "CDDA visual: armor_lc_light_leg_guard",
+    inventory_image = "mcl_armor_inv_leggings_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_lc_light_leg_guard"] = "cdda_items:i_ed6ca3e8370cc966"
+
+minetest.register_craftitem("cdda_items:i_07f1723e86c1c2cd", {
+    description = "CDDA visual: armor_lc_lightplate",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_lc_lightplate"] = "cdda_items:i_07f1723e86c1c2cd"
+
+minetest.register_craftitem("cdda_items:i_8bec6d4718c50007", {
+    description = "CDDA visual: armor_lc_plate",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_lc_plate"] = "cdda_items:i_8bec6d4718c50007"
+
+minetest.register_craftitem("cdda_items:i_3fe1b74b5b5a13d5", {
+    description = "CDDA visual: armor_lightplate",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_lightplate"] = "cdda_items:i_3fe1b74b5b5a13d5"
+
+minetest.register_craftitem("cdda_items:i_bed29260df77f4bf", {
+    description = "CDDA visual: armor_mc_brigandine",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_mc_brigandine"] = "cdda_items:i_bed29260df77f4bf"
+
+minetest.register_craftitem("cdda_items:i_836e92363c1d7381", {
+    description = "CDDA visual: armor_mc_brigandine_shoulders",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_mc_brigandine_shoulders"] = "cdda_items:i_836e92363c1d7381"
+
+minetest.register_craftitem("cdda_items:i_dc233742660c126f", {
+    description = "CDDA visual: armor_mc_brigandine_shoulders_xs",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_mc_brigandine_shoulders_xs"] = "cdda_items:i_dc233742660c126f"
+
+minetest.register_craftitem("cdda_items:i_4811cc7fc0d94601", {
+    description = "CDDA visual: armor_mc_brigandine_xs",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_mc_brigandine_xs"] = "cdda_items:i_4811cc7fc0d94601"
+
+minetest.register_craftitem("cdda_items:i_6a0fcfe8ab910f59", {
+    description = "CDDA visual: armor_mc_chestplate",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_mc_chestplate"] = "cdda_items:i_6a0fcfe8ab910f59"
+
+minetest.register_craftitem("cdda_items:i_434e33f468e43127", {
+    description = "CDDA visual: armor_mc_coat_brigandine",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_mc_coat_brigandine"] = "cdda_items:i_434e33f468e43127"
+
+minetest.register_craftitem("cdda_items:i_4d0b91c1043c1709", {
+    description = "CDDA visual: armor_mc_coat_brigandine_shoulders",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_mc_coat_brigandine_shoulders"] = "cdda_items:i_4d0b91c1043c1709"
+
+minetest.register_craftitem("cdda_items:i_724df1b7da8611c7", {
+    description = "CDDA visual: armor_mc_coat_brigandine_shoulders_xs",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_mc_coat_brigandine_shoulders_xs"] = "cdda_items:i_724df1b7da8611c7"
+
+minetest.register_craftitem("cdda_items:i_4ac91602fbcc2559", {
+    description = "CDDA visual: armor_mc_coat_brigandine_xs",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_mc_coat_brigandine_xs"] = "cdda_items:i_4ac91602fbcc2559"
+
+minetest.register_craftitem("cdda_items:i_721cf14c8abc56b9", {
+    description = "CDDA visual: armor_mc_heavy_chestplate",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_mc_heavy_chestplate"] = "cdda_items:i_721cf14c8abc56b9"
+
+minetest.register_craftitem("cdda_items:i_f851e09ec412543c", {
+    description = "CDDA visual: armor_mc_heavy_leg_guard",
+    inventory_image = "mcl_armor_inv_leggings_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_mc_heavy_leg_guard"] = "cdda_items:i_f851e09ec412543c"
+
+minetest.register_craftitem("cdda_items:i_ae897986d2ae7b13", {
+    description = "CDDA visual: armor_mc_heavyplate",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_mc_heavyplate"] = "cdda_items:i_ae897986d2ae7b13"
+
+minetest.register_craftitem("cdda_items:i_cf0491e07326161c", {
+    description = "CDDA visual: armor_mc_leg_guard",
+    inventory_image = "mcl_armor_inv_leggings_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_mc_leg_guard"] = "cdda_items:i_cf0491e07326161c"
+
+minetest.register_craftitem("cdda_items:i_ed7ddc1543d4d920", {
+    description = "CDDA visual: armor_mc_light_chestplate",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_mc_light_chestplate"] = "cdda_items:i_ed7ddc1543d4d920"
+
+minetest.register_craftitem("cdda_items:i_ee1b7b1c1bd8d533", {
+    description = "CDDA visual: armor_mc_light_leg_guard",
+    inventory_image = "mcl_armor_inv_leggings_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_mc_light_leg_guard"] = "cdda_items:i_ee1b7b1c1bd8d533"
+
+minetest.register_craftitem("cdda_items:i_cd2960e58418d70a", {
+    description = "CDDA visual: armor_mc_lightplate",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_mc_lightplate"] = "cdda_items:i_cd2960e58418d70a"
+
+minetest.register_craftitem("cdda_items:i_0854db9d499b88e6", {
+    description = "CDDA visual: armor_mc_plate",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_mc_plate"] = "cdda_items:i_0854db9d499b88e6"
+
+minetest.register_craftitem("cdda_items:i_fb72c3f6f9f2dc43", {
+    description = "CDDA visual: armor_mercenary_bottom",
+    inventory_image = "mcl_armor_inv_leggings_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_mercenary_bottom"] = "cdda_items:i_fb72c3f6f9f2dc43"
+
+minetest.register_craftitem("cdda_items:i_27ebcffd34f7611b", {
+    description = "CDDA visual: armor_mercenary_top",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_mercenary_top"] = "cdda_items:i_27ebcffd34f7611b"
+
+minetest.register_craftitem("cdda_items:i_404b99354dbb57e9", {
+    description = "CDDA visual: armor_metal_sheets",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_metal_sheets"] = "cdda_items:i_404b99354dbb57e9"
+
+minetest.register_craftitem("cdda_items:i_19b21e04f609ab9f", {
+    description = "CDDA visual: armor_metal_sheets_chain",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_metal_sheets_chain"] = "cdda_items:i_19b21e04f609ab9f"
+
+minetest.register_craftitem("cdda_items:i_a28aab0ead36182f", {
+    description = "CDDA visual: armor_metal_sheets_chain_heavy",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_metal_sheets_chain_heavy"] = "cdda_items:i_a28aab0ead36182f"
+
+minetest.register_craftitem("cdda_items:i_5877befa195a93e1", {
+    description = "CDDA visual: armor_metal_sheets_heavy",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_metal_sheets_heavy"] = "cdda_items:i_5877befa195a93e1"
+
+minetest.register_craftitem("cdda_items:i_7600246198484d49", {
+    description = "CDDA visual: armor_nomad_chainmail",
+    inventory_image = "mcl_armor_inv_chestplate_chain.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_nomad_chainmail"] = "cdda_items:i_7600246198484d49"
+
+minetest.register_craftitem("cdda_items:i_a011c2ba5aac8b9b", {
+    description = "CDDA visual: armor_nomad_chainmail_on",
+    inventory_image = "mcl_armor_inv_chestplate_chain.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_nomad_chainmail_on"] = "cdda_items:i_a011c2ba5aac8b9b"
+
+minetest.register_craftitem("cdda_items:i_ea118cf245d03d08", {
+    description = "CDDA visual: armor_nomad_heavyplate",
+    inventory_image = "mcl_armor_inv_chestplate_netherite.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_nomad_heavyplate"] = "cdda_items:i_ea118cf245d03d08"
+
+minetest.register_craftitem("cdda_items:i_fed223f5f428e120", {
+    description = "CDDA visual: armor_nomad_heavyplate_on",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_nomad_heavyplate_on"] = "cdda_items:i_fed223f5f428e120"
+
+minetest.register_craftitem("cdda_items:i_acaf5b6f5dbb943d", {
+    description = "CDDA visual: armor_nomad_lightplate",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_nomad_lightplate"] = "cdda_items:i_acaf5b6f5dbb943d"
+
+minetest.register_craftitem("cdda_items:i_bb1c36f8271084ff", {
+    description = "CDDA visual: armor_nomad_lightplate_on",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_nomad_lightplate_on"] = "cdda_items:i_bb1c36f8271084ff"
+
+minetest.register_craftitem("cdda_items:i_f7e242b00d0a65f7", {
+    description = "CDDA visual: armor_nomad_plate",
+    inventory_image = "mcl_armor_inv_chestplate_netherite.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_nomad_plate"] = "cdda_items:i_f7e242b00d0a65f7"
+
+minetest.register_craftitem("cdda_items:i_58d39e81604f3201", {
+    description = "CDDA visual: armor_nomad_plate_on",
+    inventory_image = "mcl_armor_inv_chestplate_diamond.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_nomad_plate_on"] = "cdda_items:i_58d39e81604f3201"
+
+minetest.register_craftitem("cdda_items:i_0ea8eb0c9b44886c", {
+    description = "CDDA visual: armor_plarmor",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_plarmor"] = "cdda_items:i_0ea8eb0c9b44886c"
+
+minetest.register_craftitem("cdda_items:i_1e7c4e7168625ef0", {
+    description = "CDDA visual: armor_plarmor_xs",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_plarmor_xs"] = "cdda_items:i_1e7c4e7168625ef0"
+
+minetest.register_craftitem("cdda_items:i_89825a3f1d038c6f", {
+    description = "CDDA visual: armor_plate",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_plate"] = "cdda_items:i_89825a3f1d038c6f"
+
+minetest.register_craftitem("cdda_items:i_3dc9161177805884", {
+    description = "CDDA visual: armor_qt_brigandine",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_qt_brigandine"] = "cdda_items:i_3dc9161177805884"
+
+minetest.register_craftitem("cdda_items:i_07d4cbe0aa56d5a6", {
+    description = "CDDA visual: armor_qt_brigandine_shoulders",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_qt_brigandine_shoulders"] = "cdda_items:i_07d4cbe0aa56d5a6"
+
+minetest.register_craftitem("cdda_items:i_9af48bc6e8ccfbbe", {
+    description = "CDDA visual: armor_qt_brigandine_shoulders_xs",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_qt_brigandine_shoulders_xs"] = "cdda_items:i_9af48bc6e8ccfbbe"
+
+minetest.register_craftitem("cdda_items:i_24da7e6fc5236b58", {
+    description = "CDDA visual: armor_qt_brigandine_xs",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_qt_brigandine_xs"] = "cdda_items:i_24da7e6fc5236b58"
+
+minetest.register_craftitem("cdda_items:i_fb29f67e3154b5ba", {
+    description = "CDDA visual: armor_qt_chestplate",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_qt_chestplate"] = "cdda_items:i_fb29f67e3154b5ba"
+
+minetest.register_craftitem("cdda_items:i_9f6a87f77784179a", {
+    description = "CDDA visual: armor_qt_coat_brigandine",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_qt_coat_brigandine"] = "cdda_items:i_9f6a87f77784179a"
+
+minetest.register_craftitem("cdda_items:i_8eec8a7114cfc758", {
+    description = "CDDA visual: armor_qt_coat_brigandine_shoulders",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_qt_coat_brigandine_shoulders"] = "cdda_items:i_8eec8a7114cfc758"
+
+minetest.register_craftitem("cdda_items:i_49044cc7c0c3dfdc", {
+    description = "CDDA visual: armor_qt_coat_brigandine_shoulders_xs",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_qt_coat_brigandine_shoulders_xs"] = "cdda_items:i_49044cc7c0c3dfdc"
+
+minetest.register_craftitem("cdda_items:i_0dcf4b726babc322", {
+    description = "CDDA visual: armor_qt_coat_brigandine_xs",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_qt_coat_brigandine_xs"] = "cdda_items:i_0dcf4b726babc322"
+
+minetest.register_craftitem("cdda_items:i_be2944318b3f4f1a", {
+    description = "CDDA visual: armor_qt_heavy_chestplate",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_qt_heavy_chestplate"] = "cdda_items:i_be2944318b3f4f1a"
+
+minetest.register_craftitem("cdda_items:i_f4a7c291ed599761", {
+    description = "CDDA visual: armor_qt_heavy_leg_guard",
+    inventory_image = "mcl_armor_inv_leggings_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_qt_heavy_leg_guard"] = "cdda_items:i_f4a7c291ed599761"
+
+minetest.register_craftitem("cdda_items:i_214b7e2b6cbcb6a8", {
+    description = "CDDA visual: armor_qt_heavyplate",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_qt_heavyplate"] = "cdda_items:i_214b7e2b6cbcb6a8"
+
+minetest.register_craftitem("cdda_items:i_d88b6e18ad49c9c1", {
+    description = "CDDA visual: armor_qt_leg_guard",
+    inventory_image = "mcl_armor_inv_leggings_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_qt_leg_guard"] = "cdda_items:i_d88b6e18ad49c9c1"
+
+minetest.register_craftitem("cdda_items:i_9ad047eedf9d1cdf", {
+    description = "CDDA visual: armor_qt_light_chestplate",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_qt_light_chestplate"] = "cdda_items:i_9ad047eedf9d1cdf"
+
+minetest.register_craftitem("cdda_items:i_dd443b8e70ecafd6", {
+    description = "CDDA visual: armor_qt_light_leg_guard",
+    inventory_image = "mcl_armor_inv_leggings_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_qt_light_leg_guard"] = "cdda_items:i_dd443b8e70ecafd6"
+
+minetest.register_craftitem("cdda_items:i_eb3a88ef455776dd", {
+    description = "CDDA visual: armor_qt_lightplate",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_qt_lightplate"] = "cdda_items:i_eb3a88ef455776dd"
+
+minetest.register_craftitem("cdda_items:i_439e22f2ec89a817", {
+    description = "CDDA visual: armor_qt_plate",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_qt_plate"] = "cdda_items:i_439e22f2ec89a817"
+
+minetest.register_craftitem("cdda_items:i_a9c359907bd02d08", {
+    description = "CDDA visual: armor_riot_leg",
+    inventory_image = "mcl_armor_inv_leggings_netherite.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_riot_leg"] = "cdda_items:i_a9c359907bd02d08"
+
+minetest.register_craftitem("cdda_items:i_8cf0912a6d38d927", {
+    description = "CDDA visual: armor_riot_torso",
+    inventory_image = "mcl_armor_inv_chestplate_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_riot_torso"] = "cdda_items:i_8cf0912a6d38d927"
+
+minetest.register_craftitem("cdda_items:i_67b676ea71bc0d09", {
+    description = "CDDA visual: armor_samurai",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_samurai"] = "cdda_items:i_67b676ea71bc0d09"
+
+minetest.register_craftitem("cdda_items:i_fc4adf2ee094c993", {
+    description = "CDDA visual: armor_scrapsuit",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_scrapsuit"] = "cdda_items:i_fc4adf2ee094c993"
+
+minetest.register_craftitem("cdda_items:i_b3fa5cce8f2f205c", {
+    description = "CDDA visual: armor_star_samurai",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_star_samurai"] = "cdda_items:i_b3fa5cce8f2f205c"
+
+minetest.register_craftitem("cdda_items:i_b05176cc8fffa8b8", {
+    description = "CDDA visual: armor_star_samurai_helmet_destroyed",
+    inventory_image = "mcl_armor_inv_helmet_iron.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_star_samurai_helmet_destroyed"] = "cdda_items:i_b05176cc8fffa8b8"
+
+minetest.register_craftitem("cdda_items:i_2e28a1d37fc468f8", {
+    description = "CDDA visual: armor_star_samurai_legs",
+    inventory_image = "mcl_armor_inv_leggings_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_star_samurai_legs"] = "cdda_items:i_2e28a1d37fc468f8"
+
+minetest.register_craftitem("cdda_items:i_a8f31d58a82e3458", {
+    description = "CDDA visual: armor_star_samurai_torso",
+    inventory_image = "mcl_armor_inv_chestplate_gold.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_star_samurai_torso"] = "cdda_items:i_a8f31d58a82e3458"
+
+minetest.register_craftitem("cdda_items:i_17602c2dd59efd26", {
+    description = "CDDA visual: armor_thessalonian",
+    inventory_image = "mcl_armor_inv_chestplate_netherite.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_thessalonian"] = "cdda_items:i_17602c2dd59efd26"
+
+minetest.register_craftitem("cdda_items:i_a84bbc242255034e", {
+    description = "CDDA visual: armor_tiresuit",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_tiresuit"] = "cdda_items:i_a84bbc242255034e"
+
+minetest.register_craftitem("cdda_items:i_694e990a454c26a2", {
+    description = "CDDA visual: armor_xl_scrapsuit",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_xl_scrapsuit"] = "cdda_items:i_694e990a454c26a2"
+
+minetest.register_craftitem("cdda_items:i_3ee1b4032cb4573f", {
+    description = "CDDA visual: armor_xs_scrapsuit",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["armor_xs_scrapsuit"] = "cdda_items:i_3ee1b4032cb4573f"
+
+minetest.register_craftitem("cdda_items:i_a0d5aee28d1606aa", {
+    description = "CDDA visual: arrow_cf",
+    inventory_image = "mcl_bows_arrow_inv.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["arrow_cf"] = "cdda_items:i_a0d5aee28d1606aa"
+
+minetest.register_craftitem("cdda_items:i_2c019719af8b966c", {
+    description = "CDDA visual: arrow_field_point_fletched",
+    inventory_image = "mcl_bows_arrow_inv.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["arrow_field_point_fletched"] = "cdda_items:i_2c019719af8b966c"
+
+minetest.register_craftitem("cdda_items:i_20c68080018c053d", {
+    description = "CDDA visual: arrow_fire_hardened_fletched",
+    inventory_image = "mcl_bows_arrow_inv.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["arrow_fire_hardened_fletched"] = "cdda_items:i_20c68080018c053d"
+
+minetest.register_craftitem("cdda_items:i_4fce64a7f1a6d512", {
+    description = "CDDA visual: arrow_flamming",
+    inventory_image = "mcl_bows_arrow_inv.png^(mcl_potions_arrow_inv.png^[colorize:#FF9900:100)",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["arrow_flamming"] = "cdda_items:i_4fce64a7f1a6d512"
+
+minetest.register_craftitem("cdda_items:i_f51ebe4e783a931c", {
+    description = "CDDA visual: arrow_heavy_field_point_fletched",
+    inventory_image = "mcl_bows_arrow_inv.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["arrow_heavy_field_point_fletched"] = "cdda_items:i_f51ebe4e783a931c"
+
+minetest.register_craftitem("cdda_items:i_dc500f717a2188ad", {
+    description = "CDDA visual: arrow_heavy_fire_hardened_fletched",
+    inventory_image = "mcl_bows_arrow_inv.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["arrow_heavy_fire_hardened_fletched"] = "cdda_items:i_dc500f717a2188ad"
+
+minetest.register_craftitem("cdda_items:i_85661bd6483d2afe", {
+    description = "CDDA visual: arrow_metal",
+    inventory_image = "mcl_bows_arrow_inv.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["arrow_metal"] = "cdda_items:i_85661bd6483d2afe"
+
+minetest.register_craftitem("cdda_items:i_a501ad639e9e4d12", {
+    description = "CDDA visual: arrow_metal_bodkin",
+    inventory_image = "mcl_bows_arrow_inv.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["arrow_metal_bodkin"] = "cdda_items:i_a501ad639e9e4d12"
+
+minetest.register_craftitem("cdda_items:i_176d2421201caea9", {
+    description = "CDDA visual: arrow_metal_sharpened_fletched",
+    inventory_image = "mcl_bows_arrow_inv.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["arrow_metal_sharpened_fletched"] = "cdda_items:i_176d2421201caea9"
+
+minetest.register_craftitem("cdda_items:i_b27e143193ba1ff6", {
+    description = "CDDA visual: arrow_metal_target",
+    inventory_image = "mcl_bows_arrow_inv.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["arrow_metal_target"] = "cdda_items:i_b27e143193ba1ff6"
+
+minetest.register_craftitem("cdda_items:i_0e1d6f1cd5168dcf", {
+    description = "CDDA visual: arrow_meteor",
+    inventory_image = "mcl_bows_arrow_inv.png^(mcl_potions_arrow_inv.png^[colorize:#59C106:100)",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["arrow_meteor"] = "cdda_items:i_0e1d6f1cd5168dcf"
+
+minetest.register_craftitem("cdda_items:i_abc0d90d44907705", {
+    description = "CDDA visual: arrow_plastic",
+    inventory_image = "mcl_bows_arrow_inv.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["arrow_plastic"] = "cdda_items:i_abc0d90d44907705"
+
+minetest.register_craftitem("cdda_items:i_dcf69b508f817887", {
+    description = "CDDA visual: arrow_small_game_fletched",
+    inventory_image = "mcl_bows_arrow_inv.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["arrow_small_game_fletched"] = "cdda_items:i_dcf69b508f817887"
+
+minetest.register_craftitem("cdda_items:i_d3da7829eea977ba", {
+    description = "CDDA visual: arrow_wood",
+    inventory_image = "mcl_bows_arrow_inv.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["arrow_wood"] = "cdda_items:i_d3da7829eea977ba"
+
+minetest.register_craftitem("cdda_items:i_f5bf49aa6e0acfa2", {
+    description = "CDDA visual: arrow_wood_heavy",
+    inventory_image = "mcl_bows_arrow_inv.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["arrow_wood_heavy"] = "cdda_items:i_f5bf49aa6e0acfa2"
+
+minetest.register_craftitem("cdda_items:i_194cc3e819f0f2b0", {
+    description = "CDDA visual: art_beads",
+    inventory_image = "mcl_mobitems_string.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["art_beads"] = "cdda_items:i_194cc3e819f0f2b0"
+
+minetest.register_craftitem("cdda_items:i_1f5af61c8bbc8dd0", {
+    description = "CDDA visual: art_boots",
+    inventory_image = "mcl_armor_inv_boots_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["art_boots"] = "cdda_items:i_1f5af61c8bbc8dd0"
+
+minetest.register_craftitem("cdda_items:i_a2d618d657ca5b6c", {
+    description = "CDDA visual: art_coat",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["art_coat"] = "cdda_items:i_a2d618d657ca5b6c"
+
+minetest.register_craftitem("cdda_items:i_8c1b07ff33d38f0b", {
+    description = "CDDA visual: art_crystal",
+    inventory_image = "mcl_amethyst_amethyst_shard.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["art_crystal"] = "cdda_items:i_8c1b07ff33d38f0b"
+
+minetest.register_craftitem("cdda_items:i_5779e668737eda21", {
+    description = "CDDA visual: art_dagger",
+    inventory_image = "default_tool_steelsword.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["art_dagger"] = "cdda_items:i_5779e668737eda21"
+
+minetest.register_craftitem("cdda_items:i_af3b31cb8e877c26", {
+    description = "CDDA visual: art_disc",
+    inventory_image = "mcl_jukebox_record_13.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["art_disc"] = "cdda_items:i_af3b31cb8e877c26"
+
+minetest.register_craftitem("cdda_items:i_1c0477ac6ebbc00b", {
+    description = "CDDA visual: art_helm",
+    inventory_image = "mcl_armor_inv_helmet_gold.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["art_helm"] = "cdda_items:i_1c0477ac6ebbc00b"
+
+minetest.register_craftitem("cdda_items:i_42da39a97dece845", {
+    description = "CDDA visual: art_jelly",
+    inventory_image = "mcl_mobitems_slimeball.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["art_jelly"] = "cdda_items:i_42da39a97dece845"
+
+minetest.register_craftitem("cdda_items:i_3102bd82dde6b36b", {
+    description = "CDDA visual: art_mask",
+    inventory_image = "mcl_pottery_sherds_skull.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["art_mask"] = "cdda_items:i_3102bd82dde6b36b"
+
+minetest.register_craftitem("cdda_items:i_b5771b6af2a2a028", {
+    description = "CDDA visual: art_napkin",
+    inventory_image = "default_paper.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["art_napkin"] = "cdda_items:i_b5771b6af2a2a028"
+
+minetest.register_craftitem("cdda_items:i_91231e6047665c91", {
+    description = "CDDA visual: art_robe",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["art_robe"] = "cdda_items:i_91231e6047665c91"
+
+minetest.register_craftitem("cdda_items:i_29e8560c1db0e3e4", {
+    description = "CDDA visual: art_spear",
+    inventory_image = "default_tool_stoneshovel.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["art_spear"] = "cdda_items:i_29e8560c1db0e3e4"
+
+minetest.register_craftitem("cdda_items:i_b6bbeb6cbbcb8e5a", {
+    description = "CDDA visual: art_sphere",
+    inventory_image = "default_clay_lump.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["art_sphere"] = "cdda_items:i_b6bbeb6cbbcb8e5a"
+
+minetest.register_craftitem("cdda_items:i_548b717876f6560a", {
+    description = "CDDA visual: art_spiral",
+    inventory_image = "mcl_mobitems_breeze_rod.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["art_spiral"] = "cdda_items:i_548b717876f6560a"
+
+minetest.register_craftitem("cdda_items:i_7a7d0fe866ae202b", {
+    description = "CDDA visual: art_staff",
+    inventory_image = "mcl_fishing_fishing_rod.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["art_staff"] = "cdda_items:i_7a7d0fe866ae202b"
+
+minetest.register_craftitem("cdda_items:i_363d7a015461571c", {
+    description = "CDDA visual: art_sword",
+    inventory_image = "default_tool_steelsword.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["art_sword"] = "cdda_items:i_363d7a015461571c"
+
+minetest.register_craftitem("cdda_items:i_05b767e67fea1326", {
+    description = "CDDA visual: art_teardrop",
+    inventory_image = "mcl_mobitems_ghast_tear.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["art_teardrop"] = "cdda_items:i_05b767e67fea1326"
+
+minetest.register_craftitem("cdda_items:i_0f8c8b812a87702c", {
+    description = "CDDA visual: art_urchin",
+    inventory_image = "mcl_fishing_pufferfish_raw.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["art_urchin"] = "cdda_items:i_0f8c8b812a87702c"
+
+minetest.register_craftitem("cdda_items:i_39e0ff2d6a4bf8aa", {
+    description = "CDDA visual: artificial_sweetener",
+    inventory_image = "mcl_core_sugar.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["artificial_sweetener"] = "cdda_items:i_39e0ff2d6a4bf8aa"
+
+minetest.register_craftitem("cdda_items:i_e759a1190572cddf", {
+    description = "CDDA visual: ash",
+    inventory_image = "default_gunpowder.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["ash"] = "cdda_items:i_e759a1190572cddf"
+
+minetest.register_craftitem("cdda_items:i_a32053dc0abe6d17", {
+    description = "CDDA visual: atomic_survival",
+    inventory_image = "mcl_books_book_written.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["atomic_survival"] = "cdda_items:i_a32053dc0abe6d17"
+
+minetest.register_craftitem("cdda_items:i_eb8a5f92a7b29e57", {
+    description = "CDDA visual: avgas",
+    inventory_image = "mcl_potions_potion_bottle.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["avgas"] = "cdda_items:i_eb8a5f92a7b29e57"
+
+minetest.register_craftitem("cdda_items:i_0485f4fbb0f51986", {
+    description = "CDDA visual: awl_bone",
+    inventory_image = "mcl_mobitems_bone.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["awl_bone"] = "cdda_items:i_0485f4fbb0f51986"
+
+minetest.register_craftitem("cdda_items:i_aef56d35f0be0b47", {
+    description = "CDDA visual: awl_steel",
+    inventory_image = "mcl_bows_arrow_inv.png^(mcl_potions_arrow_inv.png^[colorize:#78695A:100)",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["awl_steel"] = "cdda_items:i_aef56d35f0be0b47"
+
+minetest.register_craftitem("cdda_items:i_089c4a07b545a29c", {
+    description = "CDDA visual: ax",
+    inventory_image = "default_tool_steelaxe.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["ax"] = "cdda_items:i_089c4a07b545a29c"
+
+minetest.register_craftitem("cdda_items:i_8baa96e022af5818", {
+    description = "CDDA visual: ax_sheets_bolted",
+    inventory_image = "default_tool_steelaxe.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["ax_sheets_bolted"] = "cdda_items:i_8baa96e022af5818"
+
+minetest.register_craftitem("cdda_items:i_e38381851ad51c2b", {
+    description = "CDDA visual: ax_sheets_welded",
+    inventory_image = "default_tool_steelaxe.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["ax_sheets_welded"] = "cdda_items:i_e38381851ad51c2b"
+
+minetest.register_craftitem("cdda_items:i_7038bf6955dd2a94", {
+    description = "CDDA visual: ayran",
+    inventory_image = "mcl_potions_dragon_breath.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["ayran"] = "cdda_items:i_7038bf6955dd2a94"
+
+minetest.register_craftitem("cdda_items:i_0edc5542ac2a1381", {
+    description = "CDDA visual: b_shorts",
+    inventory_image = "mcl_armor_inv_leggings_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["b_shorts"] = "cdda_items:i_0edc5542ac2a1381"
+
+minetest.register_craftitem("cdda_items:i_4dfce18220e70288", {
+    description = "CDDA visual: bacon",
+    inventory_image = "mcl_mobitems_porkchop_cooked.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["bacon"] = "cdda_items:i_4dfce18220e70288"
+
+minetest.register_craftitem("cdda_items:i_d438a50c870d0e0a", {
+    description = "CDDA visual: bacon_uncut",
+    inventory_image = "mcl_mobitems_porkchop_raw.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["bacon_uncut"] = "cdda_items:i_d438a50c870d0e0a"
+
+minetest.register_craftitem("cdda_items:i_f9c3dcdaa16b5150", {
+    description = "CDDA visual: badge_detective",
+    inventory_image = "mcl_shield_48.png^(mcl_banners_item_overlay_48.png^[colorize:#2e3094)",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["badge_detective"] = "cdda_items:i_f9c3dcdaa16b5150"
+
+minetest.register_craftitem("cdda_items:i_354fc4e5bb96ecd2", {
+    description = "CDDA visual: badge_doctor",
+    inventory_image = "ward_armor_trim_smithing_template.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["badge_doctor"] = "cdda_items:i_354fc4e5bb96ecd2"
+
+minetest.register_craftitem("cdda_items:i_35660c3b2fcc4b5b", {
+    description = "CDDA visual: badge_foodkid",
+    inventory_image = "farming_cookie.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["badge_foodkid"] = "cdda_items:i_35660c3b2fcc4b5b"
+
+minetest.register_craftitem("cdda_items:i_5f8d0339903d0d5a", {
+    description = "CDDA visual: badge_swat",
+    inventory_image = "mcl_shield_48.png^(mcl_banners_item_overlay_48.png^[colorize:#2e3094)",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["badge_swat"] = "cdda_items:i_5f8d0339903d0d5a"
+
+minetest.register_craftitem("cdda_items:i_9bccbfc31d6ccce4", {
+    description = "CDDA visual: bag_paper_powder",
+    inventory_image = "default_paper.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["bag_paper_powder"] = "cdda_items:i_9bccbfc31d6ccce4"
+
+minetest.register_craftitem("cdda_items:i_3c4303745400a876", {
+    description = "CDDA visual: bag_plastic",
+    inventory_image = "mcl_mobitems_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["bag_plastic"] = "cdda_items:i_3c4303745400a876"
+
+minetest.register_craftitem("cdda_items:i_906fd99b7629de50", {
+    description = "CDDA visual: bag_zipper",
+    inventory_image = "default_book.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["bag_zipper"] = "cdda_items:i_906fd99b7629de50"
+
+minetest.register_craftitem("cdda_items:i_a9279936ea6243a8", {
+    description = "CDDA visual: bag_zipper_gallon",
+    inventory_image = "mcl_mobitems_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["bag_zipper_gallon"] = "cdda_items:i_a9279936ea6243a8"
+
+minetest.register_craftitem("cdda_items:i_fccaba58dc2048a1", {
+    description = "CDDA visual: baking_book",
+    inventory_image = "mcl_books_book_written.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["baking_book"] = "cdda_items:i_fccaba58dc2048a1"
+
+minetest.register_craftitem("cdda_items:i_190359f8bfed579b", {
+    description = "CDDA visual: baklava",
+    inventory_image = "mcl_farming_pumpkin_pie.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["baklava"] = "cdda_items:i_190359f8bfed579b"
+
+minetest.register_craftitem("cdda_items:i_3bfd1f312f7c0469", {
+    description = "CDDA visual: balaclava_cut_resistant",
+    inventory_image = "mcl_armor_inv_helmet_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["balaclava_cut_resistant"] = "cdda_items:i_3bfd1f312f7c0469"
+
+minetest.register_craftitem("cdda_items:i_39a1d0bee570e614", {
+    description = "CDDA visual: balaclava_skull",
+    inventory_image = "mcl_armor_inv_helmet_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["balaclava_skull"] = "cdda_items:i_39a1d0bee570e614"
+
+minetest.register_craftitem("cdda_items:i_7ef10d806b619c4f", {
+    description = "CDDA visual: balclava",
+    inventory_image = "mcl_armor_inv_helmet_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["balclava"] = "cdda_items:i_7ef10d806b619c4f"
+
+minetest.register_craftitem("cdda_items:i_408e8039242c52a8", {
+    description = "CDDA visual: ballistic_vest_esapi",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["ballistic_vest_esapi"] = "cdda_items:i_408e8039242c52a8"
+
+minetest.register_craftitem("cdda_items:i_6fdef8e65cbf2f03", {
+    description = "CDDA visual: ballistic_vest_heavy",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["ballistic_vest_heavy"] = "cdda_items:i_6fdef8e65cbf2f03"
+
+minetest.register_craftitem("cdda_items:i_77c97bb43b0fba97", {
+    description = "CDDA visual: ballistic_vest_heavy_arms",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["ballistic_vest_heavy_arms"] = "cdda_items:i_77c97bb43b0fba97"
+
+minetest.register_craftitem("cdda_items:i_e01db4cbd8268939", {
+    description = "CDDA visual: ballistic_vest_heavy_legs",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["ballistic_vest_heavy_legs"] = "cdda_items:i_e01db4cbd8268939"
+
+minetest.register_craftitem("cdda_items:i_1f68cdce09f3ef80", {
+    description = "CDDA visual: ballistic_vest_light",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["ballistic_vest_light"] = "cdda_items:i_1f68cdce09f3ef80"
+
+minetest.register_craftitem("cdda_items:i_ff405c54e9911f45", {
+    description = "CDDA visual: ballistic_vest_light_operator",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["ballistic_vest_light_operator"] = "cdda_items:i_ff405c54e9911f45"
+
+minetest.register_craftitem("cdda_items:i_4f082244b2a11938", {
+    description = "CDDA visual: ballistic_vest_light_pouches",
+    inventory_image = "mcl_armor_inv_chestplate_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["ballistic_vest_light_pouches"] = "cdda_items:i_4f082244b2a11938"
+
+minetest.register_craftitem("cdda_items:i_5be504ff12a3367c", {
+    description = "CDDA visual: balloon",
+    inventory_image = "mcl_throwing_snowball.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["balloon"] = "cdda_items:i_5be504ff12a3367c"
+
+minetest.register_craftitem("cdda_items:i_193ba6b0effc073e", {
+    description = "CDDA visual: bandages",
+    inventory_image = "default_paper.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["bandages"] = "cdda_items:i_193ba6b0effc073e"
+
+minetest.register_craftitem("cdda_items:i_f2a82f797f9fd8ab", {
+    description = "CDDA visual: bandages_makeshift",
+    inventory_image = "mcl_mobitems_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["bandages_makeshift"] = "cdda_items:i_f2a82f797f9fd8ab"
+
+minetest.register_craftitem("cdda_items:i_ad6e1de04f3e976e", {
+    description = "CDDA visual: bandages_makeshift_bleached",
+    inventory_image = "mcl_mobitems_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["bandages_makeshift_bleached"] = "cdda_items:i_ad6e1de04f3e976e"
+
+minetest.register_craftitem("cdda_items:i_f856c7d4390312ab", {
+    description = "CDDA visual: bandages_makeshift_boiled",
+    inventory_image = "mcl_mobitems_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["bandages_makeshift_boiled"] = "cdda_items:i_f856c7d4390312ab"
+
+minetest.register_craftitem("cdda_items:i_6d1de5e555fbb710", {
+    description = "CDDA visual: bandana",
+    inventory_image = "mcl_mobitems_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["bandana"] = "cdda_items:i_6d1de5e555fbb710"
+
+minetest.register_craftitem("cdda_items:i_ae6b4a35c30fb10b", {
+    description = "CDDA visual: bandana_head",
+    inventory_image = "mcl_armor_inv_helmet_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["bandana_head"] = "cdda_items:i_ae6b4a35c30fb10b"
+
+minetest.register_craftitem("cdda_items:i_b44b0e72ce18dee5", {
+    description = "CDDA visual: barb_paralysis",
+    inventory_image = "mcl_bows_arrow_inv.png^(mcl_potions_arrow_inv.png^[colorize:#87A363:100)",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["barb_paralysis"] = "cdda_items:i_b44b0e72ce18dee5"
+
+minetest.register_craftitem("cdda_items:i_08ec529b18c98e34", {
+    description = "CDDA visual: barley",
+    inventory_image = "mcl_farming_wheat_seeds.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["barley"] = "cdda_items:i_08ec529b18c98e34"
+
+minetest.register_craftitem("cdda_items:i_57fe09203c7d8879", {
+    description = "CDDA visual: barley_stalks",
+    inventory_image = "farming_wheat_harvested.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["barley_stalks"] = "cdda_items:i_57fe09203c7d8879"
+
+minetest.register_craftitem("cdda_items:i_c2648cd5583d1a0c", {
+    description = "CDDA visual: barometer",
+    inventory_image = "mcl_compass_compass_01.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["barometer"] = "cdda_items:i_c2648cd5583d1a0c"
+
+minetest.register_craftitem("cdda_items:i_4d6d5ed34610e6bd", {
+    description = "CDDA visual: baseball",
+    inventory_image = "mcl_throwing_snowball.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["baseball"] = "cdda_items:i_4d6d5ed34610e6bd"
+
+minetest.register_craftitem("cdda_items:i_ebb9840c00c14e8c", {
+    description = "CDDA visual: basic_chemistry",
+    inventory_image = "mcl_books_book_written.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["basic_chemistry"] = "cdda_items:i_ebb9840c00c14e8c"
+
+minetest.register_craftitem("cdda_items:i_3a2ca2a0ec474373", {
+    description = "CDDA visual: basket",
+    inventory_image = "mcl_minecarts_minecart_normal.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["basket"] = "cdda_items:i_3a2ca2a0ec474373"
+
+minetest.register_craftitem("cdda_items:i_7cd9fb78e5309f96", {
+    description = "CDDA visual: basketball",
+    inventory_image = "default_clay_lump.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["basketball"] = "cdda_items:i_7cd9fb78e5309f96"
+
+minetest.register_craftitem("cdda_items:i_092cde1743bca445", {
+    description = "CDDA visual: bastsandals",
+    inventory_image = "mcl_armor_inv_boots_leather.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["bastsandals"] = "cdda_items:i_092cde1743bca445"
+
+minetest.register_craftitem("cdda_items:i_b740f41cda224dc9", {
+    description = "CDDA visual: batrachian_sample",
+    inventory_image = "mcl_potions_dragon_breath.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["batrachian_sample"] = "cdda_items:i_b740f41cda224dc9"
+
+minetest.register_craftitem("cdda_items:i_4b5a39a037123611", {
+    description = "CDDA visual: battleaxe",
+    inventory_image = "default_tool_steelaxe.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["battleaxe"] = "cdda_items:i_4b5a39a037123611"
+
+minetest.register_craftitem("cdda_items:i_ca8c46e48c09051b", {
+    description = "CDDA visual: battleaxe_fake",
+    inventory_image = "default_tool_steelaxe.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["battleaxe_fake"] = "cdda_items:i_ca8c46e48c09051b"
+
+minetest.register_craftitem("cdda_items:i_df04b986e3ede498", {
+    description = "CDDA visual: battleaxe_inferior",
+    inventory_image = "default_tool_steelaxe.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["battleaxe_inferior"] = "cdda_items:i_df04b986e3ede498"
+
+minetest.register_craftitem("cdda_items:i_56dda39bf48e79da", {
+    description = "CDDA visual: bcheckers_man",
+    inventory_image = "mcl_jukebox_record_13.png",
+    stack_max = 1,
+    groups = {not_in_creative_inventory = 1},
+})
+cdda_items.visual_by_cdda_id["bcheckers_man"] = "cdda_items:i_56dda39bf48e79da"
+
