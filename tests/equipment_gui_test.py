@@ -27,6 +27,7 @@ def main():
         parser.add_argument('--' + name, type=Path, required=True)
     parser.add_argument('--action-driven', action='store_true', help='Verify ordinary start.sh mode without the real-time scheduler')
     parser.add_argument('--resume-only', action='store_true')
+    parser.add_argument('--presentation-only', action='store_true', help='Exercise paging, layering and search without gameplay mutations')
     args = parser.parse_args()
     ws, out = args.workspace.resolve(), args.artifacts.resolve()
     out.mkdir(parents=True, exist_ok=False)
@@ -235,7 +236,47 @@ def main():
                 wait(lambda r: int(r['pending_move']) == 0 and int(r['pause_reasons']) == 0)
             def item(v, name):
                 return next(e for e in entries(v) if e.TypeId().decode() == name)
-            if args.resume_only:
+            if args.presentation_only:
+                es = entries(view)
+                check('native_fixture_exceeds_grid_and_worn_pages',len(es)>27 and sum(e.Worn() for e in es)>10)
+                paused=latest();sent=paused['equipment_sent']
+                click(10.35,9.2);select_item(es[27]);shot('page-two.png')
+                check('page_two_selects_exact_native_identity', int(latest()['equipment_selected'])==es[27].Id())
+                click(1.025,10.025);wait(lambda r:int(r['equipment_selected'])==es[0].Id())
+                check('quick_row_only_selects_existing_identity',latest()['equipment_sent']==sent)
+                click(10.45,1.6)
+                layer=[e for e in es if e.Worn()][10]
+                click(5.225,2.575);wait(lambda r:int(r['equipment_selected'])==layer.Id())
+                check('layer_beyond_ten_slots_is_accessible', True);shot('layer-page-two.png')
+                # Native IDs are reset on every fresh query, while the viewport is retained.
+                old_view=latest()['inventory_view'];click(12.35,1.25)
+                wait(lambda r:r['inventory_view']!=old_view and int(r['inventory_view'])>0)
+                check('refresh_invalidates_selection',int(latest()['equipment_selected'])==0)
+                select_item(es[27]);shot('refresh-page-two.png')
+                tap('Escape');wait(lambda r:int(r['equipment_form'])==0)
+                view=open_inventory();es=entries(view)
+                select_item(es[27]);check('reopening_preserves_page_with_fresh_handles',int(latest()['equipment_selected'])==es[27].Id())
+                # Search focuses only after the explicit opening click.
+                click(4.9,4.95);xdo('type','--clearmodifiers','bandana');click(6.5,4.95)
+                filtered=[e for e in es if b'bandana' in e.Name().lower()]
+                click(1.025,5.975);wait(lambda r:int(r['equipment_selected'])==filtered[0].Id())
+                check('explicit_search_focus_selects_native_filtered_item',True);shot('optional-search.png')
+                tap('Escape');time.sleep(.3)
+                check('first_escape_returns_to_grid_with_pause',int(latest()['equipment_form'])==1 and latest()['simulation_time']==paused['simulation_time'])
+                click(8.5,4.95) # Remove the applied search; reset page.
+                pack=next(e for e in es if e.TypeId()==b'backpack_hiking')
+                select_item(pack);shot('compact-container.png');click(13.4,7.45);shot('expanded-container.png')
+                check('details_do_not_execute_native_actions',latest()['equipment_sent']==sent)
+                click(1.5,4.95);xdo('key','Home');xdo('key','Down');xdo('key','Down');xdo('key','Return');time.sleep(.3)
+                click(1.025,5.975);wait(lambda r:int(r['equipment_selected'])==pack.Id())
+                shot('container-filter.png');check('container_filter_keeps_native_container_identity',True)
+                click(13.5,.5);wait(lambda r:int(r['transfer_form'])==1);click(9.7,.5);wait(lambda r:int(r['transfer_form'])==0)
+                tap('Escape');wait(lambda r:int(r['equipment_form'])==0)
+                view=open_inventory();click(1.025,5.975);wait(lambda r:int(r['equipment_selected'])==pack.Id())
+                check('reopen_preserves_filter',True)
+                tap('Escape');wait(lambda r:int(r['equipment_form'])==0)
+                check('browse_never_issues_equipment_command',latest()['equipment_sent']==sent)
+            elif args.resume_only:
                 check('actual_reload_keeps_native_weapon_and_backpack', item(view,'rock').Wielded() and item(view,'backpack_hiking').Worn())
                 check('actual_reload_keeps_nested_contents_once', view.EntriesLength() == 6 and item(view,'hat_ball').ParentId() > 0)
                 tap('Escape');wait(lambda r: int(r['equipment_form']) == 0)
@@ -344,9 +385,11 @@ def main():
         elif isinstance(value,list):
             for child in value: uid_counts(child,counts)
         return counts
-    check('canonical_save_has_each_fixture_item_once', uid_counts(native['player']) == uid_counts(before['player']) and len(uid_counts(native['player'])) == 5)
-    check('canonical_save_records_selected_rock_as_weapon', native['player']['weapon']['typeid'] == 'rock')
+    check('canonical_save_has_each_fixture_item_once', uid_counts(native['player']) == uid_counts(before['player']) and len(uid_counts(native['player'])) == (51 if args.presentation_only else 5))
+    check('canonical_save_records_selected_rock_as_weapon', native['player']['weapon']['typeid'] == ('bat' if args.presentation_only else 'rock'))
     check('canonical_save_records_backpack_worn', any(i['typeid'] == 'backpack_hiking' for i in native['player']['worn']['worn']))
+    if args.presentation_only:
+        check('readonly_inventory_preserves_canonical_items',native['player']['worn']==before['player']['worn'] and native['player']['weapon']==before['player']['weapon'])
     if args.resume_only:
         check('actual_reload_preserves_canonical_position', native['player_abs'] == before['player_abs'])
         if args.action_driven:

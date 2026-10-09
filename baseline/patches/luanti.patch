@@ -3852,10 +3852,10 @@ index 0000000..8a266d4
 +} // namespace cdda_client
 diff --git a/src/cdda/equipment_inventory.h b/src/cdda/equipment_inventory.h
 new file mode 100644
-index 0000000..a90e235
+index 0000000..b87c61f
 --- /dev/null
 +++ b/src/cdda/equipment_inventory.h
-@@ -0,0 +1,273 @@
+@@ -0,0 +1,294 @@
 +#pragma once
 +#include "avatar_status.h"
 +#include "cwm/cwm_generated.h"
@@ -3951,6 +3951,19 @@ index 0000000..a90e235
 +    }
 +    return out;
 +}
++// Category art is presentation only. Unknown/localized category labels use a
++// neutral question mark rather than pretending to be a stone gameplay item.
++inline std::string equipmentCategoryIcon(const EquipmentEntry& entry) {
++    const auto category = equipmentLower(entry.category);
++    if (category == "clothing") return "mcl_armor_inv_chestplate_leather.png";
++    if (category == "weapons" || category == "guns") return "default_tool_steelsword.png";
++    if (category == "tools") return "default_tool_steelaxe.png";
++    if (category == "ammo" || category == "magazines") return "mcl_bows_arrow_inv.png";
++    if (category == "food") return "default_apple.png";
++    if (category == "drugs") return "mcl_potions_potion_bottle.png";
++    if (category == "books" || category == "manuals" || category == "maps") return "default_book.png";
++    return "cdda_status_unknown.png";
++}
 +inline constexpr size_t equipmentPageSize = 27;
 +inline std::string equipmentForm(const EquipmentView& view, size_t page, uint32_t selected,
 +        const std::string& search, int filter, const std::string& notice,
@@ -3963,7 +3976,7 @@ index 0000000..a90e235
 +        "style_type[button;border=false;bgimg=mcl_inventory_button9.png;bgimg_pressed=mcl_inventory_button9_pressed.png;bgimg_middle=2,2]"
 +        "label[0.5,0.4;Inventario]button[11.6,0.2;3.9,0.6;transfers;Quantita e trasferimenti]"
 +        "button[11.3,0.95;2.1,0.6;refresh;Aggiorna]button_exit[13.7,0.95;1.8,0.6;close;Chiudi]"
-+        "box[11.05,1.75;0.025,8.75;#77777770]";
++        "style_type[image_button;border=false;bgimg=;bgimg_pressed=]box[11.05,1.75;0.025,8.75;#77777770]";
 +    if (search_open) {
 +        f += "field[0.5,4.65;5.2,0.6;search;;" + statusEscape(search) + "]field_close_on_enter[search;false]"
 +            "button[5.85,4.65;1.3,0.6;find;Cerca]button[7.35,4.65;1.3,0.6;search_back;Fine]"
@@ -3985,10 +3998,13 @@ index 0000000..a90e235
 +        if (!e) return;
 +        if (hand) f += "box[" + position + ";1.05,1.05;#4CA5C080]";
 +        if (selected == e->id) f += "box[" + position + ";1.05,1.05;#E8CF5790]";
-+        f += "item_image_button[" + position + ";1.05,1.05;" + statusEscape(icon(e->type)) + ";" + key + ";]";
++        const auto visual = icon(e->type);
++        const bool generic = visual.empty() || visual == "cdda_items:fallback_generic";
++        f += std::string(generic ? "image_button[" : "item_image_button[") + position + ";1.05,1.05;" +
++            statusEscape(generic ? equipmentCategoryIcon(*e) : visual) + ";" + key + ";]";
 +        if (e->counted) f += "label[" + std::to_string(x + .08) + "," + std::to_string(y + .87) + ";" + std::to_string(e->charges) + "]";
 +        f += "tooltip[" + key + ";" + statusEscape(e->name + (e->counted ? " x" + std::to_string(e->charges) : "") +
-+            "\n" + view.source(e->id) + "\nClic: seleziona. Le azioni sono nel pannello a destra.") + "]";
++            "\n" + view.source(e->id) + (generic ? "\nIcona di categoria / segnaposto" : "\nIcona dal mapping (puo essere un proxy)") + "\nClic: seleziona. Le azioni sono nel pannello a destra.") + "]";
 +    };
 +    const EquipmentEntry* hand = nullptr;
 +    std::vector<uint32_t> worn;
@@ -3999,7 +4015,7 @@ index 0000000..a90e235
 +    f += "label[0.5,1.6;In mano]";
 +    slot(.5,2.05,hand,hand ? "hand_" + std::to_string(hand->id) : "",true);
 +    if (!hand) f += "tooltip[0.5,2.05;1.05,1.05;Mani libere]";
-+    f += "model[2.05,1.55;2.3,2.9;avatar;character.b3d;character.png;0,180;false;false;0,0]"
++    f += "model[2.05,1.55;2.3,2.9;avatar;character.b3d;mcl_skins_character_1.png;0,180;false;false;0,0]"
 +        "tooltip[2.05,1.55;2.3,2.9;Sagoma di riferimento. Gli indossati reali sono a destra.]"
 +        "label[4.7,1.6;Indossati (" + std::to_string(worn.size()) + ")]";
 +    const auto worn_pages = std::max<size_t>(1, (worn.size() + 9) / 10);
@@ -4012,6 +4028,7 @@ index 0000000..a90e235
 +    if (worn_pages > 1) f += "button[8.05,1.3;0.65,0.6;worn_prev;<]label[8.85,1.6;" + std::to_string(worn_page + 1) + "/" +
 +        std::to_string(worn_pages) + "]button[10.15,1.3;0.65,0.6;worn_next;>]";
 +    const auto ids = equipmentFilter(view, search, filter);
++    f += "label[3.1,0.4;" + std::to_string(view.entries.size()) + " oggetti   -   " + std::to_string(ids.size()) + " nel filtro]";
 +    const size_t pages = std::max<size_t>(1, (ids.size() + equipmentPageSize - 1) / equipmentPageSize);
 +    page = std::min(page, pages - 1);
 +    for (size_t n = 0; n < equipmentPageSize; ++n) {
@@ -4028,7 +4045,11 @@ index 0000000..a90e235
 +        slot(.5 + n * 1.15,9.5,e,e ? "quick_" + std::to_string(e->id) : "");
 +    }
 +    if (const auto* e = view.entry(selected)) {
-+        f += "item_image[11.35,1.9;1.05,1.05;" + statusEscape(icon(e->type)) + "]";
++        const auto visual = icon(e->type);
++        const bool generic = visual.empty() || visual == "cdda_items:fallback_generic";
++        f += std::string(generic ? "image[11.35,1.9;1.05,1.05;" : "item_image[11.35,1.9;1.05,1.05;") +
++            statusEscape(generic ? equipmentCategoryIcon(*e) : visual) + "]";
++        f += "tooltip[11.35,1.9;1.05,1.05;" + std::string(generic ? "Icona di categoria / segnaposto" : "Icona dal mapping (puo essere un proxy)") + "]";
 +        const std::string role = e->wielded ? "In mano" : e->worn ? "Indossato" : e->parent ? "Nelle tasche" : "Inventario";
 +        auto rich = [&](double y, double height, const std::string& text) {
 +            f += "hypertext[11.35," + std::to_string(y) + ";4.15," + std::to_string(height) + ";;" +

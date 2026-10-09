@@ -42,6 +42,7 @@ int main(int argc, const char *argv[]) {
     bool create_realtime = false;
     bool create_pickup = false;
     bool create_equipment = false;
+    bool create_inventory_pages = false;
     bool create_consumption = false;
     bool create_medicine = false;
     bool create_crafting = false;
@@ -62,6 +63,7 @@ int main(int argc, const char *argv[]) {
         else if (arg == "--create-crafting") { create = true; create_crafting = true; create_posture = true; }
         else if (arg == "--create-medicine") { create = true; create_medicine = true; create_posture = true; }
         else if (arg == "--create-consumption") { create = true; create_consumption = true; create_posture = true; }
+        else if (arg == "--create-inventory-pages") { create = true; create_equipment = true; create_posture = true; create_inventory_pages = true; }
         else if (arg == "--create-equipment") { create = true; create_equipment = true; create_posture = true; }
         else if (arg == "--create-pickup") { create = true; create_pickup = true; }
         else if (arg == "--create-ergonomics") { create = true; create_posture = true; create_body = true; create_ergonomics = true; }
@@ -386,6 +388,21 @@ int main(int argc, const char *argv[]) {
             if (!u.wield(bat)) return 21;
             u.moves = 100;
             g->set_safe_mode(SAFE_MODE_OFF);
+        }
+        if (create_inventory_pages) {
+            for (int i = 0; i < 35; ++i) {
+                item stone(itype_id("rock"), calendar::turn);
+                stone.set_var("uid", "equipment-page-rock-" + std::to_string(i));
+                u.i_add(stone);
+            }
+            // Debug fixture supplies native layered clothing directly. This
+            // tests presentation pagination, not normal can_wear admission.
+            for (int i = 0; i < 11; ++i) {
+                item layer(itype_id("bandana"), calendar::turn);
+                layer.set_var("uid", "equipment-layer-" + std::to_string(i));
+                u.worn.wear_item(u, layer, false, true, true, true);
+            }
+            u.moves = 100;
         }
         if (create_combat) {
             // Native fixture only: equipment is supplied by pristine CDDA,
