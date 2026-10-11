@@ -1,28 +1,34 @@
 # Implementation status
 
-Current scoped delivery: **LANG-01 product language**, CWM **2.18**.
-English is the default, independent of the system locale and old global engine
-settings. **Italiano (WIP)** is selectable from **Esc → Language / Lingua**
-and main-menu settings. Exit and relaunch `start.sh` to apply it to both
-processes. The launcher stores only actual menu changes in a separate
-presentation preference; native options and canonical save formats are unchanged.
-Integration UI uses a shared presentation helper; native item/recipe names and
-choices use CDDA's captured gettext catalog. Missing Italian translations retain
-English. Native category IDs keep generic icons stable across languages, with
-localized display/search labels. Item mapping batches remain unchanged.
-Both reconstructed localized runtimes and Italian catalogs are installed in the
-normal `start.sh`, retaining accepted continuous **4x** and rollback copies.
-[Behavior, verification and limits](docs/fixes/product-language.md).
+Current scoped delivery: **AIM-01 held right-mouse aim**, CWM **2.18**.
+RMB holds assisted native aim; F remains a keyboard fallback. Context RMB
+opens/collects and Shift+RMB closes nearby projected openings, with gestures
+classified once. Firearm + pointed perceived hostile wins over a context behind
+it; crouch does not steal aim. LMB still fires once per press, then held RMB
+resumes paid aim. Only one explicit shot/R may finish the current in-flight AIM
+step; menus/pause/recovery, changed target/weapon and timeout discard it.
+No shot waits behind movement, other fire or activities. Release stops new aim
+improvement, retaining the existing native policy for already-paid recoil.
+Both processes keep CDDA authority/costs; no new protocol/save fields or native
+simulation changes. The verified client is installed in ordinary `start.sh`,
+with previous-client rollback; localized native runtime/catalogs are unchanged.
+[Behavior and scoped verification](docs/fixes/held-mouse-aim.md).
 
-Latest manual feedback remains **UX-03 focused rechecks 1–3 PASS**.
-The rejected Assign/Clear interaction was replaced by drag-and-drop;
-its replacement check and other hotbar checks remain untested.
-Backlog **15 PENDING**: the existing thirteen plus two language checks.
-No manual PASS is inferred from automation and no user testing is required today.
-**Next scheduled step: held RMB aim/context priority**. External containers
-remain the next essential inventory extension. Rig/UV/animations, sound,
-richer native dialogs and the pending UX-02 exceptions remain in the plan.
+Backlog **18 PENDING**: the previous fifteen plus three RMB checks. Existing
+manual PASS remain accepted; no acceptance is inferred from renderer automation.
+No user testing is required today. **Next essential step: external containers
+and selected-quantity collection**, followed by richer native dialogs/feedback.
+Rig/UV/animations, audio and the existing UX-02 exceptions remain scheduled.
 Full SAVE-001 stays OPEN and M5.5 remains historical FAILED.
+
+Previous scoped delivery: **LANG-01 product language**, CWM **2.18**.
+English defaults independently of the system locale and legacy engine settings;
+Italiano (WIP) is selectable from Esc → Language/Lingua, applied to both processes
+through a restart. Actual menu preferences are separate from native options and
+canonical saves. Native gettext and a shared UI helper provide English fallback;
+category IDs keep generic art stable. Both runtimes and Italian catalogs were
+installed with rollback copies, preserving continuous **4x**. Its delivery had
+**15 PENDING**, before the three AIM-01 checks. [Report](docs/fixes/product-language.md).
 
 Previous scoped delivery: **UX-03D inventory drag-and-drop**, CWM **2.18**.
 Assign/Clear buttons are removed. Grid, quick slots, hand, worn-item pages,
@@ -50,8 +56,8 @@ are unchanged. Clouds share the paused visual clock. Normal start.sh defaults to
 the accepted continuous **4x** mode; explicit ordinary/comparison options remain.
 The earlier 2.17 delivery installed both runtimes with previous-pair copies;
 its installed save/reload checks and exact hashes remain in historical receipts.
-Held RMB aiming, real wielded rig/UV/animations, audio and richer native dialogs
-remain scheduled; product language is delivered in the later LANG-01 slice.
+Real wielded rig/UV/animations, audio and richer native dialogs remain scheduled;
+product language and held RMB aim are delivered in later scoped slices.
 
 Earlier manual acceptance: ranged/reload, owned transfers, UX-01 and ordinary
 UX-02 each four PASS, with the errata preserved. Death/IPC/native decisions were
@@ -71,7 +77,7 @@ whereas Interrompi requests native cancellation. The original equipment fixture
 wears only a backpack; it does not contain an unseen full outfit.
 Body-region clothing/encumbrance, persistent selection across queries and
 nearby external containers/selected-quantity collection still need dedicated
-semantic interfaces. Complete inventory drag-and-drop and language are delivered; held RMB aim follows;
+semantic interfaces. Inventory drag-and-drop, language and held RMB aim are delivered;
 external containers remain the next essential inventory extension.
 The broader M5.5 gate remains historical FAILED and full SAVE-001 stays OPEN.
 

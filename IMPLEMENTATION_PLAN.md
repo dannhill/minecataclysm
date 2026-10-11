@@ -63,12 +63,32 @@ batch invariato. Fallback inglese per traduzioni italiane mancanti.
 Backlog corrente **15 PENDING**, aggiungendo soltanto due prove di lingua;
 nessun nuovo gate manuale oggi e nessun PASS dedotto dai test automatici.
 
-**Prossimo intervento: mira con RMB mantenuto e priorità contestuali**, prima
-di contenitori esterni e raccolta quantitativa. Conservare costi/limiti CDDA,
-distinguere mira da apertura/chiusura/raccolta in base al bersaglio e agli
-oggetti realmente impugnati. Le validazioni di lingua e DND possono restare
-pendenti durante questa fetta ortogonale. Poi restano dialoghi/feedback,
-rig/UV/animazioni e audio, oltre alle macrofeature del piano sotto.
+La fetta successiva è ora consegnata sotto; i quindici punti sopra descrivono
+il backlog alla consegna LANG-01.
+
+## AIM-01 — Destro mantenuto e priorità contestuali — 2026-10-12
+
+Mira assistita con RMB mantenuto, F alternativo; sparo singolo per clic sinistro,
+ripresa della mira dopo il tiro se RMB resta premuto. Porte/finestre e raccolta
+conservano le interazioni contestuali; un gesto di apertura/raccolta non diventa
+mira cambiando puntamento. Shift+RMB chiude; Shift per accovacciarsi non blocca
+la mira su un ostile puntato. Un clic rapidissimo resta un'interazione.
+
+Un solo sparo/R esplicito può attendere la fine del passo AIM già in corso,
+con identità e deadline stretti; nessuna coda dietro movimento, altri colpi,
+lavori o menu. Pausa/menu/recovery richiedono rilascio e nuova pressione;
+cancellano anche quel differimento. Il rinculo e i costi restano CDDA, così
+come il mantenimento nativo della precisione già pagata. Nessuna mira gratuita,
+nuova regola simulativa, modifica schema o deduzione dal nome dell'oggetto.
+[Design](docs/design/held-mouse-aim.md) e [consegna](docs/fixes/held-mouse-aim.md).
+Disponibile nel normale start.sh, CWM **2.18**. Backlog corrente **18 PENDING**:
+tre nuovi punti per RMB, quindici precedenti invariati. Non serve testarli oggi.
+
+**Prossimo intervento essenziale: contenitori esterni e raccolta quantitativa**,
+con sorgenti native/raggi/tasche/capacità, selezione di quantità e costi nativi;
+poi feedback/dialoghi delle operazioni. Questa estensione deve rispettare i
+gesti DND esistenti senza dedurre l'approvazione manuale ancora pendente.
+Rig/UV/animazioni, audio e le altre macrofeature restano nel piano sottostante.
 
 ## Riscontro inventario/interfacce — 2026-10-09
 
