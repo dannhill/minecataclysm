@@ -1,0 +1,391 @@
+{
+  "scope": "AIM-01 held right-mouse aim and context routing; not full SAVE-001 or M5.5 conformance",
+  "date": "2026-10-12",
+  "status": "scoped automated verification PASS; manual acceptance PENDING",
+  "source_commit": "cba0a26da4b756e5cd37543962b3735c4f42a13f",
+  "build_source_commit": "a05efff0349bca0b995138193805ea7b6fba7166",
+  "post_build_changes": "Root verification harnesses add private-display focus and CLI port isolation; delivery documentation only. Production forks, protocol/schema/generated sources and launcher unchanged since a05efff.",
+  "runtime_protocol": "2.18",
+  "captured_sources": {
+    "cdda": {
+      "url": "https://github.com/CleverRaven/Cataclysm-DDA.git",
+      "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+      "patch": "baseline/patches/cdda.patch",
+      "patch_sha256": "4ad9c1ef2ea909557be33f490721e45607657bbe776a89be7ba2f1cfb65906c3",
+      "tree_inventory": "baseline/trees/cdda.json",
+      "tree_sha256": "e838634904a5cd90cf0fe85ecd6489f1d765fdc21f38803acf52bf0e57ddb7a8",
+      "file_count": 8587
+    },
+    "luanti": {
+      "url": "https://github.com/luanti-org/luanti.git",
+      "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
+      "patch": "baseline/patches/luanti.patch",
+      "patch_sha256": "124e3f59611d2214fc958c0511c553d3681a6ffe8f34aa43a5850e4f8878c046",
+      "tree_inventory": "baseline/trees/luanti.json",
+      "tree_sha256": "bfd9802aafb61107bad09e215f755df02bd1a1aa7c769509ead4f73aff4159ab",
+      "file_count": 2261
+    },
+    "mineclonia": {
+      "url": "https://github.com/mark-wiemer/mineclonia.git",
+      "commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+      "patch": "baseline/patches/mineclonia.patch",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree_inventory": "baseline/trees/mineclonia.json",
+      "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36",
+      "file_count": 9359
+    }
+  },
+  "installed_runtime": {
+    "build_source_commit": "a05efff0349bca0b995138193805ea7b6fba7166",
+    "client": {
+      "path": "luanti/bin/luanti",
+      "sha256": "a5b04d7fb3168a822ae0f7988d45b8dbde791e07e96d4c0df61178f78219c4ac",
+      "previous_sha256": "9d579c520ba396988131d9f361e176f4bf140d988b924a6d6b1ba649dd2d4e58",
+      "rollback": "artifacts/aim-20261012/luanti-previous-runtime",
+      "built_from": "artifacts/language-20261011/workspace/luanti/bin/luanti"
+    },
+    "unchanged": {
+      "cdda/build/src/cdda-server": {
+        "sha256": "e23bc68b4941066f0030701e82e0a48fa72fc7bd7f755fe89eb09833495bf06f",
+        "source_receipt": "docs/fixes/product-language-evidence.json"
+      },
+      "cdda/lang/mo/it_IT/LC_MESSAGES/cataclysm-dda.mo": {
+        "sha256": "f1f11ecbeda860d664338d92406faccb39cc8a821f2a1758789f5f41ec53b609",
+        "source_receipt": "docs/fixes/product-language-evidence.json"
+      },
+      "luanti/locale/it/LC_MESSAGES/luanti.mo": {
+        "sha256": "e6090e6ff7d07257c16411d5f64bbda471ad76df1643220a81c79477c5cf7bf0",
+        "source_receipt": "docs/fixes/product-language-evidence.json"
+      }
+    }
+  },
+  "install_receipt": "artifacts/aim-20261012/install.json",
+  "environment": {
+    "platform": "Linux-7.0.11-76070011-generic-x86_64-with-glibc2.35",
+    "os": "Pop!_OS 22.04 LTS",
+    "compiler": "GCC 11.4.0",
+    "gui": "Private Xvfb 1280x800, -noreset, 96 DPI; Mesa software rendering; xdotool; real renderer; isolated copied canonical fixtures; byte-transparent CWM relay with optional withheld server output for cancellation test"
+  },
+  "build_mode": "Incremental refresh of owned language-delivery reconstruction, caches retained; Luanti Release/gettext, -flto=2 linking, -j2. Not a cold or whole-project clean build.",
+  "build_command": "cmake --build luanti/build --target luanti -j2",
+  "build_log": "artifacts/aim-20261012/build-luanti-final.log",
+  "source_replay": {
+    "status": "PASS",
+    "build_receipt": "artifacts/aim-20261012/source-replay-final-code.json",
+    "delivery_receipt": "artifacts/aim-20261012/source-replay-delivery.json",
+    "workspace": "artifacts/language-20261011/workspace"
+  },
+  "verification": {
+    "luanti": {
+      "status": "PASS",
+      "tests": 309,
+      "modules": 47,
+      "catch_assertions": 648,
+      "catch_cases": 4,
+      "command": "luanti/bin/luanti --run-unittests --config <language artifact>/unit.conf --logfile <aim artifact>/unit-engine.log",
+      "log": "artifacts/aim-20261012/unit-tests.log"
+    },
+    "protocol": {
+      "status": "PASS",
+      "tests": 10,
+      "command": "ctest --test-dir build/protocol --output-on-failure",
+      "log": "artifacts/aim-20261012/protocol-tests.log"
+    },
+    "native_reuse": {
+      "executed_again": false,
+      "source_unchanged": true,
+      "runtime_unchanged": true,
+      "prior_evidence": "docs/fixes/product-language-evidence.json",
+      "prior_source_commit": "b6710849b46090884fd68c97c1d42fb1e265e494",
+      "prior_native_tests": {
+        "status": "PASS",
+        "cases": 173,
+        "assertions": 185813,
+        "seed": 42,
+        "command": "build/tests/cata_test '[cwm],[pickup],[item],[reload]' --rng-seed 42 --user-dir=<isolated artifact directory>",
+        "workdir": "<native reconstruction>/cdda",
+        "log": "artifacts/language-20261011/native-tests-final.log"
+      },
+      "note": "Native and Mineclonia inventory digests identical to LANG-01; actual native gameplay/save checks are newly exercised by the renderer suites above."
+    },
+    "gui": [
+      {
+        "name": "rmb-reconstructed",
+        "status": "PASS",
+        "checks": {
+          "actual_start_ready": true,
+          "native_loaded_weapon_visible": true,
+          "manual_pause_blocks_aim_fire_reload_and_time": true,
+          "paused_keys_not_replayed": true,
+          "rmb_held_across_pause_requires_release": true,
+          "reading_does_not_aim_for_free": true,
+          "rmb_held_across_menu_is_not_replayed": true,
+          "held_aim_uses_native_paid_steps": true,
+          "single_fire_waits_only_for_current_paid_aim_step": true,
+          "menu_cancels_deferred_shot_without_native_ammo_loss": true,
+          "held_rmb_resumes_paid_aim_after_single_shot": true,
+          "rmb_release_stops_new_aim_steps": true,
+          "held_mouse_fires_exactly_once": true,
+          "native_shot_acknowledged": true,
+          "shot_does_not_move_player": true,
+          "native_target_takes_damage": true,
+          "empty_reticle_sends_no_shot": true,
+          "empty_reticle_does_not_send_paid_aim": true,
+          "friendly_creature_not_accepted_as_ranged_target": true,
+          "friendly_reticle_does_not_send_paid_aim": true,
+          "held_rmb_not_replayed_after_real_reconnect": true,
+          "native_reload_choices_exclude_incompatible_ammo": true,
+          "cancel_ammo_choice_keeps_rounds": true,
+          "native_reload_confirmation": true,
+          "decline_reload_keeps_rounds": true,
+          "reload_blocks_movement_aim_and_fire": true,
+          "inventory_freezes_native_reload": true,
+          "cancel_native_reload_preserves_rounds": true,
+          "reconnect_discards_old_weapon_handle_without_replaying_fire": true,
+          "new_reload_has_fresh_activity_token": true,
+          "native_reload_transfers_ammo_once": true,
+          "actual_runtime_survives_native_ranged_combat": true,
+          "byte_relay_completed_without_errors": true,
+          "ranged_save_readable_by_pristine_native_core": true,
+          "native_gun_instance_persists_once": true,
+          "canonical_ammunition_conserved_except_one_fired_round": true,
+          "ranged-other_untouched": true,
+          "ranged-wrong_untouched": true,
+          "completed_reload_has_no_pending_activity": true,
+          "canonical_ranged_save_has_no_luanti_inventory": true
+        },
+        "passed": 40,
+        "scope": "reconstructed normal start.sh",
+        "command": "python3 artifacts/aim-20261012/run-gui.py ranged_gui_test.py artifacts/native-ranged-20261008/fixture/user rmb-reconstructed --held-rmb",
+        "script_sha256": "d358864f17f56b97a03ff633cd2138259746c1d547af8c407c8fab5ccc6deecf",
+        "log": "artifacts/aim-20261012/rmb-reconstructed.log",
+        "screenshots": {
+          "artifacts/aim-20261012/rmb-reconstructed/reload-complete.png": "282a8225557276313b0936932d37b5bbd2b155c54b2786e055544fbf69fea144",
+          "artifacts/aim-20261012/rmb-reconstructed/aimed.png": "ed9b429a23f5a8ee4218cee8b1678ffee7bc6eda9c2ff746eb5a865895ff0eba",
+          "artifacts/aim-20261012/rmb-reconstructed/reload-paused.png": "777bfac2a2017a25e897bf80df825f703bc0036a55f6c71a86e9c3aa2593ec6e",
+          "artifacts/aim-20261012/rmb-reconstructed/ammo-choices.png": "5566132b7a7c9c1bdeb77d9e6641251498c0db77ed1e05d2cf067b2be8bbfa92",
+          "artifacts/aim-20261012/rmb-reconstructed/pointed-target.png": "c7027b6ddb16afdd22deba49d1a2b4f0e398ab0e5a84b4049f714cb1a5f5f2c5",
+          "artifacts/aim-20261012/rmb-reconstructed/reload-confirmation.png": "5d23150c9b16e55a545a15bbb0862cf27f0861f3ea4fd7a643995ca771eb4c0c"
+        },
+        "harness_variant": "artifacts/aim-20261012/run-gui-single-read-variant.py",
+        "harness_sha256": "28cc43376453e1c9ea3298aaa2daaeee359000b19643c5d11e4f92a21d5e33f9"
+      },
+      {
+        "name": "windows-reconstructed-ready",
+        "status": "PASS",
+        "checks": {
+          "actual_start_ready": true,
+          "starts_native_walking_in_shallow_water": true,
+          "native_perceived_gauges_ingested": true,
+          "compact_icon_hud_is_rendered": true,
+          "Control_L_physical_hold_no_autorepeat": true,
+          "Control_L_release_restores_walk": true,
+          "Shift_L_physical_hold_no_autorepeat": true,
+          "Shift_L_release_restores_walk": true,
+          "crouch_priority_and_return_to_held_run": true,
+          "pointed_window_open_native_ack": true,
+          "simultaneous_shift_close_keeps_context_action_priority": true,
+          "delayed_modifier_reply_does_not_swallow_close": true,
+          "prone_wading_eye_above_surface": true,
+          "posture_changes_preserve_native_coordinates": true,
+          "presentation_clock_and_pickups_advance_when_active": true,
+          "H_freezes_native_time_water_and_pickups": true,
+          "S_does_not_change_sheet_selection": true,
+          "visual_clock_resumes_without_catchup": true,
+          "rendered_water_pixels_frozen_in_manual_pause": true,
+          "paused_controls_and_animation_remain_stopped": true,
+          "paused_controls_not_replayed": true,
+          "recovery_preserves_native_prone": true,
+          "prone_water_exit_has_small_visual_step": true,
+          "prone_water_entry_has_small_visual_step": true,
+          "small_water_dip_never_exposes_underside": true,
+          "actual_runtime_survives": true,
+          "byte_relay_completed_without_errors": true,
+          "save_readable_by_pristine_native_core": true,
+          "prone_is_canonical_native_save_field": true,
+          "pointed_window_closed_in_canonical_save": true,
+          "canonical_native_anchor_preserved": true,
+          "visual_sheet_does_not_pickup_or_attack": true
+        },
+        "passed": 32,
+        "scope": "reconstructed normal start.sh",
+        "command": "python3 artifacts/aim-20261012/run-gui.py controls_presentation_gui_test.py artifacts/controls-hud-20261008/fixture-indoor/user windows-reconstructed-ready",
+        "script_sha256": "1c4726a95837ddaf7bc35d84c87982c012a8368630168b4bb91e6e20bae505f6",
+        "log": "artifacts/aim-20261012/windows-reconstructed-ready.log",
+        "screenshots": {
+          "artifacts/aim-20261012/windows-reconstructed-ready/water-paused-after.png": "e88cdb99481ba02dada7851eff2e5169d8bab79f54140cceac0e7be3cb2f9bb1",
+          "artifacts/aim-20261012/windows-reconstructed-ready/prone-water-return.png": "1f443a6beac8f55a3ef5bb015c258c08770322287d5e75f16228ac073b334552",
+          "artifacts/aim-20261012/windows-reconstructed-ready/body-after-s.png": "73b9ad902b2414073c652124dd10347a8a13643fb8d2c712daaec764c71e7ccf",
+          "artifacts/aim-20261012/windows-reconstructed-ready/compact-hud.png": "58ba384ae463c501ef78f05d76ddc87c20f5c6728c8df2b1460dca7f7447f95b",
+          "artifacts/aim-20261012/windows-reconstructed-ready/held-Shift_L.png": "28059a24c11d65dbda42a1e7dec099f06b8213b7ba1d8ba0a3635817fc52f522",
+          "artifacts/aim-20261012/windows-reconstructed-ready/water-paused-before.png": "e88cdb99481ba02dada7851eff2e5169d8bab79f54140cceac0e7be3cb2f9bb1",
+          "artifacts/aim-20261012/windows-reconstructed-ready/body-before-s.png": "73b9ad902b2414073c652124dd10347a8a13643fb8d2c712daaec764c71e7ccf",
+          "artifacts/aim-20261012/windows-reconstructed-ready/final-hud.png": "f16ede6ba61bcd071cc67bf51d54efbc19ae21f4b7d311870cbf9e9b3b7248f0",
+          "artifacts/aim-20261012/windows-reconstructed-ready/last-frame.png": "3434c6993b85a68d319739a3a5b2b7b3c7aeb1b5bff19227e37601d9dece5e1c",
+          "artifacts/aim-20261012/windows-reconstructed-ready/prone-shallow-water.png": "3c54380504f2a9e23df6057a700dd452e7be36402d4792d9569b5ec36d85164c",
+          "artifacts/aim-20261012/windows-reconstructed-ready/held-Control_L.png": "6aab2e545d33a1b68b6bbf9fb11b241a89149df8bac624325a923e94560c11a9",
+          "artifacts/aim-20261012/windows-reconstructed-ready/prone-floor.png": "40951552512fed95deb25525834fc2404f96ee8b17b30cdbb7797c94e11b619c"
+        },
+        "harness_variant": "artifacts/aim-20261012/run-gui.py",
+        "harness_sha256": "b1840d94c251dd1b199c77089199bcacb43bc2ed004e2277d1d197b877854cd5"
+      },
+      {
+        "name": "pickup-reconstructed-focus",
+        "status": "PASS",
+        "checks": {
+          "actual_start_ready": true,
+          "idle_does_not_auto_pickup": true,
+          "selected_ground_pile_is_rendered": true,
+          "container_freezes_native_time": true,
+          "escape_does_not_transfer_items": true,
+          "actual_chest_slots_detected": true,
+          "manual_pause_keeps_pickup_queued_without_free_transfer": true,
+          "reconnect_cancels_unsent_selection_and_container": true,
+          "reconnect_does_not_replay_stale_selection": true,
+          "only_selected_stack_transferred": true,
+          "single_item_uses_direct_pickup_without_container": true,
+          "emptied_ground_tile_removes_visual": true,
+          "actual_runtime_survives": true,
+          "byte_relay_completed_without_errors": true,
+          "gui_save_readable_by_independent_native_core": true,
+          "native_inventory_preserves_selected_seven_charge_stack": true,
+          "native_inventory_contains_directly_picked_single_item": true,
+          "no_native_ground_duplicates": true
+        },
+        "passed": 18,
+        "scope": "reconstructed normal start.sh",
+        "command": "python3 artifacts/aim-20261012/run-gui.py pickup_gui_test.py artifacts/playable-core-item-ui-20261008/fixture/user pickup-reconstructed-focus",
+        "log": "artifacts/aim-20261012/pickup-reconstructed-focus.log",
+        "screenshots": {
+          "artifacts/aim-20261012/pickup-reconstructed-focus/empty-ground.png": "98b644db4d16d9c8a7e81aaa65e81110dca225569dc0303b469b9dcaa17b86ed",
+          "artifacts/aim-20261012/pickup-reconstructed-focus/container-open.png": "0da7e951ec8f9db9cfef453dce00cfc3498498d88ebd1c59c6ce69897b4ab219",
+          "artifacts/aim-20261012/pickup-reconstructed-focus/pointed-pile.png": "15320e0d180a07da5fed4c8d766e3f147b9b87a8249ce810d3ee65456c6d08a7",
+          "artifacts/aim-20261012/pickup-reconstructed-focus/native-stack-tooltip.png": "b895b45bd8e04d7542918b806508e23f25b8e80748c687f65cdc12897dc52519",
+          "artifacts/aim-20261012/pickup-reconstructed-focus/single-item-left.png": "dc7dc28a390d24cc2478a11a9918da50eae30213ca09f018882d9e568f768189",
+          "artifacts/aim-20261012/pickup-reconstructed-focus/container-reopened.png": "0da7e951ec8f9db9cfef453dce00cfc3498498d88ebd1c59c6ce69897b4ab219"
+        },
+        "delivery_script_sha256": "a4c57c402ab0e2cc4f0b634b03d537432a9ae73a4740930710046c7668689ccf",
+        "script_sha256": "77e25737058de97ebe4156418c00c33fca92af35c4012e2970ef4f221cd4051a",
+        "executed_script_variant": "artifacts/aim-20261012/pickup-script-executed-variant.py",
+        "variant_note": "This successful run started after focus adaptation but before the CLI port-isolation edit. Variant reconstructed from that sole later edit; the later port edit is harness-only and not claimed tested by this run.",
+        "harness_variant": "artifacts/aim-20261012/run-gui-single-read-variant.py",
+        "harness_sha256": "28cc43376453e1c9ea3298aaa2daaeee359000b19643c5d11e4f92a21d5e33f9"
+      },
+      {
+        "name": "rmb-installed",
+        "status": "PASS",
+        "checks": {
+          "actual_start_ready": true,
+          "native_loaded_weapon_visible": true,
+          "manual_pause_blocks_aim_fire_reload_and_time": true,
+          "paused_keys_not_replayed": true,
+          "rmb_held_across_pause_requires_release": true,
+          "reading_does_not_aim_for_free": true,
+          "rmb_held_across_menu_is_not_replayed": true,
+          "held_aim_uses_native_paid_steps": true,
+          "single_fire_waits_only_for_current_paid_aim_step": true,
+          "menu_cancels_deferred_shot_without_native_ammo_loss": true,
+          "held_rmb_resumes_paid_aim_after_single_shot": true,
+          "rmb_release_stops_new_aim_steps": true,
+          "held_mouse_fires_exactly_once": true,
+          "native_shot_acknowledged": true,
+          "shot_does_not_move_player": true,
+          "native_target_takes_damage": true,
+          "empty_reticle_sends_no_shot": true,
+          "empty_reticle_does_not_send_paid_aim": true,
+          "friendly_creature_not_accepted_as_ranged_target": true,
+          "friendly_reticle_does_not_send_paid_aim": true,
+          "held_rmb_not_replayed_after_real_reconnect": true,
+          "native_reload_choices_exclude_incompatible_ammo": true,
+          "cancel_ammo_choice_keeps_rounds": true,
+          "native_reload_confirmation": true,
+          "decline_reload_keeps_rounds": true,
+          "reload_blocks_movement_aim_and_fire": true,
+          "inventory_freezes_native_reload": true,
+          "cancel_native_reload_preserves_rounds": true,
+          "reconnect_discards_old_weapon_handle_without_replaying_fire": true,
+          "new_reload_has_fresh_activity_token": true,
+          "native_reload_transfers_ammo_once": true,
+          "actual_runtime_survives_native_ranged_combat": true,
+          "byte_relay_completed_without_errors": true,
+          "ranged_save_readable_by_pristine_native_core": true,
+          "native_gun_instance_persists_once": true,
+          "canonical_ammunition_conserved_except_one_fired_round": true,
+          "ranged-other_untouched": true,
+          "ranged-wrong_untouched": true,
+          "completed_reload_has_no_pending_activity": true,
+          "canonical_ranged_save_has_no_luanti_inventory": true
+        },
+        "passed": 40,
+        "scope": "installed normal start.sh",
+        "command": "CWM_TEST_INSTALLED=1 python3 artifacts/aim-20261012/run-gui.py ranged_gui_test.py artifacts/native-ranged-20261008/fixture/user rmb-installed --held-rmb",
+        "script_sha256": "d358864f17f56b97a03ff633cd2138259746c1d547af8c407c8fab5ccc6deecf",
+        "log": "artifacts/aim-20261012/rmb-installed.log",
+        "screenshots": {
+          "artifacts/aim-20261012/rmb-installed/reload-complete.png": "63d94c05d474e4c541ae748981c500ac36b7861e6780c46ce6405c22d8418b26",
+          "artifacts/aim-20261012/rmb-installed/aimed.png": "b8f5090b1f3a7f0f001f0a365ca23d02c0d0bde13ea9652989be65a2124d2ad8",
+          "artifacts/aim-20261012/rmb-installed/reload-paused.png": "0488cc5ece792627af586530fc7c4da5cd4b710adf7b7d4fe3c76c3a1eeff5de",
+          "artifacts/aim-20261012/rmb-installed/ammo-choices.png": "92138829cd3d6f0db4dab830e14b75eb37e142085ec8b1e88711af560b8ab072",
+          "artifacts/aim-20261012/rmb-installed/pointed-target.png": "675266abb1dff68beebdb4d650fb9f1a59c9784f86284cd966cc4bdb3708cc2f",
+          "artifacts/aim-20261012/rmb-installed/reload-confirmation.png": "4e1edef8b7ef9d4f8521b4adcd796ba7aa2498d5b7f53a5dce5cdbc038c22a1b"
+        },
+        "harness_variant": "artifacts/aim-20261012/run-gui.py",
+        "harness_sha256": "b1840d94c251dd1b199c77089199bcacb43bc2ed004e2277d1d197b877854cd5"
+      }
+    ],
+    "independent_native_reader": {
+      "source": "/home/dannhill/Projects/cdda-mineclonia/tests/takeover_save_reader.cpp",
+      "source_sha256": "49cfbc6108be782e9dcf4392d79f3dcf0cbbea47fef91f80827b89d5007f7830",
+      "pristine_core": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/pristine-cdda",
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/pristine-cdda/build/src",
+      "binary": "/home/dannhill/Projects/cdda-mineclonia/artifacts/inventory-feedback-20261009/native-save-reader",
+      "binary_sha256": "d65889a6cf0c36db31d493bba915a89bc7424d60f0ddb9800992fd0d4f39958a"
+    }
+  },
+  "retained_harness_failures": [
+    {
+      "runs": [
+        "windows-reconstructed",
+        "pickup-reconstructed"
+      ],
+      "reason": "windowactivate requires a window manager; use controlled windowfocus in private Xvfb."
+    },
+    {
+      "runs": [
+        "windows-reconstructed-focus"
+      ],
+      "reason": "Default game configuration overrides test config port; concurrent presentation servers shared port 30000. Test now passes its private port on CLI."
+    },
+    {
+      "runs": [
+        "windows-reconstructed-isolated"
+      ],
+      "reason": "Fragmented displayfd output was read with one read and the pipe closed before the newline; Xvfb failed. Harness now reads the full ready line."
+    }
+  ],
+  "manual_validation": {
+    "pending": 18,
+    "previous": 15,
+    "new": 3,
+    "file": "docs/validation/pending-manual.md",
+    "accepted_from_automation": false
+  },
+  "limits": [
+    "Assisted native hostile/firearm aim only. No free-reticle shot, neutral targeting, zoom, new models/UV/animations or audio.",
+    "Native previously paid recoil idle policy remains unchanged; release stops new improvement commands.",
+    "Window regression runs on ground level; negative/multi-Z node conversion is covered by existing unit tests and inspected scene coordinate mapping, without claiming a new multi-floor GUI scenario.",
+    "F remains a keyboard fallback; physical pause/menu/reconnect rearm scenario is exercised with the primary RMB input.",
+    "Canonical readback is scoped compatibility evidence; full SAVE-001 remains OPEN and M5.5 historical FAILED."
+  ],
+  "artifact_log_sha256": {
+    "artifacts/aim-20261012/build-luanti-final.log": "bf92c3d980d0361cab6b47ae910f2f9b5fdae847d7c5149af4fd10e733a7b30f",
+    "artifacts/aim-20261012/unit-tests.log": "8618f5aae177cdd2d6ec1e5c785fc409a9fe3d307c84d38d771579e69c5a71c1",
+    "artifacts/aim-20261012/protocol-tests.log": "1dce96203394809de32ab25f2ef947527fbce484f95c9238b7f3da21c2fff307",
+    "artifacts/aim-20261012/rmb-reconstructed.log": "54922ee3145f531a5260e9b5576a9f38f92bd8c3be354f88712826d071a33204",
+    "artifacts/aim-20261012/rmb-installed.log": "54922ee3145f531a5260e9b5576a9f38f92bd8c3be354f88712826d071a33204",
+    "artifacts/aim-20261012/windows-reconstructed-ready.log": "3bbf187c2e7cf229295a1d6597ba7dfe7240867d25d4511882de444369b9c9c0",
+    "artifacts/aim-20261012/pickup-reconstructed-focus.log": "cd49e4015e101d37110777ffc3784248efe74cb91296814f97b376929122647d"
+  },
+  "harness_variants_note": "Original single-read readiness variant reconstructed from the sole newline-reading edit; these successful older runs did not encounter the displayfd race. Final ready-line harness is exercised by windows-reconstructed-ready and rmb-installed.",
+  "harness_at_delivery_sha256": "b1840d94c251dd1b199c77089199bcacb43bc2ed004e2277d1d197b877854cd5"
+}
