@@ -1221,7 +1221,7 @@ index 5d6b891..48c0d59 100644
  		g_settings->getFlagStr("anticheat_flags", flagdesc_anticheat, nullptr);
  
 diff --git a/src/unittest/test_mapblock.cpp b/src/unittest/test_mapblock.cpp
-index 7f3f860..f00cbe5 100644
+index 7f3f860..e915a9d 100644
 --- a/src/unittest/test_mapblock.cpp
 +++ b/src/unittest/test_mapblock.cpp
 @@ -10,6 +10,16 @@
@@ -1258,7 +1258,7 @@ index 7f3f860..f00cbe5 100644
  };
  
  static TestMapBlock g_test_instance;
-@@ -44,9 +62,196 @@ void TestMapBlock::runTests(IGameDef *gamedef)
+@@ -44,9 +62,202 @@ void TestMapBlock::runTests(IGameDef *gamedef)
  	TEST(testSave29, gamedef);
  	TEST(testLoad29, gamedef);
  	TEST(testLoad20, gamedef);
@@ -1279,7 +1279,7 @@ index 7f3f860..f00cbe5 100644
 +{
 +    using namespace cdda_client;
 +    EquipmentView view; view.view = 1;
-+    EquipmentEntry pack; pack.id = 1; pack.name = "Pack"; pack.worn = true; pack.container = true;
++    EquipmentEntry pack; pack.id = 1; pack.name = "Pack"; pack.category = "clothing"; pack.worn = true; pack.container = true;
 +    view.entries.push_back(pack);
 +    for (uint32_t id = 2; id <= 40; ++id) {
 +        EquipmentEntry child; child.id = id; child.parent = 1; child.pocket = 0;
@@ -1292,7 +1292,13 @@ index 7f3f860..f00cbe5 100644
 +    UASSERTEQ(size_t, equipmentFilter(view,"",1).size(), 1);
 +    ::cwm::set_product_language("en");
 +    UASSERTEQ(std::string, view.source(2), "Worn > Pack / Main");
++    const auto category_icon = equipmentCategoryIcon(pack);
++    UASSERTEQ(std::string, equipmentCategoryLabel(pack.category), "Clothing");
 +    ::cwm::set_product_language("it");
++    UASSERTEQ(std::string, equipmentCategoryIcon(pack), category_icon);
++    UASSERTEQ(std::string, equipmentCategoryLabel(pack.category), "Vestiti");
++    UASSERTEQ(size_t, equipmentFilter(view,"vestiti",0).size(), 1);
++    UASSERTEQ(size_t, equipmentFilter(view,"clothing",0).size(), 1);
 +    UASSERTEQ(std::string, view.source(2), "Indossato > Pack / Main");
 +    const auto italian = equipmentForm(view,0,2,"",0,"",[](const auto&) { return "known:rock"; });
 +    UASSERT(italian.find(";action_0;Impugna]") != std::string::npos);
@@ -4547,10 +4553,10 @@ index 0000000..8a266d4
 +} // namespace cdda_client
 diff --git a/src/cdda/equipment_inventory.h b/src/cdda/equipment_inventory.h
 new file mode 100644
-index 0000000..74108ae
+index 0000000..6193f98
 --- /dev/null
 +++ b/src/cdda/equipment_inventory.h
-@@ -0,0 +1,332 @@
+@@ -0,0 +1,349 @@
 +#pragma once
 +#include "cwm/product_language.hpp"
 +#include "avatar_status.h"
@@ -4626,12 +4632,29 @@ index 0000000..74108ae
 +    for (auto& c : text) c = char(std::tolower(static_cast<unsigned char>(c)));
 +    return text;
 +}
++// Wire categories are native IDs. Translate only their displayed labels.
++inline std::string equipmentCategoryLabel(const std::string& category) {
++    if (category == "guns") return ::cwm::text("Guns", "Armi da fuoco");
++    if (category == "magazines") return ::cwm::text("Magazines", "Caricatori");
++    if (category == "ammo") return ::cwm::text("Ammo", "Munizioni");
++    if (category == "weapons") return ::cwm::text("Weapons", "Armi");
++    if (category == "tools") return ::cwm::text("Tools", "Attrezzi");
++    if (category == "clothing") return ::cwm::text("Clothing", "Vestiti");
++    if (category == "food") return ::cwm::text("Food", "Cibo");
++    if (category == "drugs") return ::cwm::text("Drugs", "Farmaci");
++    if (category == "manuals") return ::cwm::text("Manuals", "Manuali");
++    if (category == "books") return ::cwm::text("Books", "Libri");
++    if (category == "maps") return ::cwm::text("Maps", "Mappe");
++    if (category == "container") return ::cwm::text("Containers", "Contenitori");
++    if (category == "armor") return ::cwm::text("Armor", "Armature");
++    return category;
++}
 +inline std::vector<uint32_t> equipmentFilter(const EquipmentView& view, const std::string& search, int filter) {
 +    std::vector<uint32_t> ids;
 +    const auto needle = equipmentLower(search);
 +    for (const auto& e : view.entries) {
 +        if ((filter == 1 && !e.wielded && !e.worn) || (filter == 2 && !e.container)) continue;
-+        if (!needle.empty() && equipmentLower(e.name + " " + e.category + " " + view.source(e.id)).find(needle) == std::string::npos) continue;
++        if (!needle.empty() && equipmentLower(e.name + " " + e.category + " " + equipmentCategoryLabel(e.category) + " " + view.source(e.id)).find(needle) == std::string::npos) continue;
 +        ids.push_back(e.id);
 +    }
 +    return ids;
@@ -4650,8 +4673,8 @@ index 0000000..74108ae
 +    }
 +    return out;
 +}
-+// Category art is presentation only. Unknown/localized category labels use a
-+// neutral question mark rather than pretending to be a stone gameplay item.
++// Category art uses native category IDs, independent of the selected language.
++// Unknown IDs use a neutral question mark; type mappings remain primary.
 +inline std::string equipmentCategoryIcon(const EquipmentEntry& entry) {
 +    const auto category = equipmentLower(entry.category);
 +    if (category == "clothing") return "mcl_armor_inv_chestplate_leather.png";
@@ -4782,7 +4805,7 @@ index 0000000..74108ae
 +        };
 +        f += "hypertext[12.55,1.9;2.95,1.05;;" + statusEscape("<global color=#323232 size=16><b>" + equipmentMarkup(e->name) + "</b>") + "]";
 +        std::string detail = "<style color=#25647A><b>" + role + "</b></style>" +
-+            (e->counted ? "   x" + std::to_string(e->charges) : "") + "\n" + equipmentMarkup(e->category) + "\n" +
++            (e->counted ? "   x" + std::to_string(e->charges) : "") + "\n" + equipmentMarkup(equipmentCategoryLabel(e->category)) + "\n" +
 +            "<b>" + equipmentAmount(e->weight) + " kg   /   " + equipmentAmount(e->volume) + " L</b>\n" +
 +            ("<style color=#25647A><b>" + ::cwm::text("Source", "Provenienza") + "</b></style>\n") + equipmentMarkup(view.source(e->id));
 +        const auto pocket_count = std::count_if(view.pockets.begin(),view.pockets.end(),[&](const auto& p) { return p.owner == selected; });

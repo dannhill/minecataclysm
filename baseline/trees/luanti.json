@@ -7257,7 +7257,7 @@
   {
     "path": "src/cdda/equipment_inventory.h",
     "mode": "100644",
-    "sha256": "016e6fc223a4529f235deeb738bb89c9e2437ac68f18de85594796eb116ec08f"
+    "sha256": "06f2b67366c1ee6dacec821ff5a18ec64f484e594402e27cbe51394a5199d34a"
   },
   {
     "path": "src/cdda/ground_item_formspec.h",
@@ -10327,7 +10327,7 @@
   {
     "path": "src/unittest/test_mapblock.cpp",
     "mode": "100644",
-    "sha256": "1cb5b67a0c95edc40e95537a2720197ea63d8b5812af1aa4a62d2bb88ae41e2b"
+    "sha256": "d66d2542dad3db64527c7b3722d223fec043f9abca953cb6205aefa4b7e2ef8e"
   },
   {
     "path": "src/unittest/test_mapnode.cpp",

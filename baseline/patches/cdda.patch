@@ -1669,7 +1669,7 @@ index 0000000..0866007
 +} // namespace cwm
 diff --git a/src/cwm/cwm_inventory.h b/src/cwm/cwm_inventory.h
 new file mode 100644
-index 0000000..dd48554
+index 0000000..63c6eeb
 --- /dev/null
 +++ b/src/cwm/cwm_inventory.h
 @@ -0,0 +1,258 @@
@@ -1899,7 +1899,7 @@ index 0000000..dd48554
 +                if (quick_identity.size() == 32) for (unsigned n = 1; n <= 9; ++n)
 +                    if (u.get_value("cwm_quick_slot_" + std::to_string(n)) == quick_identity) quick_slot = n;
 +                entries.push_back(CDDA::CWM::CreateInventoryEntryDirect(fbb, id, parent_id, pocket_index,
-+                    it->typeId().str().c_str(), remove_color_tags(it->tname()).c_str(), it->get_category_shallow().name().c_str(),
++                    it->typeId().str().c_str(), remove_color_tags(it->tname()).c_str(), it->get_category_shallow().get_id().str().c_str(),
 +                    it->charges, it->count_by_charges(), worn, wielded,
 +                    units::to_gram<int64_t>(it->weight()), units::to_milliliter<int64_t>(it->volume()),
 +                    units::to_millimeter<int64_t>(it->length()), access, actions, &reasons, consume_moves, consume_label, remove_color_tags(warning).c_str(), transfer_source_error(u, location).c_str(),
@@ -2357,10 +2357,10 @@ index 0000000..c273bf2
 +}
 diff --git a/src/cwm/cwm_map_exporter.cpp b/src/cwm/cwm_map_exporter.cpp
 new file mode 100644
-index 0000000..e77485b
+index 0000000..1d0b669
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.cpp
-@@ -0,0 +1,656 @@
+@@ -0,0 +1,657 @@
 +#include "cwm/product_language.hpp"
 +#include "cwm_motion.h"
 +// CDDA CWM Map & Entity Exporter Implementation
@@ -2379,6 +2379,7 @@ index 0000000..e77485b
 +#include "effect.h"
 +#include "game.h"
 +#include "item.h"
++#include "item_category.h"
 +#include "map.h"
 +#include "monster.h"
 +#include "creature_tracker.h"
@@ -2908,7 +2909,7 @@ index 0000000..e77485b
 +        owned_items.push_back(CDDA::CWM::CreateGroundItemStateDirect(fbb,
 +            static_cast<uint32_t>(owned_items.size()), it->typeId().str().c_str(),
 +            remove_color_tags(it->tname()).c_str(), it->charges, it->count_by_charges(),
-+            it->get_category_shallow().name().c_str(), u.is_wielding(*it), it->rotten()));
++            it->get_category_shallow().get_id().str().c_str(), u.is_wielding(*it), it->rotten()));
 +        return VisitResponse::NEXT;
 +    });
 +    const auto owned_items_vec = fbb.CreateVector(owned_items);
@@ -2922,7 +2923,7 @@ index 0000000..e77485b
 +        quick_slots.push_back(CDDA::CWM::CreateQuickSlotDirect(fbb, n,
 +            u.get_value(Hotbar::slot_key(n)).c_str(), location ? location->typeId().str().c_str() : "",
 +            location ? remove_color_tags(location->tname()).c_str() : "",
-+            location ? location->get_category_shallow().name().c_str() : "",
++            location ? location->get_category_shallow().get_id().str().c_str() : "",
 +            location ? location->charges : 0, location && location->count_by_charges(),
 +            location && u.is_worn(*location), location && u.is_wielding(*location), actions,
 +            location && location->rotten()));

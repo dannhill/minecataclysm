@@ -1,6 +1,8 @@
 # Validazioni manuali del playable core
 
-Stato corrente: **13 punti PENDING**, senza richiedere prove oggi. Il
+Stato corrente: **15 punti PENDING**, senza richiedere prove oggi. Due nuovi
+punti riguardano la lingua del prodotto; i tredici precedenti restano pendenti.
+Il
 [riscontro UX-03 più recente](../source/ux03-drag-feedback-2026-10-09.md)
 valida **Ricontrolli UX-03 1–3 PASS**. Il precedente **hotbar 1 FAIL**
 per Assegna/Svuota viene ora sostituito da un **ricontrollo DND PENDING**;
@@ -520,5 +522,28 @@ cronologia; non serve ripeterli per il solo FAIL ergonomico della hotbar.
 
 Le verifiche automatiche su renderer e core di riferimento sono registrate
 nel [report UX-03](../fixes/interactive-quickbar.md); non costituiscono PASS
-manuali. Lingua inglese/italiano WIP, mira RMB, UV/rig, animazioni e suoni
-restano nel piano e non fanno parte di questa checklist.
+manuali. La lingua ha ora la checklist separata sotto; mira RMB, UV/rig,
+animazioni e suoni restano nel piano.
+
+## LANG-01 — Lingua del prodotto — PENDING (2), rinviabili
+
+Disponibile dal normale `./start.sh`; non serve fare queste prove oggi.
+I PASS precedenti rimangono accettati. Le prove automatiche delle due lingue
+non attestano la tua accettazione della leggibilità e del menu.
+[Comportamento e impostazioni](../design/product-language.md).
+
+1. **Inglese predefinito**: senza una preferenza di prodotto già scelta,
+   `./start.sh` apre in inglese, indipendentemente dalla lingua del sistema.
+   Controlla I, H e K: etichette inglesi, nomi/descrizioni nativi inglesi e
+   ricerca funzionante. Per una scelta nativa annullabile puoi usare la
+   demo isolata di equipaggiamento: Riponi della mazza, poi Cancel.
+   Se hai già scelto italiano, Esc → Language → English, esci e riavvia.
+2. **Italiano WIP e ritorno**: Esc → Language / Lingua → Italiano (WIP).
+   La partita corrente mantiene la lingua iniziale. Esci e riavvia lo
+   stesso `start.sh` o la stessa demo senza `--fresh`: I/H/K usano italiano,
+   con fallback inglese per testi nativi non ancora tradotti. Nella demo,
+   il cappello e lo zaino hanno nomi italiani, e Riponi offre Annulla.
+   Riporta il selettore su English e riavvia: la scelta persiste e anche
+   i testi nativi tornano inglesi. Il cambio lingua non riordina né duplica
+   gli oggetti e non cancella i salvataggi. Non serve ripetere i vecchi
+   test di persistenza o tutte le azioni inventario già validate.

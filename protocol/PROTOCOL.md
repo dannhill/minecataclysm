@@ -36,7 +36,10 @@ and transfer requests continue to pay CDDA costs and retain its choices.
 
 CWM 2.17 appends `QuickbarBindRequest` (41), `QuickbarUseRequest` (42),
 `WorldSnapshot.quick_slots`, `InventoryEntry.quick_slot/rotten` and owned-item
-category/wielded/rotten presentation fields. Nine quick slots are references
+category/wielded/rotten presentation fields. Category strings in inventory,
+owned-item metadata and quick slots carry native item-category IDs (not translated
+labels); renderers may localize their display. This clarification keeps icons
+stable across language choices without changing the schema. Nine quick slots are references
 to actual owned items, not additional storage. Binding uses a current inventory
 view/item plus the expected previous binding; clearing requires zero view/item.
 It changes optional UI metadata only, without native move costs or time advance.

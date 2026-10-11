@@ -296,6 +296,10 @@ def main():
                       '++\u00a0' + ('cappello da baseball' if language == 'it' else 'baseball cap'))
                 check('native_nested_backpack_name_uses_selected_catalog', item(view,'backpack_hiking').Name().decode().startswith(
                       '++\u00a0' + ('zaino da escursione' if language == 'it' else 'hiking backpack') + ' > '))
+                check('native_category_ids_are_language_independent',
+                      item(view,'hat_ball').Category()==b'clothing' and
+                      item(view,'backpack_hiking').Category()==b'clothing' and
+                      item(view,'bat').Category()==b'weapons')
                 select_item(item(view,'hat_ball')); shot('translated-item-details.png')
                 click(9.5,4.95);xdo('key','Home');xdo('key','Down');xdo('key','Down');xdo('key','Return');time.sleep(.3)
                 click(1.025,5.975)

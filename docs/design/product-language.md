@@ -44,8 +44,10 @@ Luanti's engine menus use its existing gettext catalog.
 Operation IDs, type IDs, instance identities and enum values remain unchanged.
 No new wire field or protocol version is required (CWM remains 2.18).
 Never choose gameplay behavior, mappings or item identity from translated names.
-Presentation-only category fallback art may remain neutral for an unknown
-translated category; native item type mappings remain the primary icon source.
+Category metadata carries native category IDs in inventory, owned ground items
+and quick slots. Generic art uses those IDs, independent of language; labels
+are translated only for display/search. Unknown IDs use a neutral fallback.
+Native item type mappings remain the primary icon source; batches are unchanged.
 
 ## Build and verification
 
