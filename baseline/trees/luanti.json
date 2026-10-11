@@ -1152,7 +1152,7 @@
   {
     "path": "builtin/mainmenu/settings/dlg_settings.lua",
     "mode": "100644",
-    "sha256": "64f398224a108f098d3a4c9a06c3747215244f10c05d9e35256b3fab12d8c48b"
+    "sha256": "3271868b3ac3672dc448e0066db37e0ca4c49ac2957ceea6edbe7e7dd44ff4d7"
   },
   {
     "path": "builtin/mainmenu/settings/generate_from_settingtypes.lua",
@@ -1232,7 +1232,7 @@
   {
     "path": "builtin/settingtypes.txt",
     "mode": "100644",
-    "sha256": "944ad63067eb3f21e8dc5e72ca88037228514fbd01638b359d02ab599e1f5961"
+    "sha256": "1fa54bb4708e772a2678bea753820120516e9969c6fc7301d0eff52ef8faa107"
   },
   {
     "path": "client/serverlist/.gitignore",

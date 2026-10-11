@@ -1,8 +1,110 @@
+diff --git a/builtin/mainmenu/settings/dlg_settings.lua b/builtin/mainmenu/settings/dlg_settings.lua
+index 57e5a13..499e52c 100644
+--- a/builtin/mainmenu/settings/dlg_settings.lua
++++ b/builtin/mainmenu/settings/dlg_settings.lua
+@@ -129,7 +129,7 @@ local function load()
+ 		id = "accessibility",
+ 		title = fgettext_ne("Accessibility"),
+ 		content = {
+-			"language",
++			"cwm_language",
+ 			{ heading = fgettext_ne("General") },
+ 			"font_size",
+ 			"chat_font_size",
+@@ -179,70 +179,11 @@ local function load()
+ 		table.insert(content, idx, note)
+ 	end
+ 
+-	-- These must not be translated, as they need to show in the local
+-	-- language no matter the user's current language.
+-	-- This list must be kept in sync with src/unsupported_language_list.txt.
+-	get_setting_info("language").option_labels = {
+-		[""] = fgettext_ne("(Use system language)"),
+-		--ar = " [ar]", blacklisted
+-		be = "Беларуская [be]",
+-		bg = "Български [bg]",
+-		ca = "Català [ca]",
+-		cs = "Česky [cs]",
+-		cy = "Cymraeg [cy]",
+-		da = "Dansk [da]",
+-		de = "Deutsch [de]",
+-		--dv = " [dv]", blacklisted
+-		el = "Ελληνικά [el]",
+-		en = "English [en]",
+-		eo = "Esperanto [eo]",
+-		es = "Español [es]",
+-		et = "Eesti [et]",
+-		eu = "Euskara [eu]",
+-		fi = "Suomi [fi]",
+-		fil = "Wikang Filipino [fil]",
+-		fr = "Français [fr]",
+-		gd = "Gàidhlig [gd]",
+-		gl = "Galego [gl]",
+-		--he = " [he]", blacklisted
+-		--hi = " [hi]", blacklisted
+-		hu = "Magyar [hu]",
+-		id = "Bahasa Indonesia [id]",
+-		it = "Italiano [it]",
+-		ja = "日本語 [ja]",
+-		jbo = "Lojban [jbo]",
+-		kk = "Қазақша [kk]",
+-		--kn = " [kn]", blacklisted
+-		ko = "한국어 [ko]",
+-		ky = "Kırgızca / Кыргызча [ky]",
+-		lt = "Lietuvių [lt]",
+-		lv = "Latviešu [lv]",
+-		mn = "Монгол [mn]",
+-		mr = "मराठी [mr]",
+-		ms = "Bahasa Melayu [ms]",
+-		--ms_Arab = " [ms_Arab]", blacklisted
+-		nb = "Norsk Bokmål [nb]",
+-		nl = "Nederlands [nl]",
+-		nn = "Norsk Nynorsk [nn]",
+-		oc = "Occitan [oc]",
+-		pl = "Polski [pl]",
+-		pt = "Português [pt]",
+-		pt_BR = "Português do Brasil [pt_BR]",
+-		ro = "Română [ro]",
+-		ru = "Русский [ru]",
+-		sk = "Slovenčina [sk]",
+-		sl = "Slovenščina [sl]",
+-		sr_Cyrl = "Српски [sr_Cyrl]",
+-		sr_Latn = "Srpski (Latinica) [sr_Latn]",
+-		sv = "Svenska [sv]",
+-		sw = "Kiswahili [sw]",
+-		--th = " [th]", blacklisted
+-		tr = "Türkçe [tr]",
+-		tt = "Tatarça [tt]",
+-		uk = "Українська [uk]",
+-		vi = "Tiếng Việt [vi]",
+-		zh_CN = "中文 (简体) [zh_CN]",
+-		zh_TW = "正體中文 (繁體) [zh_TW]",
++	-- One product selector drives both processes on the next supervised launch.
++	-- Keep names readable regardless of the active language.
++	get_setting_info("cwm_language").option_labels = {
++		en = "English",
++		it = "Italiano (WIP)",
+ 	}
+ 
+ 	get_setting_info("touch_controls").option_labels = {
 diff --git a/builtin/settingtypes.txt b/builtin/settingtypes.txt
-index 728eaf4..982f8cf 100644
+index 728eaf4..3d27414 100644
 --- a/builtin/settingtypes.txt
 +++ b/builtin/settingtypes.txt
-@@ -2557,3 +2557,21 @@ keymap_increase_viewing_range_min (View range increase key) key +
+@@ -666,9 +666,9 @@ mute_sound (Mute sound) bool false
+ 
+ [*User Interfaces]
+ 
+-#    Set the language. By default, the system language is used.
+-#    A restart is required after changing this.
+-language (Language) enum   ,be,bg,ca,cs,da,de,el,en,eo,es,et,eu,fi,fr,gd,gl,hu,id,it,ja,jbo,kk,ko,lt,lv,ms,nb,nl,nn,pl,pt,pt_BR,ro,ru,sk,sl,sr_Cyrl,sr_Latn,sv,sw,tr,uk,vi,zh_CN,zh_TW
++#    Product language for CDDA and the 3D interface. Restart through start.sh
++#    after changing this setting. Italian is WIP; missing translations use English.
++cwm_language (Language) enum en en,it
+ 
+ [**GUI]
+ 
+@@ -2557,3 +2557,17 @@ keymap_increase_viewing_range_min (View range increase key) key +
  
  #    Key for decreasing the viewing range.
  keymap_decrease_viewing_range_min (View range decrease key) key -
@@ -11,10 +113,6 @@ index 728eaf4..982f8cf 100644
 +
 +# Hold by default; enable to toggle on each physical press.
 +cwm_run_toggle (CDDA: toggle running) bool false
-+#    Product language for both CDDA and the 3D interface. Restart the game
-+#    through start.sh after changing this setting. Italian is incomplete (WIP);
-+#    untranslated native messages fall back to English.
-+cwm_language (CDDA language (it = Italian WIP; restart required)) enum en en,it
 +cwm_crouch_toggle (CDDA: toggle crouching) bool false
 +keymap_cdda_run (CDDA: run key) string KEY_LCONTROL
 +keymap_cdda_crouch (CDDA: crouch key) string KEY_LSHIFT
