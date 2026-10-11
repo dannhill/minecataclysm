@@ -293,9 +293,9 @@ def main():
                       next(status.Needs(n).Label().decode() for n in range(status.NeedsLength())
                            if status.Needs(n).Id()==b'thirst') == ('Sete' if language=='it' else 'Thirst'))
                 check('native_item_name_uses_selected_catalog', item(view,'hat_ball').Name().decode() ==
-                      ('cappello da baseball' if language == 'it' else 'baseball cap'))
-                check('native_nested_backpack_name_uses_selected_catalog', item(view,'backpack_hiking').Name().decode() ==
-                      ('zaino da escursione' if language == 'it' else 'hiking backpack'))
+                      '++\u00a0' + ('cappello da baseball' if language == 'it' else 'baseball cap'))
+                check('native_nested_backpack_name_uses_selected_catalog', item(view,'backpack_hiking').Name().decode().startswith(
+                      '++\u00a0' + ('zaino da escursione' if language == 'it' else 'hiking backpack') + ' > '))
                 select_item(item(view,'hat_ball')); shot('translated-item-details.png')
                 click(9.5,4.95);xdo('key','Home');xdo('key','Down');xdo('key','Down');xdo('key','Return');time.sleep(.3)
                 click(1.025,5.975)
@@ -342,7 +342,7 @@ def main():
                     tap('Escape');wait(lambda r:int(r['pause_reasons'])==0)
                     view=open_inventory()
                     check('menu_change_keeps_current_native_language_until_restart',
-                          item(view,'hat_ball').Name().decode() == ('cappello da baseball' if language == 'it' else 'baseball cap'))
+                          item(view,'hat_ball').Name().decode() == '++\u00a0' + ('cappello da baseball' if language == 'it' else 'baseball cap'))
                     tap('Escape');wait(lambda r:int(r['equipment_form'])==0)
             elif args.quickbar or args.quickbar_resume:
                 import struct
