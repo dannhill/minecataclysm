@@ -239,7 +239,7 @@ index b6ae675..9e33201 100644
  		/*
  			Local player handling
 diff --git a/src/client/game.cpp b/src/client/game.cpp
-index 27b5833..996aa3f 100644
+index 27b5833..8b1d69e 100644
 --- a/src/client/game.cpp
 +++ b/src/client/game.cpp
 @@ -8,6 +8,8 @@
@@ -729,7 +729,7 @@ index 27b5833..996aa3f 100644
  	os		<< "button_exit[4," << (ypos++) << ";3,0.5;btn_exit_os;"
  		<< strgettext("Exit to OS")   << "]";
 +	os << "label[7.5,0.65;" << ::cwm::tr("Language", "Lingua") << "]"
-+		<< "dropdown[7.5,1.15;3.0,0.6;cwm_product_language;English,Italiano (WIP);"
++		<< "dropdown[7.5,1.15;3.0;cwm_product_language;English,Italiano (WIP);"
 +		<< (g_settings->get("cwm_language") == "it" ? 2 : 1) << ";true]"
 +		<< "textarea[7.5,2.0;3.1,1.4;;;"
 +		<< ::cwm::tr("Restart start.sh to apply.\nItalian translation is incomplete.",

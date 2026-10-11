@@ -37,6 +37,7 @@ def main():
     parser.add_argument('--use-saved-language', action='store_true', help='Verify launcher preference resolution without a language environment override')
     args = parser.parse_args()
     ws, out = args.workspace.resolve(), args.artifacts.resolve()
+    sys.path.insert(0, str(ws / 'tools'))
     out.mkdir(parents=True, exist_ok=False)
     user = out / 'user'
     shutil.copytree(args.fixture.resolve(), user)
@@ -119,6 +120,7 @@ def main():
     wrapper.write_text("#!/usr/bin/env python3\nimport os,sys,re\nfrom pathlib import Path\n" +
         "args=sys.argv[1:]\ni=args.index('--config')+1\np=Path(args[i])\ns=p.read_text()\n" +
         f"Path({str(native_path)!r}).write_text(re.findall(r'^cwm_socket_path = (.+)$',s,re.M)[-1])\n" +
+        f"Path({str(out / 'actual-client-config-path')!r}).write_text(str(p))\n" +
         f"p.write_text(s+'\\ncwm_socket_path = {relay_path}\\n')\n" +
         f"Path({str(out / 'relay-client.conf')!r}).write_text(p.read_text())\n" +
         f"os.execv({str(ws / 'luanti/bin/luanti')!r},[{str(ws / 'luanti/bin/luanti')!r},*args])\n")
@@ -308,6 +310,24 @@ def main():
                 view=open_inventory()
                 check('localized_native_cancel_preserves_wielded_item', item(view,'bat').Wielded())
                 tap('Escape');wait(lambda r:int(r['equipment_form'])==0)
+                if args.language_menu_change:
+                    tap('Escape');wait(lambda r:int(r['pause_reasons'])==2)
+                    shot('pause-language-selector.png')
+                    # Fixed-size v1 pause form on the controlled 96-DPI display.
+                    xdo('mousemove','--window',window,'875','320');xdo('click','1')
+                    xdo('key','Home')
+                    if args.language_menu_change == 'it': xdo('key','Down')
+                    xdo('key','Return');time.sleep(.4)
+                    from product_language import configured_language
+                    actual_config = Path((out / 'actual-client-config-path').read_text())
+                    check('real_pause_menu_updates_product_preference',
+                          configured_language(actual_config)==args.language_menu_change)
+                    shot('pause-language-selected.png')
+                    tap('Escape');wait(lambda r:int(r['pause_reasons'])==0)
+                    view=open_inventory()
+                    check('menu_change_keeps_current_native_language_until_restart',
+                          item(view,'hat_ball').Name().decode() == ('cappello da baseball' if language == 'it' else 'baseball cap'))
+                    tap('Escape');wait(lambda r:int(r['equipment_form'])==0)
             elif args.quickbar or args.quickbar_resume:
                 import struct
                 from CDDA.CWM.WorldSnapshot import WorldSnapshot
@@ -679,6 +699,10 @@ def main():
         check('readonly_inventory_preserves_canonical_items',native['player']['worn']==before['player']['worn'] and native['player']['weapon']==before['player']['weapon'])
     if args.language_smoke:
         check('presentation_language_does_not_rewrite_native_options', native_options.read_bytes() == native_options_before)
+        if args.language_menu_change:
+            from product_language import configured_language
+            check('normal_launcher_persists_actual_menu_change',
+                  configured_language(user / 'config/presentation-language.conf') == args.language_menu_change)
     if args.resume_only:
         check('actual_reload_preserves_canonical_position', native['player_abs'] == before['player_abs'])
         if args.action_driven:
