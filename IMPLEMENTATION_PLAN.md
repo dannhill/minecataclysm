@@ -46,11 +46,29 @@ Il riordino usa ranghi compatti opzionali sugli oggetti nativi, non capacità
 o tasche nuove; una casella vuota porta l'oggetto alla fine, senza buchi
 persistenti. Scambio hotbar atomico con verifica di entrambe le identità.
 [Consegna ed evidenze](docs/fixes/inventory-drag-and-drop.md).
-Backlog **13 PENDING**: ricontrollo DND di 1, hotbar 2–4, due nuove prove
-mano/indossati e contenitori, sette precedenti. Nessun PASS manuale dedotto.
-Prossimo intervento previsto: lingua inglese/italiano WIP, poi mira con RMB
-mantenuto e priorità contestuali; contenitori esterni restano la successiva
-estensione essenziale dell'inventario. M5.5/SAVE-001 restano separati.
+Il backlog alla consegna UX-03D era **13 PENDING**: ricontrollo DND di 1,
+hotbar 2–4, due nuove prove mano/indossati e contenitori, sette precedenti.
+M5.5/SAVE-001 restano separati.
+
+## LANG-01 — Lingua del prodotto — 2026-10-12
+
+Consegnata nel normale `start.sh`: **English** predefinito, **Italiano (WIP)**
+selezionabile da Esc e dalle impostazioni. Riavvio supervisionato per allineare
+Luanti, testo d'integrazione e traduzioni native CDDA. La preferenza di
+presentazione è separata da opzioni native e save canonici; il cambio non
+esegue azioni, non altera costi e non riscrive le regole. Identificatori nativi
+restano stabili, compresi quelli delle categorie usati dalle icone; mapping
+batch invariato. Fallback inglese per traduzioni italiane mancanti.
+[Design](docs/design/product-language.md) e [consegna/evidenze](docs/fixes/product-language.md).
+Backlog corrente **15 PENDING**, aggiungendo soltanto due prove di lingua;
+nessun nuovo gate manuale oggi e nessun PASS dedotto dai test automatici.
+
+**Prossimo intervento: mira con RMB mantenuto e priorità contestuali**, prima
+di contenitori esterni e raccolta quantitativa. Conservare costi/limiti CDDA,
+distinguere mira da apertura/chiusura/raccolta in base al bersaglio e agli
+oggetti realmente impugnati. Le validazioni di lingua e DND possono restare
+pendenti durante questa fetta ortogonale. Poi restano dialoghi/feedback,
+rig/UV/animazioni e audio, oltre alle macrofeature del piano sotto.
 
 ## Riscontro inventario/interfacce — 2026-10-09
 

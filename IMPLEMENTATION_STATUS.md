@@ -1,25 +1,37 @@
 # Implementation status
 
-Current scoped delivery: **UX-03D inventory drag-and-drop**, CWM **2.18**.
+Current scoped delivery: **LANG-01 product language**, CWM **2.18**.
+English is the default, independent of the system locale and old global engine
+settings. **Italiano (WIP)** is selectable from **Esc → Language / Lingua**
+and main-menu settings. Exit and relaunch `start.sh` to apply it to both
+processes. The launcher stores only actual menu changes in a separate
+presentation preference; native options and canonical save formats are unchanged.
+Integration UI uses a shared presentation helper; native item/recipe names and
+choices use CDDA's captured gettext catalog. Missing Italian translations retain
+English. Native category IDs keep generic icons stable across languages, with
+localized display/search labels. Item mapping batches remain unchanged.
+Both reconstructed localized runtimes and Italian catalogs are installed in the
+normal `start.sh`, retaining accepted continuous **4x** and rollback copies.
+[Behavior, verification and limits](docs/fixes/product-language.md).
+
+Latest manual feedback remains **UX-03 focused rechecks 1–3 PASS**.
+The rejected Assign/Clear interaction was replaced by drag-and-drop;
+its replacement check and other hotbar checks remain untested.
+Backlog **15 PENDING**: the existing thirteen plus two language checks.
+No manual PASS is inferred from automation and no user testing is required today.
+**Next scheduled step: held RMB aim/context priority**. External containers
+remain the next essential inventory extension. Rig/UV/animations, sound,
+richer native dialogs and the pending UX-02 exceptions remain in the plan.
+Full SAVE-001 stays OPEN and M5.5 remains historical FAILED.
+
+Previous scoped delivery: **UX-03D inventory drag-and-drop**, CWM **2.18**.
 Assign/Clear buttons are removed. Grid, quick slots, hand, worn-item pages,
 owned-container icons/rows and explicit Ground zone use semantic drag input.
 Short click still selects; Esc/outside release cancels. Quick-slot swaps are
-atomic and grid ordering persists on actual native items as optional UI
-metadata. Equipment/transfers still execute paid native actions and decisions,
-then return only after authoritative completion. Both reconstructed runtimes
-are installed for normal start.sh (accepted continuous 4x), with rollback copies.
-[Report and scoped receipts](docs/fixes/inventory-drag-and-drop.md).
-
-Latest manual feedback: **UX-03 focused rechecks 1–3 PASS** (search, pause
-clouds, quantity/errors). **Hotbar 1 FAIL** was the rejected Assign/Clear
-interaction; [exact feedback](docs/source/ux03-drag-feedback-2026-10-09.md).
-It now has a replacement drag recheck PENDING; **2–4 are still untested**.
-Backlog **13 PENDING**: four hotbar, two new equipment/container drag checks
-and the previous seven UI/UX-02 exceptions. Existing PASS remain accepted;
-automation does not infer manual acceptance. No user testing required today.
-**Next scheduled step: product language (English default, Italian WIP),
-then held RMB aim/context priority**. External containers remain the next
-essential inventory extension. [Design](docs/design/inventory-drag-and-drop.md).
+atomic and grid ordering persists on actual native items as optional UI metadata.
+Equipment/transfers execute paid native actions and decisions, then return after
+authoritative completion. Its delivery had **13 PENDING**, before LANG-01's
+additional checks. [Report and scoped receipts](docs/fixes/inventory-drag-and-drop.md).
 
 Previous scoped delivery (2026-10-09): **UX-03 interactive persistent hotbar**,
 CWM **2.17**. Nine explicitly assigned/removable references are independent of
@@ -38,8 +50,8 @@ are unchanged. Clouds share the paused visual clock. Normal start.sh defaults to
 the accepted continuous **4x** mode; explicit ordinary/comparison options remain.
 The earlier 2.17 delivery installed both runtimes with previous-pair copies;
 its installed save/reload checks and exact hashes remain in historical receipts.
-English default / Italian WIP, held RMB aiming, real wielded rig/UV/animations,
-audio and richer native dialogs remain scheduled, not delivered by this slice.
+Held RMB aiming, real wielded rig/UV/animations, audio and richer native dialogs
+remain scheduled; product language is delivered in the later LANG-01 slice.
 
 Earlier manual acceptance: ranged/reload, owned transfers, UX-01 and ordinary
 UX-02 each four PASS, with the errata preserved. Death/IPC/native decisions were
@@ -59,7 +71,7 @@ whereas Interrompi requests native cancellation. The original equipment fixture
 wears only a backpack; it does not contain an unseen full outfit.
 Body-region clothing/encumbrance, persistent selection across queries and
 nearby external containers/selected-quantity collection still need dedicated
-semantic interfaces. Complete inventory drag-and-drop is delivered; language/aim feedback follows;
+semantic interfaces. Complete inventory drag-and-drop and language are delivered; held RMB aim follows;
 external containers remain the next essential inventory extension.
 The broader M5.5 gate remains historical FAILED and full SAVE-001 stays OPEN.
 

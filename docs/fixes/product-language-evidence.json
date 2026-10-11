@@ -1,0 +1,348 @@
+{
+  "scope": "LANG-01 product language; not full SAVE-001 or M5.5 conformance",
+  "date": "2026-10-12",
+  "status": "scoped automated verification PASS; manual acceptance PENDING",
+  "source_commit": "b6710849b46090884fd68c97c1d42fb1e265e494",
+  "runtime_protocol": "2.18",
+  "post_build_changes": "Delivery documentation only. Production fork inventories, shared helper, launcher, schema, tests and generated sources unchanged since b671084.",
+  "captured_sources": {
+    "cdda": {
+      "url": "https://github.com/CleverRaven/Cataclysm-DDA.git",
+      "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+      "patch": "baseline/patches/cdda.patch",
+      "patch_sha256": "4ad9c1ef2ea909557be33f490721e45607657bbe776a89be7ba2f1cfb65906c3",
+      "tree_inventory": "baseline/trees/cdda.json",
+      "tree_sha256": "e838634904a5cd90cf0fe85ecd6489f1d765fdc21f38803acf52bf0e57ddb7a8",
+      "file_count": 8587
+    },
+    "luanti": {
+      "url": "https://github.com/luanti-org/luanti.git",
+      "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
+      "patch": "baseline/patches/luanti.patch",
+      "patch_sha256": "1af922e7b72e2af36e6cdab55eb96308274b7bf495b180cdcda75a4d4c118153",
+      "tree_inventory": "baseline/trees/luanti.json",
+      "tree_sha256": "d2c152557a960040763cf9fa0edcfe037cf6a539980a92555c06e45b599fd040",
+      "file_count": 2260
+    },
+    "mineclonia": {
+      "url": "https://github.com/mark-wiemer/mineclonia.git",
+      "commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+      "patch": "baseline/patches/mineclonia.patch",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree_inventory": "baseline/trees/mineclonia.json",
+      "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36",
+      "file_count": 9359
+    }
+  },
+  "shared_product_language_header": {
+    "path": "protocol/include/cwm/product_language.hpp",
+    "sha256": "1dd0a2406d19f7f1db4ac9ab4d517d0c28653a66841ac20568c649cdf6bfeb2e"
+  },
+  "installed_files": {
+    "cdda/build/src/cdda-server": {
+      "source": "artifacts/language-20261011/workspace/cdda/build/src/cdda-server",
+      "sha256": "e23bc68b4941066f0030701e82e0a48fa72fc7bd7f755fe89eb09833495bf06f",
+      "previously_existed": true,
+      "previous_sha256": "bffbb91d60e480ec084215a144cafe6f96e767a52b73e756e0856616f7c7dbb6",
+      "rollback": "artifacts/language-20261011/rollback/cdda/build/src/cdda-server"
+    },
+    "luanti/bin/luanti": {
+      "source": "artifacts/language-20261011/workspace/luanti/bin/luanti",
+      "sha256": "9d579c520ba396988131d9f361e176f4bf140d988b924a6d6b1ba649dd2d4e58",
+      "previously_existed": true,
+      "previous_sha256": "3a890d7de31b9a7803e5c03fc10ec957fec48d6a451a3cffa9e236ff1347efdd",
+      "rollback": "artifacts/language-20261011/rollback/luanti/bin/luanti"
+    },
+    "cdda/lang/mo/it_IT/LC_MESSAGES/cataclysm-dda.mo": {
+      "source": "artifacts/language-20261011/workspace/cdda/lang/mo/it_IT/LC_MESSAGES/cataclysm-dda.mo",
+      "sha256": "f1f11ecbeda860d664338d92406faccb39cc8a821f2a1758789f5f41ec53b609",
+      "previously_existed": false
+    },
+    "luanti/locale/it/LC_MESSAGES/luanti.mo": {
+      "source": "artifacts/language-20261011/workspace/luanti/locale/it/LC_MESSAGES/luanti.mo",
+      "sha256": "e6090e6ff7d07257c16411d5f64bbda471ad76df1643220a81c79477c5cf7bf0",
+      "previously_existed": false
+    }
+  },
+  "previous_launcher": {
+    "source_commit": "bab11bbd34f2e587e66942a7d3ae121816b55956",
+    "rollback": "artifacts/language-20261011/rollback/start.sh",
+    "sha256": "f67aaf3f6614acf231252e1f3a876f8466e7e53a24c8149c2dd6432b4b27daf3"
+  },
+  "install_receipt": "artifacts/language-20261011/install.json",
+  "environment": {
+    "platform": "Linux-7.0.11-76070011-generic-x86_64-with-glibc2.35",
+    "os": "Pop!_OS 22.04 LTS",
+    "compiler": "g++ (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0",
+    "gui": "Private Xvfb 1280x800, -noreset, 96 DPI; xdotool; Mesa software rendering; actual Luanti renderer and byte-transparent CWM relay; isolated copied fixtures"
+  },
+  "gettext_tool": {
+    "version": "msgfmt (GNU gettext-tools) 0.21",
+    "package": "artifacts/language-20261011/deps/gettext_0.21-4ubuntu4_amd64.deb",
+    "package_sha256": "d7ca7d040b80cfeef9f85248af63f5796d8ebc59c95a37e942de85b602e9baac",
+    "wrapper": "artifacts/language-20261011/deps/msgfmt",
+    "mode": "Ubuntu gettext package extracted locally with bundled libraries; no system installation"
+  },
+  "build_mode": {
+    "cdda": "Existing reconstructed cache reconfigured LOCALIZE=ON, common/runtime/test objects recompiled; final category fixes incrementally rebuilt",
+    "luanti": "Fresh independent reconstruction and Release/gettext build, then source refreshes/incremental verified fixes; final linking uses -flto=2",
+    "whole_project_clean_gate": false
+  },
+  "configure_commands": [
+    "cmake -S cdda -B cdda/build -DLOCALIZE=ON -DLANGUAGES=it_IT -DGETTEXT_MSGFMT_EXECUTABLE=<artifact>/deps/msgfmt",
+    "cmake -S luanti -B luanti/build -DCMAKE_BUILD_TYPE=Release -DRUN_IN_PLACE=ON -DBUILD_CLIENT=ON -DBUILD_SERVER=OFF -DBUILD_UNITTESTS=ON -DENABLE_SOUND=OFF -DENABLE_GETTEXT=ON -DCMAKE_PREFIX_PATH=/home/dannhill/.local -DGETTEXT_MSGFMT=<artifact>/deps/msgfmt",
+    "cmake -S luanti -B luanti/build -DCMAKE_EXE_LINKER_FLAGS=-flto=2",
+    "cmake -S protocol -B build/protocol"
+  ],
+  "build_commands": [
+    "cmake --build cdda/build --target cdda-server cata_test locale -j3",
+    "cmake --build luanti/build --target luanti translations -j2",
+    "cmake --build build/protocol -j2"
+  ],
+  "source_replay": {
+    "status": "PASS",
+    "initial_independent_reconstruction": "artifacts/language-20261011/reconstruction.json",
+    "final_native_build_refresh": "artifacts/language-20261011/refresh-category-native.json",
+    "final_client_build_refresh": "artifacts/language-20261011/refresh-category-client.json",
+    "delivery_documentation_refresh": "artifacts/language-20261011/source-replay-final.json",
+    "native_workspace": "artifacts/fnd03-session/workspace",
+    "client_workspace": "artifacts/language-20261011/workspace",
+    "verified_native_copy": "artifacts/language-20261011/verified-runtime-copy-final.json"
+  },
+  "catalogs": {
+    "cdda": {
+      "source": "cdda/lang/po/it_IT.po",
+      "source_sha256": "4765c1350409baf231a144680263a30112b719d6c5d15b152bc76353da3777c2",
+      "generated": "artifacts/language-20261011/cdda-it.mo",
+      "generated_sha256": "f1f11ecbeda860d664338d92406faccb39cc8a821f2a1758789f5f41ec53b609",
+      "checks": {
+        "native_singular_and_plural": true,
+        "native_cancel": true,
+        "missing_translation_uses_original_english": true
+      }
+    },
+    "luanti": {
+      "source": "luanti/po/it/luanti.po",
+      "source_sha256": "979cb2c76c2ca35ded020bcbb79868ca691e3c41fa84ecb97d35c07ec451230d",
+      "generated": "artifacts/language-20261011/luanti-it.mo",
+      "generated_sha256": "e6090e6ff7d07257c16411d5f64bbda471ad76df1643220a81c79477c5cf7bf0",
+      "checks": {
+        "engine_pause_menu": true
+      }
+    }
+  },
+  "verification": {
+    "launcher": {
+      "status": "PASS",
+      "tests": 9,
+      "command": "python3 tests/product_language_test.py",
+      "workdir": "<client reconstruction>",
+      "log": "artifacts/language-20261011/startup-tests-category.log"
+    },
+    "native": {
+      "status": "PASS",
+      "cases": 173,
+      "assertions": 185813,
+      "seed": 42,
+      "command": "build/tests/cata_test '[cwm],[pickup],[item],[reload]' --rng-seed 42 --user-dir=<isolated artifact directory>",
+      "workdir": "<native reconstruction>/cdda",
+      "log": "artifacts/language-20261011/native-tests-final.log"
+    },
+    "native_translation": {
+      "status": "PASS",
+      "cases": 13,
+      "assertions": 38012,
+      "command": "build/tests/cata_test '[translations]~[.]' --rng-seed 42 --user-dir=<separate isolated artifact directory>",
+      "log": "artifacts/language-20261011/native-translations-final.log",
+      "excluded": "Hidden translation benchmark cases and hidden macro-address test requiring an English catalog; Italian catalog is the only runtime catalog compiled for CDDA"
+    },
+    "protocol": {
+      "status": "PASS",
+      "tests": 10,
+      "command": "ctest --test-dir build/protocol --output-on-failure",
+      "log": "artifacts/language-20261011/protocol-tests-final.log"
+    },
+    "luanti": {
+      "status": "PASS",
+      "tests": 308,
+      "modules": 47,
+      "catch_cases": 4,
+      "catch_assertions": 648,
+      "command": "luanti/bin/luanti --run-unittests --config <artifact>/unit.conf --logfile <artifact>/luanti-unit-engine-category.log",
+      "log": "artifacts/language-20261011/luanti-unit-tests-category.log"
+    },
+    "invalid_native_language": {
+      "status": "PASS",
+      "exit_code": 2,
+      "stderr": "--language requires en or it\n",
+      "no_userdir_created": true,
+      "runtime_sha256": "e23bc68b4941066f0030701e82e0a48fa72fc7bd7f755fe89eb09833495bf06f"
+    },
+    "gui": [
+      {
+        "name": "english-final",
+        "scope": "reconstructed normal launcher",
+        "language": "en",
+        "menu_change": "it",
+        "status": "PASS",
+        "passed": 22,
+        "checks": {
+          "actual_start_ready": true,
+          "native_inventory_opened": true,
+          "integration_status_labels_use_selected_language": true,
+          "native_item_name_uses_selected_catalog": true,
+          "native_nested_backpack_name_uses_selected_catalog": true,
+          "native_category_ids_are_language_independent": true,
+          "translated_filter_resolves_semantic_container_selection": true,
+          "actual_launcher_selects_same_language_in_renderer": true,
+          "localized_inventory_remains_read_only_and_paused": true,
+          "native_decision_cancel_uses_selected_catalog": true,
+          "localized_native_cancel_preserves_wielded_item": true,
+          "real_pause_menu_updates_product_preference": true,
+          "language_preference_is_free_and_keeps_simulation_paused": true,
+          "menu_change_keeps_current_native_language_until_restart": true,
+          "byte_relay_completed_without_errors": true,
+          "equipment_save_readable_by_pristine_native_core": true,
+          "canonical_save_has_each_fixture_item_once": true,
+          "canonical_save_records_expected_weapon": true,
+          "canonical_save_records_backpack_worn": true,
+          "readonly_inventory_preserves_canonical_items": true,
+          "presentation_language_does_not_rewrite_native_options": true,
+          "normal_launcher_persists_actual_menu_change": true
+        },
+        "command": "python3 artifacts/language-20261011/run-gui.py equipment_gui_test.py artifacts/native-equipment-20261008/fixture/user english-final --language-smoke en --use-saved-language --language-menu-change it",
+        "log": "artifacts/language-20261011/english-final-run.log",
+        "screenshots": {
+          "artifacts/language-20261011/english-final/translated-item-details.png": "08261f799215e04008bdbb70698d0596a1f38900f7af9b9af499827e154a28dc",
+          "artifacts/language-20261011/english-final/translated-body.png": "479719076beae4b9bdd3003a18a6f1ff6ee237f9bf9bac4848657a228b7799b2",
+          "artifacts/language-20261011/english-final/translated-crafting.png": "2d33fbc98fbead3cca9d947cf8f8d85205e632cd174e19dc8a76ddd4a0826d6f",
+          "artifacts/language-20261011/english-final/translated-native-choice.png": "2207d649345e111486cd79f9d5ba501de99fb5efe6132060c8f9f1ad06efef5a"
+        }
+      },
+      {
+        "name": "italian-installed",
+        "scope": "installed normal launcher",
+        "language": "it",
+        "menu_change": "en",
+        "status": "PASS",
+        "passed": 23,
+        "checks": {
+          "actual_start_ready": true,
+          "native_inventory_opened": true,
+          "integration_status_labels_use_selected_language": true,
+          "native_item_name_uses_selected_catalog": true,
+          "native_nested_backpack_name_uses_selected_catalog": true,
+          "native_category_ids_are_language_independent": true,
+          "translated_filter_resolves_semantic_container_selection": true,
+          "actual_launcher_selects_same_language_in_renderer": true,
+          "localized_inventory_remains_read_only_and_paused": true,
+          "native_decision_cancel_uses_selected_catalog": true,
+          "localized_native_cancel_preserves_wielded_item": true,
+          "real_pause_menu_updates_product_preference": true,
+          "language_preference_is_free_and_keeps_simulation_paused": true,
+          "menu_change_keeps_current_native_language_until_restart": true,
+          "byte_relay_completed_without_errors": true,
+          "equipment_save_readable_by_pristine_native_core": true,
+          "canonical_save_has_each_fixture_item_once": true,
+          "canonical_save_records_expected_weapon": true,
+          "canonical_save_records_backpack_worn": true,
+          "readonly_inventory_preserves_canonical_items": true,
+          "presentation_language_does_not_rewrite_native_options": true,
+          "normal_launcher_persists_actual_menu_change": true,
+          "actual_reload_preserves_canonical_position": true
+        },
+        "command": "CWM_TEST_INSTALLED=1 python3 artifacts/language-20261011/run-gui.py equipment_gui_test.py artifacts/language-20261011/english-final/user italian-installed --language-smoke it --use-saved-language --resume-only --language-menu-change en",
+        "log": "artifacts/language-20261011/italian-installed-run.log",
+        "screenshots": {
+          "artifacts/language-20261011/italian-installed/translated-item-details.png": "927e8000e2b716c68767bd055389387a4816aeede9224e545630d93f3045786c",
+          "artifacts/language-20261011/italian-installed/translated-body.png": "f5067ccad0f0c007e42fbe8f33fceef95850cd70868531fcae5dbe3f00d97fcb",
+          "artifacts/language-20261011/italian-installed/translated-crafting.png": "ba5810b9ae25d5b86b50af85878fead62a7d0d7ca04ee54a6ad57b008453b3b0",
+          "artifacts/language-20261011/italian-installed/translated-native-choice.png": "814631e2d544381a9376bd04a5ab82d84e7f8d75db0b2a160f22a89f3763bdec"
+        }
+      },
+      {
+        "name": "english-installed-return",
+        "scope": "installed normal launcher",
+        "language": "en",
+        "menu_change": null,
+        "status": "PASS",
+        "passed": 19,
+        "checks": {
+          "actual_start_ready": true,
+          "native_inventory_opened": true,
+          "integration_status_labels_use_selected_language": true,
+          "native_item_name_uses_selected_catalog": true,
+          "native_nested_backpack_name_uses_selected_catalog": true,
+          "native_category_ids_are_language_independent": true,
+          "translated_filter_resolves_semantic_container_selection": true,
+          "actual_launcher_selects_same_language_in_renderer": true,
+          "localized_inventory_remains_read_only_and_paused": true,
+          "native_decision_cancel_uses_selected_catalog": true,
+          "localized_native_cancel_preserves_wielded_item": true,
+          "byte_relay_completed_without_errors": true,
+          "equipment_save_readable_by_pristine_native_core": true,
+          "canonical_save_has_each_fixture_item_once": true,
+          "canonical_save_records_expected_weapon": true,
+          "canonical_save_records_backpack_worn": true,
+          "readonly_inventory_preserves_canonical_items": true,
+          "presentation_language_does_not_rewrite_native_options": true,
+          "actual_reload_preserves_canonical_position": true
+        },
+        "command": "CWM_TEST_INSTALLED=1 python3 artifacts/language-20261011/run-gui.py equipment_gui_test.py artifacts/language-20261011/italian-installed/user english-installed-return --language-smoke en --use-saved-language --resume-only",
+        "log": "artifacts/language-20261011/english-installed-return-run.log",
+        "screenshots": {
+          "artifacts/language-20261011/english-installed-return/translated-item-details.png": "957006bd6f65604dc8075c554a96c46228eb2f699b15291fe352c172a886f3a5",
+          "artifacts/language-20261011/english-installed-return/translated-body.png": "a0ea875d9a427269b29f15f455188e4a44ca2060c37d8c0f80d4e1d98512dc96",
+          "artifacts/language-20261011/english-installed-return/translated-crafting.png": "3d7283755694c96027907c084571b8a2f7c20cf2075f490b76df58dea1d1cb23",
+          "artifacts/language-20261011/english-installed-return/translated-native-choice.png": "e0f235fb8a0d559a3b668301de08ae2bc931ba4ddc69f32091198db2972bf22d"
+        }
+      }
+    ],
+    "independent_native_reader": {
+      "source": "/home/dannhill/Projects/cdda-mineclonia/tests/takeover_save_reader.cpp",
+      "source_sha256": "49cfbc6108be782e9dcf4392d79f3dcf0cbbea47fef91f80827b89d5007f7830",
+      "pristine_core": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/pristine-cdda",
+      "cwd": "/home/dannhill/Projects/cdda-mineclonia/artifacts/m5.5/20261003-takeover/pristine-cdda/build/src",
+      "binary": "/home/dannhill/Projects/cdda-mineclonia/artifacts/inventory-feedback-20261009/native-save-reader",
+      "binary_sha256": "d65889a6cf0c36db31d493bba915a89bc7424d60f0ddb9800992fd0d4f39958a"
+    }
+  },
+  "retained_initial_failures": [
+    {
+      "log": "artifacts/language-20261011/luanti-unit-tests.log",
+      "reason": "Explicit isolated unit configuration absent; failed before tests. File supplied and full suite rerun."
+    },
+    {
+      "checks": "artifacts/language-20261011/english-menu/checks.json",
+      "log": "artifacts/language-20261011/english-menu-run.log",
+      "reason": "Fixture assertion omitted native ++ condition marker and nonbreaking space. Test fixed without changing native item names."
+    }
+  ],
+  "manual_validation": {
+    "pending": 15,
+    "previous": 13,
+    "new_language_checks": 2,
+    "file": "docs/validation/pending-manual.md",
+    "acceptance_inferred": false
+  },
+  "limitations": [
+    "Italian is WIP; missing native translations and legacy raw technical labels retain English.",
+    "Main-menu Settings selector inspected in source; actual in-game Esc selector and normal start.sh restarts exercised.",
+    "No new manual acceptance, new gameplay mechanics, audio, rigs/animations, held RMB aiming or external containers claimed.",
+    "Canonical inventory/options/position checks are scoped compatibility evidence; full SAVE-001 remains OPEN and M5.5 historical FAILED."
+  ],
+  "artifact_log_sha256": {
+    "artifacts/language-20261011/configure-cdda.log": "f1136cab4e4927abb38e33c17577deda804bdb168b83de5daa3a8c14ee907867",
+    "artifacts/language-20261011/configure-luanti.log": "2f92f70c81ad886071bc947510c4c205f9300eafa4fc20aecf440896ce273c31",
+    "artifacts/language-20261011/configure-luanti-final.log": "912cb23680d98913bc62fe1ac3b7c06a85d09fae9ce6e0a6b27f795506656696",
+    "artifacts/language-20261011/build-cdda-localized.log": "31e8e04ac7a6e71c12a8dd8809e141e3d6589944003d9ae6f78615fb916bad88",
+    "artifacts/language-20261011/build-cdda-category.log": "2764a1758e4b7ac2705cc89bcd3b9df08d6eaa45e90ef5ecae53fd626aa2b8bf",
+    "artifacts/language-20261011/build-luanti-localized.log": "69b74cb1fe9538c84ef29a19eb70e6577b0acc16fd419ac86491449c41cc13af",
+    "artifacts/language-20261011/build-luanti-category.log": "504d138ceade96b361caaac89d437a7ee98e7f0cc00c784a1c0dbb03f9126358",
+    "artifacts/language-20261011/native-tests-final.log": "de446f7d8b0b4349d66c13e73b3626797746846606f36cb88294317c6b4e016f",
+    "artifacts/language-20261011/native-translations-final.log": "d83d24ad04d99deb8b1f0ea2362e563b3fb0c93d50025d4bc564b5502f0ab66a",
+    "artifacts/language-20261011/luanti-unit-tests-category.log": "2364627cbf8a064bb1dad4b061b8d3845c764a1d6a173549e7b2312a1479891d",
+    "artifacts/language-20261011/protocol-tests-final.log": "f21ecd0e212100424c7625bbe932bf79839352b61978d9d133e01b7299c7eaca",
+    "artifacts/language-20261011/startup-tests-category.log": "8f0baca529bb299c751eeaaeb7a3b2860c022b93819735abcc5748b640f951f2"
+  }
+}
