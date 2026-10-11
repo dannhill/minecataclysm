@@ -11,6 +11,13 @@ LUANTI_WORLD="${LUANTI_WORLD:-$PROJECT_DIR/worlds/cdda-presentation}"
 LOG_DIR="${LOG_DIR:-$PROJECT_DIR/artifacts/runtime/$(date -u +%Y%m%dT%H%M%SZ)-$$}"
 # Accepted product mode. Explicit 0 retains the ordinary native-turn comparison.
 CDDA_CONTINUOUS="${CDDA_CONTINUOUS:-$(if [[ "${CDDA_REALTIME:-0}" == 1 ]]; then printf 0; else printf 1; fi)}"
+BASE_CONFIG="${LUANTI_CONFIG:-$HOME/.minetest/minetest.conf}"
+LANGUAGE_PREFERENCES="$CDDA_USERDIR/config/presentation-language.conf"
+LANGUAGE_ARGS=()
+if [[ -v CDDA_LANGUAGE ]]; then LANGUAGE_ARGS+=(--requested "$CDDA_LANGUAGE"); fi
+PRODUCT_LANGUAGE="$(python3 "$PROJECT_DIR/tools/product_language.py" resolve \
+    --config "$BASE_CONFIG" --preferences "$LANGUAGE_PREFERENCES" "${LANGUAGE_ARGS[@]}")"
+export CDDA_LOCALE_DIR="$PROJECT_DIR/cdda/lang/mo"
 
 for binary in "$CDDA_BIN" "$LUANTI_BIN"; do
     if [[ ! -x "$binary" ]]; then
@@ -35,6 +42,11 @@ cleanup() {
     for pid in "$CLIENT_PID" "$SERVER_PID"; do
         if [[ -n "$pid" ]]; then wait "$pid" 2>/dev/null || true; fi
     done
+    if [[ -n "$CLIENT_PID" && -f "$CLIENT_CONFIG" ]]; then
+        python3 "$PROJECT_DIR/tools/product_language.py" save --config "$CLIENT_CONFIG" \
+            --preferences "$LANGUAGE_PREFERENCES" --initial "$PRODUCT_LANGUAGE" || \
+            printf '[Launcher] Could not save the presentation language preference.\n' >&2
+    fi
     rm -rf -- "$RUNTIME_DIR"
     exit "$status"
 }
@@ -48,7 +60,6 @@ if [[ ! -e "$PROJECT_DIR/luanti/games/cdda_voxel" ]]; then
     ln -s -- "$PROJECT_DIR/game" "$PROJECT_DIR/luanti/games/cdda_voxel"
 fi
 CLIENT_CONFIG="$RUNTIME_DIR/client.conf"
-BASE_CONFIG="${LUANTI_CONFIG:-$HOME/.minetest/minetest.conf}"
 if [[ -f "$BASE_CONFIG" ]]; then cp -- "$BASE_CONFIG" "$CLIENT_CONFIG"; else : > "$CLIENT_CONFIG"; fi
 printf '\n' >> "$CLIENT_CONFIG"
 cat "$PROJECT_DIR/game/minetest.conf" >> "$CLIENT_CONFIG"
@@ -56,6 +67,7 @@ if [[ "${CDDA_REALTIME:-0}" == 1 || "${CDDA_CONTINUOUS:-0}" == 1 ]]; then
     printf '\nkeymap_quicktune_next = KEY_F7\nkeymap_quicktune_prev = KEY_F8\n' >> "$CLIENT_CONFIG"
 fi
 printf '\nbind_address = 127.0.0.1\ncwm_socket_path = %s\n' "$SOCKET_PATH" >> "$CLIENT_CONFIG"
+printf '\ncwm_language = %s\nlanguage = %s\n' "$PRODUCT_LANGUAGE" "$PRODUCT_LANGUAGE" >> "$CLIENT_CONFIG"
 
 # This is a disposable presentation world. Existing user worlds are untouched.
 if [[ ! -f "$LUANTI_WORLD/world.mt" ]]; then
@@ -70,8 +82,9 @@ WORLD
 fi
 
 printf '[Launcher] Starting CDDA; logs: %s\n' "$LOG_DIR"
+printf '[Launcher] Product language: %s (Italian is WIP; menu changes apply after restart).\n' "$PRODUCT_LANGUAGE"
 cd -- "$PROJECT_DIR"
-SERVER_ARGS=()
+SERVER_ARGS=(--language "$PRODUCT_LANGUAGE")
 if [[ -n "$CDDA_CHARACTER" ]]; then SERVER_ARGS+=(--character "$CDDA_CHARACTER"); fi
 if [[ "${CDDA_TERRAIN_DEMO:-0}" == 1 ]]; then SERVER_ARGS+=(--terrain-demo); fi
 if [[ "${CDDA_REALTIME:-0}" == 1 ]]; then SERVER_ARGS+=(--realtime); fi

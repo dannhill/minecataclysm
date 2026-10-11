@@ -1232,7 +1232,7 @@
   {
     "path": "builtin/settingtypes.txt",
     "mode": "100644",
-    "sha256": "2973d67965a3b37c1403c554d1eab9f4f91bc449345e227b3c464f59562e7901"
+    "sha256": "944ad63067eb3f21e8dc5e72ca88037228514fbd01638b359d02ab599e1f5961"
   },
   {
     "path": "client/serverlist/.gitignore",
@@ -7232,12 +7232,12 @@
   {
     "path": "src/cdda/avatar_status.h",
     "mode": "100644",
-    "sha256": "79e8b64512f1de6b684340a2a2f50ba1854e259ebc9345427e93d4d38e45c377"
+    "sha256": "b862f31c05a6d82f8464119edfb23a456f39c65038c297cab7a8d61fcca9e084"
   },
   {
     "path": "src/cdda/cdda_bridge.cpp",
     "mode": "100644",
-    "sha256": "f97a10aeb5f143488cf6d15488708e602f64ffe3c0c1d226a0b0de6ab82f04f9"
+    "sha256": "ed5a55e7ab0fcd59d9662989140cfea479f5b8664a78ad27d59c2014b0c297c9"
   },
   {
     "path": "src/cdda/cdda_bridge.h",
@@ -7247,7 +7247,7 @@
   {
     "path": "src/cdda/crafting_inventory.h",
     "mode": "100644",
-    "sha256": "a33c0da52ff48552f6ec0307590def5cce626e89a2ce7e6a761c8fcdfff2e37f"
+    "sha256": "cf9cd28df6f4d7bc7980bf117bd42cfe5a4bc7687e619662351bdd203276bba8"
   },
   {
     "path": "src/cdda/decision_text.h",
@@ -7257,12 +7257,12 @@
   {
     "path": "src/cdda/equipment_inventory.h",
     "mode": "100644",
-    "sha256": "6e3a508c94dd4b2dc90cd0ca0244796ac8daffd33b4adc72d76748528719b69e"
+    "sha256": "016e6fc223a4529f235deeb738bb89c9e2437ac68f18de85594796eb116ec08f"
   },
   {
     "path": "src/cdda/ground_item_formspec.h",
     "mode": "100644",
-    "sha256": "159799b61a6db18a8ad182e5bbf36031b3e62f9af114e00782922e223014062f"
+    "sha256": "8dd6476ff5aab59861ae371548076b91d2af1f437459ca6e84c172dda6b5b5a3"
   },
   {
     "path": "src/cdda/ground_item_projection.h",
@@ -8162,7 +8162,7 @@
   {
     "path": "src/defaultsettings.cpp",
     "mode": "100644",
-    "sha256": "4517c5fed8933bbd6933aad20eb5ddc80c996701be8c8341317a23a73912ecce"
+    "sha256": "9072c0255a8dd6407643dc5be7e05c6e951b764a5a28b31fbace98c4e89125f4"
   },
   {
     "path": "src/defaultsettings.h",
@@ -8377,7 +8377,7 @@
   {
     "path": "src/gui/guiFormSpecMenu.cpp",
     "mode": "100644",
-    "sha256": "799bef71e8fad02e5013c35bbd70300aa859be05cae0d3a77910b98fbb23c357"
+    "sha256": "7901fa4616763872043793dbe4f91ada64a24d194e0d348d2565b7e169cef36f"
   },
   {
     "path": "src/gui/guiFormSpecMenu.h",
@@ -10327,7 +10327,7 @@
   {
     "path": "src/unittest/test_mapblock.cpp",
     "mode": "100644",
-    "sha256": "28708aaa8d227f72afd186cee4b7ea093d1dab74d9825d39a196a077b155bfe5"
+    "sha256": "1cb5b67a0c95edc40e95537a2720197ea63d8b5812af1aa4a62d2bb88ae41e2b"
   },
   {
     "path": "src/unittest/test_mapnode.cpp",

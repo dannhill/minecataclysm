@@ -32,14 +32,18 @@ def main():
     parser.add_argument('--quickbar', action='store_true', help='Verify UX-03 shortcuts, focus, native costs, pause and persistence')
     parser.add_argument('--quickbar-resume', action='store_true', help='Verify the saved UX-03 shortcut identities after actual reload')
     parser.add_argument('--presentation-only', action='store_true', help='Exercise paging, layering and search without gameplay mutations')
+    parser.add_argument('--language-smoke', choices=('en', 'it'), help='Check native localization and capture the real translated renderer')
     args = parser.parse_args()
     ws, out = args.workspace.resolve(), args.artifacts.resolve()
     out.mkdir(parents=True, exist_ok=False)
     user = out / 'user'
     shutil.copytree(args.fixture.resolve(), user)
-    (user / 'config/options.json').write_text(json.dumps([
+    native_options = user / 'config/options.json'
+    native_options.write_text(json.dumps([
         {'name': 'SAFEMODE', 'value': 'false'}, {'name': 'AUTOSAFEMODE', 'value': 'false'},
-        {'name': 'AUTOSAVE', 'value': 'false'}]))
+        {'name': 'AUTOSAVE', 'value': 'false'}] +
+        ([{'name': 'USE_LANG', 'value': 'it_IT'}] if args.language_smoke else [])))
+    native_options_before = native_options.read_bytes()
     checks = {}
     def check(name, ok):
         checks[name] = bool(ok)
@@ -63,6 +67,9 @@ def main():
                LOG_DIR=str(out / 'logs'), CDDA_BIN=str(ws / 'cdda/build/src/cdda-server'),
                LUANTI_BIN=str(ws / 'luanti/bin/luanti'), CDDA_CONTINUOUS='1')
     env.pop('CDDA_TERRAIN_DEMO', None)
+    env.pop('CDDA_LANGUAGE', None)
+    if args.language_smoke:
+        env['CDDA_LANGUAGE'] = args.language_smoke
     if args.quickbar or args.quickbar_resume:
         env.pop('CDDA_CONTINUOUS', None) # Verify the actual launcher default, not a demo override.
     if args.action_driven:
@@ -212,7 +219,7 @@ def main():
                     if msg.PayloadType() == Payload.DecisionPrompt:
                         prompt = DecisionPrompt();prompt.Init(msg.Payload().Bytes,msg.Payload().Pos)
                         options = [prompt.Choices(i).decode() for i in range(prompt.ChoicesLength())]
-                assert options and options[-1] == 'Cancel' and len(options) <= 9, options
+                assert options and options[-1] == ('Annulla' if args.language_smoke == 'it' else 'Cancel') and len(options) <= 9, options
                 return str(len(options))
             def open_inventory():
                 if int(latest()['equipment_form']) == 1 and int(latest()['inventory_view']) > 0:
@@ -266,7 +273,40 @@ def main():
                 wait(lambda r: int(r['pending_move']) == 0 and int(r['pause_reasons']) == 0)
             def item(v, name):
                 return next(e for e in entries(v) if e.TypeId().decode() == name)
-            if args.quickbar or args.quickbar_resume:
+            if args.language_smoke:
+                language = args.language_smoke
+                check('native_item_name_uses_selected_catalog', item(view,'hat_ball').Name().decode() ==
+                      ('cappello da baseball' if language == 'it' else 'baseball cap'))
+                check('native_nested_backpack_name_uses_selected_catalog', item(view,'backpack_hiking').Name().decode() ==
+                      ('zaino da escursione' if language == 'it' else 'hiking backpack'))
+                select_item(item(view,'hat_ball')); shot('translated-item-details.png')
+                click(9.5,4.95);xdo('key','Home');xdo('key','Down');xdo('key','Down');xdo('key','Return');time.sleep(.3)
+                click(1.025,5.975)
+                wait(lambda r:int(r['equipment_selected'])==item(view,'backpack_hiking').Id())
+                check('translated_filter_resolves_semantic_container_selection',True)
+                click(9.5,4.95);xdo('key','Home');xdo('key','Return');time.sleep(.3)
+                # Match field values produced by the actual launcher, not the test base config.
+                translated_config = (out / 'relay-client.conf').read_text()
+                check('actual_launcher_selects_same_language_in_renderer',
+                      f'\ncwm_language = {language}\nlanguage = {language}\n' in translated_config)
+                frozen = latest()['simulation_time']
+                time.sleep(.4)
+                check('localized_inventory_remains_read_only_and_paused', latest()['simulation_time'] == frozen)
+                tap('Escape');wait(lambda r:int(r['equipment_form'])==0)
+                tap('h');wait(lambda r:int(r['body_form'])==1);shot('translated-body.png')
+                tap('Escape');wait(lambda r:int(r['body_form'])==0)
+                tap('k');wait(lambda r:int(r['crafting_form'])==1 and int(r['crafting_view'])>0)
+                shot('translated-crafting.png')
+                tap('Escape');wait(lambda r:int(r['crafting_form'])==0)
+                view=open_inventory();select_item(item(view,'bat'));action(1)
+                wait(lambda r:int(r['pending_decision'])>0);shot('translated-native-choice.png')
+                choice = cancel_choice()
+                check('native_decision_cancel_uses_selected_catalog', True)
+                tap(choice);finish_action()
+                view=open_inventory()
+                check('localized_native_cancel_preserves_wielded_item', item(view,'bat').Wielded())
+                tap('Escape');wait(lambda r:int(r['equipment_form'])==0)
+            elif args.quickbar or args.quickbar_resume:
                 import struct
                 from CDDA.CWM.WorldSnapshot import WorldSnapshot
                 def states():
@@ -631,10 +671,12 @@ def main():
             for child in value: uid_counts(child,counts)
         return counts
     check('canonical_save_has_each_fixture_item_once', uid_counts(native['player']) == uid_counts(before['player']) and len(uid_counts(native['player'])) == (51 if args.presentation_only else 5))
-    check('canonical_save_records_selected_rock_as_weapon', native['player']['weapon']['typeid'] == ('bat' if args.presentation_only else 'rock'))
+    check('canonical_save_records_expected_weapon', native['player']['weapon']['typeid'] == ('bat' if args.presentation_only or args.language_smoke else 'rock'))
     check('canonical_save_records_backpack_worn', any(i['typeid'] == 'backpack_hiking' for i in native['player']['worn']['worn']))
-    if args.presentation_only:
+    if args.presentation_only or args.language_smoke:
         check('readonly_inventory_preserves_canonical_items',native['player']['worn']==before['player']['worn'] and native['player']['weapon']==before['player']['weapon'])
+    if args.language_smoke:
+        check('presentation_language_does_not_rewrite_native_options', native_options.read_bytes() == native_options_before)
     if args.resume_only:
         check('actual_reload_preserves_canonical_position', native['player_abs'] == before['player_abs'])
         if args.action_driven:

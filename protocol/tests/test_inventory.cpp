@@ -1,4 +1,5 @@
 #include "cwm/cwm_session.hpp"
+#include "cwm/product_language.hpp"
 #include <stdexcept>
 #include <iostream>
 using namespace cdda::cwm;
@@ -19,6 +20,19 @@ std::vector<uint8_t> inventory(int defect) {
     return wire.finish_message(Payload::InventoryView,view.Union());
 }
 int main() {
+    // Presentation language cannot alter semantic commands or wire identifiers.
+    CHECK(::cwm::set_product_language("en"));
+    MessageBuilder english_wire(10,7,{11,22,33});
+    const auto english = english_wire.build_equipment_request(99,8,2,EquipmentAction::TAKEOFF);
+    CHECK(::cwm::set_product_language("it"));
+    CHECK(::cwm::wide("Quantity", "Quantità") == L"Quantità");
+    CHECK(::cwm::text("Fallback") == "Fallback");
+    CHECK(::cwm::text("Fallback", "") == "Fallback");
+    CHECK(!::cwm::set_product_language("fr"));
+    CHECK(::cwm::text("Quantity", "Quantità") == "Quantità");
+    MessageBuilder italian_wire(10,7,{11,22,33});
+    CHECK(italian_wire.build_equipment_request(99,8,2,EquipmentAction::TAKEOFF) == english);
+    CHECK(::cwm::set_product_language("en"));
     for (int defect=0;defect<=8;++defect) {
         const auto bytes=inventory(defect);
         CHECK(MessageVerifier::verify(bytes.data(),bytes.size()));
