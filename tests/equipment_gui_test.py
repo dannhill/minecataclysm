@@ -33,6 +33,8 @@ def main():
     parser.add_argument('--quickbar-resume', action='store_true', help='Verify the saved UX-03 shortcut identities after actual reload')
     parser.add_argument('--presentation-only', action='store_true', help='Exercise paging, layering and search without gameplay mutations')
     parser.add_argument('--language-smoke', choices=('en', 'it'), help='Check native localization and capture the real translated renderer')
+    parser.add_argument('--language-menu-change', choices=('en', 'it'), help='Change the actual pause-menu language preference before exiting')
+    parser.add_argument('--use-saved-language', action='store_true', help='Verify launcher preference resolution without a language environment override')
     args = parser.parse_args()
     ws, out = args.workspace.resolve(), args.artifacts.resolve()
     out.mkdir(parents=True, exist_ok=False)
@@ -68,7 +70,7 @@ def main():
                LUANTI_BIN=str(ws / 'luanti/bin/luanti'), CDDA_CONTINUOUS='1')
     env.pop('CDDA_TERRAIN_DEMO', None)
     env.pop('CDDA_LANGUAGE', None)
-    if args.language_smoke:
+    if args.language_smoke and not args.use_saved_language:
         env['CDDA_LANGUAGE'] = args.language_smoke
     if args.quickbar or args.quickbar_resume:
         env.pop('CDDA_CONTINUOUS', None) # Verify the actual launcher default, not a demo override.
@@ -117,8 +119,8 @@ def main():
     wrapper.write_text("#!/usr/bin/env python3\nimport os,sys,re\nfrom pathlib import Path\n" +
         "args=sys.argv[1:]\ni=args.index('--config')+1\np=Path(args[i])\ns=p.read_text()\n" +
         f"Path({str(native_path)!r}).write_text(re.findall(r'^cwm_socket_path = (.+)$',s,re.M)[-1])\n" +
-        f"p=Path({str(out / 'relay-client.conf')!r})\n" +
-        f"p.write_text(s+'\\ncwm_socket_path = {relay_path}\\n')\nargs[i]=str(p)\n" +
+        f"p.write_text(s+'\\ncwm_socket_path = {relay_path}\\n')\n" +
+        f"Path({str(out / 'relay-client.conf')!r}).write_text(p.read_text())\n" +
         f"os.execv({str(ws / 'luanti/bin/luanti')!r},[{str(ws / 'luanti/bin/luanti')!r},*args])\n")
     wrapper.chmod(0o755)
     env['LUANTI_BIN'] = str(wrapper)

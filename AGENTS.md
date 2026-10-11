@@ -15,6 +15,11 @@ silently finalized by an agent.
   beneficial. Do not preserve standalone behavior for its own sake; see
   `docs/source/project-scope-2026-10-03.md`.
 - Keep CWM independent of Luanti structures and the underlying transport.
+- Product text defaults to English; Italian WIP is the other supported choice.
+  Follow `docs/design/product-language.md`: native text uses CDDA's translator,
+  integration UI uses the shared presentation helper. Never translate wire/type
+  identifiers or infer gameplay rules from translated labels. Language changes
+  require a supervised restart and must not rewrite native options or saves.
 - A missing delta requires a full authoritative resynchronization; never infer missing state.
 - Preserve the upstream pins and complete patches in `baseline/manifest.json`.
   The ignored fork directories are working copies, not root-repository source history.
