@@ -279,6 +279,19 @@ def main():
                 return next(e for e in entries(v) if e.TypeId().decode() == name)
             if args.language_smoke:
                 language = args.language_smoke
+                import struct
+                from CDDA.CWM.WorldSnapshot import WorldSnapshot
+                buf=(out/'server-wire.bin').read_bytes();offset=0;status=None
+                while offset+4<=len(buf):
+                    size=struct.unpack('>I',buf[offset:offset+4])[0];offset+=4
+                    if offset+size>len(buf):break
+                    msg=CwmMessage.GetRootAs(buf[offset:offset+size]);offset+=size
+                    if msg.PayloadType()==Payload.WorldSnapshot:
+                        state=WorldSnapshot();state.Init(msg.Payload().Bytes,msg.Payload().Pos)
+                        if state.AvatarStatus():status=state.AvatarStatus()
+                check('integration_status_labels_use_selected_language', status is not None and
+                      next(status.Needs(n).Label().decode() for n in range(status.NeedsLength())
+                           if status.Needs(n).Id()==b'thirst') == ('Sete' if language=='it' else 'Thirst'))
                 check('native_item_name_uses_selected_catalog', item(view,'hat_ball').Name().decode() ==
                       ('cappello da baseball' if language == 'it' else 'baseball cap'))
                 check('native_nested_backpack_name_uses_selected_catalog', item(view,'backpack_hiking').Name().decode() ==
@@ -312,6 +325,7 @@ def main():
                 tap('Escape');wait(lambda r:int(r['equipment_form'])==0)
                 if args.language_menu_change:
                     tap('Escape');wait(lambda r:int(r['pause_reasons'])==2)
+                    paused_time=latest()['simulation_time']
                     shot('pause-language-selector.png')
                     # Fixed-size v1 pause form on the controlled 96-DPI display.
                     xdo('mousemove','--window',window,'875','320');xdo('click','1')
@@ -322,6 +336,8 @@ def main():
                     actual_config = Path((out / 'actual-client-config-path').read_text())
                     check('real_pause_menu_updates_product_preference',
                           configured_language(actual_config)==args.language_menu_change)
+                    check('language_preference_is_free_and_keeps_simulation_paused',
+                          latest()['simulation_time']==paused_time)
                     shot('pause-language-selected.png')
                     tap('Escape');wait(lambda r:int(r['pause_reasons'])==0)
                     view=open_inventory()
