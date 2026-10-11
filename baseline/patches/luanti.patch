@@ -1228,7 +1228,7 @@ index 5d6b891..48c0d59 100644
  		g_settings->getFlagStr("anticheat_flags", flagdesc_anticheat, nullptr);
  
 diff --git a/src/unittest/test_mapblock.cpp b/src/unittest/test_mapblock.cpp
-index 7f3f860..d60e786 100644
+index 7f3f860..f722d4c 100644
 --- a/src/unittest/test_mapblock.cpp
 +++ b/src/unittest/test_mapblock.cpp
 @@ -10,6 +10,17 @@
@@ -1267,7 +1267,7 @@ index 7f3f860..d60e786 100644
  };
  
  static TestMapBlock g_test_instance;
-@@ -44,9 +64,235 @@ void TestMapBlock::runTests(IGameDef *gamedef)
+@@ -44,9 +64,237 @@ void TestMapBlock::runTests(IGameDef *gamedef)
  	TEST(testSave29, gamedef);
  	TEST(testLoad29, gamedef);
  	TEST(testLoad20, gamedef);
@@ -1292,6 +1292,8 @@ index 7f3f860..d60e786 100644
 +                      bool allowed = true, bool fire = false, bool reload = false) {
 +        return input.sample(right, pressed, f, context, allowed, fire, reload);
 +    };
++    sample(false);
++    UASSERT(sample(false,true,false,true).context_pressed); // Down/up in one frame remains a click.
 +    sample(false);
 +    UASSERT(sample(true,true).aiming);
 +    UASSERT(sample(true).aiming);
@@ -1506,7 +1508,7 @@ index 7f3f860..d60e786 100644
  void TestMapBlock::testSaveLoad(IGameDef *gamedef, const u8 version)
 diff --git a/src/cdda/aim_input.h b/src/cdda/aim_input.h
 new file mode 100644
-index 0000000..6f07b71
+index 0000000..ff43f9c
 --- /dev/null
 +++ b/src/cdda/aim_input.h
 @@ -0,0 +1,38 @@
@@ -1532,7 +1534,7 @@ index 0000000..6f07b71
 +        if (!right) { gesture_ = Gesture::None; blocked_right_ = false; }
 +        if (!fallback) blocked_f_ = false;
 +        Result result;
-+        if (right && pressed && !blocked_right_ && gesture_ == Gesture::None) {
++        if (pressed && !blocked_right_ && gesture_ == Gesture::None) {
 +            gesture_ = context ? Gesture::Context : Gesture::Aim;
 +            result.context_pressed = context;
 +        }

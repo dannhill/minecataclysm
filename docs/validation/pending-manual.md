@@ -1,7 +1,8 @@
 # Validazioni manuali del playable core
 
-Stato corrente: **15 punti PENDING**, senza richiedere prove oggi. Due nuovi
-punti riguardano la lingua del prodotto; i tredici precedenti restano pendenti.
+Stato corrente: **18 punti PENDING**, senza richiedere prove oggi. Tre nuovi
+punti riguardano la mira RMB; i quindici precedenti (incluse le due prove di
+lingua) restano pendenti.
 Il
 [riscontro UX-03 più recente](../source/ux03-drag-feedback-2026-10-09.md)
 valida **Ricontrolli UX-03 1–3 PASS**. Il precedente **hotbar 1 FAIL**
@@ -547,3 +548,30 @@ non attestano la tua accettazione della leggibilità e del menu.
    i testi nativi tornano inglesi. Il cambio lingua non riordina né duplica
    gli oggetti e non cancella i salvataggi. Non serve ripetere i vecchi
    test di persistenza o tutte le azioni inventario già validate.
+
+## AIM-01 — Mira con destro mantenuto — PENDING (3), rinviabili
+
+Non serve fare queste prove oggi. [Regole e priorità](../design/held-mouse-aim.md).
+La demo isolata è `./ranged-demo.sh --fresh`; il comportamento è disponibile
+anche da `./start.sh` con un'arma da fuoco realmente impugnata. Rilascia i tasti
+prima di riprendere da una pausa di minaccia. F resta una scorciatoia alternativa.
+
+1. **Mira e sparo**: punta lo zombie della demo e tieni il destro. Il suggerimento
+   mostra In mira/Aiming e il rinculo nativo diminuisce pagando tempo. Clicca
+   sinistro continuando a tenere il destro: parte un solo tiro per clic, e poi
+   la mira riprende senza dover ripremere F/destro. Tenere il sinistro non crea
+   raffiche nuove. Rilascia il destro: non arrivano altri passi di miglioramento.
+   La precisione già pagata può restare finché non ti muovi/fai altro. R ricarica
+   con scelte e costi nativi; dopo il lavoro rilascia e ripremi destro per mirare.
+2. **Interazioni**: nella partita normale o demo di controlli, RMB apre porte e
+   finestre; Shift+RMB le chiude (per una finestra aperta punta il davanzale).
+   RMB sugli oggetti a terra raccoglie/apre la raccolta; tenere quel clic non
+   trasforma l'interazione in mira spostando il puntamento. Con arma da fuoco,
+   un ostile direttamente nel mirino ha priorità di mira. Shift per accovacciarti
+   non impedisce di mirare all'ostile. I vecchi PASS di apertura/raccolta restano
+   accettati: questa è una prova dell'ergonomia dopo il nuovo binding.
+3. **Pausa e bersagli**: tenendo destro, apri H/I o usa F7, poi chiudi/riprendi
+   continuando a tenerlo: nessuna mira/sparo nascosto; rilascia e ripremi per
+   ripartire. In pausa il rinculo non migliora e le munizioni non calano.
+   Puntare il cane amico o il vuoto non genera passi di mira pagati né colpi.
+   Il controllo automatico include reconnect; non devi interrompere IPC a mano.

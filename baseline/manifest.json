@@ -17,9 +17,9 @@
       "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
       "shallow": true,
       "patch": "baseline/patches/luanti.patch",
-      "patch_sha256": "c82e67f100407ff876e9dc5f0cb2fe7a6c1eb60050e8cdb93ecc650088a5541a",
+      "patch_sha256": "401e7df1b37533eb420a229d604779ae1de774cabbc6d674d5ea7172fdb8644e",
       "tree_inventory": "baseline/trees/luanti.json",
-      "tree_sha256": "8583181b887af1d2f0d26d0684d2070a0ed40eb4a9a5e56cbabff45de60ef67f",
+      "tree_sha256": "e94fafc0614b293785b9f06ac446a62b520ee31f77770780f92c1c959b4624d4",
       "file_count": 2261,
       "original_status": " M builtin/mainmenu/settings/dlg_settings.lua\n M builtin/settingtypes.txt\n M src/CMakeLists.txt\n M src/client/CMakeLists.txt\n M src/client/client.cpp\n M src/client/clientenvironment.cpp\n M src/client/game.cpp\n M src/client/hud.cpp\n M src/client/inputhandler.cpp\n M src/client/keys.h\n M src/client/mesh_generator_thread.cpp\n M src/client/mesh_generator_thread.h\n M src/defaultsettings.cpp\n M src/gui/guiFormSpecMenu.cpp\n M src/gui/guiFormSpecMenu.h\n M src/gui/guiScene.cpp\n M src/network/clientpackethandler.cpp\n M src/server/player_sao.cpp\n M src/unittest/test_mapblock.cpp\n?? src/cdda/aim_input.h\n?? src/cdda/avatar_status.h\n?? src/cdda/cdda_bridge.cpp\n?? src/cdda/cdda_bridge.h\n?? src/cdda/crafting_inventory.h\n?? src/cdda/decision_text.h\n?? src/cdda/equipment_inventory.h\n?? src/cdda/ground_item_formspec.h\n?? src/cdda/ground_item_projection.h\n?? src/cdda/ground_item_visual.h\n?? src/cdda/posture_input.h\n?? src/cdda/quickbar.h\n"
     },

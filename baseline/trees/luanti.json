@@ -7232,7 +7232,7 @@
   {
     "path": "src/cdda/aim_input.h",
     "mode": "100644",
-    "sha256": "a5556f32b5d13c0722af0d3ebe77a828a6bfec768bd9e087d584ca49630e4376"
+    "sha256": "9a36384a8bf29a4ab22703fb5e8e2f1bb18376d54ba948d184df33f9c3c61668"
   },
   {
     "path": "src/cdda/avatar_status.h",
@@ -10332,7 +10332,7 @@
   {
     "path": "src/unittest/test_mapblock.cpp",
     "mode": "100644",
-    "sha256": "b0cc443d5906a772d162f92822fa2b960a66332711ef6a21438be2120bc762bf"
+    "sha256": "da9695680c4d7b24873d389bdb993a2b3f20d2302e699bcb44b32a9beeeaf55b"
   },
   {
     "path": "src/unittest/test_mapnode.cpp",
