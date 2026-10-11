@@ -239,18 +239,19 @@ index b6ae675..9e33201 100644
  		/*
  			Local player handling
 diff --git a/src/client/game.cpp b/src/client/game.cpp
-index 27b5833..cd663a5 100644
+index 27b5833..996aa3f 100644
 --- a/src/client/game.cpp
 +++ b/src/client/game.cpp
-@@ -8,6 +8,7 @@
+@@ -8,6 +8,8 @@
  #include "IAttributes.h"
  #include "client/renderingengine.h"
  #include "camera.h"
 +#include "cdda/cdda_bridge.h"
++#include "cwm/product_language.hpp"
  #include "client.h"
  #include "client/clientevent.h"
  #include "client/gameui.h"
-@@ -118,6 +119,38 @@ struct TextDestPlayerInventory : public TextDest
+@@ -118,6 +120,38 @@ struct TextDestPlayerInventory : public TextDest
  	Client *m_client;
  };
  
@@ -289,7 +290,21 @@ index 27b5833..cd663a5 100644
  struct LocalFormspecHandler : public TextDest
  {
  	LocalFormspecHandler(const std::string &formname)
-@@ -443,12 +476,15 @@ class GameGlobalShaderConstantSetter : public IShaderConstantSetter
+@@ -134,6 +168,13 @@ struct LocalFormspecHandler : public TextDest
+ 	void gotText(const StringMap &fields)
+ 	{
+ 		if (m_formname == "MT_PAUSE_MENU") {
++			const auto language = fields.find("cwm_product_language");
++			if (language != fields.end() &&
++					(language->second == "1" || language->second == "2")) {
++				g_settings->set("cwm_language", language->second == "2" ? "it" : "en");
++				if (!g_settings_path.empty())
++					g_settings->updateConfigFile(g_settings_path.c_str());
++			}
+ 			if (fields.find("btn_sound") != fields.end()) {
+ 				g_gamecallback->changeVolume();
+ 				return;
+@@ -443,12 +484,15 @@ class GameGlobalShaderConstantSetter : public IShaderConstantSetter
  		get_sunlight_color(&sunlight, daynight_ratio);
  		m_day_light.set(sunlight, services);
  
@@ -307,7 +322,7 @@ index 27b5833..cd663a5 100644
  		m_animation_timer_delta_vertex.set(&animation_timer_delta_f, services);
  		m_animation_timer_delta_pixel.set(&animation_timer_delta_f, services);
  
-@@ -932,6 +968,7 @@ class Game {
+@@ -932,6 +976,7 @@ class Game {
  	bool m_first_loop_after_window_activation = false;
  	bool m_camera_offset_changed = false;
  	bool m_game_focused = false;
@@ -315,7 +330,7 @@ index 27b5833..cd663a5 100644
  
  	bool m_does_lost_focus_pause_game = false;
  
-@@ -1009,6 +1046,8 @@ Game::Game() :
+@@ -1009,6 +1054,8 @@ Game::Game() :
  
  Game::~Game()
  {
@@ -324,7 +339,7 @@ index 27b5833..cd663a5 100644
  	delete client;
  	delete soundmaker;
  	sound_manager.reset();
-@@ -1181,6 +1220,13 @@ void Game::run()
+@@ -1181,6 +1228,13 @@ void Game::run()
  		updateCamera(dtime);
  		updateSound(dtime);
  		processPlayerInteraction(dtime, m_game_ui->m_flags.show_hud);
@@ -338,7 +353,7 @@ index 27b5833..cd663a5 100644
  		updateFrame(&graph, &stats, dtime, cam_view);
  		updateProfilerGraphs(&graph);
  
-@@ -1239,6 +1285,8 @@ void Game::shutdown()
+@@ -1239,6 +1293,8 @@ void Game::shutdown()
  		}
  	}
  
@@ -347,7 +362,7 @@ index 27b5833..cd663a5 100644
  	delete client;
  	client = nullptr;
  	delete soundmaker;
-@@ -2046,14 +2094,38 @@ void Game::processUserInput(f32 dtime)
+@@ -2046,14 +2102,38 @@ void Game::processUserInput(f32 dtime)
  	if (m_cache_doubletap_jump && runData.jump_timer_down <= 0.4f)
  		runData.jump_timer_down += dtime;
  
@@ -389,7 +404,7 @@ index 27b5833..cd663a5 100644
  		dropSelectedItem(isKeyDown(KeyType::SNEAK));
  	} else if (wasKeyDown(KeyType::AUTOFORWARD)) {
  		toggleAutoforward();
-@@ -2063,6 +2135,8 @@ void Game::processKeyInput()
+@@ -2063,6 +2143,8 @@ void Game::processKeyInput()
  	} else if (wasKeyDown(KeyType::INVENTORY)) {
  		openInventory();
  	} else if (input->cancelPressed()) {
@@ -398,7 +413,7 @@ index 27b5833..cd663a5 100644
  #ifdef __ANDROID__
  		m_android_chat_open = false;
  #endif
-@@ -2083,7 +2157,8 @@ void Game::processKeyInput()
+@@ -2083,7 +2165,8 @@ void Game::processKeyInput()
  	} else if (wasKeyDown(KeyType::FREEMOVE)) {
  		toggleFreeMove();
  	} else if (wasKeyDown(KeyType::JUMP)) {
@@ -408,7 +423,7 @@ index 27b5833..cd663a5 100644
  	} else if (wasKeyDown(KeyType::PITCHMOVE)) {
  		togglePitchMove();
  	} else if (wasKeyDown(KeyType::FASTMOVE)) {
-@@ -2154,9 +2229,17 @@ void Game::processKeyInput()
+@@ -2154,9 +2237,17 @@ void Game::processKeyInput()
  	} else if (wasKeyDown(KeyType::ZOOM)) {
  		checkZoomEnabled();
  	} else if (wasKeyDown(KeyType::QUICKTUNE_NEXT)) {
@@ -428,7 +443,7 @@ index 27b5833..cd663a5 100644
  	} else if (wasKeyDown(KeyType::QUICKTUNE_INC)) {
  		quicktune->inc();
  	} else if (wasKeyDown(KeyType::QUICKTUNE_DEC)) {
-@@ -2178,6 +2261,22 @@ void Game::processItemSelection(u16 *new_playeritem)
+@@ -2178,6 +2269,22 @@ void Game::processItemSelection(u16 *new_playeritem)
  	LocalPlayer *player = client->getEnv().getLocalPlayer();
  
  	*new_playeritem = player->getWieldIndex();
@@ -451,7 +466,7 @@ index 27b5833..cd663a5 100644
  	u16 max_item = player->getMaxHotbarItemcount();
  	if (max_item == 0)
  		return;
-@@ -2238,6 +2337,18 @@ void Game::dropSelectedItem(bool single_item)
+@@ -2238,6 +2345,18 @@ void Game::dropSelectedItem(bool single_item)
  
  void Game::openInventory()
  {
@@ -470,7 +485,7 @@ index 27b5833..cd663a5 100644
  	/*
  	 * Don't permit to open inventory is CAO or player doesn't exists.
  	 * This prevent showing an empty inventory at player load
-@@ -2737,8 +2848,83 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
+@@ -2737,8 +2856,83 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
  		control.aux1 = control.aux1 ^ true;
  	}
  
@@ -554,7 +569,7 @@ index 27b5833..cd663a5 100644
  	//tt.stop();
  }
  
-@@ -2784,6 +2970,63 @@ inline void Game::step(f32 dtime)
+@@ -2784,6 +2978,63 @@ inline void Game::step(f32 dtime)
  
  	if (!m_is_paused)
  		client->step(dtime);
@@ -618,7 +633,7 @@ index 27b5833..cd663a5 100644
  }
  
  static void pauseNodeAnimation(PausedNodesList &paused, scene::ISceneNode *node) {
-@@ -3246,6 +3489,7 @@ void Game::updateCamera(f32 dtime)
+@@ -3246,6 +3497,7 @@ void Game::updateCamera(f32 dtime)
  	tool_reload_ratio = MYMIN(tool_reload_ratio, 1.0);
  	camera->update(player, dtime, tool_reload_ratio);
  	camera->step(dtime);
@@ -626,7 +641,7 @@ index 27b5833..cd663a5 100644
  
  	f32 camera_fov = camera->getFovMax();
  	v3s16 camera_offset = camera->getOffset();
-@@ -3262,6 +3506,7 @@ void Game::updateCamera(f32 dtime)
+@@ -3262,6 +3514,7 @@ void Game::updateCamera(f32 dtime)
  		if (m_camera_offset_changed) {
  			client->updateCameraOffset(camera_offset);
  			client->getEnv().updateCameraOffset(camera_offset);
@@ -634,7 +649,7 @@ index 27b5833..cd663a5 100644
  
  			if (clouds)
  				clouds->updateCameraOffset(camera_offset);
-@@ -3314,6 +3559,8 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
+@@ -3314,6 +3567,8 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
  
  	const ItemDefinition &selected_def = selected_item.getDefinition(itemdef_manager);
  	f32 d = getToolRange(selected_item, hand_item, itemdef_manager);
@@ -643,7 +658,7 @@ index 27b5833..cd663a5 100644
  
  	core::line3d<f32> shootline;
  
-@@ -3365,6 +3612,41 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
+@@ -3365,6 +3620,41 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
  	// but the halo rendering code is already inefficient so there's no point in optimizing it here
  	hud->updateSelectionMesh(camera_offset);
  
@@ -685,7 +700,7 @@ index 27b5833..cd663a5 100644
  	// Allow digging again if button is not pressed
  	if (runData.digging_blocked && !isKeyDown(KeyType::DIG))
  		runData.digging_blocked = false;
-@@ -4247,7 +4529,8 @@ void Game::updateClouds(float dtime)
+@@ -4247,7 +4537,8 @@ void Game::updateClouds(float dtime)
  {
  	if (this->sky->getCloudsVisible()) {
  		this->clouds->setVisible(true);
@@ -695,7 +710,7 @@ index 27b5833..cd663a5 100644
  		// this->camera->getPosition is not enough for third-person camera.
  		v3f camera_node_position = this->camera->getCameraNode()->getPosition();
  		v3s16 camera_offset      = this->camera->getOffset();
-@@ -4319,7 +4602,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
+@@ -4319,7 +4610,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
  	/*
  		Fog
  	*/
@@ -709,6 +724,19 @@ index 27b5833..cd663a5 100644
  		this->driver->setFog(
  				fog_color,
  				video::EFT_FOG_LINEAR,
+@@ -4518,6 +4814,12 @@ void Game::showPauseMenu()
+ 		<< strgettext("Exit to Menu") << "]";
+ 	os		<< "button_exit[4," << (ypos++) << ";3,0.5;btn_exit_os;"
+ 		<< strgettext("Exit to OS")   << "]";
++	os << "label[7.5,0.65;" << ::cwm::tr("Language", "Lingua") << "]"
++		<< "dropdown[7.5,1.15;3.0,0.6;cwm_product_language;English,Italiano (WIP);"
++		<< (g_settings->get("cwm_language") == "it" ? 2 : 1) << ";true]"
++		<< "textarea[7.5,2.0;3.1,1.4;;;"
++		<< ::cwm::tr("Restart start.sh to apply.\nItalian translation is incomplete.",
++			"Riavvia start.sh per applicare.\nLa traduzione italiana e incompleta.") << "]";
+ 	if (!control_text.empty()) {
+ 	os		<< "textarea[7.5,0.25;3.9,6.25;;" << control_text << ";]";
+ 	}
 diff --git a/src/client/hud.cpp b/src/client/hud.cpp
 index 2da9efa..93b5bcd 100644
 --- a/src/client/hud.cpp
