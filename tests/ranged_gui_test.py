@@ -25,6 +25,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ('workspace', 'fixture', 'native-reader', 'artifacts'):
         parser.add_argument('--' + name, type=Path, required=True)
+    parser.add_argument('--held-rmb', action='store_true', help='Verify held RMB, fire priority, release and rearm after pause/menu/recovery')
     parser.add_argument('--action-driven', action='store_true', help='Verify ordinary start.sh mode without the real-time scheduler')
     parser.add_argument('--resume-only', action='store_true')
     parser.add_argument('--save-active', action='store_true')
@@ -61,6 +62,7 @@ def main():
                LOG_DIR=str(out / 'logs'), CDDA_BIN=str(ws / 'cdda/build/src/cdda-server'),
                LUANTI_BIN=str(ws / 'luanti/bin/luanti'), CDDA_CONTINUOUS='1')
     env.pop('CDDA_TERRAIN_DEMO', None)
+    env['CDDA_LANGUAGE']='en'
     if args.action_driven:
         env['CDDA_CONTINUOUS'] = '0'
         env.pop('CDDA_REALTIME', None)
@@ -230,6 +232,10 @@ def main():
                 x=ox+13.4*unit;y=oy+10.35*unit
                 xdo('mousemove','--window',window,str(round(x)),str(round(y)));xdo('click','1')
                 wait(lambda r:int(r['equipment_form'])==0 and int(r['reload_token'])==0 and int(r['pending_move'])==0)
+            def aim_down():
+                xdo('mousedown','3') if args.held_rmb else xdo('keydown','f')
+            def aim_up():
+                xdo('mouseup','3') if args.held_rmb else xdo('keyup','f')
             if args.resume_only:
                 if args.resume_active:
                     wait(lambda r:int(r['reload_token'])>0)
@@ -246,21 +252,41 @@ def main():
                 target=latest()['combat_hover'];initial=latest();shot('pointed-target.png')
                 if not args.action_driven:
                     tap('F7');wait(lambda r:int(r['pause_reasons'])==1)
-                    frozen=latest();xdo('keydown','f');xdo('click','1');tap('r');time.sleep(.7);xdo('keyup','f')
+                    frozen=latest();aim_down();xdo('click','1');tap('r');time.sleep(.7)
+                    if not args.held_rmb: aim_up()
                     check('manual_pause_blocks_aim_fire_reload_and_time',all(latest()[k]==frozen[k] for k in ('aim_sent','fire_sent','reload_sent','weapon_ammo','weapon_recoil','simulation_time')))
                     tap('F7');wait(lambda r:int(r['pause_reasons'])==0);time.sleep(.3)
                     check('paused_keys_not_replayed',latest()['fire_sent']==frozen['fire_sent'] and latest()['reload_sent']==frozen['reload_sent'])
-                tap('h');wait(lambda r:int(r['body_form'])==1);frozen=latest()
-                xdo('keydown','f');time.sleep(.6);xdo('keyup','f')
+                    if args.held_rmb:
+                        check('rmb_held_across_pause_requires_release',latest()['aim_sent']==frozen['aim_sent'])
+                        aim_up();time.sleep(.2)
+                if args.held_rmb: aim_down()
+                tap('h');wait(lambda r:int(r['body_form'])==1 and int(r['pending_move'])==0);frozen=latest()
+                if not args.held_rmb: aim_down()
+                time.sleep(.6)
+                if not args.held_rmb: aim_up()
                 check('reading_does_not_aim_for_free',all(latest()[k]==frozen[k] for k in ('aim_sent','weapon_recoil','simulation_time')))
                 tap('Escape');wait(lambda r:int(r['body_form'])==0)
+                if args.held_rmb:
+                    time.sleep(.4);check('rmb_held_across_menu_is_not_replayed',latest()['aim_sent']==frozen['aim_sent'])
+                    aim_up();time.sleep(.2)
                 turn(0,-8);wait(lambda r:r['combat_hover']==target)
                 recoil=float(latest()['weapon_recoil']);sent=int(latest()['aim_sent']);native_time=latest()['simulation_time']
-                xdo('keydown','f');wait(lambda r:int(r['aim_sent'])>=sent+2);time.sleep(.4);xdo('keyup','f')
-                wait(lambda r:int(r['pending_move'])==0)
+                aim_down();wait(lambda r:int(r['aim_sent'])>=sent+2);time.sleep(.4)
+                if not args.held_rmb:
+                    aim_up();wait(lambda r:int(r['pending_move'])==0)
                 check('held_aim_uses_native_paid_steps',float(latest()['weapon_recoil'])<recoil and latest()['simulation_time']!=native_time and int(latest()['weapon_ammo'])==3)
                 shot('aimed.png');before=latest();sent=int(before['fire_sent'])
-                xdo('mousedown','1');wait(lambda r:int(r['fire_sent'])==sent+1);time.sleep(.8);xdo('mouseup','1');wait(lambda r:int(r['pending_move'])==0)
+                if args.held_rmb: wait(lambda r:int(r['pending_move'])>0)
+                xdo('mousedown','1');wait(lambda r:int(r['fire_sent'])==sent+1)
+                aim_at_shot=int(latest()['aim_sent'])
+                if args.held_rmb:
+                    wait(lambda r:int(r['aim_sent'])>aim_at_shot)
+                    check('held_rmb_resumes_paid_aim_after_single_shot',True)
+                time.sleep(.8);xdo('mouseup','1');aim_up();wait(lambda r:int(r['pending_move'])==0)
+                if args.held_rmb:
+                    stopped=latest()['aim_sent'];time.sleep(.4)
+                    check('rmb_release_stops_new_aim_steps',latest()['aim_sent']==stopped)
                 check('held_mouse_fires_exactly_once',int(latest()['fire_sent'])==sent+1 and int(latest()['weapon_ammo'])==2)
                 check('native_shot_acknowledged',int(latest()['attack_result'])==1 and latest()['attack_target']==target)
                 check('shot_does_not_move_player',all(abs(float(latest()[k])-float(before[k]))<.02 for k in ('target_x','target_y','target_z')))
@@ -268,11 +294,24 @@ def main():
                 check('native_target_takes_damage',int(latest()['attack_target_hp'])<100)
                 turn(180,0);wait(lambda r:int(r['combat_hover'])==0);sent=latest()['fire_sent'];xdo('click','1');time.sleep(.3)
                 check('empty_reticle_sends_no_shot',latest()['fire_sent']==sent)
+                if args.held_rmb:
+                    stopped=latest()['aim_sent'];aim_down();time.sleep(.4);aim_up()
+                    check('empty_reticle_does_not_send_paid_aim',latest()['aim_sent']==stopped)
                 turn(-27,-18);wait(lambda r:int(r['combat_hover'])>0);neutral=latest()['combat_hover'];sent=latest()['fire_sent'];xdo('click','1');time.sleep(.3)
                 check('friendly_creature_not_accepted_as_ranged_target',neutral!=target and latest()['fire_sent']==sent)
+                if args.held_rmb:
+                    stopped=latest()['aim_sent'];aim_down();time.sleep(.4);aim_up()
+                    check('friendly_reticle_does_not_send_paid_aim',latest()['aim_sent']==stopped)
                 turn(0,-8)
                 if int(latest()['attack_target_hp']) >= 0:
                     wait(lambda r:r['combat_hover']==target)
+                if args.held_rmb:
+                    aim_down();stopped=int(latest()['aim_sent']);wait(lambda r:int(r['aim_sent'])>stopped)
+                    connection=latest()['connection_id'];drop.set()
+                    wait(lambda r:r['connection_id']!=connection and int(r['input_ready'])==1,timeout=20)
+                    stopped=latest()['aim_sent'];time.sleep(.6)
+                    check('held_rmb_not_replayed_after_real_reconnect',latest()['aim_sent']==stopped)
+                    aim_up();time.sleep(.2)
                 # A native critical may kill this target; reload needs no live enemy.
                 begin_reload(cancel=True);check('cancel_ammo_choice_keeps_rounds',int(latest()['weapon_ammo'])==2 and int(latest()['reload_token'])==0)
                 begin_reload(decline=True);check('decline_reload_keeps_rounds',int(latest()['weapon_ammo'])==2 and int(latest()['reload_token'])==0)
@@ -300,7 +339,7 @@ def main():
         finally:
             shutting_down.set() # Resets caused by our SIGTERM are expected only after this boundary.
             subprocess.run(['xdotool', 'keyup', 'w', 'f'], capture_output=True)
-            subprocess.run(['xdotool', 'mouseup', '1'], capture_output=True)
+            subprocess.run(['xdotool', 'mouseup', '1','3'], capture_output=True)
             stop.set()
             if proc.poll() is None:
                 os.killpg(proc.pid, signal.SIGTERM)

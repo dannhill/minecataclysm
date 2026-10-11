@@ -1232,7 +1232,7 @@
   {
     "path": "builtin/settingtypes.txt",
     "mode": "100644",
-    "sha256": "1fa54bb4708e772a2678bea753820120516e9969c6fc7301d0eff52ef8faa107"
+    "sha256": "eb45cfa1a38fb03e669f9fccc82d08ccf4e4fb48803087952a9221571a7efdd1"
   },
   {
     "path": "client/serverlist/.gitignore",
@@ -7230,6 +7230,11 @@
     "sha256": "9fa64ca28d94d2e398bfa3ce48e34f22433eafd46751dc6716ef57cd791d89bf"
   },
   {
+    "path": "src/cdda/aim_input.h",
+    "mode": "100644",
+    "sha256": "a5556f32b5d13c0722af0d3ebe77a828a6bfec768bd9e087d584ca49630e4376"
+  },
+  {
     "path": "src/cdda/avatar_status.h",
     "mode": "100644",
     "sha256": "b862f31c05a6d82f8464119edfb23a456f39c65038c297cab7a8d61fcca9e084"
@@ -7237,12 +7242,12 @@
   {
     "path": "src/cdda/cdda_bridge.cpp",
     "mode": "100644",
-    "sha256": "ed5a55e7ab0fcd59d9662989140cfea479f5b8664a78ad27d59c2014b0c297c9"
+    "sha256": "0a767a529ec888777a64552839fcecf240afc5baad172ed577fb9c7a556cd441"
   },
   {
     "path": "src/cdda/cdda_bridge.h",
     "mode": "100644",
-    "sha256": "74f29999d13380b788e49d21d4f00788c3a5e975a18a718b010f95428dc1df8b"
+    "sha256": "fbf0b351332fcdc1d42ed09afdea8824f8df72421d7845f5e96c76454d87a2a4"
   },
   {
     "path": "src/cdda/crafting_inventory.h",
@@ -7467,7 +7472,7 @@
   {
     "path": "src/client/game.cpp",
     "mode": "100644",
-    "sha256": "3af32752406066896ae5eb32b5d9910d8c8f61a6b2028e936554adcc05372783"
+    "sha256": "1be17cc6b27ff2574748950e285db9e08b54ba2c1feea02c297a6c21e8cc6a2a"
   },
   {
     "path": "src/client/game.h",
@@ -10327,7 +10332,7 @@
   {
     "path": "src/unittest/test_mapblock.cpp",
     "mode": "100644",
-    "sha256": "d66d2542dad3db64527c7b3722d223fec043f9abca953cb6205aefa4b7e2ef8e"
+    "sha256": "b0cc443d5906a772d162f92822fa2b960a66332711ef6a21438be2120bc762bf"
   },
   {
     "path": "src/unittest/test_mapnode.cpp",
