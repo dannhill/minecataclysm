@@ -37322,7 +37322,7 @@
   {
     "path": "src/cwm/cwm_crafting.h",
     "mode": "100644",
-    "sha256": "9e181d332abdb14182840424e8ed64764994225391fc0f6a338236a9b42e66b8"
+    "sha256": "ee63880d201ce261708358e245f6632622d7fe6d6d509533f1bdfc6d8baa2bad"
   },
   {
     "path": "src/cwm/cwm_hotbar.h",
@@ -37332,17 +37332,17 @@
   {
     "path": "src/cwm/cwm_inventory.h",
     "mode": "100644",
-    "sha256": "2ca2e45c4fddfbbd11f3a67410ae78a4f3c5d8c8829adf253befc43626a2eb22"
+    "sha256": "549218e2c71d2fa8de5f71b6e61edfcaca73dde53c1e130de5687aaa700a4c34"
   },
   {
     "path": "src/cwm/cwm_main.cpp",
     "mode": "100644",
-    "sha256": "15b3d9dc9c6b05def849294df84f51072b397d4083f579777445f3d1654c0070"
+    "sha256": "a7926e2b34a11cc8e65a0057ad5e9de0e0d6188536e119e8a3b9e81c801548b9"
   },
   {
     "path": "src/cwm/cwm_map_exporter.cpp",
     "mode": "100644",
-    "sha256": "eec6652c9a7a2c4ac07add4906771fdbe8bd7997fcbe48fe6c6a511838a5791e"
+    "sha256": "f53202edf23abf8fa30435c8f8895de1dc5dee89d6f9e21b40e2a845ff1a8bb1"
   },
   {
     "path": "src/cwm/cwm_map_exporter.h",
@@ -37352,12 +37352,12 @@
   {
     "path": "src/cwm/cwm_ranged.h",
     "mode": "100644",
-    "sha256": "db5f30c57b43cb12332a7a1aa121df59d756a654c3bddd6f20a10c97820da8eb"
+    "sha256": "ff94319914c8068d287abb6bfcad35ddb68824dc1ced57b57c177cc69ffe35c8"
   },
   {
     "path": "src/cwm/cwm_server.cpp",
     "mode": "100644",
-    "sha256": "e8bffa503240b886db861b0f3bef18a0576c7b72e8c5d007494f69c836ef8d37"
+    "sha256": "6c15492ffd61b7440bc4b7890de8bd72b261d0a0131fb63a3b66c2fc05cec351"
   },
   {
     "path": "src/cwm/cwm_server.h",
@@ -40312,7 +40312,7 @@
   {
     "path": "src/translations.cpp",
     "mode": "100644",
-    "sha256": "5e8dbce6f904759f92b6056ac114797e8aa9e2d5f9c134f57da2e18b23dd8dc9"
+    "sha256": "38d45de9a1e16a8366a0af067e7d462dd411dd3b4392db27138dec20d5b8d04c"
   },
   {
     "path": "src/translations.h",

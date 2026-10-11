@@ -1294,6 +1294,28 @@ index 6e66b47..1d12175 100644
  };
  
  enum class recipe_time_flag : int {
+diff --git a/src/translations.cpp b/src/translations.cpp
+index e0f257a..82690b4 100644
+--- a/src/translations.cpp
++++ b/src/translations.cpp
+@@ -1,4 +1,5 @@
+ #include <string>
++#include <cstdlib>
+ 
+ #include "cata_utility.h"
+ #include "debug.h"
+@@ -45,6 +46,11 @@ std::string select_language()
+ 
+ std::string locale_dir()
+ {
++    // Integrated launcher supplies the native catalog location explicitly.
++    // Do not infer it from the current directory or change canonical paths.
++    if( const char *override_dir = std::getenv( "CDDA_LOCALE_DIR" ) ) {
++        if( *override_dir ) return override_dir;
++    }
+     std::string loc_dir = PATH_INFO::langdir();
+ #if defined(LOCALIZE)
+ 
 diff --git a/src/ui.cpp b/src/ui.cpp
 index b901cde..58b5398 100644
 --- a/src/ui.cpp
@@ -1358,11 +1380,12 @@ index 09a7711..9b0c484 100644
          DebugLog( D_INFO, DC_ALL ) <<
 diff --git a/src/cwm/cwm_crafting.h b/src/cwm/cwm_crafting.h
 new file mode 100644
-index 0000000..d8898b7
+index 0000000..9b0b39f
 --- /dev/null
 +++ b/src/cwm/cwm_crafting.h
-@@ -0,0 +1,171 @@
+@@ -0,0 +1,172 @@
 +#pragma once
++#include "cwm/product_language.hpp"
 +#include "avatar.h"
 +#include "avatar_action.h"
 +#include "map.h"
@@ -1401,19 +1424,19 @@ index 0000000..d8898b7
 +        return s;
 +    }
 +    static std::string availability(avatar& u, const recipe& rec, int batch) {
-+        if (u.activity) return "Interrompi o concludi l'attivita prima di creare.";
-+        if (u.is_mounted() || u.is_underwater()) return "Crafting non disponibile in questa posizione.";
-+        if (rec.category == "CC_BUILDING" || rec.is_practice()) return "Lavorazione dedicata prevista in seguito.";
++        if (u.activity) return ::cwm::tr("Interrupt or finish the activity before crafting.", "Interrompi o concludi l'attivita prima di creare.");
++        if (u.is_mounted() || u.is_underwater()) return ::cwm::tr("Crafting is unavailable at this location.", "Crafting non disponibile in questa posizione.");
++        if (rec.category == "CC_BUILDING" || rec.is_practice()) return ::cwm::tr("This process requires a dedicated interface in a later update.", "Lavorazione dedicata prevista in seguito.");
 +        if (rec.result()->phase != phase_id::SOLID)
-+            return "Risultati liquidi/gassosi: gestione contenitori prevista in seguito.";
++            return ::cwm::tr("Liquid or gas results require container handling in a later update.", "Risultati liquidi/gassosi: gestione contenitori prevista in seguito.");
 +        // Sampling a byproduct group here would advance native RNG on a read-only query.
-+        if (rec.has_byproducts()) return "Ricette con sottoprodotti: supporto dedicato previsto in seguito.";
-+        if (u.morale_crafting_speed_multiplier(rec) <= 0) return "Morale insufficiente.";
-+        if (u.lighting_craft_speed_multiplier(rec) <= 0) return "Luce insufficiente.";
-+        if (!u.has_recipe(&rec, u.crafting_inventory(), u.get_crafting_group())) return "Ricetta non disponibile.";
-+        if (!rec.character_has_required_proficiencies(u)) return "Competenze obbligatorie mancanti.";
++        if (rec.has_byproducts()) return ::cwm::tr("Recipes with byproducts require a dedicated interface in a later update.", "Ricette con sottoprodotti: supporto dedicato previsto in seguito.");
++        if (u.morale_crafting_speed_multiplier(rec) <= 0) return ::cwm::tr("Morale is too low.", "Morale insufficiente.");
++        if (u.lighting_craft_speed_multiplier(rec) <= 0) return ::cwm::tr("Not enough light.", "Luce insufficiente.");
++        if (!u.has_recipe(&rec, u.crafting_inventory(), u.get_crafting_group())) return ::cwm::tr("Recipe unavailable.", "Ricetta non disponibile.");
++        if (!rec.character_has_required_proficiencies(u)) return ::cwm::tr("Required proficiencies are missing.", "Competenze obbligatorie mancanti.");
 +        if (!u.can_start_craft(&rec, recipe_filter_flags::no_favorite | recipe_filter_flags::no_equipped, batch))
-+            return "Componenti o utensili insufficienti; preferiti, tipi equipaggiati e contenitori liquidi pieni sono protetti.";
++            return ::cwm::tr("Missing components or tools; favorites, equipped item types and full liquid containers are protected.", "Componenti o utensili insufficienti; preferiti, tipi equipaggiati e contenitori liquidi pieni sono protetti.");
 +        return "";
 +    }
 +public:
@@ -1450,16 +1473,16 @@ index 0000000..d8898b7
 +                const auto remaining = work ? work->get_continue_reqs() : rec.simple_requirements();
 +                const auto filter = rec.get_component_filter(recipe_filter_flags::no_favorite | recipe_filter_flags::no_equipped);
 +                if (work && !remaining.can_make_with_inventory(inv, filter, 1))
-+                    reason = "Componenti di riparazione mancanti per riprendere.";
++                    reason = ::cwm::tr("Missing repair components needed to resume.", "Componenti di riparazione mancanti per riprendere.");
 +                auto lines = remaining.get_folded_components_list(70, c_light_gray, inv, filter, work ? 1 : batch);
 +                auto tools = rec.simple_requirements().get_folded_tools_list(70, c_light_gray, inv, actual_batch);
-+                if (work) lines.insert(lines.begin(), "Materiali originali gia consumati; qui sono mostrati gli eventuali ricambi e gli utensili del lotto.");
++                if (work) lines.insert(lines.begin(), ::cwm::tr("Original materials were already consumed; any replacements and batch tools are shown here.", "Materiali originali gia consumati; qui sono mostrati gli eventuali ricambi e gli utensili del lotto."));
 +                lines.insert(lines.end(), tools.begin(), tools.end());
 +                std::string requirements;
 +                for (const auto& line : lines) requirements += remove_color_tags(line) + "\n";
 +                if (!work && !rec.simple_requirements().can_make_with_inventory(inv,
 +                    rec.get_component_filter(recipe_filter_flags::no_favorite | recipe_filter_flags::no_equipped), batch))
-+                    requirements += "Mancano: " + remove_color_tags(rec.simple_requirements().list_missing()) + "\n";
++                    requirements += ::cwm::tr("Missing: ", "Mancano: ") + remove_color_tags(rec.simple_requirements().list_missing()) + "\n";
 +                requirements += remove_color_tags(rec.primary_skill_string(u) + "\n" + rec.required_skills_string(u)) + "\n";
 +                requirements += remove_color_tags(rec.required_proficiencies_string(&u)) + "\n";
 +                requirements += remove_color_tags(rec.missing_proficiencies_string(&u)) + "\n";
@@ -1488,12 +1511,12 @@ index 0000000..d8898b7
 +        return reply.finish_message(CDDA::CWM::Payload::CraftingView, view.Union());
 +    }
 +    std::string validate(avatar& u, uint64_t view, uint32_t entry) const {
-+        if (!view || view != view_ || !entry || entry > entries_.size()) return "Catalogo scaduto: riapri K.";
++        if (!view || view != view_ || !entry || entry > entries_.size()) return ::cwm::tr("Catalog expired: reopen K.", "Catalogo scaduto: riapri K.");
 +        u.invalidate_crafting_inventory();
 +        const auto& choice = entries_[entry-1];
 +        if (choice.resume) {
 +            if (!choice.work || !choice.work->is_craft() || &choice.work->get_making() != choice.rec)
-+                return "Lavoro incompleto non piu disponibile.";
++                return ::cwm::tr("Unfinished craft is no longer available.", "Lavoro incompleto non piu disponibile.");
 +            if (choice.work.held_by(u)) {
 +                const auto error = InventorySelection::access_error(choice.work);
 +                if (!error.empty()) return error;
@@ -1502,19 +1525,19 @@ index 0000000..d8898b7
 +                if (choice.work.where() != item_location::type::map || square_dist(tile, u.pos()) > 1 ||
 +                    !u.sees(tile) || !m.accessible_items(tile) ||
 +                    (tile != u.pos() && !m.clear_path(u.pos(), tile, 1, 1, 100)))
-+                    return "Lavoro incompleto non piu raggiungibile.";
++                    return ::cwm::tr("Unfinished craft is no longer reachable.", "Lavoro incompleto non piu raggiungibile.");
 +            }
-+            if (u.activity || u.is_underwater() || u.is_mounted()) return "Ripresa non disponibile.";
++            if (u.activity || u.is_underwater() || u.is_mounted()) return ::cwm::tr("Cannot resume this work.", "Ripresa non disponibile.");
 +            const auto error = availability(u, *choice.rec, choice.work->get_making_batch_size());
 +            if (!error.empty() && error.find("Componenti") != 0) return error;
 +            const auto remaining = choice.work->get_continue_reqs();
 +            if (!remaining.can_make_with_inventory(u.crafting_inventory(),
 +                choice.rec->get_component_filter(recipe_filter_flags::no_favorite | recipe_filter_flags::no_equipped), 1))
-+                return "Componenti di riparazione mancanti per riprendere.";
++                return ::cwm::tr("Missing repair components needed to resume.", "Componenti di riparazione mancanti per riprendere.");
 +            return "";
 +        }
 +        // A lost/deleted item_location is never converted into a new craft.
-+        if (choice.work.where() != item_location::type::invalid) return "Lavoro incompleto non piu disponibile.";
++        if (choice.work.where() != item_location::type::invalid) return ::cwm::tr("Unfinished craft is no longer available.", "Lavoro incompleto non piu disponibile.");
 +        return availability(u, *choice.rec, batch_);
 +    }
 +    bool execute(avatar& u, uint64_t view, uint32_t entry) {
@@ -1646,11 +1669,12 @@ index 0000000..0866007
 +} // namespace cwm
 diff --git a/src/cwm/cwm_inventory.h b/src/cwm/cwm_inventory.h
 new file mode 100644
-index 0000000..7b3c374
+index 0000000..dd48554
 --- /dev/null
 +++ b/src/cwm/cwm_inventory.h
-@@ -0,0 +1,257 @@
+@@ -0,0 +1,258 @@
 +#pragma once
++#include "cwm/product_language.hpp"
 +#include <algorithm>
 +#include <array>
 +#include <map>
@@ -1690,36 +1714,36 @@ index 0000000..7b3c374
 +    size_t size() const { return bindings_.size(); }
 +    static std::string access_error(item_location location) {
 +        for (int depth = 0; location.has_parent(); ++depth) {
-+            if (depth >= 32) return "Contenitore troppo annidato per questa interfaccia.";
++            if (depth >= 32) return ::cwm::tr("Container nesting is too deep for this interface.", "Contenitore troppo annidato per questa interfaccia.");
 +            const auto* pocket = location.parent_pocket();
 +            if (!pocket || !pocket->is_type(pocket_type::CONTAINER))
-+                return "Contenuto tecnico: serve l'interazione nativa dedicata.";
-+            if (pocket->sealed()) return "Tasca sigillata: apertura non ancora disponibile qui.";
++                return ::cwm::tr("Technical contents require their dedicated native interaction.", "Contenuto tecnico: serve l'interazione nativa dedicata.");
++            if (pocket->sealed()) return ::cwm::tr("Sealed pocket: opening it is not supported here yet.", "Tasca sigillata: apertura non ancora disponibile qui.");
 +            location = location.parent_item();
 +        }
 +        return {};
 +    }
 +    static std::string action_error(avatar& u, item_location location, int action) {
 +        if (!location || !location.held_by(u) || !u.has_item(*location))
-+            return "Oggetto non piu posseduto.";
-+        if (action < 0 || action > 5) return "Azione equipaggiamento non supportata.";
-+        if (u.activity) return "Attendi la conclusione dell'attivita nativa.";
++            return ::cwm::tr("Item is no longer owned.", "Oggetto non piu posseduto.");
++        if (action < 0 || action > 5) return ::cwm::tr("Equipment action is unsupported.", "Azione equipaggiamento non supportata.");
++        if (u.activity) return ::cwm::tr("Wait for the native activity to finish.", "Attendi la conclusione dell'attivita nativa.");
 +        const auto access = access_error(location);
 +        if (!access.empty()) return access;
 +        const bool worn = u.is_worn(*location), wielded = u.is_wielding(*location);
 +        if (action == 0) {
-+            if (wielded) return "Oggetto gia impugnato.";
++            if (wielded) return ::cwm::tr("Item is already wielded.", "Oggetto gia impugnato.");
 +            if (worn) { const auto result = u.can_takeoff(*location); if (!result.success()) return result.str(); }
 +            const auto weapon = u.get_wielded_item();
-+            if (weapon && weapon->has_item(*location)) return "Riponi prima il contenitore impugnato.";
++            if (weapon && weapon->has_item(*location)) return ::cwm::tr("Stow the wielded container first.", "Riponi prima il contenitore impugnato.");
 +            const auto result = u.can_wield(*location);
 +            if (!result.success()) return result.str();
 +        } else if (action == 1) {
-+            if (!wielded) return "Seleziona l'oggetto impugnato.";
++            if (!wielded) return ::cwm::tr("Select the wielded item.", "Seleziona l'oggetto impugnato.");
 +            const auto result = u.can_unwield(*location);
 +            if (!result.success()) return result.str();
 +        } else if (action == 2) {
-+            if (worn) return "Oggetto gia indossato.";
++            if (worn) return ::cwm::tr("Item is already worn.", "Oggetto gia indossato.");
 +            const auto result = u.can_wear(*location);
 +            if (!result.success()) return result.str();
 +        } else if (action == 3) {
@@ -1728,37 +1752,37 @@ index 0000000..7b3c374
 +        }
 +        if (action == 5) {
 +            if (!location->is_medical_tool() || location->is_comestible())
-+                return "Seleziona una benda o un trattamento esterno; farmaci e liquidi richiedono la loro interfaccia.";
-+            if (u.is_underwater()) return "Non puoi medicarti sott'acqua.";
-+            if (u.is_mounted()) return "Scendi dalla cavalcatura prima di medicarti.";
-+            if (location->is_filthy()) return "Oggetto sporco: non utilizzabile per medicare.";
-+            if (location->is_broken()) return "Oggetto rotto.";
-+            if (!u.can_use_heal_item(*location)) return "Biologia non compatibile con questo trattamento.";
-+            if (!location->ammo_sufficient(&u, "heal")) return "Cariche insufficienti per questo trattamento.";
++                return ::cwm::tr("Select a bandage or external treatment; drugs and liquids need their dedicated interface.", "Seleziona una benda o un trattamento esterno; farmaci e liquidi richiedono la loro interfaccia.");
++            if (u.is_underwater()) return ::cwm::tr("You cannot treat yourself underwater.", "Non puoi medicarti sott'acqua.");
++            if (u.is_mounted()) return ::cwm::tr("Dismount before treating yourself.", "Scendi dalla cavalcatura prima di medicarti.");
++            if (location->is_filthy()) return ::cwm::tr("Filthy item: cannot be used for treatment.", "Oggetto sporco: non utilizzabile per medicare.");
++            if (location->is_broken()) return ::cwm::tr("Item is broken.", "Oggetto rotto.");
++            if (!u.can_use_heal_item(*location)) return ::cwm::tr("Your biology is incompatible with this treatment.", "Biologia non compatibile con questo trattamento.");
++            if (!location->ammo_sufficient(&u, "heal")) return ::cwm::tr("Not enough charges for this treatment.", "Cariche insufficienti per questo trattamento.");
 +        }
 +        if (action == 4) {
-+            if (!location->is_food()) return "Seleziona cibo o una bevanda; medicina e uso strumenti richiedono un'altra interfaccia.";
-+            if (location->count_by_charges() && location->charges <= 0) return "Nessuna porzione disponibile.";
++            if (!location->is_food()) return ::cwm::tr("Select food or a drink; medicine and tool use need another interface.", "Seleziona cibo o una bevanda; medicina e uso strumenti richiedono un'altra interfaccia.");
++            if (location->count_by_charges() && location->charges <= 0) return ::cwm::tr("No servings available.", "Nessuna porzione disponibile.");
 +            if (location->type->has_use() && !location->type->can_use("PETFOOD"))
-+                return "Alimento con uso speciale: interazione dedicata non ancora disponibile.";
++                return ::cwm::tr("Food with a special use requires an interaction not available here yet.", "Alimento con uso speciale: interazione dedicata non ancora disponibile.");
 +            const auto result = u.can_eat(*location);
 +            if (!result.success()) return remove_color_tags(result.str());
 +            if (location->will_spill() && !location->is_container_empty())
-+                return "Contenitore commestibile pieno: gestione dei contenuti richiesta.";
++                return ::cwm::tr("Full edible container: handle its contents first.", "Contenitore commestibile pieno: gestione dei contenuti richiesta.");
 +        }
 +        if ((action == 0 || action == 2) && location->will_spill() && !location->is_container_empty())
-+            return "Contenitore aperto pieno: gestione dei liquidi richiesta.";
++            return ::cwm::tr("Full open container: handle its liquids first.", "Contenitore aperto pieno: gestione dei liquidi richiesta.");
 +        return {};
 +    }
 +    std::string validate_binding(avatar& u, uint64_t view, uint32_t id) const {
-+        if (!view || view != view_ || !id || id > bindings_.size()) return "Selezione inventario scaduta: riapri l'inventario.";
++        if (!view || view != view_ || !id || id > bindings_.size()) return ::cwm::tr("Inventory selection expired: reopen the inventory.", "Selezione inventario scaduta: riapri l'inventario.");
 +        const auto& selected = bindings_[id - 1];
 +        const auto& location = selected.location;
 +        if (!location || !location.held_by(u) || !u.has_item(*location) ||
 +            u.parents(*location) != selected.parents || location->typeId().str() != selected.type ||
 +            location->charges != selected.charges || location->count_by_charges() != selected.counted ||
 +            u.is_worn(*location) != selected.worn || u.is_wielding(*location) != selected.wielded)
-+            return "Oggetto o tasca cambiati: riapri l'inventario.";
++            return ::cwm::tr("Item or pocket changed: reopen the inventory.", "Oggetto o tasca cambiati: riapri l'inventario.");
 +        return {};
 +    }
 +    std::string validate(avatar& u, uint64_t view, uint32_t id, int action) const {
@@ -1789,12 +1813,12 @@ index 0000000..7b3c374
 +        return {}; // UI placement only, not native pocket movement.
 +    }
 +    static std::string transfer_source_error(avatar& u, item_location location) {
-+        if (!location || !location.held_by(u) || !u.has_item(*location)) return "Oggetto non piu posseduto.";
-+        if (u.activity) return "Interrompi prima l'attivita in corso.";
++        if (!location || !location.held_by(u) || !u.has_item(*location)) return ::cwm::tr("Item is no longer owned.", "Oggetto non piu posseduto.");
++        if (u.activity) return ::cwm::tr("Interrupt the current activity first.", "Interrompi prima l'attivita in corso.");
 +        const auto access = access_error(location); if (!access.empty()) return access;
-+        if (u.is_worn(*location)) return "Togli prima l'oggetto indossato.";
++        if (u.is_worn(*location)) return ::cwm::tr("Take off the worn item first.", "Togli prima l'oggetto indossato.");
 +        if (!location->made_of_from_type(phase_id::SOLID) || location->is_bucket_nonempty())
-+            return "Liquidi e contenitori aperti pieni richiedono il travaso dedicato.";
++            return ::cwm::tr("Liquids and full open containers need a dedicated pouring interaction.", "Liquidi e contenitori aperti pieni richiedono il travaso dedicato.");
 +        const auto drop = u.can_drop(*location); if (!drop.success()) return remove_color_tags(drop.str());
 +        if (u.is_wielding(*location)) { const auto result = u.can_unwield(*location); if (!result.success()) return remove_color_tags(result.str()); }
 +        return {};
@@ -1805,25 +1829,25 @@ index 0000000..7b3c374
 +        auto source = target(id);
 +        error = transfer_source_error(u, source); if (!error.empty()) return error;
 +        const int available = source->count_by_charges() ? source->charges : 1;
-+        if (quantity <= 0 || quantity > available) return "Quantita non valida o non piu disponibile.";
-+        if (get_map().getabs(u.pos()) != origin_) return "Posizione cambiata: riapri l'inventario.";
++        if (quantity <= 0 || quantity > available) return ::cwm::tr("Quantity is invalid or no longer available.", "Quantita non valida o non piu disponibile.");
++        if (get_map().getabs(u.pos()) != origin_) return ::cwm::tr("Position changed: reopen the inventory.", "Posizione cambiata: riapri l'inventario.");
 +        if (action == 0) {
-+            if (destination) return "Il deposito a terra non richiede un contenitore.";
-+            if (!get_map().can_put_items(u.pos())) return "Non puoi depositare oggetti qui.";
++            if (destination) return ::cwm::tr("Dropping on the ground does not require a container.", "Il deposito a terra non richiede un contenitore.");
++            if (!get_map().can_put_items(u.pos())) return ::cwm::tr("You cannot drop items here.", "Non puoi depositare oggetti qui.");
 +            return {};
 +        }
-+        if (action != 1) return "Trasferimento non supportato.";
++        if (action != 1) return ::cwm::tr("Transfer is unsupported.", "Trasferimento non supportato.");
 +        error = validate_binding(u, view, destination); if (!error.empty()) return error;
 +        auto container = target(destination);
 +        error = access_error(container); if (!error.empty()) return error;
-+        if (source == container || source->has_item(*container)) return "Un contenitore non puo contenere se stesso o un suo antenato.";
-+        if (source.has_parent() && source.parent_item() == container) return "Oggetto gia in questo contenitore.";
++        if (source == container || source->has_item(*container)) return ::cwm::tr("A container cannot contain itself or an ancestor.", "Un contenitore non puo contenere se stesso o un suo antenato.");
++        if (source.has_parent() && source.parent_item() == container) return ::cwm::tr("Item is already in this container.", "Oggetto gia in questo contenitore.");
 +        bool usable = false;
 +        for (const auto* pocket : container->get_all_contained_pockets()) if (pocket->is_type(pocket_type::CONTAINER)) {
-+            if (pocket->sealed()) return "Apri prima la tasca sigillata con l'interazione dedicata.";
++            if (pocket->sealed()) return ::cwm::tr("Open the sealed pocket with its dedicated interaction first.", "Apri prima la tasca sigillata con l'interazione dedicata.");
 +            usable = true;
 +        }
-+        if (!usable) return "La destinazione non ha tasche per oggetti.";
++        if (!usable) return ::cwm::tr("Destination has no item pockets.", "La destinazione non ha tasche per oggetti.");
 +        item portion(*source); if (portion.count_by_charges()) portion.charges = quantity;
 +        const auto fit = container->can_contain_directly(portion);
 +        if (!fit.success()) return remove_color_tags(fit.str());
@@ -1866,7 +1890,7 @@ index 0000000..7b3c374
 +                const int access = access_error(location).empty() ? std::max(0, location.obtain_cost(u)) : 0;
 +                const bool food = it->is_food();
 +                const auto consume_label = !food ? "" :
-+                    it->get_comestible()->comesttype == "FOOD" || it->has_flag(flag_USE_EAT_VERB) ? "Mangia" : "Bevi";
++                    it->get_comestible()->comesttype == "FOOD" || it->has_flag(flag_USE_EAT_VERB) ? ::cwm::tr("Eat", "Mangia") : ::cwm::tr("Drink", "Bevi");
 +                const int consume_moves = food ? std::max(0, to_moves<int>(u.get_consume_time(*it))) : 0;
 +                const auto warning = food && u.can_eat(*it).success() ? u.will_eat(*it, false).str() : "";
 +                const auto container_pockets = it->get_all_contained_pockets();
@@ -1909,10 +1933,10 @@ index 0000000..7b3c374
 +} // namespace cwm
 diff --git a/src/cwm/cwm_main.cpp b/src/cwm/cwm_main.cpp
 new file mode 100644
-index 0000000..1a0308e
+index 0000000..c273bf2
 --- /dev/null
 +++ b/src/cwm/cwm_main.cpp
-@@ -0,0 +1,398 @@
+@@ -0,0 +1,418 @@
 +// CDDA Headless CWM Server Entrypoint
 +// Licensed under Apache-2.0
 +
@@ -1948,6 +1972,8 @@ index 0000000..1a0308e
 +#include "cata_utility.h"
 +#include "json.h"
 +#include "rng.h"
++#include "translations.h"
++#include "cwm/product_language.hpp"
 +#include "monster.h"
 +#include "npc.h"
 +#include "vehicle.h"
@@ -2056,6 +2082,7 @@ index 0000000..1a0308e
 +    bool realtime = false;
 +    bool continuous = false;
 +    std::string character;
++    std::string language = "en";
 +
 +    for (int i = 1; i < argc; ++i) {
 +        std::string arg = argv[i];
@@ -2080,6 +2107,8 @@ index 0000000..1a0308e
 +            }
 +        } else if (arg == "--character" && i + 1 < argc) {
 +            character = argv[++i];
++        } else if (arg == "--language" && i + 1 < argc) {
++            language = argv[++i];
 +        } else if (arg == "--new-character") {
 +            new_character = true;
 +        } else if (arg == "--continuous") {
@@ -2095,6 +2124,7 @@ index 0000000..1a0308e
 +                      << "  --userdir <path>      User directory for savegames and config (default: ./user)\n"
 +                      << "  --datadir <path>      Data directory (default: auto-detected)\n"
 +                      << "  --character <id>      Select a decoded save ID (or a name with --new-character)\n"
++                      << "  --language <en|it>    Product language (default: en; Italian is WIP)\n"
 +                      << "  --new-character       Explicitly create a character; existing saves are preserved\n"
 +                      << "  --continuous         Native tile+offset prototype at global 4x\n"
 +                      << "  --realtime           Enable the isolated real-time scheduler prototype\n"
@@ -2108,6 +2138,16 @@ index 0000000..1a0308e
 +        }
 +    }
 +
++    if (!cwm::set_product_language(language)) {
++        std::cerr << "--language requires en or it\n";
++        return 2;
++    }
++#ifndef LOCALIZE
++    if (language == "it") {
++        std::cerr << "Italian requires a runtime built with LOCALIZE=ON\n";
++        return 2;
++    }
++#endif
 +    if (!headless && socket_path.empty()) {
 +        std::cerr << "--socket is required for IPC; use start.sh for supervised play\n";
 +        return 2;
@@ -2169,6 +2209,10 @@ index 0000000..1a0308e
 +
 +    get_options().init();
 +    get_options().load();
++    // Override only this process's presentation preference. Never rewrite the
++    // player's existing options or infer language from the system locale.
++    get_options().get_option("USE_LANG").setValue(language == "it" ? "it_IT" : "en");
++    set_language(language == "it" ? "it_IT" : "en");
 +    init_colors();
 +
 +    g = std::make_unique<game>();
@@ -2313,10 +2357,11 @@ index 0000000..1a0308e
 +}
 diff --git a/src/cwm/cwm_map_exporter.cpp b/src/cwm/cwm_map_exporter.cpp
 new file mode 100644
-index 0000000..0af7805
+index 0000000..e77485b
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.cpp
-@@ -0,0 +1,655 @@
+@@ -0,0 +1,656 @@
++#include "cwm/product_language.hpp"
 +#include "cwm_motion.h"
 +// CDDA CWM Map & Entity Exporter Implementation
 +// Licensed under Apache-2.0
@@ -2401,18 +2446,18 @@ index 0000000..0af7805
 +    };
 +    const auto stamina = value("stamina", "Stamina", get_stamina_bar(u.get_stamina(), u.get_stamina_max()));
 +    std::vector<flatbuffers::Offset<CDDA::CWM::StatusValue>> needs;
-+    needs.push_back(value("hunger", "Fame", display::hunger_text_color(u), hunger_perceived_level(u)));
-+    needs.push_back(value("thirst", "Sete", display::thirst_text_color(u), thirst_perceived_level(u)));
-+    needs.push_back(value("fatigue", "Sonno", display::fatigue_text_color(u), fatigue_perceived_level(u)));
-+    needs.push_back(value("pain", "Dolore", display::pain_text_color(u), pain_perceived_level(u)));
-+    needs.push_back(value("weariness", "Affaticamento", display::weariness_text_color(u)));
-+    needs.push_back(value("temperature", "Temperatura", display::temp_text_color(u)));
++    needs.push_back(value("hunger", ::cwm::tr("Hunger", "Fame"), display::hunger_text_color(u), hunger_perceived_level(u)));
++    needs.push_back(value("thirst", ::cwm::tr("Thirst", "Sete"), display::thirst_text_color(u), thirst_perceived_level(u)));
++    needs.push_back(value("fatigue", ::cwm::tr("Sleep", "Sonno"), display::fatigue_text_color(u), fatigue_perceived_level(u)));
++    needs.push_back(value("pain", ::cwm::tr("Pain", "Dolore"), display::pain_text_color(u), pain_perceived_level(u)));
++    needs.push_back(value("weariness", ::cwm::tr("Weariness", "Affaticamento"), display::weariness_text_color(u)));
++    needs.push_back(value("temperature", ::cwm::tr("Temperature", "Temperatura"), display::temp_text_color(u)));
 +    needs.push_back(value("morale", "Morale", display::morale_face_color(u)));
 +    std::vector<flatbuffers::Offset<CDDA::CWM::BodyPartStatus>> parts;
 +    for (const bodypart_id& bp : u.get_all_body_parts(get_body_part_flags::only_main)) {
-+        const auto health = value("health", "Salute",
++        const auto health = value("health", ::cwm::tr("Health", "Salute"),
 +            get_hp_bar(u.get_part_hp_cur(bp), u.get_part_hp_max(bp), false));
-+        const auto temperature = value("temperature", "Temperatura", display::temp_text_color(u, bp.id()));
++        const auto temperature = value("temperature", ::cwm::tr("Temperature", "Temperatura"), display::temp_text_color(u, bp.id()));
 +        std::vector<std::string> conditions;
 +        // Same wound/treatment effects explicitly disclosed by body_window.
 +        // Do not export arbitrary hidden diseases, effect IDs or exact timers.
@@ -3046,11 +3091,12 @@ index 0000000..9ff67ca
 +} // namespace cwm
 diff --git a/src/cwm/cwm_ranged.h b/src/cwm/cwm_ranged.h
 new file mode 100644
-index 0000000..43d3a08
+index 0000000..bb65c87
 --- /dev/null
 +++ b/src/cwm/cwm_ranged.h
-@@ -0,0 +1,103 @@
+@@ -0,0 +1,104 @@
 +#pragma once
++#include "cwm/product_language.hpp"
 +#include "avatar.h"
 +#include "avatar_action.h"
 +#include "activity_actor_definitions.h"
@@ -3080,21 +3126,21 @@ index 0000000..43d3a08
 +}
 +inline std::string ranged_weapon_error(avatar& u, int action) {
 +    const auto w=u.get_wielded_item();
-+    if (!w || !w->is_gun()) return "Impugna prima un'arma da fuoco.";
-+    if (u.activity) return "Interrompi o concludi l'attivita prima di agire.";
-+    if (u.is_mounted() || u.in_vehicle) return "Armi montate/veicoli: interfaccia successiva.";
++    if (!w || !w->is_gun()) return ::cwm::tr("Wield a firearm first.", "Impugna prima un'arma da fuoco.");
++    if (u.activity) return ::cwm::tr("Interrupt or finish the activity before acting.", "Interrompi o concludi l'attivita prima di agire.");
++    if (u.is_mounted() || u.in_vehicle) return ::cwm::tr("Mounted and vehicle weapons need a later interface.", "Armi montate/veicoli: interfaccia successiva.");
 +    const auto mode=w->gun_current_mode();
-+    if (!mode || mode.melee() || !mode->is_gun() || mode.qty <= 0) return "Modalita non balistica: interfaccia successiva.";
-+    if (mode->has_flag(flag_RELOAD_AND_SHOOT)) return "Archi e armi carica-e-spara: interfaccia successiva.";
-+    if (action==2) return w->is_reloadable() && u.rate_action_reload(*w)==hint_rating::good ? "" : "Arma non ricaricabile o gia piena.";
-+    if (w->ammo_data() && !w->ammo_types().count(w->loaded_ammo().ammo_type())) return "Munizioni caricate incompatibili.";
++    if (!mode || mode.melee() || !mode->is_gun() || mode.qty <= 0) return ::cwm::tr("Non-ballistic modes need a later interface.", "Modalita non balistica: interfaccia successiva.");
++    if (mode->has_flag(flag_RELOAD_AND_SHOOT)) return ::cwm::tr("Bows and reload-and-shoot weapons need a later interface.", "Archi e armi carica-e-spara: interfaccia successiva.");
++    if (action==2) return w->is_reloadable() && u.rate_action_reload(*w)==hint_rating::good ? "" : ::cwm::tr("Weapon cannot be reloaded or is already full.", "Arma non ricaricabile o gia piena.");
++    if (w->ammo_data() && !w->ammo_types().count(w->loaded_ammo().ammo_type())) return ::cwm::tr("Loaded ammunition is incompatible.", "Munizioni caricate incompatibili.");
 +    std::vector<std::string> messages;
 +    const bool common=gunmode_checks_common(u,get_map(),messages,mode);
 +    const bool weapon=gunmode_checks_weapon(u,get_map(),messages,mode);
 +    if (common && weapon) return "";
 +    std::string why;
 +    for (const auto& m:messages) why+=remove_color_tags(m)+"\n";
-+    return why.empty() ? "Arma non pronta a sparare." : why;
++    return why.empty() ? ::cwm::tr("Weapon is not ready to fire.", "Arma non pronta a sparare.") : why;
 +}
 +class RangedSelection {
 +    item_location weapon_;
@@ -3113,12 +3159,12 @@ index 0000000..43d3a08
 +        return token_;
 +    }
 +    std::string validate(avatar& u, game& g, uint64_t weapon, uint64_t target, int action) {
-+        if (action<0 || action>2 || !weapon || weapon!=refresh(u)) return "Arma o modalita cambiata; ripunta il bersaglio.";
++        if (action<0 || action>2 || !weapon || weapon!=refresh(u)) return ::cwm::tr("Weapon or mode changed; point at the target again.", "Arma o modalita cambiata; ripunta il bersaglio.");
 +        auto why=ranged_weapon_error(u,action);if (!why.empty()) return why;
-+        if (action==2) return target ? "La ricarica non richiede un bersaglio." : "";
++        if (action==2) return target ? ::cwm::tr("Reloading does not require a target.", "La ricarica non richiede un bersaglio.") : "";
 +        const auto* t=perceived_hostile(target,u,g);
 +        const auto gun=u.get_wielded_item()->gun_current_mode();
-+        if (!t || rl_dist(u.pos(),t->pos())>gun->gun_range(&u)) return "Bersaglio non percepito, non ostile o fuori portata.";
++        if (!t || rl_dist(u.pos(),t->pos())>gun->gun_range(&u)) return ::cwm::tr("Target is not perceived, not hostile or out of range.", "Bersaglio non percepito, non ostile o fuori portata.");
 +        return "";
 +    }
 +    bool maintaining_aim(avatar& u, game& g) {
@@ -3155,10 +3201,11 @@ index 0000000..43d3a08
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..32f44bc
+index 0000000..8a4d111
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,1031 @@
+@@ -0,0 +1,1032 @@
++#include "cwm/product_language.hpp"
 +#include "cwm_motion.h"
 +// CDDA CWM IPC Server Implementation
 +// Licensed under Apache-2.0
@@ -3646,7 +3693,7 @@ index 0000000..32f44bc
 +    // Revalidate busy state at execution as well as admission: multiple
 +    // commands may arrive before the first starts its native activity.
 +    if (u.activity) {
-+        result_ = Result{command.id, false, "Interrompi o concludi l'attivita prima di agire."};
++        result_ = Result{command.id, false, ::cwm::tr("Interrupt or finish the activity before acting.", "Interrompi o concludi l'attivita prima di agire.")};
 +        return false;
 +    }
 +    if (command.ranged_action >= 0) {
@@ -3656,7 +3703,7 @@ index 0000000..32f44bc
 +        inventory_selection_.clear();crafting_selection_.clear();
 +        accepted=ranged_selection_.execute(u,g,command.ranged_weapon,command.ranged_target,command.ranged_action);
 +        refresh_activity(u);++world_revision_;
-+        result_=Result{command.id,accepted,accepted ? "" : "Azione nativa annullata o non riuscita."};
++        result_=Result{command.id,accepted,accepted ? "" : ::cwm::tr("Native action was cancelled or failed.", "Azione nativa annullata o non riuscita.")};
 +        return accepted || u.moves!=before_moves;
 +    } else if (command.crafting_view) {
 +        auto error = crafting_selection_.validate(u, command.crafting_view, command.crafting_entry);
@@ -3669,7 +3716,7 @@ index 0000000..32f44bc
 +        // Native placement may store/drop an already-created craft without
 +        // starting ACT_CRAFT. Publish that canonical mutation even with zero work.
 +        ++world_revision_;
-+        result_ = Result{command.id, accepted, accepted ? "" : "Nessun lavoro avviato; controlla gli eventuali incompleti in K."};
++        result_ = Result{command.id, accepted, accepted ? "" : ::cwm::tr("No work started; check for unfinished crafts in K.", "Nessun lavoro avviato; controlla gli eventuali incompleti in K.")};
 +        return acted;
 +    } else if (command.transfer_action >= 0) {
 +        auto error = inventory_selection_.validate_transfer(u, command.inventory_view,
@@ -3687,7 +3734,7 @@ index 0000000..32f44bc
 +            u.assign_activity(insert_item_activity_actor(destination, {{source, command.transfer_quantity}}, false));
 +        }
 +        const bool accepted = bool(u.activity);
-+        result_ = Result{command.id, accepted, accepted ? "" : "Trasferimento nativo non avviato."};
++        result_ = Result{command.id, accepted, accepted ? "" : ::cwm::tr("Native transfer did not start.", "Trasferimento nativo non avviato.")};
 +        if (accepted) ++world_revision_;
 +        return accepted;
 +    } else if (command.equipment_action >= 0) {
@@ -3727,7 +3774,7 @@ index 0000000..32f44bc
 +        }
 +        const bool acted = accepted || u.moves != before_moves;
 +        if (acted) ++world_revision_;
-+        result_ = Result{command.id, accepted, accepted ? "" : "Azione nativa annullata o non riuscita."};
++        result_ = Result{command.id, accepted, accepted ? "" : ::cwm::tr("Native action was cancelled or failed.", "Azione nativa annullata o non riuscita.")};
 +        return acted; // Native action debt/turns, never a Luanti inventory mutation.
 +    } else if (command.movement_mode >= 0) {
 +        if (!valid_mode(command.movement_mode) || (realtime_ && pause_reasons(g))) {
@@ -3885,7 +3932,7 @@ index 0000000..32f44bc
 +        const bool throttled = now < next_crafting_query_;
 +        if (!throttled) next_crafting_query_ = now + std::chrono::milliseconds(100);
 +        emit(crafting_selection_.query(u, request->query_id(), request->search()->str(), request->batch(), reply,
-+            throttled ? "Attendi un istante prima di aggiornare il catalogo." : ""));
++            throttled ? ::cwm::tr("Wait a moment before refreshing the catalog.", "Attendi un istante prima di aggiornare il catalogo.") : ""));
 +        return;
 +    }
 +    if (const auto* request = msg->payload_as_InventoryQueryRequest()) {
@@ -3896,7 +3943,7 @@ index 0000000..32f44bc
 +        const bool throttled = now < next_inventory_query_;
 +        if (!throttled) next_inventory_query_ = now + std::chrono::milliseconds(100);
 +        emit(inventory_selection_.query(u, request->query_id(), reply,
-+            throttled ? "Attendi un istante prima di aggiornare l'inventario." : ""));
++            throttled ? ::cwm::tr("Wait a moment before refreshing the inventory.", "Attendi un istante prima di aggiornare l'inventario.") : ""));
 +        return; // No command ledger, move cost, calendar change or input action.
 +    }
 +    uint64_t id = 0;
@@ -4025,7 +4072,7 @@ index 0000000..32f44bc
 +            inventory_work_command_ = id; inventory_work_settled_ = false;
 +            activity_token_ = 0; inventory_selection_.clear(); crafting_selection_.clear(); ++world_revision_;
 +        }
-+        send_result({id, valid, valid ? "" : "Attivita conclusa, cambiata o gioco in pausa."}, u, m, g);
++        send_result({id, valid, valid ? "" : ::cwm::tr("Activity finished, changed or game paused.", "Attivita conclusa, cambiata o gioco in pausa.")}, u, m, g);
 +        return; // Never enqueue cancellation behind the busy native activity.
 +    }
 +    if (const auto* request = msg->payload_as_ContinuousIntentRequest()) {
@@ -4182,7 +4229,7 @@ index 0000000..32f44bc
 +            }
 +        }
 +    } else return;
-+    if (u.activity) error = "Interrompi o concludi l'attivita prima di agire.";
++    if (u.activity) error = ::cwm::tr("Interrupt or finish the activity before acting.", "Interrompi o concludi l'attivita prima di agire.");
 +    if (commands_.size() >= 32) error = "Command queue full";
 +    if (realtime_ && pause_reasons(g)) error = "Simulation is paused";
 +    if (!error.empty()) send_result(Result{command.id, false, error}, u, m, g);
