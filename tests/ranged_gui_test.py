@@ -72,6 +72,7 @@ def main():
     relay_path = Path(scratch.name) / 'relay.sock'
     native_path = out / 'native-socket'
     stop, drop = threading.Event(), threading.Event()
+    hold_server = threading.Event()
     shutting_down = threading.Event()
     expected_shutdown_errors = []
     relay_errors = []
@@ -86,7 +87,10 @@ def main():
                     continue
                 with client_socket, socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as server_socket:
                     server_socket.connect(native_path.read_text().strip())
+                    withheld=[]
                     while not stop.is_set():
+                        if not hold_server.is_set() and withheld:
+                            client_socket.sendall(b''.join(withheld));withheld.clear()
                         if drop.is_set():
                             drop.clear()
                             break
@@ -99,7 +103,8 @@ def main():
                                 break
                             with (out / ('client-wire.bin' if source is client_socket else 'server-wire.bin')).open('ab') as capture:
                                 capture.write(data)
-                            (server_socket if source is client_socket else client_socket).sendall(data)
+                            if source is server_socket and hold_server.is_set(): withheld.append(data)
+                            else: (server_socket if source is client_socket else client_socket).sendall(data)
                         if closed:
                             break
         except (ConnectionResetError, BrokenPipeError) as error:
@@ -261,7 +266,7 @@ def main():
                         check('rmb_held_across_pause_requires_release',latest()['aim_sent']==frozen['aim_sent'])
                         aim_up();time.sleep(.2)
                 if args.held_rmb: aim_down()
-                tap('h');wait(lambda r:int(r['body_form'])==1 and int(r['pending_move'])==0);frozen=latest()
+                tap('h');wait(lambda r:int(r['body_form'])==1 and int(r['pending_move'])==0 and (args.action_driven or int(r['pause_reasons'])&2));frozen=latest()
                 if not args.held_rmb: aim_down()
                 time.sleep(.6)
                 if not args.held_rmb: aim_up()
@@ -277,7 +282,17 @@ def main():
                     aim_up();wait(lambda r:int(r['pending_move'])==0)
                 check('held_aim_uses_native_paid_steps',float(latest()['weapon_recoil'])<recoil and latest()['simulation_time']!=native_time and int(latest()['weapon_ammo'])==3)
                 shot('aimed.png');before=latest();sent=int(before['fire_sent'])
-                if args.held_rmb: wait(lambda r:int(r['pending_move'])>0)
+                if args.held_rmb:
+                    hold_server.set();time.sleep(.2)
+                    wait(lambda r:int(r['pending_move'])>0)
+                    xdo('mousedown','1');wait(lambda r:int(r['ranged_deferred'])==1)
+                    check('single_fire_waits_only_for_current_paid_aim_step',int(latest()['fire_sent'])==sent)
+                    tap('h');wait(lambda r:int(r['body_form'])==1 and int(r['ranged_deferred'])==-1)
+                    hold_server.clear();wait(lambda r:int(r['pending_move'])==0)
+                    check('menu_cancels_deferred_shot_without_native_ammo_loss',int(latest()['fire_sent'])==sent and int(latest()['weapon_ammo'])==3)
+                    xdo('mouseup','1');aim_up();tap('Escape');wait(lambda r:int(r['body_form'])==0)
+                    stopped=int(latest()['aim_sent']);aim_down();wait(lambda r:int(r['aim_sent'])>stopped)
+                    wait(lambda r:int(r['pending_move'])>0)
                 xdo('mousedown','1');wait(lambda r:int(r['fire_sent'])==sent+1)
                 aim_at_shot=int(latest()['aim_sent'])
                 if args.held_rmb:
@@ -337,6 +352,7 @@ def main():
                     shot('reload-complete.png')
                 check('actual_runtime_survives_native_ranged_combat',proc.poll() is None)
         finally:
+            hold_server.clear()
             shutting_down.set() # Resets caused by our SIGTERM are expected only after this boundary.
             subprocess.run(['xdotool', 'keyup', 'w', 'f'], capture_output=True)
             subprocess.run(['xdotool', 'mouseup', '1','3'], capture_output=True)

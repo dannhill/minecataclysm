@@ -45,7 +45,8 @@ it does not make held LMB an automatic trigger.
 
 Menus, manual/threat pause, loss of focus, activities and reconnect disarm held
 inputs. Release and press again to resume; no hidden fire/aim is queued for
-unpause. R disarms the hold while native reload/choices execute. Hint text names
+unpause. Read-only ground consultation remains accessible under manual pause;
+its existing native guards still prohibit free pickup/open/close. R disarms the hold while native reload/choices execute. Hint text names
 RMB/F and marks the held aim intent; recoil remains the native number.
 `aim_held` in the diagnostic trace is local input intent, not simulated state.
 
