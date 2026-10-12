@@ -1681,10 +1681,10 @@ index 0000000..e1e7236
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..6924c41
+index 0000000..c523ab1
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,2799 @@
+@@ -0,0 +1,2800 @@
 +#include "cwm/product_language.hpp"
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
@@ -3471,7 +3471,8 @@ index 0000000..6924c41
 +        << ',' << pimpl_->equipment_page_ << ',' << pimpl_->equipment_filter_ << ',' << pimpl_->equipment_search_open_
 +        << ',' << pimpl_->quick_slot_ << ',' << std::count_if(pimpl_->quick_slots_.begin(), pimpl_->quick_slots_.end(), [](const auto& s) { return bool(s); })
 +        << ',' << [&]() { for (unsigned n = 0; n < 9; ++n) if (pimpl_->quick_slots_[n].item.wielded) return n + 1; return 0u; }()
-+        << ',' << pimpl_->quick_use_sent_ << ',' << pimpl_->quick_bind_command_ << ',' << pimpl_->aim_input_.aiming() << ',' << (pimpl_->deferred_ranged_ ? pimpl_->deferred_ranged_->action : -1) << '\n';
++        << ',' << pimpl_->quick_use_sent_ << ',' << pimpl_->quick_bind_command_ << ',' << pimpl_->aim_input_.aiming() << ',' << (pimpl_->deferred_ranged_ ? pimpl_->deferred_ranged_->action : -1) << ',' << pimpl_->external_anchor_.has_value()
++        << ',' << std::count_if(pimpl_->equipment_view_.entries.begin(),pimpl_->equipment_view_.entries.end(),[](const auto& e){return e.external;}) << '\n';
 +    pimpl_->trace_.flush();
 +}
 +
