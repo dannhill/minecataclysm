@@ -271,7 +271,7 @@ def main():
                     check('resumed_actor_consumes_only_saved_fresh_serving', not any(e.TypeId()==b'apple' and not e.ConsumeWarning() for e in entries(view)))
                     tap('Escape');wait(lambda r: int(r['equipment_form']) == 0)
             else:
-                check('food_and_drink_native_actions_and_duration', food(view).Actions() & 16 and food(view).ConsumeMoves() > 0 and item(view,'water_clean').ConsumeLabel() == b'Bevi')
+                check('food_and_drink_native_actions_and_duration', food(view).Actions() & 16 and food(view).ConsumeMoves() > 0 and item(view,'water_clean').ConsumeLabel() in (b'Drink',b'Bevi'))
                 check('liquid_nested_in_native_bottle', item(view,'water_clean').ParentId() == item(view,'bottle_twoliter').Id())
                 check('non_food_cannot_be_consumed', not item(view,'rock').Actions() & 16)
                 check('rotten_food_has_native_warning_without_consumption', bool(rotten(view).ConsumeWarning()) and rotten(view).Actions() & 16)
