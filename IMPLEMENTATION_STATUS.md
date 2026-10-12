@@ -1,6 +1,29 @@
 # Implementation status
 
-Current scoped delivery: **AIM-01 held right-mouse aim**, CWM **2.18**.
+Current scoped delivery: **EXT-01 external storage and partial collection**,
+CWM **2.19**, installed in ordinary `start.sh` with paired runtime rollback.
+RMB on nearby visible native storage opens two Mineclonia-style nine-column
+panes; empty storage is interactive. Ground backpacks, counted stacks and
+multi-item piles use the same interface. Loose ordinary items retain direct
+pickup and rotating visuals; furniture contents no longer rotate outside.
+Drag between receiving areas or onto real container items. Selecting a stack
+and editing Quantity supports partial collection/deposit. CDDA's pickup/drop/
+insert actors own pockets, size/capacity/theft, cost, outcome and persistence;
+paid completion returns to the same external menu. Sealed/distant/changed
+sites, stale identity/parents/charges and external equipment shortcuts reject.
+No local inventory, teleport or optimistic transfer is committed.
+[Behavior and scoped evidence](docs/fixes/external-storage.md).
+
+Backlog **22 PENDING**: eighteen unchanged plus four storage checks. Previous
+manual PASS remain accepted; automation does not imply user acceptance.
+No user testing is required today. `./storage-demo.sh --fresh` opens an isolated
+scene; without `--fresh` it resumes that demo save. Furniture chest meshes are
+provisional presentation proxies. Cargo, pouring, opening seals and explicit
+single-pocket placement remain separate. Next: richer native dialogs and
+visible operation feedback, retaining rig/UV/animation/audio and other core
+features in the plan. Full SAVE-001 remains OPEN; historical M5.5 remains FAILED.
+
+Previous scoped delivery: **AIM-01 held right-mouse aim**, CWM **2.18**.
 RMB holds assisted native aim; F remains a keyboard fallback. Context RMB
 opens/collects and Shift+RMB closes nearby projected openings, with gestures
 classified once. Firearm + pointed perceived hostile wins over a context behind
@@ -14,10 +37,10 @@ simulation changes. The verified client is installed in ordinary `start.sh`,
 with previous-client rollback; localized native runtime/catalogs are unchanged.
 [Behavior and scoped verification](docs/fixes/held-mouse-aim.md).
 
-Backlog **18 PENDING**: the previous fifteen plus three RMB checks. Existing
+At AIM-01 delivery, backlog **18 PENDING**: the previous fifteen plus three RMB checks. Existing
 manual PASS remain accepted; no acceptance is inferred from renderer automation.
-No user testing is required today. **Next essential step: external containers
-and selected-quantity collection**, followed by richer native dialogs/feedback.
+No user testing was required then. External containers and selected-quantity
+collection are now delivered above; richer native dialogs/feedback follow.
 Rig/UV/animations, audio and the existing UX-02 exceptions remain scheduled.
 Full SAVE-001 stays OPEN and M5.5 remains historical FAILED.
 

@@ -81,14 +81,40 @@ cancellano anche quel differimento. Il rinculo e i costi restano CDDA, così
 come il mantenimento nativo della precisione già pagata. Nessuna mira gratuita,
 nuova regola simulativa, modifica schema o deduzione dal nome dell'oggetto.
 [Design](docs/design/held-mouse-aim.md) e [consegna](docs/fixes/held-mouse-aim.md).
-Disponibile nel normale start.sh, CWM **2.18**. Backlog corrente **18 PENDING**:
+Disponibile nel normale start.sh, CWM **2.18**. Backlog alla consegna **18 PENDING**:
 tre nuovi punti per RMB, quindici precedenti invariati. Non serve testarli oggi.
 
-**Prossimo intervento essenziale: contenitori esterni e raccolta quantitativa**,
-con sorgenti native/raggi/tasche/capacità, selezione di quantità e costi nativi;
-poi feedback/dialoghi delle operazioni. Questa estensione deve rispettare i
-gesti DND esistenti senza dedurre l'approvazione manuale ancora pendente.
+L'intervento annunciato a questa consegna è completato nella sezione seguente.
 Rig/UV/animazioni, audio e le altre macrofeature restano nel piano sottostante.
+
+## EXT-01 — Contenitori esterni e raccolta parziale — 2026-10-12
+
+Consegnato nel normale `start.sh`, CWM **2.19**, mantenendo tempo continuo 4x e
+lingua del prodotto. I mobili con semantica nativa CONTAINER (armadietti,
+casse, ecc.) aprono due griglie a nove colonne, anche se vuoti. Il contenuto
+non compare più come drop rotanti; gli oggetti sfusi restano drop. Anche zaini
+a terra, pile multiple e oggetti a cariche aprono la stessa vista quantitativa.
+I modelli di cassa sono proxy provvisori per i vari mobili, non un mapping
+finale né l'importazione di meccaniche Mineclonia.
+
+DND fra zone di raccolta/deposito o su vere icone di contenitori; clic sulla
+pila + Quantity per trasferimenti parziali. Pickup/drop/insert nativi gestiscono
+costi, furto, capacità, tasche, salvataggi e ritorno al menu dopo il pagamento.
+Raggio, percezione, sigilli, identità, genitori, quantità e tipo di mobile sono
+ricontrollati all'ammissione e all'esecuzione. Nessuna inferenza da etichette,
+mutazione d'inventario Luanti o deduzione del risultato durante il lavoro.
+
+[Consegna](docs/fixes/external-storage.md), [protocollo](protocol/PROTOCOL.md),
+[prova isolata](storage-demo.sh). Quattro nuovi test nel backlog portano il totale
+a **22 PENDING**; gli altri diciotto e tutti i PASS precedenti rimangono.
+Nessun nuovo gate manuale oggi. Cargo veicoli, travaso liquidi, apertura dei
+sigilli, selezione della singola tasca e trasferimenti in batch sono rinviati;
+M5.5 FAILED e SAVE-001 OPEN restano separati dalla verifica della feature.
+
+**Prossimo intervento essenziale:** interfacce dei dialoghi nativi e feedback
+chiaro delle operazioni: conferme/capacità/attività, azioni consecutive e
+spiegazione delle scelte. Mantenere le eccezioni UX-02 non provate nel backlog;
+poi rig/UV/animazioni/audio e altre feature core secondo le priorità sotto.
 
 ## Riscontro inventario/interfacce — 2026-10-09
 
