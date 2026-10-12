@@ -238,6 +238,8 @@ def main():
             def entries(v):
                 return [v.Entries(n) for n in range(v.EntriesLength())]
             def select_item(e):
+                time.sleep(.55) # Native view publication precedes rendered formspec installation.
+                xdo('windowactivate','--sync',window)
                 index = e.Id() - 1
                 click(1.025 + (index % 9)*1.15, 5.975 + ((index % 27) // 9)*1.15)
                 wait(lambda r: int(r['equipment_selected']) == e.Id())
