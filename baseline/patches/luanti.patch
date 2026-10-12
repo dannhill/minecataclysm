@@ -1734,7 +1734,7 @@ index 0000000..e1e7236
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..9304488
+index 0000000..957dd84
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
 @@ -0,0 +1,2810 @@
@@ -4458,7 +4458,7 @@ index 0000000..9304488
 +        swprintf(text, 256, clock_format.c_str(), pimpl_->metrics_.time_scale,
 +            pause_state.c_str(), movement_state.c_str());
 +        pimpl_->clock_text_->setText(text);
-+        pimpl_->clock_text_->setVisible(!pimpl_->ground_container_open_ && !pimpl_->body_form_open_ && !pimpl_->equipment_open_ && !pimpl_->crafting_open_);
++        pimpl_->clock_text_->setVisible(!pimpl_->ground_container_open_ && !pimpl_->body_form_open_ && !pimpl_->equipment_open_ && !pimpl_->crafting_open_ && !pimpl_->metrics_.pending_decision);
 +    } else if (pimpl_->clock_text_) pimpl_->clock_text_->setVisible(false);
 +
 +    if (pimpl_->terrain_demo_) {
@@ -4473,6 +4473,7 @@ index 0000000..9304488
 +            (L"\n" + ::cwm::wide("F7: switch A/B", "F7: cambia A/B") + L"   |   " + ::cwm::wide("F8: fog ", "F8: nebbia ")) + (pimpl_->terrain_fog_ ? L"ON" : L"OFF") +
 +            (L"\n" + ::cwm::wide("WASD + mouse. From the center:", "WASD + mouse. Dal centro:") + L"\n" + ::cwm::wide("NW forest", "NO bosco") + L" | " + ::cwm::wide("NE field", "NE campo") + L" | " + ::cwm::wide("SW road/house", "SO strada/casa") + L" | " + ::cwm::wide("SE shore", "SE riva"));
 +        pimpl_->terrain_text_->setText(text.c_str());
++        pimpl_->terrain_text_->setVisible(!pimpl_->metrics_.pending_decision);
 +    }
 +
 +    if (!pimpl_->vertical_text_) {
@@ -4511,7 +4512,7 @@ index 0000000..9304488
 +            pimpl_->safety_text_->setOverrideColor(irr::video::SColor(255, 255, 210, 80));
 +    }
 +    if (pimpl_->safety_text_)
-+        pimpl_->safety_text_->setVisible(pimpl_->metrics_.connected && pimpl_->metrics_.safety_stop);
++        pimpl_->safety_text_->setVisible(pimpl_->metrics_.connected && pimpl_->metrics_.safety_stop && !pimpl_->metrics_.pending_decision);
 +
 +    if (!pimpl_->debug_text_) {
 +        // Create static text at top left
@@ -4542,8 +4543,7 @@ index 0000000..9304488
 +                 pimpl_->metrics_.vehicles_count);
 +
 +        pimpl_->debug_text_->setText(text);
-+        pimpl_->debug_text_->setVisible(!pimpl_->equipment_open_ && !pimpl_->crafting_open_);
-+        pimpl_->debug_text_->setVisible(!pimpl_->ground_container_open_ && !pimpl_->body_form_open_ && !pimpl_->equipment_open_ && !pimpl_->crafting_open_);
++        pimpl_->debug_text_->setVisible(!pimpl_->ground_container_open_ && !pimpl_->body_form_open_ && !pimpl_->equipment_open_ && !pimpl_->crafting_open_ && !pimpl_->metrics_.pending_decision);
 +    }
 +}
 +
