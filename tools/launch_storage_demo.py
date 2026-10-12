@@ -47,7 +47,7 @@ def main():
     print('Click an item, set Quantity, then drag that selected item for a partial transfer.', flush=True)
     print('Transfers pay native costs; the menu reopens after completion. F7 pauses.', flush=True)
     print('Restart without --fresh to check persistence.', flush=True)
-    os.execve(root / 'start.sh', [str(root / 'start.sh'), '--go', '--name', 'storage_demo', *client_args], env)
+    os.execve(root / 'start.sh', [str(root / 'start.sh'), '--go', '--name', 'storage_demo', '--port', str(port), *client_args], env)
 
 
 if __name__ == '__main__':

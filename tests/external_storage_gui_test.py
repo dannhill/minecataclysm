@@ -236,7 +236,8 @@ def main():
                 assert index<27
                 return (.5 if e.External() else 11.5)+(index%9)*1.12+.525,2+(index//9)*1.15+.525
             def mouse(x,y):xdo('mousemove','--window',window,str(round(origin_x+x*unit)),str(round(origin_y+y*unit)))
-            def click(x,y):mouse(x,y);xdo('click','1');time.sleep(.2)
+            def click(x,y):
+                xdo('windowactivate','--sync',window);time.sleep(.05);mouse(x,y);xdo('click','1');time.sleep(.2)
             def select_item(e,v):click(*point(e,v));wait(lambda r:int(r['equipment_selected'])==e.Id())
             def amount(value):click(12.4,7.25);xdo('key','ctrl+a');xdo('type','--clearmodifiers',str(value));time.sleep(.15)
             def drag(e,v,target,expect_sent=True):
@@ -247,6 +248,7 @@ def main():
                 return sent
             def finish():
                 wait(lambda r:int(r['pending_move'])==0 and int(r['transfer_token'])==0 and int(r['equipment_form'])==1 and int(r['inventory_view'])>0,timeout=25)
+                time.sleep(.5) # State trace precedes installation of the corresponding formspec.
                 return views()[-1]
             if args.resume_only:
                 check('reloaded_external_menu_keeps_owned_twenty_two_rounds',sum(e.Charges() for e in entries(view) if not e.External() and e.TypeId().decode()=='9mm')==22)
