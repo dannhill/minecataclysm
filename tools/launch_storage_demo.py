@@ -42,7 +42,7 @@ def main():
     env.pop('CDDA_TERRAIN_DEMO', None)
     print('Isolated storage scene:', session, flush=True)
     print('Locker beside the road on your right: 30 rounds and a backpack containing a rock.', flush=True)
-    print('Locker on your left: empty. Sealed crate behind you: contents inaccessible.', flush=True)
+    print('Locker on your left: empty. The low sealed crate has inaccessible contents.', flush=True)
     print('Right click storage. Drag items between panels or onto a container icon.', flush=True)
     print('Click an item, set Quantity, then drag that selected item for a partial transfer.', flush=True)
     print('Transfers pay native costs; the menu reopens after completion. F7 pauses.', flush=True)
