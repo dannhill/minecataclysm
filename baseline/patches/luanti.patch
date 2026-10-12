@@ -911,7 +911,7 @@ index 7758c96..f5783bf 100644
  	settings->setDefault("keymap_toggle_update_camera", "KEY_F4");
  #else
 diff --git a/src/gui/guiFormSpecMenu.cpp b/src/gui/guiFormSpecMenu.cpp
-index ed1c300..7f2559d 100644
+index ed1c300..c210c01 100644
 --- a/src/gui/guiFormSpecMenu.cpp
 +++ b/src/gui/guiFormSpecMenu.cpp
 @@ -1,3 +1,5 @@
@@ -920,13 +920,10 @@ index ed1c300..7f2559d 100644
  // Luanti
  // SPDX-License-Identifier: LGPL-2.1-or-later
  // Copyright (C) 2013 celeron55, Perttu Ahola <celeron55@gmail.com>
-@@ -169,6 +171,13 @@ void GUIFormSpecMenu::removeTooltip()
+@@ -169,6 +171,10 @@ void GUIFormSpecMenu::removeTooltip()
  
  void GUIFormSpecMenu::setInitialFocus()
  {
-+    if(m_text_dst && m_text_dst->m_formname=="CWM_DECISION" && type=="cwm_decision") {
-+        m_cwm_decision=true;m_cwm_decision_waiting=description=="1";return;
-+    }
 +    if (m_text_dst && m_text_dst->m_formname == "CWM_EQUIPMENT") {
 +        Environment->setFocus(this);
 +        return; // Visible search must never acquire initial keyboard focus.
@@ -934,10 +931,15 @@ index ed1c300..7f2559d 100644
  	// Set initial focus according to following order of precedence:
  	// 1. first empty editbox
  	// 2. first editbox
-@@ -2922,6 +2931,25 @@ void GUIFormSpecMenu::parseElement(parserData* data, const std::string &element)
+@@ -2922,6 +2928,30 @@ void GUIFormSpecMenu::parseElement(parserData* data, const std::string &element)
  	// They remain here due to bool flags, for now
  	data->type = type;
  
++    if(m_text_dst && m_text_dst->m_formname=="CWM_DECISION" && type=="cwm_decision") {
++        m_cwm_decision=true;m_cwm_decision_waiting=description=="1";return;
++    }
++    
++
 +    if (m_text_dst && m_text_dst->m_formname == "CWM_EQUIPMENT") {
 +        if (type == "cwm_inventory") {
 +            const auto p = split(description, ';');
@@ -960,7 +962,7 @@ index ed1c300..7f2559d 100644
  	auto it = element_parsers.find(type);
  	if (it != element_parsers.end()) {
  		it->second(this, data, description);
-@@ -2989,6 +3017,11 @@ void GUIFormSpecMenu::regenerateGui(v2u32 screensize)
+@@ -2989,6 +3019,11 @@ void GUIFormSpecMenu::regenerateGui(v2u32 screensize)
  	m_tables.clear();
  	m_checkboxes.clear();
  	m_scrollbars.clear();
@@ -972,7 +974,7 @@ index ed1c300..7f2559d 100644
  	m_fields.clear();
  	m_tooltips.clear();
  	m_tooltip_rects.clear();
-@@ -3577,6 +3610,7 @@ void GUIFormSpecMenu::drawMenu()
+@@ -3577,6 +3612,7 @@ void GUIFormSpecMenu::drawMenu()
  		Draw dragged item stack
  	*/
  	drawSelectedItem();
@@ -980,7 +982,7 @@ index ed1c300..7f2559d 100644
  
  	skin->setFont(old_font);
  }
-@@ -3900,6 +3934,101 @@ void GUIFormSpecMenu::acceptInput(FormspecQuitMode quitmode)
+@@ -3900,6 +3936,101 @@ void GUIFormSpecMenu::acceptInput(FormspecQuitMode quitmode)
  	}
  }
  
@@ -1082,7 +1084,7 @@ index ed1c300..7f2559d 100644
  bool GUIFormSpecMenu::preprocessEvent(const SEvent& event)
  {
  	// This must be done first so that GUIModalMenu can set m_pointer_type
-@@ -3907,6 +4036,18 @@ bool GUIFormSpecMenu::preprocessEvent(const SEvent& event)
+@@ -3907,6 +4038,18 @@ bool GUIFormSpecMenu::preprocessEvent(const SEvent& event)
  	if (GUIModalMenu::preprocessEvent(event))
  		return true;
  
@@ -1101,7 +1103,7 @@ index ed1c300..7f2559d 100644
  	// The IGUITabControl renders visually using the skin's selected
  	// font, which we override for the duration of form drawing,
  	// but computes tab hotspots based on how it would have rendered
-@@ -3990,6 +4131,15 @@ bool GUIFormSpecMenu::preprocessEvent(const SEvent& event)
+@@ -3990,6 +4133,15 @@ bool GUIFormSpecMenu::preprocessEvent(const SEvent& event)
  
  void GUIFormSpecMenu::tryClose()
  {
@@ -1117,7 +1119,7 @@ index ed1c300..7f2559d 100644
  	if (m_allowclose) {
  		doPause = false;
  		acceptInput(quit_mode_cancel);
-@@ -4001,6 +4151,21 @@ void GUIFormSpecMenu::tryClose()
+@@ -4001,6 +4153,21 @@ void GUIFormSpecMenu::tryClose()
  
  bool GUIFormSpecMenu::OnEvent(const SEvent& event)
  {
@@ -1139,7 +1141,7 @@ index ed1c300..7f2559d 100644
  	if (event.EventType==EET_KEY_INPUT_EVENT) {
  		KeyPress kp(event.KeyInput);
  		if (event.KeyInput.PressedDown && (
-@@ -4757,6 +4922,14 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
+@@ -4757,6 +4924,14 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
  	}
  
  	if (event.EventType == EET_GUI_EVENT) {

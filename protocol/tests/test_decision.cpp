@@ -15,7 +15,7 @@ int main(){
         CHECK(MessageVerifier::verify(bytes.data(),bytes.size()));CHECK(valid_decision(GetCwmMessage(bytes.data())->payload_as_DecisionPrompt())==(bad==0));
     }
     MessageBuilder wire(1,1);auto& f=wire.builder();std::vector<std::string> labels{"Proceed","Stop"};
-    auto v=CreateDecisionPromptDirect(f,4,"Safe fallback unavailable",&labels,-1);auto bytes=wire.finish_message(Payload::DecisionPrompt,v.Union());
+    auto v=CreateDecisionPrompt(f,4,f.CreateString("Safe fallback unavailable"),f.CreateVectorOfStrings(labels),-1);auto bytes=wire.finish_message(Payload::DecisionPrompt,v.Union());
     CHECK(valid_decision(GetCwmMessage(bytes.data())->payload_as_DecisionPrompt()));
     std::cout<<"Decision identity, label bounds, cancellation metadata and no inferred cancellation PASS\n";
 }
