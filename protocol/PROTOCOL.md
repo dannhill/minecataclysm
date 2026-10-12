@@ -644,3 +644,44 @@ in canonical CDDA Creature values. Native tile-based perception, AI and combat
 still use the anchor. This is a spatial prototype, not a claim that every CDDA
 system now uses continuous distances. An anchor mismatch after an external
 teleport resets offsets but retains already-paid rounding credit.
+
+
+## External storage (2.19)
+
+`InventoryQueryRequest.external_coord` optionally selects an absolute native
+CDDA tile. The server requires same-Z adjacency, perception and native item
+accessibility. The resulting InventoryView combines owned and external entries,
+marks external ancestry explicitly, and supplies the native site label and
+volume capacity/free space. An ordinary query still exports possessions only.
+External rows have no owned equipment actions, quick slots or grid order.
+
+All handles are ephemeral. Query binds the avatar origin, site terrain/furniture
+IDs, safe native item_locations, type/charges and parent chains. Both admission
+and native execution revalidate them. A changed position/site/selection, sealed
+pocket or inaccessible tile rejects; no search for a replacement by type/name.
+
+ItemTransferAction appends TAKE_EXTERNAL=2 and DEPOSIT_EXTERNAL=3. Quantity is
+positive, at most the current native charges, or one for non-counted items.
+TAKE_EXTERNAL starts native ACT_PICKUP and carries no destination handle.
+DEPOSIT_EXTERNAL starts native ACT_DROP with the queried tile offset and
+force_ground; capacity is checked at admission/execution. INSERT=1 also accepts
+accessible external item containers, subject to native size/capacity/ancestry
+and ownership restrictions. External equipment/drop/arrange shortcuts reject.
+Native theft/capacity decisions remain part of pickup; direct insert cannot
+bypass ownership or open sealed pockets. Work pause/cancel/completion follows
+the existing paid inventory-work lifecycle. ACT_PICKUP exports transfer state
+with unknown total (zero), as native drop already permits.
+
+GroundItemTileState appends storage/label; visible native CONTAINER furniture
+exports a site even when empty. Contents require native perception,
+could_see_items and accessible_items. GroundItemState appends container to allow
+opening a ground backpack rather than immediately collecting it. STORAGE bit 7
+is presentation semantics only. Storage sites suppress rotating item visuals;
+loose ground items retain them. Deltas clear vanished sites and resync installs
+a new complete projection. All fields use CDDA coordinates/identities; no
+Luanti inventory or type is serialized. Exact 2.19 negotiation is required.
+
+Vehicle cargo, liquid transfer and explicit per-pocket placement are outside
+this slice. Native actor persistence stays canonical. During an activity CDDA
+may apply its own overflow/drop policy if the destination changes; the client
+requeries the actual result instead of assuming a committed destination.

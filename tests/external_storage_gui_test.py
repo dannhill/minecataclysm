@@ -221,10 +221,11 @@ def main():
                 return views()[-1]
             turn(-90, -8)
             wait(lambda r:int(r['ground_hover'])==1)
-            check('storage_contents_have_no_rotating_drop_nodes',int(latest()['ground_target_visual_nodes'])==0)
             xdo('click','3')
             wait(lambda r:int(r['equipment_form'])==1 and int(r['inventory_view'])>0)
             view=views()[-1];shot('storage.png')
+            check('storage_contents_have_no_rotating_drop_nodes',int(latest()['ground_target_visual_nodes'])==0)
+
             from formspec_geometry import geometry
             origin_x,origin_y,unit=geometry(out/'storage.png',22,9)
             def entries(v):return [v.Entries(n) for n in range(v.EntriesLength())]

@@ -4788,10 +4788,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..7eef819
+index 0000000..0cb4d39
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,1817 @@
+@@ -0,0 +1,1818 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "move_mode.h"
@@ -6528,16 +6528,17 @@ index 0000000..7eef819
 +    REQUIRE(u.wear_item(item(itype_id("backpack_hiking"))));u.moves=1000;
 +}
 +}
-+TEST_CASE("cwm_external_view_is_readonly_and_rejects_sealed_unseen_and_distant_contents","[cwm][external]") {
++TEST_CASE("cwm_external_view_is_readonly_and_rejects_sealed_and_distant_contents","[cwm][external]") {
 +    external_fixture();auto& u=get_avatar();auto& m=get_map();const auto pos=u.pos()+tripoint_east;
 +    m.furn_set(pos,furn_id("f_locker"));m.add_item_or_charges(pos,item(itype_id("9mm"),calendar::turn,30));
-+    const auto time=calendar::turn;const auto rng=rng_get_engine();cwm::InventorySelection selection;
++    const auto time=calendar::turn;cwm::InventorySelection selection;
 +    auto absolute=m.getabs(pos);
 +    bool valid=true;
 +    SECTION("accessible locker"){}
 +    SECTION("sealed crate"){m.furn_set(pos,furn_id("f_crate_c"));valid=false;}
 +    SECTION("far tile"){absolute.x+=2;valid=false;}
 +    SECTION("other level"){absolute.z++;valid=false;}
++    const auto rng=rng_get_engine(); // Catch section-entry seed reset precedes the read-only query.
 +    cdda::cwm::MessageBuilder wire(1,1);const auto bytes=selection.query(u,1,wire,{},absolute);
 +    const auto* view=CDDA::CWM::GetCwmMessage(bytes.data())->payload_as_InventoryView();
 +    REQUIRE(view);CHECK(cdda::cwm::valid_inventory(view));CHECK(bool(view->view_id())==valid);

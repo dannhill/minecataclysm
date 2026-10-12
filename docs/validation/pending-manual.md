@@ -1,8 +1,8 @@
 # Validazioni manuali del playable core
 
-Stato corrente: **18 punti PENDING**, senza richiedere prove oggi. Tre nuovi
-punti riguardano la mira RMB; i quindici precedenti (incluse le due prove di
-lingua) restano pendenti.
+Stato corrente: **22 punti PENDING**, senza richiedere prove oggi. Quattro nuovi
+punti riguardano contenitori esterni e raccolta parziale; i diciotto precedenti
+(incluse lingua e mira RMB) restano pendenti.
 Il
 [riscontro UX-03 più recente](../source/ux03-drag-feedback-2026-10-09.md)
 valida **Ricontrolli UX-03 1–3 PASS**. Il precedente **hotbar 1 FAIL**
@@ -575,3 +575,34 @@ prima di riprendere da una pausa di minaccia. F resta una scorciatoia alternativ
    ripartire. In pausa il rinculo non migliora e le munizioni non calano.
    Puntare il cane amico o il vuoto non genera passi di mira pagati né colpi.
    Il controllo automatico include reconnect; non devi interrompere IPC a mano.
+
+
+## EXT-01 — Contenitori esterni e raccolta parziale — PENDING (4), rinviabili
+
+Prova isolata: `./storage-demo.sh --fresh`. Le partite normali aperte con
+`./start.sh` ricevono la stessa interazione. Senza `--fresh` la demo riapre
+il proprio salvataggio e non usa la tua partita. Gli armadietti usano per ora
+una cassa come modello proxy; il contenuto e le regole sono quelli CDDA.
+
+1. **Aprire e leggere.** Punta l'armadietto con munizioni/zaino vicino allo
+   spawn e premi RMB: due griglie a nove colonne, contenuto esterno e tuo
+   inventario. Il contenuto del mobile non gira fuori come drop. Anche
+   l'armadietto vuoto è interattivo. Leggere lascia tempo e personaggio fermi;
+   gli oggetti sfusi continuano a comparire come drop.
+2. **Quantità e deposito.** Clic sulla pila di 30 munizioni, Quantity=7,
+   trascina nella zona Collect here del tuo pannello o in una sua casella
+   vuota. Dopo il costo nativo ritorna il menu con 23 rimaste fuori. Deposita
+   alcune munizioni nella zona Deposit here del pannello esterno: finiscono
+   nel mobile puntato, non sotto il personaggio. Nessuna duplicazione.
+3. **Tasche reali e rifiuti.** Trascina munizioni sull'icona dello zaino a
+   terra: sono contenute nelle sue tasche. Raccogli il sasso annidato senza
+   raccogliere lo zaino. La mazza nella bottiglia deve fallire conservando gli
+   oggetti e mostrando la ragione; una quantità eccessiva e la cassa sigillata
+   non devono aggirare le regole. L'apertura dei sigilli arriverà separatamente.
+4. **Pausa e persistenza.** F7 impedisce nuove raccolte/trasferimenti: dopo
+   il rilascio della pausa il tentativo rifiutato non si esegue da solo.
+   Esegui raccolta/deposito validi, chiudi, riavvia la stessa demo senza
+   `--fresh`: quantità, contenuti annidati e posizione devono essere mantenuti.
+
+Questa checklist non richiede prove oggi. Nessun PASS è dedotto dai test
+automatici; tutti i PASS già dichiarati nelle sezioni precedenti rimangono.
