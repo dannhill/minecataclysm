@@ -1723,10 +1723,10 @@ index 0000000..e1e7236
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..04afdc5
+index 0000000..9304488
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,2800 @@
+@@ -0,0 +1,2810 @@
 +#include "cwm/product_language.hpp"
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
@@ -1740,6 +1740,7 @@ index 0000000..04afdc5
 +#include "crafting_inventory.h"
 +#include "decision_text.h"
 +#include "decision_dialog.h"
++#include "cwm/cwm_clock.hpp"
 +#include "avatar_status.h"
 +#include "posture_input.h"
 +#include "aim_input.h"
@@ -1846,7 +1847,7 @@ index 0000000..04afdc5
 +    std::unordered_map<uint64_t, VisualVehicle> vehicles_;
 +    irr::gui::IGUIStaticText* debug_text_{nullptr};
 +    irr::gui::IGUIStaticText* safety_text_{nullptr};
-+    irr::gui::IGUIStaticText* decision_text_{nullptr};
++    
 +    irr::gui::IGUIStaticText* posture_text_{nullptr};
 +    irr::gui::IGUIStaticText* vertical_text_{nullptr};
 +    DecisionDialog decision_dialog_; bool decision_dirty_{false};
@@ -1927,6 +1928,7 @@ index 0000000..04afdc5
 +    std::wstring inventory_work_label_;
 +    std::string inventory_work_error_;
 +    irr::gui::IGUIStaticText* inventory_work_text_{nullptr};
++    irr::gui::IGUIStaticText* work_progress_{nullptr};
 +
 +    void dismiss_inventory_work() {
 +        inventory_work_command_ = 0; inventory_return_requested_ = inventory_return_armed_ = false;
@@ -3009,11 +3011,11 @@ index 0000000..04afdc5
 +                metrics_.realtime = snap->clock() && snap->clock()->realtime();
 +                metrics_.continuous_motion = snap->clock() && snap->clock()->continuous_motion();
 +                metrics_.pause_reasons = snap->clock() ? snap->clock()->pause_reasons() : 0;
-+                if(decision_dialog_.submitted && !(metrics_.pause_reasons & 8)) {
++                if(decision_dialog_.submitted && !(metrics_.pause_reasons & cdda::cwm::Decision)) {
 +                    metrics_.pending_decision=0;decision_dialog_={};decision_dirty_=false;
 +                }
 +                metrics_.time_scale = snap->clock() ? snap->clock()->time_scale() : 1.f;
-+                if (metrics_.safety_stop || (metrics_.pause_reasons & uint32_t(1 | 4)))
++                if (metrics_.safety_stop || (metrics_.pause_reasons & uint32_t(1 | 4 | 8)))
 +                    inventory_return_requested_ = false;
 +                // Recovery-only is a transport/full-state pause, not an
 +                // authoritative input cancellation.  Preserve the last
@@ -3330,7 +3332,7 @@ index 0000000..04afdc5
 +    std::string trace_path;
 +    if (g_settings->getNoEx("cwm_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->trace_.open(trace_path);
-+        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog,ipc_connected,ipc_input,ipc_output,ipc_read_bytes,ipc_write_bytes,ipc_frames,ipc_dispatch_bytes,ipc_read_calls,ipc_write_calls,session_state,input_ready,session_id,player_id,connection_id,sequence,resync_count,entity_cache,vehicle_cache,scene_origin_x,scene_origin_y,simulation_time,realtime,pause_reasons,time_scale,sent_intent,continuous_motion,intent_x,intent_y,ipc_latency_ms,projection_ms,ground_tiles,owned_items,ground_container,ground_hover,queued_pickup,ground_visual_nodes,ground_hover_items,ground_target_items,ground_target_visual_nodes,ground_target_first_type,status_available,body_form,survival_visible,status_stamina,status_head,status_arm_l,combat_hover,attacks_sent,attack_target,attack_target_hp,attack_result,player_state_flags,player_eye_offset,visual_animation_time,visual_animation_delta,ground_item_rotation,status_hunger_level,status_thirst_level,status_fatigue_level,status_pain_level,hud_images_active,equipment_form,inventory_view,inventory_entries,equipment_selected,equipment_sent,pending_decision,consumption_token,consumption_total,consumption_remaining,cancel_consumption_sent,first_aid_token,first_aid_total,first_aid_remaining,crafting_form,crafting_view,crafting_selected,crafting_sent,crafting_token,crafting_progress,weapon_token,weapon_ammo,weapon_recoil,aim_sent,fire_sent,reload_sent,reload_token,reload_total,reload_remaining,transfer_form,transfers_sent,transfer_token,transfer_total,transfer_remaining,inventory_work_command,native_work_command,native_work_settled,inventory_return,inventory_work_visible,equipment_page,equipment_filter,equipment_search_open,quick_slot,quick_count,quick_wielded,quick_use_sent,quick_bind_command,aim_held,ranged_deferred,external_form,external_entries\n";
++        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog,ipc_connected,ipc_input,ipc_output,ipc_read_bytes,ipc_write_bytes,ipc_frames,ipc_dispatch_bytes,ipc_read_calls,ipc_write_calls,session_state,input_ready,session_id,player_id,connection_id,sequence,resync_count,entity_cache,vehicle_cache,scene_origin_x,scene_origin_y,simulation_time,realtime,pause_reasons,time_scale,sent_intent,continuous_motion,intent_x,intent_y,ipc_latency_ms,projection_ms,ground_tiles,owned_items,ground_container,ground_hover,queued_pickup,ground_visual_nodes,ground_hover_items,ground_target_items,ground_target_visual_nodes,ground_target_first_type,status_available,body_form,survival_visible,status_stamina,status_head,status_arm_l,combat_hover,attacks_sent,attack_target,attack_target_hp,attack_result,player_state_flags,player_eye_offset,visual_animation_time,visual_animation_delta,ground_item_rotation,status_hunger_level,status_thirst_level,status_fatigue_level,status_pain_level,hud_images_active,equipment_form,inventory_view,inventory_entries,equipment_selected,equipment_sent,pending_decision,consumption_token,consumption_total,consumption_remaining,cancel_consumption_sent,first_aid_token,first_aid_total,first_aid_remaining,crafting_form,crafting_view,crafting_selected,crafting_sent,crafting_token,crafting_progress,weapon_token,weapon_ammo,weapon_recoil,aim_sent,fire_sent,reload_sent,reload_token,reload_total,reload_remaining,transfer_form,transfers_sent,transfer_token,transfer_total,transfer_remaining,inventory_work_command,native_work_command,native_work_settled,inventory_return,inventory_work_visible,equipment_page,equipment_filter,equipment_search_open,quick_slot,quick_count,quick_wielded,quick_use_sent,quick_bind_command,aim_held,ranged_deferred,external_form,external_entries,decision_waiting\n";
 +    }
 +    if (g_settings->getNoEx("cwm_entity_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->entity_trace_.open(trace_path);
@@ -3348,9 +3350,10 @@ index 0000000..04afdc5
 +        for (auto* image : pimpl_->hud_images_) image->remove();
 +        if (pimpl_->clock_text_) pimpl_->clock_text_->remove();
 +        if (pimpl_->safety_text_) pimpl_->safety_text_->remove();
-+        if (pimpl_->decision_text_) pimpl_->decision_text_->remove();
++        
 +        if (pimpl_->posture_text_) pimpl_->posture_text_->remove();
 +        if (pimpl_->inventory_work_text_) pimpl_->inventory_work_text_->remove();
++        if(pimpl_->work_progress_)pimpl_->work_progress_->remove();
 +        if (pimpl_->vertical_text_) pimpl_->vertical_text_->remove();
 +        if (pimpl_->terrain_text_) pimpl_->terrain_text_->remove();
 +        for (auto& [id, ent] : pimpl_->entities_) if (ent.scene_node)
@@ -3515,7 +3518,7 @@ index 0000000..04afdc5
 +        << ',' << pimpl_->quick_slot_ << ',' << std::count_if(pimpl_->quick_slots_.begin(), pimpl_->quick_slots_.end(), [](const auto& s) { return bool(s); })
 +        << ',' << [&]() { for (unsigned n = 0; n < 9; ++n) if (pimpl_->quick_slots_[n].item.wielded) return n + 1; return 0u; }()
 +        << ',' << pimpl_->quick_use_sent_ << ',' << pimpl_->quick_bind_command_ << ',' << pimpl_->aim_input_.aiming() << ',' << (pimpl_->deferred_ranged_ ? pimpl_->deferred_ranged_->action : -1) << ',' << pimpl_->external_anchor_.has_value()
-+        << ',' << std::count_if(pimpl_->equipment_view_.entries.begin(),pimpl_->equipment_view_.entries.end(),[](const auto& e){return e.external;}) << '\n';
++        << ',' << std::count_if(pimpl_->equipment_view_.entries.begin(),pimpl_->equipment_view_.entries.end(),[](const auto& e){return e.external;}) << ',' << pimpl_->decision_dialog_.submitted << '\n';
 +    pimpl_->trace_.flush();
 +}
 +
@@ -4278,6 +4281,13 @@ index 0000000..04afdc5
 +    pimpl_->inventory_work_text_->setVisible(pimpl_->inventory_work_command_ && pimpl_->session_.ready() &&
 +        !pimpl_->equipment_open_ && !pimpl_->crafting_open_ && !pimpl_->body_form_open_ &&
 +        !pimpl_->ground_container_open_ && !pimpl_->metrics_.pending_decision);
++    if(!pimpl_->work_progress_) {
++        pimpl_->work_progress_=guienv->addStaticText(L"",irr::core::rect<irr::s32>(),false,false,nullptr,-1,true);
++        pimpl_->work_progress_->setBackgroundColor(irr::video::SColor(255,65,133,125));pimpl_->work_progress_->setEnabled(false);
++    }
++    const int work_percent=pimpl_->activity_total_>0 ? std::clamp(100-int(100.0*pimpl_->activity_remaining_/pimpl_->activity_total_),0,100):0;
++    pimpl_->work_progress_->setRelativePosition(irr::core::rect<irr::s32>(work_left,work_top+52,work_left+420*work_percent/100,work_top+56));
++    pimpl_->work_progress_->setVisible(pimpl_->inventory_work_text_->isVisible() && pimpl_->activity_total_>0 && work_percent>0);
 +    const int posture_left = screen.Width >= 1000 ? 420 : 10;
 +    const int posture_top = screen.Width >= 1000 ? 105 : 160;
 +    pimpl_->posture_text_->setRelativePosition(irr::core::rect<irr::s32>(posture_left, posture_top,
@@ -4776,7 +4786,7 @@ index 0000000..b255489
 +} // namespace cdda_client
 diff --git a/src/cdda/decision_dialog.h b/src/cdda/decision_dialog.h
 new file mode 100644
-index 0000000..c676d22
+index 0000000..736c56f
 --- /dev/null
 +++ b/src/cdda/decision_dialog.h
 @@ -0,0 +1,40 @@
@@ -4803,7 +4813,7 @@ index 0000000..c676d22
 +            "style_type[label;textcolor=#323232]style_type[button;border=false;bgimg=mcl_inventory_button9.png;bgimg_pressed=mcl_inventory_button9_pressed.png;bgimg_middle=2,2]";
 +        f+="cwm_decision["+std::string(submitted?"1":"0")+"]image[0.55,0.4;0.65,0.65;cdda_status_unknown.png]";
 +        f+="label[1.45,0.75;"+::cwm::text("Choose an action","Scegli un'azione")+"]";
-+        f+="label[0.55,1.35;"+::cwm::text("Time is paused · no action has been approved","Il tempo e fermo · nessuna azione e stata approvata")+"]";
++        f+="label[0.55,1.35;"+std::string(submitted?::cwm::text("Response sent · waiting for the game","Risposta inviata · in attesa del gioco"): ::cwm::text("Time is paused while you choose","Il tempo e fermo mentre scegli"))+"]";
 +        f+="hypertext[0.55,1.85;14.9,3.9;prompt;"+statusEscape("<global color=#323232 size=18>"+decisionRichText(body))+"]set_focus[prompt;true]";
 +        if(submitted)return f+"label[0.55,6.3;"+::cwm::text("Waiting for the game...","In attesa del gioco...")+"]";
 +        const int maximum=std::max(0,int(choices.size()*8.5)-36);

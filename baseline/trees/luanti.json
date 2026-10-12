@@ -7242,7 +7242,7 @@
   {
     "path": "src/cdda/cdda_bridge.cpp",
     "mode": "100644",
-    "sha256": "bd1d6095e52a423a431970905c8c50e3f27d0a34f34c7e5a4e4ad2eb9048e18f"
+    "sha256": "f1348ed75d1620837bd02f22bec2d206fccc07a5abf0911331ae798b84ba23a4"
   },
   {
     "path": "src/cdda/cdda_bridge.h",
@@ -7257,7 +7257,7 @@
   {
     "path": "src/cdda/decision_dialog.h",
     "mode": "100644",
-    "sha256": "c5884f2721ea6a5d95ab3e7aea6dff223fa7fc013529eb1ad8fa0aa06713df13"
+    "sha256": "6fd688a9c4b9646fd4c9bdd770bc92c2dea132660b58b3e8c18b227eb976660a"
   },
   {
     "path": "src/cdda/decision_input.h",
