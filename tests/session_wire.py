@@ -1,6 +1,13 @@
 """Shared CWM 2 fixture envelope. Production never uses this test helper."""
 import struct
 import threading
+import re
+from pathlib import Path
+
+# Follow the captured protocol instead of silently retaining an obsolete minor.
+_header = (Path(__file__).resolve().parents[1] / "protocol/include/cwm/cwm_protocol.hpp").read_text()
+PROTOCOL_MAJOR = int(re.search(r"PROTOCOL_VERSION_MAJOR = (\d+)", _header)[1])
+PROTOCOL_MINOR = int(re.search(r"PROTOCOL_VERSION_MINOR = (\d+)", _header)[1])
 from CDDA.CWM import CwmMessage as Msg, Payload, HelloRequest as Hello, HelloResponse, WorldSnapshot as World, SnapshotAck, WorldReset
 
 class NativeWire:
@@ -10,8 +17,8 @@ class NativeWire:
         self.identity = (0,0,0)
         self.lock = threading.RLock()
     def hello_fields(self, b):
-        Hello.HelloRequestAddProtocolVersionMajor(b,2)
-        Hello.HelloRequestAddProtocolVersionMinor(b,15)
+        Hello.HelloRequestAddProtocolVersionMajor(b,PROTOCOL_MAJOR)
+        Hello.HelloRequestAddProtocolVersionMinor(b,PROTOCOL_MINOR)
         Hello.HelloRequestAddClientId(b,self.client_id)
     def finish(self, b, kind, value):
         if kind == Payload.Payload.HelloRequest:
@@ -53,8 +60,8 @@ class AuthorityWire:
         self.sequence+=1
         return envelope(b,kind,value,self.sequence,self.revision,self.identity)
     def hello_fields(self,b):
-        HelloResponse.HelloResponseAddProtocolVersionMajor(b,2)
-        HelloResponse.HelloResponseAddProtocolVersionMinor(b,15)
+        HelloResponse.HelloResponseAddProtocolVersionMajor(b,PROTOCOL_MAJOR)
+        HelloResponse.HelloResponseAddProtocolVersionMinor(b,PROTOCOL_MINOR)
         HelloResponse.HelloResponseAddNextCommandId(b,1)
     def reset(self,request=0):
         import flatbuffers
