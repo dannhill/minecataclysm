@@ -5,3 +5,5 @@
 class ItemTransferAction(object):
     DROP = 0
     INSERT = 1
+    TAKE_EXTERNAL = 2
+    DEPOSIT_EXTERNAL = 3

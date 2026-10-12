@@ -138,3 +138,11 @@ minetest.register_on_mods_loaded(function()
     minetest.settings:set("time_speed", "0")
 end)
 minetest.after(0, function() minetest.set_timeofday(0.5) end)
+
+-- Static native storage projection; inventory and costs belong to CDDA.
+minetest.register_node("cdda_nodes:storage", {
+    description = "Native storage", drawtype = "mesh", mesh = "mcl_chests_chest.b3d",
+    tiles = {"mcl_chests_normal.png"}, paramtype = "light", paramtype2 = "facedir",
+    walkable = true, selection_box = {type="fixed",fixed={-.44,-.5,-.44,.44,.375,.44}},
+    collision_box = {type="fixed",fixed={-.44,-.5,-.44,.44,.375,.44}},
+})

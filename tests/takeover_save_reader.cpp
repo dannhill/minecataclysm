@@ -48,6 +48,7 @@ int main(int argc, const char *argv[]) {
     bool create_crafting = false;
     bool create_ranged = false;
     bool create_transfer = false;
+    bool create_external = false;
     bool create_recovery = false;
     bool create_body = false;
     bool create_combat = false;
@@ -58,6 +59,7 @@ int main(int argc, const char *argv[]) {
         std::string arg(argv[i]);
         if (arg == "--create") create = true;
         else if (arg == "--create-recovery") { create = true; create_recovery = true; create_posture = true; }
+        else if (arg == "--create-external") { create = true; create_external = true; create_posture = true; }
         else if (arg == "--create-transfer") { create = true; create_transfer = true; create_posture = true; }
         else if (arg == "--create-ranged") { create = true; create_ranged = true; create_posture = true; }
         else if (arg == "--create-crafting") { create = true; create_crafting = true; create_posture = true; }
@@ -374,6 +376,24 @@ int main(int argc, const char *argv[]) {
             item bottle(itype_id("bottle_plastic"),calendar::turn);bottle.set_var("uid","transfer-bottle");u.i_add(bottle);
             item bat(itype_id("bat"),calendar::turn);bat.set_var("uid","transfer-bat");u.i_add(bat);
             item stone(itype_id("rock"),calendar::turn);stone.set_var("uid","transfer-rock");u.i_add(stone);
+            u.moves=100;g->set_safe_mode(SAFE_MODE_OFF);
+        }
+        if (create_external) {
+            u.remove_weapon();
+            if (!u.wear_item(item(itype_id("backpack_hiking"),calendar::turn))) return 28;
+            item owned(itype_id("9mm"),calendar::turn,20);owned.set_var("uid","external-owned-ammo");u.i_add(owned);
+            item bottle(itype_id("bottle_plastic"),calendar::turn);bottle.set_var("uid","external-owned-bottle");u.i_add(bottle);
+            item bat(itype_id("bat"),calendar::turn);bat.set_var("uid","external-owned-bat");u.i_add(bat);
+            const auto pos=u.pos()+tripoint_east;
+            m.furn_set(pos,furn_id("f_locker"));m.i_clear(pos);
+            item ammo(itype_id("9mm"),calendar::turn,30);ammo.set_var("uid","external-ground-ammo");m.add_item_or_charges(pos,ammo);
+            item pack(itype_id("backpack_hiking"),calendar::turn);pack.set_var("uid","external-ground-pack");
+            item rock(itype_id("rock"),calendar::turn);rock.set_var("uid","external-nested-rock");
+            if(!pack.put_in(rock,pocket_type::CONTAINER).success())return 29;
+            m.add_item_or_charges(pos,pack);
+            m.furn_set(u.pos()+tripoint_west,furn_id("f_locker"));m.i_clear(u.pos()+tripoint_west);
+            m.furn_set(u.pos()+tripoint_north,furn_id("f_crate_c"));m.i_clear(u.pos()+tripoint_north);
+            item hidden(itype_id("rock"),calendar::turn);hidden.set_var("uid","external-sealed-rock");m.add_item_or_charges(u.pos()+tripoint_north,hidden);
             u.moves=100;g->set_safe_mode(SAFE_MODE_OFF);
         }
         if (create_equipment) {

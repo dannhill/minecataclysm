@@ -11,7 +11,7 @@
 namespace cdda::cwm {
 
 constexpr uint16_t PROTOCOL_VERSION_MAJOR = 2;
-constexpr uint16_t PROTOCOL_VERSION_MINOR = 18;
+constexpr uint16_t PROTOCOL_VERSION_MINOR = 19;
 
 struct Identity { uint64_t session{0}, player{0}, connection{0}; };
 
@@ -138,8 +138,8 @@ public:
         auto request = CDDA::CWM::CreateCancelItemTransferRequest(fbb_, command, token);
         return finish_message(CDDA::CWM::Payload::CancelItemTransferRequest, request.Union());
     }
-    std::vector<uint8_t> build_inventory_query(uint64_t query_id) {
-        const auto request = CDDA::CWM::CreateInventoryQueryRequest(fbb_, query_id);
+    std::vector<uint8_t> build_inventory_query(uint64_t query_id, const CDDA::CWM::Coord3i* external = nullptr) {
+        const auto request = CDDA::CWM::CreateInventoryQueryRequest(fbb_, query_id, external);
         return finish_message(CDDA::CWM::Payload::InventoryQueryRequest, request.Union());
     }
     std::vector<uint8_t> build_equipment_request(uint64_t command_id, uint64_t view_id,

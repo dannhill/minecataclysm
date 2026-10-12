@@ -205,8 +205,15 @@ class InventoryEntry(object):
             return self._tab.Get(flatbuffers.number_types.Uint32Flags, o + self._tab.Pos)
         return 0
 
+    # InventoryEntry
+    def External(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(52))
+        if o != 0:
+            return bool(self._tab.Get(flatbuffers.number_types.BoolFlags, o + self._tab.Pos))
+        return False
+
 def InventoryEntryStart(builder):
-    builder.StartObject(24)
+    builder.StartObject(25)
 
 def Start(builder):
     InventoryEntryStart(builder)
@@ -360,6 +367,12 @@ def InventoryEntryAddUiOrder(builder, uiOrder):
 
 def AddUiOrder(builder, uiOrder):
     InventoryEntryAddUiOrder(builder, uiOrder)
+
+def InventoryEntryAddExternal(builder, external):
+    builder.PrependBoolSlot(24, external, 0)
+
+def AddExternal(builder, external):
+    InventoryEntryAddExternal(builder, external)
 
 def InventoryEntryEnd(builder):
     return builder.EndObject()

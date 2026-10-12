@@ -1669,10 +1669,10 @@ index 0000000..0866007
 +} // namespace cwm
 diff --git a/src/cwm/cwm_inventory.h b/src/cwm/cwm_inventory.h
 new file mode 100644
-index 0000000..63c6eeb
+index 0000000..3d5bed2
 --- /dev/null
 +++ b/src/cwm/cwm_inventory.h
-@@ -0,0 +1,258 @@
+@@ -0,0 +1,328 @@
 +#pragma once
 +#include "cwm/product_language.hpp"
 +#include <algorithm>
@@ -1680,6 +1680,8 @@ index 0000000..63c6eeb
 +#include <map>
 +#include <vector>
 +#include <string>
++#include <optional>
++#include "mapdata.h"
 +#include "avatar.h"
 +#include "calendar.h"
 +#include "flag.h"
@@ -1703,15 +1705,48 @@ index 0000000..63c6eeb
 +        std::vector<item*> parents;
 +        std::string type;
 +        int charges;
-+        bool counted, worn, wielded;
++        bool counted, worn, wielded, external;
 +    };
 +    uint64_t next_view_{1}, view_{0};
 +    tripoint origin_{};
 +    std::vector<Binding> bindings_;
++    std::optional<tripoint> external_;
++    std::string external_terrain_, external_furniture_;
 +public:
-+    void clear() { view_ = 0; bindings_.clear(); }
++    void clear() { view_ = 0; bindings_.clear(); external_.reset(); }
 +    uint64_t view_id() const { return view_; }
 +    size_t size() const { return bindings_.size(); }
++    tripoint external_position() const { return get_map().getlocal(*external_); }
++    bool external_item(uint32_t id) const { return bindings_.at(id - 1).external; }
++    static std::vector<item*> external_parents(item_location loc) {
++        std::vector<item*> out;
++        while (loc.has_parent() && out.size() <= 32) { loc = loc.parent_item(); out.push_back(loc.get_item()); }
++        return out;
++    }
++    static std::string external_access(avatar& u, const tripoint& absolute) {
++        auto& m = get_map(); const auto origin = m.getabs(u.pos());
++        if (absolute.z != origin.z || std::abs(int64_t(absolute.x)-origin.x) > 1 ||
++            std::abs(int64_t(absolute.y)-origin.y) > 1) return ::cwm::tr("Storage is out of reach.", "Contenitore fuori portata.");
++        const auto pos = m.getlocal(absolute);
++        if (!m.inbounds(pos) || !u.sees(pos) || !m.accessible_items(pos) || !m.could_see_items(pos,u.pos()))
++            return ::cwm::tr("Storage contents are not accessible or perceived.", "Contenuto non accessibile o non percepito.");
++        return {};
++    }
++    std::string validate_external(avatar& u) const {
++        if (!external_ || get_map().getabs(u.pos()) != origin_) return ::cwm::tr("Position changed: reopen storage.", "Posizione cambiata: riapri il contenitore.");
++        auto error = external_access(u,*external_); if (!error.empty()) return error;
++        auto& m = get_map(); const auto pos = external_position();
++        if (m.ter(pos).id().str()!=external_terrain_ || m.furn(pos).id().str()!=external_furniture_)
++            return ::cwm::tr("Storage changed: reopen it.", "Contenitore cambiato: riaprilo.");
++        return {};
++    }
++    static std::string external_source_error(avatar& u, item_location loc) {
++        if (u.activity) return ::cwm::tr("Interrupt the current activity first.", "Interrompi prima l'attivita in corso.");
++        auto error = access_error(loc); if (!error.empty()) return error;
++        if (!loc->made_of_from_type(phase_id::SOLID) || loc->is_bucket_nonempty())
++            return ::cwm::tr("Liquids and full open containers need a dedicated interaction.", "Liquidi e contenitori aperti pieni richiedono un'interazione dedicata.");
++        return {};
++    }
 +    static std::string access_error(item_location location) {
 +        for (int depth = 0; location.has_parent(); ++depth) {
 +            if (depth >= 32) return ::cwm::tr("Container nesting is too deep for this interface.", "Contenitore troppo annidato per questa interfaccia.");
@@ -1778,8 +1813,10 @@ index 0000000..63c6eeb
 +        if (!view || view != view_ || !id || id > bindings_.size()) return ::cwm::tr("Inventory selection expired: reopen the inventory.", "Selezione inventario scaduta: riapri l'inventario.");
 +        const auto& selected = bindings_[id - 1];
 +        const auto& location = selected.location;
-+        if (!location || !location.held_by(u) || !u.has_item(*location) ||
-+            u.parents(*location) != selected.parents || location->typeId().str() != selected.type ||
++        if (selected.external) { auto error=validate_external(u); if (!error.empty()) return error; }
++        if (!location || (selected.external ? get_map().getabs(location.pos()) != *external_ :
++            (!location.held_by(u) || !u.has_item(*location))) ||
++            (selected.external ? external_parents(location) : u.parents(*location)) != selected.parents || location->typeId().str() != selected.type ||
 +            location->charges != selected.charges || location->count_by_charges() != selected.counted ||
 +            u.is_worn(*location) != selected.worn || u.is_wielding(*location) != selected.wielded)
 +            return ::cwm::tr("Item or pocket changed: reopen the inventory.", "Oggetto o tasca cambiati: riapri l'inventario.");
@@ -1794,6 +1831,7 @@ index 0000000..63c6eeb
 +        return value >= 1 && value <= 2048 && std::floor(value) == value ? unsigned(value) : 0;
 +    }
 +    std::string arrange(avatar& u, uint64_t view, uint32_t source, uint32_t before) {
++        if (external_) return "Arrange items in the ordinary owned inventory.";
 +        auto error = validate_binding(u, view, source); if (!error.empty()) return error;
 +        if (before) { error = validate_binding(u, view, before); if (!error.empty()) return error; }
 +        if (source == before) return {};
@@ -1827,10 +1865,24 @@ index 0000000..63c6eeb
 +                                 uint32_t destination, int action) const {
 +        auto error = validate_binding(u, view, id); if (!error.empty()) return error;
 +        auto source = target(id);
-+        error = transfer_source_error(u, source); if (!error.empty()) return error;
++        error = external_item(id) ? external_source_error(u, source) : transfer_source_error(u, source); if (!error.empty()) return error;
 +        const int available = source->count_by_charges() ? source->charges : 1;
 +        if (quantity <= 0 || quantity > available) return ::cwm::tr("Quantity is invalid or no longer available.", "Quantita non valida o non piu disponibile.");
 +        if (get_map().getabs(u.pos()) != origin_) return ::cwm::tr("Position changed: reopen the inventory.", "Posizione cambiata: riapri l'inventario.");
++        if (action == 2) {
++            if (destination || !external_item(id)) return "Select an external item to collect.";
++            return validate_external(u);
++        }
++        if (action == 3) {
++            if (destination || external_item(id)) return "Select an owned item to deposit.";
++            error = validate_external(u); if (!error.empty()) return error;
++            const auto pos = external_position(); auto& m = get_map();
++            if (!m.can_put_items_ter_furn(pos)) return "Items cannot be deposited here.";
++            item portion(*source); if (portion.count_by_charges()) portion.charges=quantity;
++            if (portion.volume() > m.free_volume(pos)) return "Not enough space in this storage.";
++            return {};
++        }
++        if (action == 0 && external_item(id)) return "Collect the external item first.";
 +        if (action == 0) {
 +            if (destination) return ::cwm::tr("Dropping on the ground does not require a container.", "Il deposito a terra non richiede un contenitore.");
 +            if (!get_map().can_put_items(u.pos())) return ::cwm::tr("You cannot drop items here.", "Non puoi depositare oggetti qui.");
@@ -1839,6 +1891,8 @@ index 0000000..63c6eeb
 +        if (action != 1) return ::cwm::tr("Transfer is unsupported.", "Trasferimento non supportato.");
 +        error = validate_binding(u, view, destination); if (!error.empty()) return error;
 +        auto container = target(destination);
++        if (external_item(id) || external_item(destination)) { error=validate_external(u); if (!error.empty()) return error; }
++        if (external_item(id) && !source->is_owned_by(u,true)) return "Collect this item with native pickup before inserting it.";
 +        error = access_error(container); if (!error.empty()) return error;
 +        if (source == container || source->has_item(*container)) return ::cwm::tr("A container cannot contain itself or an ancestor.", "Un contenitore non puo contenere se stesso o un suo antenato.");
 +        if (source.has_parent() && source.parent_item() == container) return ::cwm::tr("Item is already in this container.", "Oggetto gia in questo contenitore.");
@@ -1857,22 +1911,31 @@ index 0000000..63c6eeb
 +    }
 +    item_location target(uint32_t id) const { return bindings_.at(id - 1).location; }
 +    std::vector<uint8_t> query(avatar& u, uint64_t query_id, cdda::cwm::MessageBuilder& wire,
-+                              const std::string& error = {}) {
++                              const std::string& supplied_error = {}, const std::optional<tripoint>& external = {}) {
++        std::string error=supplied_error;
++        if (external && error.empty()) error=external_access(u,*external);
 +        auto& fbb = wire.builder();
 +        std::vector<flatbuffers::Offset<CDDA::CWM::InventoryEntry>> entries;
 +        std::vector<flatbuffers::Offset<CDDA::CWM::InventoryPocket>> pockets;
 +        bool truncated = false;
++        if (!error.empty()) clear();
 +        if (error.empty()) {
 +            clear(); view_ = next_view_++; origin_ = get_map().getabs(u.pos());
++            if (external) {
++                external_=external; const auto pos=external_position(); auto& m=get_map();
++                external_terrain_=m.ter(pos).id().str();external_furniture_=m.furn(pos).id().str();
++            }
 +            std::map<item*, uint32_t> ids;
-+            u.visit_items([&](item* it, item* parent) {
++            bool exporting_external=false;
++            const auto append = [&](item* it, item* parent) {
 +                if (entries.size() >= 2048) { truncated = true; return VisitResponse::ABORT; }
-+                const auto ancestors = u.parents(*it);
++                const auto ancestors = exporting_external ? std::vector<item*>{} : u.parents(*it);
 +                if (ancestors.size() > 32 || (parent && !ids.count(parent))) {
 +                    truncated = true; return VisitResponse::SKIP;
 +                }
 +                const uint32_t id = entries.size() + 1, parent_id = parent ? ids.at(parent) : 0;
-+                item_location location = parent ? item_location(bindings_[parent_id - 1].location, it) : item_location(u, it);
++                item_location location = parent ? item_location(bindings_[parent_id - 1].location, it) : exporting_external ? item_location(map_cursor(external_position()),it) : item_location(u, it);
++                if (exporting_external && !access_error(location).empty()) return VisitResponse::SKIP;
 +                const bool worn = u.is_worn(*it), wielded = u.is_wielding(*it);
 +                int pocket_index = -1;
 +                if (parent) {
@@ -1902,11 +1965,11 @@ index 0000000..63c6eeb
 +                    it->typeId().str().c_str(), remove_color_tags(it->tname()).c_str(), it->get_category_shallow().get_id().str().c_str(),
 +                    it->charges, it->count_by_charges(), worn, wielded,
 +                    units::to_gram<int64_t>(it->weight()), units::to_milliliter<int64_t>(it->volume()),
-+                    units::to_millimeter<int64_t>(it->length()), access, actions, &reasons, consume_moves, consume_label, remove_color_tags(warning).c_str(), transfer_source_error(u, location).c_str(),
++                    units::to_millimeter<int64_t>(it->length()), access, actions, &reasons, consume_moves, consume_label, remove_color_tags(warning).c_str(), (exporting_external ? external_source_error(u,location) : transfer_source_error(u, location)).c_str(),
 +                    std::any_of(container_pockets.begin(), container_pockets.end(),
-+                        [](const auto* p) { return p->is_type(pocket_type::CONTAINER); }), quick_slot, it->rotten(), ui_order(*it)));
-+                bindings_.push_back({location, ancestors, it->typeId().str(), it->charges,
-+                                     it->count_by_charges(), worn, wielded});
++                        [](const auto* p) { return p->is_type(pocket_type::CONTAINER); }), exporting_external ? 0 : quick_slot, it->rotten(), exporting_external ? 0 : ui_order(*it), exporting_external));
++                bindings_.push_back({location, exporting_external ? external_parents(location) : ancestors, it->typeId().str(), it->charges,
++                                     it->count_by_charges(), worn, wielded, exporting_external});
 +                ids[it] = id;
 +                const auto own_pockets = it->get_all_contained_pockets();
 +                for (size_t i = 0; i < own_pockets.size(); ++i) {
@@ -1921,12 +1984,19 @@ index 0000000..63c6eeb
 +                        std::max(0, p->moves()), p->sealed(), p->rigid(), p->watertight()));
 +                }
 +                return VisitResponse::NEXT;
-+            });
++            };
++            u.visit_items(append);
++            if (external_) { exporting_external=true; map_cursor(external_position()).visit_items(append); }
 +        }
++        const CDDA::CWM::Coord3i coord(external ? external->x : 0, external ? external->y : 0, external ? external->z : 0);
++        const auto pos = external_ ? external_position() : u.pos(); auto& m=get_map();
++        const auto label = external_ ? m.name(pos) : "";
++        const auto capacity = external_ ? units::to_milliliter<int64_t>(m.max_volume(pos)) : 0;
++        const auto remaining = external_ ? std::max<int64_t>(0,units::to_milliliter<int64_t>(m.free_volume(pos))) : 0;
 +        const auto result = CDDA::CWM::CreateInventoryViewDirect(fbb, query_id, error.empty() ? view_ : 0,
 +            &entries, &pockets, truncated, error.c_str(), units::to_gram<int64_t>(u.weight_carried()),
 +            units::to_gram<int64_t>(u.weight_capacity()), units::to_milliliter<int64_t>(u.volume_carried()),
-+            units::to_milliliter<int64_t>(u.volume_capacity()));
++            units::to_milliliter<int64_t>(u.volume_capacity()), error.empty() && external ? &coord : nullptr, label.c_str(), capacity, remaining);
 +        return wire.finish_message(CDDA::CWM::Payload::InventoryView, result.Union());
 +    }
 +};
@@ -2357,10 +2427,10 @@ index 0000000..c273bf2
 +}
 diff --git a/src/cwm/cwm_map_exporter.cpp b/src/cwm/cwm_map_exporter.cpp
 new file mode 100644
-index 0000000..1d0b669
+index 0000000..960d55a
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.cpp
-@@ -0,0 +1,657 @@
+@@ -0,0 +1,663 @@
 +#include "cwm/product_language.hpp"
 +#include "cwm_motion.h"
 +// CDDA CWM Map & Entity Exporter Implementation
@@ -2525,6 +2595,7 @@ index 0000000..1d0b669
 +        material = FLOOR;
 +    if (!f.id.is_null()) {
 +        flags |= FURNITURE;
++        if (m.has_flag(ter_furn_flag::TFLAG_CONTAINER, p)) flags |= STORAGE;
 +        if (blocked && !f.has_flag(ter_furn_flag::TFLAG_SHORT)) flags |= TALL_FURNITURE;
 +    }
 +    uint8_t orientation = 0;
@@ -2655,10 +2726,14 @@ index 0000000..1d0b669
 +                        if (cache) cache->tiles[cache_index] = packed;
 +
 +                        const map_stack stack = m.i_at(p);
-+                        std::string item_signature;
++                        const bool storage = m.has_flag(ter_furn_flag::TFLAG_CONTAINER, p) && u.sees(p);
++                        const std::string storage_label = storage ? remove_color_tags(m.name(p)) : "";
++                        std::string item_signature = storage ? "storage:" + m.furn(p).id().str() + ":" + storage_label + ";" : "";
++                        const bool perceived = !stack.empty() && u.sees(p) && m.could_see_items(p,u.pos()) && m.accessible_items(p);
 +                        std::vector<flatbuffers::Offset<CDDA::CWM::GroundItemState>> item_offsets;
 +                        uint32_t stack_index = 0;
 +                        for (const item& it : stack) {
++                            if (!perceived) break;
 +                            const std::string type = it.typeId().str();
 +                            const std::string name = it.tname();
 +                            const bool by_charges = it.count_by_charges();
@@ -2668,7 +2743,8 @@ index 0000000..1d0b669
 +                                ":" + (by_charges ? "1;" : "0;");
 +                            item_offsets.push_back(CDDA::CWM::CreateGroundItemStateDirect(
 +                                fbb, stack_index++, type.c_str(), name.c_str(),
-+                                it.charges, by_charges));
++                                it.charges, by_charges, "", false, it.rotten(),
++                                it.is_container()));
 +                        }
 +
 +                        bool items_changed = include_chunks || !cache;
@@ -2696,7 +2772,7 @@ index 0000000..1d0b669
 +                        if (items_changed && (!item_signature.empty() || !include_chunks)) {
 +                            const CDDA::CWM::Coord3i coord(p.x, p.y, p.z);
 +                            ground_item_tiles.push_back(CDDA::CWM::CreateGroundItemTileState(
-+                                fbb, &coord, fbb.CreateVector(item_offsets)));
++                                fbb, &coord, fbb.CreateVector(item_offsets), storage, fbb.CreateString(storage_label)));
 +                        }
 +                        if (cache) cache->ground_items[cache_index] = std::move(item_signature);
 +                    }
@@ -2950,7 +3026,7 @@ index 0000000..1d0b669
 +    const auto ranged = export_ranged_weapon(fbb, const_cast<avatar&>(u), weapon_token);
 +    const auto reload = activity_token && u.activity.id() == activity_id("ACT_RELOAD") && u.activity.moves_total>0 ?
 +        CDDA::CWM::CreateReloadState(fbb,activity_token,u.activity.moves_total,std::clamp(u.activity.moves_left,0,u.activity.moves_total)) : flatbuffers::Offset<CDDA::CWM::ReloadState>{};
-+    const auto transfer = activity_token && (u.activity.id() == activity_id("ACT_DROP") || u.activity.id() == activity_id("ACT_INSERT_ITEM")) ?
++    const auto transfer = activity_token && (u.activity.id() == activity_id("ACT_DROP") || u.activity.id() == activity_id("ACT_INSERT_ITEM") || u.activity.id() == activity_id("ACT_PICKUP")) ?
 +        CDDA::CWM::CreateItemTransferState(fbb, activity_token, std::max(0, u.activity.moves_total),
 +            std::clamp(u.activity.moves_left, 0, std::max(0, u.activity.moves_total)), u.activity.id() == activity_id("ACT_INSERT_ITEM")) :
 +        flatbuffers::Offset<CDDA::CWM::ItemTransferState>{};
@@ -3202,10 +3278,10 @@ index 0000000..bb65c87
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..8a4d111
+index 0000000..fe3adea
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,1032 @@
+@@ -0,0 +1,1039 @@
 +#include "cwm/product_language.hpp"
 +#include "cwm_motion.h"
 +// CDDA CWM IPC Server Implementation
@@ -3316,7 +3392,7 @@ index 0000000..8a4d111
 +        activity_kind_ = "ACT_CRAFT"; activity_total_ = 10000000; activity_remaining_ = remaining;
 +        return;
 +    }
-+    if (u.activity.id() == activity_id("ACT_DROP") || u.activity.id() == activity_id("ACT_INSERT_ITEM")) {
++    if (u.activity.id() == activity_id("ACT_DROP") || u.activity.id() == activity_id("ACT_INSERT_ITEM") || u.activity.id() == activity_id("ACT_PICKUP")) {
 +        if (!activity_token_ || activity_kind_ != u.activity.id().str()) activity_token_ = next_activity_token_++;
 +        activity_kind_ = u.activity.id().str();
 +        activity_total_ = std::max(0, u.activity.moves_total);
@@ -3726,8 +3802,13 @@ index 0000000..8a4d111
 +        if (!error.empty()) { result_ = Result{command.id, false, error}; return false; }
 +        auto source = inventory_selection_.target(command.inventory_item);
 +        auto destination = command.transfer_destination ? inventory_selection_.target(command.transfer_destination) : item_location::nowhere;
++        const auto external_pos = command.transfer_action == 3 ? inventory_selection_.external_position() : u.pos();
 +        inventory_selection_.clear(); ranged_selection_.clear(); activity_token_ = 0;
-+        if (command.transfer_action == 0) {
++        if (command.transfer_action == 2) {
++            u.pick_up({{source,command.transfer_quantity}});
++        } else if (command.transfer_action == 3) {
++            u.assign_activity(drop_activity_actor({drop_or_stash_item_info(source,command.transfer_quantity)}, external_pos-u.pos(),true));
++        } else if (command.transfer_action == 0) {
 +            // The selected destination is explicitly ground at the avatar tile,
 +            // never implicit vehicle cargo; same actor as native advanced inventory.
 +            u.assign_activity(drop_activity_actor({drop_or_stash_item_info(source, command.transfer_quantity)}, tripoint_zero, true));
@@ -3943,8 +4024,10 @@ index 0000000..8a4d111
 +        Hotbar::refresh(u);
 +        const bool throttled = now < next_inventory_query_;
 +        if (!throttled) next_inventory_query_ = now + std::chrono::milliseconds(100);
++        std::optional<tripoint> external;
++        if (const auto* c=request->external_coord()) external=tripoint(c->x(),c->y(),c->z());
 +        emit(inventory_selection_.query(u, request->query_id(), reply,
-+            throttled ? ::cwm::tr("Wait a moment before refreshing the inventory.", "Attendi un istante prima di aggiornare l'inventario.") : ""));
++            throttled ? ::cwm::tr("Wait a moment before refreshing the inventory.", "Attendi un istante prima di aggiornare l'inventario.") : "", external));
 +        return; // No command ledger, move cost, calendar change or input action.
 +    }
 +    uint64_t id = 0;
@@ -4065,7 +4148,7 @@ index 0000000..8a4d111
 +        const auto token = transfer ? transfer->activity_token() : meal ? meal->activity_token() : aid ? aid->activity_token() : craft ? craft->activity_token() : reload->activity_token();
 +        refresh_activity(u);
 +        const bool valid = activity_token_ && token == activity_token_ &&
-+            (transfer ? (u.activity.id() == activity_id("ACT_DROP") || u.activity.id() == activity_id("ACT_INSERT_ITEM")) :
++            (transfer ? (u.activity.id() == activity_id("ACT_DROP") || u.activity.id() == activity_id("ACT_INSERT_ITEM") || u.activity.id() == activity_id("ACT_PICKUP")) :
 +             u.activity.id() == activity_id(meal ? "ACT_CONSUME" : aid ? "ACT_FIRSTAID" : craft ? "ACT_CRAFT" : "ACT_RELOAD")) &&
 +            u.activity.is_interruptible() && (!realtime_ || !pause_reasons(g));
 +        if (valid) {
@@ -4704,10 +4787,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..eb2a6cf
+index 0000000..35ba7ee
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,1719 @@
+@@ -0,0 +1,1817 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "move_mode.h"
@@ -4784,6 +4867,14 @@ index 0000000..eb2a6cf
 +        server.next_inventory_query_ = {};
 +        const auto bytes = wire.build_inventory_query( 1 );
 +        server.handle_client_message( bytes.data(), bytes.size(), get_avatar(), get_map(), *g );
++        return server.inventory_selection_.view_id();
++    }
++    static uint64_t external_inventory(CwmServer& server,const tripoint& absolute) {
++        cdda::cwm::MessageBuilder wire(server.received_sequence_+1,1,server.identity_);
++        server.next_inventory_query_={};
++        const CDDA::CWM::Coord3i coord(absolute.x,absolute.y,absolute.z);
++        const auto bytes=wire.build_inventory_query(1,&coord);
++        server.handle_client_message(bytes.data(),bytes.size(),get_avatar(),get_map(),*g);
 +        return server.inventory_selection_.view_id();
 +    }
 +    static uint32_t item_id( CwmServer &server, const item &it ) {
@@ -6426,6 +6517,96 @@ index 0000000..eb2a6cf
 +    CHECK(rock.stacks_with(other));
 +    rock.charges=7; auto portion=rock.split(2);
 +    CHECK(rock.get_var("cwm_inventory_position",0)==4); CHECK(portion.get_var("cwm_inventory_position",0)==0);
++}
++
++namespace {
++void external_fixture() {
++    clear_avatar();clear_map();clear_creatures();auto& u=get_avatar();u.setpos(tripoint(60,60,0));
++    calendar::turn=calendar::turn_zero+36_hours;u.recalc_sight_limits();g->reset_light_level();
++    get_map().build_map_cache(0);get_map().invalidate_visibility_cache();get_map().update_visibility_cache(0);
++    REQUIRE(u.wear_item(item(itype_id("backpack_hiking"))));u.moves=1000;
++}
++}
++TEST_CASE("cwm_external_view_is_readonly_and_rejects_sealed_unseen_and_distant_contents","[cwm][external]") {
++    external_fixture();auto& u=get_avatar();auto& m=get_map();const auto pos=u.pos()+tripoint_east;
++    m.furn_set(pos,furn_id("f_locker"));m.add_item_or_charges(pos,item(itype_id("9mm"),calendar::turn,30));
++    const auto time=calendar::turn;const auto rng=rng_get_engine();cwm::InventorySelection selection;
++    auto absolute=m.getabs(pos);
++    bool valid=true;
++    SECTION("accessible locker"){}
++    SECTION("sealed crate"){m.furn_set(pos,furn_id("f_crate_c"));valid=false;}
++    SECTION("far tile"){absolute.x+=2;valid=false;}
++    SECTION("other level"){absolute.z++;valid=false;}
++    cdda::cwm::MessageBuilder wire(1,1);const auto bytes=selection.query(u,1,wire,{},absolute);
++    const auto* view=CDDA::CWM::GetCwmMessage(bytes.data())->payload_as_InventoryView();
++    REQUIRE(view);CHECK(cdda::cwm::valid_inventory(view));CHECK(bool(view->view_id())==valid);
++    CHECK(u.moves==1000);CHECK(calendar::turn==time);CHECK(rng_get_engine()==rng);CHECK_FALSE(u.activity);
++    if(valid){CHECK(view->external_coord());CHECK(view->external_capacity_ml()>0);CHECK(view->entries()->Get(view->entries()->size()-1)->external());}
++    else {CHECK(selection.size()==0);CHECK_FALSE(view->external_coord());}
++}
++TEST_CASE("cwm_external_partial_pickup_uses_native_actor_and_conserves_charges","[cwm][external]") {
++    external_fixture();auto& u=get_avatar();auto& m=get_map();const auto pos=u.pos()+tripoint_east;
++    m.furn_set(pos,furn_id("f_locker"));auto& ammo=m.add_item_or_charges(pos,item(itype_id("9mm"),calendar::turn,30));
++    cwm::CwmServer server("/unused-external");cwm::CwmServerTestAccess::ready(server);
++    const auto view=cwm::CwmServerTestAccess::external_inventory(server,m.getabs(pos));REQUIRE(view);
++    const auto id=cwm::CwmServerTestAccess::item_id(server,ammo);REQUIRE(id);
++    cwm::CwmServerTestAccess::transfer(server,view,id,7,0,2);REQUIRE(server.has_queued_action());
++    REQUIRE(cwm::CwmServerTestAccess::execute(server));REQUIRE(u.activity.id()==activity_id("ACT_PICKUP"));
++    CHECK(ammo.charges==30);CHECK(u.moves==1000);cwm::CwmServerTestAccess::complete(server);
++    SECTION("complete pickup"){
++        u.activity.do_turn(u);CHECK_FALSE(u.activity);CHECK(ammo.charges==23);CHECK(u.moves<1000);
++        int held=0;u.visit_items([&](const item* it){if(it->typeId()==itype_id("9mm"))held+=it->charges;return VisitResponse::NEXT;});CHECK(held==7);
++    }
++    SECTION("cancel pickup without duplication"){
++        const auto token=cwm::CwmServerTestAccess::consumption(server);REQUIRE(token);
++        cwm::CwmServerTestAccess::interrupt_transfer(server,token,2);CHECK_FALSE(u.activity);CHECK(ammo.charges==30);
++    }
++    cwm::CwmServerTestAccess::transfer(server,view,id,7,0,2);CHECK_FALSE(server.has_queued_action());
++}
++TEST_CASE("cwm_external_deposit_and_nested_insert_follow_native_capacity_and_costs","[cwm][external]") {
++    external_fixture();auto& u=get_avatar();auto& m=get_map();const auto pos=u.pos()+tripoint_east;
++    m.furn_set(pos,furn_id("f_locker"));auto ammo=u.i_add(item(itype_id("9mm"),calendar::turn,30));REQUIRE(ammo);
++    auto& pack=m.add_item_or_charges(pos,item(itype_id("backpack_hiking")));
++    cwm::CwmServer server("/unused-external-deposit");cwm::CwmServerTestAccess::ready(server);
++    const auto view=cwm::CwmServerTestAccess::external_inventory(server,m.getabs(pos));REQUIRE(view);
++    const auto id=cwm::CwmServerTestAccess::item_id(server,*ammo);
++    uint32_t destination=0;int action=3;
++    SECTION("deposit in furniture"){}
++    SECTION("insert into external backpack"){action=1;destination=cwm::CwmServerTestAccess::item_id(server,pack);}
++    cwm::CwmServerTestAccess::transfer(server,view,id,7,destination,action);REQUIRE(server.has_queued_action());
++    REQUIRE(cwm::CwmServerTestAccess::execute(server));CHECK(ammo->charges==30);CHECK(u.moves==1000);REQUIRE(u.activity);
++    process_activity(u);CHECK_FALSE(u.activity);CHECK(ammo->charges==23);
++    int stored=0;map_cursor(pos).visit_items([&](const item* it){if(it->typeId()==itype_id("9mm"))stored+=it->charges;return VisitResponse::NEXT;});CHECK(stored==7);
++}
++TEST_CASE("cwm_external_admission_and_execution_revalidate_site_identity_and_quantity","[cwm][external]") {
++    external_fixture();auto& u=get_avatar();auto& m=get_map();const auto pos=u.pos()+tripoint_east;
++    m.furn_set(pos,furn_id("f_locker"));auto& ammo=m.add_item_or_charges(pos,item(itype_id("9mm"),calendar::turn,30));
++    cwm::CwmServer server("/unused-external-stale");cwm::CwmServerTestAccess::ready(server);
++    const auto view=cwm::CwmServerTestAccess::external_inventory(server,m.getabs(pos));REQUIRE(view);
++    const auto id=cwm::CwmServerTestAccess::item_id(server,ammo);int mutation=0,quantity=7,action=2;bool queued=true;
++    SECTION("changed charges"){mutation=1;}
++    SECTION("changed furniture"){mutation=2;}
++    SECTION("changed position"){mutation=3;}
++    SECTION("sealed after admission"){mutation=4;}
++    SECTION("zero quantity"){quantity=0;queued=false;}
++    SECTION("too many charges"){quantity=31;queued=false;}
++    SECTION("external source cannot use ordinary drop"){action=0;queued=false;}
++    cwm::CwmServerTestAccess::transfer(server,view,id,quantity,0,action);REQUIRE(server.has_queued_action()==queued);
++    if(queued){if(mutation==1)++ammo.charges;if(mutation==2)m.furn_set(pos,furn_id("f_counter"));if(mutation==3)u.setpos(u.pos()+tripoint_south);if(mutation==4)m.furn_set(pos,furn_id("f_crate_c"));
++        CHECK_FALSE(cwm::CwmServerTestAccess::execute(server));CHECK_FALSE(cwm::CwmServerTestAccess::accepted(server));}
++    CHECK_FALSE(u.activity);CHECK(u.moves==1000);
++}
++TEST_CASE("cwm_external_nested_handles_preserve_parents_and_owned_authority","[cwm][external]") {
++    external_fixture();auto& u=get_avatar();auto& m=get_map();const auto pos=u.pos()+tripoint_east;
++    item pack(itype_id("backpack_hiking"));REQUIRE(pack.put_in(item(itype_id("rock")),pocket_type::CONTAINER).success());
++    auto& placed=m.add_item_or_charges(pos,pack);auto* child=placed.all_items_top().front();
++    cwm::InventorySelection selection;cdda::cwm::MessageBuilder wire(1,1);const auto bytes=selection.query(u,1,wire,{},m.getabs(pos));
++    const auto* view=CDDA::CWM::GetCwmMessage(bytes.data())->payload_as_InventoryView();REQUIRE(cdda::cwm::valid_inventory(view));
++    uint32_t id=0,parent=0;for(uint32_t i=1;i<=selection.size();++i){if(selection.target(i).get_item()==child)id=i;if(selection.target(i).get_item()==&placed)parent=i;}REQUIRE(id);REQUIRE(parent);
++    CHECK(view->entries()->Get(id-1)->parent_id()==parent);CHECK(selection.validate_binding(u,view->view_id(),id).empty());
++    CHECK_FALSE(selection.validate(u,view->view_id(),id,0).empty());CHECK_FALSE(selection.arrange(u,view->view_id(),id,0).empty());
++    CHECK_FALSE(selection.validate_transfer(u,view->view_id(),parent,1,id,1).empty());
++    placed.remove_item(*child);CHECK_FALSE(selection.validate_binding(u,view->view_id(),id).empty());
 +}
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644

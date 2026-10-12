@@ -60,8 +60,22 @@ class GroundItemTileState(object):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(6))
         return o == 0
 
+    # GroundItemTileState
+    def Storage(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(8))
+        if o != 0:
+            return bool(self._tab.Get(flatbuffers.number_types.BoolFlags, o + self._tab.Pos))
+        return False
+
+    # GroundItemTileState
+    def StorageLabel(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(10))
+        if o != 0:
+            return self._tab.String(o + self._tab.Pos)
+        return None
+
 def GroundItemTileStateStart(builder):
-    builder.StartObject(2)
+    builder.StartObject(4)
 
 def Start(builder):
     GroundItemTileStateStart(builder)
@@ -83,6 +97,18 @@ def GroundItemTileStateStartItemsVector(builder, numElems):
 
 def StartItemsVector(builder, numElems):
     return GroundItemTileStateStartItemsVector(builder, numElems)
+
+def GroundItemTileStateAddStorage(builder, storage):
+    builder.PrependBoolSlot(2, storage, 0)
+
+def AddStorage(builder, storage):
+    GroundItemTileStateAddStorage(builder, storage)
+
+def GroundItemTileStateAddStorageLabel(builder, storageLabel):
+    builder.PrependUOffsetTRelativeSlot(3, flatbuffers.number_types.UOffsetTFlags.py_type(storageLabel), 0)
+
+def AddStorageLabel(builder, storageLabel):
+    GroundItemTileStateAddStorageLabel(builder, storageLabel)
 
 def GroundItemTileStateEnd(builder):
     return builder.EndObject()

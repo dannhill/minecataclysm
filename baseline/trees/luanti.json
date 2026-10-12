@@ -7242,12 +7242,12 @@
   {
     "path": "src/cdda/cdda_bridge.cpp",
     "mode": "100644",
-    "sha256": "e5067246ebe12c944ba5f3bbe1c581719981e940dd420a7dcc8da4848cf4af2d"
+    "sha256": "bfcea0f287f5d8185471d5f44b08e61861f4fb563ccb6cc35bfe29171dc55480"
   },
   {
     "path": "src/cdda/cdda_bridge.h",
     "mode": "100644",
-    "sha256": "fbf0b351332fcdc1d42ed09afdea8824f8df72421d7845f5e96c76454d87a2a4"
+    "sha256": "1d682722df0e79a09b2ebab21bc8ead2e24f63da97dde7c6f400d24f3ec198fd"
   },
   {
     "path": "src/cdda/crafting_inventory.h",
@@ -7262,7 +7262,7 @@
   {
     "path": "src/cdda/equipment_inventory.h",
     "mode": "100644",
-    "sha256": "06f2b67366c1ee6dacec821ff5a18ec64f484e594402e27cbe51394a5199d34a"
+    "sha256": "efe4ca8d70f0463f8bb9066e6d066d1d40068c8e1b6a303b5dd793bca9645446"
   },
   {
     "path": "src/cdda/ground_item_formspec.h",
@@ -7272,7 +7272,7 @@
   {
     "path": "src/cdda/ground_item_projection.h",
     "mode": "100644",
-    "sha256": "5480d024e8505e7c383a2568e4691d1c6ae28ace8c54142ff0bc9e05752ef5af"
+    "sha256": "ea3afc478c7d4f5c2578313453d241c4c4adf0b7f3d92b60b9d49f46a8bbec32"
   },
   {
     "path": "src/cdda/ground_item_visual.h",
@@ -7472,7 +7472,7 @@
   {
     "path": "src/client/game.cpp",
     "mode": "100644",
-    "sha256": "1be17cc6b27ff2574748950e285db9e08b54ba2c1feea02c297a6c21e8cc6a2a"
+    "sha256": "c1f03f80e7f6a02ec983239a5925cf09444f8839a89659d3046021546701fe8e"
   },
   {
     "path": "src/client/game.h",
@@ -8382,7 +8382,7 @@
   {
     "path": "src/gui/guiFormSpecMenu.cpp",
     "mode": "100644",
-    "sha256": "7901fa4616763872043793dbe4f91ada64a24d194e0d348d2565b7e169cef36f"
+    "sha256": "e0b7bd272a791c1e4c2f6d2508b332a5deaa8316ebc5208b7ef032eebdfdff9f"
   },
   {
     "path": "src/gui/guiFormSpecMenu.h",

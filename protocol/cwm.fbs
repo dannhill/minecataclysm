@@ -109,11 +109,14 @@ table GroundItemState {
     category: string;
     wielded: bool;
     rotten: bool;
+    container: bool;
 }
 
 table GroundItemTileState {
     coord: Coord3i;
     items: [GroundItemState];
+    storage: bool;
+    storage_label: string;
 }
 
 table EntityState {
@@ -306,7 +309,7 @@ table CraftingRequest { command_id: uint64; view_id: uint64; entry_id: uint32; }
 
 // Read-only correlated query. Handles live only in this session/view and
 // reference native item_locations; never interpret a display stack index.
-table InventoryQueryRequest { query_id: uint64; }
+table InventoryQueryRequest { query_id: uint64; external_coord: Coord3i; }
 table InventoryEntry {
     id: uint32;
     parent_id: uint32;
@@ -333,6 +336,7 @@ table InventoryEntry {
     quick_slot: uint8;
     rotten: bool;
     ui_order: uint32;
+    external: bool;
 }
 table InventoryPocket {
     owner_id: uint32;
@@ -359,6 +363,10 @@ table InventoryView {
     weight_capacity_grams: int64;
     volume_ml: int64;
     volume_capacity_ml: int64;
+    external_coord: Coord3i;
+    external_label: string;
+    external_capacity_ml: int64;
+    external_remaining_ml: int64;
 }
 enum EquipmentAction : byte { WIELD = 0, STOW = 1, WEAR = 2, TAKEOFF = 3, CONSUME = 4, TREAT = 5 }
 // Stable native-owned UI bookmarks. Selection never wields an item.
@@ -398,7 +406,7 @@ table EquipmentRequest {
 }
 
 // Ephemeral owned-item identities, native quantities and destination container.
-enum ItemTransferAction : byte { DROP = 0, INSERT = 1 }
+enum ItemTransferAction : byte { DROP = 0, INSERT = 1, TAKE_EXTERNAL = 2, DEPOSIT_EXTERNAL = 3 }
 table ItemTransferRequest { command_id: uint64; view_id: uint64; item_id: uint32; quantity: int32; destination_id: uint32; action: ItemTransferAction; }
 table ItemTransferState { token: uint64; total_moves: int32; remaining_moves: int32; inserting: bool; }
 table CancelItemTransferRequest { command_id: uint64; activity_token: uint64; }

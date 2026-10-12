@@ -478,29 +478,35 @@ inline const char *EnumNameEquipmentAction(EquipmentAction e) {
 enum class ItemTransferAction : int8_t {
   DROP = 0,
   INSERT = 1,
+  TAKE_EXTERNAL = 2,
+  DEPOSIT_EXTERNAL = 3,
   MIN = DROP,
-  MAX = INSERT
+  MAX = DEPOSIT_EXTERNAL
 };
 
-inline const ItemTransferAction (&EnumValuesItemTransferAction())[2] {
+inline const ItemTransferAction (&EnumValuesItemTransferAction())[4] {
   static const ItemTransferAction values[] = {
     ItemTransferAction::DROP,
-    ItemTransferAction::INSERT
+    ItemTransferAction::INSERT,
+    ItemTransferAction::TAKE_EXTERNAL,
+    ItemTransferAction::DEPOSIT_EXTERNAL
   };
   return values;
 }
 
 inline const char * const *EnumNamesItemTransferAction() {
-  static const char * const names[3] = {
+  static const char * const names[5] = {
     "DROP",
     "INSERT",
+    "TAKE_EXTERNAL",
+    "DEPOSIT_EXTERNAL",
     nullptr
   };
   return names;
 }
 
 inline const char *EnumNameItemTransferAction(ItemTransferAction e) {
-  if (::flatbuffers::IsOutRange(e, ItemTransferAction::DROP, ItemTransferAction::INSERT)) return "";
+  if (::flatbuffers::IsOutRange(e, ItemTransferAction::DROP, ItemTransferAction::DEPOSIT_EXTERNAL)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesItemTransferAction()[index];
 }
@@ -1545,7 +1551,8 @@ struct GroundItemState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_COUNT_BY_CHARGES = 12,
     VT_CATEGORY = 14,
     VT_WIELDED = 16,
-    VT_ROTTEN = 18
+    VT_ROTTEN = 18,
+    VT_CONTAINER = 20
   };
   uint32_t stack_index() const {
     return GetField<uint32_t>(VT_STACK_INDEX, 0);
@@ -1595,6 +1602,12 @@ struct GroundItemState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   bool mutate_rotten(bool _rotten = 0) {
     return SetField<uint8_t>(VT_ROTTEN, static_cast<uint8_t>(_rotten), 0);
   }
+  bool container() const {
+    return GetField<uint8_t>(VT_CONTAINER, 0) != 0;
+  }
+  bool mutate_container(bool _container = 0) {
+    return SetField<uint8_t>(VT_CONTAINER, static_cast<uint8_t>(_container), 0);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_STACK_INDEX, 4) &&
@@ -1608,6 +1621,7 @@ struct GroundItemState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyString(category()) &&
            VerifyField<uint8_t>(verifier, VT_WIELDED, 1) &&
            VerifyField<uint8_t>(verifier, VT_ROTTEN, 1) &&
+           VerifyField<uint8_t>(verifier, VT_CONTAINER, 1) &&
            verifier.EndTable();
   }
 };
@@ -1640,6 +1654,9 @@ struct GroundItemStateBuilder {
   void add_rotten(bool rotten) {
     fbb_.AddElement<uint8_t>(GroundItemState::VT_ROTTEN, static_cast<uint8_t>(rotten), 0);
   }
+  void add_container(bool container) {
+    fbb_.AddElement<uint8_t>(GroundItemState::VT_CONTAINER, static_cast<uint8_t>(container), 0);
+  }
   explicit GroundItemStateBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -1660,13 +1677,15 @@ inline ::flatbuffers::Offset<GroundItemState> CreateGroundItemState(
     bool count_by_charges = false,
     ::flatbuffers::Offset<::flatbuffers::String> category = 0,
     bool wielded = false,
-    bool rotten = false) {
+    bool rotten = false,
+    bool container = false) {
   GroundItemStateBuilder builder_(_fbb);
   builder_.add_category(category);
   builder_.add_charges(charges);
   builder_.add_name(name);
   builder_.add_type_id(type_id);
   builder_.add_stack_index(stack_index);
+  builder_.add_container(container);
   builder_.add_rotten(rotten);
   builder_.add_wielded(wielded);
   builder_.add_count_by_charges(count_by_charges);
@@ -1682,7 +1701,8 @@ inline ::flatbuffers::Offset<GroundItemState> CreateGroundItemStateDirect(
     bool count_by_charges = false,
     const char *category = nullptr,
     bool wielded = false,
-    bool rotten = false) {
+    bool rotten = false,
+    bool container = false) {
   auto type_id__ = type_id ? _fbb.CreateString(type_id) : 0;
   auto name__ = name ? _fbb.CreateString(name) : 0;
   auto category__ = category ? _fbb.CreateString(category) : 0;
@@ -1695,14 +1715,17 @@ inline ::flatbuffers::Offset<GroundItemState> CreateGroundItemStateDirect(
       count_by_charges,
       category__,
       wielded,
-      rotten);
+      rotten,
+      container);
 }
 
 struct GroundItemTileState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef GroundItemTileStateBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_COORD = 4,
-    VT_ITEMS = 6
+    VT_ITEMS = 6,
+    VT_STORAGE = 8,
+    VT_STORAGE_LABEL = 10
   };
   const CDDA::CWM::Coord3i *coord() const {
     return GetStruct<const CDDA::CWM::Coord3i *>(VT_COORD);
@@ -1716,12 +1739,27 @@ struct GroundItemTileState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Tabl
   ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::GroundItemState>> *mutable_items() {
     return GetPointer<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::GroundItemState>> *>(VT_ITEMS);
   }
+  bool storage() const {
+    return GetField<uint8_t>(VT_STORAGE, 0) != 0;
+  }
+  bool mutate_storage(bool _storage = 0) {
+    return SetField<uint8_t>(VT_STORAGE, static_cast<uint8_t>(_storage), 0);
+  }
+  const ::flatbuffers::String *storage_label() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_STORAGE_LABEL);
+  }
+  ::flatbuffers::String *mutable_storage_label() {
+    return GetPointer<::flatbuffers::String *>(VT_STORAGE_LABEL);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<CDDA::CWM::Coord3i>(verifier, VT_COORD, 4) &&
            VerifyOffset(verifier, VT_ITEMS) &&
            verifier.VerifyVector(items()) &&
            verifier.VerifyVectorOfTables(items()) &&
+           VerifyField<uint8_t>(verifier, VT_STORAGE, 1) &&
+           VerifyOffset(verifier, VT_STORAGE_LABEL) &&
+           verifier.VerifyString(storage_label()) &&
            verifier.EndTable();
   }
 };
@@ -1735,6 +1773,12 @@ struct GroundItemTileStateBuilder {
   }
   void add_items(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::GroundItemState>>> items) {
     fbb_.AddOffset(GroundItemTileState::VT_ITEMS, items);
+  }
+  void add_storage(bool storage) {
+    fbb_.AddElement<uint8_t>(GroundItemTileState::VT_STORAGE, static_cast<uint8_t>(storage), 0);
+  }
+  void add_storage_label(::flatbuffers::Offset<::flatbuffers::String> storage_label) {
+    fbb_.AddOffset(GroundItemTileState::VT_STORAGE_LABEL, storage_label);
   }
   explicit GroundItemTileStateBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -1750,22 +1794,31 @@ struct GroundItemTileStateBuilder {
 inline ::flatbuffers::Offset<GroundItemTileState> CreateGroundItemTileState(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     const CDDA::CWM::Coord3i *coord = nullptr,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::GroundItemState>>> items = 0) {
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::GroundItemState>>> items = 0,
+    bool storage = false,
+    ::flatbuffers::Offset<::flatbuffers::String> storage_label = 0) {
   GroundItemTileStateBuilder builder_(_fbb);
+  builder_.add_storage_label(storage_label);
   builder_.add_items(items);
   builder_.add_coord(coord);
+  builder_.add_storage(storage);
   return builder_.Finish();
 }
 
 inline ::flatbuffers::Offset<GroundItemTileState> CreateGroundItemTileStateDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     const CDDA::CWM::Coord3i *coord = nullptr,
-    const std::vector<::flatbuffers::Offset<CDDA::CWM::GroundItemState>> *items = nullptr) {
+    const std::vector<::flatbuffers::Offset<CDDA::CWM::GroundItemState>> *items = nullptr,
+    bool storage = false,
+    const char *storage_label = nullptr) {
   auto items__ = items ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::GroundItemState>>(*items) : 0;
+  auto storage_label__ = storage_label ? _fbb.CreateString(storage_label) : 0;
   return CDDA::CWM::CreateGroundItemTileState(
       _fbb,
       coord,
-      items__);
+      items__,
+      storage,
+      storage_label__);
 }
 
 struct EntityState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -4637,7 +4690,8 @@ inline ::flatbuffers::Offset<CraftingRequest> CreateCraftingRequest(
 struct InventoryQueryRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef InventoryQueryRequestBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_QUERY_ID = 4
+    VT_QUERY_ID = 4,
+    VT_EXTERNAL_COORD = 6
   };
   uint64_t query_id() const {
     return GetField<uint64_t>(VT_QUERY_ID, 0);
@@ -4645,9 +4699,16 @@ struct InventoryQueryRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Ta
   bool mutate_query_id(uint64_t _query_id = 0) {
     return SetField<uint64_t>(VT_QUERY_ID, _query_id, 0);
   }
+  const CDDA::CWM::Coord3i *external_coord() const {
+    return GetStruct<const CDDA::CWM::Coord3i *>(VT_EXTERNAL_COORD);
+  }
+  CDDA::CWM::Coord3i *mutable_external_coord() {
+    return GetStruct<CDDA::CWM::Coord3i *>(VT_EXTERNAL_COORD);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint64_t>(verifier, VT_QUERY_ID, 8) &&
+           VerifyField<CDDA::CWM::Coord3i>(verifier, VT_EXTERNAL_COORD, 4) &&
            verifier.EndTable();
   }
 };
@@ -4658,6 +4719,9 @@ struct InventoryQueryRequestBuilder {
   ::flatbuffers::uoffset_t start_;
   void add_query_id(uint64_t query_id) {
     fbb_.AddElement<uint64_t>(InventoryQueryRequest::VT_QUERY_ID, query_id, 0);
+  }
+  void add_external_coord(const CDDA::CWM::Coord3i *external_coord) {
+    fbb_.AddStruct(InventoryQueryRequest::VT_EXTERNAL_COORD, external_coord);
   }
   explicit InventoryQueryRequestBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -4672,9 +4736,11 @@ struct InventoryQueryRequestBuilder {
 
 inline ::flatbuffers::Offset<InventoryQueryRequest> CreateInventoryQueryRequest(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint64_t query_id = 0) {
+    uint64_t query_id = 0,
+    const CDDA::CWM::Coord3i *external_coord = nullptr) {
   InventoryQueryRequestBuilder builder_(_fbb);
   builder_.add_query_id(query_id);
+  builder_.add_external_coord(external_coord);
   return builder_.Finish();
 }
 
@@ -4704,7 +4770,8 @@ struct InventoryEntry FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_CONTAINER = 44,
     VT_QUICK_SLOT = 46,
     VT_ROTTEN = 48,
-    VT_UI_ORDER = 50
+    VT_UI_ORDER = 50,
+    VT_EXTERNAL = 52
   };
   uint32_t id() const {
     return GetField<uint32_t>(VT_ID, 0);
@@ -4850,6 +4917,12 @@ struct InventoryEntry FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   bool mutate_ui_order(uint32_t _ui_order = 0) {
     return SetField<uint32_t>(VT_UI_ORDER, _ui_order, 0);
   }
+  bool external() const {
+    return GetField<uint8_t>(VT_EXTERNAL, 0) != 0;
+  }
+  bool mutate_external(bool _external = 0) {
+    return SetField<uint8_t>(VT_EXTERNAL, static_cast<uint8_t>(_external), 0);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_ID, 4) &&
@@ -4884,6 +4957,7 @@ struct InventoryEntry FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyField<uint8_t>(verifier, VT_QUICK_SLOT, 1) &&
            VerifyField<uint8_t>(verifier, VT_ROTTEN, 1) &&
            VerifyField<uint32_t>(verifier, VT_UI_ORDER, 4) &&
+           VerifyField<uint8_t>(verifier, VT_EXTERNAL, 1) &&
            verifier.EndTable();
   }
 };
@@ -4964,6 +5038,9 @@ struct InventoryEntryBuilder {
   void add_ui_order(uint32_t ui_order) {
     fbb_.AddElement<uint32_t>(InventoryEntry::VT_UI_ORDER, ui_order, 0);
   }
+  void add_external(bool external) {
+    fbb_.AddElement<uint8_t>(InventoryEntry::VT_EXTERNAL, static_cast<uint8_t>(external), 0);
+  }
   explicit InventoryEntryBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -5000,7 +5077,8 @@ inline ::flatbuffers::Offset<InventoryEntry> CreateInventoryEntry(
     bool container = false,
     uint8_t quick_slot = 0,
     bool rotten = false,
-    uint32_t ui_order = 0) {
+    uint32_t ui_order = 0,
+    bool external = false) {
   InventoryEntryBuilder builder_(_fbb);
   builder_.add_length_mm(length_mm);
   builder_.add_volume_ml(volume_ml);
@@ -5019,6 +5097,7 @@ inline ::flatbuffers::Offset<InventoryEntry> CreateInventoryEntry(
   builder_.add_pocket_index(pocket_index);
   builder_.add_parent_id(parent_id);
   builder_.add_id(id);
+  builder_.add_external(external);
   builder_.add_rotten(rotten);
   builder_.add_quick_slot(quick_slot);
   builder_.add_container(container);
@@ -5054,7 +5133,8 @@ inline ::flatbuffers::Offset<InventoryEntry> CreateInventoryEntryDirect(
     bool container = false,
     uint8_t quick_slot = 0,
     bool rotten = false,
-    uint32_t ui_order = 0) {
+    uint32_t ui_order = 0,
+    bool external = false) {
   auto type_id__ = type_id ? _fbb.CreateString(type_id) : 0;
   auto name__ = name ? _fbb.CreateString(name) : 0;
   auto category__ = category ? _fbb.CreateString(category) : 0;
@@ -5087,7 +5167,8 @@ inline ::flatbuffers::Offset<InventoryEntry> CreateInventoryEntryDirect(
       container,
       quick_slot,
       rotten,
-      ui_order);
+      ui_order,
+      external);
 }
 
 struct InventoryPocket FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -5321,7 +5402,11 @@ struct InventoryView FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_WEIGHT_GRAMS = 16,
     VT_WEIGHT_CAPACITY_GRAMS = 18,
     VT_VOLUME_ML = 20,
-    VT_VOLUME_CAPACITY_ML = 22
+    VT_VOLUME_CAPACITY_ML = 22,
+    VT_EXTERNAL_COORD = 24,
+    VT_EXTERNAL_LABEL = 26,
+    VT_EXTERNAL_CAPACITY_ML = 28,
+    VT_EXTERNAL_REMAINING_ML = 30
   };
   uint64_t query_id() const {
     return GetField<uint64_t>(VT_QUERY_ID, 0);
@@ -5383,6 +5468,30 @@ struct InventoryView FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   bool mutate_volume_capacity_ml(int64_t _volume_capacity_ml = 0) {
     return SetField<int64_t>(VT_VOLUME_CAPACITY_ML, _volume_capacity_ml, 0);
   }
+  const CDDA::CWM::Coord3i *external_coord() const {
+    return GetStruct<const CDDA::CWM::Coord3i *>(VT_EXTERNAL_COORD);
+  }
+  CDDA::CWM::Coord3i *mutable_external_coord() {
+    return GetStruct<CDDA::CWM::Coord3i *>(VT_EXTERNAL_COORD);
+  }
+  const ::flatbuffers::String *external_label() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_EXTERNAL_LABEL);
+  }
+  ::flatbuffers::String *mutable_external_label() {
+    return GetPointer<::flatbuffers::String *>(VT_EXTERNAL_LABEL);
+  }
+  int64_t external_capacity_ml() const {
+    return GetField<int64_t>(VT_EXTERNAL_CAPACITY_ML, 0);
+  }
+  bool mutate_external_capacity_ml(int64_t _external_capacity_ml = 0) {
+    return SetField<int64_t>(VT_EXTERNAL_CAPACITY_ML, _external_capacity_ml, 0);
+  }
+  int64_t external_remaining_ml() const {
+    return GetField<int64_t>(VT_EXTERNAL_REMAINING_ML, 0);
+  }
+  bool mutate_external_remaining_ml(int64_t _external_remaining_ml = 0) {
+    return SetField<int64_t>(VT_EXTERNAL_REMAINING_ML, _external_remaining_ml, 0);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint64_t>(verifier, VT_QUERY_ID, 8) &&
@@ -5400,6 +5509,11 @@ struct InventoryView FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyField<int64_t>(verifier, VT_WEIGHT_CAPACITY_GRAMS, 8) &&
            VerifyField<int64_t>(verifier, VT_VOLUME_ML, 8) &&
            VerifyField<int64_t>(verifier, VT_VOLUME_CAPACITY_ML, 8) &&
+           VerifyField<CDDA::CWM::Coord3i>(verifier, VT_EXTERNAL_COORD, 4) &&
+           VerifyOffset(verifier, VT_EXTERNAL_LABEL) &&
+           verifier.VerifyString(external_label()) &&
+           VerifyField<int64_t>(verifier, VT_EXTERNAL_CAPACITY_ML, 8) &&
+           VerifyField<int64_t>(verifier, VT_EXTERNAL_REMAINING_ML, 8) &&
            verifier.EndTable();
   }
 };
@@ -5438,6 +5552,18 @@ struct InventoryViewBuilder {
   void add_volume_capacity_ml(int64_t volume_capacity_ml) {
     fbb_.AddElement<int64_t>(InventoryView::VT_VOLUME_CAPACITY_ML, volume_capacity_ml, 0);
   }
+  void add_external_coord(const CDDA::CWM::Coord3i *external_coord) {
+    fbb_.AddStruct(InventoryView::VT_EXTERNAL_COORD, external_coord);
+  }
+  void add_external_label(::flatbuffers::Offset<::flatbuffers::String> external_label) {
+    fbb_.AddOffset(InventoryView::VT_EXTERNAL_LABEL, external_label);
+  }
+  void add_external_capacity_ml(int64_t external_capacity_ml) {
+    fbb_.AddElement<int64_t>(InventoryView::VT_EXTERNAL_CAPACITY_ML, external_capacity_ml, 0);
+  }
+  void add_external_remaining_ml(int64_t external_remaining_ml) {
+    fbb_.AddElement<int64_t>(InventoryView::VT_EXTERNAL_REMAINING_ML, external_remaining_ml, 0);
+  }
   explicit InventoryViewBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -5460,14 +5586,22 @@ inline ::flatbuffers::Offset<InventoryView> CreateInventoryView(
     int64_t weight_grams = 0,
     int64_t weight_capacity_grams = 0,
     int64_t volume_ml = 0,
-    int64_t volume_capacity_ml = 0) {
+    int64_t volume_capacity_ml = 0,
+    const CDDA::CWM::Coord3i *external_coord = nullptr,
+    ::flatbuffers::Offset<::flatbuffers::String> external_label = 0,
+    int64_t external_capacity_ml = 0,
+    int64_t external_remaining_ml = 0) {
   InventoryViewBuilder builder_(_fbb);
+  builder_.add_external_remaining_ml(external_remaining_ml);
+  builder_.add_external_capacity_ml(external_capacity_ml);
   builder_.add_volume_capacity_ml(volume_capacity_ml);
   builder_.add_volume_ml(volume_ml);
   builder_.add_weight_capacity_grams(weight_capacity_grams);
   builder_.add_weight_grams(weight_grams);
   builder_.add_view_id(view_id);
   builder_.add_query_id(query_id);
+  builder_.add_external_label(external_label);
+  builder_.add_external_coord(external_coord);
   builder_.add_error(error);
   builder_.add_pockets(pockets);
   builder_.add_entries(entries);
@@ -5486,10 +5620,15 @@ inline ::flatbuffers::Offset<InventoryView> CreateInventoryViewDirect(
     int64_t weight_grams = 0,
     int64_t weight_capacity_grams = 0,
     int64_t volume_ml = 0,
-    int64_t volume_capacity_ml = 0) {
+    int64_t volume_capacity_ml = 0,
+    const CDDA::CWM::Coord3i *external_coord = nullptr,
+    const char *external_label = nullptr,
+    int64_t external_capacity_ml = 0,
+    int64_t external_remaining_ml = 0) {
   auto entries__ = entries ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::InventoryEntry>>(*entries) : 0;
   auto pockets__ = pockets ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::InventoryPocket>>(*pockets) : 0;
   auto error__ = error ? _fbb.CreateString(error) : 0;
+  auto external_label__ = external_label ? _fbb.CreateString(external_label) : 0;
   return CDDA::CWM::CreateInventoryView(
       _fbb,
       query_id,
@@ -5501,7 +5640,11 @@ inline ::flatbuffers::Offset<InventoryView> CreateInventoryViewDirect(
       weight_grams,
       weight_capacity_grams,
       volume_ml,
-      volume_capacity_ml);
+      volume_capacity_ml,
+      external_coord,
+      external_label__,
+      external_capacity_ml,
+      external_remaining_ml);
 }
 
 struct QuickSlot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {

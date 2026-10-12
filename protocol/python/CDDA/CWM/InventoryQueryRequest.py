@@ -31,8 +31,19 @@ class InventoryQueryRequest(object):
             return self._tab.Get(flatbuffers.number_types.Uint64Flags, o + self._tab.Pos)
         return 0
 
+    # InventoryQueryRequest
+    def ExternalCoord(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(6))
+        if o != 0:
+            x = o + self._tab.Pos
+            from CDDA.CWM.Coord3i import Coord3i
+            obj = Coord3i()
+            obj.Init(self._tab.Bytes, x)
+            return obj
+        return None
+
 def InventoryQueryRequestStart(builder):
-    builder.StartObject(1)
+    builder.StartObject(2)
 
 def Start(builder):
     InventoryQueryRequestStart(builder)
@@ -42,6 +53,12 @@ def InventoryQueryRequestAddQueryId(builder, queryId):
 
 def AddQueryId(builder, queryId):
     InventoryQueryRequestAddQueryId(builder, queryId)
+
+def InventoryQueryRequestAddExternalCoord(builder, externalCoord):
+    builder.PrependStructSlot(1, flatbuffers.number_types.UOffsetTFlags.py_type(externalCoord), 0)
+
+def AddExternalCoord(builder, externalCoord):
+    InventoryQueryRequestAddExternalCoord(builder, externalCoord)
 
 def InventoryQueryRequestEnd(builder):
     return builder.EndObject()

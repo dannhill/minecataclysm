@@ -130,8 +130,40 @@ class InventoryView(object):
             return self._tab.Get(flatbuffers.number_types.Int64Flags, o + self._tab.Pos)
         return 0
 
+    # InventoryView
+    def ExternalCoord(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(24))
+        if o != 0:
+            x = o + self._tab.Pos
+            from CDDA.CWM.Coord3i import Coord3i
+            obj = Coord3i()
+            obj.Init(self._tab.Bytes, x)
+            return obj
+        return None
+
+    # InventoryView
+    def ExternalLabel(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(26))
+        if o != 0:
+            return self._tab.String(o + self._tab.Pos)
+        return None
+
+    # InventoryView
+    def ExternalCapacityMl(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(28))
+        if o != 0:
+            return self._tab.Get(flatbuffers.number_types.Int64Flags, o + self._tab.Pos)
+        return 0
+
+    # InventoryView
+    def ExternalRemainingMl(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(30))
+        if o != 0:
+            return self._tab.Get(flatbuffers.number_types.Int64Flags, o + self._tab.Pos)
+        return 0
+
 def InventoryViewStart(builder):
-    builder.StartObject(10)
+    builder.StartObject(14)
 
 def Start(builder):
     InventoryViewStart(builder)
@@ -207,6 +239,30 @@ def InventoryViewAddVolumeCapacityMl(builder, volumeCapacityMl):
 
 def AddVolumeCapacityMl(builder, volumeCapacityMl):
     InventoryViewAddVolumeCapacityMl(builder, volumeCapacityMl)
+
+def InventoryViewAddExternalCoord(builder, externalCoord):
+    builder.PrependStructSlot(10, flatbuffers.number_types.UOffsetTFlags.py_type(externalCoord), 0)
+
+def AddExternalCoord(builder, externalCoord):
+    InventoryViewAddExternalCoord(builder, externalCoord)
+
+def InventoryViewAddExternalLabel(builder, externalLabel):
+    builder.PrependUOffsetTRelativeSlot(11, flatbuffers.number_types.UOffsetTFlags.py_type(externalLabel), 0)
+
+def AddExternalLabel(builder, externalLabel):
+    InventoryViewAddExternalLabel(builder, externalLabel)
+
+def InventoryViewAddExternalCapacityMl(builder, externalCapacityMl):
+    builder.PrependInt64Slot(12, externalCapacityMl, 0)
+
+def AddExternalCapacityMl(builder, externalCapacityMl):
+    InventoryViewAddExternalCapacityMl(builder, externalCapacityMl)
+
+def InventoryViewAddExternalRemainingMl(builder, externalRemainingMl):
+    builder.PrependInt64Slot(13, externalRemainingMl, 0)
+
+def AddExternalRemainingMl(builder, externalRemainingMl):
+    InventoryViewAddExternalRemainingMl(builder, externalRemainingMl)
 
 def InventoryViewEnd(builder):
     return builder.EndObject()

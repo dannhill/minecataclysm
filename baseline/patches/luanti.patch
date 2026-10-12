@@ -240,7 +240,7 @@ index b6ae675..9e33201 100644
  		/*
  			Local player handling
 diff --git a/src/client/game.cpp b/src/client/game.cpp
-index 27b5833..f3a08e6 100644
+index 27b5833..c96ab2f 100644
 --- a/src/client/game.cpp
 +++ b/src/client/game.cpp
 @@ -8,6 +8,8 @@
@@ -659,7 +659,7 @@ index 27b5833..f3a08e6 100644
  
  	core::line3d<f32> shootline;
  
-@@ -3365,6 +3620,47 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
+@@ -3365,6 +3620,48 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
  	// but the halo rendering code is already inefficient so there's no point in optimizing it here
  	hud->updateSelectionMesh(camera_offset);
  
@@ -670,7 +670,8 @@ index 27b5833..f3a08e6 100644
 +		auto item_ray = shootline;
 +		if (pointed.type != POINTEDTHING_NOTHING)
 +			item_ray.end = pointed.intersection_point;
-+		const bool items_pointed = bridge.pointGroundItems(item_ray);
++		bool items_pointed = bridge.pointGroundItems(item_ray);
++        if(pointed.type == POINTEDTHING_NODE && bridge.pointStorageNode(pointed.node_undersurface)) items_pointed=true;
 +		bridge.pointCombatTarget(item_ray);
 +        const bool reload_pressed = wasKeyDown(KeyType::CDDA_RELOAD);
 +        const bool fire_pressed = wasKeyPressed(KeyType::DIG);
@@ -707,7 +708,7 @@ index 27b5833..f3a08e6 100644
  	// Allow digging again if button is not pressed
  	if (runData.digging_blocked && !isKeyDown(KeyType::DIG))
  		runData.digging_blocked = false;
-@@ -4247,7 +4543,8 @@ void Game::updateClouds(float dtime)
+@@ -4247,7 +4544,8 @@ void Game::updateClouds(float dtime)
  {
  	if (this->sky->getCloudsVisible()) {
  		this->clouds->setVisible(true);
@@ -717,7 +718,7 @@ index 27b5833..f3a08e6 100644
  		// this->camera->getPosition is not enough for third-person camera.
  		v3f camera_node_position = this->camera->getCameraNode()->getPosition();
  		v3s16 camera_offset      = this->camera->getOffset();
-@@ -4319,7 +4616,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
+@@ -4319,7 +4617,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
  	/*
  		Fog
  	*/
@@ -731,7 +732,7 @@ index 27b5833..f3a08e6 100644
  		this->driver->setFog(
  				fog_color,
  				video::EFT_FOG_LINEAR,
-@@ -4518,6 +4820,12 @@ void Game::showPauseMenu()
+@@ -4518,6 +4821,12 @@ void Game::showPauseMenu()
  		<< strgettext("Exit to Menu") << "]";
  	os		<< "button_exit[4," << (ypos++) << ";3,0.5;btn_exit_os;"
  		<< strgettext("Exit to OS")   << "]";
@@ -889,7 +890,7 @@ index 7758c96..f5783bf 100644
  	settings->setDefault("keymap_toggle_update_camera", "KEY_F4");
  #else
 diff --git a/src/gui/guiFormSpecMenu.cpp b/src/gui/guiFormSpecMenu.cpp
-index ed1c300..37f2b06 100644
+index ed1c300..9ab77a7 100644
 --- a/src/gui/guiFormSpecMenu.cpp
 +++ b/src/gui/guiFormSpecMenu.cpp
 @@ -1,3 +1,4 @@
@@ -1021,7 +1022,7 @@ index ed1c300..37f2b06 100644
 +    if (target.name.rfind("quickslot_", 0) == 0) return true;
 +    if (target.name.rfind("hand_", 0) == 0) return source.actions & 1;
 +    if (target.name.rfind("worn_", 0) == 0 || target.name.rfind("wear_empty_", 0) == 0) return source.actions & 4;
-+    if (target.name == "drag_ground" || (target.flags & 1)) return (source.flags & 2) && source.item != target.item;
++    if (target.name == "drag_ground" || target.name.rfind("drag_owned",0)==0 || target.name.rfind("drag_external",0)==0 || (target.flags & 1)) return (source.flags & 2) && source.item != target.item;
 +    if (source.name.rfind("hand_", 0) == 0) return source.actions & 2;
 +    if (source.name.rfind("worn_", 0) == 0) return source.actions & 8;
 +    return true; // Grid placement or bookmark removal only.
@@ -1680,10 +1681,10 @@ index 0000000..e1e7236
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..4b32e9d
+index 0000000..6924c41
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,2761 @@
+@@ -0,0 +1,2799 @@
 +#include "cwm/product_language.hpp"
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
@@ -1901,10 +1902,12 @@ index 0000000..4b32e9d
 +    struct QueuedTransfer { uint64_t view; uint32_t item, destination; int quantity, action; };
 +    std::optional<QueuedTransfer> queued_transfer_;
 +    bool transfer_form_{false}, transferring_{false};
++    std::optional<v3s32> external_anchor_;
 +    uint32_t transfer_destination_{0}; size_t destination_page_{0}; int transfer_quantity_{1};
 +    uint64_t transfers_sent_{0};
 +
 +    std::string equipment_form() const {
++        if (external_anchor_) return externalStorageForm(equipment_view_, equipment_page_, destination_page_, equipment_selected_, transfer_quantity_, equipment_notice_, [&](const auto& type) { return ground_item_visual_name(type); });
 +        if (transfer_form_) return transferForm(equipment_view_, equipment_page_, equipment_selected_, transfer_destination_,
 +            destination_page_, transfer_quantity_, equipment_notice_, [&](const auto& type) { return ground_item_visual_name(type); }, activity_token_);
 +        return equipmentForm(equipment_view_, equipment_page_, equipment_selected_, equipment_search_,
@@ -1918,14 +1921,15 @@ index 0000000..4b32e9d
 +        crafting_close_ = crafting_open_;
 +        queued_cancel_activity_.reset(); activity_token_ = 0; weapon_token_ = 0; reloading_ = false;
 +        activity_total_ = activity_remaining_ = 0;
-+        queued_equipment_.reset(); queued_transfer_.reset(); transferring_ = false; inventory_query_ = 0; equipment_view_ = {};
++        queued_equipment_.reset(); queued_transfer_.reset(); external_anchor_.reset(); transferring_ = false; inventory_query_ = 0; equipment_view_ = {};
 +        equipment_close_ = equipment_open_;
 +    }
 +    bool query_inventory() {
 +        if (!session_.ready() || !player_ready_ || metrics_.pending_decision || pending_move_) return false;
 +        auto wire = session_.builder();
 +        inventory_query_ = next_inventory_query_++;
-+        const auto bytes = wire.build_inventory_query(inventory_query_);
++        const CDDA::CWM::Coord3i coord(external_anchor_ ? external_anchor_->X : 0, external_anchor_ ? external_anchor_->Y : 0, external_anchor_ ? external_anchor_->Z : 0);
++        const auto bytes = wire.build_inventory_query(inventory_query_, external_anchor_ ? &coord : nullptr);
 +        equipment_view_ = {}; equipment_selected_ = 0; transfer_destination_ = 0; destination_page_ = 0; transfer_quantity_ = 1;
 +        equipment_notice_.clear(); equipment_dirty_ = true;
 +        return connection_->send_message(bytes.data(), bytes.size());
@@ -1953,6 +1957,8 @@ index 0000000..4b32e9d
 +            inventory_work_command_ = id; inventory_work_settled_ = inventory_work_rejected_ = false;
 +            inventory_return_requested_ = true; inventory_return_armed_ = false; inventory_work_error_.clear();
 +            if (cancel) inventory_work_label_ = (::cwm::wide("Interrupting activity", "Interruzione dell’attivita"));
++            else if (transfer && queued_transfer_->action == 2) inventory_work_label_ = ::cwm::wide("Collect from storage", "Raccogli dal contenitore");
++            else if (transfer && queued_transfer_->action == 3) inventory_work_label_ = ::cwm::wide("Deposit in storage", "Deposita nel contenitore");
 +            else if (transfer) inventory_work_label_ = queued_transfer_->action ? (::cwm::wide("Stow in container", "Riponi nel contenitore")) : (::cwm::wide("Drop on ground", "Deposita a terra"));
 +            else {
 +                const std::array<std::wstring,6> labels{{(::cwm::wide("Wield", "Impugna")), (::cwm::wide("Stow", "Riponi")), (::cwm::wide("Wear", "Indossa")), (::cwm::wide("Take off", "Togli")), (::cwm::wide("Eat / drink", "Mangia / bevi")), (::cwm::wide("Treat", "Medica"))}};
@@ -2061,7 +2067,7 @@ index 0000000..4b32e9d
 +        if (!smgr_) return;
 +
 +        for (auto it = ground_item_visuals_.begin(); it != ground_item_visuals_.end();) {
-+            if (ground_items_.get(it->first)) {
++            if (ground_items_.get(it->first) && !ground_items_.storage(it->first)) {
 +                ++it;
 +                continue;
 +            }
@@ -2079,6 +2085,7 @@ index 0000000..4b32e9d
 +        };
 +
 +        for (const auto& [pos, items] : ground_items_.tiles()) {
++            if (ground_items_.storage(pos)) continue;
 +            const size_t count = std::min<size_t>(3, items.size());
 +            std::vector<std::string> names;
 +            names.reserve(count);
@@ -2386,7 +2393,7 @@ index 0000000..4b32e9d
 +            else if (material == WATER) floor = terrain_node("cdda_nodes:demo_water");
 +        }
 +        if (flags & FURNITURE) {
-+            lower = get_node_for_material(LEGACY_FURNITURE);
++            lower = flags & STORAGE ? terrain_node("cdda_nodes:storage") : get_node_for_material(LEGACY_FURNITURE);
 +            if (flags & TALL_FURNITURE) upper = lower;
 +        }
 +        // Recognizable entry geometry for native connections. These are
@@ -2893,14 +2900,14 @@ index 0000000..4b32e9d
 +                                    state->type_id() ? state->type_id()->str() : "",
 +                                    state->name() ? state->name()->str() : "",
 +                                    state->charges(),
-+                                    state->count_by_charges()
++                                    state->count_by_charges(), "", false, state->rotten(), state->container()
 +                                });
 +                            }
 +                        }
 +
 +                        const auto* p = tile->coord();
 +                        ground_items_.apply(project_tile(p->x(), p->y(), p->z()),
-+                                            std::move(items));
++                                            std::move(items), tile->storage(), tile->storage_label()?tile->storage_label()->str():"");
 +                    }
 +                }
 +
@@ -3280,7 +3287,7 @@ index 0000000..4b32e9d
 +    std::string trace_path;
 +    if (g_settings->getNoEx("cwm_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->trace_.open(trace_path);
-+        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog,ipc_connected,ipc_input,ipc_output,ipc_read_bytes,ipc_write_bytes,ipc_frames,ipc_dispatch_bytes,ipc_read_calls,ipc_write_calls,session_state,input_ready,session_id,player_id,connection_id,sequence,resync_count,entity_cache,vehicle_cache,scene_origin_x,scene_origin_y,simulation_time,realtime,pause_reasons,time_scale,sent_intent,continuous_motion,intent_x,intent_y,ipc_latency_ms,projection_ms,ground_tiles,owned_items,ground_container,ground_hover,queued_pickup,ground_visual_nodes,ground_hover_items,ground_target_items,ground_target_visual_nodes,ground_target_first_type,status_available,body_form,survival_visible,status_stamina,status_head,status_arm_l,combat_hover,attacks_sent,attack_target,attack_target_hp,attack_result,player_state_flags,player_eye_offset,visual_animation_time,visual_animation_delta,ground_item_rotation,status_hunger_level,status_thirst_level,status_fatigue_level,status_pain_level,hud_images_active,equipment_form,inventory_view,inventory_entries,equipment_selected,equipment_sent,pending_decision,consumption_token,consumption_total,consumption_remaining,cancel_consumption_sent,first_aid_token,first_aid_total,first_aid_remaining,crafting_form,crafting_view,crafting_selected,crafting_sent,crafting_token,crafting_progress,weapon_token,weapon_ammo,weapon_recoil,aim_sent,fire_sent,reload_sent,reload_token,reload_total,reload_remaining,transfer_form,transfers_sent,transfer_token,transfer_total,transfer_remaining,inventory_work_command,native_work_command,native_work_settled,inventory_return,inventory_work_visible,equipment_page,equipment_filter,equipment_search_open,quick_slot,quick_count,quick_wielded,quick_use_sent,quick_bind_command,aim_held,ranged_deferred\n";
++        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog,ipc_connected,ipc_input,ipc_output,ipc_read_bytes,ipc_write_bytes,ipc_frames,ipc_dispatch_bytes,ipc_read_calls,ipc_write_calls,session_state,input_ready,session_id,player_id,connection_id,sequence,resync_count,entity_cache,vehicle_cache,scene_origin_x,scene_origin_y,simulation_time,realtime,pause_reasons,time_scale,sent_intent,continuous_motion,intent_x,intent_y,ipc_latency_ms,projection_ms,ground_tiles,owned_items,ground_container,ground_hover,queued_pickup,ground_visual_nodes,ground_hover_items,ground_target_items,ground_target_visual_nodes,ground_target_first_type,status_available,body_form,survival_visible,status_stamina,status_head,status_arm_l,combat_hover,attacks_sent,attack_target,attack_target_hp,attack_result,player_state_flags,player_eye_offset,visual_animation_time,visual_animation_delta,ground_item_rotation,status_hunger_level,status_thirst_level,status_fatigue_level,status_pain_level,hud_images_active,equipment_form,inventory_view,inventory_entries,equipment_selected,equipment_sent,pending_decision,consumption_token,consumption_total,consumption_remaining,cancel_consumption_sent,first_aid_token,first_aid_total,first_aid_remaining,crafting_form,crafting_view,crafting_selected,crafting_sent,crafting_token,crafting_progress,weapon_token,weapon_ammo,weapon_recoil,aim_sent,fire_sent,reload_sent,reload_token,reload_total,reload_remaining,transfer_form,transfers_sent,transfer_token,transfer_total,transfer_remaining,inventory_work_command,native_work_command,native_work_settled,inventory_return,inventory_work_visible,equipment_page,equipment_filter,equipment_search_open,quick_slot,quick_count,quick_wielded,quick_use_sent,quick_bind_command,aim_held,ranged_deferred,external_form,external_entries\n";
 +    }
 +    if (g_settings->getNoEx("cwm_entity_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->entity_trace_.open(trace_path);
@@ -3693,28 +3700,34 @@ index 0000000..4b32e9d
 +    return impl.pointed_ground_.has_value();
 +}
 +
++bool CddaBridge::pointStorageNode(const v3s16& node) {
++    if(!pimpl_ || !pimpl_->session_.ready())return false;
++    auto& i=*pimpl_;const auto tile=luantiToCddaCoord(node);const auto base=cddaToLuantiCoord(tile.X,tile.Y,tile.Z);
++    const auto* label=i.ground_items_.storage(base); const auto player=i.entities_.find(1);
++    if(!label || player==i.entities_.end())return false;
++    const auto& p=player->second.target_pos;
++    if(base.Y!=std::round(p.Y) || std::abs(base.X-std::round(p.X))>1 || std::abs(base.Z-std::round(p.Z))>1)return false;
++    i.pointed_ground_=base;i.hover_hint_=utf8_to_wide(*label)+::cwm::wide(" — right click"," — tasto destro");return true;
++}
++
 +std::string CddaBridge::activateGroundItems() {
 +    if (!pimpl_ || !pimpl_->pointed_ground_ || pimpl_->pending_move_ || pimpl_->queued_pickup_)
 +        return {};
 +    auto& impl = *pimpl_;
 +    const auto* items = impl.ground_items_.get(*impl.pointed_ground_);
-+    if (!items || items->empty()) return {};
++    const bool storage=impl.ground_items_.storage(*impl.pointed_ground_);
++    if (!storage && (!items || items->empty())) return {};
 +    impl.last_ground_target_ = *impl.pointed_ground_;
-+    if (items->size() == 1) {
-+        impl.queue_pickup(*impl.pointed_ground_, items->front());
-+        return {};
++    if (!storage && items->size()==1 && !items->front().count_by_charges && !items->front().container) {
++        impl.queue_pickup(*impl.pointed_ground_,items->front());return {};
 +    }
-+    impl.ground_container_pos_ = *impl.pointed_ground_;
-+    impl.ground_selection_ = *items;
-+    impl.ground_page_ = impl.owned_page_ = 0;
-+    impl.populate_mirror(impl.ground_mirror_, impl.ground_selection_, 27);
-+    impl.populate_mirror(impl.owned_mirror_, impl.owned_items_, 36);
-+    impl.ground_close_requested_ = impl.ground_form_dirty_ = false;
-+    impl.ground_container_open_ = true;
-+    infostream << "CWM ground container opened: " << items->size() << " ground items, "
-+               << impl.owned_items_.size() << " owned items" << std::endl;
-+    setMenuPause(true);
-+    return impl.container_form();
++    if(impl.equipment_open_ || impl.body_form_open_ || impl.crafting_open_ || impl.activity_token_ || impl.metrics_.pending_decision)return {};
++    const auto native=luantiToCddaCoord(*impl.pointed_ground_);
++    impl.dismiss_inventory_work();
++    impl.external_anchor_=v3s32(native.X+impl.scene_origin_.X,native.Y+impl.scene_origin_.Y,native.Z);
++    impl.equipment_open_=impl.equipment_dirty_=true;impl.equipment_close_=false;
++    impl.equipment_page_=impl.destination_page_=0;impl.transfer_form_=false;
++    setMenuPause(true);impl.query_inventory();return {};
 +}
 +
 +Inventory* CddaBridge::getInventoryMirror(const InventoryLocation& loc) {
@@ -3899,6 +3912,7 @@ index 0000000..4b32e9d
 +        pimpl_->body_form_open_ || pimpl_->crafting_open_ || pimpl_->ground_container_open_ || pimpl_->metrics_.pending_decision) return {};
 +    auto& i = *pimpl_;
 +    i.dismiss_inventory_work();
++    i.external_anchor_.reset();
 +    i.equipment_open_ = true; i.equipment_close_ = false; i.transfer_form_ = false;
 +    i.equipment_search_open_ = true; i.equipment_focus_search_ = false;
 +    setMenuPause(true);
@@ -3940,6 +3954,20 @@ index 0000000..4b32e9d
 +            i.equipment_notice_ = (::cwm::text("View changed: try dragging again.", "Vista cambiata: riprova il trascinamento.")); return;
 +        }
 +        i.equipment_selected_ = source->id;
++        if (i.external_anchor_) {
++            if (i.activity_token_ || (i.metrics_.pause_reasons & ~uint32_t(2))) { i.equipment_notice_ = ::cwm::text("Resume or interrupt the work first.","Riprendi o interrompi prima il lavoro."); return; }
++            int quantity=source->counted?source->charges:1;
++            if (fields.count("quantity")) { const auto& value=fields.at("quantity"); quantity=0;
++                if (!value.empty() && value.size()<=9 && std::all_of(value.begin(),value.end(),[](unsigned char c){return std::isdigit(c);}))
++                    for(char c:value) quantity=quantity*10+c-'0'; }
++            if (quantity<=0 || quantity>(source->counted?source->charges:1)) {i.equipment_notice_=::cwm::text("Invalid quantity.","Quantita non valida.");return;}
++            if (!source->transfer_reason.empty()) {i.equipment_notice_=source->transfer_reason;return;}
++            const int action=destination && destination->container ? 1 :
++                to.rfind("drag_owned",0)==0 && source->external ? 2 : to.rfind("drag_external",0)==0 && !source->external ? 3 : -1;
++            if(action<0) {i.equipment_notice_=::cwm::text("Drag onto a container or the receiving area.","Trascina su un contenitore o sulla zona di destinazione.");return;}
++            i.queued_transfer_=Impl::QueuedTransfer{i.equipment_view_.view,source->id,destination?destination->id:0,quantity,action};
++            i.inventory_return_armed_=true;i.equipment_close_=true;return;
++        }
 +        const unsigned from_slot = number(from, "quickslot_"), to_slot = number(to, "quickslot_");
 +        const bool grid = to.rfind("grid_", 0) == 0 || (to.rfind("item_", 0) == 0 && destination && !destination->container);
 +        if (to_slot || (from_slot && grid) || (grid && from.rfind("item_", 0) == 0)) {
@@ -3995,6 +4023,17 @@ index 0000000..4b32e9d
 +        else if (!i.session_.ready() || i.pending_move_) i.equipment_notice_ = (::cwm::text("Wait for the updated state.", "Attendi lo stato aggiornato."));
 +        else { i.queued_cancel_activity_ = i.activity_token_; i.inventory_return_armed_ = true; i.equipment_close_ = true; return; }
 +        i.equipment_dirty_ = true; return;
++    }
++    if (i.external_anchor_) {
++        if(fields.count("refresh")){i.query_inventory();return;}
++        for(const auto& e:i.equipment_view_.entries) if(fields.count("item_"+std::to_string(e.id))) {i.equipment_selected_=e.id;i.transfer_quantity_=1;}
++        if(fields.count("all")) {const auto* e=i.equipment_view_.entry(i.equipment_selected_);if(e)i.transfer_quantity_=e->counted?e->charges:1;}
++        if(fields.count("ext_prev") && i.equipment_page_) --i.equipment_page_;
++        if(fields.count("own_prev") && i.destination_page_) --i.destination_page_;
++        const auto ext=std::count_if(i.equipment_view_.entries.begin(),i.equipment_view_.entries.end(),[](const auto& e){return e.external;});
++        if(fields.count("ext_next") && (i.equipment_page_+1)*27<size_t(ext))++i.equipment_page_;
++        if(fields.count("own_next") && (i.destination_page_+1)*27<i.equipment_view_.entries.size()-ext)++i.destination_page_;
++        i.equipment_dirty_=true;return;
 +    }
 +    if (fields.count("transfers") || fields.count("back")) {
 +        if (fields.count("transfers")) {
@@ -4447,10 +4486,10 @@ index 0000000..4b32e9d
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.h b/src/cdda/cdda_bridge.h
 new file mode 100644
-index 0000000..cb9f18a
+index 0000000..3441cbc
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.h
-@@ -0,0 +1,167 @@
+@@ -0,0 +1,168 @@
 +// Luanti C++ CWM Presentation Bridge
 +// Licensed under Apache-2.0
 +#pragma once
@@ -4551,6 +4590,7 @@ index 0000000..cb9f18a
 +    bool handleAimInput(bool right, bool pressed, bool fallback, bool context,
 +                        bool focused, bool fire, bool reload);
 +    bool reloadWeapon();
++    bool pointStorageNode(const v3s16& node);
 +    bool pointGroundItems(const irr::core::line3d<float>& ray);
 +    std::string activateGroundItems();
 +    Inventory* getInventoryMirror(const InventoryLocation& location);
@@ -4721,10 +4761,10 @@ index 0000000..8a266d4
 +} // namespace cdda_client
 diff --git a/src/cdda/equipment_inventory.h b/src/cdda/equipment_inventory.h
 new file mode 100644
-index 0000000..6193f98
+index 0000000..4cfd424
 --- /dev/null
 +++ b/src/cdda/equipment_inventory.h
-@@ -0,0 +1,349 @@
+@@ -0,0 +1,400 @@
 +#pragma once
 +#include "cwm/product_language.hpp"
 +#include "avatar_status.h"
@@ -4748,7 +4788,7 @@ index 0000000..6193f98
 +    std::array<std::string, 6> reasons;
 +    int consume_moves{}; std::string consume_label, consume_warning;
 +    std::string transfer_reason; bool container{};
-+    unsigned quick_slot{}; bool rotten{}; uint32_t ui_order{};
++    unsigned quick_slot{}; bool rotten{}; uint32_t ui_order{}; bool external{};
 +};
 +struct EquipmentPocket {
 +    uint32_t owner{}, index{}; std::string name;
@@ -4757,7 +4797,8 @@ index 0000000..6193f98
 +};
 +struct EquipmentView {
 +    uint64_t query{}, view{}; bool truncated{};
-+    std::string error;
++    std::string error, external_label;
++    int64_t external_capacity{}, external_remaining{};
 +    int64_t weight{}, weight_capacity{}, volume{}, volume_capacity{};
 +    std::vector<EquipmentEntry> entries;
 +    std::vector<EquipmentPocket> pockets;
@@ -4766,10 +4807,12 @@ index 0000000..6193f98
 +        query = source.query_id(); view = source.view_id(); truncated = source.truncated();
 +        error = source.error()->str(); weight = source.weight_grams(); weight_capacity = source.weight_capacity_grams();
 +        volume = source.volume_ml(); volume_capacity = source.volume_capacity_ml();
++        external_label=source.external_label()?source.external_label()->str():"";
++        external_capacity=source.external_capacity_ml(); external_remaining=source.external_remaining_ml();
 +        for (const auto* e : *source.entries()) {
 +            EquipmentEntry entry{e->id(), e->parent_id(), e->pocket_index(),
 +                e->type_id()->str(), e->name()->str(), e->category()->str(), e->charges(), e->access_moves(),
-+                e->count_by_charges(), e->worn(), e->wielded(), e->weight_grams(), e->volume_ml(), e->length_mm(), e->actions(), {}, e->consume_moves(), e->consume_label()->str(), e->consume_warning()->str(), e->transfer_reason()->str(), e->container(), e->quick_slot(), e->rotten(), e->ui_order()};
++                e->count_by_charges(), e->worn(), e->wielded(), e->weight_grams(), e->volume_ml(), e->length_mm(), e->actions(), {}, e->consume_moves(), e->consume_label()->str(), e->consume_warning()->str(), e->transfer_reason()->str(), e->container(), e->quick_slot(), e->rotten(), e->ui_order(), e->external()};
 +            for (unsigned i = 0; i < 6; ++i) entry.reasons[i] = e->reasons()->Get(i)->str();
 +            entries.push_back(std::move(entry));
 +        }
@@ -4782,6 +4825,7 @@ index 0000000..6193f98
 +    }
 +    std::string source(uint32_t id) const {
 +        const auto* e = entry(id); if (!e) return {};
++        if (!e->parent && e->external) return external_label;
 +        if (!e->parent) return e->worn ? (::cwm::text("Worn", "Indossato")) : e->wielded ? (::cwm::text("Wielded", "Impugnato")) : (::cwm::text("Inventory", "Inventario"));
 +        std::string out;
 +        for (unsigned depth = 0; e && e->parent && depth < 32; ++depth) {
@@ -4793,6 +4837,7 @@ index 0000000..6193f98
 +        }
 +        if (e && !e->parent && (e->worn || e->wielded))
 +            out = std::string(e->worn ? (::cwm::text("Worn", "Indossato")) : (::cwm::text("In hand", "In mano"))) + " > " + out;
++        if (e && e->external) out = external_label + " > " + out;
 +        return out;
 +    }
 +};
@@ -4821,6 +4866,7 @@ index 0000000..6193f98
 +    std::vector<uint32_t> ids;
 +    const auto needle = equipmentLower(search);
 +    for (const auto& e : view.entries) {
++        if (e.external) continue;
 +        if ((filter == 1 && !e.wielded && !e.worn) || (filter == 2 && !e.container)) continue;
 +        if (!needle.empty() && equipmentLower(e.name + " " + e.category + " " + equipmentCategoryLabel(e.category) + " " + view.source(e.id)).find(needle) == std::string::npos) continue;
 +        ids.push_back(e.id);
@@ -4872,6 +4918,51 @@ index 0000000..6193f98
 +        std::to_string(e ? (e->container ? 1 : 0) | (e->transfer_reason.empty() ? 2 : 0) : 0) + "]";
 +}
 +inline constexpr size_t equipmentPageSize = 27;
++// Both grids are projections. Dragging schedules a native actor after menu pause.
++inline std::string externalStorageForm(const EquipmentView& view, size_t external_page, size_t owned_page,
++        uint32_t selected, int quantity, const std::string& notice,
++        const std::function<std::string(const std::string&)>& icon) {
++    std::string f="formspec_version[4]size[22,9]no_prepend[]bgcolor[#00000000]"
++        "background9[0,0;22,9;mcl_base_textures_background9.png;false;7]"
++        "style_type[label;textcolor=#323232]style_type[button;border=false;bgimg=mcl_inventory_button9.png;bgimg_pressed=mcl_inventory_button9_pressed.png;bgimg_middle=2,2]"
++        "style_type[image_button;border=false;bgimg=;bgimg_pressed=]";
++    f+="label[0.5,0.4;"+statusEscape(view.external_label.empty()?::cwm::text("Storage / ground","Contenitore / terra"):view.external_label)+"]";
++    f+="label[11.5,0.4;"+::cwm::text("Your inventory","Il tuo inventario")+"]";
++    f+="button[17.5,0.15;1.8,0.65;refresh;"+::cwm::text("Refresh","Aggiorna")+"]button_exit[19.6,0.15;1.9,0.65;close;"+::cwm::text("Close","Chiudi")+"]set_focus[refresh;false]";
++    if(!view.view)return f+"label[0.5,2;"+statusEscape(view.error.empty()?::cwm::text("Reading storage...","Lettura contenitore..."):view.error)+"]";
++    f+="cwm_inventory["+std::to_string(view.view)+";"+std::to_string(selected)+"]";
++    std::vector<const EquipmentEntry*> ext,own;
++    for(const auto& e:view.entries)(e.external?ext:own).push_back(&e);
++    const auto pane=[&](const auto& items,double x,size_t page,const std::string& prefix,const std::string& destination,const std::string& label) {
++        const size_t pages=std::max<size_t>(1,(items.size()+26)/27);page=std::min(page,pages-1);
++        f+="button["+std::to_string(x)+",1;0.7,0.6;"+prefix+"_prev;<]label["+std::to_string(x+1)+",1.3;"+std::to_string(page+1)+" / "+std::to_string(pages)+"]button["+std::to_string(x+9.25)+",1;0.7,0.6;"+prefix+"_next;>]";
++        for(size_t n=0;n<27;++n) {
++            const size_t index=page*27+n;const auto* e=index<items.size()?items[index]:nullptr;
++            const double sx=x+(n%9)*1.12,sy=2+(n/9)*1.15;
++            const auto pos=std::to_string(sx)+","+std::to_string(sy);
++            const std::string key=e?"item_"+std::to_string(e->id):destination+"_empty_"+std::to_string(n);
++            f+="image["+pos+";1.05,1.05;mcl_formspec_itemslot.png]";
++            if(!e) {f+="button["+pos+";1.05,1.05;"+key+";]cwm_drag["+key+";0;;1]";continue;}
++            f+=equipmentDrag(key,e,icon);
++            if(selected==e->id)f+="box["+pos+";1.05,1.05;#E8CF5790]";
++            const auto visual=icon(e->type);const bool generic=visual.empty()||visual=="cdda_items:fallback_generic";
++            f+=std::string(generic?"image_button[":"item_image_button[")+pos+";1.05,1.05;"+statusEscape(generic?equipmentCategoryIcon(*e):visual)+";"+key+";]";
++            if(e->counted)f+="label["+std::to_string(sx+.05)+","+std::to_string(sy+.86)+";"+std::to_string(e->charges)+"]";
++            f+="tooltip["+key+";"+statusEscape(e->name+"\n"+view.source(e->id)+(e->transfer_reason.empty()?"":"\n"+e->transfer_reason))+ "]";
++        }
++        f+="button["+std::to_string(x)+",5.65;10,0.65;"+destination+";"+label+"]cwm_drag["+destination+";0;;1]";
++    };
++    pane(ext,.5,external_page,"ext","drag_external",::cwm::text("Deposit here · or drag onto a container above","Deposita qui · oppure trascina su un contenitore sopra"));
++    pane(own,11.5,owned_page,"own","drag_owned",::cwm::text("Collect here · or drag onto a container above","Raccogli qui · oppure trascina su un contenitore sopra"));
++    f+="label[0.5,6.8;"+::cwm::text("Free space: ","Spazio libero: ")+equipmentAmount(view.external_remaining)+" / "+equipmentAmount(view.external_capacity)+" L]";
++    if(const auto* e=view.entry(selected)) {
++        f+="label[0.5,7.45;"+statusEscape(e->name)+"]";
++        f+="label[11.5,6.6;"+::cwm::text("Quantity to move","Quantita da spostare")+"]field[11.5,6.95;2.2,0.65;quantity;;"+std::to_string(quantity)+"]field_close_on_enter[quantity;false]button[14,6.95;1.8,0.65;all;"+::cwm::text("All","Tutto")+"]";
++    }
++    f+="hypertext[0.5,8.05;21,0.7;;"+statusEscape("<global color=#963F25 size=18><b>"+equipmentMarkup(notice)+"</b>")+"]";
++    if(view.truncated)f+="label[11.5,7.9;"+::cwm::text("View limit reached; collect items and refresh.","Limite vista raggiunto; raccogli oggetti e aggiorna.")+"]";
++    return f;
++}
 +inline std::string equipmentForm(const EquipmentView& view, size_t page, uint32_t selected,
 +        const std::string& search, int filter, const std::string& notice,
 +        const std::function<std::string(const std::string&)>& icon, uint64_t consumption_token = 0,
@@ -5125,10 +5216,10 @@ index 0000000..d9aeac8
 +}
 diff --git a/src/cdda/ground_item_projection.h b/src/cdda/ground_item_projection.h
 new file mode 100644
-index 0000000..e034236
+index 0000000..c7e4f07
 --- /dev/null
 +++ b/src/cdda/ground_item_projection.h
-@@ -0,0 +1,64 @@
+@@ -0,0 +1,71 @@
 +#pragma once
 +
 +#include <cstdint>
@@ -5146,14 +5237,18 @@ index 0000000..e034236
 +	std::string name;
 +	int32_t charges{0};
 +	bool count_by_charges{false};
-+    std::string category; bool wielded{false}, rotten{false};
++    std::string category; bool wielded{false}, rotten{false}, container{false};
 +};
 +
 +class GroundItemProjection {
 +	std::map<v3s16, std::vector<GroundItemView>> tiles_;
++    std::map<v3s16, std::string> storage_;
 +
 +public:
-+	void clear() { tiles_.clear(); }
++	void clear() { tiles_.clear(); storage_.clear(); }
++    const std::string* storage(const v3s16& pos) const {
++        const auto it=storage_.find(pos);return it==storage_.end()?nullptr:&it->second;
++    }
 +	size_t size() const { return tiles_.size(); }
 +	const auto &tiles() const { return tiles_; }
 +
@@ -5163,8 +5258,9 @@ index 0000000..e034236
 +		return it == tiles_.end() ? nullptr : &it->second;
 +	}
 +
-+	void apply(const v3s16 &pos, std::vector<GroundItemView> items)
++	void apply(const v3s16 &pos, std::vector<GroundItemView> items, bool storage=false, const std::string& label={})
 +	{
++        if(storage) storage_[pos]=label; else storage_.erase(pos);
 +		if (items.empty())
 +			tiles_.erase(pos);
 +		else
@@ -5177,7 +5273,8 @@ index 0000000..e034236
 +		const int min_y = origin.Y - scene_origin.Y;
 +		const int min_z = origin.Z;
 +
-+		for (auto it = tiles_.begin(); it != tiles_.end();) {
++		const auto prune = [&](auto& entries) {
++        for (auto it = entries.begin(); it != entries.end();) {
 +			const v3s16 &p = it->first;
 +			const int x = p.X;
 +			const int y = -p.Z;
@@ -5185,10 +5282,11 @@ index 0000000..e034236
 +			if (x < min_x || x >= min_x + width ||
 +					y < min_y || y >= min_y + width ||
 +					z < min_z || z >= min_z + 3)
-+				it = tiles_.erase(it);
++				it = entries.erase(it);
 +			else
 +				++it;
 +		}
++        }; prune(tiles_); prune(storage_);
 +	}
 +};
 +

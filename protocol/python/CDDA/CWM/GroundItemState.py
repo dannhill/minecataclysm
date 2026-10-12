@@ -80,8 +80,15 @@ class GroundItemState(object):
             return bool(self._tab.Get(flatbuffers.number_types.BoolFlags, o + self._tab.Pos))
         return False
 
+    # GroundItemState
+    def Container(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(20))
+        if o != 0:
+            return bool(self._tab.Get(flatbuffers.number_types.BoolFlags, o + self._tab.Pos))
+        return False
+
 def GroundItemStateStart(builder):
-    builder.StartObject(8)
+    builder.StartObject(9)
 
 def Start(builder):
     GroundItemStateStart(builder)
@@ -133,6 +140,12 @@ def GroundItemStateAddRotten(builder, rotten):
 
 def AddRotten(builder, rotten):
     GroundItemStateAddRotten(builder, rotten)
+
+def GroundItemStateAddContainer(builder, container):
+    builder.PrependBoolSlot(8, container, 0)
+
+def AddContainer(builder, container):
+    GroundItemStateAddContainer(builder, container)
 
 def GroundItemStateEnd(builder):
     return builder.EndObject()

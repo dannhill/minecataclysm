@@ -29,7 +29,12 @@ inline bool valid_inventory(const CDDA::CWM::InventoryView* view) {
     if (view->error()->size()) return !view->view_id() && !view->entries()->size() && !view->pockets()->size();
     if (!view->view_id() || view->weight_grams() < 0 || view->weight_capacity_grams() < 0 ||
         view->volume_ml() < 0 || view->volume_capacity_ml() < 0) return false;
+    if (view->external_coord()) {
+        if (!text(view->external_label(),2048,false) || view->external_coord()->z() < -1024 || view->external_coord()->z()>1024 ||
+            view->external_capacity_ml()<0 || view->external_remaining_ml()<0 || view->external_remaining_ml()>view->external_capacity_ml())return false;
+    } else if (view->external_capacity_ml() || view->external_remaining_ml()) return false;
     std::vector<unsigned> depths(1, 0);
+    std::vector<bool> external(1,false);
     uint32_t id = 0;
     for (const auto* entry : *view->entries()) {
         if (!entry || entry->id() != ++id || entry->parent_id() >= id || entry->pocket_index() < -1 ||
@@ -44,6 +49,9 @@ inline bool valid_inventory(const CDDA::CWM::InventoryView* view) {
             if (!text(entry->reasons()->Get(i), 2048) ||
                 bool(entry->actions() & (1 << i)) == bool(entry->reasons()->Get(i)->size())) return false;
         if ((entry->actions() & 16) && (!entry->consume_moves() || !entry->consume_label()->size())) return false;
+        if (entry->external() && (!view->external_coord() || entry->worn() || entry->wielded() || entry->actions() || entry->quick_slot() || entry->ui_order())) return false;
+        if(entry->parent_id() && entry->external()!=external[entry->parent_id()])return false;
+        external.push_back(entry->external());
         depths.push_back(entry->parent_id() ? depths[entry->parent_id()] + 1 : 0);
         if (depths.back() > 32) return false;
     }
@@ -172,7 +180,8 @@ inline bool valid_world(const CDDA::CWM::WorldSnapshot* world) {
         if (world->ground_item_tiles()->size() > 65536) return false;
         std::set<std::tuple<int, int, int>> coords;
         for (const auto* tile : *world->ground_item_tiles()) {
-            if (!tile || !tile->coord() || !valid_items(tile->items())) return false;
+            if (!tile || !tile->coord() || !valid_items(tile->items()) ||
+                (tile->storage() && (!tile->storage_label() || !tile->storage_label()->size() || tile->storage_label()->size()>2048 || tile->storage_label()->str().find('\0')!=std::string::npos))) return false;
             const auto* p = tile->coord();
             if (p->x() < 0 || p->x() >= 132 || p->y() < 0 || p->y() >= 132 ||
                 p->z() < -1024 || p->z() > 1024 ||

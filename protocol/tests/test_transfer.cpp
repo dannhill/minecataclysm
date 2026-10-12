@@ -24,5 +24,11 @@ int main(){
     MessageBuilder wire(2,7,{11,22,33});auto bytes=wire.build_item_transfer(19,12,3,7,4,ItemTransferAction::INSERT);
     const auto* r=GetCwmMessage(bytes.data())->payload_as_ItemTransferRequest();CHECK(r&&r->command_id()==19&&r->view_id()==12&&r->item_id()==3&&r->quantity()==7&&r->destination_id()==4&&r->action()==ItemTransferAction::INSERT);
     bytes=wire.build_cancel_item_transfer(20,13);CHECK(GetCwmMessage(bytes.data())->payload_as_CancelItemTransferRequest()->activity_token()==13);
+    for(auto action : {ItemTransferAction::TAKE_EXTERNAL,ItemTransferAction::DEPOSIT_EXTERNAL}) {
+        bytes=wire.build_item_transfer(21,12,3,7,0,action);CHECK(MessageVerifier::verify(bytes.data(),bytes.size()));
+        CHECK(GetCwmMessage(bytes.data())->payload_as_ItemTransferRequest()->action()==action);
+    }
+    Coord3i external(10001,-20002,1);bytes=wire.build_inventory_query(22,&external);
+    const auto* query=GetCwmMessage(bytes.data())->payload_as_InventoryQueryRequest();CHECK(query&&query->query_id()==22&&query->external_coord()->x()==10001&&query->external_coord()->y()==-20002);
     std::cout<<"Transfer bounds, exclusive native activities, stable union IDs and quantities PASS\n";
 }
