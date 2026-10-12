@@ -385,6 +385,7 @@ int main(int argc, const char *argv[]) {
             item bottle(itype_id("bottle_plastic"),calendar::turn);bottle.set_var("uid","external-owned-bottle");u.i_add(bottle);
             item bat(itype_id("bat"),calendar::turn);bat.set_var("uid","external-owned-bat");u.i_add(bat);
             const auto pos=u.pos()+tripoint_east;
+            m.ter_set(pos,ter_id("t_floor"));
             m.furn_set(pos,furn_id("f_locker"));m.i_clear(pos);
             item ammo(itype_id("9mm"),calendar::turn,30);ammo.set_var("uid","external-ground-ammo");m.add_item_or_charges(pos,ammo);
             item pack(itype_id("backpack_hiking"),calendar::turn);pack.set_var("uid","external-ground-pack");
