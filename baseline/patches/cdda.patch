@@ -1669,10 +1669,10 @@ index 0000000..0866007
 +} // namespace cwm
 diff --git a/src/cwm/cwm_inventory.h b/src/cwm/cwm_inventory.h
 new file mode 100644
-index 0000000..3936c85
+index 0000000..4049b36
 --- /dev/null
 +++ b/src/cwm/cwm_inventory.h
-@@ -0,0 +1,328 @@
+@@ -0,0 +1,329 @@
 +#pragma once
 +#include "cwm/product_language.hpp"
 +#include <algorithm>
@@ -1893,6 +1893,7 @@ index 0000000..3936c85
 +        auto container = target(destination);
 +        if (external_item(id) || external_item(destination)) { error=validate_external(u); if (!error.empty()) return error; }
 +        if (external_item(id) && !source->is_owned_by(u,true)) return "Collect this item with native pickup before inserting it.";
++        if (external_item(destination) && !container->is_owned_by(u,true)) return ::cwm::tr("This container is owned by someone else.", "Questo contenitore appartiene a qualcun altro.");
 +        error = access_error(container); if (!error.empty()) return error;
 +        if (source == container || source->has_item(*container)) return ::cwm::tr("A container cannot contain itself or an ancestor.", "Un contenitore non puo contenere se stesso o un suo antenato.");
 +        if (source.has_parent() && source.parent_item() == container) return ::cwm::tr("Item is already in this container.", "Oggetto gia in questo contenitore.");
@@ -4787,7 +4788,7 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..35ba7ee
+index 0000000..7eef819
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
 @@ -0,0 +1,1817 @@
@@ -6555,7 +6556,7 @@ index 0000000..35ba7ee
 +    CHECK(ammo.charges==30);CHECK(u.moves==1000);cwm::CwmServerTestAccess::complete(server);
 +    SECTION("complete pickup"){
 +        u.activity.do_turn(u);CHECK_FALSE(u.activity);CHECK(ammo.charges==23);CHECK(u.moves<1000);
-+        int held=0;u.visit_items([&](const item* it){if(it->typeId()==itype_id("9mm"))held+=it->charges;return VisitResponse::NEXT;});CHECK(held==7);
++        int held=0;u.visit_items([&](item* it,item*){if(it->typeId()==itype_id("9mm"))held+=it->charges;return VisitResponse::NEXT;});CHECK(held==7);
 +    }
 +    SECTION("cancel pickup without duplication"){
 +        const auto token=cwm::CwmServerTestAccess::consumption(server);REQUIRE(token);
@@ -6576,7 +6577,7 @@ index 0000000..35ba7ee
 +    cwm::CwmServerTestAccess::transfer(server,view,id,7,destination,action);REQUIRE(server.has_queued_action());
 +    REQUIRE(cwm::CwmServerTestAccess::execute(server));CHECK(ammo->charges==30);CHECK(u.moves==1000);REQUIRE(u.activity);
 +    process_activity(u);CHECK_FALSE(u.activity);CHECK(ammo->charges==23);
-+    int stored=0;map_cursor(pos).visit_items([&](const item* it){if(it->typeId()==itype_id("9mm"))stored+=it->charges;return VisitResponse::NEXT;});CHECK(stored==7);
++    int stored=0;map_cursor(pos).visit_items([&](item* it,item*){if(it->typeId()==itype_id("9mm"))stored+=it->charges;return VisitResponse::NEXT;});CHECK(stored==7);
 +}
 +TEST_CASE("cwm_external_admission_and_execution_revalidate_site_identity_and_quantity","[cwm][external]") {
 +    external_fixture();auto& u=get_avatar();auto& m=get_map();const auto pos=u.pos()+tripoint_east;
