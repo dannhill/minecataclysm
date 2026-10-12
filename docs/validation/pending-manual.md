@@ -1,8 +1,8 @@
 # Validazioni manuali del playable core
 
-Stato corrente: **22 punti PENDING**, senza richiedere prove oggi. Quattro nuovi
-punti riguardano contenitori esterni e raccolta parziale; i diciotto precedenti
-(incluse lingua e mira RMB) restano pendenti.
+Stato corrente: **26 punti PENDING**, senza richiedere prove oggi. Quattro nuovi
+punti riguardano dialoghi nativi e feedback del lavoro; i ventidue precedenti
+(inclusi contenitori, lingua e mira RMB) restano pendenti.
 Il
 [riscontro UX-03 più recente](../source/ux03-drag-feedback-2026-10-09.md)
 valida **Ricontrolli UX-03 1–3 PASS**. Il precedente **hotbar 1 FAIL**
@@ -606,3 +606,34 @@ una cassa come modello proxy; il contenuto e le regole sono quelli CDDA.
 
 Questa checklist non richiede prove oggi. Nessun PASS è dedotto dai test
 automatici; tutti i PASS già dichiarati nelle sezioni precedenti rimangono.
+
+
+## UX-04A — Dialoghi nativi e feedback del lavoro — PENDING (4), rinviabili
+
+Le interfacce sono disponibili nel normale `./start.sh`. Per prove isolate usa
+`./consumption-demo.sh --fresh` e `./medicine-demo.sh --fresh`: non aprono la
+tua partita. I dialoghi conservano scelte e testo CDDA; le icone anatomiche e
+la scheda medica strutturata sono la prossima fetta, UX-04B.
+
+1. **Conferma leggibile.** Nella demo consumo scegli la mela marcia: pannello
+   chiaro, testo/colori/scorrimento e pulsanti leggibili, senza tag grezzi o
+   overlay di debug sul testo. Mouse e numeri 1–9 scelgono; Invio da solo non
+   approva. No oppure Esc devono conservare il cibo e tornare all'inventario.
+2. **Due domande consecutive.** Nella demo medicina scegli una benda e una
+   parte del corpo. Tenere premuto il numero usato per scegliere la parte non
+   deve confermare anche la domanda successiva: serve rilascio e nuova
+   pressione. Esc sul selettore o sulla conferma annulla secondo CDDA, senza
+   consumo/cura. Il testo completo di una scelta lunga resta nel tooltip.
+3. **Consulta, riprendi, interrompi.** Approva esplicitamente una medicazione:
+   il pannello temporaneo indica operazione/oggetto e progresso nativo quando
+   disponibile. I consulta e mette in pausa; chiudere I riprende il lavoro.
+   Interrompi annulla l'actor, conservando i costi già pagati. Nessuna cura o
+   consumo mentre leggi il dialogo; il lavoro finito non viene presentato come
+   un successo inventato dal client.
+4. **Ripetizioni e lingua.** Ripeti conferme/annullamenti con clic rapidi:
+   nessuna doppia azione o risposta applicata alla domanda sbagliata. Prova
+   English e, quando vuoi, Italiano WIP riavviando dal menu delle impostazioni:
+   la semantica di Esc e delle scelte resta uguale, anche con etichette tradotte.
+
+I vecchi PASS rimangono. Le eccezioni UX-02 morte/IPC non provate restano nelle
+loro sezioni: queste prove e l'automazione non deducono la tua accettazione.

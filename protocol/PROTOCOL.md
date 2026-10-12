@@ -685,3 +685,21 @@ Vehicle cargo, liquid transfer and explicit per-pocket placement are outside
 this slice. Native actor persistence stays canonical. During an activity CDDA
 may apply its own overflow/drop policy if the destination changes; the client
 requeries the actual result instead of assuming a committed destination.
+
+
+## Graphical native decisions (2.20)
+
+DecisionPrompt appends `cancel_choice:int32=-1`. CDDA advertises the existing
+safe fallback index; -1 disables client cancellation. Native paged choices keep
+their original mapping. Cancel never depends on translated labels or the client
+assuming that the last choice is safe. Choice count remains 1–9; IDs are nonzero,
+text/labels are bounded to 16384 bytes and labels are nonempty and NUL-free.
+Invalid prompts initiate authoritative resynchronization. Exact 2.20 negotiation
+is required; response and canonical-save formats are unchanged.
+
+The modal renderer binds decision ID and connection identity, accepts one
+explicit response and waits for native settlement/new prompt. In real-time mode
+settlement observes PauseReason::Decision (16), not Recovery (8). Native lookup,
+pagination, costs and fallback on lost peer remain server-owned. Physical held
+keys do not answer a later prompt; graphical reading/cancellation does not infer
+health, consequences or successful inventory work from text/initial ACKs.
