@@ -3279,10 +3279,10 @@ index 0000000..bb65c87
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..fe3adea
+index 0000000..cb3ea35
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,1039 @@
+@@ -0,0 +1,1040 @@
 +#include "cwm/product_language.hpp"
 +#include "cwm_motion.h"
 +// CDDA CWM IPC Server Implementation
@@ -3460,7 +3460,7 @@ index 0000000..fe3adea
 +    const auto text = fbb.CreateString(decision_text_);
 +    const auto labels = fbb.CreateVectorOfStrings(decision_labels_);
 +    emit(builder.finish_message(CDDA::CWM::Payload::DecisionPrompt,
-+        CDDA::CWM::CreateDecisionPrompt(fbb, pending_decision_, text, labels).Union()));
++        CDDA::CWM::CreateDecisionPrompt(fbb, pending_decision_, text, labels, static_cast<int>(decision_labels_.size()) - 1).Union()));
 +}
 +
 +void CwmServer::send_result(const Result& result, avatar& u, map& m, game& g) {
@@ -3715,6 +3715,7 @@ index 0000000..fe3adea
 +
 +int CwmServer::ask_decision(const std::string& text, const std::vector<std::string>& choices,
 +                          avatar& u, map& m, game& g, const std::function<bool()>& keep_running) {
++    if (choices.empty()) return -1;
 +    if (choices.size() > 9) {
 +        // The temporary numbered GUI pages long native lists. Preserve every
 +        // available action and its original index; never hang on >9 choices.

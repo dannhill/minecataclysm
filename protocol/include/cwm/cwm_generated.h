@@ -7245,7 +7245,8 @@ struct DecisionPrompt FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_DECISION_ID = 4,
     VT_TEXT = 6,
-    VT_CHOICES = 8
+    VT_CHOICES = 8,
+    VT_CANCEL_CHOICE = 10
   };
   uint64_t decision_id() const {
     return GetField<uint64_t>(VT_DECISION_ID, 0);
@@ -7265,6 +7266,12 @@ struct DecisionPrompt FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   ::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *mutable_choices() {
     return GetPointer<::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *>(VT_CHOICES);
   }
+  int32_t cancel_choice() const {
+    return GetField<int32_t>(VT_CANCEL_CHOICE, -1);
+  }
+  bool mutate_cancel_choice(int32_t _cancel_choice = -1) {
+    return SetField<int32_t>(VT_CANCEL_CHOICE, _cancel_choice, -1);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint64_t>(verifier, VT_DECISION_ID, 8) &&
@@ -7273,6 +7280,7 @@ struct DecisionPrompt FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_CHOICES) &&
            verifier.VerifyVector(choices()) &&
            verifier.VerifyVectorOfStrings(choices()) &&
+           VerifyField<int32_t>(verifier, VT_CANCEL_CHOICE, 4) &&
            verifier.EndTable();
   }
 };
@@ -7290,6 +7298,9 @@ struct DecisionPromptBuilder {
   void add_choices(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>>> choices) {
     fbb_.AddOffset(DecisionPrompt::VT_CHOICES, choices);
   }
+  void add_cancel_choice(int32_t cancel_choice) {
+    fbb_.AddElement<int32_t>(DecisionPrompt::VT_CANCEL_CHOICE, cancel_choice, -1);
+  }
   explicit DecisionPromptBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -7305,9 +7316,11 @@ inline ::flatbuffers::Offset<DecisionPrompt> CreateDecisionPrompt(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint64_t decision_id = 0,
     ::flatbuffers::Offset<::flatbuffers::String> text = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>>> choices = 0) {
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>>> choices = 0,
+    int32_t cancel_choice = -1) {
   DecisionPromptBuilder builder_(_fbb);
   builder_.add_decision_id(decision_id);
+  builder_.add_cancel_choice(cancel_choice);
   builder_.add_choices(choices);
   builder_.add_text(text);
   return builder_.Finish();
@@ -7317,14 +7330,16 @@ inline ::flatbuffers::Offset<DecisionPrompt> CreateDecisionPromptDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint64_t decision_id = 0,
     const char *text = nullptr,
-    const std::vector<::flatbuffers::Offset<::flatbuffers::String>> *choices = nullptr) {
+    const std::vector<::flatbuffers::Offset<::flatbuffers::String>> *choices = nullptr,
+    int32_t cancel_choice = -1) {
   auto text__ = text ? _fbb.CreateString(text) : 0;
   auto choices__ = choices ? _fbb.CreateVector<::flatbuffers::Offset<::flatbuffers::String>>(*choices) : 0;
   return CDDA::CWM::CreateDecisionPrompt(
       _fbb,
       decision_id,
       text__,
-      choices__);
+      choices__,
+      cancel_choice);
 }
 
 struct DecisionResponse FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {

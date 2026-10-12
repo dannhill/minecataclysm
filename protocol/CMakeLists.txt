@@ -74,3 +74,7 @@ add_test(NAME test_transfer COMMAND test_transfer)
 add_executable(test_quickbar tests/test_quickbar.cpp)
 target_link_libraries(test_quickbar PRIVATE cwm_protocol)
 add_test(NAME test_quickbar COMMAND test_quickbar)
+
+add_executable(test_decision tests/test_decision.cpp)
+target_link_libraries(test_decision PRIVATE cwm_protocol)
+add_test(NAME test_decision COMMAND test_decision)

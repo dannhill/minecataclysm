@@ -445,6 +445,7 @@ table DecisionPrompt {
     decision_id: uint64;
     text: string;
     choices: [string];
+    cancel_choice: int32 = -1; // Native safe fallback; -1 disables client cancellation.
 }
 
 table DecisionResponse {

@@ -20,6 +20,14 @@ inline uint64_t fresh_identity() {
     const uint64_t value = (uint64_t(random()) << 32) ^ random();
     return value ? value : 1;
 }
+inline bool valid_decision(const CDDA::CWM::DecisionPrompt* prompt) {
+    const auto text=[](const auto* s,size_t bound){return s && s->size()<=bound && s->str().find('\0')==std::string::npos;};
+    if(!prompt || !prompt->decision_id() || !text(prompt->text(),16384) || !prompt->choices() ||
+        !prompt->choices()->size() || prompt->choices()->size()>9 || prompt->cancel_choice() < -1 ||
+        prompt->cancel_choice()>=int(prompt->choices()->size()))return false;
+    for(const auto* label:*prompt->choices())if(!text(label,16384) || !label->size())return false;
+    return true;
+}
 inline bool valid_inventory(const CDDA::CWM::InventoryView* view) {
     const auto text = [](const auto* s, size_t limit, bool empty = true) {
         return s && s->size() <= limit && (empty || s->size()) && s->str().find('\0') == std::string::npos;
@@ -341,7 +349,11 @@ public:
             return true;
         }
         if (msg.payload_type() == Payload::HeartbeatAck) return true;
-        if (ready() && (msg.payload_type() == Payload::CommandAck || msg.payload_type() == Payload::DecisionPrompt)) return true;
+        if (ready() && msg.payload_type() == Payload::DecisionPrompt) {
+            if(!valid_decision(msg.payload_as_DecisionPrompt())) {request_resync(channel);return false;}
+            return true;
+        }
+        if (ready() && msg.payload_type() == Payload::CommandAck) return true;
         request_resync(channel); return false;
     }
     bool commit(const CDDA::CWM::WorldSnapshot& world, CwmTransport& channel) {

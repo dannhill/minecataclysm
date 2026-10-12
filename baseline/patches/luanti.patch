@@ -240,7 +240,7 @@ index b6ae675..9e33201 100644
  		/*
  			Local player handling
 diff --git a/src/client/game.cpp b/src/client/game.cpp
-index 27b5833..c96ab2f 100644
+index 27b5833..15e810e 100644
 --- a/src/client/game.cpp
 +++ b/src/client/game.cpp
 @@ -8,6 +8,8 @@
@@ -252,10 +252,15 @@ index 27b5833..c96ab2f 100644
  #include "client.h"
  #include "client/clientevent.h"
  #include "client/gameui.h"
-@@ -118,6 +120,38 @@ struct TextDestPlayerInventory : public TextDest
+@@ -118,6 +120,43 @@ struct TextDestPlayerInventory : public TextDest
  	Client *m_client;
  };
  
++struct CwmDecisionFormHandler : public TextDest {
++    uint64_t id,connection;
++    CwmDecisionFormHandler(uint64_t selected,uint64_t generation):id(selected),connection(generation){m_formname="CWM_DECISION";}
++    void gotText(const StringMap& fields) override {cdda_client::CddaBridge::getInstance().decisionDialogFields(id,connection,fields);}
++};
 +struct CwmGroundFormHandler : public TextDest
 +{
 +	CwmGroundFormHandler() { m_formname = "CWM_GROUND"; }
@@ -291,7 +296,7 @@ index 27b5833..c96ab2f 100644
  struct LocalFormspecHandler : public TextDest
  {
  	LocalFormspecHandler(const std::string &formname)
-@@ -134,6 +168,13 @@ struct LocalFormspecHandler : public TextDest
+@@ -134,6 +173,13 @@ struct LocalFormspecHandler : public TextDest
  	void gotText(const StringMap &fields)
  	{
  		if (m_formname == "MT_PAUSE_MENU") {
@@ -305,7 +310,7 @@ index 27b5833..c96ab2f 100644
  			if (fields.find("btn_sound") != fields.end()) {
  				g_gamecallback->changeVolume();
  				return;
-@@ -443,12 +484,15 @@ class GameGlobalShaderConstantSetter : public IShaderConstantSetter
+@@ -443,12 +489,15 @@ class GameGlobalShaderConstantSetter : public IShaderConstantSetter
  		get_sunlight_color(&sunlight, daynight_ratio);
  		m_day_light.set(sunlight, services);
  
@@ -323,7 +328,7 @@ index 27b5833..c96ab2f 100644
  		m_animation_timer_delta_vertex.set(&animation_timer_delta_f, services);
  		m_animation_timer_delta_pixel.set(&animation_timer_delta_f, services);
  
-@@ -932,6 +976,7 @@ class Game {
+@@ -932,6 +981,7 @@ class Game {
  	bool m_first_loop_after_window_activation = false;
  	bool m_camera_offset_changed = false;
  	bool m_game_focused = false;
@@ -331,7 +336,7 @@ index 27b5833..c96ab2f 100644
  
  	bool m_does_lost_focus_pause_game = false;
  
-@@ -1009,6 +1054,8 @@ Game::Game() :
+@@ -1009,6 +1059,8 @@ Game::Game() :
  
  Game::~Game()
  {
@@ -340,7 +345,7 @@ index 27b5833..c96ab2f 100644
  	delete client;
  	delete soundmaker;
  	sound_manager.reset();
-@@ -1181,6 +1228,13 @@ void Game::run()
+@@ -1181,6 +1233,13 @@ void Game::run()
  		updateCamera(dtime);
  		updateSound(dtime);
  		processPlayerInteraction(dtime, m_game_ui->m_flags.show_hud);
@@ -354,7 +359,7 @@ index 27b5833..c96ab2f 100644
  		updateFrame(&graph, &stats, dtime, cam_view);
  		updateProfilerGraphs(&graph);
  
-@@ -1239,6 +1293,8 @@ void Game::shutdown()
+@@ -1239,6 +1298,8 @@ void Game::shutdown()
  		}
  	}
  
@@ -363,7 +368,7 @@ index 27b5833..c96ab2f 100644
  	delete client;
  	client = nullptr;
  	delete soundmaker;
-@@ -2046,14 +2102,38 @@ void Game::processUserInput(f32 dtime)
+@@ -2046,14 +2107,38 @@ void Game::processUserInput(f32 dtime)
  	if (m_cache_doubletap_jump && runData.jump_timer_down <= 0.4f)
  		runData.jump_timer_down += dtime;
  
@@ -405,7 +410,7 @@ index 27b5833..c96ab2f 100644
  		dropSelectedItem(isKeyDown(KeyType::SNEAK));
  	} else if (wasKeyDown(KeyType::AUTOFORWARD)) {
  		toggleAutoforward();
-@@ -2063,6 +2143,8 @@ void Game::processKeyInput()
+@@ -2063,6 +2148,8 @@ void Game::processKeyInput()
  	} else if (wasKeyDown(KeyType::INVENTORY)) {
  		openInventory();
  	} else if (input->cancelPressed()) {
@@ -414,7 +419,7 @@ index 27b5833..c96ab2f 100644
  #ifdef __ANDROID__
  		m_android_chat_open = false;
  #endif
-@@ -2083,7 +2165,8 @@ void Game::processKeyInput()
+@@ -2083,7 +2170,8 @@ void Game::processKeyInput()
  	} else if (wasKeyDown(KeyType::FREEMOVE)) {
  		toggleFreeMove();
  	} else if (wasKeyDown(KeyType::JUMP)) {
@@ -424,7 +429,7 @@ index 27b5833..c96ab2f 100644
  	} else if (wasKeyDown(KeyType::PITCHMOVE)) {
  		togglePitchMove();
  	} else if (wasKeyDown(KeyType::FASTMOVE)) {
-@@ -2154,9 +2237,17 @@ void Game::processKeyInput()
+@@ -2154,9 +2242,17 @@ void Game::processKeyInput()
  	} else if (wasKeyDown(KeyType::ZOOM)) {
  		checkZoomEnabled();
  	} else if (wasKeyDown(KeyType::QUICKTUNE_NEXT)) {
@@ -444,7 +449,7 @@ index 27b5833..c96ab2f 100644
  	} else if (wasKeyDown(KeyType::QUICKTUNE_INC)) {
  		quicktune->inc();
  	} else if (wasKeyDown(KeyType::QUICKTUNE_DEC)) {
-@@ -2178,6 +2269,22 @@ void Game::processItemSelection(u16 *new_playeritem)
+@@ -2178,6 +2274,22 @@ void Game::processItemSelection(u16 *new_playeritem)
  	LocalPlayer *player = client->getEnv().getLocalPlayer();
  
  	*new_playeritem = player->getWieldIndex();
@@ -467,7 +472,7 @@ index 27b5833..c96ab2f 100644
  	u16 max_item = player->getMaxHotbarItemcount();
  	if (max_item == 0)
  		return;
-@@ -2238,6 +2345,18 @@ void Game::dropSelectedItem(bool single_item)
+@@ -2238,6 +2350,18 @@ void Game::dropSelectedItem(bool single_item)
  
  void Game::openInventory()
  {
@@ -486,7 +491,7 @@ index 27b5833..c96ab2f 100644
  	/*
  	 * Don't permit to open inventory is CAO or player doesn't exists.
  	 * This prevent showing an empty inventory at player load
-@@ -2737,8 +2856,83 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
+@@ -2737,8 +2861,68 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
  		control.aux1 = control.aux1 ^ true;
  	}
  
@@ -507,22 +512,7 @@ index 27b5833..c96ab2f 100644
 +		const bool vertical_down = isKeyDown(KeyType::JUMP);
 +		const bool vertical_pressed = vertical_down && !m_cdda_vertical_held;
 +		m_cdda_vertical_held = vertical_down;
-+		static bool decision_held[9] = {};
-+		if (bridge.getMetrics().pending_decision) {
-+			const auto choices = bridge.getMetrics().decision_choices;
-+			bool answered = false;
-+			for (uint16_t i = 0; i < 9; ++i) {
-+				const auto key = static_cast<GameKeyType>(KeyType::SLOT_1 + i);
-+				const bool down = isKeyDown(key);
-+				const bool pressed = wasKeyDown(key);
-+				if (!answered && i < choices && !decision_held[i] && (down || pressed))
-+					answered = bridge.answerDecision(i);
-+				decision_held[i] = down;
-+			}
-+			return;
-+		}
-+		for (uint16_t i = 0; i < 9; ++i)
-+			decision_held[i] = isKeyDown(static_cast<GameKeyType>(KeyType::SLOT_1 + i));
++        if(bridge.getMetrics().pending_decision)return; // Modal owns all native choices.
 +		// A held key must not automatically acknowledge each new threat.
 +		static bool acknowledgement_held = false;
 +		const bool acknowledgement_down = isKeyDown(KeyType::AUX1);
@@ -570,7 +560,7 @@ index 27b5833..c96ab2f 100644
  	//tt.stop();
  }
  
-@@ -2784,6 +2978,63 @@ inline void Game::step(f32 dtime)
+@@ -2784,6 +2968,73 @@ inline void Game::step(f32 dtime)
  
  	if (!m_is_paused)
  		client->step(dtime);
@@ -629,6 +619,16 @@ index 27b5833..c96ab2f 100644
 +        }
 +        bridge.setMenuPause(g_menumgr.menuCount() > 0);
 +		bridge.update(dtime);
++        auto *decision_menu=m_game_ui->getFormspecGUI();
++        if(decision_menu && m_game_ui->getFormspecName()=="CWM_DECISION" && !bridge.getMetrics().pending_decision)
++            decision_menu->quitMenu();
++        const auto decision_update=bridge.takeDecisionDialogUpdate();
++        if(!decision_update.empty()) {
++            auto *&form=m_game_ui->updateFormspec("CWM_DECISION");
++            GUIFormSpecMenu::create(form,client,m_rendering_engine->get_gui_env(),&input->joystick,
++                new FormspecFormSource(decision_update),new CwmDecisionFormHandler(bridge.getMetrics().pending_decision,bridge.decisionDialogConnection()),"",sound_manager.get());
++            form->allowClose(false); // Only an explicit native cancellation may dismiss it.
++        }
 +		bridge.renderDebugOverlay(m_rendering_engine->get_gui_env());
 +	}
  }
@@ -770,10 +770,18 @@ index 2da9efa..93b5bcd 100644
  		v2s32 pos(floor(e->pos.X * (float) m_screensize.X + 0.5),
  				floor(e->pos.Y * (float) m_screensize.Y + 0.5));
 diff --git a/src/client/inputhandler.cpp b/src/client/inputhandler.cpp
-index 88969f0..be19634 100644
+index 88969f0..37b1943 100644
 --- a/src/client/inputhandler.cpp
 +++ b/src/client/inputhandler.cpp
-@@ -63,6 +63,14 @@ void KeyCache::populate()
+@@ -3,6 +3,7 @@
+ // Copyright (C) 2010-2013 celeron55, Perttu Ahola <celeron55@gmail.com>
+ // Copyright (C) 2017 nerzhul, Loic Blot <loic.blot@unix-experience.fr>
+ 
++#include "cdda/decision_input.h"
+ #include "settings.h"
+ #include "util/numeric.h"
+ #include "inputhandler.h"
+@@ -63,6 +64,14 @@ void KeyCache::populate()
  			getKeySetting("keymap_decrease_viewing_range_min");
  	key[KeyType::RANGESELECT] = getKeySetting("keymap_rangeselect");
  	key[KeyType::ZOOM] = getKeySetting("keymap_zoom");
@@ -788,6 +796,19 @@ index 88969f0..be19634 100644
  
  	key[KeyType::QUICKTUNE_NEXT] = getKeySetting("keymap_quicktune_next");
  	key[KeyType::QUICKTUNE_PREV] = getKeySetting("keymap_quicktune_prev");
+@@ -109,7 +118,11 @@ bool MyEventReceiver::OnEvent(const SEvent &event)
+ 		return true;
+ 	}
+ 
+-	// This is separate from other keyboard handling so that it also works in menus.
++	// Observe physical keys before menus consume them. Held keys never answer
++    // a later native decision after a page change or reconnection.
++    if(event.EventType==EET_KEY_INPUT_EVENT)
++        cdda_client::decisionInput().observe(unsigned(event.KeyInput.Key),event.KeyInput.PressedDown);
++    // This is separate from other keyboard handling so that it also works in menus.
+ 	if (event.EventType == EET_KEY_INPUT_EVENT) {
+ 		const KeyPress keyCode(event.KeyInput);
+ 		if (keyCode == getKeySetting("keymap_fullscreen")) {
 diff --git a/src/client/keys.h b/src/client/keys.h
 index 4bce131..f2c9cbf 100644
 --- a/src/client/keys.h
@@ -890,18 +911,22 @@ index 7758c96..f5783bf 100644
  	settings->setDefault("keymap_toggle_update_camera", "KEY_F4");
  #else
 diff --git a/src/gui/guiFormSpecMenu.cpp b/src/gui/guiFormSpecMenu.cpp
-index ed1c300..9ab77a7 100644
+index ed1c300..7f2559d 100644
 --- a/src/gui/guiFormSpecMenu.cpp
 +++ b/src/gui/guiFormSpecMenu.cpp
-@@ -1,3 +1,4 @@
+@@ -1,3 +1,5 @@
 +#include "cwm/product_language.hpp"
++#include "cdda/decision_input.h"
  // Luanti
  // SPDX-License-Identifier: LGPL-2.1-or-later
  // Copyright (C) 2013 celeron55, Perttu Ahola <celeron55@gmail.com>
-@@ -169,6 +170,10 @@ void GUIFormSpecMenu::removeTooltip()
+@@ -169,6 +171,13 @@ void GUIFormSpecMenu::removeTooltip()
  
  void GUIFormSpecMenu::setInitialFocus()
  {
++    if(m_text_dst && m_text_dst->m_formname=="CWM_DECISION" && type=="cwm_decision") {
++        m_cwm_decision=true;m_cwm_decision_waiting=description=="1";return;
++    }
 +    if (m_text_dst && m_text_dst->m_formname == "CWM_EQUIPMENT") {
 +        Environment->setFocus(this);
 +        return; // Visible search must never acquire initial keyboard focus.
@@ -909,7 +934,7 @@ index ed1c300..9ab77a7 100644
  	// Set initial focus according to following order of precedence:
  	// 1. first empty editbox
  	// 2. first editbox
-@@ -2922,6 +2927,25 @@ void GUIFormSpecMenu::parseElement(parserData* data, const std::string &element)
+@@ -2922,6 +2931,25 @@ void GUIFormSpecMenu::parseElement(parserData* data, const std::string &element)
  	// They remain here due to bool flags, for now
  	data->type = type;
  
@@ -935,17 +960,19 @@ index ed1c300..9ab77a7 100644
  	auto it = element_parsers.find(type);
  	if (it != element_parsers.end()) {
  		it->second(this, data, description);
-@@ -2989,6 +3013,9 @@ void GUIFormSpecMenu::regenerateGui(v2u32 screensize)
+@@ -2989,6 +3017,11 @@ void GUIFormSpecMenu::regenerateGui(v2u32 screensize)
  	m_tables.clear();
  	m_checkboxes.clear();
  	m_scrollbars.clear();
 +    m_cwm_drag_zones.clear(); m_cwm_drag_view = 0; m_cwm_drag_selected = 0;
++    m_cwm_decision=false; m_cwm_decision_waiting=false;
++    if(!m_text_dst || m_text_dst->m_formname!="CWM_DECISION")m_allowclose=true;
 +    if (m_cwm_drag_source) m_cwm_drag_cancelled = true;
 +    m_cwm_drag_source.reset(); m_cwm_drag_active = false;
  	m_fields.clear();
  	m_tooltips.clear();
  	m_tooltip_rects.clear();
-@@ -3577,6 +3604,7 @@ void GUIFormSpecMenu::drawMenu()
+@@ -3577,6 +3610,7 @@ void GUIFormSpecMenu::drawMenu()
  		Draw dragged item stack
  	*/
  	drawSelectedItem();
@@ -953,7 +980,7 @@ index ed1c300..9ab77a7 100644
  
  	skin->setFont(old_font);
  }
-@@ -3900,6 +3928,101 @@ void GUIFormSpecMenu::acceptInput(FormspecQuitMode quitmode)
+@@ -3900,6 +3934,101 @@ void GUIFormSpecMenu::acceptInput(FormspecQuitMode quitmode)
  	}
  }
  
@@ -1055,7 +1082,7 @@ index ed1c300..9ab77a7 100644
  bool GUIFormSpecMenu::preprocessEvent(const SEvent& event)
  {
  	// This must be done first so that GUIModalMenu can set m_pointer_type
-@@ -3907,6 +4030,18 @@ bool GUIFormSpecMenu::preprocessEvent(const SEvent& event)
+@@ -3907,6 +4036,18 @@ bool GUIFormSpecMenu::preprocessEvent(const SEvent& event)
  	if (GUIModalMenu::preprocessEvent(event))
  		return true;
  
@@ -1074,7 +1101,7 @@ index ed1c300..9ab77a7 100644
  	// The IGUITabControl renders visually using the skin's selected
  	// font, which we override for the duration of form drawing,
  	// but computes tab hotspots based on how it would have rendered
-@@ -3990,6 +4125,15 @@ bool GUIFormSpecMenu::preprocessEvent(const SEvent& event)
+@@ -3990,6 +4131,15 @@ bool GUIFormSpecMenu::preprocessEvent(const SEvent& event)
  
  void GUIFormSpecMenu::tryClose()
  {
@@ -1090,15 +1117,29 @@ index ed1c300..9ab77a7 100644
  	if (m_allowclose) {
  		doPause = false;
  		acceptInput(quit_mode_cancel);
-@@ -4001,6 +4145,7 @@ void GUIFormSpecMenu::tryClose()
+@@ -4001,6 +4151,21 @@ void GUIFormSpecMenu::tryClose()
  
  bool GUIFormSpecMenu::OnEvent(const SEvent& event)
  {
++    if(m_cwm_decision && event.EventType==EET_KEY_INPUT_EVENT) {
++        const auto key=event.KeyInput.Key;
++        const bool fresh=event.KeyInput.PressedDown && cdda_client::decisionInput().fresh(unsigned(key));
++        if(key>=KEY_KEY_1 && key<=KEY_KEY_9) {
++            if(fresh && !m_cwm_decision_waiting)m_text_dst->gotText(StringMap{{"choice_"+std::to_string(key-KEY_KEY_1),"true"}});
++            return true;
++        }
++        if(key==KEY_ESCAPE) {
++            if(fresh && !m_cwm_decision_waiting)m_text_dst->gotText(StringMap{{"cancel","true"}});
++            return true;
++        }
++        if(key==KEY_RETURN || KeyPress(event.KeyInput)==getKeySetting("keymap_inventory"))return true;
++        if(key==KEY_SPACE && event.KeyInput.PressedDown && !fresh)return true;
++    }
 +    if (event.EventType == EET_KEY_INPUT_EVENT && cwmDragEvent(event)) return true;
  	if (event.EventType==EET_KEY_INPUT_EVENT) {
  		KeyPress kp(event.KeyInput);
  		if (event.KeyInput.PressedDown && (
-@@ -4757,6 +4902,14 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
+@@ -4757,6 +4922,14 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
  	}
  
  	if (event.EventType == EET_GUI_EVENT) {
@@ -1114,10 +1155,10 @@ index ed1c300..9ab77a7 100644
  				&& isVisible()) {
  			// find the element that was clicked
 diff --git a/src/gui/guiFormSpecMenu.h b/src/gui/guiFormSpecMenu.h
-index 5c3fcd8..4b2ccf2 100644
+index 5c3fcd8..643bd70 100644
 --- a/src/gui/guiFormSpecMenu.h
 +++ b/src/gui/guiFormSpecMenu.h
-@@ -334,6 +334,20 @@ class GUIFormSpecMenu : public GUIModalMenu
+@@ -334,6 +334,21 @@ class GUIFormSpecMenu : public GUIModalMenu
  	std::unordered_map<std::string, bool> field_enter_after_edit;
  	std::unordered_map<std::string, bool> field_close_on_enter;
  	std::unordered_map<std::string, bool> m_dropdown_index_event;
@@ -1126,6 +1167,7 @@ index 5c3fcd8..4b2ccf2 100644
 +        uint32_t item{}; bool texture{}; unsigned actions{}, flags{};
 +    };
 +    std::vector<CwmDragZone> m_cwm_drag_zones;
++    bool m_cwm_decision{false},m_cwm_decision_waiting{false};
 +    uint64_t m_cwm_drag_view{};
 +    uint32_t m_cwm_drag_selected{};
 +    std::optional<size_t> m_cwm_drag_source;
@@ -1681,7 +1723,7 @@ index 0000000..e1e7236
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..c523ab1
+index 0000000..04afdc5
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
 @@ -0,0 +1,2800 @@
@@ -1697,6 +1739,7 @@ index 0000000..c523ab1
 +#include "quickbar.h"
 +#include "crafting_inventory.h"
 +#include "decision_text.h"
++#include "decision_dialog.h"
 +#include "avatar_status.h"
 +#include "posture_input.h"
 +#include "aim_input.h"
@@ -1806,7 +1849,7 @@ index 0000000..c523ab1
 +    irr::gui::IGUIStaticText* decision_text_{nullptr};
 +    irr::gui::IGUIStaticText* posture_text_{nullptr};
 +    irr::gui::IGUIStaticText* vertical_text_{nullptr};
-+    std::wstring decision_body_;
++    DecisionDialog decision_dialog_; bool decision_dirty_{false};
 +    irr::scene::ISceneManager* smgr_{nullptr};
 +    std::unordered_map<uint16_t, content_t> material_map_;
 +    // Anchor presentation at the first bubble origin. Later CDDA bubble shifts
@@ -2966,8 +3009,11 @@ index 0000000..c523ab1
 +                metrics_.realtime = snap->clock() && snap->clock()->realtime();
 +                metrics_.continuous_motion = snap->clock() && snap->clock()->continuous_motion();
 +                metrics_.pause_reasons = snap->clock() ? snap->clock()->pause_reasons() : 0;
++                if(decision_dialog_.submitted && !(metrics_.pause_reasons & 8)) {
++                    metrics_.pending_decision=0;decision_dialog_={};decision_dirty_=false;
++                }
 +                metrics_.time_scale = snap->clock() ? snap->clock()->time_scale() : 1.f;
-+                if (metrics_.safety_stop || (metrics_.pause_reasons & uint32_t(1 | 4 | 8)))
++                if (metrics_.safety_stop || (metrics_.pause_reasons & uint32_t(1 | 4)))
 +                    inventory_return_requested_ = false;
 +                // Recovery-only is a transport/full-state pause, not an
 +                // authoritative input cancellation.  Preserve the last
@@ -3113,11 +3159,8 @@ index 0000000..c523ab1
 +                    prompt->choices()->size() > 9) break;
 +                metrics_.pending_decision = prompt->decision_id();
 +                metrics_.decision_choices = prompt->choices()->size();
-+                decision_body_ = utf8_to_wide(decisionPlainText(prompt->text()->str())) + L"\n\n";
-+                for (size_t i = 0; i < prompt->choices()->size(); ++i)
-+                    decision_body_ += std::to_wstring(i + 1) + L". " +
-+                        utf8_to_wide(decisionPlainText(prompt->choices()->Get(i)->str())) + L"\n";
-+                decision_body_ += (L"\n" + ::cwm::wide("Press the corresponding number to choose.", "Premi il numero corrispondente per scegliere."));
++                decision_dialog_.read(*prompt,session_.identity.connection);
++                decision_dirty_=true;
 +                break;
 +            }
 +
@@ -3250,12 +3293,12 @@ index 0000000..c523ab1
 +
 +    bool answer_decision(uint16_t choice) {
 +        if (!connection_ || !connection_->is_valid() || !session_.ready() || !metrics_.pending_decision ||
-+            choice >= metrics_.decision_choices) return false;
++            choice >= metrics_.decision_choices || !decision_dialog_.permits(metrics_.pending_decision,session_.identity.connection,choice)) return false;
 +        auto builder = session_.builder();
 +        const auto request = builder.finish_message(CDDA::CWM::Payload::DecisionResponse,
 +            CDDA::CWM::CreateDecisionResponse(builder.builder(), metrics_.pending_decision, choice).Union());
 +        if (!connection_->send_message(request.data(), request.size())) return false;
-+        metrics_.pending_decision = 0;
++        decision_dialog_.submitted=true;decision_dirty_=true;
 +        return true;
 +    }
 +};
@@ -3499,7 +3542,7 @@ index 0000000..c523ab1
 +                i.equipment_open_ = i.equipment_dirty_ = true; i.equipment_close_ = false;
 +                setMenuPause(true);
 +                if (!i.query_inventory()) i.equipment_view_.error = (::cwm::text("Inventory unavailable: try again.", "Inventario non disponibile: riprova."));
-+                i.equipment_notice_ = error;
++                i.equipment_notice_ = error.empty() ? ::cwm::text("Native work finished. Review the updated inventory.","Lavoro nativo terminato. Controlla l'inventario aggiornato.") : error;
 +            }
 +        }
 +    }
@@ -3816,6 +3859,21 @@ index 0000000..c523ab1
 +    return pimpl_ && pimpl_->answer_decision(choice);
 +}
 +
++uint64_t CddaBridge::decisionDialogConnection() const {return pimpl_?pimpl_->decision_dialog_.connection:0;}
++std::string CddaBridge::takeDecisionDialogUpdate() {
++    if(!pimpl_ || !pimpl_->metrics_.pending_decision || !pimpl_->decision_dirty_)return {};
++    pimpl_->decision_dirty_=false;return pimpl_->decision_dialog_.form();
++}
++void CddaBridge::decisionDialogFields(uint64_t id,uint64_t connection,const std::unordered_map<std::string,std::string>& fields) {
++    if(!pimpl_ || !pimpl_->session_.ready() || !pimpl_->metrics_.pending_decision ||
++        id!=pimpl_->metrics_.pending_decision || connection!=pimpl_->session_.identity.connection)return;
++    auto& dialog=pimpl_->decision_dialog_;
++    if(fields.count("cancel") || fields.count("quit")) {
++        if(dialog.cancel>=0) pimpl_->answer_decision(dialog.cancel);
++        return;
++    }
++    for(unsigned n=0;n<dialog.choices.size();++n)if(fields.count("choice_"+std::to_string(n))) {pimpl_->answer_decision(n);return;}
++}
 +std::string CddaBridge::openCrafting() {
 +    if (!pimpl_ || !pimpl_->session_.ready() || !pimpl_->player_ready_ || pimpl_->pending_move_ ||
 +        pimpl_->body_form_open_ || pimpl_->ground_container_open_ || pimpl_->equipment_open_ || pimpl_->metrics_.pending_decision) return {};
@@ -4204,8 +4262,8 @@ index 0000000..c523ab1
 +    }
 +    if (!pimpl_->inventory_work_text_) {
 +        pimpl_->inventory_work_text_ = guienv->addStaticText(L"", irr::core::rect<irr::s32>(), false, true, nullptr, -1, true);
-+        pimpl_->inventory_work_text_->setOverrideColor(irr::video::SColor(255, 240, 245, 238));
-+        pimpl_->inventory_work_text_->setBackgroundColor(irr::video::SColor(200, 24, 35, 34));
++        pimpl_->inventory_work_text_->setOverrideColor(irr::video::SColor(255, 40, 53, 53));
++        pimpl_->inventory_work_text_->setBackgroundColor(irr::video::SColor(235, 232, 236, 230));
 +        pimpl_->inventory_work_text_->setEnabled(false); // Overlay never captures input.
 +    }
 +    const int work_left = std::max(10, (int(screen.Width) - 420) / 2);
@@ -4215,7 +4273,7 @@ index 0000000..c523ab1
 +    if (pimpl_->activity_total_ > 0) work_text += L"  " + std::to_wstring(
 +        std::clamp(100 - int(100.0 * pimpl_->activity_remaining_ / pimpl_->activity_total_), 0, 100)) + L"%";
 +    else work_text += pimpl_->inventory_work_settled_ ? (::cwm::wide(" — finished", " — conclusa")) : (::cwm::wide(" — in progress", " — in corso"));
-+    work_text += (L"\n" + ::cwm::wide("I: inspect / interrupt · Esc: stay in the world", "I: consulta / interrompi · Esc: resta nel mondo"));
++    work_text += (L"\n" + ::cwm::wide("I: inspect (pauses) · Esc: hide this panel", "I: consulta (pausa) · Esc: nascondi questo pannello"));
 +    pimpl_->inventory_work_text_->setText(work_text.c_str());
 +    pimpl_->inventory_work_text_->setVisible(pimpl_->inventory_work_command_ && pimpl_->session_.ready() &&
 +        !pimpl_->equipment_open_ && !pimpl_->crafting_open_ && !pimpl_->body_form_open_ &&
@@ -4357,9 +4415,9 @@ index 0000000..c523ab1
 +        std::wstring consumption_hint;
 +        if (pimpl_->activity_token_ && pimpl_->activity_total_ > 0) {
 +            const int percent = int(100LL * (pimpl_->activity_total_ - pimpl_->activity_remaining_) / pimpl_->activity_total_);
-+            consumption_hint = (pimpl_->transferring_ ? (::cwm::wide("Transfer in progress: ", "Trasferimento in corso: ")) : pimpl_->crafting_ ? (::cwm::wide("Crafting in progress: ", "Crafting in corso: ")) : pimpl_->first_aid_ ? (::cwm::wide("Treatment in progress: ", "Trattamento in corso: ")) : pimpl_->reloading_ ? (::cwm::wide("Reload in progress: ", "Ricarica in corso: ")) : (::cwm::wide("Consumption in progress: ", "Consumo in corso: "))) + std::to_wstring(percent) + (::cwm::wide("% - I: interrupt", "% - I: interrompi"));
++            consumption_hint = (pimpl_->transferring_ ? (::cwm::wide("Transfer in progress: ", "Trasferimento in corso: ")) : pimpl_->crafting_ ? (::cwm::wide("Crafting in progress: ", "Crafting in corso: ")) : pimpl_->first_aid_ ? (::cwm::wide("Treatment in progress: ", "Trattamento in corso: ")) : pimpl_->reloading_ ? (::cwm::wide("Reload in progress: ", "Ricarica in corso: ")) : (::cwm::wide("Consumption in progress: ", "Consumo in corso: "))) + std::to_wstring(percent) + (::cwm::wide("% - I: inspect / pause", "% - I: consulta / pausa"));
 +        }
-+        if (pimpl_->transferring_ && !pimpl_->activity_total_) consumption_hint = (::cwm::wide("Native drop in progress - I: interrupt", "Deposito nativo in corso - I: interrompi"));
++        if (pimpl_->transferring_ && !pimpl_->activity_total_) consumption_hint = (::cwm::wide("Transfer in progress - I: inspect / pause", "Trasferimento in corso - I: consulta / pausa"));
 +        const auto plain_hint = utf8_to_wide(decisionPlainText(wide_to_utf8(consumption_hint.empty() ? hint : consumption_hint)));
 +        pimpl_->item_hint_text_->setText(plain_hint.c_str());
 +        pimpl_->item_hint_text_->setVisible(pimpl_->session_.ready() &&
@@ -4394,22 +4452,6 @@ index 0000000..c523ab1
 +            (L"\n" + ::cwm::wide("F7: switch A/B", "F7: cambia A/B") + L"   |   " + ::cwm::wide("F8: fog ", "F8: nebbia ")) + (pimpl_->terrain_fog_ ? L"ON" : L"OFF") +
 +            (L"\n" + ::cwm::wide("WASD + mouse. From the center:", "WASD + mouse. Dal centro:") + L"\n" + ::cwm::wide("NW forest", "NO bosco") + L" | " + ::cwm::wide("NE field", "NE campo") + L" | " + ::cwm::wide("SW road/house", "SO strada/casa") + L" | " + ::cwm::wide("SE shore", "SE riva"));
 +        pimpl_->terrain_text_->setText(text.c_str());
-+    }
-+
-+    if (!pimpl_->decision_text_) {
-+        pimpl_->decision_text_ = guienv->addStaticText(L"", irr::core::rect<irr::s32>(100, 230, 850, 480),
-+            true, true, nullptr, -1, true);
-+        if (pimpl_->decision_text_) {
-+            pimpl_->decision_text_->setOverrideColor(irr::video::SColor(255, 255, 255, 255));
-+            pimpl_->decision_text_->setBackgroundColor(irr::video::SColor(245, 25, 25, 30));
-+        }
-+    }
-+    if (pimpl_->decision_text_) {
-+        const auto screen = guienv->getVideoDriver()->getScreenSize();
-+        pimpl_->decision_text_->setRelativePosition(irr::core::rect<irr::s32>(
-+            50, 170, std::max(200, int(screen.Width) - 50), std::max(250, int(screen.Height) - 40)));
-+        pimpl_->decision_text_->setText(pimpl_->decision_body_.c_str());
-+        pimpl_->decision_text_->setVisible(pimpl_->metrics_.pending_decision != 0);
 +    }
 +
 +    if (!pimpl_->vertical_text_) {
@@ -4487,10 +4529,10 @@ index 0000000..c523ab1
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.h b/src/cdda/cdda_bridge.h
 new file mode 100644
-index 0000000..3441cbc
+index 0000000..7d23811
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.h
-@@ -0,0 +1,168 @@
+@@ -0,0 +1,171 @@
 +// Luanti C++ CWM Presentation Bridge
 +// Licensed under Apache-2.0
 +#pragma once
@@ -4601,6 +4643,9 @@ index 0000000..3441cbc
 +    std::string takeGroundContainerUpdate();
 +    bool acknowledgeThreat();
 +    bool answerDecision(uint16_t choice);
++    uint64_t decisionDialogConnection() const;
++    std::string takeDecisionDialogUpdate();
++    void decisionDialogFields(uint64_t id,uint64_t connection,const std::unordered_map<std::string,std::string>& fields);
 +    void handleMovementIntent(int direction);
 +    void handleContinuousIntent(float x, float y);
 +    void setMenuPause(bool paused);
@@ -4729,12 +4774,79 @@ index 0000000..b255489
 +    return f;
 +}
 +} // namespace cdda_client
+diff --git a/src/cdda/decision_dialog.h b/src/cdda/decision_dialog.h
+new file mode 100644
+index 0000000..c676d22
+--- /dev/null
++++ b/src/cdda/decision_dialog.h
+@@ -0,0 +1,40 @@
++#pragma once
++#include "avatar_status.h"
++#include "decision_text.h"
++#include "cwm/cwm_generated.h"
++#include "cwm/product_language.hpp"
++#include <vector>
++namespace cdda_client {
++struct DecisionDialog {
++    uint64_t id{},connection{};int cancel{-1};bool submitted{};
++    std::string body;std::vector<std::string> choices;
++    void read(const CDDA::CWM::DecisionPrompt& prompt,uint64_t generation) {
++        id=prompt.decision_id();connection=generation;cancel=prompt.cancel_choice();submitted=false;
++        body=prompt.text()->str();choices.clear();for(const auto* label:*prompt.choices())choices.push_back(label->str());
++    }
++    bool permits(uint64_t expected,uint64_t generation,int choice) const {
++        return id && expected==id && generation==connection && !submitted && choice>=0 && size_t(choice)<choices.size();
++    }
++    std::string form() const {
++        std::string f="formspec_version[4]size[16,12]no_prepend[]bgcolor[#00000000]"
++            "background9[0,0;16,12;mcl_base_textures_background9.png;false;7]"
++            "style_type[label;textcolor=#323232]style_type[button;border=false;bgimg=mcl_inventory_button9.png;bgimg_pressed=mcl_inventory_button9_pressed.png;bgimg_middle=2,2]";
++        f+="cwm_decision["+std::string(submitted?"1":"0")+"]image[0.55,0.4;0.65,0.65;cdda_status_unknown.png]";
++        f+="label[1.45,0.75;"+::cwm::text("Choose an action","Scegli un'azione")+"]";
++        f+="label[0.55,1.35;"+::cwm::text("Time is paused · no action has been approved","Il tempo e fermo · nessuna azione e stata approvata")+"]";
++        f+="hypertext[0.55,1.85;14.9,3.9;prompt;"+statusEscape("<global color=#323232 size=18>"+decisionRichText(body))+"]set_focus[prompt;true]";
++        if(submitted)return f+"label[0.55,6.3;"+::cwm::text("Waiting for the game...","In attesa del gioco...")+"]";
++        const int maximum=std::max(0,int(choices.size()*8.5)-36);
++        f+="scrollbaroptions[min=0;max="+std::to_string(std::max(1,maximum))+";smallstep=4;largestep=12;thumbsize=36]scrollbar[15.05,6;0.4,3.65;vertical;choices_scroll;0]scroll_container[0.55,6;14.3,3.65;choices_scroll;vertical;0.1]";
++        for(size_t n=0;n<choices.size();++n) {
++            const auto name="choice_"+std::to_string(n);auto label=decisionPlainText(choices[n]);
++            // Full text remains in the tooltip; do not cut in the middle of UTF-8.
++            if(label.size()>95) {size_t end=95;while(end && (static_cast<unsigned char>(label[end])&0xC0)==0x80)--end;label=label.substr(0,end)+"...";}
++            f+="button[0,"+std::to_string(n*.85)+";14.25,0.72;"+name+";"+std::to_string(n+1)+". "+statusEscape(label)+"]tooltip["+name+";"+statusEscape(decisionPlainText(choices[n]))+"]";
++        }
++        f+="scroll_container_end[]label[0.55,10.05;"+::cwm::text("Click a choice or press 1–9. Enter never approves automatically.","Clic su una scelta o 1–9. Invio non approva automaticamente.")+"]";
++        if(cancel>=0 && size_t(cancel)<choices.size())f+="button[0.55,10.65;14.9,0.75;cancel;Esc: "+statusEscape(decisionPlainText(choices[cancel]))+"]";
++        return f;
++    }
++};
++} // namespace cdda_client
+diff --git a/src/cdda/decision_input.h b/src/cdda/decision_input.h
+new file mode 100644
+index 0000000..38421b3
+--- /dev/null
++++ b/src/cdda/decision_input.h
+@@ -0,0 +1,15 @@
++#pragma once
++#include <array>
++namespace cdda_client {
++class DecisionInput {
++    std::array<bool,512> down_{};
++    unsigned event_key_{512}; bool fresh_{};
++public:
++    void observe(unsigned key,bool down) {
++        event_key_=key;fresh_=key<down_.size() && down && !down_[key];
++        if(key<down_.size())down_[key]=down;
++    }
++    bool fresh(unsigned key) const {return event_key_==key && fresh_;}
++};
++inline DecisionInput& decisionInput() {static DecisionInput input;return input;}
++} // namespace cdda_client
 diff --git a/src/cdda/decision_text.h b/src/cdda/decision_text.h
 new file mode 100644
-index 0000000..8a266d4
+index 0000000..15c7818
 --- /dev/null
 +++ b/src/cdda/decision_text.h
-@@ -0,0 +1,25 @@
+@@ -0,0 +1,53 @@
 +#pragma once
 +#include <string>
 +#include <string_view>
@@ -4759,13 +4871,41 @@ index 0000000..8a266d4
 +    }
 +    return text;
 +}
++inline std::string decisionMarkup(std::string_view source) {
++    std::string out;
++    for(char c:source) {if(c=='<' || c=='>' || c=='\\')out+='\\';out+=c;}
++    return out;
++}
++inline std::string decisionRichText(std::string_view source) {
++    std::string out;unsigned opened=0;
++    for(size_t i=0;i<source.size();) {
++        if(source.substr(i,8)=="</color>") {if(opened){out+="</style>";--opened;}i+=8;continue;}
++        if(source.substr(i,7)=="<color_") {
++            const auto end=source.find('>',i+7);
++            if(end!=source.npos) {
++                const auto tag=source.substr(i+7,end-i-7);std::string color;
++                if(tag=="c_red" || tag=="c_light_red" || tag=="red")color="#A53C2C";
++                else if(tag=="c_green" || tag=="c_light_green" || tag=="green")color="#32723C";
++                else if(tag=="c_yellow" || tag=="yellow")color="#936812";
++                else if(tag=="c_cyan" || tag=="c_light_blue" || tag=="c_blue")color="#236B91";
++                else if(tag=="c_white" || tag=="c_light_gray" || tag=="c_dark_gray")color="#484848";
++                if(!color.empty()){out+="<style color="+color+">";++opened;i=end+1;continue;}
++                bool valid=!tag.empty();for(char c:tag)if(!((c>='a'&&c<='z')||(c>='A'&&c<='Z')||(c>='0'&&c<='9')||c=='_'))valid=false;
++                if(valid){out+="<style>";++opened;i=end+1;continue;}
++            }
++        }
++        out+=decisionMarkup(source.substr(i++,1));
++    }
++    while(opened){out+="</style>";--opened;}
++    return out;
++}
 +} // namespace cdda_client
 diff --git a/src/cdda/equipment_inventory.h b/src/cdda/equipment_inventory.h
 new file mode 100644
-index 0000000..4cfd424
+index 0000000..5f6b692
 --- /dev/null
 +++ b/src/cdda/equipment_inventory.h
-@@ -0,0 +1,400 @@
+@@ -0,0 +1,401 @@
 +#pragma once
 +#include "cwm/product_language.hpp"
 +#include "avatar_status.h"
@@ -5099,6 +5239,7 @@ index 0000000..4cfd424
 +            }
 +        }
 +    } else f += ("textarea[11.35,3.1;4.15,2.4;;;" + ::cwm::text("Select an item.", "Seleziona un oggetto.") + "\n\n" + ::cwm::text("Clicking icons only selects.", "Clic sulle icone: solo selezione.") + "\n" + ::cwm::text("Available actions appear here.", "Le azioni disponibili appaiono qui.") + "]");
++    if(consumption_token && notice.empty())f+="tooltip[close;"+::cwm::text("Close resumes native work. Use Interrupt to cancel it.","Chiudere riprende il lavoro nativo. Usa Interrompi per annullarlo.")+"]label[0.5,10.65;"+::cwm::text("Work paused · Close resumes · Interrupt cancels","Lavoro in pausa · Chiudi riprende · Interrompi annulla")+"]";
 +    if (consumption_token) f += "button[11.35,10.1;4.15,0.5;cancel_consume;" + std::string(transferring ? (::cwm::text("Interrupt transfer", "Interrompi trasferimento")) : crafting ? (::cwm::text("Interrupt crafting", "Interrompi crafting")) : first_aid ? (::cwm::text("Interrupt treatment", "Interrompi trattamento")) : reloading ? (::cwm::text("Interrupt reload", "Interrompi ricarica")) : (::cwm::text("Interrupt consumption", "Interrompi consumo"))) + "]";
 +    if (!notice.empty()) f += "box[0.4,10.57;10.5,0.4;#F2CEAAFF]hypertext[0.5,10.58;10.3,0.4;;" +
 +        statusEscape("<global color=#6B2915 size=18><b>" + equipmentMarkup(notice) + "</b>") + "]";

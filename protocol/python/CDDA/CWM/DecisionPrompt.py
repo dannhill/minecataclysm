@@ -58,8 +58,15 @@ class DecisionPrompt(object):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(8))
         return o == 0
 
+    # DecisionPrompt
+    def CancelChoice(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(10))
+        if o != 0:
+            return self._tab.Get(flatbuffers.number_types.Int32Flags, o + self._tab.Pos)
+        return -1
+
 def DecisionPromptStart(builder):
-    builder.StartObject(3)
+    builder.StartObject(4)
 
 def Start(builder):
     DecisionPromptStart(builder)
@@ -87,6 +94,12 @@ def DecisionPromptStartChoicesVector(builder, numElems):
 
 def StartChoicesVector(builder, numElems):
     return DecisionPromptStartChoicesVector(builder, numElems)
+
+def DecisionPromptAddCancelChoice(builder, cancelChoice):
+    builder.PrependInt32Slot(3, cancelChoice, -1)
+
+def AddCancelChoice(builder, cancelChoice):
+    DecisionPromptAddCancelChoice(builder, cancelChoice)
 
 def DecisionPromptEnd(builder):
     return builder.EndObject()
