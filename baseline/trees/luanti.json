@@ -7257,7 +7257,7 @@
   {
     "path": "src/cdda/decision_dialog.h",
     "mode": "100644",
-    "sha256": "6fd688a9c4b9646fd4c9bdd770bc92c2dea132660b58b3e8c18b227eb976660a"
+    "sha256": "38c848fb84edbc5eb1bcc996e84af69a827c6fc20292c864a7eb9e6812735b68"
   },
   {
     "path": "src/cdda/decision_input.h",
@@ -8392,7 +8392,7 @@
   {
     "path": "src/gui/guiFormSpecMenu.cpp",
     "mode": "100644",
-    "sha256": "8e58e8c9d96ff49f05c781292fae24dc36f7088b89f3e317026b9ae739aac409"
+    "sha256": "e994fb2c5b79809c3b4272f7fe1178624828e2241adac606ca0ac98dee9052c2"
   },
   {
     "path": "src/gui/guiFormSpecMenu.h",
