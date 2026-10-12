@@ -1,6 +1,31 @@
 # Implementation status
 
-Current scoped delivery: **EXT-01 external storage and partial collection**,
+Current scoped delivery: **UX-04A native decision panels and work feedback**,
+CWM **2.20**, installed in ordinary `start.sh` with paired rollback copies.
+Native questions now use a Mineclonia-style modal: readable colour-safe text,
+scrolling, full-label tooltips, clickable choices and physical 1–9 shortcuts.
+Esc selects the cancellation index advertised by CDDA; labels are not parsed
+for gameplay or cancellation. Enter cannot choose via accidental widget focus.
+Held keys cannot answer a later prompt. Handlers bind exact decision/connection;
+one response enters waiting until native settlement/new prompt. Debug overlays
+are hidden while choosing. Native costs, pagination, lost-peer fallback and
+canonical save behavior remain server-owned.
+
+The temporary work panel has clearer inspect/pause instructions and a native
+progress bar when total work is known. Closing inspection resumes the actor;
+Interrupt cancels it. Returned inventory reports work completion without claiming
+success from an initial ACK. [Design](docs/design/native-decision-panels.md) and
+[scoped verification](docs/fixes/native-decision-panels.md).
+
+Backlog **26 PENDING**: four new dialog/work checks plus twenty-two unchanged.
+No user testing is required today; no acceptance is inferred from automation.
+Next essential UI slice: **UX-04B structured medical selection**, with native
+body-part identities, observable health and known treatment effects; do not
+infer these from ASCII bars or labels. The generic medical selector remains
+native text in this slice. Existing UX-02 death/IPC manual exceptions remain
+separate. Full SAVE-001 is OPEN; historical M5.5 is FAILED.
+
+Previous scoped delivery: **EXT-01 external storage and partial collection**,
 CWM **2.19**, installed in ordinary `start.sh` with paired runtime rollback.
 RMB on nearby visible native storage opens two Mineclonia-style nine-column
 panes; empty storage is interactive. Ground backpacks, counted stacks and
@@ -14,7 +39,7 @@ sites, stale identity/parents/charges and external equipment shortcuts reject.
 No local inventory, teleport or optimistic transfer is committed.
 [Behavior and scoped evidence](docs/fixes/external-storage.md).
 
-Backlog **22 PENDING**: eighteen unchanged plus four storage checks. Previous
+At EXT-01 delivery, backlog **22 PENDING**: eighteen unchanged plus four storage checks. Previous
 manual PASS remain accepted; automation does not imply user acceptance.
 No user testing is required today. `./storage-demo.sh --fresh` opens an isolated
 scene; without `--fresh` it resumes that demo save. Furniture chest meshes are

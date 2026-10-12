@@ -6,7 +6,8 @@ nei quattro punti ciascuno con il
 [riscontro successivo ed errata corrige](../source/core-ux-validation-2026-10-09.md).
 Eccezioni morte/IPC/decisioni non provate restano separate. **UX-03 consegnata**:
 ricerca visibile senza focus, hotbar assegnabile/rimuovibile, mano evidenziata
-nell'HUD e feedback/errori migliorati. UX-04–05, raggruppamento anatomico e
+nell'HUD e feedback/errori migliorati. UX-04A ora consegnata: pannelli di scelta nativa e feedback del lavoro.
+[Design](native-decision-panels.md). UX-04B/UX-05, raggruppamento anatomico e
 continuità della selezione tra query restano pianificati.
 [Consegna UX-03](../fixes/interactive-quickbar.md).
 Il riscontro successivo valida Ricontrolli UX-03 1–3, ma **rifiuta il flusso
@@ -181,6 +182,12 @@ riferimento, costi, busy/pause, nessun replay, salvataggio e riconnessione.
 
 ## UX-04 — Conferme visive, poi scheda medica
 
+UX-04A consegnata nel normale start.sh (CWM 2.20): pannelli cliccabili,
+colori/scorrimento, Esc nativo, protezione dei tasti tenuti e feedback del lavoro.
+[Report](../fixes/native-decision-panels.md). UX-04B resta la prossima fetta:
+metadati medici strutturati, icone anatomiche e cuori, senza parsing delle
+barrette ASCII. Accettazione manuale PENDING, backlog corrente 26 punti.
+
 Componente coerente con inventario: titolo corto, icona, motivo, effetti
 conoscibili, pulsanti espliciti Conferma/Annulla, scorrimento e focus sicuro.
 Rischi importanti (cibo marcio, danni agli oggetti in acqua, parti ferite,
@@ -223,8 +230,8 @@ raddoppiano il risultato, ricetta diventata indisponibile resta spiegata.
    feedback dell'arma/operazioni e nuovi dialoghi restano task distinti.
 3. UX-04 con UI medica e UX-05 recenti/preferiti; per ogni adattamento
    conservare costi nativi e significato delle informazioni osservabili.
-4. Contenitori esterni vicini e raccolta con quantità selezionate restano
-   la prossima estensione essenziale dell'inventario. La roadmap M6/M7 e le
+4. Contenitori esterni vicini e raccolta quantitativa sono consegnati
+   in EXT-01 (CWM 2.19); quattro prove restano nel backlog. La roadmap M6/M7 e le
    fondazioni non vengono sostituite da un progetto separato di UI.
 
 Per ogni fetta consegnata aggiungere solo le nuove prove necessarie a

@@ -111,10 +111,34 @@ Nessun nuovo gate manuale oggi. Cargo veicoli, travaso liquidi, apertura dei
 sigilli, selezione della singola tasca e trasferimenti in batch sono rinviati;
 M5.5 FAILED e SAVE-001 OPEN restano separati dalla verifica della feature.
 
-**Prossimo intervento essenziale:** interfacce dei dialoghi nativi e feedback
-chiaro delle operazioni: conferme/capacità/attività, azioni consecutive e
-spiegazione delle scelte. Mantenere le eccezioni UX-02 non provate nel backlog;
-poi rig/UV/animazioni/audio e altre feature core secondo le priorità sotto.
+L'intervento annunciato qui è consegnato nella sezione seguente.
+
+## UX-04A — Dialoghi nativi e feedback del lavoro — 2026-10-12
+
+Consegnati in `start.sh`, CWM **2.20**. Il testo numerato sovrapposto al mondo
+è sostituito da un pannello coerente con l'inventario: lettura/scelte scorrevoli,
+colori nativi sanificati, pulsanti e scorciatoie 1–9. Etichette su una riga e
+contenuto completo nel tooltip; debug nascosto durante la decisione. Esc usa
+l'indice di annullamento esportato da CDDA, senza deduzioni da traduzioni;
+Invio non sceglie tramite il focus e un tasto tenuto non risponde alla domanda
+successiva. Ogni risposta è legata a domanda/connessione e viene inviata una
+sola volta; il pannello attende il risultato nativo o la domanda successiva.
+
+Il lavoro temporaneo mostra operazione/oggetto e progresso nativo disponibile;
+I significa consulta/pausa, Chiudi riprende, Interrompi annulla secondo l'actor.
+Il ritorno all'inventario segue ancora completamento e costo nativi, con feedback
+leggibile. Nessun nuovo costo/durata, conferma automatica, regola o campo nel save.
+[Design](docs/design/native-decision-panels.md), [report](docs/fixes/native-decision-panels.md).
+Quattro nuove prove portano il backlog a **26 PENDING**, mantenendo i 22
+precedenti e tutti i PASS. Nessun gate manuale oggi.
+
+**Prossimo intervento essenziale: UX-04B, scheda medica strutturata**. Esporre
+identità delle parti, salute osservabile e benefici/rischi conoscibili associati
+alla scelta; icone anatomiche/cuori e selezione esplicita di oggetto/parte.
+Non ricavare statistiche da barrette ASCII o dal testo tradotto. La presente
+fetta aggiorna la veste e gli input, lasciando le descrizioni mediche native.
+UX-05 recenti/preferiti, rig/UV/animazioni/audio e macrofeature restano nel piano.
+Le eccezioni UX-02 morte/IPC non provate restano nel backlog; M5.5/SAVE-001 separati.
 
 ## Riscontro inventario/interfacce — 2026-10-09
 
