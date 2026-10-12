@@ -17,6 +17,18 @@ std::vector<uint8_t> snapshot(int defect) {
     world.add_entities(entities);world.add_vehicles(vehicles);world.add_fields(fields);world.add_item_transfer(transfer);world.add_consumption(meal);
     return wire.finish_message(Payload::WorldSnapshot,world.Finish().Union());
 }
+std::vector<uint8_t> external_view(int defect) {
+    MessageBuilder wire(1,7,{11,22,33});auto& f=wire.builder();
+    std::vector<flatbuffers::Offset<flatbuffers::String>> reasons(6,f.CreateString("not owned"));
+    std::vector<flatbuffers::Offset<InventoryEntry>> entries;
+    entries.push_back(CreateInventoryEntryDirect(f,1,0,-1,"rock","rock","tools",0,false,
+        defect==3,false,100,100,100,0,0,&reasons,0,"","","",false,defect==4?1:0,false,0,defect!=1));
+    std::vector<flatbuffers::Offset<InventoryPocket>> pockets;
+    Coord3i coord(100,100,defect==6?1025:0);
+    const auto view=CreateInventoryViewDirect(f,1,1,&entries,&pockets,false,"",100,1000,100,1000,
+        defect==2?nullptr:&coord,defect==5?"":"locker",500,defect==7?501:400);
+    return wire.finish_message(Payload::InventoryView,view.Union());
+}
 int main(){
     static_assert(int(Payload::CancelReloadRequest)==38);
     static_assert(int(Payload::ItemTransferRequest)==39);
@@ -30,5 +42,9 @@ int main(){
     }
     Coord3i external(10001,-20002,1);bytes=wire.build_inventory_query(22,&external);
     const auto* query=GetCwmMessage(bytes.data())->payload_as_InventoryQueryRequest();CHECK(query&&query->query_id()==22&&query->external_coord()->x()==10001&&query->external_coord()->y()==-20002);
+    for(int defect=0;defect<8;++defect) {
+        bytes=external_view(defect);CHECK(MessageVerifier::verify(bytes.data(),bytes.size()));
+        CHECK(valid_inventory(GetCwmMessage(bytes.data())->payload_as_InventoryView())==(defect==0||defect==1));
+    }
     std::cout<<"Transfer bounds, exclusive native activities, stable union IDs and quantities PASS\n";
 }

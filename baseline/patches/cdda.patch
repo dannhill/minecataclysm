@@ -1669,7 +1669,7 @@ index 0000000..0866007
 +} // namespace cwm
 diff --git a/src/cwm/cwm_inventory.h b/src/cwm/cwm_inventory.h
 new file mode 100644
-index 0000000..3d5bed2
+index 0000000..3936c85
 --- /dev/null
 +++ b/src/cwm/cwm_inventory.h
 @@ -0,0 +1,328 @@
@@ -1814,7 +1814,7 @@ index 0000000..3d5bed2
 +        const auto& selected = bindings_[id - 1];
 +        const auto& location = selected.location;
 +        if (selected.external) { auto error=validate_external(u); if (!error.empty()) return error; }
-+        if (!location || (selected.external ? get_map().getabs(location.pos()) != *external_ :
++        if (!location || (selected.external ? get_map().getabs(location.position()) != *external_ :
 +            (!location.held_by(u) || !u.has_item(*location))) ||
 +            (selected.external ? external_parents(location) : u.parents(*location)) != selected.parents || location->typeId().str() != selected.type ||
 +            location->charges != selected.charges || location->count_by_charges() != selected.counted ||

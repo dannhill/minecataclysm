@@ -37332,7 +37332,7 @@
   {
     "path": "src/cwm/cwm_inventory.h",
     "mode": "100644",
-    "sha256": "2bc0021ac16ef5665ca74c19ffe77c1c35b0c8ca77d8e2df143ee622374b63ef"
+    "sha256": "a8bb77084c5fd376612ed99cfdb0fd31490c1b2928339371a7e566ee2627d92f"
   },
   {
     "path": "src/cwm/cwm_main.cpp",
