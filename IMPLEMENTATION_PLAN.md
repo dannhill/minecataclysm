@@ -174,7 +174,9 @@ con setter esplicito, handle verificati, dedup e zero costo/avvio in pausa.
 Ingredienti preferiti/protetti sono distinti. Ripresa per requisiti rimanenti,
 senza interpretazione di errori italiani. CWM2.22; [design](docs/design/recipe-shortcuts.md).
 Il controllo RNG nuovo ha richiesto di evitare estrazioni per insiemi di varianti
-vuoti: nessuna variante reale o probabilità nuova. Sequenza casuale successiva
+vuoti: nessuna variante reale o probabilità nuova. La conoscenza per i preferiti
+usa fonti reali native senza generare acqua/pseudo-utensili né estrarre semi
+casuali; regole di accesso/proprietà e percorso normale di crafting conservati. Sequenza casuale successiva
 modificata eliminando quelle estrazioni inutili; verifica ed evidenze separate.
 
 “Più eseguite” richiede conteggi di completamenti effettivi e persistenza definita:

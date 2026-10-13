@@ -10,7 +10,10 @@ newest first, including matching unfinished work. It is not a completion counter
 
 Favorites reuse uistate.favorite_recipes and read_recipes. The native command
 binds the catalog/view entry, revalidates present knowledge/book/helper access,
-checks expected favorite state, and sets an explicit desired value. It runs as
+checks expected favorite state, and sets an explicit desired value. Knowledge
+uses native real-item source discovery: existing books/readers/cargo and helpers,
+with the same reachability/ownership checks but no newly generated water or
+pseudo-tools. Normal crafting source collection keeps its default behavior. It runs as
 UI metadata during pause/activities, without starting work or charging moves.
 The ordinary command ledger rejects expired/conflicting requests and replays a
 cached result for an exact duplicate. The client never flips its own copy or
@@ -29,7 +32,12 @@ The new metadata test found weighted-list selection burning RNG for empty item
 variant sets. item::select_itype_variant now returns immediately in that case.
 Nonempty variant selection is unchanged. This intentionally changes subsequent
 random-stream order by eliminating meaningless draws, without introducing new
-probabilities or gameplay authority. Validate crafting/read-only metadata and
+probabilities or gameplay authority. A second trace found the ordinary per-item
+seed also being drawn by generated water in the material cache; favorite
+knowledge now avoids that cache through real-only source discovery. No RNG
+rollback, seed override or swallowed error is introduced. This is scoped metadata
+verification, not certification of every legacy material-cache preview.
+Validate crafting/read-only metadata and
 native item/reload behavior, retain the original failing evidence.
 
 A future Frequent view needs completion-event accounting, correct batch/result
