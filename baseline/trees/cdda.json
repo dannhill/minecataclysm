@@ -37322,7 +37322,7 @@
   {
     "path": "src/cwm/cwm_crafting.h",
     "mode": "100644",
-    "sha256": "9e6d1b7dbf70c75d9e8bd66cb321ca957634d025fbc69db2af9b4cf376757c02"
+    "sha256": "788bbb1eb1aae093c03446c186f8bf5e2ed3da063acae5b447c19db37c55c7f2"
   },
   {
     "path": "src/cwm/cwm_hotbar.h",
@@ -39507,7 +39507,7 @@
   {
     "path": "src/rng.cpp",
     "mode": "100644",
-    "sha256": "1161c6598d37bd1fae4c6c883255c2d91d9c46cd515163cfaf1b7573fda0ef2e"
+    "sha256": "223f5ab1af127c21aafcd5bdf850588bdcef0e405fff39107f4cc2b500875d34"
   },
   {
     "path": "src/rng.h",
