@@ -332,10 +332,7 @@ def main():
                     paused_time=latest()['simulation_time']
                     shot('pause-language-selector.png')
                     # Fixed-size v1 pause form on the controlled 96-DPI display.
-                    xdo('mousemove','--window',window,'875','320');xdo('click','1')
-                    xdo('key','Home')
-                    if args.language_menu_change == 'it': xdo('key','Down')
-                    xdo('key','Return');time.sleep(.4)
+                    xdo('mousemove','--window',window,'875', '365' if args.language_menu_change == 'it' else '320');xdo('click','1');time.sleep(.4)
                     from product_language import configured_language
                     actual_config = Path((out / 'actual-client-config-path').read_text())
                     check('real_pause_menu_updates_product_preference',

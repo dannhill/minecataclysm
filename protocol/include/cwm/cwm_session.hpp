@@ -26,6 +26,18 @@ inline bool valid_decision(const CDDA::CWM::DecisionPrompt* prompt) {
         !prompt->choices()->size() || prompt->choices()->size()>9 || prompt->cancel_choice() < -1 ||
         prompt->cancel_choice()>=int(prompt->choices()->size()))return false;
     for(const auto* label:*prompt->choices())if(!text(label,16384) || !label->size())return false;
+    if (prompt->medical()) {
+        if (prompt->medical()->size() > 128) return false;
+        std::set<std::string> ids; std::set<int> choices;
+        for (const auto* p : *prompt->medical()) {
+            if (!p || !text(p->body_id(),128) || !p->body_id()->size() || !ids.insert(p->body_id()->str()).second ||
+                !text(p->name(),512) || !p->name()->size() || !text(p->description(),16384) || !text(p->health_text(),512) ||
+                p->choice() < -1 || p->choice() >= int(prompt->choices()->size()) || (p->choice() >= 0 && p->choice() == prompt->cancel_choice()) ||
+                (p->choice() >= 0 && !choices.insert(p->choice()).second) || p->health_quarters() < -1 || p->health_quarters() > 20 ||
+                p->hp_current() < -1 || p->hp_max() < -1 || (p->hp_current() == -1) != (p->hp_max() == -1) ||
+                (p->hp_max() >= 0 && (p->hp_max() == 0 || p->hp_current() > p->hp_max() || p->health_quarters() < 0))) return false;
+        }
+    }
     return true;
 }
 inline bool valid_inventory(const CDDA::CWM::InventoryView* view) {
@@ -97,7 +109,8 @@ inline bool valid_world(const CDDA::CWM::WorldSnapshot* world) {
         world->vehicles()->size() > 8192 || world->fields()->size() > 65536) return false;
     if (world->full() && (!world->chunks() || !world->chunks()->size() || world->chunks()->size() > 1024)) return false;
     if (!world->full() && world->chunks() && world->chunks()->size()) return false;
-    if (world->inventory_work() && !world->inventory_work()->command_id()) return false;
+    if (world->inventory_work() && (!world->inventory_work()->command_id() ||
+        world->inventory_work()->remaining_time_ms() > world->inventory_work()->total_time_ms())) return false;
     if (const auto* slots = world->quick_slots()) {
         if (slots->size() != 9) return false;
         std::set<std::string> identities;

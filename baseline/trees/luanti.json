@@ -7242,7 +7242,7 @@
   {
     "path": "src/cdda/cdda_bridge.cpp",
     "mode": "100644",
-    "sha256": "1d671d18c7eedb7db5af804199be4b0af272801fb4300884cb3b639b41603d73"
+    "sha256": "69e357a12666cb513e91ccc82ea26c2f4618258bca4797e26dc04e8c57fb55b4"
   },
   {
     "path": "src/cdda/cdda_bridge.h",
@@ -7257,7 +7257,7 @@
   {
     "path": "src/cdda/decision_dialog.h",
     "mode": "100644",
-    "sha256": "38c848fb84edbc5eb1bcc996e84af69a827c6fc20292c864a7eb9e6812735b68"
+    "sha256": "c0d884bf915a03bfbb46c38dc7bc681281364be9c9aa2220f99168970e5e9208"
   },
   {
     "path": "src/cdda/decision_input.h",
@@ -7272,7 +7272,7 @@
   {
     "path": "src/cdda/equipment_inventory.h",
     "mode": "100644",
-    "sha256": "27b6111164027a544d2ed2182689974daa932c9834222c74e92b86b397fb53b5"
+    "sha256": "a7a28e610be8ed39f92b74f5821f748ec8a3f86a9e7f6c9f85891f48964099b0"
   },
   {
     "path": "src/cdda/ground_item_formspec.h",
@@ -7482,7 +7482,7 @@
   {
     "path": "src/client/game.cpp",
     "mode": "100644",
-    "sha256": "1b4e5cfdc2bc877646a6781f0236c862df0d452aa472c42f00544ef8960ad2b7"
+    "sha256": "db11286dbfa9a1062244c2b64740db3e9aa70048179cbbe27610a61b954b2814"
   },
   {
     "path": "src/client/game.h",

@@ -264,7 +264,7 @@ def main():
                     message = CwmMessage.GetRootAs(buf[offset:offset+n]);offset += n
                     if message.PayloadType()==Payload.DecisionPrompt:
                         prompt=DecisionPrompt();prompt.Init(message.Payload().Bytes,message.Payload().Pos)
-                        found.append((prompt.DecisionId(),prompt.Text().decode(),[prompt.Choices(i).decode() for i in range(prompt.ChoicesLength())]))
+                        found.append((prompt.DecisionId(),prompt.Text().decode(),[prompt.Choices(i).decode() for i in range(prompt.ChoicesLength())],prompt))
                 return found
             def bandages(v):return [e for e in entries(v) if e.TypeId()==b'bandages']
             def ready_inventory():
@@ -277,11 +277,15 @@ def main():
                 shot(name)
                 dx,dy,du=geometry(out/name,16,12)
                 xdo('windowactivate','--sync',window)
-                xdo('mousemove','--window',window,str(round(dx+7*du)),str(round(dy+(6+index*.85+.36)*du)))
+                xdo('mousemove','--window',window,str(round(dx+(3.2 if prompts()[-1][3].MedicalLength() else 7)*du)),str(round(dy+((3.1+next(n for n in range(prompts()[-1][3].MedicalLength()) if prompts()[-1][3].Medical(n).Choice()==index)*2.8+.35) if prompts()[-1][3].MedicalLength() else (6+index*.85+.36))*du)))
                 xdo('click','1');time.sleep(.3)
             check('fixture_supplies_three_native_bandages',len(bandages(view))==3)
             xdo('keydown','1')
             first=begin(view);shot('native-body-choices.png')
+            typed=first[3];parts=[typed.Medical(n) for n in range(typed.MedicalLength())]
+            check('typed_medical_disclosure_has_stable_body_ids_and_no_exact_self_hp',len(parts)==6 and len({p.BodyId() for p in parts})==6 and all(p.HpCurrent()==-1 and p.HpMax()==-1 for p in parts))
+            check('native_wounded_parts_selectable_healthy_parts_readonly',any(p.BodyId()==b'arm_l' and p.Choice()>=0 and 0<=p.HealthQuarters()<=20 for p in parts) and any(p.Choice()==-1 for p in parts))
+            check('native_descriptions_preserve_known_effects',all(p.Description() for p in parts))
             identifier=first[0];stopped=latest()['simulation_time'];position=tuple(latest()[k] for k in ('target_x','target_y','target_z'))
             xdo('keydown','1');time.sleep(.6)
             check('number_held_before_dialog_does_not_choose',int(latest()['pending_decision'])==identifier and int(latest()['decision_waiting'])==0)

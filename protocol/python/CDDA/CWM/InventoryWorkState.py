@@ -38,8 +38,22 @@ class InventoryWorkState(object):
             return bool(self._tab.Get(flatbuffers.number_types.BoolFlags, o + self._tab.Pos))
         return False
 
+    # InventoryWorkState
+    def TotalTimeMs(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(8))
+        if o != 0:
+            return self._tab.Get(flatbuffers.number_types.Uint32Flags, o + self._tab.Pos)
+        return 0
+
+    # InventoryWorkState
+    def RemainingTimeMs(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(10))
+        if o != 0:
+            return self._tab.Get(flatbuffers.number_types.Uint32Flags, o + self._tab.Pos)
+        return 0
+
 def InventoryWorkStateStart(builder):
-    builder.StartObject(2)
+    builder.StartObject(4)
 
 def Start(builder):
     InventoryWorkStateStart(builder)
@@ -55,6 +69,18 @@ def InventoryWorkStateAddSettled(builder, settled):
 
 def AddSettled(builder, settled):
     InventoryWorkStateAddSettled(builder, settled)
+
+def InventoryWorkStateAddTotalTimeMs(builder, totalTimeMs):
+    builder.PrependUint32Slot(2, totalTimeMs, 0)
+
+def AddTotalTimeMs(builder, totalTimeMs):
+    InventoryWorkStateAddTotalTimeMs(builder, totalTimeMs)
+
+def InventoryWorkStateAddRemainingTimeMs(builder, remainingTimeMs):
+    builder.PrependUint32Slot(3, remainingTimeMs, 0)
+
+def AddRemainingTimeMs(builder, remainingTimeMs):
+    InventoryWorkStateAddRemainingTimeMs(builder, remainingTimeMs)
 
 def InventoryWorkStateEnd(builder):
     return builder.EndObject()

@@ -233,6 +233,8 @@ table WorldSnapshot {
 table InventoryWorkState {
     command_id: uint64;
     settled: bool;
+    total_time_ms: uint32; // Synchronous native debit paced by the coordinator.
+    remaining_time_ms: uint32;
 }
 
 table SimulationState {
@@ -441,11 +443,23 @@ table AcknowledgeThreatRequest {
     command_id: uint64;
 }
 
+table MedicalOption {
+    choice: int32 = -1; // Current page choice index; -1 is read-only/unavailable.
+    body_id: string;
+    name: string;
+    description: string; // Native benefits, limitations and known wound state.
+    health_quarters: int32 = -1; // 0..20 native observable resolution; -1 unknown.
+    health_text: string;
+    hp_current: int32 = -1;
+    hp_max: int32 = -1;
+}
+
 table DecisionPrompt {
     decision_id: uint64;
     text: string;
     choices: [string];
     cancel_choice: int32 = -1; // Native safe fallback; -1 disables client cancellation.
+    medical: [MedicalOption];
 }
 
 table DecisionResponse {

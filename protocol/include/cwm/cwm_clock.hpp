@@ -24,6 +24,7 @@ public:
     double scale() const { return scale_; }
     double elapsed() const { return elapsed_; }
     bool tick_due() const { return elapsed_ + 1e-8 >= tick_end_; }
+    double remaining_work() const { return std::max(0.0, action_due_ - elapsed_); }
     bool action_due() const { return elapsed_ + 1e-8 >= action_due_; }
     // Activity actors already own their native debit; pace exactly that work.
     double charge_work(int moves, int native_speed) {

@@ -240,7 +240,7 @@ index b6ae675..9e33201 100644
  		/*
  			Local player handling
 diff --git a/src/client/game.cpp b/src/client/game.cpp
-index 27b5833..15e810e 100644
+index 27b5833..81ee4e9 100644
 --- a/src/client/game.cpp
 +++ b/src/client/game.cpp
 @@ -8,6 +8,8 @@
@@ -296,21 +296,22 @@ index 27b5833..15e810e 100644
  struct LocalFormspecHandler : public TextDest
  {
  	LocalFormspecHandler(const std::string &formname)
-@@ -134,6 +173,13 @@ struct LocalFormspecHandler : public TextDest
+@@ -134,6 +173,14 @@ struct LocalFormspecHandler : public TextDest
  	void gotText(const StringMap &fields)
  	{
  		if (m_formname == "MT_PAUSE_MENU") {
 +			const auto language = fields.find("cwm_product_language");
-+			if (language != fields.end() &&
-+					(language->second == "1" || language->second == "2")) {
-+				g_settings->set("cwm_language", language->second == "2" ? "it" : "en");
++            const std::string chosen_language = fields.count("cwm_language_en") ? "en" : fields.count("cwm_language_it") ? "it" :
++                language != fields.end() && language->second == "1" ? "en" : language != fields.end() && language->second == "2" ? "it" : "";
++			if (!chosen_language.empty()) {
++				g_settings->set("cwm_language", chosen_language);
 +				if (!g_settings_path.empty())
 +					g_settings->updateConfigFile(g_settings_path.c_str());
 +			}
  			if (fields.find("btn_sound") != fields.end()) {
  				g_gamecallback->changeVolume();
  				return;
-@@ -443,12 +489,15 @@ class GameGlobalShaderConstantSetter : public IShaderConstantSetter
+@@ -443,12 +490,15 @@ class GameGlobalShaderConstantSetter : public IShaderConstantSetter
  		get_sunlight_color(&sunlight, daynight_ratio);
  		m_day_light.set(sunlight, services);
  
@@ -328,7 +329,7 @@ index 27b5833..15e810e 100644
  		m_animation_timer_delta_vertex.set(&animation_timer_delta_f, services);
  		m_animation_timer_delta_pixel.set(&animation_timer_delta_f, services);
  
-@@ -932,6 +981,7 @@ class Game {
+@@ -932,6 +982,7 @@ class Game {
  	bool m_first_loop_after_window_activation = false;
  	bool m_camera_offset_changed = false;
  	bool m_game_focused = false;
@@ -336,7 +337,7 @@ index 27b5833..15e810e 100644
  
  	bool m_does_lost_focus_pause_game = false;
  
-@@ -1009,6 +1059,8 @@ Game::Game() :
+@@ -1009,6 +1060,8 @@ Game::Game() :
  
  Game::~Game()
  {
@@ -345,7 +346,7 @@ index 27b5833..15e810e 100644
  	delete client;
  	delete soundmaker;
  	sound_manager.reset();
-@@ -1181,6 +1233,13 @@ void Game::run()
+@@ -1181,6 +1234,13 @@ void Game::run()
  		updateCamera(dtime);
  		updateSound(dtime);
  		processPlayerInteraction(dtime, m_game_ui->m_flags.show_hud);
@@ -359,7 +360,7 @@ index 27b5833..15e810e 100644
  		updateFrame(&graph, &stats, dtime, cam_view);
  		updateProfilerGraphs(&graph);
  
-@@ -1239,6 +1298,8 @@ void Game::shutdown()
+@@ -1239,6 +1299,8 @@ void Game::shutdown()
  		}
  	}
  
@@ -368,7 +369,7 @@ index 27b5833..15e810e 100644
  	delete client;
  	client = nullptr;
  	delete soundmaker;
-@@ -2046,14 +2107,38 @@ void Game::processUserInput(f32 dtime)
+@@ -2046,14 +2108,38 @@ void Game::processUserInput(f32 dtime)
  	if (m_cache_doubletap_jump && runData.jump_timer_down <= 0.4f)
  		runData.jump_timer_down += dtime;
  
@@ -410,7 +411,7 @@ index 27b5833..15e810e 100644
  		dropSelectedItem(isKeyDown(KeyType::SNEAK));
  	} else if (wasKeyDown(KeyType::AUTOFORWARD)) {
  		toggleAutoforward();
-@@ -2063,6 +2148,8 @@ void Game::processKeyInput()
+@@ -2063,6 +2149,8 @@ void Game::processKeyInput()
  	} else if (wasKeyDown(KeyType::INVENTORY)) {
  		openInventory();
  	} else if (input->cancelPressed()) {
@@ -419,7 +420,7 @@ index 27b5833..15e810e 100644
  #ifdef __ANDROID__
  		m_android_chat_open = false;
  #endif
-@@ -2083,7 +2170,8 @@ void Game::processKeyInput()
+@@ -2083,7 +2171,8 @@ void Game::processKeyInput()
  	} else if (wasKeyDown(KeyType::FREEMOVE)) {
  		toggleFreeMove();
  	} else if (wasKeyDown(KeyType::JUMP)) {
@@ -429,7 +430,7 @@ index 27b5833..15e810e 100644
  	} else if (wasKeyDown(KeyType::PITCHMOVE)) {
  		togglePitchMove();
  	} else if (wasKeyDown(KeyType::FASTMOVE)) {
-@@ -2154,9 +2242,17 @@ void Game::processKeyInput()
+@@ -2154,9 +2243,17 @@ void Game::processKeyInput()
  	} else if (wasKeyDown(KeyType::ZOOM)) {
  		checkZoomEnabled();
  	} else if (wasKeyDown(KeyType::QUICKTUNE_NEXT)) {
@@ -449,7 +450,7 @@ index 27b5833..15e810e 100644
  	} else if (wasKeyDown(KeyType::QUICKTUNE_INC)) {
  		quicktune->inc();
  	} else if (wasKeyDown(KeyType::QUICKTUNE_DEC)) {
-@@ -2178,6 +2274,22 @@ void Game::processItemSelection(u16 *new_playeritem)
+@@ -2178,6 +2275,22 @@ void Game::processItemSelection(u16 *new_playeritem)
  	LocalPlayer *player = client->getEnv().getLocalPlayer();
  
  	*new_playeritem = player->getWieldIndex();
@@ -472,7 +473,7 @@ index 27b5833..15e810e 100644
  	u16 max_item = player->getMaxHotbarItemcount();
  	if (max_item == 0)
  		return;
-@@ -2238,6 +2350,18 @@ void Game::dropSelectedItem(bool single_item)
+@@ -2238,6 +2351,18 @@ void Game::dropSelectedItem(bool single_item)
  
  void Game::openInventory()
  {
@@ -491,7 +492,7 @@ index 27b5833..15e810e 100644
  	/*
  	 * Don't permit to open inventory is CAO or player doesn't exists.
  	 * This prevent showing an empty inventory at player load
-@@ -2737,8 +2861,68 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
+@@ -2737,8 +2862,68 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
  		control.aux1 = control.aux1 ^ true;
  	}
  
@@ -560,7 +561,7 @@ index 27b5833..15e810e 100644
  	//tt.stop();
  }
  
-@@ -2784,6 +2968,73 @@ inline void Game::step(f32 dtime)
+@@ -2784,6 +2969,73 @@ inline void Game::step(f32 dtime)
  
  	if (!m_is_paused)
  		client->step(dtime);
@@ -634,7 +635,7 @@ index 27b5833..15e810e 100644
  }
  
  static void pauseNodeAnimation(PausedNodesList &paused, scene::ISceneNode *node) {
-@@ -3246,6 +3497,7 @@ void Game::updateCamera(f32 dtime)
+@@ -3246,6 +3498,7 @@ void Game::updateCamera(f32 dtime)
  	tool_reload_ratio = MYMIN(tool_reload_ratio, 1.0);
  	camera->update(player, dtime, tool_reload_ratio);
  	camera->step(dtime);
@@ -642,7 +643,7 @@ index 27b5833..15e810e 100644
  
  	f32 camera_fov = camera->getFovMax();
  	v3s16 camera_offset = camera->getOffset();
-@@ -3262,6 +3514,7 @@ void Game::updateCamera(f32 dtime)
+@@ -3262,6 +3515,7 @@ void Game::updateCamera(f32 dtime)
  		if (m_camera_offset_changed) {
  			client->updateCameraOffset(camera_offset);
  			client->getEnv().updateCameraOffset(camera_offset);
@@ -650,7 +651,7 @@ index 27b5833..15e810e 100644
  
  			if (clouds)
  				clouds->updateCameraOffset(camera_offset);
-@@ -3314,6 +3567,8 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
+@@ -3314,6 +3568,8 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
  
  	const ItemDefinition &selected_def = selected_item.getDefinition(itemdef_manager);
  	f32 d = getToolRange(selected_item, hand_item, itemdef_manager);
@@ -659,7 +660,7 @@ index 27b5833..15e810e 100644
  
  	core::line3d<f32> shootline;
  
-@@ -3365,6 +3620,48 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
+@@ -3365,6 +3621,48 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
  	// but the halo rendering code is already inefficient so there's no point in optimizing it here
  	hud->updateSelectionMesh(camera_offset);
  
@@ -708,7 +709,7 @@ index 27b5833..15e810e 100644
  	// Allow digging again if button is not pressed
  	if (runData.digging_blocked && !isKeyDown(KeyType::DIG))
  		runData.digging_blocked = false;
-@@ -4247,7 +4544,8 @@ void Game::updateClouds(float dtime)
+@@ -4247,7 +4545,8 @@ void Game::updateClouds(float dtime)
  {
  	if (this->sky->getCloudsVisible()) {
  		this->clouds->setVisible(true);
@@ -718,7 +719,7 @@ index 27b5833..15e810e 100644
  		// this->camera->getPosition is not enough for third-person camera.
  		v3f camera_node_position = this->camera->getCameraNode()->getPosition();
  		v3s16 camera_offset      = this->camera->getOffset();
-@@ -4319,7 +4617,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
+@@ -4319,7 +4618,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
  	/*
  		Fog
  	*/
@@ -732,14 +733,14 @@ index 27b5833..15e810e 100644
  		this->driver->setFog(
  				fog_color,
  				video::EFT_FOG_LINEAR,
-@@ -4518,6 +4821,12 @@ void Game::showPauseMenu()
+@@ -4518,6 +4822,12 @@ void Game::showPauseMenu()
  		<< strgettext("Exit to Menu") << "]";
  	os		<< "button_exit[4," << (ypos++) << ";3,0.5;btn_exit_os;"
  		<< strgettext("Exit to OS")   << "]";
 +	os << "label[7.5,0.65;" << ::cwm::tr("Language", "Lingua") << "]"
-+		<< "dropdown[7.5,1.15;3.0;cwm_product_language;English,Italiano (WIP);"
-+		<< (g_settings->get("cwm_language") == "it" ? 2 : 1) << ";true]"
-+		<< "textarea[7.5,2.0;3.1,1.8;;;"
++        << "button[7.5,1.15;3.0,0.6;cwm_language_en;English]"
++        << "button[7.5,1.9;3.0,0.6;cwm_language_it;Italiano (WIP)]"
++		<< "textarea[7.5,2.7;3.1,1.8;;;"
 +		<< ::cwm::tr("Restart start.sh to apply.\nItalian: WIP.",
 +			"Riavvia start.sh per applicare.\nItaliano: WIP.") << "]";
  	if (!control_text.empty()) {
@@ -1734,10 +1735,10 @@ index 0000000..e1e7236
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..957dd84
+index 0000000..6af0137
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,2810 @@
+@@ -0,0 +1,2815 @@
 +#include "cwm/product_language.hpp"
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
@@ -1980,14 +1981,16 @@ index 0000000..957dd84
 +        queued_equipment_.reset(); queued_transfer_.reset(); external_anchor_.reset(); transferring_ = false; inventory_query_ = 0; equipment_view_ = {};
 +        equipment_close_ = equipment_open_;
 +    }
-+    bool query_inventory() {
++    bool query_inventory(bool preserve_view = false) {
 +        if (!session_.ready() || !player_ready_ || metrics_.pending_decision || pending_move_) return false;
 +        auto wire = session_.builder();
 +        inventory_query_ = next_inventory_query_++;
 +        const CDDA::CWM::Coord3i coord(external_anchor_ ? external_anchor_->X : 0, external_anchor_ ? external_anchor_->Y : 0, external_anchor_ ? external_anchor_->Z : 0);
 +        const auto bytes = wire.build_inventory_query(inventory_query_, external_anchor_ ? &coord : nullptr);
-+        equipment_view_ = {}; equipment_selected_ = 0; transfer_destination_ = 0; destination_page_ = 0; transfer_quantity_ = 1;
-+        equipment_notice_.clear(); equipment_dirty_ = true;
++        if (!preserve_view) {
++            equipment_view_ = {}; equipment_selected_ = 0; transfer_destination_ = 0; destination_page_ = 0; transfer_quantity_ = 1;
++            equipment_notice_.clear(); equipment_dirty_ = true;
++        }
 +        return connection_->send_message(bytes.data(), bytes.size());
 +    }
 +    void flush_equipment() {
@@ -2824,6 +2827,9 @@ index 0000000..957dd84
 +                activity_token_ = transfer ? transfer->token() : reload ? reload->token() : craft ? craft->token() : aid ? aid->token() : consumption ? consumption->token() : 0;
 +                activity_total_ = transfer ? transfer->total_moves() : reload ? reload->total_moves() : craft ? 10000000 : aid ? aid->total_moves() : consumption ? consumption->total_moves() : 0;
 +                activity_remaining_ = transfer ? transfer->remaining_moves() : reload ? reload->remaining_moves() : craft ? 10000000 - craft->progress() : aid ? aid->remaining_moves() : consumption ? consumption->remaining_moves() : 0;
++                if (!activity_token_ && native_work && !native_work->settled() && native_work->total_time_ms()) {
++                    activity_total_ = native_work->total_time_ms(); activity_remaining_ = native_work->remaining_time_ms();
++                }
 +                if (previous_consumption != activity_token_ && equipment_open_) equipment_dirty_ = true;
 +                if (previous_consumption != activity_token_ && crafting_open_) crafting_dirty_ = true;
 +                const auto projection_started = std::chrono::steady_clock::now();
@@ -3540,7 +3546,7 @@ index 0000000..957dd84
 +            pimpl_->quick_bind_refresh_ = false;
 +            if (pimpl_->equipment_open_) {
 +                const auto notice = pimpl_->equipment_notice_;
-+                pimpl_->query_inventory();
++                pimpl_->query_inventory(true);
 +                pimpl_->equipment_notice_ = notice;
 +            }
 +        }
@@ -4133,7 +4139,7 @@ index 0000000..957dd84
 +        if (fields.count("next") && (i.equipment_page_ + 1) * 36 < i.equipment_view_.entries.size()) ++i.equipment_page_;
 +        const auto containers = std::count_if(i.equipment_view_.entries.begin(), i.equipment_view_.entries.end(), [](const auto& e) { return e.container; });
 +        if (fields.count("dest_prev") && i.destination_page_) --i.destination_page_;
-+        if (fields.count("dest_next") && (i.destination_page_ + 1) * 12 < size_t(containers)) ++i.destination_page_;
++        if (fields.count("dest_next") && (i.destination_page_ + 1) * 6 < size_t(containers)) ++i.destination_page_;
 +        if (fields.count("drop") || fields.count("insert")) {
 +            const auto* selected = i.equipment_view_.entry(i.equipment_selected_);
 +            const bool insert = fields.count("insert");
@@ -4797,10 +4803,10 @@ index 0000000..b255489
 +} // namespace cdda_client
 diff --git a/src/cdda/decision_dialog.h b/src/cdda/decision_dialog.h
 new file mode 100644
-index 0000000..c6ae3b7
+index 0000000..da6320f
 --- /dev/null
 +++ b/src/cdda/decision_dialog.h
-@@ -0,0 +1,41 @@
+@@ -0,0 +1,76 @@
 +#pragma once
 +#include "avatar_status.h"
 +#include "decision_text.h"
@@ -4808,15 +4814,49 @@ index 0000000..c6ae3b7
 +#include "cwm/product_language.hpp"
 +#include <vector>
 +namespace cdda_client {
++struct MedicalOptionView {
++    int choice{-1}, quarters{-1}, current{-1}, maximum{-1};
++    std::string id, name, description, health_text;
++};
 +struct DecisionDialog {
 +    uint64_t id{},connection{};int cancel{-1};bool submitted{};
 +    std::string body;std::vector<std::string> choices;
++    std::vector<MedicalOptionView> medical;
 +    void read(const CDDA::CWM::DecisionPrompt& prompt,uint64_t generation) {
 +        id=prompt.decision_id();connection=generation;cancel=prompt.cancel_choice();submitted=false;
 +        body=prompt.text()->str();choices.clear();for(const auto* label:*prompt.choices())choices.push_back(label->str());
++        medical.clear(); if(prompt.medical())for(const auto* p:*prompt.medical())medical.push_back({
++            p->choice(),p->health_quarters(),p->hp_current(),p->hp_max(),p->body_id()->str(),p->name()->str(),p->description()->str(),p->health_text()->str()});
 +    }
 +    bool permits(uint64_t expected,uint64_t generation,int choice) const {
 +        return id && expected==id && generation==connection && !submitted && choice>=0 && size_t(choice)<choices.size();
++    }
++    std::string medicalForm(std::string f) const {
++        f += "hypertext[0.55,1.85;14.9,1.0;prompt;" + statusEscape("<global color=#323232 size=18>"+decisionRichText(body)) + "]";
++        const double height = medical.size()*2.8 + choices.size()*.85;
++        f += "scrollbaroptions[min=0;max="+std::to_string(int(std::max(1.,(height-6.7)*10)))+";smallstep=5;largestep=24;thumbsize=67]scrollbar[15.05,3.1;0.4,6.7;vertical;medical_scroll;0]scroll_container[0.55,3.1;14.3,6.7;medical_scroll;vertical;0.1]";
++        double y=0;std::vector<bool> shown(choices.size(),false);
++        for(const auto& p:medical) {
++            const auto ys=std::to_string(y);
++            f+="image[0,"+ys+";0.7,0.7;"+bodyPartIcon(p.id)+"]";
++            if(p.choice>=0) { shown[p.choice]=true; f+="button[0.85,"+ys+";4.7,0.7;choice_"+std::to_string(p.choice)+";"+std::to_string(p.choice+1)+". "+statusEscape(p.name)+"]"; }
++            else f+="label[0.85,"+std::to_string(y+.35)+";"+statusEscape(p.name)+"]";
++            if(p.quarters>=0)for(int n=0;n<10;++n) {
++                const auto x=std::to_string(5.8+n*.42);
++                f+="image["+x+","+std::to_string(y+.1)+";0.36,0.36;heart.png^[opacity:45]";
++                const int half=std::clamp(p.quarters-2*n,0,2);
++                if(half)f+="image["+x+","+std::to_string(y+.1)+";0.36,0.36;heart.png^[opacity:0^[lowpart:"+std::to_string(half*50)+":heart.png]";
++            } else f+="label[5.8,"+std::to_string(y+.35)+";"+statusEscape(p.health_text.empty()?::cwm::text("Health unknown","Salute sconosciuta"):p.health_text)+"]";
++            if(p.current>=0)f+="label[10.5,"+std::to_string(y+.35)+";"+std::to_string(p.current)+" / "+std::to_string(p.maximum)+"]";
++            f+="hypertext[0.85,"+std::to_string(y+.8)+";13.2,1.8;medical_info_"+p.id+";"+statusEscape("<global color=#323232 size=16>"+decisionRichText(p.description))+ "]";
++            y+=2.8;
++        }
++        for(size_t n=0;n<choices.size();++n)if(!shown[n]) {
++            f+="button[0,"+std::to_string(y)+";14.25,0.72;choice_"+std::to_string(n)+";"+std::to_string(n+1)+". "+statusEscape(decisionPlainText(choices[n]))+"]";y+=.85;
++        }
++        f+="scroll_container_end[]label[0.55,10.05;"+::cwm::text("Choose a body part. Effects shown are expectations, not guaranteed healing.","Scegli una parte. Gli effetti indicati non garantiscono la guarigione.")+"]";
++        if(cancel>=0 && size_t(cancel)<choices.size())f+="button[0.55,10.65;14.9,0.75;cancel;Esc: "+statusEscape(decisionPlainText(choices[cancel]))+"]";
++        return f;
 +    }
 +    std::string form() const {
 +        std::string f="formspec_version[4]size[16,12]no_prepend[]bgcolor[#00000000]"
@@ -4825,6 +4865,7 @@ index 0000000..c6ae3b7
 +        f+="cwm_decision["+std::string(submitted?"1":"0")+"]image[0.55,0.4;0.65,0.65;cdda_status_unknown.png]";
 +        f+="label[1.45,0.75;"+::cwm::text("Choose an action","Scegli un'azione")+"]";
 +        f+="label[0.55,1.35;"+std::string(submitted?::cwm::text("Response sent · waiting for the game","Risposta inviata · in attesa del gioco"): ::cwm::text("Time is paused while you choose","Il tempo e fermo mentre scegli"))+"]";
++        if(!medical.empty() && !submitted)return medicalForm(f);
 +        f+="hypertext[0.55,1.85;14.9,3.9;prompt;"+statusEscape("<global color=#323232 size=18>"+decisionRichText(body))+"]set_focus[prompt;true]";
 +        if(submitted)return f+"label[0.55,6.3;"+::cwm::text("Waiting for the game...","In attesa del gioco...")+"]";
 +        const int maximum=std::max(0,int(choices.size()*8.5)-36);
@@ -4924,7 +4965,7 @@ index 0000000..15c7818
 +} // namespace cdda_client
 diff --git a/src/cdda/equipment_inventory.h b/src/cdda/equipment_inventory.h
 new file mode 100644
-index 0000000..5f6b692
+index 0000000..1277f84
 --- /dev/null
 +++ b/src/cdda/equipment_inventory.h
 @@ -0,0 +1,401 @@
@@ -5295,12 +5336,12 @@ index 0000000..5f6b692
 +    }
 +    std::vector<uint32_t> containers;
 +    for (const auto& e : view.entries) if (e.container) containers.push_back(e.id);
-+    const size_t destination_pages = std::max<size_t>(1, (containers.size() + 11) / 12);
++    const size_t destination_pages = std::max<size_t>(1, (containers.size() + 5) / 6);
 +    destination_page = std::min(destination_page, destination_pages - 1);
-+    for (size_t n = destination_page * 12; n < std::min(containers.size(), (destination_page + 1) * 12); ++n) {
++    for (size_t n = destination_page * 6; n < std::min(containers.size(), (destination_page + 1) * 6); ++n) {
 +        const auto& e = *view.entry(containers[n]);
-+        const auto y = std::to_string(2.6 + (n % 12) * .42);
-+        f += "button[8," + y + ";7.5,0.4;destination_" + std::to_string(e.id) + ";" +
++        const auto y = std::to_string(2.6 + (n % 6) * .95);
++        f += "button[8," + y + ";7.5,0.85;destination_" + std::to_string(e.id) + ";" +
 +            statusEscape((destination == e.id ? "> " : "") + e.name) + "]";
 +        f += equipmentDrag("destination_" + std::to_string(e.id), &e, icon);
 +        std::string detail = view.source(e.id);

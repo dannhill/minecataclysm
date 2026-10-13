@@ -36977,7 +36977,7 @@
   {
     "path": "src/character_body.cpp",
     "mode": "100644",
-    "sha256": "87816ed3f8d691c58c4ecf3f12fa4a8b380309884acddd3bc0c2306e9186df71"
+    "sha256": "72329f790d33fa2207009bf57d673ec91cda1f25e0fa1fec7a4d7ca7ee90ebd7"
   },
   {
     "path": "src/character_crafting.cpp",
@@ -37342,12 +37342,12 @@
   {
     "path": "src/cwm/cwm_map_exporter.cpp",
     "mode": "100644",
-    "sha256": "7ca3c8e06a2b68e1480a6f4fd9ac7935cd6a4f082f85b5bd3690620d83289991"
+    "sha256": "bde87a94f455ef1e3866ca53dbc297c56bedfae3beed67ff7fd4317e957d4a72"
   },
   {
     "path": "src/cwm/cwm_map_exporter.h",
     "mode": "100644",
-    "sha256": "5b9bd1541b2f17cad5d01eb60f8f7dd42e5d14a3e1bff7b7e9c682340a4a6321"
+    "sha256": "bb801dba65a7cb0dbaa223e940ceb695684733f5ed5ac98a7f456f30a27de3b0"
   },
   {
     "path": "src/cwm/cwm_ranged.h",
@@ -37357,12 +37357,12 @@
   {
     "path": "src/cwm/cwm_server.cpp",
     "mode": "100644",
-    "sha256": "2acf48a8f3ee5b7e7885a30affbaff7f913fc965dc718c369b0576e6a438ee09"
+    "sha256": "7eb25763b5cb46d0de64aaff937a76610f7fb33da88e34cf6aae32b747d68d23"
   },
   {
     "path": "src/cwm/cwm_server.h",
     "mode": "100644",
-    "sha256": "65b10fec5fcdee243daea18c6bc78fd70be40a2c6e304f28cd6076a444776563"
+    "sha256": "4d6f25e6c2af3cac46af09584a53306c797d548080bd6536769c01044ebdff77"
   },
   {
     "path": "src/cwm/cwm_status_gauges.h",
@@ -37537,12 +37537,12 @@
   {
     "path": "src/do_turn.cpp",
     "mode": "100644",
-    "sha256": "c8dac7d7db5208dab0afbb903f8419669b1db29799ab8e12ab41920ad27c524f"
+    "sha256": "71f7a8bd12da7e41168bda4f31093e2d6ed80f698743b6cc38b6f1acb4f3a69b"
   },
   {
     "path": "src/do_turn.h",
     "mode": "100644",
-    "sha256": "909fdf1e036470f092755a04130804bd02aa0f55ca0e0c4a47a90fad86520c94"
+    "sha256": "44442fa18e8fb128bf7b18c5571e2c2b38d000c0ee5ad67ae6e660088c1dfe81"
   },
   {
     "path": "src/drawing_primitives.cpp",
@@ -40897,7 +40897,7 @@
   {
     "path": "tests/cwm_pickup_test.cpp",
     "mode": "100644",
-    "sha256": "2331dc56a91c40c491c49198f6f444a8347d0572f51926864b503bf4120ed97d"
+    "sha256": "91352e5b82eca90cd087685da40771b09f55ae6d61c6c8d59c5ddf7f9f6497a3"
   },
   {
     "path": "tests/cwm_projection_test.cpp",

@@ -284,7 +284,7 @@ index a90f830..84949ac 100644
      // Chance to suffer pain if overburden and stamina runs out or has trait BADBACK
      // Starts at 1 in 25, goes down by 5 for every 50% more carried
 diff --git a/src/character_body.cpp b/src/character_body.cpp
-index 96a2dec..87b12cf 100644
+index 96a2dec..31ecc6f 100644
 --- a/src/character_body.cpp
 +++ b/src/character_body.cpp
 @@ -1,6 +1,7 @@
@@ -295,7 +295,37 @@ index 96a2dec..87b12cf 100644
  #include "flag.h"
  #include "game.h"
  #include "make_static.h"
-@@ -1324,7 +1325,28 @@ bodypart_id Character::body_window( const std::string &menu_header,
+@@ -1104,6 +1105,7 @@ bodypart_id Character::body_window( const std::string &menu_header,
+         int bonus;
+     };
+ 
++    std::vector<external_medical_option> medical_parts;
+     std::vector<healable_bp> parts;
+     for( const bodypart_id &part : this->get_all_body_parts( get_body_part_flags::only_main ) ) {
+         // TODO: figure out how to do head and torso bonus?
+@@ -1313,6 +1315,21 @@ bodypart_id Character::body_window( const std::string &menu_header,
+             }
+         }
+         bmenu.addentry_desc( i, e.allowed, MENU_AUTOASSIGN, msg, desc );
++        if (external_ui_active()) {
++            external_medical_option option;
++            option.body_id = bp.id().str(); option.name = e.name; option.description = desc;
++            // Same disclosure/precision and get_bar resolution as this native menu.
++            // Broken/mending/PAIN_IMMUNE remain qualitative; no hidden exact HP.
++            if (!no_feeling && !limb_is_broken && !limb_is_mending && maximal_hp > 0) {
++                const float sw = std::clamp(float(current_hp) / maximal_hp, 0.f, 1.f) * 5;
++                const int full = int(sw);
++                option.health_quarters = current_hp <= 0 ? 0 :
++                    full * 4 + (sw - full >= .5f ? 2 : full == 0 ? 1 : 0);
++                if (precise) { option.hp_current = current_hp; option.hp_max = maximal_hp; }
++            } else option.health_text = no_feeling && !limb_is_broken && !limb_is_mending ?
++                remove_color_tags(hp_str) : limb_is_mending ? _( "Mending" ) : _( "Broken" );
++            medical_parts.push_back(std::move(option));
++        }
+     }
+ 
+     if( !is_valid_choice ) { // no body part can be chosen for this item/effect
+@@ -1324,7 +1341,29 @@ bodypart_id Character::body_window( const std::string &menu_header,
          bmenu.set_selected( default_selection_idx );
      }
  
@@ -308,6 +338,7 @@ index 96a2dec..87b12cf 100644
 +            // No disabled choice is selectable over IPC. Preserve the native
 +            // explanation rather than deriving healing rules in the bridge.
 +            if( parts[i].allowed ) {
++                medical_parts[i].choice = labels.size();
 +                mapping.push_back( static_cast<int>( i ) );
 +                labels.push_back( remove_color_tags( bmenu.entries[i].txt ) + "\n" +
 +                                  remove_color_tags( bmenu.entries[i].desc ) );
@@ -316,7 +347,7 @@ index 96a2dec..87b12cf 100644
 +            }
 +        }
 +        labels.push_back( _( "Cancel" ) );
-+        const int selected = external_ui_choice( text, labels );
++        const int selected = external_ui_medical_choice( text, labels, medical_parts );
 +        bmenu.ret = selected >= 0 && static_cast<size_t>( selected ) < mapping.size() ?
 +                    mapping[selected] : -1;
 +    } else {
@@ -547,7 +578,7 @@ index 52b63dc..ad5585d 100644
  
  enum class craft_flags : int {
 diff --git a/src/do_turn.cpp b/src/do_turn.cpp
-index 2455a6f..7d02353 100644
+index 2455a6f..32c0e4a 100644
 --- a/src/do_turn.cpp
 +++ b/src/do_turn.cpp
 @@ -120,14 +120,21 @@ bool cleanup_at_end()
@@ -605,7 +636,7 @@ index 2455a6f..7d02353 100644
          }
          if( g->gamemode ) {
              g->gamemode = std::make_unique<special_game>(); // null gamemode or something..
-@@ -400,6 +414,59 @@ void overmap_npc_move()
+@@ -400,6 +414,72 @@ void overmap_npc_move()
  
  // MAIN GAME LOOP
  // Returns true if game is over (death, saved, quit, etc)
@@ -628,6 +659,19 @@ index 2455a6f..7d02353 100644
 +bool external_ui_active()
 +{
 +    return external_choice && bool( *external_choice );
++}
++
++namespace { const std::vector<external_medical_option>* medical_options = nullptr; }
++const std::vector<external_medical_option> &external_medical_options() {
++    static const std::vector<external_medical_option> empty;
++    return medical_options ? *medical_options : empty;
++}
++int external_ui_medical_choice(const std::string &text, const std::vector<std::string> &choices,
++                              const std::vector<external_medical_option> &parts) {
++    struct Restore { const std::vector<external_medical_option>* previous;
++        ~Restore() { medical_options = previous; } } restore{medical_options};
++    medical_options = &parts;
++    return external_ui_choice(text, choices);
 +}
 +
 +int external_ui_choice( const std::string &text, const std::vector<std::string> &choices )
@@ -665,7 +709,7 @@ index 2455a6f..7d02353 100644
  bool do_turn()
  {
      if( g->is_game_over() ) {
-@@ -486,7 +553,11 @@ bool do_turn()
+@@ -486,7 +566,11 @@ bool do_turn()
  
      g->perhaps_add_random_npc( /* ignore_spawn_timers_and_rates = */ false );
      while( u.moves > 0 && u.activity ) {
@@ -677,7 +721,7 @@ index 2455a6f..7d02353 100644
      }
      // FIXME: hack needed due to the legacy code in advanced_inventory::move_all_items()
      if( !u.activity ) {
-@@ -533,7 +604,7 @@ bool do_turn()
+@@ -533,7 +617,7 @@ bool do_turn()
                      g->queue_screenshot = false;
                  }
  
@@ -686,7 +730,7 @@ index 2455a6f..7d02353 100644
                      ++g->moves_since_last_save;
                      u.action_taken();
                  }
-@@ -542,11 +613,19 @@ bool do_turn()
+@@ -542,11 +626,19 @@ bool do_turn()
                      return turn_handler::cleanup_at_end();
                  }
  
@@ -706,7 +750,7 @@ index 2455a6f..7d02353 100644
                  }
              }
              // Reset displayed sound markers now that the turn is over.
-@@ -578,6 +657,10 @@ bool do_turn()
+@@ -578,6 +670,10 @@ bool do_turn()
          }
      }
  
@@ -718,16 +762,26 @@ index 2455a6f..7d02353 100644
          // Still have a view offset, but might not be driving anymore,
          // or the option has been deactivated,
 diff --git a/src/do_turn.h b/src/do_turn.h
-index 6ebdaa7..ba65968 100644
+index 6ebdaa7..28a8694 100644
 --- a/src/do_turn.h
 +++ b/src/do_turn.h
-@@ -2,8 +2,23 @@
+@@ -2,8 +2,33 @@
  #ifndef CATA_SRC_DO_TURN_H
  #define CATA_SRC_DO_TURN_H
  
 +#include <functional>
 +#include <string>
 +#include <vector>
++
++struct external_medical_option {
++    int choice = -1;
++    std::string body_id, name, description, health_text;
++    int health_quarters = -1; // Native observable five-segment resolution; unknown=-1.
++    int hp_current = -1, hp_max = -1; // Only the native precise view may disclose exact HP.
++};
++const std::vector<external_medical_option> &external_medical_options();
++int external_ui_medical_choice(const std::string &text, const std::vector<std::string> &choices,
++                              const std::vector<external_medical_option> &parts);
 +
  /** MAIN GAME LOOP. Returns true if game is over (death, saved, quit, etc.). */
  bool do_turn();
@@ -2428,7 +2482,7 @@ index 0000000..c273bf2
 +}
 diff --git a/src/cwm/cwm_map_exporter.cpp b/src/cwm/cwm_map_exporter.cpp
 new file mode 100644
-index 0000000..960d55a
+index 0000000..597f9c9
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.cpp
 @@ -0,0 +1,663 @@
@@ -2622,7 +2676,7 @@ index 0000000..960d55a
 +    bool include_chunks,
 +    ProjectionCache* cache, cdda::cwm::Identity identity,
 +    uint64_t base_revision, uint64_t state_id, uint64_t resync_id,
-+    uint64_t completed_command_id, const ClockView* clock, uint64_t activity_token, uint64_t weapon_token, uint64_t inventory_work_command, bool inventory_work_settled
++    uint64_t completed_command_id, const ClockView* clock, uint64_t activity_token, uint64_t weapon_token, uint64_t inventory_work_command, bool inventory_work_settled, uint32_t work_total_ms, uint32_t work_remaining_ms
 +) {
 +    cdda::cwm::MessageBuilder builder(sequence_num, world_rev, identity);
 +    auto& fbb = builder.builder();
@@ -3032,7 +3086,7 @@ index 0000000..960d55a
 +            std::clamp(u.activity.moves_left, 0, std::max(0, u.activity.moves_total)), u.activity.id() == activity_id("ACT_INSERT_ITEM")) :
 +        flatbuffers::Offset<CDDA::CWM::ItemTransferState>{};
 +    const auto inventory_work = inventory_work_command ? CDDA::CWM::CreateInventoryWorkState(
-+        fbb, inventory_work_command, inventory_work_settled) : flatbuffers::Offset<CDDA::CWM::InventoryWorkState>{};
++        fbb, inventory_work_command, inventory_work_settled, work_total_ms, work_remaining_ms) : flatbuffers::Offset<CDDA::CWM::InventoryWorkState>{};
 +    auto world_snap = CDDA::CWM::CreateWorldSnapshot(
 +        fbb,
 +        world_rev,
@@ -3097,10 +3151,10 @@ index 0000000..960d55a
 +} // namespace cwm
 diff --git a/src/cwm/cwm_map_exporter.h b/src/cwm/cwm_map_exporter.h
 new file mode 100644
-index 0000000..9ff67ca
+index 0000000..b8dd82d
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.h
-@@ -0,0 +1,66 @@
+@@ -0,0 +1,67 @@
 +// CDDA CWM Map & Entity Exporter
 +// Licensed under Apache-2.0
 +#pragma once
@@ -3146,7 +3200,8 @@ index 0000000..9ff67ca
 +        uint64_t base_revision = 0, uint64_t state_id = 1,
 +        uint64_t resync_id = 0, uint64_t completed_command_id = 0,
 +        const ClockView* clock = nullptr, uint64_t activity_token = 0, uint64_t weapon_token = 0,
-+        uint64_t inventory_work_command = 0, bool inventory_work_settled = false
++        uint64_t inventory_work_command = 0, bool inventory_work_settled = false,
++        uint32_t work_total_ms = 0, uint32_t work_remaining_ms = 0
 +    );
 +
 +    static std::vector<uint8_t> export_tile_delta(
@@ -3279,10 +3334,10 @@ index 0000000..bb65c87
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..cb3ea35
+index 0000000..d7d03a0
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,1040 @@
+@@ -0,0 +1,1057 @@
 +#include "cwm/product_language.hpp"
 +#include "cwm_motion.h"
 +// CDDA CWM IPC Server Implementation
@@ -3429,7 +3484,9 @@ index 0000000..cb3ea35
 +    auto snapshot = CwmMapExporter::export_world_snapshot(sequence_counter_, world_revision_,
 +                    u, m, g, full, &projection_cache_, identity_, sent_revision_, state_id,
 +                    resync_id_, completed, realtime_ ? &clock : nullptr, activity_token_, ranged_selection_.refresh(u),
-+                    inventory_work_command_, inventory_work_settled_);
++                    inventory_work_command_, inventory_work_settled_,
++                    uint32_t(std::min(4294967., inventory_work_total_)*1000),
++                    uint32_t(std::min({4294967., inventory_work_total_, clock_.remaining_work()})*1000));
 +    const bool is_full = CDDA::CWM::GetCwmMessage(snapshot.data())->payload_as_WorldSnapshot()->full();
 +    if (emit(snapshot)) {
 +        snapshot_sent_ = true;
@@ -3459,8 +3516,13 @@ index 0000000..cb3ea35
 +    auto& fbb = builder.builder();
 +    const auto text = fbb.CreateString(decision_text_);
 +    const auto labels = fbb.CreateVectorOfStrings(decision_labels_);
++    std::vector<flatbuffers::Offset<CDDA::CWM::MedicalOption>> parts;
++    for (const auto& p : decision_medical_) parts.push_back(CDDA::CWM::CreateMedicalOption(
++        fbb, p.choice, fbb.CreateString(p.body_id), fbb.CreateString(p.name), fbb.CreateString(p.description),
++        p.health_quarters, fbb.CreateString(p.health_text), p.hp_current, p.hp_max));
++    const auto medical = parts.empty() ? flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<CDDA::CWM::MedicalOption>>>{} : fbb.CreateVector(parts);
 +    emit(builder.finish_message(CDDA::CWM::Payload::DecisionPrompt,
-+        CDDA::CWM::CreateDecisionPrompt(fbb, pending_decision_, text, labels, static_cast<int>(decision_labels_.size()) - 1).Union()));
++        CDDA::CWM::CreateDecisionPrompt(fbb, pending_decision_, text, labels, static_cast<int>(decision_labels_.size()) - 1, medical).Union()));
 +}
 +
 +void CwmServer::send_result(const Result& result, avatar& u, map& m, game& g) {
@@ -3626,6 +3688,8 @@ index 0000000..cb3ea35
 +            const bool acted = execute(command, u, m, g);
 +            const double duration = command.equipment_action >= 0 || command.transfer_action >= 0 ?
 +                clock_.charge_work(before-u.moves, speed) : clock_.charge_action(before-u.moves, speed);
++            if (acted && inventory_work_command_ == command.id && !u.activity)
++                inventory_work_total_ = clock_.remaining_work();
 +            motion_seconds_ = static_cast<float>(std::clamp(duration, .05, 60.));
 +            if (!acted && !command.id) held_direction_ = 0;
 +            if (result_) {
@@ -3697,7 +3761,7 @@ index 0000000..cb3ea35
 +        u.moves = 0;
 +        return false;
 +    }, [&](const std::string& text, const std::vector<std::string>& choices) {
-+        return ask_decision(text, choices, u, m, g, keep_running);
++        return ask_decision(text, choices, u, m, g, keep_running, external_medical_options());
 +    }, realtime_ ? std::function<bool()>([&]() { return pace_world(u, m, g, keep_running); }) : std::function<bool()>{}, [&](int moves, int speed) {
 +        if (realtime_) clock_.charge_work(moves, speed);
 +    });
@@ -3714,7 +3778,7 @@ index 0000000..cb3ea35
 +}
 +
 +int CwmServer::ask_decision(const std::string& text, const std::vector<std::string>& choices,
-+                          avatar& u, map& m, game& g, const std::function<bool()>& keep_running) {
++                          avatar& u, map& m, game& g, const std::function<bool()>& keep_running, const std::vector<external_medical_option>& medical) {
 +    if (choices.empty()) return -1;
 +    if (choices.size() > 9) {
 +        // The temporary numbered GUI pages long native lists. Preserve every
@@ -3728,7 +3792,13 @@ index 0000000..cb3ea35
 +            if (begin) { page.push_back("Previous page"); indices.push_back(-1); }
 +            if (end < choices.size() - 1) { page.push_back("Next page"); indices.push_back(-2); }
 +            page.push_back(choices.back()); indices.push_back(choices.size() - 1);
-+            const int answer = ask_decision(text, page, u, m, g, keep_running);
++            std::vector<external_medical_option> page_medical;
++            for (auto option : medical) {
++                if (option.choice < 0) { if (begin == 0) page_medical.push_back(option); continue; }
++                const auto found = std::find(indices.begin(), indices.end(), option.choice);
++                if (found != indices.end()) { option.choice = found - indices.begin(); page_medical.push_back(option); }
++            }
++            const int answer = ask_decision(text, page, u, m, g, keep_running, page_medical);
 +            if (indices[answer] == -1) begin -= 6;
 +            else if (indices[answer] == -2) begin += 6;
 +            else return indices[answer];
@@ -3741,6 +3811,7 @@ index 0000000..cb3ea35
 +    decision_answer_.reset();
 +    decision_text_ = text;
 +    decision_labels_ = choices;
++    decision_medical_ = medical;
 +    send_state(u, m, g, !snapshot_sent_);
 +    send_decision();
 +    while (keep_running() && has_active_client() && !decision_answer_) {
@@ -3750,6 +3821,7 @@ index 0000000..cb3ea35
 +    // Yes/No, deathcam and world-end menus put the non-destructive option last.
 +    const int selected = decision_answer_.value_or(static_cast<int>(choices.size()) - 1);
 +    pending_decision_ = 0;
++    decision_medical_.clear();
 +    decision_answer_.reset();
 +    if (realtime_) { clock_.sample(cdda::cwm::SimulationClock::Wall::now(), false); ++world_revision_; send_state(u, m, g); }
 +    return selected;
@@ -3760,7 +3832,7 @@ index 0000000..cb3ea35
 +    const bool acted = execute_native(command, u, m, g);
 +    // A rejected request during someone else's work cannot replace its identity.
 +    if (!was_busy && (command.equipment_action >= 0 || command.transfer_action >= 0)) {
-+        inventory_work_command_ = command.id; inventory_work_settled_ = false;
++        inventory_work_command_ = command.id; inventory_work_settled_ = false; inventory_work_total_ = 0;
 +    }
 +    return acted;
 +}
@@ -4325,10 +4397,10 @@ index 0000000..cb3ea35
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.h b/src/cwm/cwm_server.h
 new file mode 100644
-index 0000000..b9b87be
+index 0000000..9df180d
 --- /dev/null
 +++ b/src/cwm/cwm_server.h
-@@ -0,0 +1,150 @@
+@@ -0,0 +1,153 @@
 +// CDDA CWM IPC Server
 +// Licensed under Apache-2.0
 +#pragma once
@@ -4339,6 +4411,7 @@ index 0000000..b9b87be
 +#include <deque>
 +#include <functional>
 +#include <optional>
++#include "do_turn.h"
 +#include "cwm_map_exporter.h"
 +#include "cwm_inventory.h"
 +#include "cwm_crafting.h"
@@ -4408,6 +4481,7 @@ index 0000000..b9b87be
 +    uint64_t next_state_{1}, awaiting_state_{0}, resync_id_{0};
 +    bool negotiated_{false}, ready_{false}, rejecting_{false};
 +    InventorySelection inventory_selection_;
++    double inventory_work_total_{0};
 +    uint64_t inventory_work_command_{0};
 +    bool inventory_work_settled_{false};
 +    bool refresh_inventory_work(const avatar& u);
@@ -4462,6 +4536,7 @@ index 0000000..b9b87be
 +    std::optional<int> decision_answer_;
 +    std::string decision_text_;
 +    std::vector<std::string> decision_labels_;
++    std::vector<external_medical_option> decision_medical_;
 +    CwmMapExporter::ProjectionCache projection_cache_;
 +
 +    void send_state(avatar& u, map& m, game& g, bool full = false, uint64_t completed = 0);
@@ -4473,7 +4548,7 @@ index 0000000..b9b87be
 +    bool execute(const Command& command, avatar& u, map& m, game& g);
 +    bool execute_native(const Command& command, avatar& u, map& m, game& g);
 +    int ask_decision(const std::string& text, const std::vector<std::string>& choices,
-+                     avatar& u, map& m, game& g, const std::function<bool()>& keep_running);
++                     avatar& u, map& m, game& g, const std::function<bool()>& keep_running, const std::vector<external_medical_option>& medical = {});
 +
 +    void handle_client_message(const uint8_t* data, size_t size, avatar& u, map& m, game& g);
 +};
@@ -4789,10 +4864,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..0cb4d39
+index 0000000..9883a83
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,1818 @@
+@@ -0,0 +1,1845 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "move_mode.h"
@@ -6610,6 +6685,33 @@ index 0000000..0cb4d39
 +    CHECK_FALSE(selection.validate(u,view->view_id(),id,0).empty());CHECK_FALSE(selection.arrange(u,view->view_id(),id,0).empty());
 +    CHECK_FALSE(selection.validate_transfer(u,view->view_id(),parent,1,id,1).empty());
 +    placed.remove_item(*child);CHECK_FALSE(selection.validate_binding(u,view->view_id(),id).empty());
++}
++
++TEST_CASE("cwm_medical_metadata_preserves_native_disclosure_and_cancel", "[cwm][medicine]") {
++    clear_avatar(); clear_map(); clear_creatures();
++    avatar& u=get_avatar();u.setpos(tripoint(60,60,0));
++    const bool precise=GENERATE(false,true);
++    u.set_part_hp_cur(bodypart_id("arm_l"),u.get_part_hp_max(bodypart_id("arm_l"))/2);
++    g->new_game=false;g->uquit=QUIT_NO;g->set_safe_mode(SAFE_MODE_OFF);
++    const int hp=u.get_part_hp_cur(bodypart_id("arm_l")); int questions=0;
++    REQUIRE(external_medical_options().empty());
++    do_turn_with_action([&]() {
++        const auto chosen=u.body_window("Native medical metadata",false,precise,0,0,0,0,0,0,2,0);
++        CHECK(chosen==bodypart_str_id::NULL_ID());
++        CHECK(u.get_part_hp_cur(bodypart_id("arm_l"))==hp);
++        CHECK_FALSE(u.has_effect(efftype_id("bandaged"),bodypart_id("arm_l")));
++        CHECK(external_medical_options().empty());
++        finish_external_action_phase();return false;
++    },[&](const std::string&,const std::vector<std::string>& choices) {
++        ++questions;const auto& parts=external_medical_options();REQUIRE(parts.size()==6);
++        auto arm=std::find_if(parts.begin(),parts.end(),[](const auto& p){return p.body_id=="arm_l";});
++        REQUIRE(arm!=parts.end());CHECK(arm->choice>=0);CHECK(arm->health_quarters>=0);CHECK(arm->health_quarters<=20);
++        CHECK((arm->hp_current>=0)==precise);CHECK((arm->hp_max>=0)==precise);
++        auto leg=std::find_if(parts.begin(),parts.end(),[](const auto& p){return p.body_id=="leg_l";});
++        REQUIRE(leg!=parts.end());CHECK(leg->choice==-1);CHECK_FALSE(leg->description.empty());
++        return int(choices.size())-1;
++    });
++    CHECK(questions==1);CHECK(external_medical_options().empty());
 +}
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644

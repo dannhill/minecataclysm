@@ -193,6 +193,9 @@ struct TimeEventBuilder;
 struct AcknowledgeThreatRequest;
 struct AcknowledgeThreatRequestBuilder;
 
+struct MedicalOption;
+struct MedicalOptionBuilder;
+
 struct DecisionPrompt;
 struct DecisionPromptBuilder;
 
@@ -3260,7 +3263,9 @@ struct InventoryWorkState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table
   typedef InventoryWorkStateBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_COMMAND_ID = 4,
-    VT_SETTLED = 6
+    VT_SETTLED = 6,
+    VT_TOTAL_TIME_MS = 8,
+    VT_REMAINING_TIME_MS = 10
   };
   uint64_t command_id() const {
     return GetField<uint64_t>(VT_COMMAND_ID, 0);
@@ -3274,10 +3279,24 @@ struct InventoryWorkState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table
   bool mutate_settled(bool _settled = 0) {
     return SetField<uint8_t>(VT_SETTLED, static_cast<uint8_t>(_settled), 0);
   }
+  uint32_t total_time_ms() const {
+    return GetField<uint32_t>(VT_TOTAL_TIME_MS, 0);
+  }
+  bool mutate_total_time_ms(uint32_t _total_time_ms = 0) {
+    return SetField<uint32_t>(VT_TOTAL_TIME_MS, _total_time_ms, 0);
+  }
+  uint32_t remaining_time_ms() const {
+    return GetField<uint32_t>(VT_REMAINING_TIME_MS, 0);
+  }
+  bool mutate_remaining_time_ms(uint32_t _remaining_time_ms = 0) {
+    return SetField<uint32_t>(VT_REMAINING_TIME_MS, _remaining_time_ms, 0);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint64_t>(verifier, VT_COMMAND_ID, 8) &&
            VerifyField<uint8_t>(verifier, VT_SETTLED, 1) &&
+           VerifyField<uint32_t>(verifier, VT_TOTAL_TIME_MS, 4) &&
+           VerifyField<uint32_t>(verifier, VT_REMAINING_TIME_MS, 4) &&
            verifier.EndTable();
   }
 };
@@ -3291,6 +3310,12 @@ struct InventoryWorkStateBuilder {
   }
   void add_settled(bool settled) {
     fbb_.AddElement<uint8_t>(InventoryWorkState::VT_SETTLED, static_cast<uint8_t>(settled), 0);
+  }
+  void add_total_time_ms(uint32_t total_time_ms) {
+    fbb_.AddElement<uint32_t>(InventoryWorkState::VT_TOTAL_TIME_MS, total_time_ms, 0);
+  }
+  void add_remaining_time_ms(uint32_t remaining_time_ms) {
+    fbb_.AddElement<uint32_t>(InventoryWorkState::VT_REMAINING_TIME_MS, remaining_time_ms, 0);
   }
   explicit InventoryWorkStateBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -3306,9 +3331,13 @@ struct InventoryWorkStateBuilder {
 inline ::flatbuffers::Offset<InventoryWorkState> CreateInventoryWorkState(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint64_t command_id = 0,
-    bool settled = false) {
+    bool settled = false,
+    uint32_t total_time_ms = 0,
+    uint32_t remaining_time_ms = 0) {
   InventoryWorkStateBuilder builder_(_fbb);
   builder_.add_command_id(command_id);
+  builder_.add_remaining_time_ms(remaining_time_ms);
+  builder_.add_total_time_ms(total_time_ms);
   builder_.add_settled(settled);
   return builder_.Finish();
 }
@@ -7240,13 +7269,179 @@ inline ::flatbuffers::Offset<AcknowledgeThreatRequest> CreateAcknowledgeThreatRe
   return builder_.Finish();
 }
 
+struct MedicalOption FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef MedicalOptionBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_CHOICE = 4,
+    VT_BODY_ID = 6,
+    VT_NAME = 8,
+    VT_DESCRIPTION = 10,
+    VT_HEALTH_QUARTERS = 12,
+    VT_HEALTH_TEXT = 14,
+    VT_HP_CURRENT = 16,
+    VT_HP_MAX = 18
+  };
+  int32_t choice() const {
+    return GetField<int32_t>(VT_CHOICE, -1);
+  }
+  bool mutate_choice(int32_t _choice = -1) {
+    return SetField<int32_t>(VT_CHOICE, _choice, -1);
+  }
+  const ::flatbuffers::String *body_id() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_BODY_ID);
+  }
+  ::flatbuffers::String *mutable_body_id() {
+    return GetPointer<::flatbuffers::String *>(VT_BODY_ID);
+  }
+  const ::flatbuffers::String *name() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_NAME);
+  }
+  ::flatbuffers::String *mutable_name() {
+    return GetPointer<::flatbuffers::String *>(VT_NAME);
+  }
+  const ::flatbuffers::String *description() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_DESCRIPTION);
+  }
+  ::flatbuffers::String *mutable_description() {
+    return GetPointer<::flatbuffers::String *>(VT_DESCRIPTION);
+  }
+  int32_t health_quarters() const {
+    return GetField<int32_t>(VT_HEALTH_QUARTERS, -1);
+  }
+  bool mutate_health_quarters(int32_t _health_quarters = -1) {
+    return SetField<int32_t>(VT_HEALTH_QUARTERS, _health_quarters, -1);
+  }
+  const ::flatbuffers::String *health_text() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_HEALTH_TEXT);
+  }
+  ::flatbuffers::String *mutable_health_text() {
+    return GetPointer<::flatbuffers::String *>(VT_HEALTH_TEXT);
+  }
+  int32_t hp_current() const {
+    return GetField<int32_t>(VT_HP_CURRENT, -1);
+  }
+  bool mutate_hp_current(int32_t _hp_current = -1) {
+    return SetField<int32_t>(VT_HP_CURRENT, _hp_current, -1);
+  }
+  int32_t hp_max() const {
+    return GetField<int32_t>(VT_HP_MAX, -1);
+  }
+  bool mutate_hp_max(int32_t _hp_max = -1) {
+    return SetField<int32_t>(VT_HP_MAX, _hp_max, -1);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<int32_t>(verifier, VT_CHOICE, 4) &&
+           VerifyOffset(verifier, VT_BODY_ID) &&
+           verifier.VerifyString(body_id()) &&
+           VerifyOffset(verifier, VT_NAME) &&
+           verifier.VerifyString(name()) &&
+           VerifyOffset(verifier, VT_DESCRIPTION) &&
+           verifier.VerifyString(description()) &&
+           VerifyField<int32_t>(verifier, VT_HEALTH_QUARTERS, 4) &&
+           VerifyOffset(verifier, VT_HEALTH_TEXT) &&
+           verifier.VerifyString(health_text()) &&
+           VerifyField<int32_t>(verifier, VT_HP_CURRENT, 4) &&
+           VerifyField<int32_t>(verifier, VT_HP_MAX, 4) &&
+           verifier.EndTable();
+  }
+};
+
+struct MedicalOptionBuilder {
+  typedef MedicalOption Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_choice(int32_t choice) {
+    fbb_.AddElement<int32_t>(MedicalOption::VT_CHOICE, choice, -1);
+  }
+  void add_body_id(::flatbuffers::Offset<::flatbuffers::String> body_id) {
+    fbb_.AddOffset(MedicalOption::VT_BODY_ID, body_id);
+  }
+  void add_name(::flatbuffers::Offset<::flatbuffers::String> name) {
+    fbb_.AddOffset(MedicalOption::VT_NAME, name);
+  }
+  void add_description(::flatbuffers::Offset<::flatbuffers::String> description) {
+    fbb_.AddOffset(MedicalOption::VT_DESCRIPTION, description);
+  }
+  void add_health_quarters(int32_t health_quarters) {
+    fbb_.AddElement<int32_t>(MedicalOption::VT_HEALTH_QUARTERS, health_quarters, -1);
+  }
+  void add_health_text(::flatbuffers::Offset<::flatbuffers::String> health_text) {
+    fbb_.AddOffset(MedicalOption::VT_HEALTH_TEXT, health_text);
+  }
+  void add_hp_current(int32_t hp_current) {
+    fbb_.AddElement<int32_t>(MedicalOption::VT_HP_CURRENT, hp_current, -1);
+  }
+  void add_hp_max(int32_t hp_max) {
+    fbb_.AddElement<int32_t>(MedicalOption::VT_HP_MAX, hp_max, -1);
+  }
+  explicit MedicalOptionBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<MedicalOption> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<MedicalOption>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<MedicalOption> CreateMedicalOption(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    int32_t choice = -1,
+    ::flatbuffers::Offset<::flatbuffers::String> body_id = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> name = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> description = 0,
+    int32_t health_quarters = -1,
+    ::flatbuffers::Offset<::flatbuffers::String> health_text = 0,
+    int32_t hp_current = -1,
+    int32_t hp_max = -1) {
+  MedicalOptionBuilder builder_(_fbb);
+  builder_.add_hp_max(hp_max);
+  builder_.add_hp_current(hp_current);
+  builder_.add_health_text(health_text);
+  builder_.add_health_quarters(health_quarters);
+  builder_.add_description(description);
+  builder_.add_name(name);
+  builder_.add_body_id(body_id);
+  builder_.add_choice(choice);
+  return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<MedicalOption> CreateMedicalOptionDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    int32_t choice = -1,
+    const char *body_id = nullptr,
+    const char *name = nullptr,
+    const char *description = nullptr,
+    int32_t health_quarters = -1,
+    const char *health_text = nullptr,
+    int32_t hp_current = -1,
+    int32_t hp_max = -1) {
+  auto body_id__ = body_id ? _fbb.CreateString(body_id) : 0;
+  auto name__ = name ? _fbb.CreateString(name) : 0;
+  auto description__ = description ? _fbb.CreateString(description) : 0;
+  auto health_text__ = health_text ? _fbb.CreateString(health_text) : 0;
+  return CDDA::CWM::CreateMedicalOption(
+      _fbb,
+      choice,
+      body_id__,
+      name__,
+      description__,
+      health_quarters,
+      health_text__,
+      hp_current,
+      hp_max);
+}
+
 struct DecisionPrompt FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef DecisionPromptBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_DECISION_ID = 4,
     VT_TEXT = 6,
     VT_CHOICES = 8,
-    VT_CANCEL_CHOICE = 10
+    VT_CANCEL_CHOICE = 10,
+    VT_MEDICAL = 12
   };
   uint64_t decision_id() const {
     return GetField<uint64_t>(VT_DECISION_ID, 0);
@@ -7272,6 +7467,12 @@ struct DecisionPrompt FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   bool mutate_cancel_choice(int32_t _cancel_choice = -1) {
     return SetField<int32_t>(VT_CANCEL_CHOICE, _cancel_choice, -1);
   }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::MedicalOption>> *medical() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::MedicalOption>> *>(VT_MEDICAL);
+  }
+  ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::MedicalOption>> *mutable_medical() {
+    return GetPointer<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::MedicalOption>> *>(VT_MEDICAL);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint64_t>(verifier, VT_DECISION_ID, 8) &&
@@ -7281,6 +7482,9 @@ struct DecisionPrompt FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyVector(choices()) &&
            verifier.VerifyVectorOfStrings(choices()) &&
            VerifyField<int32_t>(verifier, VT_CANCEL_CHOICE, 4) &&
+           VerifyOffset(verifier, VT_MEDICAL) &&
+           verifier.VerifyVector(medical()) &&
+           verifier.VerifyVectorOfTables(medical()) &&
            verifier.EndTable();
   }
 };
@@ -7301,6 +7505,9 @@ struct DecisionPromptBuilder {
   void add_cancel_choice(int32_t cancel_choice) {
     fbb_.AddElement<int32_t>(DecisionPrompt::VT_CANCEL_CHOICE, cancel_choice, -1);
   }
+  void add_medical(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::MedicalOption>>> medical) {
+    fbb_.AddOffset(DecisionPrompt::VT_MEDICAL, medical);
+  }
   explicit DecisionPromptBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -7317,9 +7524,11 @@ inline ::flatbuffers::Offset<DecisionPrompt> CreateDecisionPrompt(
     uint64_t decision_id = 0,
     ::flatbuffers::Offset<::flatbuffers::String> text = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>>> choices = 0,
-    int32_t cancel_choice = -1) {
+    int32_t cancel_choice = -1,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::MedicalOption>>> medical = 0) {
   DecisionPromptBuilder builder_(_fbb);
   builder_.add_decision_id(decision_id);
+  builder_.add_medical(medical);
   builder_.add_cancel_choice(cancel_choice);
   builder_.add_choices(choices);
   builder_.add_text(text);
@@ -7331,15 +7540,18 @@ inline ::flatbuffers::Offset<DecisionPrompt> CreateDecisionPromptDirect(
     uint64_t decision_id = 0,
     const char *text = nullptr,
     const std::vector<::flatbuffers::Offset<::flatbuffers::String>> *choices = nullptr,
-    int32_t cancel_choice = -1) {
+    int32_t cancel_choice = -1,
+    const std::vector<::flatbuffers::Offset<CDDA::CWM::MedicalOption>> *medical = nullptr) {
   auto text__ = text ? _fbb.CreateString(text) : 0;
   auto choices__ = choices ? _fbb.CreateVector<::flatbuffers::Offset<::flatbuffers::String>>(*choices) : 0;
+  auto medical__ = medical ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::MedicalOption>>(*medical) : 0;
   return CDDA::CWM::CreateDecisionPrompt(
       _fbb,
       decision_id,
       text__,
       choices__,
-      cancel_choice);
+      cancel_choice,
+      medical__);
 }
 
 struct DecisionResponse FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
