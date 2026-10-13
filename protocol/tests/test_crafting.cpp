@@ -40,7 +40,7 @@ int main() {
         MessageBuilder wire(1,1);auto& f=wire.builder();
         auto entry=CreateCraftingEntryDirect(f,1,"bandages_makeshift","bandages_makeshift","Bandage","","",1,false,0,defect!=1,defect==2?21:1);
         std::vector<flatbuffers::Offset<CraftingEntry>> list{entry};
-        auto view=CreateCraftingViewDirect(f,1,1,1,&list,false,"",defect==3?static_cast<CraftingFilter>(3):defect==4?CraftingFilter::RECENT:CraftingFilter::FAVORITES);
+        auto view=CreateCraftingViewDirect(f,1,1,1,&list,false,"",defect==3?static_cast<CraftingFilter>(4):defect==4?CraftingFilter::RECENT:CraftingFilter::FAVORITES);
         auto data=wire.finish_message(Payload::CraftingView,view.Union());
         CHECK(valid_crafting(GetCwmMessage(data.data())->payload_as_CraftingView())==(defect==0 || defect==4));
     }

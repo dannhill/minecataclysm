@@ -226,7 +226,8 @@ def main():
                 wait(lambda r:int(r['crafting_view'])>0 and r['crafting_view']!=old)
                 return catalog()
             def tab(index):
-                old=latest()['crafting_view'];click(1.65+index*2.45,2.2)
+                if catalog().Filter()==index:return catalog()
+                old=latest()['crafting_view'];click(1.35+index*1.85,2.2)
                 wait(lambda r:int(r['crafting_view'])>0 and r['crafting_view']!=old)
                 v=catalog();check('native_filter_'+str(index),v.Filter()==index);return v
             def favorite_recipe(v,desired):

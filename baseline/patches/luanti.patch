@@ -1735,7 +1735,7 @@ index 0000000..e1e7236
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..d092563
+index 0000000..1d58778
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
 @@ -0,0 +1,2840 @@
@@ -2768,7 +2768,7 @@ index 0000000..d092563
 +            case CDDA::CWM::Payload::CraftingView: {
 +                const auto* view = msg->payload_as_CraftingView();
 +                if (crafting_open_ && view->query_id() == crafting_query_) {
-+                    crafting_view_.read(*view); crafting_dirty_ = true;crafting_query_pending_=false;crafting_selected_=0;
++                    crafting_view_.read(*view); crafting_filter_=view->filter();crafting_dirty_ = true;crafting_query_pending_=false;crafting_selected_=0;
 +                }
 +                break;
 +            }
@@ -3910,7 +3910,7 @@ index 0000000..d092563
 +        pimpl_->body_form_open_ || pimpl_->ground_container_open_ || pimpl_->equipment_open_ || pimpl_->metrics_.pending_decision) return {};
 +    auto& i = *pimpl_;
 +    i.crafting_open_ = true; i.crafting_close_ = false;
-+    i.crafting_search_.clear(); i.crafting_batch_ = 1; i.crafting_filter_=CDDA::CWM::CraftingFilter::ALL;
++    i.crafting_search_.clear(); i.crafting_batch_ = 1; i.crafting_filter_=CDDA::CWM::CraftingFilter::AUTO;
 +    setMenuPause(true);
 +    if (!i.query_crafting()) i.crafting_view_.error = (::cwm::text("Catalog unavailable: try again.", "Catalogo non disponibile: riprova."));
 +    return i.crafting_form();
@@ -3934,8 +3934,8 @@ index 0000000..d092563
 +        }return;
 +    }
 +    bool tab_change=false;
-+    const char* tabs[]={"all_recipes","favorite_recipes","recent_recipes"};
-+    for(int n=0;n<3;++n)if(fields.count(tabs[n]) && int(i.crafting_filter_)!=n){i.crafting_filter_=static_cast<CDDA::CWM::CraftingFilter>(n);tab_change=true;}
++    const char* tabs[]={"all_recipes","favorite_recipes","recent_recipes","unfinished_recipes"};
++    for(int n=0;n<4;++n)if(fields.count(tabs[n]) && int(i.crafting_filter_)!=n){i.crafting_filter_=static_cast<CDDA::CWM::CraftingFilter>(n);tab_change=true;}
 +    if (fields.count("cancel_craft") && i.crafting_ && i.activity_token_) {
 +        if (i.metrics_.pause_reasons & ~uint32_t(2)) i.crafting_notice_ = (::cwm::text("Resume the game before interrupting.", "Riprendi il gioco prima di interrompere."));
 +        else if (!i.session_.ready() || i.pending_move_) i.crafting_notice_ = (::cwm::text("Wait for the updated state.", "Attendi lo stato aggiornato."));
@@ -4758,7 +4758,7 @@ index 0000000..7d23811
 +} // namespace cdda_client
 diff --git a/src/cdda/crafting_inventory.h b/src/cdda/crafting_inventory.h
 new file mode 100644
-index 0000000..ef0a648
+index 0000000..c77e759
 --- /dev/null
 +++ b/src/cdda/crafting_inventory.h
 @@ -0,0 +1,80 @@
@@ -4796,11 +4796,11 @@ index 0000000..ef0a648
 +        ("button[6.1,1;1.6,0.65;find;" + ::cwm::text("Search", "Cerca") + "]label[8,0.7;" + ::cwm::text("Batch", "Lotto") + "]dropdown[8,1;3.3,0.65;batch;");
 +    for (unsigned n=1; n<=20; ++n) f += (n>1 ? "," : "") + std::to_string(n);
 +    f += ";" + std::to_string(batch) + ("]button[11.6,1;1.8,0.65;refresh;" + ::cwm::text("Refresh", "Aggiorna") + "]button_exit[13.7,1;1.8,0.65;close;" + ::cwm::text("Close", "Chiudi") + "]");
-+    const char* ids[]={"all_recipes","favorite_recipes","recent_recipes"};
-+    const char* labels[]={::cwm::text("All","Tutte"),::cwm::text("Favorites","Preferite"),::cwm::text("Recent","Recenti")};
-+    for(int n=0;n<3;++n) {
++    const char* ids[]={"all_recipes","favorite_recipes","recent_recipes","unfinished_recipes"};
++    const char* labels[]={::cwm::text("All","Tutte"),::cwm::text("Favorites","Preferite"),::cwm::text("Recent","Recenti"),::cwm::text("Unfinished","Incompleti")};
++    for(int n=0;n<4;++n) {
 +        if(n==int(filter))f+="style["+std::string(ids[n])+";bgcolor=#E8CF57FF]";
-+        f+="button["+std::to_string(.5+n*2.45)+",1.9;2.3,0.6;"+ids[n]+";"+labels[n]+"]";
++        f+="button["+std::to_string(.5+n*1.85)+",1.9;1.72,0.6;"+ids[n]+";"+labels[n]+"]";
 +    }
 +    if(updating)f+="label[8,2.6;"+::cwm::text("Updating native catalog...","Aggiornamento catalogo nativo...")+"]";
 +    if (busy) f += ("button[8,1.9;7.5,0.6;cancel_craft;" + ::cwm::text("Interrupt current work", "Interrompi lavoro corrente") + "]");

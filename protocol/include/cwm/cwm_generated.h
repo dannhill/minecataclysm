@@ -443,31 +443,37 @@ enum class CraftingFilter : uint8_t {
   ALL = 0,
   FAVORITES = 1,
   RECENT = 2,
+  UNFINISHED = 3,
+  AUTO = 4,
   MIN = ALL,
-  MAX = RECENT
+  MAX = AUTO
 };
 
-inline const CraftingFilter (&EnumValuesCraftingFilter())[3] {
+inline const CraftingFilter (&EnumValuesCraftingFilter())[5] {
   static const CraftingFilter values[] = {
     CraftingFilter::ALL,
     CraftingFilter::FAVORITES,
-    CraftingFilter::RECENT
+    CraftingFilter::RECENT,
+    CraftingFilter::UNFINISHED,
+    CraftingFilter::AUTO
   };
   return values;
 }
 
 inline const char * const *EnumNamesCraftingFilter() {
-  static const char * const names[4] = {
+  static const char * const names[6] = {
     "ALL",
     "FAVORITES",
     "RECENT",
+    "UNFINISHED",
+    "AUTO",
     nullptr
   };
   return names;
 }
 
 inline const char *EnumNameCraftingFilter(CraftingFilter e) {
-  if (::flatbuffers::IsOutRange(e, CraftingFilter::ALL, CraftingFilter::RECENT)) return "";
+  if (::flatbuffers::IsOutRange(e, CraftingFilter::ALL, CraftingFilter::AUTO)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesCraftingFilter()[index];
 }

@@ -6,3 +6,5 @@ class CraftingFilter(object):
     ALL = 0
     FAVORITES = 1
     RECENT = 2
+    UNFINISHED = 3
+    AUTO = 4

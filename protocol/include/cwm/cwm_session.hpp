@@ -91,14 +91,14 @@ inline bool valid_crafting(const CDDA::CWM::CraftingView* view) {
         return s && s->size() <= bound && (empty || s->size()) && std::string_view(s->c_str(), s->size()).find('\0') == std::string::npos;
     };
     if (!view || !view->query_id() || !view->batch() || view->batch() > 20 || !view->entries() ||
-        view->entries()->size() > 256 || int(view->filter()) > 2 || !text(view->error(), 2048)) return false;
+        view->entries()->size() > 256 || int(view->filter()) > 3 || !text(view->error(), 2048)) return false;
     if (view->error()->size()) return !view->view_id() && !view->entries()->size();
     if (!view->view_id()) return false;
     uint32_t id = 0;
     for (const auto* e : *view->entries())
         if (!e || e->id() != ++id || !text(e->recipe_id(), 1024, false) || !text(e->result_type(), 1024, false) ||
             !text(e->name(), 16384, false) || !text(e->requirements(), 16384) || !text(e->reason(), 2048) ||
-            e->recent_rank() > 20 || (view->filter()==CDDA::CWM::CraftingFilter::FAVORITES && !e->favorite()) ||
+            e->recent_rank() > 20 || (view->filter()==CDDA::CWM::CraftingFilter::UNFINISHED && !e->resume()) || (view->filter()==CDDA::CWM::CraftingFilter::FAVORITES && !e->favorite()) ||
             (view->filter()==CDDA::CWM::CraftingFilter::RECENT && !e->recent_rank()) || e->expected_moves() < 0 || e->progress() < 0 || e->progress() > 10000000 || (!e->resume() && e->progress())) return false;
     return true;
 }

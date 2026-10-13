@@ -1434,10 +1434,10 @@ index 09a7711..9b0c484 100644
          DebugLog( D_INFO, DC_ALL ) <<
 diff --git a/src/cwm/cwm_crafting.h b/src/cwm/cwm_crafting.h
 new file mode 100644
-index 0000000..7d9eab4
+index 0000000..78a9e5a
 --- /dev/null
 +++ b/src/cwm/cwm_crafting.h
-@@ -0,0 +1,199 @@
+@@ -0,0 +1,212 @@
 +#pragma once
 +#include "cwm/product_language.hpp"
 +#include "avatar.h"
@@ -1531,6 +1531,7 @@ index 0000000..7d9eab4
 +            std::vector<Selection> candidates;
 +            const auto include = [&](const recipe& rec,item_location work) {
 +                if (!rec || rec.obsolete) return;
++                if(filter==CDDA::CWM::CraftingFilter::UNFINISHED && !work)return;
 +                if(filter==CDDA::CWM::CraftingFilter::FAVORITES && !uistate.favorite_recipes.count(rec.ident()))return;
 +                if(filter==CDDA::CWM::CraftingFilter::RECENT && !recent_rank(rec))return;
 +                candidates.push_back({&rec,work,bool(work)});
@@ -1541,6 +1542,17 @@ index 0000000..7d9eab4
 +                for(auto& it:m.i_at(tile))if(it.is_craft())include(it.get_making(),item_location(map_cursor(tile),&it));
 +            }
 +            for(const auto* rec:available)include(*rec,{});
++            if(filter==CDDA::CWM::CraftingFilter::AUTO) {
++                const auto any=[&](auto predicate){return std::any_of(candidates.begin(),candidates.end(),predicate);};
++                filter=any([](const auto& e){return e.resume;}) ? CDDA::CWM::CraftingFilter::UNFINISHED :
++                    any([](const auto& e){return recent_rank(*e.rec)>0;}) ? CDDA::CWM::CraftingFilter::RECENT :
++                    any([](const auto& e){return uistate.favorite_recipes.count(e.rec->ident())>0;}) ? CDDA::CWM::CraftingFilter::FAVORITES : CDDA::CWM::CraftingFilter::ALL;
++                candidates.erase(std::remove_if(candidates.begin(),candidates.end(),[&](const auto& e) {
++                    return (filter==CDDA::CWM::CraftingFilter::UNFINISHED && !e.resume) ||
++                        (filter==CDDA::CWM::CraftingFilter::RECENT && !recent_rank(*e.rec)) ||
++                        (filter==CDDA::CWM::CraftingFilter::FAVORITES && !uistate.favorite_recipes.count(e.rec->ident()));
++                }),candidates.end());
++            }
 +            std::stable_sort(candidates.begin(),candidates.end(),[&](const auto& a,const auto& b) {
 +                if(filter==CDDA::CWM::CraftingFilter::RECENT && recent_rank(*a.rec)!=recent_rank(*b.rec))return recent_rank(*a.rec)<recent_rank(*b.rec);
 +                if(a.resume!=b.resume)return a.resume;
@@ -1587,6 +1599,7 @@ index 0000000..7d9eab4
 +            };
 +            for(const auto& candidate:candidates)add(*candidate.rec,candidate.work);
 +        }
++        if(filter==CDDA::CWM::CraftingFilter::AUTO)filter=CDDA::CWM::CraftingFilter::ALL;
 +        const auto list = fbb.CreateVector(rows); const auto why = fbb.CreateString(error);
 +        const auto view = CDDA::CWM::CreateCraftingView(fbb, query, view_, batch, list, truncated, why, filter);
 +        return reply.finish_message(CDDA::CWM::Payload::CraftingView, view.Union());
@@ -3361,7 +3374,7 @@ index 0000000..bb65c87
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..2d116f5
+index 0000000..717b83a
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
 @@ -0,0 +1,1064 @@
@@ -4107,7 +4120,7 @@ index 0000000..2d116f5
 +        msg->payload_type() != Payload::ContinuousIntentRequest) return;
 +    if (const auto* request = msg->payload_as_CraftingQueryRequest()) {
 +        if (!request->query_id() || !request->search() || request->search()->size() > 256 ||
-+            request->search()->str().find('\0') != std::string::npos || !request->batch() || request->batch() > 20 || int(request->filter()) > 2) {
++            request->search()->str().find('\0') != std::string::npos || !request->batch() || request->batch() > 20 || int(request->filter()) > 4) {
 +            server_->client()->close(); return;
 +        }
 +        const auto now = std::chrono::steady_clock::now();
@@ -4898,10 +4911,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..60cb537
+index 0000000..c34b8ed
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,1900 @@
+@@ -0,0 +1,1902 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "move_mode.h"
@@ -6781,6 +6794,8 @@ index 0000000..60cb537
 +    cwm::CwmServerTestAccess::favorite(server,view,1,false,false,2);CHECK_FALSE(cwm::CwmServerTestAccess::favorite_accepted(server,2));
 +    cwm::CwmServerTestAccess::favorite(server,view+1,1,false,true,3);CHECK_FALSE(cwm::CwmServerTestAccess::favorite_accepted(server,3));
 +    cwm::CwmServerTestAccess::favorite(server,view,1,false,true,4);CHECK(cwm::CwmServerTestAccess::favorite_accepted(server,4));CHECK(uistate.favorite_recipes.empty());
++    u.forget_recipe(&rec);cwm::CwmServerTestAccess::favorite(server,view,1,true,false,5);
++    CHECK_FALSE(cwm::CwmServerTestAccess::favorite_accepted(server,5));CHECK(uistate.favorite_recipes.empty());
 +    CHECK(calendar::turn==clock);CHECK(u.moves==1000);CHECK(rng_get_engine()==rng);CHECK_FALSE(u.activity);CHECK(uistate.recent_recipes.empty());
 +}
 +TEST_CASE("cwm_recipe_filters_precede_cap_and_preserve_native_recent_order", "[cwm][crafting]") {
