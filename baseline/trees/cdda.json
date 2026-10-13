@@ -40897,7 +40897,7 @@
   {
     "path": "tests/cwm_pickup_test.cpp",
     "mode": "100644",
-    "sha256": "91352e5b82eca90cd087685da40771b09f55ae6d61c6c8d59c5ddf7f9f6497a3"
+    "sha256": "27a453b356fed63586e4ca6aba1293c410c35c0f84bf648e4cd2b8ef03bd03b6"
   },
   {
     "path": "tests/cwm_projection_test.cpp",

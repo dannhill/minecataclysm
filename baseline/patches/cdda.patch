@@ -4864,7 +4864,7 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..9883a83
+index 0000000..bececb6
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
 @@ -0,0 +1,1845 @@
@@ -6693,7 +6693,7 @@ index 0000000..9883a83
 +    const bool precise=GENERATE(false,true);
 +    u.set_part_hp_cur(bodypart_id("arm_l"),u.get_part_hp_max(bodypart_id("arm_l"))/2);
 +    g->new_game=false;g->uquit=QUIT_NO;g->set_safe_mode(SAFE_MODE_OFF);
-+    const int hp=u.get_part_hp_cur(bodypart_id("arm_l")); int questions=0;
++    const int hp=u.get_part_hp_cur(bodypart_id("arm_l")); int questions=0; u.moves=1000;
 +    REQUIRE(external_medical_options().empty());
 +    do_turn_with_action([&]() {
 +        const auto chosen=u.body_window("Native medical metadata",false,precise,0,0,0,0,0,0,2,0);
