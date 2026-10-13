@@ -164,6 +164,26 @@ core dopo UX-05; nessun nuovo gate personale oggi. Per RMB il rilascio già term
 il gesto di mira: non azzerare la precisione pagata; postura/zoom visivi separati,
 movimento e penalità nativi. SAVE-001 OPEN e storico M5.5 FAILED restano separati.
 
+## UX-05 — Scorciatoie native del crafting — 2026-10-14
+
+K: Tutte/Preferite/Recenti/Incompleti, con apertura prioritaria a incompleti
+accessibili, recenti noti, preferite note e infine catalogo. Filtri prima del limite
+256, ricerca/lotti conservati. Stato della ricetta e ammissibilità restano CDDA.
+Preferiti e ultime 20 ricette avviate usano uistate.json nativo (condiviso dal mondo),
+con setter esplicito, handle verificati, dedup e zero costo/avvio in pausa.
+Ingredienti preferiti/protetti sono distinti. Ripresa per requisiti rimanenti,
+senza interpretazione di errori italiani. CWM2.22; [design](docs/design/recipe-shortcuts.md).
+Il controllo RNG nuovo ha richiesto di evitare estrazioni per insiemi di varianti
+vuoti: nessuna variante reale o probabilità nuova. Sequenza casuale successiva
+modificata eliminando quelle estrazioni inutili; verifica ed evidenze separate.
+
+“Più eseguite” richiede conteggi di completamenti effettivi e persistenza definita:
+non ricavarlo dai recenti avviati. Rimane follow-up, insieme a sottoricette e
+risultati/liquidi/pratica. Backlog **24 PENDING + 1 FAIL manuale**, quattro prove
+nuove, vecchi PASS invariati. Nessun gate personale oggi. Segue consolidamento
+core e debito visivo rig/UV/animazioni/audio, conservando FND-05/SAVE-001/M5.5
+separati. Confronti di nuovi controlli spaziali richiedono ancora la prova utente.
+
 ## Riscontro inventario/interfacce — 2026-10-09
 
 Il [riscontro successivo con errata corrige](docs/source/core-ux-validation-2026-10-09.md)

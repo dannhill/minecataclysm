@@ -1,6 +1,8 @@
 # Validazioni manuali del playable core
 
-Stato corrente dopo il riscontro del 2026-10-13: **20 PENDING + 1 FAIL manuale**.
+Stato corrente dopo UX-05 (2026-10-14): **24 PENDING + 1 FAIL manuale**.
+Quattro nuove prove riguardano le scorciatoie di crafting; le 20 precedenti
+e il FAIL lingua da ricontrollare restano invariati, senza obblighi oggi.
 Acquisiti **12 nuovi PASS**: UI/mapping 4, hotbar 4, mano/contenitori 2,
 lingua 1 e mira 1. I 13 punti non provati rimangono; aggiunte 3 prove mirate
 ai commenti e 4 alla scheda medica. LANG-01 punto 2 conserva il FAIL finché
@@ -695,3 +697,31 @@ Prova isolata: `./medicine-demo.sh --fresh`; disponibile anche in start.sh.
    riprendere, controlla il risultato con H. Salva/riapri la demo senza --fresh:
    oggetti e condizione persistono senza doppia cura. Italiano WIP può avere
    descrizioni inglesi dove manca la traduzione, ma stessi cuori e scelte.
+
+
+## UX-05 — Ricette recenti, preferite e incompleti — PENDING (4), rinviabili
+
+Disponibile nel normale `./start.sh`; scena isolata `./crafting-demo.sh --fresh`.
+
+1. **Preferite senza lavoro:** K, cerca bandage, scegli la ricetta senza utensile
+   e Aggiungi ricetta preferita. K resta aperto, appare l’asterisco; Preferite
+   mostra quella ricetta. Rimuovila: non deve più comparire in quella scheda.
+   Segnare/selezionare/leggere non consuma materiali né avvia attività; il tempo
+   resta in pausa. Il preferito della ricetta è distinto dai componenti protetti.
+2. **Recenti reali:** scegli componenti/fonti e rispondi No: la ricetta non entra
+   nei Recenti. Approva poi un lavoro: Recenti la mostra senza dover cercare.
+   Riaprendo K la scheda iniziale segue dati nativi: prima incompleti accessibili,
+   poi recenti/preferite, altrimenti Tutte. I recenti indicano avvii, non completamenti.
+   Una ricetta recente con materiali mancanti mostra il limite e non diventa gratis.
+3. **Incompleti:** avvia un lotto 2, apri K, interrompi e scegli il lavoro R
+   nella scheda Incompleti. La ripresa conserva il progresso e chiede solo
+   requisiti/ricambi nativi necessari; non riavvia un secondo lavoro né crea
+   risultati duplicati. Prova in inglese: nessun controllo dipende dal testo italiano.
+4. **Persistenza e leggibilità:** lascia la ricetta preferita e un avvio recente,
+   esci e rilancia la demo senza --fresh. Schede, ricerca, lotti e marker devono
+   restare leggibili e preferiti/recenti devono persistere. English e Italiano WIP
+   devono conservare significato delle schede. Riavvio/ripresa non contano come
+   nuovi completamenti; un elenco Più eseguite non è ancora presente.
+
+Le vecchie validazioni restano accettate. Un playtest mirato del core è consigliato
+al consolidamento delle interfacce, ma queste prove possono ancora essere rinviate.

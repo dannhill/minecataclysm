@@ -724,3 +724,25 @@ native debit paced by the coordinator. Remaining cannot exceed total. Native
 activity move progress takes precedence; zero means unavailable. Pausing freezes
 the existing clock. These values describe paid work, never introduce an actor,
 change native cost or become canonical-save fields. Exact version 2.21 is required.
+
+## Native recipe shortcuts (2.22)
+
+CraftingQueryRequest appends CraftingFilter: ALL=0, FAVORITES=1, RECENT=2,
+UNFINISHED=3, AUTO=4. AUTO is a request only: the server resolves reachable
+unfinished work → currently known recent recipes → known favorites → ALL.
+CraftingView echoes a resolved filter0–3. Filtering precedes the 256 row cap.
+CraftingEntry appends favorite and recent_rank (0 absent,1 newest,maximum20).
+Filtered entries must meet the advertised scope; unknown filters/ranks are
+rejected. Search/batch still apply to the native catalog and no query creates
+history or starts/consumes native work.
+
+CraftingFavoriteRequest appends a union alternative: command_id, view_id,
+entry_id, desired favorite, expected_favorite. The native view/knowledge and
+expected state are checked; setting uses native uistate favorite/read sets.
+The normal bounded ledger supplies at-most-once handling and correlated ACK/
+state. It is immediate native UI metadata, allowed during pause/activity;
+no simulation debit, queued actor or client mutation. State is refreshed after
+settlement; stale handles and changed/unknown recipes reject. Native world
+uistate.json remains the canonical persistence for UI preferences/history.
+Exact paired protocol2.22 is required. Existing craft input, actor, component
+selection/protection, interruption and character save schemas are unchanged.
