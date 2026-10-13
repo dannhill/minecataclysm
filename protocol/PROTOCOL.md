@@ -703,3 +703,24 @@ settlement observes PauseReason::Decision (16), not Recovery (8). Native lookup,
 pagination, costs and fallback on lost peer remain server-owned. Physical held
 keys do not answer a later prompt; graphical reading/cancellation does not infer
 health, consequences or successful inventory work from text/initial ACKs.
+
+## Structured medical choices and synchronous work progress (2.21)
+
+DecisionPrompt optionally appends `medical:[MedicalOption]`: native body ID/name,
+page-local choice (-1 read-only), native benefits/known wound descriptions,
+observable health in quarters of the five native segments (-1 qualitative),
+qualitative health text, and exact current/max HP only when native precise mode
+permits it. No client inference from translated labels or ASCII bars. Metadata
+is scoped to the synchronous native body_window choice; every page remaps its
+allowed indices and native safe cancellation remains unchanged.
+
+Medical lists are bounded to 128 parts, IDs to 128 bytes, names/qualitative text
+to 512 and descriptions to 16384, all NUL-free. Duplicate IDs/choice indices,
+cancel/select collisions, invalid ranges and inconsistent precise disclosure
+are rejected via resync. Generic decisions need no medical payload.
+
+InventoryWorkState appends total_time_ms/remaining_time_ms for a synchronous
+native debit paced by the coordinator. Remaining cannot exceed total. Native
+activity move progress takes precedence; zero means unavailable. Pausing freezes
+the existing clock. These values describe paid work, never introduce an actor,
+change native cost or become canonical-save fields. Exact version 2.21 is required.

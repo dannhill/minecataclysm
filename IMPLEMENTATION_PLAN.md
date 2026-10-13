@@ -140,6 +140,29 @@ fetta aggiorna la veste e gli input, lasciando le descrizioni mediche native.
 UX-05 recenti/preferiti, rig/UV/animazioni/audio e macrofeature restano nel piano.
 Le eccezioni UX-02 morte/IPC non provate restano nel backlog; M5.5/SAVE-001 separati.
 
+## Riscontro manuale e UX-04B — 2026-10-13
+
+[Riscontro integrale](docs/source/manual-ui-feedback-2026-10-13.md): acquisiti
+12 nuovi PASS, un FAIL lingua e 13 prove non eseguite. Riparazioni mirate:
+ultima griglia mantenuta durante query di layout, destinazioni a sei righe più
+alte, progresso Indossa/Togli dal clock autorevole già esistente, scelta lingua
+con pulsanti espliciti e restart coordinato. Il FAIL resta tale fino al ricontrollo
+manuale; niente accettazione implicita. Cambio lingua a caldo è un follow-up.
+
+UX-04B usa dati semantici del menu medico nativo: item reale → parte → conferma,
+icone/cuori alla risoluzione osservabile, parti disabilitate leggibili, effetti e
+limiti nativi. Nessuna statistica ricostruita dal testo. Parte → item filtrati
+resta un’estensione successiva del medesimo flusso, insieme agli asset anatomici.
+CWM 2.21; [design](docs/design/structured-medical-selection.md).
+
+Sincronizzati [batch Sol 28–60](docs/fixes/item-mapping-2026-10-13.md): 2.400
+oggetti totali, 972 rappresentazioni supportate. Nuovo backlog **20 PENDING +
+1 FAIL manuale**: 13 invariati, 3 ricontrolli commenti e 4 medici. Prossima fetta:
+**UX-05 ricette recenti/preferite**. Un playtest mirato è consigliato al consolidamento
+core dopo UX-05; nessun nuovo gate personale oggi. Per RMB il rilascio già termina
+il gesto di mira: non azzerare la precisione pagata; postura/zoom visivi separati,
+movimento e penalità nativi. SAVE-001 OPEN e storico M5.5 FAILED restano separati.
+
 ## Riscontro inventario/interfacce — 2026-10-09
 
 Il [riscontro successivo con errata corrige](docs/source/core-ux-validation-2026-10-09.md)

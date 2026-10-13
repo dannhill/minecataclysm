@@ -391,10 +391,11 @@ def main():
                     sent=latest()['transfers_sent'];equipped=latest()['equipment_sent']
                     drag(cell(rock),(-.5,-.5))
                     check('outside_release_cancels_without_ground_drop',latest()['inventory_view']==old and latest()['transfers_sent']==sent and latest()['equipment_sent']==equipped and latest()['simulation_time']==paused)
-                    old_view=latest()['inventory_view']
+                    old_view=latest()['inventory_view']; layout_start=len(rows())
                     drag(cell(rock),cell(bat),screenshot='drag-ghost-and-target.png')
                     wait(lambda r:int(r['pending_move'])==0 and int(r['inventory_view'])>0 and r['inventory_view']!=old_view)
                     view=views()[-1]
+                    check('layout_query_keeps_previous_grid_visible',all(int(r['equipment_form'])==1 and int(r['inventory_view'])>0 for r in rows()[layout_start:]))
                     check('drag_grid_order_is_persistent_native_ui_metadata',item(view,'rock').UiOrder()<item(view,'bat').UiOrder() and latest()['simulation_time']==paused)
                     bind('bat',1);bind('hat_ball',2);bind('rock',3)
                     check('assignment_preserves_native_time_and_hand',latest()['simulation_time']==paused and slot(1).Wielded() and not slot(3).Wielded())
@@ -424,6 +425,8 @@ def main():
                     xdo('keydown','2','g');time.sleep(.2);xdo('keyup','2','g')
                     wait(lambda r:int(r['native_work_settled'])==1 and int(r['pending_move'])==0 and slot(2).Worn(),timeout=25)
                     check('quick_clothing_uses_native_wear',slot(2).Worn())
+                    work=[state.InventoryWork() for state in states() if state.InventoryWork() and state.InventoryWork().TotalTimeMs()]
+                    check('synchronous_equipment_exports_native_pacing_progress',bool(work) and all(0<=w.RemainingTimeMs()<=w.TotalTimeMs() for w in work) and any(not w.Settled() and w.RemainingTimeMs()>0 for w in work))
                     check('same_frame_slot_and_use_targets_new_selection',int(latest()['quick_slot'])==2 and slot(2).Worn())
                     check('world_quick_use_does_not_force_inventory',int(latest()['equipment_form'])==0)
                     tap('F7');wait(lambda r:int(r['pause_reasons'])&1)

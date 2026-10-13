@@ -1,20 +1,13 @@
 # Validazioni manuali del playable core
 
-Stato alla ricezione del riscontro del 2026-10-13: **13 PENDING + 1 FAIL**.
-Acquisiti **12 nuovi PASS** dalle modifiche dirette dell’utente;
-[riscontro e commenti integrali](../source/manual-ui-feedback-2026-10-13.md).
-I vecchi conteggi sotto descrivono le consegne precedenti. Nessun obbligo oggi.
-Il
-[riscontro UX-03 più recente](../source/ux03-drag-feedback-2026-10-09.md)
-valida **Ricontrolli UX-03 1–3 PASS**. Il precedente **hotbar 1 FAIL**
-per Assegna/Svuota viene ora sostituito da un **ricontrollo DND PENDING**;
-**1–4 sono ora PASS manuali** al 2026-10-13. I commenti ergonomici restano registrati.
-Restano quattro vecchi ricontrolli UI/mapping e tre eccezioni UX-02.
-Il [drag-and-drop UX-03D](../fixes/inventory-drag-and-drop.md) è installato
-nel normale start.sh: quattro punti hotbar (incluso il ricontrollo di 1),
-due nuovi per mano/indossati e contenitori, più i sette vecchi punti pendenti.
-Gli altri PASS restano accettati; le verifiche automatiche non sostituiscono
-il tuo giudizio sui nuovi gesti. Puoi eseguire queste prove in seguito.
+Stato corrente dopo il riscontro del 2026-10-13: **20 PENDING + 1 FAIL manuale**.
+Acquisiti **12 nuovi PASS**: UI/mapping 4, hotbar 4, mano/contenitori 2,
+lingua 1 e mira 1. I 13 punti non provati rimangono; aggiunte 3 prove mirate
+ai commenti e 4 alla scheda medica. LANG-01 punto 2 conserva il FAIL finché
+l’utente non accetta il ricontrollo. Nessun PASS è dedotto dai fix automatici.
+[Riscontro e commenti integrali](../source/manual-ui-feedback-2026-10-13.md).
+Tutti i PASS precedenti restano accettati. Nessun obbligo di prove oggi.
+I contatori nelle descrizioni delle consegne precedenti sono storici.
 
 Il [riscontro precedente ed errata corrige](../source/core-ux-validation-2026-10-09.md)
 accetta 1–4 di tiro/ricarica, quantità/trasferimenti, UX-01 e UX-02 (16 PASS),
@@ -637,7 +630,7 @@ automatici; tutti i PASS già dichiarati nelle sezioni precedenti rimangono.
 Le interfacce sono disponibili nel normale `./start.sh`. Per prove isolate usa
 `./consumption-demo.sh --fresh` e `./medicine-demo.sh --fresh`: non aprono la
 tua partita. I dialoghi conservano scelte e testo CDDA; le icone anatomiche e
-la scheda medica strutturata sono la prossima fetta, UX-04B.
+la scheda medica strutturata sono ora disponibili in UX-04B; la checklist originale rimane da provare.
 
 1. **Conferma leggibile.** Nella demo consumo scegli la mela marcia: pannello
    chiaro, testo/colori/scorrimento e pulsanti leggibili, senza tag grezzi o
@@ -661,3 +654,44 @@ la scheda medica strutturata sono la prossima fetta, UX-04B.
 
 I vecchi PASS rimangono. Le eccezioni UX-02 morte/IPC non provate restano nelle
 loro sezioni: queste prove e l'automazione non deducono la tua accettazione.
+
+
+## Ricontrolli commenti del 2026-10-13 — PENDING (3), rinviabili
+
+1. **DND senza vista vuota:** equipment-demo --fresh, I; riordina griglia,
+   assegna/scambia/svuota hotbar. Durante l’attesa della risposta la griglia
+   resta visibile, poi si aggiorna senza mostrare il pannello vuoto di lettura.
+   Le azioni fisiche mantengono invece i costi nativi e la pausa/ritorno.
+2. **Indossa/Togli:** indossa e togli un oggetto con costo percepibile.
+   Il pannello mostra percentuale/progresso del pagamento temporale CDDA;
+   I mette in pausa anche questo pagamento. Alla fine lo stato indossato è
+   aggiornato. Per azioni brevi il pannello può durare poco; nessun ritardo finto.
+3. **Destinazioni più grandi:** Quantità e trasferimenti mostra sei contenitori
+   per pagina con righe più alte. DND e clic selezionano la destinazione giusta;
+   se ce ne sono di più, le frecce permettono di raggiungerli. Capacità e quantità
+   conservano la validazione CDDA.
+
+**LANG-01 punto 2 — FAIL conservato, ricontrollo della correzione:** Esc usa
+ora due pulsanti espliciti English / Italiano (WIP). Scegli italiano, esci e
+riavvia; scegli poi English, esci e riavvia. Entrambi i processi devono tornare
+inglesi e la scelta deve restare al successivo avvio. Non è un nuovo punto
+conteggiato: è il ricontrollo del FAIL sopra. Cambio a caldo rinviato.
+
+## UX-04B — Scheda medica strutturata — PENDING (4), rinviabili
+
+Prova isolata: `./medicine-demo.sh --fresh`; disponibile anche in start.sh.
+
+1. **Parti e cuori:** I → benda → Medica/Treat mostra icone anatomiche proxy,
+   cuori e descrizioni leggibili. Le parti sane/non pertinenti sono consultabili
+   ma non selezionabili per quell’oggetto. Nessuna cura mentre leggi.
+2. **Scelta esplicita:** scegli con mouse una parte ferita; la conferma riguarda
+   quella parte e quella precisa benda. No/Esc conservano oggetto e stato;
+   tenere un numero premuto non approva la domanda successiva.
+3. **Effetti conoscibili:** confronta benda e salvietta. Bandaggio/disinfezione,
+   benefici e limiti sono quelli nativi; nessuna promessa di HP immediati.
+   Scorrimento permette di leggere tutte le parti/descrizioni. Le parti con
+   salute non conoscibile o fratture mantengono una descrizione qualitativa.
+4. **Lavoro e persistenza:** approva una medicazione; I pausa, chiudi per
+   riprendere, controlla il risultato con H. Salva/riapri la demo senza --fresh:
+   oggetti e condizione persistono senza doppia cura. Italiano WIP può avere
+   descrizioni inglesi dove manca la traduzione, ma stessi cuori e scelte.
