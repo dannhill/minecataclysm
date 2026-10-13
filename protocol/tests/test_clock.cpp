@@ -23,9 +23,9 @@ int main() {
     c.sample(t(300),true); CHECK(std::abs(c.elapsed()-2.75)<1e-8); CHECK(!c.tick_due());
     const auto before=c.elapsed(); c.sample(t(299),true); CHECK(c.elapsed()==before);
     SimulationClock a; a.sample(t(0),true);
-    CHECK(std::abs(a.charge_action(100,125)-.8)<1e-8); CHECK(!a.action_due());
+    CHECK(std::abs(a.charge_action(100,125)-.8)<1e-8); CHECK(!a.action_due()); CHECK(std::abs(a.remaining_work()-.8)<1e-8);
     for(int i=1;i<=3;++i)a.sample(t(i*.25),true);
-    CHECK(!a.action_due()); a.sample(t(.8),true); CHECK(a.action_due());
+    CHECK(!a.action_due()); CHECK(std::abs(a.remaining_work()-.05)<1e-8); a.sample(t(.8),true); CHECK(a.action_due()); CHECK(a.remaining_work()==0);
     a.charge_action(100,125); a.sample(t(1),true); CHECK(!a.action_due()); CHECK(a.tick_due());
     a.complete_tick(); CHECK(!a.tick_due());
     a.sample(t(1),false); a.sample(t(60),true); CHECK(!a.action_due());

@@ -4803,7 +4803,7 @@ index 0000000..b255489
 +} // namespace cdda_client
 diff --git a/src/cdda/decision_dialog.h b/src/cdda/decision_dialog.h
 new file mode 100644
-index 0000000..da6320f
+index 0000000..74ce5f0
 --- /dev/null
 +++ b/src/cdda/decision_dialog.h
 @@ -0,0 +1,76 @@
@@ -4848,7 +4848,7 @@ index 0000000..da6320f
 +                if(half)f+="image["+x+","+std::to_string(y+.1)+";0.36,0.36;heart.png^[opacity:0^[lowpart:"+std::to_string(half*50)+":heart.png]";
 +            } else f+="label[5.8,"+std::to_string(y+.35)+";"+statusEscape(p.health_text.empty()?::cwm::text("Health unknown","Salute sconosciuta"):p.health_text)+"]";
 +            if(p.current>=0)f+="label[10.5,"+std::to_string(y+.35)+";"+std::to_string(p.current)+" / "+std::to_string(p.maximum)+"]";
-+            f+="hypertext[0.85,"+std::to_string(y+.8)+";13.2,1.8;medical_info_"+p.id+";"+statusEscape("<global color=#323232 size=16>"+decisionRichText(p.description))+ "]";
++            f+="hypertext[0.85,"+std::to_string(y+.8)+";13.2,1.8;medical_info_"+std::to_string(int(y*10))+";"+statusEscape("<global color=#323232 size=16>"+decisionRichText(p.description))+ "]";
 +            y+=2.8;
 +        }
 +        for(size_t n=0;n<choices.size();++n)if(!shown[n]) {
