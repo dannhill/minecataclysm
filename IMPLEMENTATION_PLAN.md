@@ -132,7 +132,7 @@ leggibile. Nessun nuovo costo/durata, conferma automatica, regola o campo nel sa
 Quattro nuove prove portano il backlog a **26 PENDING**, mantenendo i 22
 precedenti e tutti i PASS. Nessun gate manuale oggi.
 
-**Prossimo intervento essenziale: UX-04B, scheda medica strutturata**. Esporre
+**Intervento successivo annunciato allora: UX-04B, scheda medica strutturata**. Esporre
 identità delle parti, salute osservabile e benefici/rischi conoscibili associati
 alla scelta; icone anatomiche/cuori e selezione esplicita di oggetto/parte.
 Non ricavare statistiche da barrette ASCII o dal testo tradotto. La presente
@@ -153,7 +153,8 @@ UX-04B usa dati semantici del menu medico nativo: item reale → parte → confe
 icone/cuori alla risoluzione osservabile, parti disabilitate leggibili, effetti e
 limiti nativi. Nessuna statistica ricostruita dal testo. Parte → item filtrati
 resta un’estensione successiva del medesimo flusso, insieme agli asset anatomici.
-CWM 2.21; [design](docs/design/structured-medical-selection.md).
+CWM 2.21, installato in start.sh; [design](docs/design/structured-medical-selection.md)
+e [consegna/evidenze](docs/fixes/structured-medical-selection.md).
 
 Sincronizzati [batch Sol 28–60](docs/fixes/item-mapping-2026-10-13.md): 2.400
 oggetti totali, 972 rappresentazioni supportate. Nuovo backlog **20 PENDING +

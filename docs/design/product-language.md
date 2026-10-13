@@ -7,8 +7,8 @@ translations use their original English text.
 
 ## Player setting and restart
 
-The normal `./start.sh` opens the world directly. Press **Esc**, select
-**Language / Lingua** on the right, then exit the game and launch `start.sh`
+The normal `./start.sh` opens the world directly. Press **Esc**, click
+**English** or **Italiano (WIP)** on the right, then exit the game and launch `start.sh`
 again. The current session retains its startup language: changing a preference
 does not reinterpret an open native decision or restart an activity.
 The main-menu Settings → Accessibility selector exposes the same two choices
@@ -70,3 +70,8 @@ launcher stubs do not certify native localization or rendered text.
 The scoped delivery report records exact sources, commands, binaries, generated
 catalog hashes and limits. Full SAVE-001 and M5.5 are not recertified by language
 checks. Future feature UI must follow these same language boundaries.
+
+UX-04B (2026-10-13) replaces the pause dropdown with explicit language buttons.
+The user's Italian → English FAIL stays in manual review; automated menu/restart
+checks are scoped evidence, not personal acceptance. Live language switching is
+deferred; all clinical and decision text remains in the startup language.

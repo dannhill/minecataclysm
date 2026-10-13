@@ -1,0 +1,255 @@
+{
+  "date": "2026-10-13",
+  "status": "Scoped automated PASS; manual acceptance remains separate",
+  "scope": "UX-04B item-first structured medical UI, manual feedback fixes and batch mapping 28\u201360",
+  "protocol": "2.21",
+  "source_commit": "a492c54f5ea7fc17bb0e3bc1a0c65f1683398ac0",
+  "build_source": {
+    "native": "d828834823d716be6fdb2a71f25bbfca2894f49e",
+    "client": "d828834823d716be6fdb2a71f25bbfca2894f49e",
+    "native_tests": "19509ae626cf0581da616b10e998c651fdddb3a3"
+  },
+  "post_build_changes": "Later native change corrects initial movement credit in a test fixture only. Subsequent root changes adapt GUI harnesses and documentation; runtime production sources remain the built d828834 source.",
+  "captured_sources": {
+    "cdda": {
+      "url": "https://github.com/CleverRaven/Cataclysm-DDA.git",
+      "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+      "shallow": true,
+      "patch": "baseline/patches/cdda.patch",
+      "patch_sha256": "9797b2fd47756483ad4981517c0d64544100d9dd0f65aba07cac58189efcca84",
+      "tree_inventory": "baseline/trees/cdda.json",
+      "tree_sha256": "dae0e3ae378886593481d08072cdc7b2cdce2e14b1e8076918e17da92be0f1f8",
+      "file_count": 8587,
+      "original_status": " M src/CMakeLists.txt\n M src/avatar.cpp\n M src/avatar_action.cpp\n M src/avatar_action.h\n M src/character.cpp\n M src/character_body.cpp\n M src/character_inventory.cpp\n M src/craft_command.cpp\n M src/craft_command.h\n M src/crafting.cpp\n M src/crafting.h\n M src/do_turn.cpp\n M src/do_turn.h\n M src/game.cpp\n M src/game.h\n M src/handle_action.cpp\n M src/iexamine.cpp\n M src/item.cpp\n M src/iuse_actor.cpp\n M src/melee.cpp\n M src/output.cpp\n M src/pickup.cpp\n M src/ranged.cpp\n M src/ranged.h\n M src/recipe.cpp\n M src/recipe.h\n M src/translations.cpp\n M src/ui.cpp\n M tests/CMakeLists.txt\n M tests/test_main.cpp\n?? src/cwm/cwm_crafting.h\n?? src/cwm/cwm_hotbar.h\n?? src/cwm/cwm_inventory.h\n?? src/cwm/cwm_main.cpp\n?? src/cwm/cwm_map_exporter.cpp\n?? src/cwm/cwm_map_exporter.h\n?? src/cwm/cwm_ranged.h\n?? src/cwm/cwm_server.cpp\n?? src/cwm/cwm_server.h\n?? src/cwm/cwm_status_gauges.h\n?? src/cwm_motion.cpp\n?? src/cwm_motion.h\n?? src/safe_mode_actions.h\n?? tests/cwm_pickup_test.cpp\n?? tests/cwm_projection_test.cpp\n?? tests/cwm_runtime_test.cpp\n"
+    },
+    "luanti": {
+      "url": "https://github.com/luanti-org/luanti.git",
+      "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
+      "shallow": true,
+      "patch": "baseline/patches/luanti.patch",
+      "patch_sha256": "4e9f40610dd52e1b0bf2b2f5271c7873297b38afde49c1628e31c3d46c424d44",
+      "tree_inventory": "baseline/trees/luanti.json",
+      "tree_sha256": "aabadc370df02251cb035e3385cefaa47d6814cec18ebff792823ff9587378fb",
+      "file_count": 2263,
+      "original_status": " M builtin/mainmenu/settings/dlg_settings.lua\n M builtin/settingtypes.txt\n M src/CMakeLists.txt\n M src/client/CMakeLists.txt\n M src/client/client.cpp\n M src/client/clientenvironment.cpp\n M src/client/game.cpp\n M src/client/hud.cpp\n M src/client/inputhandler.cpp\n M src/client/keys.h\n M src/client/mesh_generator_thread.cpp\n M src/client/mesh_generator_thread.h\n M src/defaultsettings.cpp\n M src/gui/guiFormSpecMenu.cpp\n M src/gui/guiFormSpecMenu.h\n M src/gui/guiScene.cpp\n M src/network/clientpackethandler.cpp\n M src/server/player_sao.cpp\n M src/unittest/test_mapblock.cpp\n?? src/cdda/aim_input.h\n?? src/cdda/avatar_status.h\n?? src/cdda/cdda_bridge.cpp\n?? src/cdda/cdda_bridge.h\n?? src/cdda/crafting_inventory.h\n?? src/cdda/decision_dialog.h\n?? src/cdda/decision_input.h\n?? src/cdda/decision_text.h\n?? src/cdda/equipment_inventory.h\n?? src/cdda/ground_item_formspec.h\n?? src/cdda/ground_item_projection.h\n?? src/cdda/ground_item_visual.h\n?? src/cdda/posture_input.h\n?? src/cdda/quickbar.h\n"
+    },
+    "mineclonia": {
+      "url": "https://github.com/mark-wiemer/mineclonia.git",
+      "commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+      "shallow": true,
+      "patch": "baseline/patches/mineclonia.patch",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree_inventory": "baseline/trees/mineclonia.json",
+      "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36",
+      "file_count": 9359,
+      "original_status": ""
+    }
+  },
+  "installed_runtime": {
+    "cdda/build/src/cdda-server": {
+      "sha256": "2951032f1e35199adad6b1d571c032775f0a30e8c762202bca5b66780e1d0ac7",
+      "previous_sha256": "3ccfea69f51cd064333d1826b0a46127cc606d22abdf470c5ec355b2832e5cc4",
+      "rollback": "artifacts/medical-20261013/cdda-previous-runtime",
+      "built_from": "artifacts/fnd03-session/workspace/cdda/build/src/cdda-server"
+    },
+    "luanti/bin/luanti": {
+      "sha256": "9bb36a7514506c58d7dbfc1795f527bcdaef46053dcca484a945830b37e3a2bb",
+      "previous_sha256": "8a0b5fdbc1aef374ab678ec9e7415b7d9315b9a412dd52b2c5c47816de06421e",
+      "rollback": "artifacts/medical-20261013/luanti-previous-runtime",
+      "built_from": "artifacts/language-20261011/workspace/luanti/bin/luanti"
+    }
+  },
+  "mapping": {
+    "report": {
+      "production_batches": 60,
+      "records": 2400,
+      "presentation_supported": 972,
+      "mapped_but_fallback": 274,
+      "no_good_match": 1154,
+      "copied_textures": 146
+    },
+    "idempotent": true,
+    "assets_match_pinned_source": true,
+    "hashes": {
+      "game/mods/cdda_items/generated_mapping.lua": "76274f9180824acd9005efb538fe96054ccd2ac5b1e75c8e81de24c5cf350be6",
+      "game/mods/cdda_items/generated_assets.tsv": "9ebd889aad69957a148b6fc0c3cdfb6c5357b112f6207ed63acb770a8722ca5c",
+      "game/mods/cdda_items/mapping_provenance.json": "b8defdbb6893793c9637c7e3aad75a3da570548df0ccb10ddbb2c8cc8890df31"
+    },
+    "decision_classes_valid": true,
+    "alternatives_have_identifiers": true
+  },
+  "environment": {
+    "platform": "Linux-7.0.11-76070011-generic-x86_64-with-glibc2.35",
+    "compiler": "GCC 11.4.0",
+    "native": "LOCALIZE ON, cached reconstructed workspace, j3",
+    "client": "Release/gettext ON/sound OFF, cached reconstructed workspace, j2, LTO=2",
+    "gui": "Private Xvfb1280x800 96DPI, Mesa software, xdotool, isolated saves/configs, real start.sh, transparent relay"
+  },
+  "build_mode": "Incremental source-verified reconstructions with caches retained; not a cold build or full conformance gate",
+  "builds": {
+    "native": "cmake --build cdda/build --target cdda-server cata_test -j3",
+    "client": "cmake --build luanti/build --target luanti -j2",
+    "protocol": "cmake --build build/protocol -j2"
+  },
+  "tests": {
+    "native": {
+      "status": "PASS",
+      "cases": 179,
+      "assertions": 185997,
+      "command": "build/tests/cata_test '[cwm],[pickup],[item],[reload]' --rng-seed 42 --user-dir=<isolated artifact>",
+      "log": "artifacts/medical-20261013/native-tests-v2.log"
+    },
+    "client": {
+      "status": "PASS",
+      "tests": 309,
+      "modules": 47,
+      "catch_assertions": 648,
+      "catch_cases": 4,
+      "log": "artifacts/medical-20261013/client-tests-v2.log"
+    },
+    "protocol": {
+      "status": "PASS",
+      "tests": 11,
+      "log": "artifacts/medical-20261013/protocol-tests.log"
+    },
+    "language_launcher": {
+      "status": "PASS",
+      "tests": 9,
+      "log": "artifacts/medical-20261013/language-unit.log"
+    },
+    "presentation": {
+      "status": "PASS",
+      "executable": "artifacts/medical-20261013/presentation-test",
+      "sha256": "9706084e262edd10aa924598a4a7bda41d60547615282760833a42a0cc4abe30",
+      "command": "g++ -std=c++20 -Iluanti/src -Iprotocol/include -I/home/dannhill/.local/include tests/decision_presentation_test.cpp -o <artifact>/presentation-test; <artifact>/presentation-test"
+    },
+    "gui": {
+      "medical-reconstructed": {
+        "status": "PASS",
+        "checks": 26,
+        "receipt": "artifacts/aim-20261012/medical-reconstructed/checks.json",
+        "summary": "artifacts/aim-20261012/medical-reconstructed/summary.json",
+        "installed": false
+      },
+      "medical-installed": {
+        "status": "PASS",
+        "checks": 26,
+        "receipt": "artifacts/aim-20261012/medical-installed/checks.json",
+        "summary": "artifacts/aim-20261012/medical-installed/summary.json",
+        "installed": true
+      },
+      "medical-quickbar": {
+        "status": "PASS",
+        "checks": 35,
+        "receipt": "artifacts/aim-20261012/medical-quickbar/checks.json",
+        "summary": "artifacts/aim-20261012/medical-quickbar/summary.json",
+        "installed": false
+      },
+      "medical-language-en-to-it-v3": {
+        "status": "PASS",
+        "checks": 22,
+        "receipt": "artifacts/aim-20261012/medical-language-en-to-it-v3/checks.json",
+        "summary": "artifacts/aim-20261012/medical-language-en-to-it-v3/summary.json",
+        "installed": false
+      },
+      "medical-language-it-to-en": {
+        "status": "PASS",
+        "checks": 23,
+        "receipt": "artifacts/aim-20261012/medical-language-it-to-en/checks.json",
+        "summary": "artifacts/aim-20261012/medical-language-it-to-en/summary.json",
+        "installed": false
+      },
+      "medical-language-en-again": {
+        "status": "PASS",
+        "checks": 19,
+        "receipt": "artifacts/aim-20261012/medical-language-en-again/checks.json",
+        "summary": "artifacts/aim-20261012/medical-language-en-again/summary.json",
+        "installed": true
+      }
+    }
+  },
+  "native_save_oracle": {
+    "path": "artifacts/inventory-feedback-20261009/native-save-reader",
+    "sha256": "d65889a6cf0c36db31d493bba915a89bc7424d60f0ddb9800992fd0d4f39958a",
+    "scope": "Independent pristine pinned-core canonical reader; no whole SAVE-001 certification"
+  },
+  "manual": {
+    "new_user_pass": 12,
+    "pending": 20,
+    "fail": 1,
+    "fail_scope": "LANG-01.2 remains FAIL until user rechecks the installed preference repair",
+    "no_gate_today": true,
+    "source": "docs/source/manual-ui-feedback-2026-10-13.md"
+  },
+  "retained_failures": [
+    {
+      "log": "artifacts/medical-20261013/client-tests.log",
+      "reason": "Missing isolated unit.conf; created configuration before rerun"
+    },
+    {
+      "log": "artifacts/medical-20261013/native-tests.log",
+      "reason": "New native fixture had no initial move credit: skipped callback; assigned1000 native credit for the action under test, assertions preserved"
+    },
+    {
+      "log": "artifacts/medical-20261013/gui-language-en-to-it.log",
+      "reason": "Legacy equipment harness blindly pressedEsc, now cancelling the actual native modal; removed implicit answer"
+    },
+    {
+      "log": "artifacts/medical-20261013/gui-language-en-to-it-v2.log",
+      "reason": "Harness assumed pause0 after completion despite intended automatic inventory return; accepts only paid settled inventory or running state"
+    }
+  ],
+  "limitations": [
+    "Body-first H\u2192filtered medical items is a separate follow-up",
+    "Anatomical proxies, startup-only language, no new aim/recoil rules",
+    "Historical M5.5 FAILED; full SAVE-001 OPEN"
+  ],
+  "source_replay": [
+    "artifacts/medical-20261013/source-replay-native-delivery.json",
+    "artifacts/medical-20261013/source-replay-client-delivery.json"
+  ],
+  "artifact_hashes": {
+    "artifacts/medical-20261013/baseline-check.log": "e6b9d36dd49e4e43f39c46e669c43295a8505bfcdfb95ba6f3bccbc88b3d8a84",
+    "artifacts/medical-20261013/baseline-delivery-check.log": "e6b9d36dd49e4e43f39c46e669c43295a8505bfcdfb95ba6f3bccbc88b3d8a84",
+    "artifacts/medical-20261013/capture-test-fixture.log": "089b20f9f77f667792cea9858e18c3aed80e3900234b1b2c786625fa972e092a",
+    "artifacts/medical-20261013/capture-v2.log": "65106e63865c4c4d595b310a8a336f572377550418f22ab189b9b69326d1089d",
+    "artifacts/medical-20261013/capture.log": "635fe9f709e81d2be136c318dc9b14a0693f0ca81d081cb6a25d3051a159b62f",
+    "artifacts/medical-20261013/client-build.log": "56dde4299ffcbe1622fdb8c98020c4778353eea81726ae69842c7e6532c0498d",
+    "artifacts/medical-20261013/client-refresh-v2.json": "ed1f07f96a02773386f41ed96549d7b5ab04e3f5420c41fbf761e9e0632c2f5e",
+    "artifacts/medical-20261013/client-refresh-v2.log": "289fa67b7e068339dd140e3ec12cc4ab2e9543297f9f18193a82c4825f4d0752",
+    "artifacts/medical-20261013/client-refresh.json": "c462d7ade09898ffacea778c7371a0bdeea926ae3dad7c320490797ee4994ff9",
+    "artifacts/medical-20261013/client-refresh.log": "59d9c4172d77c8e4591a48d4eceec059db05c18880539465877439691622c667",
+    "artifacts/medical-20261013/client-test-refresh-v2.json": "edf101056d76f3492bf60aa27df185d7489365d6a152017c35176824c6354cba",
+    "artifacts/medical-20261013/client-test-refresh-v2.log": "38c159acd1d3f5da3422c80654dbc53f21f589298e75081051962ac67bded846",
+    "artifacts/medical-20261013/client-test-refresh-v3.json": "2428a79dc3ef060b274610651d5bc416c00e572caa9cfda1d5d5270c59a596d1",
+    "artifacts/medical-20261013/client-test-refresh-v3.log": "690a3cb9383a96cc8888d6cae8a7d20cd9b7e7420dfd91368bbbc3ce72367f79",
+    "artifacts/medical-20261013/client-test-refresh.json": "5bdf365a234db3e635d46c690e574e2be2a9f5d5f3fe56744f256431e0635cf7",
+    "artifacts/medical-20261013/client-test-refresh.log": "ecb9b35e1b97f605a65b77635c573edbd0c95522b2235baab9654655dccbd9df",
+    "artifacts/medical-20261013/client-tests-v2.log": "40a0f91e6423340db86138cafdd1d0a1e94b545a2eee207474b972025c17c46d",
+    "artifacts/medical-20261013/client-tests.log": "64b175c99c2061ee289bc8bb6a3534fa0349761aca41f37b772663a1a637e7b9",
+    "artifacts/medical-20261013/gui-language-en-again.log": "74ec14c546eb605aad2f69aaf6b9ccab15367eaf55a1c7f4ef4835e2df9efe09",
+    "artifacts/medical-20261013/gui-language-en-to-it-v2.log": "933e3ba96f0f6ec8f76ff5c288d4cbe4f0789a972d1de8b56dbb3522105debb4",
+    "artifacts/medical-20261013/gui-language-en-to-it-v3.log": "d40496d9f7b7da51104aed6191162281887fd64368404f475b1b0bd853a8479a",
+    "artifacts/medical-20261013/gui-language-en-to-it.log": "04ede59fb5aa0a099a337b7f5793a7e70b33ded610699338f69176ca606ec971",
+    "artifacts/medical-20261013/gui-language-it-to-en.log": "277dc378f651355c2e00f417df70955b8aedb00f64a62c8032f5a9e95d73fa9f",
+    "artifacts/medical-20261013/gui-medical-installed.log": "7d072d8398cc0287e018f18ee32445a827ec4e8809e61f388088cb0ea753c93d",
+    "artifacts/medical-20261013/gui-medical-reconstructed.log": "7d072d8398cc0287e018f18ee32445a827ec4e8809e61f388088cb0ea753c93d",
+    "artifacts/medical-20261013/gui-quickbar.log": "b28bf1beecd8e857783d94f8e02ee76639206ac408b403219d52f5b9b44ead83",
+    "artifacts/medical-20261013/install.json": "8f787654ed41d53452dc6f28692935fe9d389c7a9af6400da528371982c35e6a",
+    "artifacts/medical-20261013/language-unit.log": "3f63be41631be132fb074fa827ca7325f00882cf43ab0ca7e95fdbed22b58760",
+    "artifacts/medical-20261013/mapping-validation.json": "5e2881108b8f38632d624840442a6a63f02f52822b87ded4c97f8ce221d726a8",
+    "artifacts/medical-20261013/native-build.log": "f57afc769519e6753d76bee5865226156d3ef9aa8c2815ed3676bfe3bc82a687",
+    "artifacts/medical-20261013/native-refresh-v2.json": "ed1f07f96a02773386f41ed96549d7b5ab04e3f5420c41fbf761e9e0632c2f5e",
+    "artifacts/medical-20261013/native-refresh-v2.log": "289fa67b7e068339dd140e3ec12cc4ab2e9543297f9f18193a82c4825f4d0752",
+    "artifacts/medical-20261013/native-refresh.json": "c462d7ade09898ffacea778c7371a0bdeea926ae3dad7c320490797ee4994ff9",
+    "artifacts/medical-20261013/native-refresh.log": "59d9c4172d77c8e4591a48d4eceec059db05c18880539465877439691622c667",
+    "artifacts/medical-20261013/native-test-rebuild.log": "7e9c7d9d5c571a018637a060550391b64841d447b657a9ad4f1ae162e25f4d58",
+    "artifacts/medical-20261013/native-test-refresh.json": "1d704c4920b9c4b39a7b20a350465abe6119835c00e2a1cf65fd11fc37cfa328",
+    "artifacts/medical-20261013/native-test-refresh.log": "ae3f136a2edc6e0b3ec1da2c5dd5d79d00a845d3998d7379b8138f6feb13bae7",
+    "artifacts/medical-20261013/native-tests-v2.log": "d2d4e0afcc3eb6441ae0beb1f20454846b50e5ce7d3ccdf42016e472faa1dcbe",
+    "artifacts/medical-20261013/native-tests.log": "bcbd8d74a4317609d22bc32832ad039055ab4660862820db33ad6f18968f4bf2",
+    "artifacts/medical-20261013/protocol-build.log": "1903b9ee37cb5a07724464a84387ecfeff84405ef059395c8948304e24951195",
+    "artifacts/medical-20261013/protocol-tests.log": "c9aa07cb82983b5e9c2ebccf32f752eff6d97d868bdd734d5d4f2ae955a8ebdc",
+    "artifacts/medical-20261013/unit-engine-v2.log": "5687213403cb6f4bf7245c89fc9bdaa17dd2e753c04886fdbfb128b646687c96"
+  }
+}

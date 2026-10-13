@@ -1,6 +1,39 @@
 # Implementation status
 
-Current scoped delivery: **UX-04A native decision panels and work feedback**,
+Current scoped delivery: **UX-04B structured medical selection and manual feedback**,
+CWM **2.21**, installed in ordinary `start.sh`, paired rollback runtimes retained.
+Item-first native treatment selection now exports observable body identities,
+health resolution and known treatment descriptions. Anatomical armour proxies,
+hearts and readable disabled parts replace flattened ASCII choice labels. Exact
+HP only in native precise mode; unknown/broken/mending health stays qualitative.
+Native choice mapping, explicit confirmation, ACT_FIRSTAID, paid costs,
+interruption and canonical persistence remain unchanged. No client healing.
+
+The user's [file feedback](docs/source/manual-ui-feedback-2026-10-13.md) adds
+**12 manual PASS**, leaves **13 untested points**, and records **LANG-01.2 FAIL**.
+Fixes retain the last accepted grid during layout queries, enlarge container
+hit targets to six rows per page, and show synchronous equipment pacing from
+the native coordinator clock. Esc language controls are explicit buttons;
+restart still required. Original PASS retained; the language FAIL awaits the
+user's recheck even after scoped automated verification. Backlog **20 PENDING +
+1 manual FAIL** includes three feedback rechecks and four medical checks.
+No user testing required today; no acceptance is inferred from automation.
+
+Mapping synchronized through **Sol batch 60**: 2,400 items, 972 supported visual
+registrations, 146 textures with attribution/hash; unsupported/no-match fallback
+and local water_clean override retained. No Mineclonia gameplay imported.
+[Delivery/evidence](docs/fixes/structured-medical-selection.md),
+[mapping](docs/fixes/item-mapping-2026-10-13.md),
+[backlog](docs/validation/pending-manual.md).
+
+Next essential slice: **UX-05 recent/favorite recipes**. Body-first H → filtered
+medical items, refined anatomical art, live language change and first-person aim
+pose/zoom remain follow-ups. RMB release already ends the gesture; earned native
+precision is not reset. Movement retains native accuracy costs. Full SAVE-001
+remains OPEN; historical M5.5 remains FAILED. Incremental scoped verification
+never promotes the whole gate.
+
+Previous scoped delivery: **UX-04A native decision panels and work feedback**,
 CWM **2.20**, installed in ordinary `start.sh` with paired rollback copies.
 Native questions now use a Mineclonia-style modal: readable colour-safe text,
 scrolling, full-label tooltips, clickable choices and physical 1–9 shortcuts.
@@ -17,9 +50,9 @@ Interrupt cancels it. Returned inventory reports work completion without claimin
 success from an initial ACK. [Design](docs/design/native-decision-panels.md) and
 [scoped verification](docs/fixes/native-decision-panels.md).
 
-Backlog **26 PENDING**: four new dialog/work checks plus twenty-two unchanged.
+At UX-04A delivery, backlog **26 PENDING**: four new dialog/work checks plus twenty-two unchanged.
 No user testing is required today; no acceptance is inferred from automation.
-Next essential UI slice: **UX-04B structured medical selection**, with native
+The next slice announced then was **UX-04B structured medical selection**, with native
 body-part identities, observable health and known treatment effects; do not
 infer these from ASCII bars or labels. The generic medical selector remains
 native text in this slice. Existing UX-02 death/IPC manual exceptions remain
