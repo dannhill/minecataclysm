@@ -4758,7 +4758,7 @@ index 0000000..7d23811
 +} // namespace cdda_client
 diff --git a/src/cdda/crafting_inventory.h b/src/cdda/crafting_inventory.h
 new file mode 100644
-index 0000000..c77e759
+index 0000000..b837757
 --- /dev/null
 +++ b/src/cdda/crafting_inventory.h
 @@ -0,0 +1,80 @@
@@ -4797,7 +4797,7 @@ index 0000000..c77e759
 +    for (unsigned n=1; n<=20; ++n) f += (n>1 ? "," : "") + std::to_string(n);
 +    f += ";" + std::to_string(batch) + ("]button[11.6,1;1.8,0.65;refresh;" + ::cwm::text("Refresh", "Aggiorna") + "]button_exit[13.7,1;1.8,0.65;close;" + ::cwm::text("Close", "Chiudi") + "]");
 +    const char* ids[]={"all_recipes","favorite_recipes","recent_recipes","unfinished_recipes"};
-+    const char* labels[]={::cwm::text("All","Tutte"),::cwm::text("Favorites","Preferite"),::cwm::text("Recent","Recenti"),::cwm::text("Unfinished","Incompleti")};
++    const std::string labels[]={::cwm::text("All","Tutte"),::cwm::text("Favorites","Preferite"),::cwm::text("Recent","Recenti"),::cwm::text("Unfinished","Incompleti")};
 +    for(int n=0;n<4;++n) {
 +        if(n==int(filter))f+="style["+std::string(ids[n])+";bgcolor=#E8CF57FF]";
 +        f+="button["+std::to_string(.5+n*1.85)+",1.9;1.72,0.6;"+ids[n]+";"+labels[n]+"]";

@@ -7252,7 +7252,7 @@
   {
     "path": "src/cdda/crafting_inventory.h",
     "mode": "100644",
-    "sha256": "ecdef912bda815c52d955239696f3776b026a80876006d98abbecca6d0a39c2a"
+    "sha256": "cd448a4d999d6c190e0e26dbc711a19272bf12470b2e0a5459fef448b9129309"
   },
   {
     "path": "src/cdda/decision_dialog.h",
