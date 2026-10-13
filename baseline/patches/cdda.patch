@@ -1011,7 +1011,7 @@ index e2e738d..e3ed1a6 100644
      creature_tracker &creatures = get_creature_tracker();
      if( g->climb_down_menu_pick( examp, cmenu.ret ) ) {
 diff --git a/src/item.cpp b/src/item.cpp
-index 9c51213..ec81aed 100644
+index 9c51213..472bb0a 100644
 --- a/src/item.cpp
 +++ b/src/item.cpp
 @@ -918,6 +918,9 @@ item item::split( int qty )
@@ -1033,6 +1033,16 @@ index 9c51213..ec81aed 100644
      if( !map_equal_ignoring_keys( item_vars, rhs.item_vars, ignore_keys ) ) {
          return false;
      }
+@@ -9345,6 +9348,9 @@ bool item::is_gun() const
+ 
+ void item::select_itype_variant()
+ {
++    // A missing variant set is a semantic no-op. Crafting inventory previews
++    // construct temporary items; empty choices must not consume gameplay RNG.
++    if( type->variants.empty() ) { return; }
+     weighted_int_list<std::string> variants;
+     for( const itype_variant_data &iv : type->variants ) {
+         variants.add( iv.id, iv.weight );
 diff --git a/src/iuse_actor.cpp b/src/iuse_actor.cpp
 index 248ed42..51a1c39 100644
 --- a/src/iuse_actor.cpp
