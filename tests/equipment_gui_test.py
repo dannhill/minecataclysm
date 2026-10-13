@@ -271,8 +271,10 @@ def main():
                 sent = int(latest()['equipment_sent'])
                 click(12.325 + (number % 2)*2.2, 8.15 + (number // 2)*.75)
                 wait(lambda r: int(r['equipment_sent']) == sent+1)
-                tap('Escape')  # Explicitly opt out of UX-02 return; this suite tests native mechanics.
-                wait(lambda r: int(r['equipment_form']) == 0)
+                # Esc now answers the native modal. Never use it as an implicit
+                # opt-out while a question is opening; inspect real settlement.
+                wait(lambda r: int(r['equipment_form']) == 0 or
+                     (int(r['native_work_settled']) == 1 and int(r['pending_move']) == 0))
             def finish_action():
                 wait(lambda r: int(r['pending_move']) == 0 and int(r['pause_reasons']) == 0)
             def item(v, name):
