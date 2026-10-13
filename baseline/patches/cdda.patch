@@ -4911,10 +4911,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..c34b8ed
+index 0000000..ee1e3a9
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,1902 @@
+@@ -0,0 +1,1905 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "move_mode.h"
@@ -6788,14 +6788,17 @@ index 0000000..c34b8ed
 +    const auto view=cwm::CwmServerTestAccess::recipe_catalog(server);REQUIRE(view);
 +    const auto clock=calendar::turn;u.moves=1000;const auto rng=rng_get_engine();
 +    cwm::CwmServerTestAccess::favorite(server,view,1,true,false,1);
++    INFO("RNG after initial favorite: " << rng_get_engine());
 +    CHECK(cwm::CwmServerTestAccess::favorite_accepted(server,1));CHECK(uistate.favorite_recipes.count(rec.ident())==1);CHECK(uistate.read_recipes.count(rec.ident())==1);
 +    cwm::CwmServerTestAccess::favorite(server,view,1,true,false,1); // Same identity cannot toggle twice.
++    INFO("RNG after replay: " << rng_get_engine());
 +    CHECK(cwm::CwmServerTestAccess::favorite_accepted(server,1));CHECK(uistate.favorite_recipes.count(rec.ident())==1);
 +    cwm::CwmServerTestAccess::favorite(server,view,1,false,false,2);CHECK_FALSE(cwm::CwmServerTestAccess::favorite_accepted(server,2));
 +    cwm::CwmServerTestAccess::favorite(server,view+1,1,false,true,3);CHECK_FALSE(cwm::CwmServerTestAccess::favorite_accepted(server,3));
 +    cwm::CwmServerTestAccess::favorite(server,view,1,false,true,4);CHECK(cwm::CwmServerTestAccess::favorite_accepted(server,4));CHECK(uistate.favorite_recipes.empty());
 +    u.forget_recipe(&rec);cwm::CwmServerTestAccess::favorite(server,view,1,true,false,5);
 +    CHECK_FALSE(cwm::CwmServerTestAccess::favorite_accepted(server,5));CHECK(uistate.favorite_recipes.empty());
++    INFO("RNG initial: " << rng);
 +    CHECK(calendar::turn==clock);CHECK(u.moves==1000);CHECK(rng_get_engine()==rng);CHECK_FALSE(u.activity);CHECK(uistate.recent_recipes.empty());
 +}
 +TEST_CASE("cwm_recipe_filters_precede_cap_and_preserve_native_recent_order", "[cwm][crafting]") {
@@ -6814,7 +6817,7 @@ index 0000000..c34b8ed
 +    auto* history=CDDA::CWM::GetCwmMessage(bytes.data())->payload_as_CraftingView();REQUIRE(cdda::cwm::valid_crafting(history));REQUIRE(history->entries()->size()==2);
 +    CHECK(history->entries()->Get(0)->recipe_id()->str()==target->ident().str());CHECK(history->entries()->Get(0)->recent_rank()==1);CHECK(history->entries()->Get(1)->recent_rank()==2);
 +    CHECK(uistate.recent_recipes==original);CHECK_FALSE(u.activity);
-+    std::ostringstream json;JsonOut out(json);uistate.serialize(out);auto saved=json_loader::from_string(json.str()).get_object();
++    std::ostringstream json;JsonOut out(json);uistate.serialize(out);auto saved=json_loader::from_string(json.str()).get_object();saved.allow_omitted_members();
 +    CHECK(saved.get_array("favorite_recipes").get_string(0)==target->ident().str());CHECK(saved.get_array("recent_recipes").size()==2);
 +}
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
