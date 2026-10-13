@@ -17,6 +17,17 @@ Assegna/Svuota e coinvolge tutte le sezioni, prima di lingua/mira.
 [Report e prove](../fixes/inventory-drag-and-drop.md); accettazione del nuovo
 gesto PENDING, backlog a 13 punti. I tre ricontrolli restano PASS.
 
+## Aggiornamento del 2026-10-14
+
+UX-04B è consegnata e UX-05 implementa filtri nativi per disponibili, preferite,
+recenti e lavori incompleti: [design corrente](recipe-shortcuts.md). Il ranking
+per frequenza resta separato, perché la cronologia CDDA conta avvii, non
+completamenti. L’ultima griglia resta visibile durante le query. I riscontri
+manuali successivi accettano hotbar e trasferimenti; non si riapre il precedente
+FAIL del flusso a pulsanti sostituito dal drag-and-drop. Il backlog corrente è
+**24 PENDING + 1 FAIL lingua**, con quattro prove UX-05 rinviabili. Le descrizioni
+di consegna e i conteggi precedenti sotto sono storici.
+
 ## Studio dei sorgenti e vincoli effettivi
 
 | Sorgente letto | Comportamento riscontrato | Conseguenza per la UI |
