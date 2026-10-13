@@ -37322,7 +37322,7 @@
   {
     "path": "src/cwm/cwm_crafting.h",
     "mode": "100644",
-    "sha256": "788bbb1eb1aae093c03446c186f8bf5e2ed3da063acae5b447c19db37c55c7f2"
+    "sha256": "0e48822fba287fdd05f81b22596babd0a2d446b844bc53fd841b143567a6df28"
   },
   {
     "path": "src/cwm/cwm_hotbar.h",
@@ -38007,12 +38007,12 @@
   {
     "path": "src/inventory.cpp",
     "mode": "100644",
-    "sha256": "78bf9d76cdcb455c14586b86137625c7bd4e15b10ac76f307acb85cd4c74281f"
+    "sha256": "7efca07b63be2a3ba0929ed60178ef053269de91236d3bee7fed41beac9d5ed9"
   },
   {
     "path": "src/inventory.h",
     "mode": "100644",
-    "sha256": "e007c312db6ea202c9cd870add78fcf461169342c614c0432c9b3cfd68da38a6"
+    "sha256": "e17c988709dff9569e3221483fb1019cf0aee79a8d0e6b95f6337d429f5d837e"
   },
   {
     "path": "src/inventory_ui.cpp",
@@ -39507,7 +39507,7 @@
   {
     "path": "src/rng.cpp",
     "mode": "100644",
-    "sha256": "223f5ab1af127c21aafcd5bdf850588bdcef0e405fff39107f4cc2b500875d34"
+    "sha256": "1161c6598d37bd1fae4c6c883255c2d91d9c46cd515163cfaf1b7573fda0ef2e"
   },
   {
     "path": "src/rng.h",
@@ -40512,7 +40512,7 @@
   {
     "path": "src/vehicle_use.cpp",
     "mode": "100644",
-    "sha256": "b66dd804dc9be986f9d985ca4f01cf85c9a5c4e59cf5fbe31aa9d3670487f19c"
+    "sha256": "032c2eca1eb76731c2deb33989ecd7d5e1bf80209282eed899fd2a6f946bf11e"
   },
   {
     "path": "src/version.cmake",
@@ -40557,7 +40557,7 @@
   {
     "path": "src/vpart_position.h",
     "mode": "100644",
-    "sha256": "74baa98d3ed787ce1818c0ed389f470b4de6a31909924dded68256dca2cc3340"
+    "sha256": "3c61587c524fb5ab520b0494ce6c843169502a9f13851d3667b6fef509130488"
   },
   {
     "path": "src/vpart_range.h",

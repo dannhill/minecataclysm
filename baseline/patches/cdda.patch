@@ -1010,6 +1010,113 @@ index e2e738d..e3ed1a6 100644
  
      creature_tracker &creatures = get_creature_tracker();
      if( g->climb_down_menu_pick( examp, cmenu.ret ) ) {
+diff --git a/src/inventory.cpp b/src/inventory.cpp
+index 32dfb57..ef0d142 100644
+--- a/src/inventory.cpp
++++ b/src/inventory.cpp
+@@ -482,9 +482,9 @@ static int count_charges_in_list( const ammotype *ammotype, const map_stack &ite
+ 
+ void inventory::form_from_map( const tripoint &origin, int range, const Character *pl,
+                                bool assign_invlet,
+-                               bool clear_path )
++                               bool clear_path, bool include_pseudo )
+ {
+-    form_from_map( get_map(), origin, range, pl, assign_invlet, clear_path );
++    form_from_map( get_map(), origin, range, pl, assign_invlet, clear_path, include_pseudo );
+ }
+ 
+ void inventory::form_from_zone( map &m, std::unordered_set<tripoint_abs_ms> &zone_pts,
+@@ -500,7 +500,7 @@ void inventory::form_from_zone( map &m, std::unordered_set<tripoint_abs_ms> &zon
+ 
+ void inventory::form_from_map( map &m, const tripoint &origin, int range, const Character *pl,
+                                bool assign_invlet,
+-                               bool clear_path )
++                               bool clear_path, bool include_pseudo )
+ {
+     // populate a grid of spots that can be reached
+     std::vector<tripoint> reachable_pts = {};
+@@ -514,27 +514,27 @@ void inventory::form_from_map( map &m, const tripoint &origin, int range, const
+             reachable_pts.emplace_back( p );
+         }
+     }
+-    form_from_map( m, reachable_pts, pl, assign_invlet );
++    form_from_map( m, reachable_pts, pl, assign_invlet, include_pseudo );
+ }
+ 
+ void inventory::form_from_map( map &m, std::vector<tripoint> pts, const Character *pl,
+-                               bool assign_invlet )
++                               bool assign_invlet, bool include_pseudo )
+ {
+     items.clear();
+     provisioned_pseudo_tools.clear();
+ 
+     for( const tripoint &p : pts ) {
+         // a temporary hack while trees are terrain
+-        if( m.ter( p )->has_flag( ter_furn_flag::TFLAG_TREE ) ) {
++        if( include_pseudo && m.ter( p )->has_flag( ter_furn_flag::TFLAG_TREE ) ) {
+             provide_pseudo_item( itype_butchery_tree_pseudo );
+         }
+         // Another terrible hack, as terrain can't provide pseudo items, and construction can't do multi-step furniture
+         ter_id brick_oven( "t_brick_oven" );
+-        if( m.ter( p ) == brick_oven ) {
++        if( include_pseudo && m.ter( p ) == brick_oven ) {
+             provide_pseudo_item( itype_brick_oven_pseudo );
+         }
+         const furn_t &f = m.furn( p ).obj();
+-        if( item *furn_item = provide_pseudo_item( f.crafting_pseudo_item ) ) {
++        if( item *furn_item = include_pseudo ? provide_pseudo_item( f.crafting_pseudo_item ) : nullptr ) {
+             for( const itype *ammo : f.crafting_ammo_item_types() ) {
+                 if( furn_item->has_pocket_type( pocket_type::MAGAZINE ) ) {
+                     // NOTE: This only works if the pseudo item has a MAGAZINE pocket, not a MAGAZINE_WELL!
+@@ -572,15 +572,15 @@ void inventory::form_from_map( map &m, std::vector<tripoint> pts, const Characte
+             }
+         }
+         // Kludges for now!
+-        if( m.has_nearby_fire( p, 0 ) ) {
++        if( include_pseudo && m.has_nearby_fire( p, 0 ) ) {
+             if( item *fire = provide_pseudo_item( itype_fire ) ) {
+                 fire->charges = 1;
+             }
+         }
+         // Handle any water from map sources.
+-        item water = m.water_from( p );
+-        if( !water.is_null() ) {
+-            add_item( water );
++        if( include_pseudo ) {
++            item water = m.water_from( p );
++            if( !water.is_null() ) { add_item( water ); }
+         }
+ 
+         // keg-kludge
+@@ -595,7 +595,7 @@ void inventory::form_from_map( map &m, std::vector<tripoint> pts, const Characte
+ 
+         // form from vehicle
+         if( optional_vpart_position vp = m.veh_at( p ) ) {
+-            vp->form_inventory( *this );
++            vp->form_inventory( *this, include_pseudo );
+         }
+     }
+     pts.clear();
+diff --git a/src/inventory.h b/src/inventory.h
+index 5dd44b0..7ca192e 100644
+--- a/src/inventory.h
++++ b/src/inventory.h
+@@ -157,12 +157,12 @@ class inventory : public visitable
+                              const Character *pl = nullptr, bool assign_invlet = true );
+         void form_from_map( const tripoint &origin, int range, const Character *pl = nullptr,
+                             bool assign_invlet = true,
+-                            bool clear_path = true );
++                            bool clear_path = true, bool include_pseudo = true );
+         void form_from_map( map &m, const tripoint &origin, int range, const Character *pl = nullptr,
+                             bool assign_invlet = true,
+-                            bool clear_path = true );
++                            bool clear_path = true, bool include_pseudo = true );
+         void form_from_map( map &m, std::vector<tripoint> pts, const Character *pl,
+-                            bool assign_invlet = true );
++                            bool assign_invlet = true, bool include_pseudo = true );
+         /**
+          * Remove a specific item from the inventory. The item is compared
+          * by pointer. Contents of the item are removed as well.
 diff --git a/src/item.cpp b/src/item.cpp
 index 9c51213..472bb0a 100644
 --- a/src/item.cpp
@@ -1358,24 +1465,6 @@ index 6e66b47..1d12175 100644
  };
  
  enum class recipe_time_flag : int {
-diff --git a/src/rng.cpp b/src/rng.cpp
-index 2fcf17b..5666819 100644
---- a/src/rng.cpp
-+++ b/src/rng.cpp
-@@ -1,3 +1,5 @@
-+#include <execinfo.h>
-+bool cwm_recipe_rng_trace=false;
- #include "rng.h"
- 
- #include <algorithm>
-@@ -198,6 +200,7 @@ cata_default_random_engine::result_type rng_get_first_seed()
- 
- cata_default_random_engine &rng_get_engine()
- {
-+    if(cwm_recipe_rng_trace){cwm_recipe_rng_trace=false;void* frames[20];const int n=backtrace(frames,20);backtrace_symbols_fd(frames,n,2);}
-     // NOLINTNEXTLINE(cata-determinism)
-     static cata_default_random_engine eng( rng_get_first_seed() );
-     return eng;
 diff --git a/src/translations.cpp b/src/translations.cpp
 index e0f257a..82690b4 100644
 --- a/src/translations.cpp
@@ -1416,6 +1505,44 @@ index b901cde..58b5398 100644
      w_x_setup = pos_scalar::auto_assign {};
      w_y_setup = pos_scalar::auto_assign {};
      w_width_setup = size_scalar::auto_assign {};
+diff --git a/src/vehicle_use.cpp b/src/vehicle_use.cpp
+index 567f951..7b75d93 100644
+--- a/src/vehicle_use.cpp
++++ b/src/vehicle_use.cpp
+@@ -1721,7 +1721,7 @@ void vehicle::build_bike_rack_menu( veh_menu &menu, int part )
+     }
+ }
+ 
+-void vpart_position::form_inventory( inventory &inv ) const
++void vpart_position::form_inventory( inventory &inv, bool include_pseudo ) const
+ {
+     if( const std::optional<vpart_reference> vp_cargo = part_with_feature( VPFLAG_CARGO, true ) ) {
+         for( const item &it : vp_cargo->items() ) {
+@@ -1729,9 +1729,10 @@ void vpart_position::form_inventory( inventory &inv ) const
+                 const int count = it.count_by_charges() ? it.charges : 1;
+                 inv.update_liq_container_count( it.typeId(), count );
+             }
+-            inv.add_item( it );
++            inv.add_item( it, false, include_pseudo );
+         }
+     }
++    if( !include_pseudo ) { return; }
+ 
+     // HACK: water_faucet pseudo tool gives access to liquids in tanks
+     const std::optional<vpart_reference> vp_faucet = part_with_tool( itype_water_faucet );
+diff --git a/src/vpart_position.h b/src/vpart_position.h
+index 66dee4b..5808c88 100644
+--- a/src/vpart_position.h
++++ b/src/vpart_position.h
+@@ -93,7 +93,7 @@ class vpart_position
+         // Returns a list of all tools provided by vehicle and their hotkey
+         std::map<item, int> get_tools() const;
+         // Forms inventory for inventory::form_from_map
+-        void form_inventory( inventory &inv ) const;
++        void form_inventory( inventory &inv, bool include_pseudo = true ) const;
+ 
+         /**
+          * Returns the position of this part in the coordinates system that @ref game::m uses.
 diff --git a/tests/CMakeLists.txt b/tests/CMakeLists.txt
 index bfe0773..66ca653 100644
 --- a/tests/CMakeLists.txt
@@ -1462,10 +1589,10 @@ index 09a7711..9b0c484 100644
          DebugLog( D_INFO, DC_ALL ) <<
 diff --git a/src/cwm/cwm_crafting.h b/src/cwm/cwm_crafting.h
 new file mode 100644
-index 0000000..871f3d7
+index 0000000..56bbc99
 --- /dev/null
 +++ b/src/cwm/cwm_crafting.h
-@@ -0,0 +1,214 @@
+@@ -0,0 +1,217 @@
 +#pragma once
 +#include "cwm/product_language.hpp"
 +#include "avatar.h"
@@ -1488,7 +1615,6 @@ index 0000000..871f3d7
 +#include <algorithm>
 +#include <cctype>
 +
-+extern bool cwm_recipe_rng_trace;
 +namespace cwm {
 +inline item_location active_craft(const avatar& u) {
 +    if (u.activity.id() == activity_id("ACT_CRAFT") && !u.activity.targets.empty()) {
@@ -1532,9 +1658,13 @@ index 0000000..871f3d7
 +    std::string set_favorite(avatar& u,uint64_t view,uint32_t entry,bool favorite,bool expected) {
 +        if(!view || view!=view_ || !entry || entry>entries_.size())return ::cwm::tr("Catalog expired: reopen K.","Catalogo scaduto: riapri K.");
 +        const auto* rec=entries_[entry-1].rec;
-+        cwm_recipe_rng_trace=true;
-+        u.invalidate_crafting_inventory();const auto helpers=u.get_crafting_group();
-+        const auto available=u.get_available_recipes(u.crafting_inventory(),&helpers);
++        // Knowledge uses real books/readers, not freshly generated water or
++        // pseudo-tools. Keep native reachability, ownership and helper rules.
++        inventory sources;sources.form_from_map(u.pos(),PICKUP_RANGE,&u,false,true,false);
++        for(const auto& loc:u.all_items_loc())sources.add_item(*loc,false,false);
++        for(const auto* pseudo:u.get_pseudo_items())sources.add_item(*pseudo,false,false);
++        const auto helpers=u.get_crafting_group();
++        const auto available=u.get_available_recipes(sources,&helpers);
 +        if(!*rec || rec->obsolete || std::find(available.begin(),available.end(),rec)==available.end())
 +            return ::cwm::tr("Recipe is no longer known or accessible.","Ricetta non piu nota o accessibile.");
 +        const bool current=uistate.favorite_recipes.count(rec->ident());
