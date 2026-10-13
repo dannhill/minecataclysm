@@ -11,7 +11,7 @@
 namespace cdda::cwm {
 
 constexpr uint16_t PROTOCOL_VERSION_MAJOR = 2;
-constexpr uint16_t PROTOCOL_VERSION_MINOR = 21;
+constexpr uint16_t PROTOCOL_VERSION_MINOR = 22;
 
 struct Identity { uint64_t session{0}, player{0}, connection{0}; };
 
@@ -116,10 +116,14 @@ public:
         return finish_message(CDDA::CWM::Payload::AttackRequest, req.Union());
     }
 
-    std::vector<uint8_t> build_crafting_query(uint64_t query_id, const std::string& search, uint32_t batch) {
+    std::vector<uint8_t> build_crafting_query(uint64_t query_id, const std::string& search, uint32_t batch, CDDA::CWM::CraftingFilter filter = CDDA::CWM::CraftingFilter::ALL) {
         const auto text = fbb_.CreateString(search);
-        const auto request = CDDA::CWM::CreateCraftingQueryRequest(fbb_, query_id, text, batch);
+        const auto request = CDDA::CWM::CreateCraftingQueryRequest(fbb_, query_id, text, batch, filter);
         return finish_message(CDDA::CWM::Payload::CraftingQueryRequest, request.Union());
+    }
+    std::vector<uint8_t> build_crafting_favorite(uint64_t id, uint64_t view, uint32_t entry, bool favorite, bool expected) {
+        const auto request = CDDA::CWM::CreateCraftingFavoriteRequest(fbb_,id,view,entry,favorite,expected);
+        return finish_message(CDDA::CWM::Payload::CraftingFavoriteRequest,request.Union());
     }
     std::vector<uint8_t> build_crafting_request(uint64_t id, uint64_t view, uint32_t entry) {
         const auto request = CDDA::CWM::CreateCraftingRequest(fbb_, id, view, entry);

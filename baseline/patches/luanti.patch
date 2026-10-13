@@ -1735,10 +1735,10 @@ index 0000000..e1e7236
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..6af0137
+index 0000000..d092563
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,2815 @@
+@@ -0,0 +1,2840 @@
 +#include "cwm/product_language.hpp"
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
@@ -1916,21 +1916,23 @@ index 0000000..6af0137
 +    CraftingView crafting_view_;
 +    bool crafting_open_{false}, crafting_close_{false}, crafting_dirty_{false};
 +    uint64_t next_crafting_query_{1}, crafting_query_{0}, crafting_sent_{0};
++    CDDA::CWM::CraftingFilter crafting_filter_{CDDA::CWM::CraftingFilter::ALL};
++    uint64_t crafting_favorite_command_{0}; bool crafting_favorite_refresh_{false},crafting_query_pending_{false};
 +    uint32_t crafting_selected_{0}; size_t crafting_page_{0}; unsigned crafting_batch_{1};
 +    std::string crafting_search_, crafting_notice_;
 +    struct QueuedCrafting { uint64_t view; uint32_t entry; };
 +    std::optional<QueuedCrafting> queued_crafting_;
 +    std::string crafting_form() const {
 +        return craftingForm(crafting_view_, crafting_page_, crafting_selected_, crafting_search_, crafting_batch_,
-+            crafting_notice_, [&](const auto& type) { return ground_item_visual_name(type); }, crafting_ && activity_token_);
++            crafting_notice_, [&](const auto& type) { return ground_item_visual_name(type); }, crafting_ && activity_token_,crafting_filter_,crafting_query_pending_ || crafting_favorite_command_);
 +    }
-+    bool query_crafting() {
++    bool query_crafting(bool preserve_view=false) {
 +        if (!session_.ready() || !player_ready_ || metrics_.pending_decision || pending_move_) return false;
 +        auto wire = session_.builder(); crafting_query_ = next_crafting_query_++;
-+        const auto bytes = wire.build_crafting_query(crafting_query_, crafting_search_, crafting_batch_);
-+        crafting_view_ = {}; crafting_selected_ = 0; crafting_page_ = 0;
-+        crafting_notice_.clear(); crafting_dirty_ = true;
-+        return connection_->send_message(bytes.data(), bytes.size());
++        const auto bytes = wire.build_crafting_query(crafting_query_, crafting_search_, crafting_batch_,crafting_filter_);
++        if(!preserve_view){crafting_view_={};crafting_selected_=0;crafting_page_=0;crafting_notice_.clear();}
++        crafting_dirty_=true;
++        crafting_query_pending_=connection_->send_message(bytes.data(),bytes.size());return crafting_query_pending_;
 +    }
 +    std::optional<uint64_t> queued_cancel_activity_;
 +
@@ -1975,6 +1977,7 @@ index 0000000..6af0137
 +        dismiss_inventory_work(); native_work_command_ = 0; native_work_settled_ = false;
 +        quick_slots_ = {}; quick_bind_command_ = 0; quick_bind_refresh_ = false;
 +        queued_crafting_.reset(); crafting_query_ = 0; crafting_view_ = {};
++        crafting_query_pending_=crafting_favorite_refresh_=false;crafting_favorite_command_=0;
 +        crafting_close_ = crafting_open_;
 +        queued_cancel_activity_.reset(); activity_token_ = 0; weapon_token_ = 0; reloading_ = false;
 +        activity_total_ = activity_remaining_ = 0;
@@ -2765,7 +2768,7 @@ index 0000000..6af0137
 +            case CDDA::CWM::Payload::CraftingView: {
 +                const auto* view = msg->payload_as_CraftingView();
 +                if (crafting_open_ && view->query_id() == crafting_query_) {
-+                    crafting_view_.read(*view); crafting_dirty_ = true;
++                    crafting_view_.read(*view); crafting_dirty_ = true;crafting_query_pending_=false;crafting_selected_=0;
 +                }
 +                break;
 +            }
@@ -3147,6 +3150,10 @@ index 0000000..6af0137
 +
 +            case CDDA::CWM::Payload::CommandAck: {
 +                const auto* ack = msg->payload_as_CommandAck();
++                if(ack && ack->command_id()==crafting_favorite_command_) {
++                    crafting_favorite_refresh_=true;
++                    crafting_notice_=ack->accepted()?::cwm::text("Recipe favorite updated.","Preferita aggiornata."):decisionPlainText(ack->error_message()->str());
++                }
 +                if (ack && ack->command_id() == quick_bind_command_) {
 +                    quick_bind_refresh_ = true;
 +                    equipment_notice_ = ack->accepted() ? (::cwm::text("Layout updated.", "Disposizione aggiornata.")) : decisionPlainText(ack->error_message()->str());
@@ -3542,6 +3549,10 @@ index 0000000..6af0137
 +void CddaBridge::update(float dtime) {
 +    if (pimpl_) {
 +        pimpl_->update(dtime);
++        if(pimpl_->crafting_favorite_refresh_ && !pimpl_->pending_move_) {
++            pimpl_->crafting_favorite_refresh_=false;pimpl_->crafting_favorite_command_=0;
++            if(pimpl_->crafting_open_)pimpl_->query_crafting(true);
++        }
 +        if (pimpl_->quick_bind_refresh_ && !pimpl_->pending_move_) {
 +            pimpl_->quick_bind_refresh_ = false;
 +            if (pimpl_->equipment_open_) {
@@ -3899,7 +3910,7 @@ index 0000000..6af0137
 +        pimpl_->body_form_open_ || pimpl_->ground_container_open_ || pimpl_->equipment_open_ || pimpl_->metrics_.pending_decision) return {};
 +    auto& i = *pimpl_;
 +    i.crafting_open_ = true; i.crafting_close_ = false;
-+    i.crafting_search_.clear(); i.crafting_batch_ = 1;
++    i.crafting_search_.clear(); i.crafting_batch_ = 1; i.crafting_filter_=CDDA::CWM::CraftingFilter::ALL;
 +    setMenuPause(true);
 +    if (!i.query_crafting()) i.crafting_view_.error = (::cwm::text("Catalog unavailable: try again.", "Catalogo non disponibile: riprova."));
 +    return i.crafting_form();
@@ -3909,15 +3920,29 @@ index 0000000..6af0137
 +    auto& i = *pimpl_;
 +    if (fields.count("quit")) {
 +        i.crafting_open_ = i.crafting_close_ = i.crafting_dirty_ = false;
-+        i.crafting_view_ = {}; i.crafting_query_ = 0; i.queued_crafting_.reset(); return;
++        i.crafting_view_ = {}; i.crafting_query_ = 0; i.crafting_query_pending_=false;i.queued_crafting_.reset(); return;
 +    }
++    if(i.crafting_query_pending_ || i.crafting_favorite_command_)return;
++    if(fields.count("favorite_recipe")) {
++        const auto* e=i.crafting_view_.entry(i.crafting_selected_);
++        if(!e || !i.session_.ready() || i.pending_move_ || i.metrics_.pending_decision)return;
++        auto wire=i.session_.builder();const auto id=i.session_.next_command++;
++        const auto bytes=wire.build_crafting_favorite(id,i.crafting_view_.view,e->id,!e->favorite,e->favorite);
++        if(i.connection_->send_message(bytes.data(),bytes.size())){
++            i.crafting_favorite_command_=i.pending_move_=id;i.move_acked_=false;
++            i.sent_move_=std::chrono::steady_clock::now();i.crafting_dirty_=true;
++        }return;
++    }
++    bool tab_change=false;
++    const char* tabs[]={"all_recipes","favorite_recipes","recent_recipes"};
++    for(int n=0;n<3;++n)if(fields.count(tabs[n]) && int(i.crafting_filter_)!=n){i.crafting_filter_=static_cast<CDDA::CWM::CraftingFilter>(n);tab_change=true;}
 +    if (fields.count("cancel_craft") && i.crafting_ && i.activity_token_) {
 +        if (i.metrics_.pause_reasons & ~uint32_t(2)) i.crafting_notice_ = (::cwm::text("Resume the game before interrupting.", "Riprendi il gioco prima di interrompere."));
 +        else if (!i.session_.ready() || i.pending_move_) i.crafting_notice_ = (::cwm::text("Wait for the updated state.", "Attendi lo stato aggiornato."));
 +        else { i.queued_cancel_activity_ = i.activity_token_; i.crafting_close_ = true; return; }
 +        i.crafting_dirty_ = true; return;
 +    }
-+    bool refresh = fields.count("refresh") || fields.count("find") || fields.count("key_enter_field");
++    bool refresh = tab_change || fields.count("refresh") || fields.count("find") || fields.count("key_enter_field");
 +    if (const auto found = fields.find("batch"); found != fields.end()) {
 +        for (unsigned n = 1; n <= 20; ++n) if (found->second == std::to_string(n) && i.crafting_batch_ != n) {
 +            i.crafting_batch_ = n; refresh = true; break;
@@ -4733,33 +4758,34 @@ index 0000000..7d23811
 +} // namespace cdda_client
 diff --git a/src/cdda/crafting_inventory.h b/src/cdda/crafting_inventory.h
 new file mode 100644
-index 0000000..b255489
+index 0000000..ef0a648
 --- /dev/null
 +++ b/src/cdda/crafting_inventory.h
-@@ -0,0 +1,64 @@
+@@ -0,0 +1,80 @@
 +#pragma once
 +#include "cwm/product_language.hpp"
 +#include "equipment_inventory.h"
 +namespace cdda_client {
 +struct CraftingEntry {
 +    uint32_t id{}; std::string recipe, type, name, requirements, reason;
-+    int64_t expected{}; bool resume{}; int progress{};
++    int64_t expected{}; bool resume{}; int progress{}; bool favorite{}; unsigned recent_rank{};
 +};
 +struct CraftingView {
 +    uint64_t query{}, view{}; unsigned batch{1}; bool truncated{};
++    CDDA::CWM::CraftingFilter filter{CDDA::CWM::CraftingFilter::ALL};
 +    std::string error; std::vector<CraftingEntry> entries;
 +    void read(const CDDA::CWM::CraftingView& source) {
 +        *this = {}; query = source.query_id(); view = source.view_id(); batch = source.batch();
-+        truncated = source.truncated(); error = source.error()->str();
++        truncated = source.truncated(); error = source.error()->str(); filter=source.filter();
 +        for (const auto* e : *source.entries()) entries.push_back({e->id(), e->recipe_id()->str(),
 +            e->result_type()->str(), e->name()->str(), e->requirements()->str(), e->reason()->str(),
-+            e->expected_moves(), e->resume(), e->progress()});
++            e->expected_moves(), e->resume(), e->progress(),e->favorite(),e->recent_rank()});
 +    }
 +    const CraftingEntry* entry(uint32_t id) const { return id && id <= entries.size() ? &entries[id-1] : nullptr; }
 +};
 +inline std::string craftingForm(const CraftingView& view, size_t page, uint32_t selected,
 +        const std::string& search, unsigned batch, const std::string& notice,
-+        const std::function<std::string(const std::string&)>& icon, bool busy) {
++        const std::function<std::string(const std::string&)>& icon, bool busy, CDDA::CWM::CraftingFilter filter=CDDA::CWM::CraftingFilter::ALL, bool updating=false) {
 +    std::string f = "formspec_version[4]size[16,11]no_prepend[]bgcolor[#00000000]"
 +        "background9[0,0;16,11;mcl_base_textures_background9.png;false;7]"
 +        "style_type[label;textcolor=#323232]"
@@ -4770,8 +4796,16 @@ index 0000000..b255489
 +        ("button[6.1,1;1.6,0.65;find;" + ::cwm::text("Search", "Cerca") + "]label[8,0.7;" + ::cwm::text("Batch", "Lotto") + "]dropdown[8,1;3.3,0.65;batch;");
 +    for (unsigned n=1; n<=20; ++n) f += (n>1 ? "," : "") + std::to_string(n);
 +    f += ";" + std::to_string(batch) + ("]button[11.6,1;1.8,0.65;refresh;" + ::cwm::text("Refresh", "Aggiorna") + "]button_exit[13.7,1;1.8,0.65;close;" + ::cwm::text("Close", "Chiudi") + "]");
++    const char* ids[]={"all_recipes","favorite_recipes","recent_recipes"};
++    const char* labels[]={::cwm::text("All","Tutte"),::cwm::text("Favorites","Preferite"),::cwm::text("Recent","Recenti")};
++    for(int n=0;n<3;++n) {
++        if(n==int(filter))f+="style["+std::string(ids[n])+";bgcolor=#E8CF57FF]";
++        f+="button["+std::to_string(.5+n*2.45)+",1.9;2.3,0.6;"+ids[n]+";"+labels[n]+"]";
++    }
++    if(updating)f+="label[8,2.6;"+::cwm::text("Updating native catalog...","Aggiornamento catalogo nativo...")+"]";
 +    if (busy) f += ("button[8,1.9;7.5,0.6;cancel_craft;" + ::cwm::text("Interrupt current work", "Interrompi lavoro corrente") + "]");
-+    if (!view.view) return f + "label[0.5,2.2;" + statusEscape(view.error.empty() ? (::cwm::text("Reading native recipes...", "Lettura ricette native...")) : view.error) + "]";
++    if (!view.view) return f + "label[0.5,3.1;" + statusEscape(view.error.empty() ? (::cwm::text("Reading native recipes...", "Lettura ricette native...")) : view.error) + "]";
++    if(view.entries.empty())f+="label[0.5,3;"+::cwm::text("No matching recipes. Try another tab or clear the search.","Nessuna ricetta. Cambia scheda o svuota la ricerca.")+"]";
 +    const size_t pages=std::max<size_t>(1,(view.entries.size()+35)/36); page=std::min(page,pages-1);
 +    for (size_t i=page*36; i<std::min(view.entries.size(),(page+1)*36); ++i) {
 +        const auto& e=view.entries[i]; const size_t n=i%36;
@@ -4779,7 +4813,13 @@ index 0000000..b255489
 +        f += "image["+x+","+y+";1.05,1.05;mcl_formspec_itemslot.png]";
 +        if (e.id==selected) f += "box["+x+","+y+";1.05,1.05;#E8CF5790]";
 +        f += "item_image_button["+x+","+y+";1.05,1.05;"+statusEscape(icon(e.type))+";recipe_"+std::to_string(e.id)+";]";
-+        f += "tooltip[recipe_"+std::to_string(e.id)+";"+statusEscape(e.name+"\n"+(e.reason.empty() ? "Disponibile" : e.reason))+"]";
++        f += "tooltip[recipe_"+std::to_string(e.id)+";"+statusEscape(e.name+"\n"+(e.reason.empty() ? ::cwm::text("Available", "Disponibile") : e.reason))+"]";
++        if(e.favorite) {
++            const auto badge="recipe_"+std::to_string(e.id);
++            f+="style["+badge+";textcolor=#8B6100;border=false;bgimg=;bgimg_pressed=;bgcolor=#00000000]button["+
++                std::to_string(.5+(n%6)*1.18+.05)+","+std::to_string(2.7+(n/6)*1.12+.05)+";0.35,0.35;"+badge+";*]";
++            f+="tooltip["+badge+";"+statusEscape(e.name+"\n"+::cwm::text("Favorite recipe","Ricetta preferita"))+"]";
++        }
 +        if (e.resume) {
 +            const auto bx = std::to_string(.5+(n%6)*1.18+.65);
 +            const auto by = std::to_string(2.7+(n/6)*1.12+.05);
@@ -4793,10 +4833,11 @@ index 0000000..b255489
 +    if (const auto* e=view.entry(selected)) {
 +        f += "textarea[8,2.8;7.5,6.1;;;"+statusEscape(e->name+"\n"+
 +            (e->resume ? (::cwm::text("Resume: ", "Riprendi: "))+std::to_string(e->progress/100000)+"%\n" : (::cwm::text("Estimated duration: ", "Durata stimata: "))+std::to_string(e->expected/100)+(::cwm::text(" CDDA seconds", " secondi CDDA") + "\n"))+
-+            e->requirements+"\n"+(e->reason.empty() ? "Disponibile" : e->reason))+"]";
-+        if (e->reason.empty() && !busy) f += "button[8,9;7.5,0.65;start;"+std::string(e->resume ? (::cwm::text("Resume work", "Riprendi lavoro")) : (::cwm::text("Choose components and craft", "Scegli componenti e crea")))+"]";
++            e->requirements+"\n"+(e->reason.empty() ? ::cwm::text("Available", "Disponibile") : e->reason))+"]";
++        if (e->reason.empty() && !busy && !updating) f += "button[8,9;7.5,0.65;start;"+std::string(e->resume ? (::cwm::text("Resume work", "Riprendi lavoro")) : (::cwm::text("Choose components and craft", "Scegli componenti e crea")))+"]";
++        if(!updating)f+="button[8,9.8;7.5,0.65;favorite_recipe;"+std::string(e->favorite?::cwm::text("Remove recipe favorite","Rimuovi ricetta preferita"): ::cwm::text("Add recipe favorite","Aggiungi ricetta preferita"))+"]";
 +    }
-+    f += "label[8,10;"+statusEscape(notice.substr(0,160))+"]";
++    f += "label[0.5,10.75;"+statusEscape(notice.substr(0,160))+"]";
 +    if (view.truncated) f += ("label[0.5,2.1;" + ::cwm::text("Too many results: narrow the search.", "Troppi risultati: restringi la ricerca.") + "]");
 +    return f;
 +}

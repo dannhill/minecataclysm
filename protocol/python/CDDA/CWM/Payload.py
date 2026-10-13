@@ -48,3 +48,4 @@ class Payload(object):
     QuickbarUseRequest = 42
     QuickbarSwapRequest = 43
     InventoryArrangeRequest = 44
+    CraftingFavoriteRequest = 45

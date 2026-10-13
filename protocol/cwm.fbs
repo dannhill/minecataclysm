@@ -296,16 +296,19 @@ table CancelFirstAidRequest { command_id: uint64; activity_token: uint64; }
 // ACT_CRAFT progress is the canonical craft item's counter (0..10,000,000).
 table CraftingState { token: uint64; progress: int32; }
 table CancelCraftingRequest { command_id: uint64; activity_token: uint64; }
-table CraftingQueryRequest { query_id: uint64; search: string; batch: uint32 = 1; }
+enum CraftingFilter: uint8 { ALL = 0, FAVORITES = 1, RECENT = 2 }
+table CraftingQueryRequest { query_id: uint64; search: string; batch: uint32 = 1; filter: CraftingFilter = ALL; }
 table CraftingEntry {
     id: uint32; recipe_id: string; result_type: string; name: string;
     requirements: string; reason: string; expected_moves: int64;
     resume: bool; progress: int32;
+    favorite: bool; recent_rank: uint8; // 0 absent, 1 newest, at most 20.
 }
 table CraftingView {
     query_id: uint64; view_id: uint64; batch: uint32 = 1;
-    entries: [CraftingEntry]; truncated: bool; error: string;
+    entries: [CraftingEntry]; truncated: bool; error: string; filter: CraftingFilter = ALL;
 }
+table CraftingFavoriteRequest { command_id: uint64; view_id: uint64; entry_id: uint32; favorite: bool; expected_favorite: bool; }
 table CraftingRequest { command_id: uint64; view_id: uint64; entry_id: uint32; }
 
 
@@ -516,6 +519,7 @@ union Payload {
     ,QuickbarUseRequest
     ,QuickbarSwapRequest
     ,InventoryArrangeRequest
+    ,CraftingFavoriteRequest
 }
 
 table CwmMessage {

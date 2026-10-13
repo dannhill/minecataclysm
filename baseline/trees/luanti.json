@@ -7242,7 +7242,7 @@
   {
     "path": "src/cdda/cdda_bridge.cpp",
     "mode": "100644",
-    "sha256": "69e357a12666cb513e91ccc82ea26c2f4618258bca4797e26dc04e8c57fb55b4"
+    "sha256": "c604da132e25271f01656e85fd7b7b6af4f6b93b265d4b9790b63584186d41a5"
   },
   {
     "path": "src/cdda/cdda_bridge.h",
@@ -7252,7 +7252,7 @@
   {
     "path": "src/cdda/crafting_inventory.h",
     "mode": "100644",
-    "sha256": "cf9cd28df6f4d7bc7980bf117bd42cfe5a4bc7687e619662351bdd203276bba8"
+    "sha256": "729eaed1b68582443a3b15a788a98a94d46b9ff7723b8c0a0c22b65d40e11780"
   },
   {
     "path": "src/cdda/decision_dialog.h",

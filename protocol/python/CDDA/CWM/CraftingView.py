@@ -84,8 +84,15 @@ class CraftingView(object):
             return self._tab.String(o + self._tab.Pos)
         return None
 
+    # CraftingView
+    def Filter(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(16))
+        if o != 0:
+            return self._tab.Get(flatbuffers.number_types.Uint8Flags, o + self._tab.Pos)
+        return 0
+
 def CraftingViewStart(builder):
-    builder.StartObject(6)
+    builder.StartObject(7)
 
 def Start(builder):
     CraftingViewStart(builder)
@@ -131,6 +138,12 @@ def CraftingViewAddError(builder, error):
 
 def AddError(builder, error):
     CraftingViewAddError(builder, error)
+
+def CraftingViewAddFilter(builder, filter):
+    builder.PrependUint8Slot(6, filter, 0)
+
+def AddFilter(builder, filter):
+    CraftingViewAddFilter(builder, filter)
 
 def CraftingViewEnd(builder):
     return builder.EndObject()

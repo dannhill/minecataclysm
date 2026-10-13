@@ -26,6 +26,7 @@ def main():
     for name in ('workspace', 'fixture', 'native-reader', 'artifacts'):
         parser.add_argument('--' + name, type=Path, required=True)
     parser.add_argument('--action-driven', action='store_true', help='Verify ordinary start.sh mode without the real-time scheduler')
+    parser.add_argument('--recipe-shortcuts', action='store_true')
     parser.add_argument('--resume-only', action='store_true')
     parser.add_argument('--save-active', action='store_true')
     parser.add_argument('--resume-active', action='store_true')
@@ -224,6 +225,18 @@ def main():
                 xdo('key','ctrl+a');xdo('key','BackSpace');xdo('type','--clearmodifiers',text);click(6.9,1.325)
                 wait(lambda r:int(r['crafting_view'])>0 and r['crafting_view']!=old)
                 return catalog()
+            def tab(index):
+                old=latest()['crafting_view'];click(1.65+index*2.45,2.2)
+                wait(lambda r:int(r['crafting_view'])>0 and r['crafting_view']!=old)
+                v=catalog();check('native_filter_'+str(index),v.Filter()==index);return v
+            def favorite_recipe(v,desired):
+                selected=next(e for e in entries(v) if e.RecipeId()==b'bandages_makeshift' and not e.Resume());select_recipe(v)
+                old=latest()['crafting_view'];frozen=latest()['simulation_time'];work=latest()['crafting_sent']
+                click(11.5,10.1)
+                wait(lambda r:int(r['crafting_view'])>0 and r['crafting_view']!=old)
+                v=catalog();check('favorite_free_keeps_time_work_and_menu_'+str(desired),latest()['simulation_time']==frozen and latest()['crafting_sent']==work and int(latest()['crafting_form'])==1)
+                check('favorite_result_'+str(desired),all(e.Favorite()==desired for e in entries(v) if e.RecipeId()==b'bandages_makeshift'))
+                return v
             def select_recipe(v,resume=False):
                 e=next(e for e in entries(v) if e.RecipeId()==b'bandages_makeshift' and e.Resume()==resume)
                 index=e.Id()-1;click(1.025+(index%6)*1.18,3.225+(index//6)*1.12)
@@ -256,7 +269,11 @@ def main():
                 xdo('key','Home');xdo('key',*(['Down']*(number-1)));xdo('key','Return')
                 wait(lambda r:int(r['crafting_view'])>0 and r['crafting_view']!=old)
                 return catalog()
-            if args.resume_only:
+            if args.recipe_shortcuts and args.resume_only:
+                view=tab(1);check('favorite_survives_native_save_and_reload',any(e.RecipeId()==b'bandages_makeshift' and e.Favorite() for e in entries(view)))
+                view=tab(2);check('recent_survives_native_save_and_reload',any(e.RecipeId()==b'bandages_makeshift' and e.RecentRank()==1 for e in entries(view)))
+                shot('reloaded-native-shortcuts.png');tap('Escape');wait(lambda r:int(r['crafting_form'])==0)
+            elif args.resume_only:
                 saved=json.loads((args.fixture.parent/'native.json').read_text())
                 if args.resume_active:
                     check('canonical_craft_resumes_saved_progress',int(latest()['crafting_token'])>0 and int(latest()['crafting_progress'])>0)
@@ -272,15 +289,29 @@ def main():
             else:
                 before_time=latest()['simulation_time'];time.sleep(.7)
                 check('catalog_pauses_native_time',latest()['simulation_time']==before_time)
+                if args.recipe_shortcuts:
+                    view=tab(2);check('fresh_recent_has_no_synthetic_history',view.EntriesLength()==0)
+                    view=tab(1);check('fresh_favorites_has_no_implicit_selection',view.EntriesLength()==0)
+                    view=tab(0);view=search();view=favorite_recipe(view,True)
+                    view=tab(1);check('favorites_only_include_native_marked_recipes',view.EntriesLength()>0 and all(e.Favorite() for e in entries(view)));shot('favorite-recipes.png')
+                    view=favorite_recipe(view,False);check('removing_last_favorite_yields_empty_view',view.EntriesLength()==0)
+                    view=tab(0);view=search();view=favorite_recipe(view,True)
+                    view=tab(2);check('favoriting_does_not_create_recent_work',view.EntriesLength()==0)
+                    view=tab(0)
                 view=search();e=select_recipe(view)
                 check('native_requirements_duration_and_available_recipe',not e.Reason() and e.ExpectedMoves()>0 and b'cotton' in e.Requirements().lower())
                 shot('recipe-details.png')
                 start();choose(approve=False)
                 check('declined_confirm_has_no_craft_activity',int(latest()['crafting_token'])==0)
+                if args.recipe_shortcuts:
+                    view=open_crafting();view=tab(2);check('declined_craft_never_enters_recent',view.EntriesLength()==0);tap('Escape');wait(lambda r:int(r['crafting_form'])==0)
                 view=open_crafting();view=search();select_recipe(view);start();choose(approve=True)
                 wait(lambda r:int(r['crafting_token'])==0,timeout=20)
                 check('first_native_craft_completes',True)
-                view=open_crafting();view=search();view=set_batch(2);e=select_recipe(view)
+                view=open_crafting()
+                if args.recipe_shortcuts:
+                    view=tab(2);check('started_craft_enters_native_recent_without_search',any(e.RecipeId()==b'bandages_makeshift' and e.RecentRank()==1 for e in entries(view)));shot('recent-recipes.png');view=tab(0)
+                view=search();view=set_batch(2);e=select_recipe(view)
                 check('batch_query_updates_native_duration',view.Batch()==2 and e.ExpectedMoves()>=3200)
                 start();choose(approve=True)
                 if not args.action_driven:
@@ -371,6 +402,10 @@ def main():
     else:
         check('completed_work_removes_native_craft_item',activity['type']=='ACT_NULL' and not crafts)
     check('canonical_crafting_save_has_no_luanti_inventory',not any('luanti' in key.lower() for key in native['player']))
+    if args.recipe_shortcuts:
+        state=json.loads((user/'save/audit_fixture/uistate.json').read_text())
+        check('native_uistate_persists_favorite_recipe','bandages_makeshift' in state['favorite_recipes'])
+        check('native_uistate_has_unique_native_recency',state['recent_recipes'][-1]=='bandages_makeshift' and state['recent_recipes'].count('bandages_makeshift')==1 and len(state['recent_recipes'])<=20)
     (out/'summary.json').write_text(json.dumps(dict(checks=checks,native_save=str(output)),indent=2)+'\n')
 
 

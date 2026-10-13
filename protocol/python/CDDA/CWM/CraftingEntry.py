@@ -87,8 +87,22 @@ class CraftingEntry(object):
             return self._tab.Get(flatbuffers.number_types.Int32Flags, o + self._tab.Pos)
         return 0
 
+    # CraftingEntry
+    def Favorite(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(22))
+        if o != 0:
+            return bool(self._tab.Get(flatbuffers.number_types.BoolFlags, o + self._tab.Pos))
+        return False
+
+    # CraftingEntry
+    def RecentRank(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(24))
+        if o != 0:
+            return self._tab.Get(flatbuffers.number_types.Uint8Flags, o + self._tab.Pos)
+        return 0
+
 def CraftingEntryStart(builder):
-    builder.StartObject(9)
+    builder.StartObject(11)
 
 def Start(builder):
     CraftingEntryStart(builder)
@@ -146,6 +160,18 @@ def CraftingEntryAddProgress(builder, progress):
 
 def AddProgress(builder, progress):
     CraftingEntryAddProgress(builder, progress)
+
+def CraftingEntryAddFavorite(builder, favorite):
+    builder.PrependBoolSlot(9, favorite, 0)
+
+def AddFavorite(builder, favorite):
+    CraftingEntryAddFavorite(builder, favorite)
+
+def CraftingEntryAddRecentRank(builder, recentRank):
+    builder.PrependUint8Slot(10, recentRank, 0)
+
+def AddRecentRank(builder, recentRank):
+    CraftingEntryAddRecentRank(builder, recentRank)
 
 def CraftingEntryEnd(builder):
     return builder.EndObject()

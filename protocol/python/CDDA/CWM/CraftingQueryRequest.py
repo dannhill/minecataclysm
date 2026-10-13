@@ -45,8 +45,15 @@ class CraftingQueryRequest(object):
             return self._tab.Get(flatbuffers.number_types.Uint32Flags, o + self._tab.Pos)
         return 1
 
+    # CraftingQueryRequest
+    def Filter(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(10))
+        if o != 0:
+            return self._tab.Get(flatbuffers.number_types.Uint8Flags, o + self._tab.Pos)
+        return 0
+
 def CraftingQueryRequestStart(builder):
-    builder.StartObject(3)
+    builder.StartObject(4)
 
 def Start(builder):
     CraftingQueryRequestStart(builder)
@@ -68,6 +75,12 @@ def CraftingQueryRequestAddBatch(builder, batch):
 
 def AddBatch(builder, batch):
     CraftingQueryRequestAddBatch(builder, batch)
+
+def CraftingQueryRequestAddFilter(builder, filter):
+    builder.PrependUint8Slot(3, filter, 0)
+
+def AddFilter(builder, filter):
+    CraftingQueryRequestAddFilter(builder, filter)
 
 def CraftingQueryRequestEnd(builder):
     return builder.EndObject()
