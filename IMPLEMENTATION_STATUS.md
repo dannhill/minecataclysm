@@ -1,6 +1,41 @@
 # Implementation status
 
-Current scoped delivery: **UX-04B structured medical selection and manual feedback**,
+Current scoped delivery: **UX-05 native recipe shortcuts**, CWM **2.22**,
+installed in ordinary `start.sh`, with paired rollback runtimes retained.
+K has All/Favorites/Recent/Unfinished; opening prioritizes reachable unfinished
+work, known recent recipes, known favorites, then All. Native filtering precedes
+the 256-row limit, and search/batches stay in scope. Recipe favorites are native
+UI metadata, distinct from protected component items; setting them keeps K open,
+without moves, activity, clock/RNG change or artificial recency. Present knowledge,
+view identity and expected state are revalidated, with at-most-once settlement.
+
+Favorites and unique last-20 started recipes use canonical world `uistate.json`,
+shared by its characters; no new character-save schema or client persistence.
+Recent means started, not completed. English-safe native continuation checks
+remaining requirements, preserving prior components and progress. Frequent,
+subrecipes, liquid/gas/byproduct results and practice remain separate.
+[Design](docs/design/recipe-shortcuts.md),
+[delivery and evidence](docs/fixes/recipe-shortcuts.md).
+
+Scoped verification: **181 native cases / 186,030 assertions**; **309 client
+cases / 47 modules**, plus **648 Catch assertions / 4 cases**; **11 protocol tests**.
+Actual renderer: **42 reconstructed + 42 installed + 14 reload checks**, all PASS,
+with isolated saves and independent pinned native reader. Builds are incremental,
+not cold clean builds. Empty-variant selection avoids meaningless RNG draws;
+this intentionally changes subsequent random-stream order. Favorite knowledge
+uses real native sources without generating water/pseudo-tools. The favorite RNG
+invariant does not certify every legacy material-cache preview.
+
+Backlog **24 PENDING + 1 manual FAIL**: four new recipe checks plus twenty previous;
+manual PASS retained and LANG-01.2 FAIL awaits the user's recheck. No user testing
+required today, and automation never implies personal acceptance.
+[Deferred checklist](docs/validation/pending-manual.md).
+Mapping remains through Sol batch60 (2,400 records / 972 supported visuals / 146
+textures); unchanged in this delivery. Next: focused core consolidation and
+rig/UV/animation/audio presentation debt. New spatial-control prototypes still
+need the user's playable comparison. Full SAVE-001 OPEN; historical M5.5 FAILED.
+
+Previous scoped delivery: **UX-04B structured medical selection and manual feedback**,
 CWM **2.21**, installed in ordinary `start.sh`, paired rollback runtimes retained.
 Item-first native treatment selection now exports observable body identities,
 health resolution and known treatment descriptions. Anatomical armour proxies,
@@ -26,7 +61,7 @@ and local water_clean override retained. No Mineclonia gameplay imported.
 [mapping](docs/fixes/item-mapping-2026-10-13.md),
 [backlog](docs/validation/pending-manual.md).
 
-Next essential slice: **UX-05 recent/favorite recipes**. Body-first H → filtered
+At UX-04B delivery, the next slice was UX-05 (now delivered above). Body-first H → filtered
 medical items, refined anatomical art, live language change and first-person aim
 pose/zoom remain follow-ups. RMB release already ends the gesture; earned native
 precision is not reset. Movement retains native accuracy costs. Full SAVE-001

@@ -1,0 +1,212 @@
+{
+  "date": "2026-10-14",
+  "status": "Scoped automated PASS; manual acceptance remains separate",
+  "scope": "UX-05 native recipe favorites, started recency, unfinished filter and remaining-requirement resume",
+  "protocol": "2.22",
+  "source_commit": "909f253288f32461032182ac060734486b857ff5",
+  "build_source": {
+    "native": "133358ebfba23869bc95e97cb5c197380d14cf08",
+    "client": "2f77fd746b838e3542c7e93185ad9311f9fd936f",
+    "protocol": "d2c0dd58fd927b8780f0e841f3cbf612ece6519a"
+  },
+  "post_build_changes": "Subsequent root changes are documentation only. Client production sources remained unchanged after its build; native sources were rebuilt after real-only discovery and removal of temporary RNG tracing.",
+  "captured_sources": {
+    "cdda": {
+      "url": "https://github.com/CleverRaven/Cataclysm-DDA.git",
+      "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+      "shallow": true,
+      "patch": "baseline/patches/cdda.patch",
+      "patch_sha256": "e54b87fd7613b610375015551ac59fc5a128d83ba6776e532a0a4b882be79ea9",
+      "tree_inventory": "baseline/trees/cdda.json",
+      "tree_sha256": "30a1020595f65a1b33798e4fbb0d622692e30c10481e17b501fa7ca57cc899fb",
+      "file_count": 8587,
+      "original_status": " M src/CMakeLists.txt\n M src/avatar.cpp\n M src/avatar_action.cpp\n M src/avatar_action.h\n M src/character.cpp\n M src/character_body.cpp\n M src/character_inventory.cpp\n M src/craft_command.cpp\n M src/craft_command.h\n M src/crafting.cpp\n M src/crafting.h\n M src/do_turn.cpp\n M src/do_turn.h\n M src/game.cpp\n M src/game.h\n M src/handle_action.cpp\n M src/iexamine.cpp\n M src/inventory.cpp\n M src/inventory.h\n M src/item.cpp\n M src/iuse_actor.cpp\n M src/melee.cpp\n M src/output.cpp\n M src/pickup.cpp\n M src/ranged.cpp\n M src/ranged.h\n M src/recipe.cpp\n M src/recipe.h\n M src/translations.cpp\n M src/ui.cpp\n M src/vehicle_use.cpp\n M src/vpart_position.h\n M tests/CMakeLists.txt\n M tests/test_main.cpp\n?? src/cwm/cwm_crafting.h\n?? src/cwm/cwm_hotbar.h\n?? src/cwm/cwm_inventory.h\n?? src/cwm/cwm_main.cpp\n?? src/cwm/cwm_map_exporter.cpp\n?? src/cwm/cwm_map_exporter.h\n?? src/cwm/cwm_ranged.h\n?? src/cwm/cwm_server.cpp\n?? src/cwm/cwm_server.h\n?? src/cwm/cwm_status_gauges.h\n?? src/cwm_motion.cpp\n?? src/cwm_motion.h\n?? src/safe_mode_actions.h\n?? tests/cwm_pickup_test.cpp\n?? tests/cwm_projection_test.cpp\n?? tests/cwm_runtime_test.cpp\n"
+    },
+    "luanti": {
+      "url": "https://github.com/luanti-org/luanti.git",
+      "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
+      "shallow": true,
+      "patch": "baseline/patches/luanti.patch",
+      "patch_sha256": "1812d40737d5dfbd1020ca7927a0bbd4e6c65fd35a18f43a99aa37dce26272f9",
+      "tree_inventory": "baseline/trees/luanti.json",
+      "tree_sha256": "b3d47e232bb14c0b8876bd3aa25a8497b7b65f0545d5bcb71eeac6cb5839ee2a",
+      "file_count": 2263,
+      "original_status": " M builtin/mainmenu/settings/dlg_settings.lua\n M builtin/settingtypes.txt\n M src/CMakeLists.txt\n M src/client/CMakeLists.txt\n M src/client/client.cpp\n M src/client/clientenvironment.cpp\n M src/client/game.cpp\n M src/client/hud.cpp\n M src/client/inputhandler.cpp\n M src/client/keys.h\n M src/client/mesh_generator_thread.cpp\n M src/client/mesh_generator_thread.h\n M src/defaultsettings.cpp\n M src/gui/guiFormSpecMenu.cpp\n M src/gui/guiFormSpecMenu.h\n M src/gui/guiScene.cpp\n M src/network/clientpackethandler.cpp\n M src/server/player_sao.cpp\n M src/unittest/test_mapblock.cpp\n?? src/cdda/aim_input.h\n?? src/cdda/avatar_status.h\n?? src/cdda/cdda_bridge.cpp\n?? src/cdda/cdda_bridge.h\n?? src/cdda/crafting_inventory.h\n?? src/cdda/decision_dialog.h\n?? src/cdda/decision_input.h\n?? src/cdda/decision_text.h\n?? src/cdda/equipment_inventory.h\n?? src/cdda/ground_item_formspec.h\n?? src/cdda/ground_item_projection.h\n?? src/cdda/ground_item_visual.h\n?? src/cdda/posture_input.h\n?? src/cdda/quickbar.h\n"
+    },
+    "mineclonia": {
+      "url": "https://github.com/mark-wiemer/mineclonia.git",
+      "commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+      "shallow": true,
+      "patch": "baseline/patches/mineclonia.patch",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree_inventory": "baseline/trees/mineclonia.json",
+      "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36",
+      "file_count": 9359,
+      "original_status": ""
+    }
+  },
+  "installed_runtime": {
+    "cdda/build/src/cdda-server": {
+      "sha256": "dfde85fb7f71d9ca845f4f917a3996e022d5593c799c0ad76e69bc98326247ee",
+      "previous_sha256": "2951032f1e35199adad6b1d571c032775f0a30e8c762202bca5b66780e1d0ac7",
+      "rollback": "artifacts/recipes-20261014/cdda-previous-runtime",
+      "built_from": "artifacts/fnd03-session/workspace/cdda/build/src/cdda-server"
+    },
+    "luanti/bin/luanti": {
+      "sha256": "71b2f0cb13ea4b1a7cb2d4a52c6a668a18538f5e08ae2d224798e398c5012d79",
+      "previous_sha256": "9bb36a7514506c58d7dbfc1795f527bcdaef46053dcca484a945830b37e3a2bb",
+      "rollback": "artifacts/recipes-20261014/luanti-previous-runtime",
+      "built_from": "artifacts/language-20261011/workspace/luanti/bin/luanti"
+    }
+  },
+  "environment": {
+    "kernel": "Linux-7.0.11-76070011-generic-x86_64-with-glibc2.35",
+    "native_build_type": "Release, LOCALIZE=ON",
+    "compiler": "c++ (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0",
+    "renderer": "Actual Luanti on isolated Xvfb 1280x800x24,96DPI; Mesa software GL; xdotool input; transparent Unix relay",
+    "build_mode": "Incremental reconstructed workspace refresh, build caches retained; not a cold clean build"
+  },
+  "tests": {
+    "native": {
+      "cases": 181,
+      "assertions": 186030,
+      "filter": "[cwm],[pickup],[item],[reload]",
+      "seed": 42,
+      "log": "artifacts/recipes-20261014/native-tests-v3.log"
+    },
+    "client": {
+      "tests": 309,
+      "modules": 47,
+      "catch_assertions": 648,
+      "catch_cases": 4,
+      "log": "artifacts/recipes-20261014/client-tests.log"
+    },
+    "protocol": {
+      "tests": 11,
+      "log": "artifacts/recipes-20261014/protocol-tests.log"
+    },
+    "actual_gui": {
+      "recipes-reconstructed": {
+        "checks": 42,
+        "summary": "artifacts/aim-20261012/recipes-reconstructed/summary.json",
+        "sha256": "a3df49b25d60c7a04c42a10b39f474405fed25b8a5a3d2aaab287e0df905b6b2"
+      },
+      "recipes-installed": {
+        "checks": 42,
+        "summary": "artifacts/aim-20261012/recipes-installed/summary.json",
+        "sha256": "61080125293b8f88b72568f9231e88766f4a60c024638cea2f5a4e6ae7a0d7ca"
+      },
+      "recipes-installed-reload": {
+        "checks": 14,
+        "summary": "artifacts/aim-20261012/recipes-installed-reload/summary.json",
+        "sha256": "abe6d94a39a931649a264076cb2d5c40890dd63f392331f81397c26594494b07"
+      }
+    }
+  },
+  "save_oracle": {
+    "path": "artifacts/inventory-feedback-20261009/native-save-reader",
+    "sha256": "d65889a6cf0c36db31d493bba915a89bc7424d60f0ddb9800992fd0d4f39958a",
+    "source": "Pinned CDDA core without integration production changes; isolated native fixture/save"
+  },
+  "backlog": {
+    "pending": 24,
+    "manual_fail": 1,
+    "added": 4,
+    "report": "docs/validation/pending-manual.md",
+    "fail_scope": "LANG-01.2 remains manual FAIL until user rechecks; existing manual PASS retained"
+  },
+  "limits": [
+    "Recent native history records starts, not completions; Frequent is deferred",
+    "Native world UI state is shared among its characters",
+    "RNG invariance is verified for the favorite metadata path, not all legacy material-cache previews",
+    "Removing meaningless empty-variant draws intentionally changes subsequent native random-stream order",
+    "Byproducts, liquid/gas result handling, practice and subrecipe navigation remain separate",
+    "Full SAVE-001 remains OPEN; historical M5.5 remains FAILED"
+  ],
+  "retained_failures": {
+    "native-tests.log": "Favorite RNG and partial JSON read exposed; genuine invariant retained",
+    "native-tests-v2.log": "Empty-variant fast path alone did not eliminate generated-water item seeds",
+    "native-rng-trace.log": "Refresh refused dirty documentation; subsequent old-binary execution is not final-source evidence",
+    "native-rng-trace-v2.log": "Corrected trace points to generated water; tracing removed before final build",
+    "client-build.log": "Translation/string-type mismatch, corrected and rebuilt"
+  },
+  "preliminary_gui_not_final_native_evidence": [
+    "artifacts/aim-20261012/recipes-preview/summary.json",
+    "artifacts/aim-20261012/recipes-preview-reload/summary.json"
+  ],
+  "commands": [
+    "python3 tools/takeover_baseline.py capture; commit captured source before refresh",
+    "python3 tools/refresh_verification_workspace.py --workspace artifacts/fnd03-session/workspace --receipt artifacts/recipes-20261014/native-refresh-real-sources.json",
+    "cmake --build artifacts/fnd03-session/workspace/cdda/build --target cdda-server cata_test -j3",
+    "(cd artifacts/fnd03-session/workspace/cdda && build/tests/cata_test \"[cwm],[pickup],[item],[reload]\" --rng-seed42 --user-dir=/home/dannhill/Projects/cdda-mineclonia/artifacts/recipes-20261014/native-test-user-v3)",
+    "cmake --build artifacts/language-20261011/workspace/luanti/build --target luanti -j3",
+    "artifacts/language-20261011/workspace/luanti/bin/luanti --run-unittests --config /home/dannhill/Projects/cdda-mineclonia/artifacts/recipes-20261014/unit.conf --logfile /home/dannhill/Projects/cdda-mineclonia/artifacts/recipes-20261014/unit-engine.log",
+    "ctest --test-dir artifacts/language-20261011/workspace/build/protocol --output-on-failure",
+    "python3 artifacts/aim-20261012/run-gui.py crafting_gui_test.py artifacts/native-crafting-20261008/fixture/user recipes-reconstructed --recipe-shortcuts",
+    "CWM_TEST_INSTALLED=1 python3 artifacts/aim-20261012/run-gui.py crafting_gui_test.py artifacts/native-crafting-20261008/fixture/user recipes-installed --recipe-shortcuts",
+    "CWM_TEST_INSTALLED=1 python3 artifacts/aim-20261012/run-gui.py crafting_gui_test.py artifacts/aim-20261012/recipes-installed/user recipes-installed-reload --recipe-shortcuts --resume-only",
+    "python3 tools/takeover_baseline.py check"
+  ],
+  "artifact_sha256": {
+    "artifacts/recipes-20261014/baseline-check.log": "e6b9d36dd49e4e43f39c46e669c43295a8505bfcdfb95ba6f3bccbc88b3d8a84",
+    "artifacts/recipes-20261014/capture-client-types.log": "5811c03cece477d5a7de21be5a26ca36d3f5ec6f9892c0d0951e2adcf139fefc",
+    "artifacts/recipes-20261014/capture-defaults.log": "2e139124c4624d94fd9fb18eeb5b8a5e1bfd8f482bbad86e1fb84c8c92f29505",
+    "artifacts/recipes-20261014/capture-diagnostic.log": "9841e7055ff5c646950ab10046fa5f16408e91b5f2322ea4c0696e4df13660d5",
+    "artifacts/recipes-20261014/capture-noop-rng.log": "621e2bf90bc3ee7479bf29e19636ec93c9993bd0931175c48fafacfbbf68ce65",
+    "artifacts/recipes-20261014/capture-real-sources.log": "d55bb55225aef58453c251820cf0243e7a7f262bc1af0a8a8b73de425951252e",
+    "artifacts/recipes-20261014/capture-rng-trace.log": "e47d2cd514a7a31d1f6ca24192ddaa8c606814fec21a79bc2c98ac160cc31611",
+    "artifacts/recipes-20261014/capture-v2.log": "080ccb5f22c21e9230f15b5c92f130abcdeb540d9331e734eeb8e563dc5ac08b",
+    "artifacts/recipes-20261014/capture.log": "bf85d2c23a1539b79b6c21581112ad79b1eb715d82f0f68934f4c3fafee64652",
+    "artifacts/recipes-20261014/client-build-v2.log": "56dde4299ffcbe1622fdb8c98020c4778353eea81726ae69842c7e6532c0498d",
+    "artifacts/recipes-20261014/client-build.log": "4ee5c7e0accdef5ed7026ac5415bd1f78ade30d7c831fa191f3c44704cff1a79",
+    "artifacts/recipes-20261014/client-refresh-defaults.json": "75c0d1f2d14e17f8d1ed31c67668b08ff05ea8f61c7dcae4090249284e34f9b6",
+    "artifacts/recipes-20261014/client-refresh-defaults.log": "731d695f93b86573ae03c48162f2066aa2676cae3c34ca1d424f9c625c912f31",
+    "artifacts/recipes-20261014/client-refresh-final.json": "1f656867f43cb36779dbac3c1b0b51313dc55433a4d8366ea660c047f698a1c2",
+    "artifacts/recipes-20261014/client-refresh-final.log": "dfce975b2b369c6bb3ccef0ee5c6afdcf28532105e3231ae25ac36e27ebd9788",
+    "artifacts/recipes-20261014/client-refresh-types.json": "c5e2dbcf6cc245f0d16c6859a71667075ab54cb5e24c38300ce361d4ad3f303b",
+    "artifacts/recipes-20261014/client-refresh-types.log": "1f4f8eac7ed68e741e94fbc8d926fa0f7d299ffd2ff83d47f351c0c5b01cb7e6",
+    "artifacts/recipes-20261014/client-refresh-v2.json": "6577ac3009d9956b12deaaed3459779afdf171a1a71a8089772aeccb5302f7c4",
+    "artifacts/recipes-20261014/client-refresh-v2.log": "278785abd0e49bc8397a23f4a905439bc99a70b8e96880579a13b94eb192d00b",
+    "artifacts/recipes-20261014/client-refresh.json": "2296194da40780779af7ef8fb8c0e78950bf35d09a3b1725940191a615efa69b",
+    "artifacts/recipes-20261014/client-refresh.log": "abf23f5e030711cf986132d9eac6b82b871764d72d2e3a535e38b48a4d4a55d3",
+    "artifacts/recipes-20261014/client-tests.log": "bd2d9fc6201f0340dc4f34dabeee1d55dfbaa6d802f81d5c554c8fceeb0f8b24",
+    "artifacts/recipes-20261014/gui-installed-reload.log": "5cd2e8309bc9b6afaf74c44457ce94a6472a4e77c7ae2d157f81047ce2dae97c",
+    "artifacts/recipes-20261014/gui-installed.log": "419c11de1d7d2f23c89d65baa1ac709d95889319f5edf91f310992006c11b85c",
+    "artifacts/recipes-20261014/gui-native-runtime.json": "391b07d229f060e20c4e8ef452716161aae0f93b178c0808e7390028966e5ffc",
+    "artifacts/recipes-20261014/gui-preview-reload.log": "5cd2e8309bc9b6afaf74c44457ce94a6472a4e77c7ae2d157f81047ce2dae97c",
+    "artifacts/recipes-20261014/gui-preview.log": "419c11de1d7d2f23c89d65baa1ac709d95889319f5edf91f310992006c11b85c",
+    "artifacts/recipes-20261014/gui-reconstructed.log": "419c11de1d7d2f23c89d65baa1ac709d95889319f5edf91f310992006c11b85c",
+    "artifacts/recipes-20261014/install.json": "5eea463fa6f39cda6733eb9049fb659e75e5294613fb3d41682bd6ba07887ac0",
+    "artifacts/recipes-20261014/native-build-diagnostic.log": "34b2ae2f8a24f6bc626cb25a21555517df90f8054b685586856b09f346092ff1",
+    "artifacts/recipes-20261014/native-build-noop-rng.log": "52a5bdbffee6b5b014d4b795db58d2d23390b855c8e87474b9ded996ad21ccf8",
+    "artifacts/recipes-20261014/native-build-real-sources.log": "29f41973b59aeaf5e38d75bc6f4bb8fc7f3148952e09397a607393bc30fea336",
+    "artifacts/recipes-20261014/native-build-rng-trace-v2.log": "97cd7a5f30224af7a3eb078115d68d8fefe5c93d7c9a165f3c9b1eeb1c55fe2f",
+    "artifacts/recipes-20261014/native-build-rng-trace.log": "2281560c078c8329d6e7ebf3de67ad8b196976944d6a5f724899a050c8c1348e",
+    "artifacts/recipes-20261014/native-build.log": "fcfda01bcde3aa0b76e71049c89b236fb911338af766be9f2b678b29cf229f50",
+    "artifacts/recipes-20261014/native-diagnostic.log": "f3385872674b7656820e0112afca81f8593f985cb76136fc6df2502dd728c1b4",
+    "artifacts/recipes-20261014/native-refresh-defaults.json": "75c0d1f2d14e17f8d1ed31c67668b08ff05ea8f61c7dcae4090249284e34f9b6",
+    "artifacts/recipes-20261014/native-refresh-defaults.log": "731d695f93b86573ae03c48162f2066aa2676cae3c34ca1d424f9c625c912f31",
+    "artifacts/recipes-20261014/native-refresh-diagnostic.json": "08b41e778c98936d2efaa1ebaa820db6063a952eb40e472fad1c444133499570",
+    "artifacts/recipes-20261014/native-refresh-diagnostic.log": "88c00433a710eacc4e34bd80885742085630d7e6235497e690ed8e43f0699274",
+    "artifacts/recipes-20261014/native-refresh-noop-rng.json": "48799c5dcf79536511d6902fcce80c804b574cd2dcfdcfa23c46b0bbac4e293d",
+    "artifacts/recipes-20261014/native-refresh-noop-rng.log": "e2fc2964815295a784f2696b0eee7be71e1c3a99a5a6d75473f5e9a1344d8487",
+    "artifacts/recipes-20261014/native-refresh-real-sources.json": "88bf4fbfbedc0570c0ad984eb35db21d96290fe70af9a0815611daa75acb9e3f",
+    "artifacts/recipes-20261014/native-refresh-real-sources.log": "ba2109fe24adb6ba0d9b0b000953f14c8a078535669a2a602cc8772a20f7adc6",
+    "artifacts/recipes-20261014/native-refresh-rng-trace-v2.json": "25503e669d4c1f2e8b77f00d938d3bae7348c493d1672f9cbc4c82460dcda994",
+    "artifacts/recipes-20261014/native-refresh-rng-trace-v2.log": "d9559de7a1860efc1aa0d6ec86aa5cbfa8498d2afc574c128eff372dc3d85399",
+    "artifacts/recipes-20261014/native-refresh-rng-trace.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "artifacts/recipes-20261014/native-refresh-v2.json": "6577ac3009d9956b12deaaed3459779afdf171a1a71a8089772aeccb5302f7c4",
+    "artifacts/recipes-20261014/native-refresh-v2.log": "278785abd0e49bc8397a23f4a905439bc99a70b8e96880579a13b94eb192d00b",
+    "artifacts/recipes-20261014/native-refresh.json": "2296194da40780779af7ef8fb8c0e78950bf35d09a3b1725940191a615efa69b",
+    "artifacts/recipes-20261014/native-refresh.log": "abf23f5e030711cf986132d9eac6b82b871764d72d2e3a535e38b48a4d4a55d3",
+    "artifacts/recipes-20261014/native-rng-trace-v2.log": "c98441cb748d36568adc47eed4d1fdb1ae7cc88be6636de8eb53b950a6694325",
+    "artifacts/recipes-20261014/native-rng-trace.log": "5974541fbf0c8ec0e9d957b66ceb82ad0ecdda9c3445719ea5b9acbf8ae2189c",
+    "artifacts/recipes-20261014/native-tests-v2.log": "788e5dd5774647e91fbbd7205cec567797e60818bc5eec8bf8a0f35931d81e14",
+    "artifacts/recipes-20261014/native-tests-v3.log": "1fef6aec1e7f3d290c65ad254398b9c638b3451e35026d1113a2704421a2059b",
+    "artifacts/recipes-20261014/native-tests.log": "c3e7901e424be41556da9e0e19d282be4a24d955519d057d8ba745b27d586b05",
+    "artifacts/recipes-20261014/protocol-build.log": "82f1e384f83a74b548b0dc8b1c4b7108cf3aeb3c89fa2307a8be6e5847daf427",
+    "artifacts/recipes-20261014/protocol-tests.log": "70c6adbd59d2c47544be18274503654b9bfb29e469cfd01a3ff44aa9bce10492",
+    "artifacts/recipes-20261014/unit-engine.log": "22a55f6cffdce91f6f292af6c52ffe05d522ff91f6bca8214b7cef41117ba232",
+    "artifacts/recipes-20261014/unit.conf": "221da54cb5ce79e13061f6cb7fc84d8995187526e27e39bc7c348cc7ae0efeaa"
+  }
+}
