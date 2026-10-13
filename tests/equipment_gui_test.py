@@ -227,6 +227,7 @@ def main():
                 return str(len(options))
             def open_inventory():
                 if int(latest()['equipment_form']) == 1 and int(latest()['inventory_view']) > 0:
+                    time.sleep(.4); xdo('windowactivate','--sync',window)
                     return views()[-1]
                 tap('i')
                 wait(lambda r: int(r['equipment_form']) == 1 and int(r['inventory_view']) > 0)
@@ -276,7 +277,8 @@ def main():
                 wait(lambda r: int(r['equipment_form']) == 0 or
                      (int(r['native_work_settled']) == 1 and int(r['pending_move']) == 0))
             def finish_action():
-                wait(lambda r: int(r['pending_move']) == 0 and int(r['pause_reasons']) == 0)
+                wait(lambda r: int(r['pending_move']) == 0 and (int(r['pause_reasons']) == 0 or
+                     (int(r['equipment_form']) == 1 and int(r['native_work_settled']) == 1)))
             def item(v, name):
                 return next(e for e in entries(v) if e.TypeId().decode() == name)
             if args.language_smoke:
