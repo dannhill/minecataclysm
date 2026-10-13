@@ -4898,7 +4898,7 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..511ad5d
+index 0000000..60cb537
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
 @@ -0,0 +1,1900 @@
@@ -6799,7 +6799,7 @@ index 0000000..511ad5d
 +    auto* history=CDDA::CWM::GetCwmMessage(bytes.data())->payload_as_CraftingView();REQUIRE(cdda::cwm::valid_crafting(history));REQUIRE(history->entries()->size()==2);
 +    CHECK(history->entries()->Get(0)->recipe_id()->str()==target->ident().str());CHECK(history->entries()->Get(0)->recent_rank()==1);CHECK(history->entries()->Get(1)->recent_rank()==2);
 +    CHECK(uistate.recent_recipes==original);CHECK_FALSE(u.activity);
-+    std::ostringstream json;JsonOut out(json);uistate.serialize(out);auto saved=JsonValue::from_string(json.str()).get_object();
++    std::ostringstream json;JsonOut out(json);uistate.serialize(out);auto saved=json_loader::from_string(json.str()).get_object();
 +    CHECK(saved.get_array("favorite_recipes").get_string(0)==target->ident().str());CHECK(saved.get_array("recent_recipes").size()==2);
 +}
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
