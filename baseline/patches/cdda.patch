@@ -5108,10 +5108,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..c8d3259
+index 0000000..27ea42c
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,1959 @@
+@@ -0,0 +1,1963 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "move_mode.h"
@@ -7053,7 +7053,10 @@ index 0000000..c8d3259
 +TEST_CASE("cwm_continuous_opening_cannot_close_through_fractional_body", "[cwm][continuous]") {
 +    external_fixture();auto& u=get_avatar();auto& m=get_map();const auto target=u.pos()+tripoint_east;
 +    m.ter_set(target,ter_str_id("t_door_o"));
-+    cwm::CwmServer server("/unused-body-door");cwm::CwmServerTestAccess::ready(server);server.enable_continuous();
++    const std::string socket="/tmp/cwm-body-door-"+std::to_string(getpid())+".sock";
++    cwm::CwmServer server(socket);REQUIRE(server.start());
++    auto peer=cdda::cwm::IpcClient::connect_unix(socket);REQUIRE(peer);REQUIRE(cwm::CwmServerTestAccess::accept_peer(server));
++    cwm::CwmServerTestAccess::ready(server);server.enable_continuous();
 +    auto state=cwm_motion::load(u,m);state.x=.4;state.y=0;cwm_motion::store(u,m,state);u.moves=1000;
 +    SECTION("rejected before admission") {
 +        cwm::CwmServerTestAccess::opening(server,target,true);CHECK_FALSE(server.has_queued_action());
@@ -7064,9 +7067,10 @@ index 0000000..c8d3259
 +    }
 +    CHECK(m.ter(target)==ter_str_id("t_door_o"));CHECK(u.moves==1000);
 +    REQUIRE(cwm_motion::advance(u,m,-1,0,.1).distance>0); // Can retreat with the open panel beside the body.
-+    state.x=0;cwm_motion::store(u,m,state);
++    state.x=0;cwm_motion::store(u,m,state);cwm::CwmServerTestAccess::ready(server);
 +    cwm::CwmServerTestAccess::opening(server,target,true,2);REQUIRE(server.has_queued_action());
 +    cwm::CwmServerTestAccess::execute(server);CHECK(m.ter(target)==ter_str_id("t_door_c"));
++    cwm::CwmServerTestAccess::complete(server);cwm::CwmServerTestAccess::ready(server);
 +    cwm::CwmServerTestAccess::opening(server,target,false,3);REQUIRE(server.has_queued_action());
 +    cwm::CwmServerTestAccess::execute(server);CHECK(m.ter(target)==ter_str_id("t_door_o"));
 +    REQUIRE(cwm_motion::advance(u,m,1,0,.1).distance>0);

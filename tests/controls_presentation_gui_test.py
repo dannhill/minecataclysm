@@ -260,6 +260,7 @@ def main():
                 xdo('click','3')
                 wait(lambda r: accepted_action(2) and int(r['pending_move']) == 0)
                 check('plain_rmb_closes_authoritatively_open_window',True)
+                time.sleep(.25)  # Respect the existing native-input debounce before the next click.
                 if not args.toggle_controls:
                     wait(lambda r: int(r['player_state_flags']) & mask == 0 and int(r['pending_move']) == 0)
                     xdo('click','3')
