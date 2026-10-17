@@ -366,7 +366,6 @@ def main():
     for uid in ['external-ground-pack','external-nested-rock','external-owned-bottle','external-owned-bat','external-sealed-rock']:
         check('canonical_identity_once_'+uid,sum(i.get('item_vars',{}).get('uid')==uid for i in owned+ground)==1)
     if args.feedback:
-        ground_tile=next(t for t in native['ground_items'] if isinstance(t,dict) and 'position' in t) if False else None
         check('canonical_external_drag_conserves_total_charges',sum(i.get('charges',0) for i in ground if i['typeid']=='9mm')==28)
     check('canonical_owned_ammo_twenty_two' ,sum(i.get('charges',0) for i in owned if i['typeid']=='9mm')==22)
     pack=next(i for i in ground if i.get('item_vars',{}).get('uid')=='external-ground-pack')
