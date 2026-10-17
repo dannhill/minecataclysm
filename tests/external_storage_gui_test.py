@@ -292,7 +292,7 @@ def main():
                     rock=find(view,'rock',False);select_item(rock,view);drag(rock,view,(-1,4));view=finish()
                     check('owned_outside_drag_drops_without_depositing_in_storage',not any(e.TypeId().decode()=='rock' for e in entries(view)))
                     tap('Escape');wait(lambda r:int(r['equipment_form'])==0)
-                    turn(0,-88);wait(lambda r:int(r['ground_hover'])==1 and int(r['ground_target_items'])==1)
+                    turn(0,-88);wait(lambda r:int(r['ground_hover'])==1 and int(r['ground_hover_items'])==1)
                     tap('F7');wait(lambda r:int(r['pause_reasons'])==1)
                     xdo('click','3');time.sleep(.6)
                     check('paused_loose_pickup_is_rejected_without_queue',int(latest()['queued_pickup'])==0 and int(latest()['pending_move'])==0 and int(latest()['ground_target_items'])==1)
