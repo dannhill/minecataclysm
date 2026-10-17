@@ -27,6 +27,7 @@ def main():
         parser.add_argument('--' + name, type=Path, required=True)
     parser.add_argument('--action-driven', action='store_true', help='Verify ordinary start.sh mode without the real-time scheduler')
     parser.add_argument('--resume-only', action='store_true')
+    parser.add_argument('--feedback', action='store_true')
     parser.add_argument('--automatic-return', action='store_true', help='Verify UX-02 returns to the transfer panel')
     parser.add_argument('--save-active', action='store_true')
     args = parser.parse_args()
@@ -252,7 +253,7 @@ def main():
                 return views()[-1]
             if args.resume_only:
                 check('reloaded_external_menu_keeps_owned_twenty_two_rounds',sum(e.Charges() for e in entries(view) if not e.External() and e.TypeId().decode()=='9mm')==22)
-                check('reloaded_external_menu_keeps_twenty_eight_rounds_outside',sum(e.Charges() for e in entries(view) if e.External() and e.TypeId().decode()=='9mm')==28)
+                check('reloaded_external_menu_keeps_twenty_eight_rounds_outside',sum(e.Charges() for e in entries(view) if e.External() and e.TypeId().decode()=='9mm')==(23 if args.feedback else 28))
                 pack=find(view,'backpack_hiking',True)
                 check('reloaded_external_backpack_retains_two_nested_rounds',find(view,'9mm',True,pack.Id()).Charges()==2)
                 check('reloaded_nested_rock_stays_owned',bool(find(view,'rock',False)))
@@ -279,6 +280,31 @@ def main():
                 bat=find(view,'bat',False);bottle=find(view,'bottle_plastic',False);select_item(bat,view);drag(bat,view,point(bottle,view));view=finish()
                 check('native_capacity_rejection_reopens_without_losing_bat',bool(find(view,'bat',False)) and int(latest()['external_form'])==1)
                 shot('capacity-error.png')
+                if args.feedback:
+                    def shift_move(e,v):
+                        sent=int(latest()['transfers_sent']);mouse(*point(e,v));xdo('keydown','Shift_L');time.sleep(.08)
+                        xdo('click','1');xdo('keyup','Shift_L');wait(lambda r:int(r['transfers_sent'])==sent+1)
+                        return finish()
+                    ammo=find(view,'9mm',True,0);select_item(ammo,view);amount(4);view=shift_move(ammo,view)
+                    check('shift_click_collects_selected_quantity',sum(e.Charges() for e in entries(view) if not e.External() and e.TypeId().decode()=='9mm')==26)
+                    ammo=find(view,'9mm',False);select_item(ammo,view);amount(4);view=shift_move(ammo,view)
+                    check('shift_click_deposits_to_opposite_pane',find(view,'9mm',True,0).Charges()==26)
+                    rock=find(view,'rock',False);select_item(rock,view);drag(rock,view,(-1,4));view=finish()
+                    check('owned_outside_drag_drops_without_depositing_in_storage',not any(e.TypeId().decode()=='rock' for e in entries(view)))
+                    tap('Escape');wait(lambda r:int(r['equipment_form'])==0)
+                    turn(0,88);wait(lambda r:int(r['ground_hover'])==1 and int(r['ground_target_items'])==1)
+                    tap('F7');wait(lambda r:int(r['pause_reasons'])==1)
+                    xdo('click','3');time.sleep(.6)
+                    check('paused_loose_pickup_is_rejected_without_queue',int(latest()['queued_pickup'])==0 and int(latest()['pending_move'])==0 and int(latest()['ground_target_items'])==1)
+                    tap('F7');wait(lambda r:int(r['pause_reasons'])==0);time.sleep(.8)
+                    check('unpause_does_not_collect_previous_loose_click',int(latest()['ground_target_items'])==1 and int(latest()['queued_pickup'])==0)
+                    xdo('click','3');wait(lambda r:int(r['ground_target_items'])==0 and int(r['pending_move'])==0)
+                    check('fresh_unpaused_click_collects_loose_item',True)
+                    turn(-90,-8);wait(lambda r:int(r['ground_hover'])==1);xdo('click','3')
+                    wait(lambda r:int(r['equipment_form'])==1 and int(r['inventory_view'])>0);view=views()[-1];time.sleep(.5)
+                    ammo=find(view,'9mm',True,0);select_item(ammo,view);amount(5);drag(ammo,view,(-1,4));view=finish()
+                    check('external_outside_drop_keeps_unmoved_twenty_one',find(view,'9mm',True,0).Charges()==21)
+                    shot('outside-drag-ground-drop.png')
                 tap('Escape');wait(lambda r:int(r['equipment_form'])==0)
                 tap('F7');wait(lambda r:int(r['pause_reasons'])==1)
                 xdo('click','3');wait(lambda r:int(r['equipment_form'])==1 and int(r['inventory_view'])>0);view=views()[-1]
@@ -339,7 +365,10 @@ def main():
     check('canonical_total_ammo_conserved',sum(i.get('charges',0) for i in owned+ground if i['typeid']=='9mm')==50)
     for uid in ['external-ground-pack','external-nested-rock','external-owned-bottle','external-owned-bat','external-sealed-rock']:
         check('canonical_identity_once_'+uid,sum(i.get('item_vars',{}).get('uid')==uid for i in owned+ground)==1)
-    check('canonical_owned_ammo_twenty_two',sum(i.get('charges',0) for i in owned if i['typeid']=='9mm')==22)
+    if args.feedback:
+        ground_tile=next(t for t in native['ground_items'] if isinstance(t,dict) and 'position' in t) if False else None
+        check('canonical_external_drag_conserves_total_charges',sum(i.get('charges',0) for i in ground if i['typeid']=='9mm')==28)
+    check('canonical_owned_ammo_twenty_two' ,sum(i.get('charges',0) for i in owned if i['typeid']=='9mm')==22)
     pack=next(i for i in ground if i.get('item_vars',{}).get('uid')=='external-ground-pack')
     check('canonical_external_pack_keeps_two_rounds',sum(i.get('charges',0) for i in items(pack) if i['typeid']=='9mm')==2)
     check('canonical_nested_rock_is_owned',any(i.get('item_vars',{}).get('uid')=='external-nested-rock' for i in owned))

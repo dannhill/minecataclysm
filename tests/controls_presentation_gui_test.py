@@ -257,12 +257,9 @@ def main():
                 wait(lambda r: accepted_action(1) and int(r['pending_move']) == 0)
                 check('pointed_window_open_native_ack',True)
                 time.sleep(.25)  # Existing interaction debounce is 200 ms.
-                # One physical chord, with no waiting for a posture roundtrip.
-                xdo('keydown','--delay','0','Shift_L','mousedown','3')
-                time.sleep(.15)
-                xdo('mouseup','3','keyup','Shift_L')
+                xdo('click','3')
                 wait(lambda r: accepted_action(2) and int(r['pending_move']) == 0)
-                check('simultaneous_shift_close_keeps_context_action_priority',True)
+                check('plain_rmb_closes_authoritatively_open_window',True)
                 if not args.toggle_controls:
                     wait(lambda r: int(r['player_state_flags']) & mask == 0 and int(r['pending_move']) == 0)
                     xdo('click','3')

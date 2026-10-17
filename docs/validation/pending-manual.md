@@ -1,8 +1,11 @@
 # Validazioni manuali del playable core
 
-Stato corrente dopo UX-05 (2026-10-14): **24 PENDING + 1 FAIL manuale**.
-Quattro nuove prove riguardano le scorciatoie di crafting; le 20 precedenti
-e il FAIL lingua da ricontrollare restano invariati, senza obblighi oggi.
+Stato corrente dopo il riscontro del 2026-10-18: **21 PENDING + 2 FAIL manuali**.
+AIM 1–3 PASS; EXT 1–3 PASS, EXT4 FAIL soltanto per raccolta differita in pausa.
+Cinque nuovi PASS; sei punti escono dai PENDING (uno diventa FAIL); tre nuove
+prove dei gesti sono rinviabili. Il FAIL lingua resta conservato.
+[Riscontro completo](../source/manual-interaction-feedback-2026-10-18.md).
+I contatori e i paragrafi dei riscontri precedenti sotto sono storici.
 Acquisiti **12 nuovi PASS**: UI/mapping 4, hotbar 4, mano/contenitori 2,
 lingua 1 e mira 1. I 13 punti non provati rimangono; aggiunte 3 prove mirate
 ai commenti e 4 alla scheda medica. LANG-01 punto 2 conserva il FAIL finché
@@ -563,7 +566,7 @@ non attestano la tua accettazione della leggibilità e del menu.
    viene cambiato in italiano, ma poi nel menu a tendina se ripremo sulla freccetta
    e seleziono inglese non me lo cambia e se riavvio il gioco rimane in italiano)
 
-## AIM-01 — Mira con destro mantenuto — 1 PASS; 2–3 PENDING (2026-10-13)
+## AIM-01 — Mira con destro mantenuto — VALIDATA: 1–3 PASS (2026-10-18)
 
 Non serve fare queste prove oggi. [Regole e priorità](../design/held-mouse-aim.md).
 La demo isolata è `./ranged-demo.sh --fresh`; il comportamento è disponibile
@@ -596,7 +599,7 @@ prima di riprendere da una pausa di minaccia. F resta una scorciatoia alternativ
    Il controllo automatico include reconnect; non devi interrompere IPC a mano.
 
 
-## EXT-01 — Contenitori esterni e raccolta parziale — PENDING (4), rinviabili
+## EXT-01 — Contenitori esterni e raccolta parziale — 1–3 PASS, 4 FAIL (2026-10-18)
 
 Prova isolata: `./storage-demo.sh --fresh`. Le partite normali aperte con
 `./start.sh` ricevono la stessa interazione. Senza `--fresh` la demo riapre
@@ -725,3 +728,29 @@ Disponibile nel normale `./start.sh`; scena isolata `./crafting-demo.sh --fresh`
 
 Le vecchie validazioni restano accettate. Un playtest mirato del core è consigliato
 al consolidamento delle interfacce, ma queste prove possono ancora essere rinviate.
+
+## INT-01 — Gesti richiesti il 2026-10-18 — PENDING (3), rinviabili
+
+1. **Porte e finestre:** RMB apre quelle chiuse e chiude quelle aperte, senza
+   Shift; tieni il clic: un solo cambio. Prova anche accovacciato. Avvicinati
+   molto all’anta/varco e apri: devi poter arretrare e passare. Una chiusura che
+   investirebbe il corpo deve essere rifiutata chiedendo di allontanarti.
+   La compenetrazione riferita durante apertura resta da ricontrollare nella
+   struttura originale: la guardia automatica prova il caso di chiusura sul corpo.
+2. **Shift-clic:** in `./storage-demo.sh --fresh`, Shift-clic sull’oggetto esterno
+   raccoglie; su quello tuo deposita nel mobile, pagando il costo CDDA. Quantità
+   selezionata rispettata, altrimenti pila intera. Nella vista dei contenitori
+   posseduti scegli prima la destinazione a destra, poi Shift-clic a sinistra;
+   senza destinazione appare un messaggio. Tasca piena/sigilli restano vincolanti.
+3. **Rilascio fuori dalla finestra:** trascina un oggetto vero da I/trasferimenti,
+   anche dalla hotbar o dal pannello esterno, oltre il bordo della finestra:
+   viene depositato a terra ai tuoi piedi, con costo/quantità nativi. Contenuti
+   esterni parziali lasciano il resto nella sorgente. Esc durante il drag annulla;
+   rilasciare sullo sfondo dentro il menu non deposita. In pausa nessun deposito
+   né raccolta deve partire dopo la ripresa. Worn/liquidi/proprietà/sigilli
+   conservano i rifiuti nativi, senza togliere vestiti o rubare implicitamente.
+
+**EXT4 — FAIL conservato:** in pausa F7, RMB su un oggetto sfuso o un gesto
+nel contenitore non deve creare raccolta differita. Riprendi e attendi senza
+cliccare: l’oggetto resta dov’è. Soltanto un nuovo clic avvia la raccolta.
+Questo ricontrollo completa il punto EXT4, senza duplicarlo nei contatori.

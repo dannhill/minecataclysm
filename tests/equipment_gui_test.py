@@ -393,8 +393,8 @@ def main():
                     drag(cell(rock),cell(bat),cancel=True)
                     check('escape_cancels_drag_without_closing_or_mutating',latest()['inventory_view']==old and int(latest()['equipment_form'])==1 and int(latest()['pending_move'])==0)
                     sent=latest()['transfers_sent'];equipped=latest()['equipment_sent']
-                    drag(cell(rock),(-.5,-.5))
-                    check('outside_release_cancels_without_ground_drop',latest()['inventory_view']==old and latest()['transfers_sent']==sent and latest()['equipment_sent']==equipped and latest()['simulation_time']==paused)
+                    drag(cell(rock),(-.5,-.5),cancel=True)
+                    check('escape_cancels_outside_drag_without_ground_drop',latest()['inventory_view']==old and latest()['transfers_sent']==sent and latest()['equipment_sent']==equipped and latest()['simulation_time']==paused)
                     old_view=latest()['inventory_view']; layout_start=len(rows())
                     drag(cell(rock),cell(bat),screenshot='drag-ghost-and-target.png')
                     wait(lambda r:int(r['pending_move'])==0 and int(r['inventory_view'])>0 and r['inventory_view']!=old_view)
