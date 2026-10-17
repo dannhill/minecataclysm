@@ -10,6 +10,23 @@ un panorama più ampio; nebbia, memoria distante e rilievo restano da scegliere.
 Lo [stato implementato](IMPLEMENTATION_STATUS.md) e le evidenze restano separati
 dagli obiettivi. La roadmap originale M0–M9 conserva i propri significati.
 
+## INT-01 — Riscontro manuale e gesti — 2026-10-18
+
+[Riscontro](docs/source/manual-interaction-feedback-2026-10-18.md): AIM1–3 PASS;
+EXT1–3 PASS, EXT4 FAIL solo per raccolta differita dalla pausa. Cinque nuovi PASS.
+Priorità a rifiuto/scarto della raccolta in pausa, RMB toggle porte/finestre,
+Shift-clic verso altro pannello/destinazione scelta e rilascio esterno = terra.
+Gesti reali producono azioni native con quantità/costi/accesso; split parziale
+esterno conserva resto e identità rapida. Chiusura sul corpo continuo rifiutata
+all’ammissione e all’esecuzione; il caso riportato durante apertura della
+struttura originale resta un ricontrollo personale, non una riproduzione certa.
+[Design](docs/design/interaction-feedback.md), CWM2.23. Backlog **21 PENDING +
+2 FAIL manuali** (lingua ed EXT4): tre nuove prove dei gesti, senza obbligo oggi.
+Rilascio mira/azzeramento precisione ancora da decidere: nessuna modifica a
+recoil o costo; la presentazione futura di arma abbassata può essere distinta.
+Dopo questi fix riprende consolidamento core/rig/UV/animazioni/audio; gate
+storici e salvataggi personali restano separati.
+
 ## Riscontro del playable core — 2026-10-08
 
 Tutte le prove manuali raccolta/corpo/melee/posture sono PASS. Il

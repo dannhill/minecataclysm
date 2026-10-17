@@ -568,6 +568,9 @@ non attestano la tua accettazione della leggibilità e del menu.
 
 ## AIM-01 — Mira con destro mantenuto — VALIDATA: 1–3 PASS (2026-10-18)
 
+Questa checklist conserva il binding della versione accettata. Il nuovo RMB
+per aprire e chiudere è nel ricontrollo INT-01 sotto e sostituisce Shift+RMB.
+
 Non serve fare queste prove oggi. [Regole e priorità](../design/held-mouse-aim.md).
 La demo isolata è `./ranged-demo.sh --fresh`; il comportamento è disponibile
 anche da `./start.sh` con un'arma da fuoco realmente impugnata. Rilascia i tasti

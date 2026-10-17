@@ -55,8 +55,9 @@ Il reader nativo indipendente e il reload reale verificano la continuità.
 - Clic breve seleziona/apre dettagli; movimento oltre una soglia avvia il
   drag. Icona al cursore e evidenziazione della destinazione valida/invalida,
   con motivo testuale quando disponibile. Decorazioni non intercettano clic.
-- Rilascio su zona senza azione, fuori dal menu o Esc durante drag annulla
-  il gesto. Nessun deposito accidentale trascinando fuori dalla finestra.
+- Aggiornamento autorizzato 2026-10-18: fuori dal menu richiede deposito a terra
+  tramite azione nativa; sfondo interno ed Esc durante drag annullano.
+  [Gesti correnti e vincoli](interaction-feedback.md).
 - Per pile: trascinamento normale dell'intera quantità disponibile;
   selezione esplicita della quantità parziale prima dell'invio, riusando la
   funzione nativa già presente. Conservare accesso a quantità precisa senza

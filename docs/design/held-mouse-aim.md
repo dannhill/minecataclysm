@@ -13,7 +13,8 @@ start an aim gesture, but no AIM is sent until an eligible creature is pointed.
 Neutral creatures never become hostile targets through this input.
 
 Without that pointed ranged target, a nearby projected door/window or reachable
-ground stack wins. RMB opens/collects; Shift+RMB closes a pointed opening.
+ground stack wins. RMB toggles a pointed opening from its last authoritative state or collects.
+Shift is posture only (2026-10-18 feedback); native validation still owns the change.
 The opening cache uses CWM material and stable scene coordinates, including
 pane/sill and negative Z floors. It is eligibility for input routing only;
 CDDA revalidates range/state and pays the actual action. Ordinary wall/floor
@@ -55,10 +56,12 @@ RMB/F and marks the held aim intent; recoil remains the native number.
 Tests must exercise actual renderer input and native command outcomes/costs,
 not just the gesture classifier. Include shoot while holding RMB, resume after
 shot, release, menu/pause/reconnect, neutral/empty reticle and reload; regress
-Shift+RMB window closure and pickup. Canonical save readback is scoped evidence,
+plain RMB closure, crouched interactions and pickup. Canonical save readback is scoped evidence,
 not full SAVE-001. The usual manual backlog retains prior untested features.
 
 Separate later work: free reticle, neutral targeting confirmation, bows,
 mounted/vehicle weapons, ballistic feedback, real wielded models/animations,
 audio, richer dialogs. External containers remain the next essential inventory
 extension; this input slice does not require pending DND/language manual PASS.
+
+Current interaction update and manual acceptance: [INT-01](interaction-feedback.md).
