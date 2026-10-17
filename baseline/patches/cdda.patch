@@ -30,16 +30,15 @@ index 6d5d148..4181ad1 100644
  
  if (MINGW AND NOT RELEASE)
 diff --git a/src/activity_actor.cpp b/src/activity_actor.cpp
-index cd1b709..7b48abd 100644
+index cd1b709..339624b 100644
 --- a/src/activity_actor.cpp
 +++ b/src/activity_actor.cpp
-@@ -3912,9 +3912,11 @@ static std::list<item> obtain_activity_items( std::vector<drop_or_stash_item_inf
+@@ -3912,9 +3912,10 @@ static std::list<item> obtain_activity_items( std::vector<drop_or_stash_item_inf
              loc.where_recursive() == item_location::type::vehicle ) {
              item copy( *loc );
              if( loc->count_by_charges() && loc->count() > it->count() ) {
 -                copy.charges -= it->count();
-+                copy.charges = it->count();
-+                loc->charges -= it->count();
++                copy = loc->split( it->count() );
 +            } else {
 +                loc.remove_item();
              }
@@ -5109,10 +5108,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..d3f8121
+index 0000000..c8d3259
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,1957 @@
+@@ -0,0 +1,1959 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "move_mode.h"
@@ -7039,14 +7038,16 @@ index 0000000..d3f8121
 +        item_location parent(map_cursor(pos),&bag);
 +        source=item_location(parent,bag.all_items_top().front());
 +    }
-+    REQUIRE(source);cwm::CwmServer server("/unused-external-ground-drop");cwm::CwmServerTestAccess::ready(server);
++    REQUIRE(source);source->set_var("cwm_quick_identity",std::string(32,'a'));
++    cwm::CwmServer server("/unused-external-ground-drop");cwm::CwmServerTestAccess::ready(server);
 +    const auto view=cwm::CwmServerTestAccess::external_inventory(server,m.getabs(pos));
 +    const auto id=cwm::CwmServerTestAccess::item_id(server,*source);REQUIRE(id);u.moves=1000;
 +    cwm::CwmServerTestAccess::transfer(server,view,id,7,0,0);REQUIRE(server.has_queued_action());
 +    REQUIRE(cwm::CwmServerTestAccess::execute(server));REQUIRE(u.activity.id()==activity_id("ACT_DROP"));
 +    process_activity(u);CHECK_FALSE(u.activity);CHECK(u.moves<1000);REQUIRE(source);CHECK(source->charges==23);
 +    int dropped=0;for(const auto& it:m.i_at(u.pos()))if(it.typeId()==itype_id("9mm"))dropped+=it.charges;
-+    CHECK(dropped==7);
++    CHECK(dropped==7);CHECK(source->get_var("cwm_quick_identity")==std::string(32,'a'));
++    for(const auto& it:m.i_at(u.pos()))if(it.typeId()==itype_id("9mm"))CHECK(it.get_var("cwm_quick_identity").empty());
 +    cwm::CwmServerTestAccess::transfer(server,view,id,7,0,0);CHECK_FALSE(server.has_queued_action());
 +}
 +TEST_CASE("cwm_continuous_opening_cannot_close_through_fractional_body", "[cwm][continuous]") {

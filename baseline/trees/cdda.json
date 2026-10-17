@@ -36452,7 +36452,7 @@
   {
     "path": "src/activity_actor.cpp",
     "mode": "100644",
-    "sha256": "22a7cce4e716fc9fb16ac56ebb75a81a99b4d148350f96af81f992694d5568e4"
+    "sha256": "7b5c385915694a940e5c99820947d2a75f5534349b70e37e3cf1eed1f1c254bf"
   },
   {
     "path": "src/activity_actor.h",
@@ -40897,7 +40897,7 @@
   {
     "path": "tests/cwm_pickup_test.cpp",
     "mode": "100644",
-    "sha256": "eb7496403069e8cb6745b07ee0de56ccfd9a7119fb5d883a2ce8bc4112811db5"
+    "sha256": "efe3687b0dd0dd7d13e22e376f8bca994ac36f1e55214fb2cd2d7d41f49e8b83"
   },
   {
     "path": "tests/cwm_projection_test.cpp",
