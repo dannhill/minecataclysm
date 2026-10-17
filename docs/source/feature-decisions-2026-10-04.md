@@ -154,6 +154,12 @@ Non modifica le scelte di autorità, percezione o tempo sopra.
 
 ## Sorgenti esaminate
 
+Integrazione 2026-10-18: l'utente sceglie esplicitamente di conservare la
+semantica atomica nativa per il singolo capo indossato/tolto. L'indicatore
+mostra tempo addebitato, non una vestizione annullabile; I deve sospendere il
+tempo residuo. Le vere attività conservano l'interruzione nativa.
+[Decisione e riscontro](manual-validation-followup-2026-10-18.md).
+
 CDDA: `do_turn`, `calendar`, `avatar_action`, `game`, `creature`, tasche e item
 location, corpo/vestiti/iuse, crafting/attività, ranged/melee, sounds/overmap,
 monster/monmove/monexamine/mattack, npctalk/npctrade/faction_camp, construction/

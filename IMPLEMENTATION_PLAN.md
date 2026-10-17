@@ -10,6 +10,25 @@ un panorama più ampio; nebbia, memoria distante e rilievo restano da scegliere.
 Lo [stato implementato](IMPLEMENTATION_STATUS.md) e le evidenze restano separati
 dagli obiettivi. La roadmap originale M0–M9 conserva i propri significati.
 
+## Indossa/Togli — semantica nativa e pausa — 2026-10-18
+
+L'utente sceglie esplicitamente la [soluzione fedele al codice nativo](docs/source/manual-validation-followup-2026-10-18.md):
+il singolo capo cambia immediatamente e addebita mosse; non si introduce una
+vestizione parziale annullabile. Distinguere il tempo CDDA residuo dal progresso
+di un actor: secondi di gioco e stato applicato per il primo, barra/Interrompi
+solo per vere attività. I deve mettere in pausa anche durante la risposta in
+volo; consultazione aggiornata dopo l'esito e chiusura riprendono lo stesso costo.
+Errori restano errori, senza dichiarare applicato un cambio rifiutato.
+[Design](docs/design/native-equipment-time.md).
+
+Il nuovo riscontro aggiunge 13 PASS personali e lascia **9 PENDING + 1 FAIL**:
+ricontrollo pausa Indossa/Togli. La richiesta di annullamento del singolo capo
+è superata dalla decisione nativa, senza cancellare il FAIL sulla pausa.
+UX-05 2–4, gesti INT-01 1–3 ed eccezioni UX-02 restano pendenti. Il commento
+sulla raccolta diretta degli oggetti sfusi è un seguito UX separato; poi
+consolidamento core e debito rig/UV/animazioni/audio. Nessun gate personale oggi.
+I conteggi nelle sezioni delle precedenti consegne sotto sono storici.
+
 ## INT-01 — Riscontro manuale e gesti — 2026-10-18
 
 [Riscontro](docs/source/manual-interaction-feedback-2026-10-18.md): AIM1–3 PASS;

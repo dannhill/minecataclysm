@@ -25,7 +25,10 @@ CDDA retains its existing fallback policy.
 Native inventory work retains its paid-completion gate. The temporary panel
 shows operation/item, native progress only when available, and clearly labels
 I as inspect/pause. Closing inspection resumes work; Interrupt cancels through
-the native actor. Returning inventory reports that native work ended, without
+the native actor. This applies to actual activities; the later
+[native equipment decision](native-equipment-time.md) distinguishes atomic
+wear/takeoff and their remaining time debit, with no fractional progress or
+Interrupt button. Returning inventory reports that native work ended, without
 claiming a successful item move or heal from an initial ACK. Capacity/rule
 rejections remain visible in the inventory.
 
