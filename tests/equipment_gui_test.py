@@ -534,7 +534,9 @@ def main():
                     paid_states=[s for s in snapshots() if s.InventoryWork() and s.InventoryWork().CommandId()==command]
                     check('native_wire_debit_monotonic_'+str(number),all(b.InventoryWork().RemainingTimeMs()<=a.InventoryWork().RemainingTimeMs() for a,b in zip(paid_states,paid_states[1:])) and any(s.InventoryWork().Settled() for s in paid_states))
                 # Leave the same canonical end condition as the standard suite.
-                select_item(item(view,'rock'));action(0);finish_action()
+                select_item(item(view,'rock'));action(0)
+                wait(lambda r:int(r['pending_decision'])>0);tap('1') # Explicit native store of the bat.
+                finish_action()
                 view=open_inventory();check('next_equipment_action_uses_fresh_inventory',item(view,'rock').Wielded())
                 tap('Escape');wait(lambda r:int(r['equipment_form'])==0)
             elif args.sequential:
