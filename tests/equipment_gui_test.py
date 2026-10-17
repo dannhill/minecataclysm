@@ -785,6 +785,9 @@ def main():
     check('canonical_save_has_each_fixture_item_once', uid_counts(native['player']) == uid_counts(before['player']) and len(uid_counts(native['player'])) == (51 if args.presentation_only else 5))
     check('canonical_save_records_expected_weapon', native['player']['weapon']['typeid'] == ('bat' if args.presentation_only or args.language_smoke else 'rock'))
     check('canonical_save_records_backpack_worn', any(i['typeid'] == 'backpack_hiking' for i in native['player']['worn']['worn']))
+    if args.native_equipment_time:
+        check('canonical_clothing_change_not_rolled_back_by_inspection',not any(i['typeid']=='hat_ball' for i in native['player']['worn']['worn']))
+        check('canonical_clothing_operations_pay_native_time',native['time']>before['time'])
     if args.presentation_only or args.language_smoke:
         check('readonly_inventory_preserves_canonical_items',native['player']['worn']==before['player']['worn'] and native['player']['weapon']==before['player']['weapon'])
     if args.language_smoke:
