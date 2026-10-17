@@ -29,6 +29,24 @@ index 6d5d148..4181ad1 100644
  endif ()
  
  if (MINGW AND NOT RELEASE)
+diff --git a/src/activity_actor.cpp b/src/activity_actor.cpp
+index cd1b709..7b48abd 100644
+--- a/src/activity_actor.cpp
++++ b/src/activity_actor.cpp
+@@ -3912,9 +3912,11 @@ static std::list<item> obtain_activity_items( std::vector<drop_or_stash_item_inf
+             loc.where_recursive() == item_location::type::vehicle ) {
+             item copy( *loc );
+             if( loc->count_by_charges() && loc->count() > it->count() ) {
+-                copy.charges -= it->count();
++                copy.charges = it->count();
++                loc->charges -= it->count();
++            } else {
++                loc.remove_item();
+             }
+-            loc.remove_item();
+             res.push_back( copy );
+         } else if( who.is_worn( *loc ) ) {
+             who.takeoff( loc, &res );
 diff --git a/src/avatar.cpp b/src/avatar.cpp
 index 83ae79c..99e0e65 100644
 --- a/src/avatar.cpp
@@ -1923,10 +1941,10 @@ index 0000000..0866007
 +} // namespace cwm
 diff --git a/src/cwm/cwm_inventory.h b/src/cwm/cwm_inventory.h
 new file mode 100644
-index 0000000..4049b36
+index 0000000..fe41b5c
 --- /dev/null
 +++ b/src/cwm/cwm_inventory.h
-@@ -0,0 +1,329 @@
+@@ -0,0 +1,332 @@
 +#pragma once
 +#include "cwm/product_language.hpp"
 +#include <algorithm>
@@ -2136,7 +2154,10 @@ index 0000000..4049b36
 +            if (portion.volume() > m.free_volume(pos)) return "Not enough space in this storage.";
 +            return {};
 +        }
-+        if (action == 0 && external_item(id)) return "Collect the external item first.";
++        if (action == 0 && external_item(id)) {
++            error = validate_external(u); if (!error.empty()) return error;
++            if (!source->is_owned_by(u,true)) return "Collect this item with native pickup before dropping it.";
++        }
 +        if (action == 0) {
 +            if (destination) return ::cwm::tr("Dropping on the ground does not require a container.", "Il deposito a terra non richiede un contenitore.");
 +            if (!get_map().can_put_items(u.pos())) return ::cwm::tr("You cannot drop items here.", "Non puoi depositare oggetti qui.");
@@ -3534,10 +3555,10 @@ index 0000000..bb65c87
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..717b83a
+index 0000000..9f92ba3
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,1064 @@
+@@ -0,0 +1,1070 @@
 +#include "cwm/product_language.hpp"
 +#include "cwm_motion.h"
 +// CDDA CWM IPC Server Implementation
@@ -4187,6 +4208,10 @@ index 0000000..717b83a
 +                accepted = m.open_door(u, target, !m.is_outside(u.pos()), false);
 +                if (accepted) u.moves -= 100; // native terrain-door OPEN cost
 +            } else if (command.action == int(CDDA::CWM::InteractAction::CLOSE)) {
++                if (continuous_ && cwm_motion::overlaps_tile(u,m,target)) {
++                    result_ = Result{command.id, false, ::cwm::tr("Move away from the opening before closing it.", "Allontanati dal varco prima di chiuderlo.")};
++                    return false;
++                }
 +                doors::close_door(m, u, target);
 +                accepted = u.moves != before_moves;
 +            } else if (command.action == int(CDDA::CWM::InteractAction::PICKUP)) {
@@ -4581,6 +4606,8 @@ index 0000000..717b83a
 +                    if (!m.open_door(u, local, inside, true)) error = "Target cannot be opened";
 +                } else if (command.action == int(CDDA::CWM::InteractAction::CLOSE)) {
 +                    if (!m.close_door(local, inside, true)) error = "Target cannot be closed";
++                    else if (continuous_ && cwm_motion::overlaps_tile(u,m,local))
++                        error = ::cwm::tr("Move away from the opening before closing it.", "Allontanati dal varco prima di chiuderlo.");
 +                } else if (command.action == int(CDDA::CWM::InteractAction::PICKUP)) {
 +                    if (!request->pickup_type_id() || request->pickup_type_id()->str().empty()) {
 +                        error = "Missing pickup item guard";
@@ -4812,10 +4839,10 @@ index 0000000..527a652
 +} // namespace cwm
 diff --git a/src/cwm_motion.cpp b/src/cwm_motion.cpp
 new file mode 100644
-index 0000000..41bd437
+index 0000000..a081e87
 --- /dev/null
 +++ b/src/cwm_motion.cpp
-@@ -0,0 +1,205 @@
+@@ -0,0 +1,214 @@
 +#include "cwm_motion.h"
 +
 +#include <algorithm>
@@ -4897,6 +4924,15 @@ index 0000000..41bd437
 +void recenter( avatar &u, const map &m )
 +{
 +    auto state = load( u, m ); state.x = state.y = 0; store( u, m, state );
++}
++bool overlaps_tile( const avatar &u, const map &m, const tripoint &p )
++{
++    if( p.z != u.posz() ) return false;
++    const State state = load( u, m );
++    const auto delta = p - u.pos();
++    const double near_x = std::clamp( state.x, delta.x - .5, delta.x + .5 );
++    const double near_y = std::clamp( state.y, delta.y - .5, delta.y + .5 );
++    return std::hypot( state.x - near_x, state.y - near_y ) < radius - 1e-8;
 +}
 +Step advance( avatar &u, map &m, double x, double y, double seconds )
 +{
@@ -5023,10 +5059,10 @@ index 0000000..41bd437
 +}
 diff --git a/src/cwm_motion.h b/src/cwm_motion.h
 new file mode 100644
-index 0000000..b7b1dc6
+index 0000000..1672957
 --- /dev/null
 +++ b/src/cwm_motion.h
-@@ -0,0 +1,26 @@
+@@ -0,0 +1,28 @@
 +// Native continuous avatar motion. No presentation-engine types or physics.
 +#pragma once
 +#include "point.h"
@@ -5041,6 +5077,8 @@ index 0000000..b7b1dc6
 +State load( const avatar &u, const map &m );
 +void store( avatar &u, const map &m, State state );
 +void recenter( avatar &u, const map &m );
++// Continuous body overlap, using the same radius as native collision.
++bool overlaps_tile( const avatar &u, const map &m, const tripoint &p );
 +// These scopes affect only ordinary walking/swimming debit, never attacks,
 +// opening doors, restraints or vertical traversal.
 +bool prepaid_crossing();
@@ -5071,10 +5109,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..ee1e3a9
+index 0000000..d3f8121
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,1905 @@
+@@ -0,0 +1,1957 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "move_mode.h"
@@ -5124,6 +5162,12 @@ index 0000000..ee1e3a9
 +                           CDDA::CWM::InteractAction::PICKUP, index, selected.typeId().str(),
 +                           selected.charges, selected.count_by_charges() );
 +        server.handle_client_message( bytes.data(), bytes.size(), get_avatar(), get_map(), *g );
++    }
++    static void opening(CwmServer& server,const tripoint& target,bool close,uint64_t id=1) {
++        cdda::cwm::MessageBuilder wire(server.received_sequence_+1,1,server.identity_);
++        auto bytes=wire.build_interact_request(id,target.x,target.y,target.z,
++            close?CDDA::CWM::InteractAction::CLOSE:CDDA::CWM::InteractAction::OPEN);
++        server.handle_client_message(bytes.data(),bytes.size(),get_avatar(),get_map(),*g);
 +    }
 +    static void attack( CwmServer &server, uint64_t target, uint64_t id = 1 ) {
 +        cdda::cwm::MessageBuilder wire( server.received_sequence_ + 1, 1, server.identity_ );
@@ -6886,7 +6930,7 @@ index 0000000..ee1e3a9
 +    SECTION("sealed after admission"){mutation=4;}
 +    SECTION("zero quantity"){quantity=0;queued=false;}
 +    SECTION("too many charges"){quantity=31;queued=false;}
-+    SECTION("external source cannot use ordinary drop"){action=0;queued=false;}
++    SECTION("external drop still requires a valid storage handle"){action=0;mutation=2;}
 +    cwm::CwmServerTestAccess::transfer(server,view,id,quantity,0,action);REQUIRE(server.has_queued_action()==queued);
 +    if(queued){if(mutation==1)++ammo.charges;if(mutation==2)m.furn_set(pos,furn_id("f_counter"));if(mutation==3)u.setpos(u.pos()+tripoint_south);if(mutation==4)m.furn_set(pos,furn_id("f_crate_c"));
 +        CHECK_FALSE(cwm::CwmServerTestAccess::execute(server));CHECK_FALSE(cwm::CwmServerTestAccess::accepted(server));}
@@ -6979,6 +7023,52 @@ index 0000000..ee1e3a9
 +    CHECK(uistate.recent_recipes==original);CHECK_FALSE(u.activity);
 +    std::ostringstream json;JsonOut out(json);uistate.serialize(out);auto saved=json_loader::from_string(json.str()).get_object();saved.allow_omitted_members();
 +    CHECK(saved.get_array("favorite_recipes").get_string(0)==target->ident().str());CHECK(saved.get_array("recent_recipes").size()==2);
++}
++
++TEST_CASE("cwm_external_ground_drop_keeps_partial_charges_and_native_cost", "[cwm][external][transfer]") {
++    external_fixture();auto& u=get_avatar();auto& m=get_map();const auto pos=u.pos()+tripoint_east;
++    m.furn_set(pos,furn_id("f_locker"));
++    item_location source;
++    SECTION("loose external stack") {
++        auto& ammo=m.add_item_or_charges(pos,item(itype_id("9mm"),calendar::turn,30));
++        source=item_location(map_cursor(pos),&ammo);
++    }
++    SECTION("nested external stack") {
++        auto& bag=m.add_item_or_charges(pos,item(itype_id("backpack_hiking")));
++        REQUIRE(bag.put_in(item(itype_id("9mm"),calendar::turn,30),pocket_type::CONTAINER).success());
++        item_location parent(map_cursor(pos),&bag);
++        source=item_location(parent,bag.all_items_top().front());
++    }
++    REQUIRE(source);cwm::CwmServer server("/unused-external-ground-drop");cwm::CwmServerTestAccess::ready(server);
++    const auto view=cwm::CwmServerTestAccess::external_inventory(server,m.getabs(pos));
++    const auto id=cwm::CwmServerTestAccess::item_id(server,*source);REQUIRE(id);u.moves=1000;
++    cwm::CwmServerTestAccess::transfer(server,view,id,7,0,0);REQUIRE(server.has_queued_action());
++    REQUIRE(cwm::CwmServerTestAccess::execute(server));REQUIRE(u.activity.id()==activity_id("ACT_DROP"));
++    process_activity(u);CHECK_FALSE(u.activity);CHECK(u.moves<1000);REQUIRE(source);CHECK(source->charges==23);
++    int dropped=0;for(const auto& it:m.i_at(u.pos()))if(it.typeId()==itype_id("9mm"))dropped+=it.charges;
++    CHECK(dropped==7);
++    cwm::CwmServerTestAccess::transfer(server,view,id,7,0,0);CHECK_FALSE(server.has_queued_action());
++}
++TEST_CASE("cwm_continuous_opening_cannot_close_through_fractional_body", "[cwm][continuous]") {
++    external_fixture();auto& u=get_avatar();auto& m=get_map();const auto target=u.pos()+tripoint_east;
++    m.ter_set(target,ter_str_id("t_door_o"));
++    cwm::CwmServer server("/unused-body-door");cwm::CwmServerTestAccess::ready(server);server.enable_continuous();
++    auto state=cwm_motion::load(u,m);state.x=.4;state.y=0;cwm_motion::store(u,m,state);u.moves=1000;
++    SECTION("rejected before admission") {
++        cwm::CwmServerTestAccess::opening(server,target,true);CHECK_FALSE(server.has_queued_action());
++    }
++    SECTION("revalidated before execution") {
++        state.x=0;cwm_motion::store(u,m,state);cwm::CwmServerTestAccess::opening(server,target,true);REQUIRE(server.has_queued_action());
++        state.x=.4;cwm_motion::store(u,m,state);CHECK_FALSE(cwm::CwmServerTestAccess::execute(server));
++    }
++    CHECK(m.ter(target)==ter_str_id("t_door_o"));CHECK(u.moves==1000);
++    REQUIRE(cwm_motion::advance(u,m,-1,0,.1).distance>0); // Can retreat with the open panel beside the body.
++    state.x=0;cwm_motion::store(u,m,state);
++    cwm::CwmServerTestAccess::opening(server,target,true,2);REQUIRE(server.has_queued_action());
++    cwm::CwmServerTestAccess::execute(server);CHECK(m.ter(target)==ter_str_id("t_door_c"));
++    cwm::CwmServerTestAccess::opening(server,target,false,3);REQUIRE(server.has_queued_action());
++    cwm::CwmServerTestAccess::execute(server);CHECK(m.ter(target)==ter_str_id("t_door_o"));
++    REQUIRE(cwm_motion::advance(u,m,1,0,.1).distance>0);
 +}
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644

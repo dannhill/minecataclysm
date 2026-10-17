@@ -240,7 +240,7 @@ index b6ae675..9e33201 100644
  		/*
  			Local player handling
 diff --git a/src/client/game.cpp b/src/client/game.cpp
-index 27b5833..81ee4e9 100644
+index 27b5833..92386ae 100644
 --- a/src/client/game.cpp
 +++ b/src/client/game.cpp
 @@ -8,6 +8,8 @@
@@ -687,7 +687,7 @@ index 27b5833..81ee4e9 100644
 +            device->isWindowActive() && device->isWindowFocused() && !isMenuActive() &&
 +                !guienv->hasFocus(gui_chat_console.get()), fire_pressed, reload_pressed);
 +		if (!bridge.getMetrics().pending_decision && context_pressed) {
-+			if (items_pointed && !isKeyDown(KeyType::SNEAK)) {
++			if (items_pointed) {
 +				const auto form = bridge.activateGroundItems();
 +				if (!form.empty()) {
 +					auto *&formspec = m_game_ui->updateFormspec("CWM_GROUND");
@@ -912,7 +912,7 @@ index 7758c96..f5783bf 100644
  	settings->setDefault("keymap_toggle_update_camera", "KEY_F4");
  #else
 diff --git a/src/gui/guiFormSpecMenu.cpp b/src/gui/guiFormSpecMenu.cpp
-index ed1c300..5fa9007 100644
+index ed1c300..c7aa073 100644
 --- a/src/gui/guiFormSpecMenu.cpp
 +++ b/src/gui/guiFormSpecMenu.cpp
 @@ -1,3 +1,5 @@
@@ -932,7 +932,7 @@ index ed1c300..5fa9007 100644
  	// Set initial focus according to following order of precedence:
  	// 1. first empty editbox
  	// 2. first editbox
-@@ -2922,6 +2928,30 @@ void GUIFormSpecMenu::parseElement(parserData* data, const std::string &element)
+@@ -2922,6 +2928,31 @@ void GUIFormSpecMenu::parseElement(parserData* data, const std::string &element)
  	// They remain here due to bool flags, for now
  	data->type = type;
  
@@ -944,7 +944,8 @@ index ed1c300..5fa9007 100644
 +    if (m_text_dst && m_text_dst->m_formname == "CWM_EQUIPMENT") {
 +        if (type == "cwm_inventory") {
 +            const auto p = split(description, ';');
-+            if (p.size() == 2) {
++            if (p.size() == 2 || p.size() == 3) {
++                m_cwm_quick_transfer = p.size() == 3 && p[2] == "1";
 +                m_cwm_drag_view = strtoull(p[0].c_str(), nullptr, 10);
 +                m_cwm_drag_selected = strtoul(p[1].c_str(), nullptr, 10);
 +            }
@@ -963,11 +964,11 @@ index ed1c300..5fa9007 100644
  	auto it = element_parsers.find(type);
  	if (it != element_parsers.end()) {
  		it->second(this, data, description);
-@@ -2989,6 +3019,11 @@ void GUIFormSpecMenu::regenerateGui(v2u32 screensize)
+@@ -2989,6 +3020,11 @@ void GUIFormSpecMenu::regenerateGui(v2u32 screensize)
  	m_tables.clear();
  	m_checkboxes.clear();
  	m_scrollbars.clear();
-+    m_cwm_drag_zones.clear(); m_cwm_drag_view = 0; m_cwm_drag_selected = 0;
++    m_cwm_drag_zones.clear(); m_cwm_drag_view = 0; m_cwm_drag_selected = 0; m_cwm_quick_transfer = false;
 +    m_cwm_decision=false; m_cwm_decision_waiting=false;
 +    if(!m_text_dst || m_text_dst->m_formname!="CWM_DECISION")m_allowclose=true;
 +    if (m_cwm_drag_source) m_cwm_drag_cancelled = true;
@@ -975,7 +976,7 @@ index ed1c300..5fa9007 100644
  	m_fields.clear();
  	m_tooltips.clear();
  	m_tooltip_rects.clear();
-@@ -3577,6 +3612,7 @@ void GUIFormSpecMenu::drawMenu()
+@@ -3577,6 +3613,7 @@ void GUIFormSpecMenu::drawMenu()
  		Draw dragged item stack
  	*/
  	drawSelectedItem();
@@ -983,7 +984,7 @@ index ed1c300..5fa9007 100644
  
  	skin->setFont(old_font);
  }
-@@ -3900,13 +3936,129 @@ void GUIFormSpecMenu::acceptInput(FormspecQuitMode quitmode)
+@@ -3900,13 +3937,137 @@ void GUIFormSpecMenu::acceptInput(FormspecQuitMode quitmode)
  	}
  }
  
@@ -1013,6 +1014,7 @@ index ed1c300..5fa9007 100644
 +        const auto at = cwmDragZoneAt(point);
 +        if (at && m_cwm_drag_zones[*at].item) {
 +            m_cwm_drag_source = at; m_cwm_drag_start = point;
++            m_cwm_drag_shift = event.MouseInput.Shift;
 +            m_cwm_drag_active = false; Environment->setFocus(this); return true;
 +        }
 +    }
@@ -1028,12 +1030,19 @@ index ed1c300..5fa9007 100644
 +        const auto at = cwmDragZoneAt(point);
 +        const bool dragging = m_cwm_drag_active;
 +        m_cwm_drag_source.reset(); m_cwm_drag_active = false;
++        StringMap fields;
 +        if (!dragging) {
-+            if (at && m_cwm_drag_zones[*at].name == source.name)
-+                m_text_dst->gotText({{source.name, "true"}});
-+        } else if (at && m_cwm_drag_zones[*at].name != source.name) {
-+            StringMap fields{{"drag_from", source.name}, {"drag_to", m_cwm_drag_zones[*at].name},
++            if (at && m_cwm_drag_zones[*at].name == source.name) {
++                if (m_cwm_quick_transfer && m_cwm_drag_shift && source.name.rfind("item_", 0) == 0)
++                    fields = {{"quick_transfer", source.name}, {"drag_view", std::to_string(m_cwm_drag_view)}};
++                else fields = {{source.name, "true"}};
++            }
++        } else if (!AbsoluteRect.isPointInside(point) || (at && m_cwm_drag_zones[*at].name != source.name)) {
++            fields = {{"drag_from", source.name},
++                {"drag_to", !AbsoluteRect.isPointInside(point) ? "drag_ground" : m_cwm_drag_zones[*at].name},
 +                {"drag_view", std::to_string(m_cwm_drag_view)}};
++        }
++        if (!fields.empty()) {
 +            if (source.item == m_cwm_drag_selected)
 +                for (const auto &f : m_fields) if (f.fname == "quantity") {
 +                    auto *e = getElementFromId(f.fid, true);
@@ -1113,7 +1122,7 @@ index ed1c300..5fa9007 100644
  	// The IGUITabControl renders visually using the skin's selected
  	// font, which we override for the duration of form drawing,
  	// but computes tab hotspots based on how it would have rendered
-@@ -3990,6 +4142,15 @@ bool GUIFormSpecMenu::preprocessEvent(const SEvent& event)
+@@ -3990,6 +4151,15 @@ bool GUIFormSpecMenu::preprocessEvent(const SEvent& event)
  
  void GUIFormSpecMenu::tryClose()
  {
@@ -1129,7 +1138,7 @@ index ed1c300..5fa9007 100644
  	if (m_allowclose) {
  		doPause = false;
  		acceptInput(quit_mode_cancel);
-@@ -4001,6 +4162,21 @@ void GUIFormSpecMenu::tryClose()
+@@ -4001,6 +4171,21 @@ void GUIFormSpecMenu::tryClose()
  
  bool GUIFormSpecMenu::OnEvent(const SEvent& event)
  {
@@ -1151,7 +1160,7 @@ index ed1c300..5fa9007 100644
  	if (event.EventType==EET_KEY_INPUT_EVENT) {
  		KeyPress kp(event.KeyInput);
  		if (event.KeyInput.PressedDown && (
-@@ -4757,6 +4933,14 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
+@@ -4757,6 +4942,14 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
  	}
  
  	if (event.EventType == EET_GUI_EVENT) {
@@ -1167,10 +1176,10 @@ index ed1c300..5fa9007 100644
  				&& isVisible()) {
  			// find the element that was clicked
 diff --git a/src/gui/guiFormSpecMenu.h b/src/gui/guiFormSpecMenu.h
-index 5c3fcd8..643bd70 100644
+index 5c3fcd8..4c4ef26 100644
 --- a/src/gui/guiFormSpecMenu.h
 +++ b/src/gui/guiFormSpecMenu.h
-@@ -334,6 +334,21 @@ class GUIFormSpecMenu : public GUIModalMenu
+@@ -334,6 +334,22 @@ class GUIFormSpecMenu : public GUIModalMenu
  	std::unordered_map<std::string, bool> field_enter_after_edit;
  	std::unordered_map<std::string, bool> field_close_on_enter;
  	std::unordered_map<std::string, bool> m_dropdown_index_event;
@@ -1185,6 +1194,7 @@ index 5c3fcd8..643bd70 100644
 +    std::optional<size_t> m_cwm_drag_source;
 +    v2s32 m_cwm_drag_start;
 +    bool m_cwm_drag_active{false}, m_cwm_drag_cancelled{false};
++    bool m_cwm_quick_transfer{false}, m_cwm_drag_shift{false};
 +    bool cwmDragEvent(const SEvent &event);
 +    void drawCwmDrag();
 +    bool cwmDragAllowed(const CwmDragZone &source, const CwmDragZone &target) const;
@@ -1735,10 +1745,10 @@ index 0000000..e1e7236
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..1d58778
+index 0000000..ccf7619
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,2840 @@
+@@ -0,0 +1,2867 @@
 +#include "cwm/product_language.hpp"
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
@@ -1872,7 +1882,7 @@ index 0000000..1d58778
 +    bool origin_valid_{false};
 +    std::map<v3s16, std::vector<MapNode>> projected_blocks_;
 +    std::map<v3s16, CDDA::CWM::CwmBlock> terrain_tiles_;
-+    std::set<v3s16> opening_tiles_;
++    std::map<v3s16, bool> opening_tiles_;
 +    AimInput aim_input_;
 +    GroundItemProjection ground_items_;
 +
@@ -2066,6 +2076,12 @@ index 0000000..1d58778
 +    }
 +
 +    void queue_pickup(const v3s16& pos, const GroundItemView& item) {
++        if ((metrics_.pause_reasons & ~uint32_t(2)) || (sent_menu_pause_ == 1 && !ground_container_open_)) {
++            queued_pickup_.reset();
++            item_hint_ = ::cwm::wide("Resume the game before collecting items.", "Riprendi il gioco prima di raccogliere oggetti.");
++            item_hint_until_ = std::chrono::steady_clock::now() + std::chrono::seconds(4);
++            return;
++        }
 +        const auto native = CddaBridge::luantiToCddaCoord(pos);
 +        queued_pickup_ = QueuedPickup{v3s32(native.X + scene_origin_.X,
 +            native.Y + scene_origin_.Y, native.Z), item};
@@ -2074,6 +2090,9 @@ index 0000000..1d58778
 +    }
 +
 +    void flush_pickup() {
++        if (queued_pickup_ && (metrics_.pause_reasons & ~uint32_t(2))) {
++            cancel_pickup_selection(); return;
++        }
 +        if (!queued_pickup_ || !session_.ready() || !player_ready_ || pending_move_ ||
 +            metrics_.pending_decision || metrics_.pause_reasons || ground_container_open_) return;
 +        const auto selected = *queued_pickup_;
@@ -2395,7 +2414,7 @@ index 0000000..1d58778
 +                         uint8_t light, uint8_t orientation, std::set<v3s16>& modified) {
 +        using namespace cdda::cwm;
 +        if (material == DOOR_CLOSED || material == DOOR_OPEN || material == WINDOW ||
-+            material == WINDOW_OPEN || material == WINDOW_BOARDED) opening_tiles_.insert(base);
++            material == WINDOW_OPEN || material == WINDOW_BOARDED) opening_tiles_[base] = material == DOOR_OPEN || material == WINDOW_OPEN;
 +        else opening_tiles_.erase(base);
 +        if (terrain_demo_) {
 +            if (material == AIR) terrain_tiles_.erase(base);
@@ -3599,7 +3618,11 @@ index 0000000..1d58778
 +}
 +
 +bool CddaBridge::handlePointedOpening(const v3s16& node, bool close) {
++    if (!pimpl_) return false;
 +    const auto tile = luantiToCddaCoord(node);
++    const auto opening = pimpl_->opening_tiles_.find(cddaToLuantiCoord(tile.X, tile.Y, tile.Z));
++    if (opening == pimpl_->opening_tiles_.end()) return false;
++    close = opening->second; // Toggle the last authoritative state; never predict the change.
 +    return handleInteract(tile.X, tile.Y, tile.Z, static_cast<int>(close ?
 +        CDDA::CWM::InteractAction::CLOSE : CDDA::CWM::InteractAction::OPEN));
 +}
@@ -3874,7 +3897,7 @@ index 0000000..1d58778
 +}
 +
 +void CddaBridge::toggleSimulationPause() {
-+    if (pimpl_) pimpl_->inventory_return_requested_ = false;
++    if (pimpl_) { pimpl_->inventory_return_requested_ = false; pimpl_->cancel_pickup_selection(); }
 +    if (pimpl_) pimpl_->send_clock_control(pimpl_->metrics_.pause_reasons & 1 ?
 +        CDDA::CWM::SimulationControl::RESUME : CDDA::CWM::SimulationControl::PAUSE);
 +}
@@ -4024,7 +4047,8 @@ index 0000000..1d58778
 +    return i.equipment_form();
 +}
 +
-+void CddaBridge::equipmentInventoryFields(const std::unordered_map<std::string, std::string>& fields) {
++void CddaBridge::equipmentInventoryFields(const std::unordered_map<std::string, std::string>& submitted) {
++    auto fields = submitted;
 +    if (!pimpl_ || !pimpl_->equipment_open_) return;
 +    auto& i = *pimpl_;
 +    if (fields.count("quit")) {
@@ -4032,6 +4056,19 @@ index 0000000..1d58778
 +        i.equipment_open_ = i.equipment_close_ = i.equipment_dirty_ = false;
 +        i.inventory_query_ = 0; i.equipment_view_ = {};
 +        return;
++    }
++    if (fields.count("quick_transfer")) {
++        const auto key = fields.at("quick_transfer");
++        const EquipmentEntry* source = nullptr;
++        for (const auto& e : i.equipment_view_.entries)
++            if (key == "item_" + std::to_string(e.id)) source = &e;
++        if (!source || (!i.external_anchor_ && (!i.transfer_form_ || !i.transfer_destination_))) {
++            i.equipment_notice_ = ::cwm::text("Select a destination container first.", "Seleziona prima un contenitore di destinazione.");
++            i.equipment_dirty_ = true; return;
++        }
++        fields["drag_from"] = key;
++        fields["drag_to"] = i.external_anchor_ ? (source->external ? "drag_owned" : "drag_external") :
++            "destination_" + std::to_string(i.transfer_destination_);
 +    }
 +    if (fields.count("drag_from") && fields.count("drag_to")) {
 +        i.equipment_dirty_ = true;
@@ -4066,7 +4103,7 @@ index 0000000..1d58778
 +                    for(char c:value) quantity=quantity*10+c-'0'; }
 +            if (quantity<=0 || quantity>(source->counted?source->charges:1)) {i.equipment_notice_=::cwm::text("Invalid quantity.","Quantita non valida.");return;}
 +            if (!source->transfer_reason.empty()) {i.equipment_notice_=source->transfer_reason;return;}
-+            const int action=destination && destination->container ? 1 :
++            const int action=to == "drag_ground" ? 0 : destination && destination->container ? 1 :
 +                to.rfind("drag_owned",0)==0 && source->external ? 2 : to.rfind("drag_external",0)==0 && !source->external ? 3 : -1;
 +            if(action<0) {i.equipment_notice_=::cwm::text("Drag onto a container or the receiving area.","Trascina su un contenitore o sulla zona di destinazione.");return;}
 +            i.queued_transfer_=Impl::QueuedTransfer{i.equipment_view_.view,source->id,destination?destination->id:0,quantity,action};
@@ -5006,7 +5043,7 @@ index 0000000..15c7818
 +} // namespace cdda_client
 diff --git a/src/cdda/equipment_inventory.h b/src/cdda/equipment_inventory.h
 new file mode 100644
-index 0000000..1277f84
+index 0000000..3a5523c
 --- /dev/null
 +++ b/src/cdda/equipment_inventory.h
 @@ -0,0 +1,401 @@
@@ -5175,7 +5212,7 @@ index 0000000..1277f84
 +    f+="label[11.5,0.4;"+::cwm::text("Your inventory","Il tuo inventario")+"]";
 +    f+="button[17.5,0.15;1.8,0.65;refresh;"+::cwm::text("Refresh","Aggiorna")+"]button_exit[19.6,0.15;1.9,0.65;close;"+::cwm::text("Close","Chiudi")+"]set_focus[refresh;false]";
 +    if(!view.view)return f+"label[0.5,2;"+statusEscape(view.error.empty()?::cwm::text("Reading storage...","Lettura contenitore..."):view.error)+"]";
-+    f+="cwm_inventory["+std::to_string(view.view)+";"+std::to_string(selected)+"]";
++    f+="cwm_inventory["+std::to_string(view.view)+";"+std::to_string(selected)+";1]";
 +    std::vector<const EquipmentEntry*> ext,own;
 +    for(const auto& e:view.entries)(e.external?ext:own).push_back(&e);
 +    const auto pane=[&](const auto& items,double x,size_t page,const std::string& prefix,const std::string& destination,const std::string& label) {
@@ -5363,7 +5400,7 @@ index 0000000..1277f84
 +        ("label[0.5,1.2;" + ::cwm::text("Item to move", "Oggetto da spostare") + "]label[8,1.2;" + ::cwm::text("Owned destination container", "Contenitore posseduto di destinazione") + "]");
 +    if (activity_token) f += ("button[8,1.65;7.5,0.6;cancel_consume;" + ::cwm::text("Interrupt activity", "Interrompi attivita") + "]");
 +    if (!view.view) return f + "label[0.5,2.2;" + statusEscape(view.error.empty() ? (::cwm::text("Reading native inventory...", "Lettura inventario nativo...")) : view.error) + "]";
-+    f += "cwm_inventory[" + std::to_string(view.view) + ";" + std::to_string(source) + "]";
++    f += "cwm_inventory[" + std::to_string(view.view) + ";" + std::to_string(source) + ";1]";
 +    const auto ids = equipmentFilter(view, "", 0);
 +    const size_t pages = std::max<size_t>(1, (ids.size() + 35) / 36);
 +    page = std::min(page, pages - 1);
