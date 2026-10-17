@@ -27,6 +27,7 @@ def main():
         parser.add_argument('--' + name, type=Path, required=True)
     parser.add_argument('--action-driven', action='store_true', help='Verify ordinary start.sh mode without the real-time scheduler')
     parser.add_argument('--resume-only', action='store_true')
+    parser.add_argument('--interaction-feedback', action='store_true')
     parser.add_argument('--automatic-return', action='store_true', help='Verify UX-02 returns to the transfer panel')
     parser.add_argument('--save-active', action='store_true')
     args = parser.parse_args()
@@ -243,8 +244,8 @@ def main():
                 nonlocal destination_point
                 containers=[x for x in entries(v) if x.Container()]
                 index=next(n for n,x in enumerate(containers) if x.Id()==e.Id())
-                assert index<12
-                destination_point=(11.75,2.8+index*.42)
+                assert index<6
+                destination_point=(11.75,3.025+index*.95)
                 click(*destination_point)
             def quantity(value):
                 click(1.2,9.97);xdo('key','ctrl+a');xdo('type','--clearmodifiers',str(value));time.sleep(.15)
@@ -252,14 +253,17 @@ def main():
                 sent=int(latest()['transfers_sent'])
                 selected=int(latest()['equipment_selected']);index=selected-1
                 source=(1.025+(index%6)*1.18,3.2+(index//6)*1.0)
-                target=destination_point if insert else (4.65,9.97)
+                target=destination_point if insert else ((-.6,4) if args.interaction_feedback else (4.65,9.97))
                 assert target is not None
                 xdo('mousemove','--window',window,str(round(origin_x+source[0]*unit)),str(round(origin_y+source[1]*unit)))
-                xdo('mousedown','1');time.sleep(.15)
-                for n in range(1,8):
-                    x=source[0]+(target[0]-source[0])*n/7;y=source[1]+(target[1]-source[1])*n/7
-                    xdo('mousemove','--window',window,str(round(origin_x+x*unit)),str(round(origin_y+y*unit)));time.sleep(.04)
-                xdo('mouseup','1');time.sleep(.4)
+                if args.interaction_feedback and insert:
+                    xdo('keydown','Shift_L');time.sleep(.08);xdo('click','1');xdo('keyup','Shift_L');time.sleep(.4)
+                else:
+                    xdo('mousedown','1');time.sleep(.15)
+                    for n in range(1,8):
+                        x=source[0]+(target[0]-source[0])*n/7;y=source[1]+(target[1]-source[1])*n/7
+                        xdo('mousemove','--window',window,str(round(origin_x+x*unit)),str(round(origin_y+y*unit)));time.sleep(.04)
+                    xdo('mouseup','1');time.sleep(.4)
                 if not expect_sent:return
                 wait(lambda r:int(r['transfers_sent'])==sent+1)
                 if not args.automatic_return:
@@ -309,7 +313,7 @@ def main():
                         check('paid_insert_returns_to_same_transfer_panel',int(latest()['transfer_form'])==1 and int(latest()['native_work_settled'])==1 and int(latest()['equipment_selected'])==0)
                         shot('transfer-automatic-return.png')
                     bag=item(view,'bag_plastic');nested=item(view,'9mm',bag.Id())
-                    check('native_transfer_splits_exact_seven',nested.Charges()==7)
+                    check('shift_transfer_uses_explicit_owned_destination' if args.interaction_feedback else 'native_transfer_splits_exact_seven',nested.Charges()==7)
                     check('native_transfer_leaves_twenty_three',sum(e.Charges() for e in entries(view) if e.TypeId().decode()=='9mm' and e.ParentId()!=bag.Id())==23)
                     check('native_provenance_identifies_destination',nested.PocketIndex()>=0)
                     transfer_panel();select_item(nested);quantity(3);action(False);finish()
