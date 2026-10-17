@@ -236,6 +236,7 @@ def main():
                 if int(latest()['transfer_form'])==1:return
                 click(13.5,.5);wait(lambda r:int(r['transfer_form'])==1)
             def select_item(e):
+                time.sleep(.5)  # Authoritative trace can precede actual formspec installation.
                 index=e.Id()-1
                 click(1.025+(index%6)*1.18,3.2+(index//6)*1.0)
                 wait(lambda r:int(r['equipment_selected'])==e.Id())
