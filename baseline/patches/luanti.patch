@@ -1745,10 +1745,10 @@ index 0000000..e1e7236
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..a63d229
+index 0000000..1f02ba7
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,2902 @@
+@@ -0,0 +1,2906 @@
 +#include "cwm/product_language.hpp"
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
@@ -1988,7 +1988,7 @@ index 0000000..a63d229
 +            destination_page_, transfer_quantity_, equipment_notice_, [&](const auto& type) { return ground_item_visual_name(type); }, activity_token_);
 +        return equipmentForm(equipment_view_, equipment_page_, equipment_selected_, equipment_search_,
 +            equipment_filter_, equipment_notice_, [&](const auto& type) { return ground_item_visual_name(type); }, activity_token_, first_aid_, crafting_, reloading_, transferring_,
-+            equipment_search_open_, equipment_details_open_, equipment_worn_page_, equipment_focus_search_, quick_slot_, inventory_time_pending());
++            equipment_search_open_, equipment_details_open_, equipment_worn_page_, equipment_focus_search_, quick_slot_, inventory_time_pending() && !inventory_work_rejected_);
 +    }
 +    void cancel_equipment() {
 +        inventory_inspection_pending_ = false;
@@ -4070,6 +4070,7 @@ index 0000000..a63d229
 +    if (i.inventory_inspection_pending_) {
 +        i.equipment_view_ = {}; i.equipment_selected_ = 0; i.inventory_query_ = 0;
 +    } else if (!i.query_inventory()) i.equipment_view_.error = (::cwm::text("Inventory unavailable: try again.", "Inventario non disponibile: riprova."));
++    if (i.inventory_work_command_ && i.inventory_work_rejected_) i.equipment_notice_ = i.inventory_work_error_;
 +    return i.equipment_form();
 +}
 +
@@ -4384,9 +4385,12 @@ index 0000000..a63d229
 +        // Upstream wear/takeoff (and wield/stow) mutate atomically and debit
 +        // moves. This is remaining native time, not cancellable actor progress.
 +        const auto tenths = (uint64_t(pimpl_->native_work_remaining_ms_) + 99) / 100;
-+        work_text += L"\n" + ::cwm::wide("Applied · Native time remaining: ", "Applicata · Tempo nativo restante: ") +
++        work_text += L"\n" + (pimpl_->inventory_work_rejected_ ?
++            ::cwm::wide("Not applied · Native time remaining: ", "Non applicata · Tempo nativo restante: ") :
++            ::cwm::wide("Applied · Native time remaining: ", "Applicata · Tempo nativo restante: ")) +
 +            std::to_wstring(tenths / 10) + L"." + std::to_wstring(tenths % 10) +
-+            ::cwm::wide(" game s · Cannot undo", " s di gioco · Non annullabile");
++            ::cwm::wide(" game s", " s di gioco");
++        if (!pimpl_->inventory_work_rejected_) work_text += ::cwm::wide(" · Cannot undo", " · Non annullabile");
 +    } else if (pimpl_->activity_token_ && pimpl_->activity_total_ > 0) work_text += L"  " + std::to_wstring(
 +        std::clamp(100 - int(100.0 * pimpl_->activity_remaining_ / pimpl_->activity_total_), 0, 100)) + L"%";
 +    else work_text += pimpl_->inventory_work_settled_ ? (::cwm::wide(" — finished", " — conclusa")) : (::cwm::wide(" — waiting for CDDA", " — attesa di CDDA"));
