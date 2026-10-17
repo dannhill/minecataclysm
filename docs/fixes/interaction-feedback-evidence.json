@@ -1,0 +1,250 @@
+{
+  "date": "2026-10-18",
+  "status": "Scoped automated PASS; manual acceptance remains separate",
+  "scope": "INT-01 authoritative RMB toggle, fractional-body close guard, paused loose pickup discard, shift transfer, outside drag and exact native external splits",
+  "protocol": "2.23",
+  "source_commit": "a2bc019a89fd794a3a54084e7258d5fbdf9ef5a9",
+  "build_source": {
+    "native": "2d58d08de7584e0b85cd53d58285a343b3796ccf",
+    "client": "1425f91494ad9678ea07fee9057d9362f83ddc7b",
+    "native_tests": "fd2f4dd066429a37ab49944e01b6738bbda51a7c"
+  },
+  "post_build_changes": "Native runtime production sources unchanged after native-refresh-final; later native update attaches a live peer in a test fixture. Luanti production sources unchanged since its build. Later root changes update GUI harnesses and documentation only.",
+  "captured_sources": {
+    "cdda": {
+      "url": "https://github.com/CleverRaven/Cataclysm-DDA.git",
+      "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+      "shallow": true,
+      "patch": "baseline/patches/cdda.patch",
+      "patch_sha256": "7a384a44ab91ff67c0b731b08644d3111e8fbe119f83208857161aabdc15e27b",
+      "tree_inventory": "baseline/trees/cdda.json",
+      "tree_sha256": "de55f55a3c466e31a8925e18dfeb3927bb0f06a41f09a0ec538c24de1121e230",
+      "file_count": 8587,
+      "original_status": " M src/CMakeLists.txt\n M src/activity_actor.cpp\n M src/avatar.cpp\n M src/avatar_action.cpp\n M src/avatar_action.h\n M src/character.cpp\n M src/character_body.cpp\n M src/character_inventory.cpp\n M src/craft_command.cpp\n M src/craft_command.h\n M src/crafting.cpp\n M src/crafting.h\n M src/do_turn.cpp\n M src/do_turn.h\n M src/game.cpp\n M src/game.h\n M src/handle_action.cpp\n M src/iexamine.cpp\n M src/inventory.cpp\n M src/inventory.h\n M src/item.cpp\n M src/iuse_actor.cpp\n M src/melee.cpp\n M src/output.cpp\n M src/pickup.cpp\n M src/ranged.cpp\n M src/ranged.h\n M src/recipe.cpp\n M src/recipe.h\n M src/translations.cpp\n M src/ui.cpp\n M src/vehicle_use.cpp\n M src/vpart_position.h\n M tests/CMakeLists.txt\n M tests/test_main.cpp\n?? src/cwm/cwm_crafting.h\n?? src/cwm/cwm_hotbar.h\n?? src/cwm/cwm_inventory.h\n?? src/cwm/cwm_main.cpp\n?? src/cwm/cwm_map_exporter.cpp\n?? src/cwm/cwm_map_exporter.h\n?? src/cwm/cwm_ranged.h\n?? src/cwm/cwm_server.cpp\n?? src/cwm/cwm_server.h\n?? src/cwm/cwm_status_gauges.h\n?? src/cwm_motion.cpp\n?? src/cwm_motion.h\n?? src/safe_mode_actions.h\n?? tests/cwm_pickup_test.cpp\n?? tests/cwm_projection_test.cpp\n?? tests/cwm_runtime_test.cpp\n"
+    },
+    "luanti": {
+      "url": "https://github.com/luanti-org/luanti.git",
+      "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
+      "shallow": true,
+      "patch": "baseline/patches/luanti.patch",
+      "patch_sha256": "15993afe4ec92d13fbe4da8c94bec346064faca437e5c1834bfe3c2f64a5a631",
+      "tree_inventory": "baseline/trees/luanti.json",
+      "tree_sha256": "b39b21d1cb272077a277b4f432f9dc6802ee5134d33820cc89f2e4b739b6d688",
+      "file_count": 2263,
+      "original_status": " M builtin/mainmenu/settings/dlg_settings.lua\n M builtin/settingtypes.txt\n M src/CMakeLists.txt\n M src/client/CMakeLists.txt\n M src/client/client.cpp\n M src/client/clientenvironment.cpp\n M src/client/game.cpp\n M src/client/hud.cpp\n M src/client/inputhandler.cpp\n M src/client/keys.h\n M src/client/mesh_generator_thread.cpp\n M src/client/mesh_generator_thread.h\n M src/defaultsettings.cpp\n M src/gui/guiFormSpecMenu.cpp\n M src/gui/guiFormSpecMenu.h\n M src/gui/guiScene.cpp\n M src/network/clientpackethandler.cpp\n M src/server/player_sao.cpp\n M src/unittest/test_mapblock.cpp\n?? src/cdda/aim_input.h\n?? src/cdda/avatar_status.h\n?? src/cdda/cdda_bridge.cpp\n?? src/cdda/cdda_bridge.h\n?? src/cdda/crafting_inventory.h\n?? src/cdda/decision_dialog.h\n?? src/cdda/decision_input.h\n?? src/cdda/decision_text.h\n?? src/cdda/equipment_inventory.h\n?? src/cdda/ground_item_formspec.h\n?? src/cdda/ground_item_projection.h\n?? src/cdda/ground_item_visual.h\n?? src/cdda/posture_input.h\n?? src/cdda/quickbar.h\n"
+    },
+    "mineclonia": {
+      "url": "https://github.com/mark-wiemer/mineclonia.git",
+      "commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+      "shallow": true,
+      "patch": "baseline/patches/mineclonia.patch",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree_inventory": "baseline/trees/mineclonia.json",
+      "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36",
+      "file_count": 9359,
+      "original_status": ""
+    }
+  },
+  "installed_runtime": {
+    "cdda/build/src/cdda-server": {
+      "sha256": "a69a6361741194697adcdfce717161e9acba1025a0c92c44a61fb0d47b7378b2",
+      "previous_sha256": "dfde85fb7f71d9ca845f4f917a3996e022d5593c799c0ad76e69bc98326247ee",
+      "rollback": "artifacts/interaction-feedback-20261018/cdda-previous-runtime",
+      "built_from": "artifacts/fnd03-session/workspace/cdda/build/src/cdda-server"
+    },
+    "luanti/bin/luanti": {
+      "sha256": "9bb258e8024b95ef99667628c49da695a81fe8e3e59a98027f311d0f768e0ec1",
+      "previous_sha256": "71b2f0cb13ea4b1a7cb2d4a52c6a668a18538f5e08ae2d224798e398c5012d79",
+      "rollback": "artifacts/interaction-feedback-20261018/luanti-previous-runtime",
+      "built_from": "artifacts/language-20261011/workspace/luanti/bin/luanti"
+    }
+  },
+  "environment": {
+    "kernel": "Linux-7.0.11-76070011-generic-x86_64-with-glibc2.35",
+    "compiler": "c++ (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0",
+    "build_mode": "Incremental refresh of reconstructed sources, caches retained; no cold clean build",
+    "client": "Release with LTO; Xvfb1280x800x24 96DPI, Mesa software GL, xdotool, private ports and transparent Unix relay"
+  },
+  "checks": {
+    "native": {
+      "cases": 183,
+      "assertions": 186099,
+      "filter": "[cwm],[pickup],[item],[reload]",
+      "seed": 42,
+      "log": "artifacts/interaction-feedback-20261018/native-tests-peer.log"
+    },
+    "client": {
+      "individual_tests": 309,
+      "modules": 47,
+      "catch_assertions": 648,
+      "catch_cases": 4,
+      "log": "artifacts/interaction-feedback-20261018/client-tests.log"
+    },
+    "protocol": {
+      "cases": 11,
+      "log": "artifacts/interaction-feedback-20261018/protocol-tests.log"
+    },
+    "actual_renderer": {
+      "controls-reconstructed-v3": {
+        "checks": 32,
+        "summary": "artifacts/interaction-feedback-20261018/controls-reconstructed-v3/summary.json",
+        "sha256": "c0537e0aa3bc9a466104d03fc6cece9201eb780d67061fa0ce3129cd8b27ba4a",
+        "canonical_json": "artifacts/interaction-feedback-20261018/controls-reconstructed-v3/native.json",
+        "canonical_sha256": "3c1abf5a2cc8aa2933bb2425c38a5b2a05f285ca798be9cc96e1880060665be7",
+        "wire_sha256": {
+          "artifacts/interaction-feedback-20261018/controls-reconstructed-v3/client-wire.bin": "7dd1e41b769aafc2417a4f53493e4bfb6b404f26dde20522477fcbc3198e5458",
+          "artifacts/interaction-feedback-20261018/controls-reconstructed-v3/server-wire.bin": "7a67121b349b5d5cb948ce79877314ddb8154f8f4e5f9eb651c8ba5e9478d8ca"
+        }
+      },
+      "owned-transfers-v2": {
+        "checks": 31,
+        "summary": "artifacts/interaction-feedback-20261018/owned-transfers-v2/summary.json",
+        "sha256": "0f851bbf14cf0075fd89150fb0df56483b079fbe27f8339e43de587af5b5c2c9",
+        "canonical_json": "artifacts/interaction-feedback-20261018/owned-transfers-v2/native.json",
+        "canonical_sha256": "03c2d6e22373b3ed6c469ce805fd961119c65a6dacd7dd2e8d98df387fe134db",
+        "wire_sha256": {
+          "artifacts/interaction-feedback-20261018/owned-transfers-v2/client-wire.bin": "dee844ed3c7e31e7cf74de1000c496978754af0a5d7ccf68adf40420cc15fac7",
+          "artifacts/interaction-feedback-20261018/owned-transfers-v2/server-wire.bin": "794e68af3daba6bbd3ba5c832bf408a7f373ec859103278f15e67d687184edd8"
+        }
+      },
+      "storage-reconstructed-v4": {
+        "checks": 39,
+        "summary": "artifacts/interaction-feedback-20261018/storage-reconstructed-v4/summary.json",
+        "sha256": "2a5d297ff895604aaec8b9c8e497b45102110c3d5e4278741c078083aeabcdb1",
+        "canonical_json": "artifacts/interaction-feedback-20261018/storage-reconstructed-v4/native.json",
+        "canonical_sha256": "ab87b4802b8abcf93f27cdccb70cd8ead41c0f93d04b6977c13aa8b8ae83024d",
+        "wire_sha256": {
+          "artifacts/interaction-feedback-20261018/storage-reconstructed-v4/client-wire.bin": "b91f732290cda95f4508e140621cb384747bdebaa7ff194e02bd047e98c91f19",
+          "artifacts/interaction-feedback-20261018/storage-reconstructed-v4/server-wire.bin": "adeaa4c378e0393dacfdc9b3aee7a5c692fceee8a7925df24334103979fa73a1"
+        }
+      },
+      "storage-installed": {
+        "checks": 39,
+        "summary": "artifacts/interaction-feedback-20261018/storage-installed/summary.json",
+        "sha256": "c892c96eb7341b26ace714b2274359ae16c1a0c35f5d8c950bf1bc2a58723ce2",
+        "canonical_json": "artifacts/interaction-feedback-20261018/storage-installed/native.json",
+        "canonical_sha256": "147c7cb8a111a6cd257562dac12f6a2aa0dc540b60a3933ac57289a48366ac40",
+        "wire_sha256": {
+          "artifacts/interaction-feedback-20261018/storage-installed/client-wire.bin": "1f46f08ef49255d8c6f1bdf431e44c89f3dfbccabf04b297612700feb0e14b2d",
+          "artifacts/interaction-feedback-20261018/storage-installed/server-wire.bin": "83e30b212a9c64f0c7ca283242d8664f0fabc439772c929c2294ab757c9aa232"
+        }
+      },
+      "storage-reloaded": {
+        "checks": 20,
+        "summary": "artifacts/interaction-feedback-20261018/storage-reloaded/summary.json",
+        "sha256": "36d2d78e24ef9681578510471ed1b32c14c23e31c51a3860e713a01b49840897",
+        "canonical_json": "artifacts/interaction-feedback-20261018/storage-reloaded/native.json",
+        "canonical_sha256": "1fdca6873215755d808ebe8ffe89fbd2e759c9f02e3eadc8a7beb3ca3d700ba3",
+        "wire_sha256": {
+          "artifacts/interaction-feedback-20261018/storage-reloaded/client-wire.bin": "03da2c6d6a5016c250d19d5be35d78503365b79c6454e8ce32fb454155fffdd6",
+          "artifacts/interaction-feedback-20261018/storage-reloaded/server-wire.bin": "802c7c29918219f2b86e512c5d2b5729bee24cb254e3977a8b9f51613aa54ace"
+        }
+      }
+    },
+    "renderer_total": 161
+  },
+  "canonical_reader": {
+    "path": "artifacts/inventory-feedback-20261009/native-save-reader",
+    "sha256": "d65889a6cf0c36db31d493bba915a89bc7424d60f0ddb9800992fd0d4f39958a",
+    "source": "Pinned native CDDA core independent from integration production changes"
+  },
+  "manual_feedback": {
+    "source": "docs/source/manual-interaction-feedback-2026-10-18.md",
+    "AIM-01": "1-3 PASS",
+    "EXT-01": "1-3 PASS,4 FAIL only paused deferred pickup",
+    "new_pass": 5,
+    "pending": 21,
+    "manual_fail": 2,
+    "new_pending_gesture_checks": 3,
+    "remaining_failures": [
+      "LANG-01.2",
+      "EXT-01.4"
+    ],
+    "no_acceptance_inferred": true
+  },
+  "limits": [
+    "Reported opening-door jam in the original world is not reproduced exactly; guarded and tested closing-through-fractional-body instead; INT-01.1 retains that user recheck",
+    "Aim release does not reset earned native recoil; design choice remains open",
+    "Worn items, liquids, seals, ownership, reachability and quantity retain native transfer restrictions",
+    "Native source ownership must be eligible; no implicit stealing, undress or pouring",
+    "Full SAVE-001 remains OPEN and historical M5.5 remains FAILED"
+  ],
+  "retained_failures": {
+    "native-tests.log": "Invalid Catch seed argument; no tests executed. Earlier UX05 reproduction command spelling corrected.",
+    "native-tests-final.log": "Door test lacked an active IPC peer and was correctly rejected by Recovery. Final fixture uses a live peer, positive valid closure/opening and admission/execution overlap checks.",
+    "gui-controls-reconstructed.log": "Second click was inside the existing200ms debounce; wait added before a new gesture.",
+    "gui-controls-reconstructed-v2.log": "All interactive checks passed; reset during declared SIGTERM incorrectly counted as live relay failure. Final test declares shutdown before SIGTERM and retains all earlier errors.",
+    "gui-storage-reconstructed.log": "Pitch aimed upward; corrected.",
+    "gui-storage-reconstructed-v2.log": "Count used previous clicked target instead of hovered target; corrected.",
+    "gui-storage-reconstructed-v3.log": "Rock has count_by_charges and opened the quantity menu; use existing non-counted bat to exercise the actual direct-pickup branch.",
+    "gui-owned-transfers.log": "Trace preceded actual returned formspec installation; wait for rendered input surface before selection. Native assertions retained."
+  },
+  "commands": [
+    "python3 tools/takeover_baseline.py capture; commit before refreshing reconstructed workspaces",
+    "python3 tools/refresh_verification_workspace.py --workspace artifacts/fnd03-session/workspace --receipt artifacts/interaction-feedback-20261018/native-refresh-final.json",
+    "cmake --build artifacts/fnd03-session/workspace/cdda/build --target cdda-server cata_test -j3",
+    "python3 tools/refresh_verification_workspace.py --workspace artifacts/fnd03-session/workspace --receipt artifacts/interaction-feedback-20261018/native-refresh-peer.json; cmake --build artifacts/fnd03-session/workspace/cdda/build --target cata_test -j3",
+    "(cd artifacts/fnd03-session/workspace/cdda && build/tests/cata_test \"[cwm],[pickup],[item],[reload]\" --rng-seed 42 --user-dir=/home/dannhill/Projects/cdda-mineclonia/artifacts/interaction-feedback-20261018/native-user-peer)",
+    "cmake --build artifacts/language-20261011/workspace/luanti/build --target luanti -j3",
+    "artifacts/language-20261011/workspace/luanti/bin/luanti --run-unittests --config /home/dannhill/Projects/cdda-mineclonia/artifacts/interaction-feedback-20261018/unit.conf --logfile /home/dannhill/Projects/cdda-mineclonia/artifacts/interaction-feedback-20261018/unit-engine.log",
+    "cmake --build artifacts/language-20261011/workspace/build/protocol -j2; ctest --test-dir artifacts/language-20261011/workspace/build/protocol --output-on-failure",
+    "python3 artifacts/interaction-feedback-20261018/run-gui.py controls_presentation_gui_test.py artifacts/controls-hud-20261008/fixture-indoor/user controls-reconstructed-v3",
+    "python3 artifacts/interaction-feedback-20261018/run-gui.py transfer_gui_test.py artifacts/native-transfer-20261009/fixture/user owned-transfers-v2 --automatic-return --interaction-feedback",
+    "python3 artifacts/interaction-feedback-20261018/run-gui.py external_storage_gui_test.py artifacts/external-20261012/fixture/user storage-reconstructed-v4 --feedback",
+    "CWM_TEST_INSTALLED=1 python3 artifacts/interaction-feedback-20261018/run-gui.py external_storage_gui_test.py artifacts/external-20261012/fixture/user storage-installed --feedback",
+    "CWM_TEST_INSTALLED=1 python3 artifacts/interaction-feedback-20261018/run-gui.py external_storage_gui_test.py artifacts/interaction-feedback-20261018/storage-installed/user storage-reloaded --feedback --resume-only",
+    "python3 tools/takeover_baseline.py check"
+  ],
+  "artifact_sha256": {
+    "artifacts/interaction-feedback-20261018/baseline-before.log": "e6b9d36dd49e4e43f39c46e669c43295a8505bfcdfb95ba6f3bccbc88b3d8a84",
+    "artifacts/interaction-feedback-20261018/capture-live-peer.log": "86a77d07bb8948cd59f7a485198c43310e789962f80181f26c40d852ef9d6151",
+    "artifacts/interaction-feedback-20261018/capture-split.log": "a2df34da4878cbc993b8a7f709a38e801d285f2391beedcc93cecadc63b6fd15",
+    "artifacts/interaction-feedback-20261018/capture.log": "5a6b98b8d286f598c85390e6cc9304c5263b05466e0cb7235eef2190c6166bcf",
+    "artifacts/interaction-feedback-20261018/client-build.log": "b79ccceeae6c46834f0a29e632a48449ced58bf989de9fa1c60c7c763e559502",
+    "artifacts/interaction-feedback-20261018/client-refresh-tests.json": "db7dceb4b1ec97945241d50dc230f379d1393998dfa74c81e0ff33bf690acf71",
+    "artifacts/interaction-feedback-20261018/client-refresh-tests.log": "093a8b106f83999c9f682519786dbfe3f2e0d372d1c1195cfa9b225f4630e8f3",
+    "artifacts/interaction-feedback-20261018/client-refresh.json": "3016fc39d1bc5237aca27e05f1cd9c0b2650da1617b617c5027ace18815c77f4",
+    "artifacts/interaction-feedback-20261018/client-refresh.log": "0c0de5faf03539d28d79d6bcb929d053436e931d2804c691a411cbbd98589e17",
+    "artifacts/interaction-feedback-20261018/client-tests.log": "4f4802dfd0b0e9e0a981aa58f3aa8ae23a1fff17d38a51df3d9a30b8ec952f46",
+    "artifacts/interaction-feedback-20261018/controls-reconstructed-v2-xvfb.log": "3291747ac9e2f074aaf5d80d917ba644f6b777e27c04b7a9557db652c1416389",
+    "artifacts/interaction-feedback-20261018/controls-reconstructed-v3-xvfb.log": "19346bc9201dc177c7ada0a9ccfebc2bfbfc1faecd3fbddd79ef126bf525b556",
+    "artifacts/interaction-feedback-20261018/controls-reconstructed-xvfb.log": "3291747ac9e2f074aaf5d80d917ba644f6b777e27c04b7a9557db652c1416389",
+    "artifacts/interaction-feedback-20261018/gui-controls-reconstructed-v2.log": "cb28885dbee18208e7451bca4f2adaa6c52b75745d381ec40b6fc19dd32b90c8",
+    "artifacts/interaction-feedback-20261018/gui-controls-reconstructed-v3.log": "f549971ee79e4723e99ae2cd94d68e6baf991fa7a0cbd5631566c6d1bb2dea4c",
+    "artifacts/interaction-feedback-20261018/gui-controls-reconstructed.log": "e531c709513ef4525a2a128abbe2fa992e490110131b9145b3d3a045b596528f",
+    "artifacts/interaction-feedback-20261018/gui-owned-transfers-v2.log": "8fdbb0d9895b31daef3bec4a265b332aa5f47a903f58e653dcf4ded526c367df",
+    "artifacts/interaction-feedback-20261018/gui-owned-transfers.log": "2fdfd5c1fab2ebfc18d11f3bac54e1dd3ae0688041ab619fe8a18d4a8d462bd1",
+    "artifacts/interaction-feedback-20261018/gui-storage-installed.log": "89c90b7f7fc44b4cc01f18f88ba967a35973f680f26f2200836e199b7be63088",
+    "artifacts/interaction-feedback-20261018/gui-storage-reconstructed-v2.log": "9adee52b4633f8852131c0572da3cf99486588a1e75d0ce81e0a9a142adc8de7",
+    "artifacts/interaction-feedback-20261018/gui-storage-reconstructed-v3.log": "1136ae30255c40d650ffba0f4de0d550a9a38e92b9918f7d6bdf958050908ba4",
+    "artifacts/interaction-feedback-20261018/gui-storage-reconstructed-v4.log": "89c90b7f7fc44b4cc01f18f88ba967a35973f680f26f2200836e199b7be63088",
+    "artifacts/interaction-feedback-20261018/gui-storage-reconstructed.log": "16ad37ec4f258c750400ada97bf65a808943c7176710a6f9ced5e9f8001de517",
+    "artifacts/interaction-feedback-20261018/gui-storage-reloaded.log": "af5e2eb8dbfefdd6df87e30d8c9d1ef23ba3ab66c993802ca3277e5a9f193df1",
+    "artifacts/interaction-feedback-20261018/install.json": "685b58824fc15def6558b914f4296c1d644cf45bf4bb9833d9b448eca44ff4dc",
+    "artifacts/interaction-feedback-20261018/native-build-final.log": "e1d73c3fbf6daa459fea2bf4b54b178e9bdd4378ab2088bb5796f48ba0bc11e3",
+    "artifacts/interaction-feedback-20261018/native-build.log": "faf5f38429c0cc7dcce1829993263cb604ada4ca69cb5f0bc850971508f55b9e",
+    "artifacts/interaction-feedback-20261018/native-refresh-final.json": "ba0a269dcbad7f5c4da7012f3aa48596532eace0685c05ed0a91a9fa64e09804",
+    "artifacts/interaction-feedback-20261018/native-refresh-final.log": "0c5e87ce9e53f3b2435945dc4c9e4b1d5460e9aff6d5dc90f3bd96cbea07fba5",
+    "artifacts/interaction-feedback-20261018/native-refresh-peer.json": "121f9c36d7a54334004576b0901287a26b77e2ee95339e251be534bb22543219",
+    "artifacts/interaction-feedback-20261018/native-refresh-peer.log": "b5e85e691fb70d07560bf6c5e6c6f10c2e3d35f3c4049e4f449becb19b99d003",
+    "artifacts/interaction-feedback-20261018/native-refresh.json": "3016fc39d1bc5237aca27e05f1cd9c0b2650da1617b617c5027ace18815c77f4",
+    "artifacts/interaction-feedback-20261018/native-refresh.log": "0c0de5faf03539d28d79d6bcb929d053436e931d2804c691a411cbbd98589e17",
+    "artifacts/interaction-feedback-20261018/native-test-build-peer.log": "1110024aa7d90a8611d328d99c262fc3966259381e998846235d64f4408e28bb",
+    "artifacts/interaction-feedback-20261018/native-tests-final.log": "b76468af2919f31a2ca9aa3fa5fd0888e681ebcd981baad495701a39975faeec",
+    "artifacts/interaction-feedback-20261018/native-tests-peer.log": "c1a169bddd37224b4d313f39073f215146f8d72ab0d8eded04441ac48ed0d8d0",
+    "artifacts/interaction-feedback-20261018/native-tests.log": "8f635c76a7b82085959c09ea3770d166cb8bec1725fff11f1191ac54e2b1d32d",
+    "artifacts/interaction-feedback-20261018/owned-transfers-v2-xvfb.log": "3291747ac9e2f074aaf5d80d917ba644f6b777e27c04b7a9557db652c1416389",
+    "artifacts/interaction-feedback-20261018/owned-transfers-xvfb.log": "3291747ac9e2f074aaf5d80d917ba644f6b777e27c04b7a9557db652c1416389",
+    "artifacts/interaction-feedback-20261018/protocol-build.log": "82f1e384f83a74b548b0dc8b1c4b7108cf3aeb3c89fa2307a8be6e5847daf427",
+    "artifacts/interaction-feedback-20261018/protocol-tests.log": "b6f690ba00e908f66f867af11c25382ee6c3c704bdf88c9661d9b76d989d72ae",
+    "artifacts/interaction-feedback-20261018/run-gui.py": "b1840d94c251dd1b199c77089199bcacb43bc2ed004e2277d1d197b877854cd5",
+    "artifacts/interaction-feedback-20261018/storage-installed-xvfb.log": "19346bc9201dc177c7ada0a9ccfebc2bfbfc1faecd3fbddd79ef126bf525b556",
+    "artifacts/interaction-feedback-20261018/storage-reconstructed-v2-xvfb.log": "982ea04f30c9b29eccbb1ad3f11d5455978d921acd5a40be3b626ef8ec3166f6",
+    "artifacts/interaction-feedback-20261018/storage-reconstructed-v3-xvfb.log": "982ea04f30c9b29eccbb1ad3f11d5455978d921acd5a40be3b626ef8ec3166f6",
+    "artifacts/interaction-feedback-20261018/storage-reconstructed-v4-xvfb.log": "982ea04f30c9b29eccbb1ad3f11d5455978d921acd5a40be3b626ef8ec3166f6",
+    "artifacts/interaction-feedback-20261018/storage-reconstructed-xvfb.log": "982ea04f30c9b29eccbb1ad3f11d5455978d921acd5a40be3b626ef8ec3166f6",
+    "artifacts/interaction-feedback-20261018/storage-reloaded-xvfb.log": "982ea04f30c9b29eccbb1ad3f11d5455978d921acd5a40be3b626ef8ec3166f6",
+    "artifacts/interaction-feedback-20261018/unit-engine.log": "859e8ed95bfa5350831dc046e103e155cf4f7c26144887a95852abf45c5c3de5",
+    "artifacts/interaction-feedback-20261018/unit.conf": "221da54cb5ce79e13061f6cb7fc84d8995187526e27e39bc7c348cc7ae0efeaa"
+  }
+}

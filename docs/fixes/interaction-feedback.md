@@ -45,7 +45,9 @@ Una futura animazione di arma abbassata può essere indipendente dal rinculo.
 ## Verifica e limiti
 
 183 casi CDDA / **186.099 assert**, 309 test Luanti / 47 moduli più 648 assert
-Catch in 4 casi; 11 test del protocollo. Build incrementali da copie ricostruite
+Catch in 4 casi; 11 test del protocollo. **161 controlli grafici/canonici PASS**:
+32 controlli, 31 trasferimenti posseduti, 39 esterni ricostruiti, 39 installati e
+20 al riavvio. Build incrementali da copie ricostruite
 con inventari verificati, non cold clean build. Renderer Luanti reale con input
 xdotool su Xvfb/Mesa privato, relay byte-trasparente e fixture/save isolati;
 lettore indipendente del core CDDA pinned. Ricevuta con comandi, source identity,
