@@ -746,3 +746,21 @@ settlement; stale handles and changed/unknown recipes reject. Native world
 uistate.json remains the canonical persistence for UI preferences/history.
 Exact paired protocol2.22 is required. Existing craft input, actor, component
 selection/protection, interruption and character save schemas are unchanged.
+
+## Native interaction feedback (2.23)
+
+No new fields or enum values. Paired version 2.23 expands ItemTransfer DROP to
+accessible external items: zero destination means ground at the avatar tile,
+not the source furniture. Revalidate native storage/reachability/parents/charges,
+position, ownership, pause and destination capacity; foreign ownership requires
+explicit native pickup first. ACT_DROP remains authoritative, including cost,
+partial charges and interruption. The native actor retains the undropped map
+portion rather than removing it or dropping the complementary quantity.
+
+Continuous CLOSE rejects a tile intersecting the native avatar circle, both
+on admission and execution, preventing closure through a fractional body offset.
+OPEN/CLOSE semantics and native costs otherwise remain unchanged. Client RMB
+chooses the inverse of the last authoritative projected opening state; it never
+changes that state optimistically. Paused pickup input is discarded, not queued
+for a later RESUME. Shift-click and off-window drag are local presentation
+gestures resolving to the existing guarded ItemTransfer requests.
