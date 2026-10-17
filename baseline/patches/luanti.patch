@@ -1745,10 +1745,10 @@ index 0000000..e1e7236
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..668d4e5
+index 0000000..a63d229
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,2901 @@
+@@ -0,0 +1,2902 @@
 +#include "cwm/product_language.hpp"
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
@@ -3595,8 +3595,9 @@ index 0000000..668d4e5
 +        // inventory. MENU_OPEN can also reject a command not yet executed.
 +        if (i.inventory_inspection_pending_ && !i.pending_move_) {
 +            i.inventory_inspection_pending_ = false;
-+            if (i.equipment_open_ && !i.query_inventory()) {
-+                i.equipment_view_.error = ::cwm::text("Inventory unavailable: try again.", "Inventario non disponibile: riprova.");
++            if (i.equipment_open_) {
++                if (!i.query_inventory()) i.equipment_view_.error = ::cwm::text("Inventory unavailable: try again.", "Inventario non disponibile: riprova.");
++                if (i.inventory_work_rejected_) i.equipment_notice_ = i.inventory_work_error_;
 +                i.equipment_dirty_ = true;
 +            }
 +        }
@@ -4382,7 +4383,7 @@ index 0000000..668d4e5
 +    if (pimpl_->inventory_time_pending()) {
 +        // Upstream wear/takeoff (and wield/stow) mutate atomically and debit
 +        // moves. This is remaining native time, not cancellable actor progress.
-+        const auto tenths = (pimpl_->native_work_remaining_ms_ + 99) / 100;
++        const auto tenths = (uint64_t(pimpl_->native_work_remaining_ms_) + 99) / 100;
 +        work_text += L"\n" + ::cwm::wide("Applied · Native time remaining: ", "Applicata · Tempo nativo restante: ") +
 +            std::to_wstring(tenths / 10) + L"." + std::to_wstring(tenths % 10) +
 +            ::cwm::wide(" game s · Cannot undo", " s di gioco · Non annullabile");

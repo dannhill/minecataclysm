@@ -1,10 +1,11 @@
 # Validazioni manuali del playable core
 
-Stato corrente dopo il riscontro del 2026-10-18: **21 PENDING + 2 FAIL manuali**.
-AIM 1–3 PASS; EXT 1–3 PASS, EXT4 FAIL soltanto per raccolta differita in pausa.
-Cinque nuovi PASS; sei punti escono dai PENDING (uno diventa FAIL); tre nuove
-prove dei gesti sono rinviabili. Il FAIL lingua resta conservato.
-[Riscontro completo](../source/manual-interaction-feedback-2026-10-18.md).
+Stato corrente dopo il secondo riscontro del 2026-10-18: **9 PENDING + 1 FAIL manuale**.
+Acquisiti 13 nuovi PASS: EXT4, dialoghi UX-04A 1–4, ricontrolli 1 e 3,
+LANG-01.2, scheda medica UX-04B 1–4 e UX-05.1. Il ricontrollo Indossa/Togli
+resta FAIL per la pausa con I; l'utente ha scelto la semantica nativa atomica,
+senza annullamento del singolo capo. Le prove non eseguite restano pendenti.
+[Riscontro e decisione](../source/manual-validation-followup-2026-10-18.md).
 I contatori e i paragrafi dei riscontri precedenti sotto sono storici.
 Acquisiti **12 nuovi PASS**: UI/mapping 4, hotbar 4, mano/contenitori 2,
 lingua 1 e mira 1. I 13 punti non provati rimangono; aggiunte 3 prove mirate
@@ -538,7 +539,7 @@ nel [report UX-03](../fixes/interactive-quickbar.md); non costituiscono PASS
 manuali. La lingua ha ora la checklist separata sotto; mira RMB, UV/rig,
 animazioni e suoni restano nel piano.
 
-## LANG-01 — Lingua del prodotto — 1 PASS; 2 FAIL manuale (2026-10-13)
+## LANG-01 — Lingua del prodotto — VALIDATA: 1–2 PASS (2026-10-18)
 
 Disponibile dal normale `./start.sh`; non serve fare queste prove oggi.
 I PASS precedenti rimangono accettati. Le prove automatiche delle due lingue
@@ -602,7 +603,7 @@ prima di riprendere da una pausa di minaccia. F resta una scorciatoia alternativ
    Il controllo automatico include reconnect; non devi interrompere IPC a mano.
 
 
-## EXT-01 — Contenitori esterni e raccolta parziale — 1–3 PASS, 4 FAIL (2026-10-18)
+## EXT-01 — Contenitori esterni e raccolta parziale — VALIDATA: 1–4 PASS (2026-10-18)
 
 Prova isolata: `./storage-demo.sh --fresh`. Le partite normali aperte con
 `./start.sh` ricevono la stessa interazione. Senza `--fresh` la demo riapre
@@ -633,7 +634,7 @@ Questa checklist non richiede prove oggi. Nessun PASS è dedotto dai test
 automatici; tutti i PASS già dichiarati nelle sezioni precedenti rimangono.
 
 
-## UX-04A — Dialoghi nativi e feedback del lavoro — PENDING (4), rinviabili
+## UX-04A — Dialoghi nativi e feedback del lavoro — VALIDATA: 1–4 PASS (2026-10-18)
 
 Le interfacce sono disponibili nel normale `./start.sh`. Per prove isolate usa
 `./consumption-demo.sh --fresh` e `./medicine-demo.sh --fresh`: non aprono la
@@ -664,28 +665,32 @@ I vecchi PASS rimangono. Le eccezioni UX-02 morte/IPC non provate restano nelle
 loro sezioni: queste prove e l'automazione non deducono la tua accettazione.
 
 
-## Ricontrolli commenti del 2026-10-13 — PENDING (3), rinviabili
+## Ricontrolli commenti del 2026-10-13 — 1 e 3 PASS, 2 FAIL (2026-10-18)
 
 1. **DND senza vista vuota:** equipment-demo --fresh, I; riordina griglia,
    assegna/scambia/svuota hotbar. Durante l’attesa della risposta la griglia
    resta visibile, poi si aggiorna senza mostrare il pannello vuoto di lettura.
    Le azioni fisiche mantengono invece i costi nativi e la pausa/ritorno.
-2. **Indossa/Togli:** indossa e togli un oggetto con costo percepibile.
-   Il pannello mostra percentuale/progresso del pagamento temporale CDDA;
-   I mette in pausa anche questo pagamento. Alla fine lo stato indossato è
-   aggiornato. Per azioni brevi il pannello può durare poco; nessun ritardo finto.
+2. **Indossa/Togli — FAIL, ricontrollo della correzione:** in
+   `./equipment-demo.sh --fresh`, indossa e togli un capo. Il cambiamento è
+   immediato; il pannello indica il tempo nativo restante in secondi di gioco,
+   senza una barra di vestizione o pulsante Interrompi. Premi I anche subito
+   dopo la scelta: deve aprirsi e mettere in pausa il tempo residuo; il capo
+   risulta già indossato/tolto. Chiudi: riprende lo stesso costo senza annullare
+   il cambio né riavviarlo. Per renderlo più osservabile puoi ridurre la velocità
+   con F8 prima di aprire I. Nessun ritardo finto. La mancanza di annullamento
+   è ora voluta: decisione esplicita dell'utente dopo verifica del codice nativo.
+   Le vere attività (medicazione/crafting ecc.) conservano invece Interrompi.
 3. **Destinazioni più grandi:** Quantità e trasferimenti mostra sei contenitori
    per pagina con righe più alte. DND e clic selezionano la destinazione giusta;
    se ce ne sono di più, le frecce permettono di raggiungerli. Capacità e quantità
    conservano la validazione CDDA.
 
-**LANG-01 punto 2 — FAIL conservato, ricontrollo della correzione:** Esc usa
-ora due pulsanti espliciti English / Italiano (WIP). Scegli italiano, esci e
-riavvia; scegli poi English, esci e riavvia. Entrambi i processi devono tornare
-inglesi e la scelta deve restare al successivo avvio. Non è un nuovo punto
-conteggiato: è il ricontrollo del FAIL sopra. Cambio a caldo rinviato.
+**LANG-01 punto 2 — PASS ricevuto il 2026-10-18:** accettato il ritorno a
+English con i pulsanti espliciti e riavvio. Il FAIL precedente è storico;
+non è una nuova prova pendente. Cambio a caldo rinviato.
 
-## UX-04B — Scheda medica strutturata — PENDING (4), rinviabili
+## UX-04B — Scheda medica strutturata — VALIDATA: 1–4 PASS (2026-10-18)
 
 Prova isolata: `./medicine-demo.sh --fresh`; disponibile anche in start.sh.
 
@@ -705,7 +710,7 @@ Prova isolata: `./medicine-demo.sh --fresh`; disponibile anche in start.sh.
    descrizioni inglesi dove manca la traduzione, ma stessi cuori e scelte.
 
 
-## UX-05 — Ricette recenti, preferite e incompleti — PENDING (4), rinviabili
+## UX-05 — Ricette recenti, preferite e incompleti — 1 PASS, 2–4 PENDING (2026-10-18)
 
 Disponibile nel normale `./start.sh`; scena isolata `./crafting-demo.sh --fresh`.
 
@@ -753,7 +758,6 @@ al consolidamento delle interfacce, ma queste prove possono ancora essere rinvia
    né raccolta deve partire dopo la ripresa. Worn/liquidi/proprietà/sigilli
    conservano i rifiuti nativi, senza togliere vestiti o rubare implicitamente.
 
-**EXT4 — FAIL conservato:** in pausa F7, RMB su un oggetto sfuso o un gesto
-nel contenitore non deve creare raccolta differita. Riprendi e attendi senza
-cliccare: l’oggetto resta dov’è. Soltanto un nuovo clic avvia la raccolta.
-Questo ricontrollo completa il punto EXT4, senza duplicarlo nei contatori.
+**EXT4 — PASS ricevuto il 2026-10-18:** accettata l'assenza di raccolta
+rinviata dopo F7. Non duplicare questo punto nei contatori. Il commento UX
+sul menu 9×3 per oggetti sfusi è nel seguito; non revoca il PASS funzionale.

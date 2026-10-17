@@ -126,7 +126,7 @@ def main():
                                     if hold_equipment_reply.is_set() and CwmMessage.GetRootAs(client_frames[4:size+4]).PayloadType()==Payload.EquipmentRequest:
                                         hold_server.set();hold_equipment_reply.clear()
                                     del client_frames[:size+4]
-                            if source is server_socket and hold_server.is_set():
+                            if source is server_socket and (hold_server.is_set() or delayed_server):
                                 delayed_server.extend(data)
                             else:
                                 (server_socket if source is client_socket else client_socket).sendall(data)
@@ -222,7 +222,6 @@ def main():
             from CDDA.CWM.Payload import Payload
             from CDDA.CWM.InventoryView import InventoryView
             def views():
-                import struct
                 buf = (out / 'server-wire.bin').read_bytes(); offset = 0; found = []
                 while offset + 4 <= len(buf):
                     n = struct.unpack('>I', buf[offset:offset+4])[0]; offset += 4
@@ -233,7 +232,6 @@ def main():
                         if v.ViewId(): found.append(v)
                 return found
             def cancel_choice():
-                import struct
                 from CDDA.CWM.DecisionPrompt import DecisionPrompt
                 buf = (out / 'server-wire.bin').read_bytes(); offset = 0; options = []
                 while offset + 4 <= len(buf):
@@ -303,7 +301,6 @@ def main():
                 return next(e for e in entries(v) if e.TypeId().decode() == name)
             if args.language_smoke:
                 language = args.language_smoke
-                import struct
                 from CDDA.CWM.WorldSnapshot import WorldSnapshot
                 buf=(out/'server-wire.bin').read_bytes();offset=0;status=None
                 while offset+4<=len(buf):
@@ -370,7 +367,6 @@ def main():
                           item(view,'hat_ball').Name().decode() == '++\u00a0' + ('cappello da baseball' if language == 'it' else 'baseball cap'))
                     tap('Escape');wait(lambda r:int(r['equipment_form'])==0)
             elif args.quickbar or args.quickbar_resume:
-                import struct
                 from CDDA.CWM.WorldSnapshot import WorldSnapshot
                 def states():
                     buf=(out/'server-wire.bin').read_bytes();offset=0;found=[]
@@ -496,7 +492,6 @@ def main():
                 from CDDA.CWM.WorldSnapshot import WorldSnapshot
                 from CDDA.CWM.Payload import Payload
                 from CDDA.CWM.CwmMessage import CwmMessage
-                import struct
                 def snapshots():
                     buf=(out/'server-wire.bin').read_bytes();offset=0;states=[]
                     while offset+4<=len(buf):
@@ -543,7 +538,6 @@ def main():
                 view=open_inventory();check('next_equipment_action_uses_fresh_inventory',item(view,'rock').Wielded())
                 tap('Escape');wait(lambda r:int(r['equipment_form'])==0)
             elif args.sequential:
-                import struct
                 from CDDA.CWM.WorldSnapshot import WorldSnapshot
                 from CDDA.CWM.SimulationControlRequest import SimulationControlRequest
                 from CDDA.CWM.EquipmentRequest import EquipmentRequest
