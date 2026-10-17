@@ -138,7 +138,7 @@
     "python3 tools/takeover_baseline.py capture; commit captured source before refresh",
     "python3 tools/refresh_verification_workspace.py --workspace artifacts/fnd03-session/workspace --receipt artifacts/recipes-20261014/native-refresh-real-sources.json",
     "cmake --build artifacts/fnd03-session/workspace/cdda/build --target cdda-server cata_test -j3",
-    "(cd artifacts/fnd03-session/workspace/cdda && build/tests/cata_test \"[cwm],[pickup],[item],[reload]\" --rng-seed42 --user-dir=/home/dannhill/Projects/cdda-mineclonia/artifacts/recipes-20261014/native-test-user-v3)",
+    "(cd artifacts/fnd03-session/workspace/cdda && build/tests/cata_test \"[cwm],[pickup],[item],[reload]\" --rng-seed 42 --user-dir=/home/dannhill/Projects/cdda-mineclonia/artifacts/recipes-20261014/native-test-user-v3)",
     "cmake --build artifacts/language-20261011/workspace/luanti/build --target luanti -j3",
     "artifacts/language-20261011/workspace/luanti/bin/luanti --run-unittests --config /home/dannhill/Projects/cdda-mineclonia/artifacts/recipes-20261014/unit.conf --logfile /home/dannhill/Projects/cdda-mineclonia/artifacts/recipes-20261014/unit-engine.log",
     "ctest --test-dir artifacts/language-20261011/workspace/build/protocol --output-on-failure",
