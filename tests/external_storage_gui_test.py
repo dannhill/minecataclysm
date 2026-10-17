@@ -253,7 +253,7 @@ def main():
                 return views()[-1]
             if args.resume_only:
                 check('reloaded_external_menu_keeps_owned_twenty_two_rounds',sum(e.Charges() for e in entries(view) if not e.External() and e.TypeId().decode()=='9mm')==22)
-                check('reloaded_external_menu_keeps_twenty_eight_rounds_outside',sum(e.Charges() for e in entries(view) if e.External() and e.TypeId().decode()=='9mm')==(23 if args.feedback else 28))
+                check('reloaded_external_menu_keeps_twenty_three_rounds_outside' if args.feedback else 'reloaded_external_menu_keeps_twenty_eight_rounds_outside',sum(e.Charges() for e in entries(view) if e.External() and e.TypeId().decode()=='9mm')==(23 if args.feedback else 28))
                 pack=find(view,'backpack_hiking',True)
                 check('reloaded_external_backpack_retains_two_nested_rounds',find(view,'9mm',True,pack.Id()).Charges()==2)
                 check('reloaded_nested_rock_stays_owned',bool(find(view,'rock',False)))
