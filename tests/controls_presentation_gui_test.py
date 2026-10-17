@@ -103,7 +103,7 @@ def main():
                         if closed:
                             break
         except Exception as error:
-            relay_errors.append(str(error))
+            if not stop.is_set(): relay_errors.append(str(error))
     relay_thread = threading.Thread(target=relay, daemon=True)
     relay_thread.start()
     wrapper = out / 'client-relay.py'
@@ -371,6 +371,7 @@ def main():
                 shot('last-frame.png')
             subprocess.run(['xdotool', 'mouseup', '1'], capture_output=True)
             subprocess.run(['xdotool', 'keyup', 'w', 'Control_L', 'Shift_L', 'x'], capture_output=True)
+            stop.set()  # Explicit test shutdown; preserve all earlier relay failures.
             if proc.poll() is None:
                 os.killpg(proc.pid, signal.SIGTERM)
                 try:
