@@ -19,6 +19,7 @@ import select
 import tempfile
 import threading
 import sys
+import struct
 
 
 def main():
@@ -29,6 +30,7 @@ def main():
     parser.add_argument('--resume-only', action='store_true')
     parser.add_argument('--drag-equipment', action='store_true')
     parser.add_argument('--sequential', action='store_true', help='Exercise UX-02 paid completion and automatic return')
+    parser.add_argument('--native-equipment-time', action='store_true', help='Atomic clothing, inspection during delayed ACK, frozen/resumed native debit')
     parser.add_argument('--quickbar', action='store_true', help='Verify UX-03 shortcuts, focus, native costs, pause and persistence')
     parser.add_argument('--quickbar-resume', action='store_true', help='Verify the saved UX-03 shortcut identities after actual reload')
     parser.add_argument('--presentation-only', action='store_true', help='Exercise paging, layering and search without gameplay mutations')
@@ -84,6 +86,8 @@ def main():
     relay_path = Path(scratch.name) / 'relay.sock'
     native_path = out / 'native-socket'
     stop, drop = threading.Event(), threading.Event()
+    hold_server = threading.Event()
+    hold_equipment_reply = threading.Event()
     relay_errors = []
     listener = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     listener.bind(str(relay_path)); listener.listen(1); listener.settimeout(.1)
@@ -96,10 +100,15 @@ def main():
                     continue
                 with client_socket, socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as server_socket:
                     server_socket.connect(native_path.read_text().strip())
+                    delayed_server = bytearray()
+                    client_frames = bytearray()
                     while not stop.is_set():
                         if drop.is_set():
                             drop.clear()
                             break
+                        if delayed_server and not hold_server.is_set():
+                            client_socket.sendall(delayed_server)
+                            delayed_server.clear()
                         readable, _, _ = select.select([client_socket, server_socket], [], [], .03)
                         closed = False
                         for source in readable:
@@ -109,7 +118,18 @@ def main():
                                 break
                             with (out / ('client-wire.bin' if source is client_socket else 'server-wire.bin')).open('ab') as capture:
                                 capture.write(data)
-                            (server_socket if source is client_socket else client_socket).sendall(data)
+                            if source is client_socket:
+                                client_frames.extend(data)
+                                while len(client_frames)>=4:
+                                    size=struct.unpack('>I',client_frames[:4])[0]
+                                    if len(client_frames)<size+4:break
+                                    if hold_equipment_reply.is_set() and CwmMessage.GetRootAs(client_frames[4:size+4]).PayloadType()==Payload.EquipmentRequest:
+                                        hold_server.set();hold_equipment_reply.clear()
+                                    del client_frames[:size+4]
+                            if source is server_socket and hold_server.is_set():
+                                delayed_server.extend(data)
+                            else:
+                                (server_socket if source is client_socket else client_socket).sendall(data)
                         if closed:
                             break
         except Exception as error:
@@ -472,6 +492,56 @@ def main():
                 check('drag_into_hand_runs_native_wield',item(view,'rock').Wielded())
                 check('physical_drags_pay_native_time',int(latest()['simulation_time'])>int(paused))
                 shot('drag-final-equipment.png')
+            elif args.native_equipment_time:
+                from CDDA.CWM.WorldSnapshot import WorldSnapshot
+                from CDDA.CWM.Payload import Payload
+                from CDDA.CWM.CwmMessage import CwmMessage
+                import struct
+                def snapshots():
+                    buf=(out/'server-wire.bin').read_bytes();offset=0;states=[]
+                    while offset+4<=len(buf):
+                        size=struct.unpack('>I',buf[offset:offset+4])[0];offset+=4
+                        if offset+size>len(buf):break
+                        msg=CwmMessage.GetRootAs(buf[offset:offset+size]);offset+=size
+                        if msg.PayloadType()==Payload.WorldSnapshot:
+                            state=WorldSnapshot();state.Init(msg.Payload().Bytes,msg.Payload().Pos);states.append(state)
+                    return states
+                tap('Escape');wait(lambda r:int(r['equipment_form'])==0)
+                tap('F8');wait(lambda r:float(r['time_scale'])==.5)
+                view=open_inventory()
+                for number, worn in ((2,True),(3,False)):
+                    # Delay bytes only, with unchanged order/contents. The real
+                    # server can apply the garment while its ACK is in flight.
+                    select_item(item(view,'hat_ball'));sent=int(latest()['equipment_sent'])
+                    hold_equipment_reply.set()
+                    click(12.325+(number%2)*2.2,8.15+(number//2)*.75)
+                    wait(lambda r:int(r['equipment_sent'])==sent+1 and int(r['pending_move'])>0)
+                    command=int(latest()['inventory_work_command'])
+                    tap('i')
+                    check('inspection_opens_before_ack_'+str(number),int(latest()['equipment_form'])==1 and int(latest()['pending_move'])==command)
+                    hold_server.clear()
+                    wait(lambda r:int(r['pending_move'])==0 and int(r['inventory_view'])>0 and int(r['pause_reasons'])&2)
+                    view=views()[-1];frozen=latest()
+                    check('garment_applied_atomically_'+str(number),item(view,'hat_ball').Worn()==worn)
+                    check('native_debit_not_an_activity_'+str(number),int(frozen['native_work_command'])==command and int(frozen['native_work_settled'])==0 and int(frozen['native_work_remaining_ms'])>0 and int(frozen['consumption_token'])==0)
+                    time.sleep(1.2)
+                    check('inspection_freezes_time_and_debit_'+str(number),latest()['simulation_time']==frozen['simulation_time'] and latest()['native_work_remaining_ms']==frozen['native_work_remaining_ms'])
+                    shot('atomic-inspect-'+str(number)+'.png')
+                    tap('Escape');wait(lambda r:int(r['equipment_form'])==0 and int(r['pause_reasons'])==0)
+                    wait(lambda r:int(r['native_work_remaining_ms'])<int(frozen['native_work_remaining_ms']))
+                    check('close_resumes_same_debit_and_panel_'+str(number),int(latest()['native_work_command'])==command and int(latest()['inventory_work_command'])==command and int(latest()['inventory_work_visible'])==1)
+                    check('no_fractional_clothing_progress_bar_'+str(number),int(latest()['work_progress_visible'])==0)
+                    shot('atomic-time-'+str(number)+'.png')
+                    wait(lambda r:int(r['native_work_settled'])==1,timeout=35)
+                    check('inspection_does_not_force_return_'+str(number),int(latest()['equipment_form'])==0)
+                    view=open_inventory()
+                    check('paid_state_still_has_expected_garment_'+str(number),item(view,'hat_ball').Worn()==worn)
+                    paid_states=[s for s in snapshots() if s.InventoryWork() and s.InventoryWork().CommandId()==command]
+                    check('native_wire_debit_monotonic_'+str(number),all(b.InventoryWork().RemainingTimeMs()<=a.InventoryWork().RemainingTimeMs() for a,b in zip(paid_states,paid_states[1:])) and any(s.InventoryWork().Settled() for s in paid_states))
+                # Leave the same canonical end condition as the standard suite.
+                select_item(item(view,'rock'));action(0);finish_action()
+                view=open_inventory();check('next_equipment_action_uses_fresh_inventory',item(view,'rock').Wielded())
+                tap('Escape');wait(lambda r:int(r['equipment_form'])==0)
             elif args.sequential:
                 import struct
                 from CDDA.CWM.WorldSnapshot import WorldSnapshot
