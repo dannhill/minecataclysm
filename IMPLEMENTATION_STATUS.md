@@ -1,6 +1,37 @@
 # Implementation status
 
-Current scoped delivery: **UX-05 native recipe shortcuts**, CWM **2.22**,
+Current scoped delivery: **INT-01 interaction feedback**, CWM **2.23**, installed
+in ordinary `start.sh` with paired rollback runtimes. RMB toggles projected
+openings using their last authoritative state; Shift is posture only. Shift-click
+moves to the opposite external pane or the selected owned container. Dropping
+outside an inventory/transfer formspec requests native ground DROP; Esc and
+background inside still cancel. Actual quantities, roles, costs, seals, capacity
+and ownership remain CDDA. No local inventory edits or automatic undress/theft.
+
+Paused loose pickup is rejected and unsent selections are discarded, so RESUME
+never executes the old click. External partial DROP uses native item::split,
+conserving the remainder and its shortcut identity. Continuous CLOSE refuses a
+tile intersecting the native body at admission and execution. The reported jam
+while *opening* the original world door remains a manual recheck: the concrete
+reproduced/guarded case is close-through-body, not a certified mesh fix.
+Aim release semantics are unchanged and pending discussion: stop paid AIM input,
+retain earned precision under the integrated native policy, no forced recoil reset.
+[Design](docs/design/interaction-feedback.md), [delivery](docs/fixes/interaction-feedback.md).
+
+Manual feedback: AIM1–3 PASS, EXT1–3 PASS, EXT4 FAIL only for paused deferred
+pickup. Five new PASS; backlog **21 PENDING + 2 manual FAIL** (language and EXT4),
+including three new gesture checks. All prior PASS retained. No manual testing
+required today; automatic checks do not constitute personal acceptance.
+[Backlog](docs/validation/pending-manual.md).
+
+Scoped verification: 183 native cases / 186,099 assertions; 309 client tests /
+47 modules plus 648 Catch assertions / 4 cases; 11 protocol tests. Actual renderer
+and independent canonical readers cover toggled windows, paid shortcut transfers,
+partial outside drops, pause/resume, recovery and canonical state. Incremental
+reconstructed builds, not a clean build. Batch60 mapping unchanged; full SAVE-001
+OPEN and historical M5.5 FAILED. Next: core consolidation and rig/UV/animation/audio.
+
+Previous scoped delivery: **UX-05 native recipe shortcuts**, CWM **2.22**,
 installed in ordinary `start.sh`, with paired rollback runtimes retained.
 K has All/Favorites/Recent/Unfinished; opening prioritizes reachable unfinished
 work, known recent recipes, known favorites, then All. Native filtering precedes
