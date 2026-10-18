@@ -11,6 +11,10 @@ The normal `./start.sh` opens the world directly. Press **Esc**, click
 **English** or **Italiano (WIP)** on the right, then exit the game and launch `start.sh`
 again. The current session retains its startup language: changing a preference
 does not reinterpret an open native decision or restart an activity.
+Selecting a language keeps the pause menu open and the simulation paused.
+Passive bridge HUD/tint widgets are hidden while any modal menu is open,
+including engine menus. Disabled Irrlicht widgets still participate in hit
+testing; a fullscreen darkness/underwater tint must never intercept these clicks.
 The main-menu Settings → Accessibility selector exposes the same two choices
 when Luanti is opened through its main menu.
 
@@ -73,6 +77,7 @@ catalog hashes and limits. Full SAVE-001 and M5.5 are not recertified by languag
 checks. Future feature UI must follow these same language boundaries.
 
 UX-04B (2026-10-13) replaces the pause dropdown with explicit language buttons.
-The user's Italian → English FAIL stays in manual review; automated menu/restart
-checks are scoped evidence, not personal acceptance. Live language switching is
+The user's renewed Italian → English FAIL after `91393f7` stays in manual review;
+[the overlay repair](../fixes/pause-language-menu.md) has scoped automated
+menu/restart evidence, which does not constitute personal acceptance. Live language switching is
 deferred; all clinical and decision text remains in the startup language.

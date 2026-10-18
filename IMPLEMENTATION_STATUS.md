@@ -1,6 +1,30 @@
 # Implementation status
 
-Current scoped delivery: **native paper-book reading and study**, CWM **2.25**,
+Current scoped repair: **English selection from Esc in low light**. Passive
+root-level tint/HUD widgets no longer intercept modal clicks. The engine menu
+manager controls overlay suppression for every modal, including Esc. Language
+selection keeps the menu open and time paused; the existing launcher persists
+the choice and applies it on restart. Verified client installed in normal
+`start.sh`; native runtime/data, CWM 2.25 and mapping batch60 unchanged.
+[Repair](docs/fixes/pause-language-menu.md),
+[exact evidence](docs/fixes/pause-language-menu-evidence.json).
+
+Scoped PASS: **309 client tests / 47 modules**, 648 Catch assertions / 4 cases,
+**9 language tests** and **75 renderer/canonical checks** across both language
+directions and an installed restart using the actual saved English preference.
+Independent pristine-core readback checks isolated saves and possessions;
+native options are untouched. Incremental reconstructed build, not cold build.
+Full SAVE-001 OPEN and historical M5.5 FAILED remain unchanged.
+
+Manual status: **28 PENDING + 1 FAIL**, LANG-01.2 reopened after the human report
+following `91393f7`. Automatic verification does not close the personal FAIL;
+prior PASS entries remain historical. The normal presentation preference is now
+English as requested; an existing session needs a full quit/relaunch.
+[Human report](docs/source/language-regression-2026-10-18.md),
+[manual ledger](docs/validation/pending-manual.md).
+Next functional core slice remains native disassembly/related item work.
+
+Previous scoped delivery: **native paper-book reading and study**, CWM **2.25**,
 installed in normal `start.sh` with paired rollback runtimes. I offers Skim/Read;
 native CDDA owns access costs, conditions, helpers, chapter duration, knowledge
 and theoretical experience. I pauses; Interrupt follows native backlog/resume.

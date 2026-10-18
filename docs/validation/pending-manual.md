@@ -592,6 +592,13 @@ non attestano la tua accettazione della leggibilità e del menu.
    viene cambiato in italiano, ma poi nel menu a tendina se ripremo sulla freccetta
    e seleziono inglese non me lo cambia e se riavvio il gioco rimane in italiano)
 
+**Riparazione del nuovo FAIL LANG-01.2:** gli overlay del renderer vengono
+ora nascosti per tutti i menu modali, incluso Esc. Il filtro del buio non deve
+intercettare il clic su English e convertirlo in una chiusura. Ricontrolla il
+punto 2 anche in un interno buio: clic su English, menu ancora aperto/tempo
+fermo, poi uscita e riavvio con lingua inglese. La riparazione automatica
+non chiude questo FAIL umano; non occorre ripetere tutti gli altri test.
+
 ## AIM-01 — Mira con destro mantenuto — VALIDATA: 1–3 PASS (2026-10-18)
 
 Questa checklist conserva il binding della versione accettata. Il nuovo RMB

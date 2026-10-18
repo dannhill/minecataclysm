@@ -1,0 +1,291 @@
+{
+  "scope": "Pause-menu language regression in low light: modal input isolation, real menu selection, persistence and installed restart",
+  "date": "2026-10-18",
+  "source_commit": "6be6c302960b54ada8d503bef76e04f44f437653",
+  "protocol": "CWM 2.25 unchanged; native runtime/data and item mapping unchanged",
+  "cause": "Passive fullscreen GUI tint remained visible over the engine pause menu. Disabled Irrlicht elements participate in hit testing; modal outside-click handling translated the intercepted click to Escape before the language button received it.",
+  "repair": "Game passes the actual menu-manager state to the bridge renderer. Hide all passive bridge widgets/icons while any modal menu is open; restore their normal native-derived state on closing. No language/persistence/gameplay rules were changed.",
+  "sources": {
+    "cdda": {
+      "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+      "patch_sha256": "675f39601ffd3ffb8394512f5b5982ee2abb0f9751dc213763945891452db2af",
+      "tree_sha256": "9eee694f0affad5f7ee3d6f43eaa69a4dc4ebd58d05de046b78ba5a6115e9286"
+    },
+    "luanti": {
+      "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
+      "patch_sha256": "bacf54293c6908b5617d76f82be4e4fa0acbc260f13d8ef70def7c1fd5fa8388",
+      "tree_sha256": "775a7abe99a7ddf3b1c3ddcda6871d912acccc4ee371719f3c1b3801532cd828"
+    },
+    "mineclonia": {
+      "commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36"
+    }
+  },
+  "refresh": {
+    "path": "artifacts/language-menu-20261018/refresh-fix.json",
+    "sha256": "a6fd4a56822181c5e6792f69046bc855d9824cc0cf90343ae6a52cdeceba2212"
+  },
+  "build": {
+    "path": "artifacts/language-menu-20261018/build-fix.log",
+    "sha256": "bc687b2f8ff2d07e83df25679aa402c25c137f637afcac170dfde635b00cbddb"
+  },
+  "baseline": {
+    "path": "artifacts/language-menu-20261018/baseline-check.log",
+    "sha256": "c5c806eba66eaa0aab12a62970ae9b708a07424de82f70379712e2e89f1de56a"
+  },
+  "build_mode": "Incremental owned reconstruction with retained caches, Release/LTO, ENABLE_SOUND=ON; not a cold build",
+  "environment": {
+    "platform": "Linux-7.0.11-76070011-generic-x86_64-with-glibc2.35",
+    "gui": "Private Xvfb, Mesa software, 1280x800 at 96 DPI; OpenAL null backend"
+  },
+  "client_units": {
+    "tests": 309,
+    "modules": 47,
+    "catch_assertions": 648,
+    "catch_cases": 4,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/language-menu-20261018/client-unit.log",
+      "sha256": "040d27123c3991b7ce2647041dc92fafc0aac42927786617b59de78bcd3f255e"
+    }
+  },
+  "language_units": {
+    "tests": 9,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/language-menu-20261018/language-unit.log",
+      "sha256": "c03d562ec1a0ae12a5e2da20983274941c1d7504153f624ecd9aff3b5148029d"
+    }
+  },
+  "gui": {
+    "fixed-it-en": {
+      "runtime": "reconstructed",
+      "checks": 25,
+      "assertions": {
+        "actual_start_ready": true,
+        "native_inventory_opened": true,
+        "integration_status_labels_use_selected_language": true,
+        "native_item_name_uses_selected_catalog": true,
+        "native_nested_backpack_name_uses_selected_catalog": true,
+        "native_category_ids_are_language_independent": true,
+        "translated_filter_resolves_semantic_container_selection": true,
+        "actual_launcher_selects_same_language_in_renderer": true,
+        "localized_inventory_remains_read_only_and_paused": true,
+        "native_decision_cancel_uses_selected_catalog": true,
+        "localized_native_cancel_preserves_wielded_item": true,
+        "pause_language_reproduces_low_light_overlay": true,
+        "pause_menu_hides_passive_hud": true,
+        "real_pause_menu_updates_product_preference": true,
+        "language_preference_is_free_and_keeps_simulation_paused": true,
+        "language_click_keeps_pause_menu_open": true,
+        "menu_change_keeps_current_native_language_until_restart": true,
+        "byte_relay_completed_without_errors": true,
+        "equipment_save_readable_by_pristine_native_core": true,
+        "canonical_save_has_each_fixture_item_once": true,
+        "canonical_save_records_expected_weapon": true,
+        "canonical_save_records_backpack_worn": true,
+        "readonly_inventory_preserves_canonical_items": true,
+        "presentation_language_does_not_rewrite_native_options": true,
+        "normal_launcher_persists_actual_menu_change": true
+      },
+      "checks_file": {
+        "path": "artifacts/language-menu-20261018/fixed-it-en/checks.json",
+        "sha256": "ac9bf44d32a45ae4b571a6da54c8a41473cb6cd3846fbcdefcc50a5d46a98504"
+      },
+      "summary": {
+        "path": "artifacts/language-menu-20261018/fixed-it-en/summary.json",
+        "sha256": "c2003c1f15b8d9930f57b47cef1070f7d1d2e4f2af654f7f5a54dbb837f5f882"
+      },
+      "canonical": {
+        "path": "artifacts/language-menu-20261018/fixed-it-en/native.json",
+        "sha256": "809ffda2bc65fefb7fc079d44f7d07bf4aa7d905abd3b27851554eb2e98d1bec"
+      },
+      "menu_screenshot": {
+        "path": "artifacts/language-menu-20261018/fixed-it-en/pause-language-selected.png",
+        "sha256": "b465bd9451a7922e96774613f82e61727b2de6df3862cab3dc235c5fe15cad76"
+      }
+    },
+    "fixed-en-it": {
+      "runtime": "reconstructed",
+      "checks": 25,
+      "assertions": {
+        "actual_start_ready": true,
+        "native_inventory_opened": true,
+        "integration_status_labels_use_selected_language": true,
+        "native_item_name_uses_selected_catalog": true,
+        "native_nested_backpack_name_uses_selected_catalog": true,
+        "native_category_ids_are_language_independent": true,
+        "translated_filter_resolves_semantic_container_selection": true,
+        "actual_launcher_selects_same_language_in_renderer": true,
+        "localized_inventory_remains_read_only_and_paused": true,
+        "native_decision_cancel_uses_selected_catalog": true,
+        "localized_native_cancel_preserves_wielded_item": true,
+        "pause_language_reproduces_low_light_overlay": true,
+        "pause_menu_hides_passive_hud": true,
+        "real_pause_menu_updates_product_preference": true,
+        "language_preference_is_free_and_keeps_simulation_paused": true,
+        "language_click_keeps_pause_menu_open": true,
+        "menu_change_keeps_current_native_language_until_restart": true,
+        "byte_relay_completed_without_errors": true,
+        "equipment_save_readable_by_pristine_native_core": true,
+        "canonical_save_has_each_fixture_item_once": true,
+        "canonical_save_records_expected_weapon": true,
+        "canonical_save_records_backpack_worn": true,
+        "readonly_inventory_preserves_canonical_items": true,
+        "presentation_language_does_not_rewrite_native_options": true,
+        "normal_launcher_persists_actual_menu_change": true
+      },
+      "checks_file": {
+        "path": "artifacts/language-menu-20261018/fixed-en-it/checks.json",
+        "sha256": "ac9bf44d32a45ae4b571a6da54c8a41473cb6cd3846fbcdefcc50a5d46a98504"
+      },
+      "summary": {
+        "path": "artifacts/language-menu-20261018/fixed-en-it/summary.json",
+        "sha256": "fe3d50dc1e663beb75865b4f4fc9c117e64ab8ec6eecb77d0510f0799a95921c"
+      },
+      "canonical": {
+        "path": "artifacts/language-menu-20261018/fixed-en-it/native.json",
+        "sha256": "3dccf2ec2c11da5466121637c870104bcb6ef197f1f1f4e72f94eff9a7a1702a"
+      },
+      "menu_screenshot": {
+        "path": "artifacts/language-menu-20261018/fixed-en-it/pause-language-selected.png",
+        "sha256": "cfa6f3879b3b631596a9f28429e39f91e6c4fbe5e5f20700f788cd3e60caf4aa"
+      }
+    },
+    "installed-restart-en": {
+      "runtime": "installed start.sh",
+      "checks": 25,
+      "assertions": {
+        "actual_start_ready": true,
+        "native_inventory_opened": true,
+        "integration_status_labels_use_selected_language": true,
+        "native_item_name_uses_selected_catalog": true,
+        "native_nested_backpack_name_uses_selected_catalog": true,
+        "native_category_ids_are_language_independent": true,
+        "translated_filter_resolves_semantic_container_selection": true,
+        "actual_launcher_selects_same_language_in_renderer": true,
+        "localized_inventory_remains_read_only_and_paused": true,
+        "native_decision_cancel_uses_selected_catalog": true,
+        "localized_native_cancel_preserves_wielded_item": true,
+        "pause_language_reproduces_low_light_overlay": true,
+        "pause_menu_hides_passive_hud": true,
+        "real_pause_menu_updates_product_preference": true,
+        "language_preference_is_free_and_keeps_simulation_paused": true,
+        "language_click_keeps_pause_menu_open": true,
+        "menu_change_keeps_current_native_language_until_restart": true,
+        "byte_relay_completed_without_errors": true,
+        "equipment_save_readable_by_pristine_native_core": true,
+        "canonical_save_has_each_fixture_item_once": true,
+        "canonical_save_records_expected_weapon": true,
+        "canonical_save_records_backpack_worn": true,
+        "readonly_inventory_preserves_canonical_items": true,
+        "presentation_language_does_not_rewrite_native_options": true,
+        "normal_launcher_persists_actual_menu_change": true
+      },
+      "checks_file": {
+        "path": "artifacts/language-menu-20261018/installed-restart-en/checks.json",
+        "sha256": "ac9bf44d32a45ae4b571a6da54c8a41473cb6cd3846fbcdefcc50a5d46a98504"
+      },
+      "summary": {
+        "path": "artifacts/language-menu-20261018/installed-restart-en/summary.json",
+        "sha256": "42fcef1948842113fb34a4d84ef222079abea99e4dd9791f6cde33e650c11b43"
+      },
+      "canonical": {
+        "path": "artifacts/language-menu-20261018/installed-restart-en/native.json",
+        "sha256": "f53514dec50265f0f4f4b18c6e227ee6f82dbc9e88d742d7efd1123dd072377b"
+      },
+      "menu_screenshot": {
+        "path": "artifacts/language-menu-20261018/installed-restart-en/pause-language-selected.png",
+        "sha256": "fa17c8422a98dbdf0477f1ac8fd87e56d42ce65614a847d202c7ad8222d3afe6"
+      }
+    }
+  },
+  "gui_checks": 75,
+  "install": {
+    "protocol": "2.25 unchanged",
+    "native_unchanged_sha256": "340f044d8ab98a421980f8706bacc21100af15679053221bd1a041201254a266",
+    "source_commit": "6be6c302960b54ada8d503bef76e04f44f437653",
+    "client": {
+      "source": "artifacts/language-20261011/workspace/luanti/bin/luanti",
+      "target": "luanti/bin/luanti",
+      "backup": "artifacts/language-menu-20261018/client-before-fix",
+      "before_sha256": "dfb6e086597976b023332bbdb7188d65224062aeba11737f9b7f64f31cd8917c",
+      "after_sha256": "3e183b225c9169a25523107b4e4c3604917e4a955b2bb2fa1124e63cd220c1a4"
+    }
+  },
+  "normal_presentation_preference": {
+    "path": "artifacts/language-menu-20261018/developer-preference.json",
+    "sha256": "94acb7e533a74f9dbf30db17e8476c06713e32e777906c5f727312181ba59762"
+  },
+  "reproduction": {
+    "old_installed_failure": {
+      "path": "artifacts/language-menu-20261018/reproduce-it-en.log",
+      "sha256": "63ea4cb63795cf0d6917a0f3b05e88f13fe0ee6703228843cea3da363811d62e"
+    },
+    "old_checks": {
+      "path": "artifacts/language-menu-20261018/reproduce-it-en/checks.json",
+      "sha256": "bcb055b1cbc842f3b254c5adc4e0a1bbeded1647779503bb2c6e05740e192a80"
+    },
+    "dispatch_diagnostic": {
+      "path": "artifacts/language-menu-20261018/diagnostic-it-en-v2/logs/luanti.log",
+      "sha256": "1aaa6cf2da8370144017724ec20eca35d4eaa36a393c18bb257d6abbfdc87c9e"
+    },
+    "diagnostic_failure": {
+      "path": "artifacts/language-menu-20261018/diagnostic-it-en-v2.log",
+      "sha256": "e854ba85368b85358afdf63b1b953fac7e89b3bd10b6a1e36e3455e88a6733e5"
+    },
+    "diagnostic_observation": "The pause handler received only quit, no language button. The scene trace exported low_light=1 and low_light_blend=1. Temporary input logs were removed from final production sources.",
+    "resolved_harness_issue": "The first private diagnostic script copy lacked tests/ on PYTHONPATH; the corrected diagnostic reproduced the product failure. No passing result is inferred from that import failure."
+  },
+  "canonical_reader": {
+    "pristine_core_pin": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+    "binary": {
+      "path": "artifacts/native-reading-20261018/native-save-reader",
+      "sha256": "8bff89f6ca3d3afc0cec9024c380969f1885a1844743270e9045f6a4c5e646f5"
+    },
+    "build_recipe": {
+      "path": "artifacts/native-reading-20261018/reader-build.json",
+      "sha256": "29d86a9313eca8e1cda31402fdd73da61f924074d9f26394a913c031ac6fa6e7"
+    },
+    "source": {
+      "path": "tests/takeover_save_reader.cpp",
+      "sha256": "f7c89287a7d99c8712fc6e35d7ee4edf1d6d5335015cc6e10fd961e8bc9944e5"
+    }
+  },
+  "harness": {
+    "path": "tests/equipment_gui_test.py",
+    "sha256": "fca61f46840f786ab10b29fc336987c99d2491cb6d83f400f9af20e26841cc67"
+  },
+  "manual": {
+    "pending": 28,
+    "open_fail": 1,
+    "reopened": "LANG-01.2 after the human report following 91393f7",
+    "acceptance": "No automatic result closes the human FAIL. Earlier human PASS entries remain historical evidence; one focused personal language recheck is requested in the ledger, without replaying the other 28 pending checks."
+  },
+  "remaining_gates": [
+    "Historical M5.5 FAILED",
+    "Full SAVE-001 OPEN",
+    "No new native/combat/protocol-wide certification; those components were unchanged"
+  ],
+  "commands": [
+    "python3 tools/takeover_baseline.py check",
+    "cmake --build artifacts/language-20261011/workspace/luanti/build --target luanti -j3",
+    "artifacts/language-20261011/workspace/luanti/bin/luanti --run-unittests --logfile artifacts/language-menu-20261018/client-unit-engine.log",
+    "python3 artifacts/language-20261011/workspace/tests/product_language_test.py",
+    "python3 artifacts/language-menu-20261018/run-gui.py equipment_gui_test.py artifacts/language-menu-20261018/fixture/user fixed-it-en --language-smoke it --use-saved-language --language-menu-change en",
+    "python3 artifacts/language-menu-20261018/run-gui.py equipment_gui_test.py artifacts/language-menu-20261018/fixture-en/user fixed-en-it --language-smoke en --use-saved-language --language-menu-change it",
+    "python3 artifacts/language-menu-20261018/install.py",
+    "CWM_TEST_INSTALLED=1 python3 artifacts/language-menu-20261018/run-gui.py equipment_gui_test.py artifacts/language-menu-20261018/restart-fixture/user installed-restart-en --language-smoke en --use-saved-language --language-menu-change it"
+  ],
+  "local_helpers": [
+    {
+      "path": "artifacts/language-menu-20261018/run-gui.py",
+      "sha256": "54b8c4b316a21584fc52f3cbcfe53d06d26522ce629de54278d39652e416d999"
+    },
+    {
+      "path": "artifacts/language-menu-20261018/install.py",
+      "sha256": "e45f18fd9e4a619c205e5bc74672afe685342f65a0eb22f51a06dcd3db185c04"
+    }
+  ]
+}
