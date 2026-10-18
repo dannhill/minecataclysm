@@ -317,7 +317,7 @@ index 16ceda4..20bd596 100644
  			float old_anim_speed = player->last_animation_speed;
  			m_velocity = v3f(0,0,0);
 diff --git a/src/client/game.cpp b/src/client/game.cpp
-index 27b5833..8b2f031 100644
+index 27b5833..970d5d3 100644
 --- a/src/client/game.cpp
 +++ b/src/client/game.cpp
 @@ -8,6 +8,8 @@
@@ -507,13 +507,19 @@ index 27b5833..8b2f031 100644
  	} else if (wasKeyDown(KeyType::PITCHMOVE)) {
  		togglePitchMove();
  	} else if (wasKeyDown(KeyType::FASTMOVE)) {
-@@ -2142,7 +2231,8 @@ void Game::processKeyInput()
- 	} else if (wasKeyDown(KeyType::TOGGLE_UPDATE_CAMERA)) {
- 		toggleUpdateCamera();
- 	} else if (wasKeyPressed(KeyType::TOGGLE_DEBUG)) {
--		toggleDebug();
+@@ -2137,12 +2226,13 @@ void Game::processKeyInput()
+ 		toggleMinimap(isKeyDown(KeyType::SNEAK));
+ 	} else if (wasKeyPressed(KeyType::TOGGLE_CHAT)) {
+ 		m_game_ui->toggleChat(client);
++	} else if (wasKeyPressed(KeyType::TOGGLE_DEBUG)) {
 +        auto& bridge = cdda_client::CddaBridge::getInstance();
 +        if (bridge.ownsPlayer(client)) bridge.toggleDiagnostics(); else toggleDebug();
+ 	} else if (wasKeyPressed(KeyType::TOGGLE_FOG)) {
+ 		toggleFog();
+ 	} else if (wasKeyDown(KeyType::TOGGLE_UPDATE_CAMERA)) {
+ 		toggleUpdateCamera();
+-	} else if (wasKeyPressed(KeyType::TOGGLE_DEBUG)) {
+-		toggleDebug();
  	} else if (wasKeyPressed(KeyType::TOGGLE_PROFILER)) {
  		m_game_ui->toggleProfiler();
  	} else if (wasKeyDown(KeyType::INCREASE_VIEWING_RANGE)) {
@@ -976,13 +982,15 @@ index d6e2863..239953a 100644
  	std::vector<std::unique_ptr<MeshUpdateWorkerThread>> m_workers;
  };
 diff --git a/src/defaultsettings.cpp b/src/defaultsettings.cpp
-index 7758c96..a440125 100644
+index 7758c96..7fda020 100644
 --- a/src/defaultsettings.cpp
 +++ b/src/defaultsettings.cpp
-@@ -166,12 +166,25 @@ void set_default_settings()
+@@ -165,13 +165,26 @@ void set_default_settings()
+ 	settings->setDefault("keymap_toggle_block_bounds", "");
  	settings->setDefault("keymap_toggle_hud", "KEY_F1");
  	settings->setDefault("keymap_toggle_chat", "KEY_F2");
- 	settings->setDefault("keymap_toggle_fog", "KEY_F3");
+-	settings->setDefault("keymap_toggle_fog", "KEY_F3");
++	settings->setDefault("keymap_toggle_fog", "KEY_F5");
 +	settings->setDefault("keymap_cdda_body", "KEY_KEY_H");
 +    settings->setDefault("keymap_cdda_aim", "KEY_KEY_F");
 +    settings->setDefault("keymap_cdda_reload", "KEY_KEY_R");
