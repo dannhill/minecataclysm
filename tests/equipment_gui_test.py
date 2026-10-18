@@ -543,6 +543,7 @@ def main():
                 from CDDA.CWM.WorldSnapshot import WorldSnapshot
                 from CDDA.CWM.SimulationControlRequest import SimulationControlRequest
                 from CDDA.CWM.EquipmentRequest import EquipmentRequest
+                from CDDA.CWM.InventoryQueryRequest import InventoryQueryRequest
                 def packets(filename):
                     buf=(out/filename).read_bytes();offset=0;found=[]
                     while offset+4<=len(buf):
@@ -622,7 +623,10 @@ def main():
                         req=SimulationControlRequest();req.Init(msg.Payload().Bytes,msg.Payload().Pos)
                         if req.Action()==3:
                             opens.append(msg.WorldRevision())
-                            if active_operation:first_return.setdefault(active_operation,msg.WorldRevision())
+                    # MENU_OPEN also pauses an explicit native stow question.
+                    # An actual inventory return requests a new inventory view.
+                    if msg.PayloadType()==Payload.InventoryQueryRequest and active_operation:
+                        first_return.setdefault(active_operation,msg.WorldRevision())
                 if args.action_driven:
                     check('each_native_operation_has_settled_state',all(id in paid for id in operations[:3]))
                 else:
