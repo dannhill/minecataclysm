@@ -365,6 +365,8 @@ def main():
                 if args.language_menu_change:
                     tap('Escape');wait(lambda r:int(r['pause_reasons'])==2)
                     paused_time=latest()['simulation_time']
+                    check('pause_language_reproduces_low_light_overlay',float(latest()['low_light_blend'])>.5)
+                    check('pause_menu_hides_passive_hud',int(latest()['hud_images_active'])==0)
                     shot('pause-language-selector.png')
                     # Fixed-size v1 pause form on the controlled 96-DPI display.
                     xdo('mousemove','--window',window,'875', '365' if args.language_menu_change == 'it' else '320');xdo('click','1');time.sleep(.4)
@@ -373,7 +375,10 @@ def main():
                     check('real_pause_menu_updates_product_preference',
                           configured_language(actual_config)==args.language_menu_change)
                     check('language_preference_is_free_and_keeps_simulation_paused',
-                          latest()['simulation_time']==paused_time)
+                          latest()['simulation_time']==paused_time and int(latest()['pause_reasons'])==2)
+                    time.sleep(.7)
+                    check('language_click_keeps_pause_menu_open',
+                          latest()['simulation_time']==paused_time and int(latest()['pause_reasons'])==2)
                     shot('pause-language-selected.png')
                     tap('Escape');wait(lambda r:int(r['pause_reasons'])==0)
                     view=open_inventory()

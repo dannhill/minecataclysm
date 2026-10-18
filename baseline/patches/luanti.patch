@@ -318,7 +318,7 @@ index 16ceda4..20bd596 100644
  			float old_anim_speed = player->last_animation_speed;
  			m_velocity = v3f(0,0,0);
 diff --git a/src/client/game.cpp b/src/client/game.cpp
-index 27b5833..545479d 100644
+index 27b5833..21d429f 100644
 --- a/src/client/game.cpp
 +++ b/src/client/game.cpp
 @@ -8,6 +8,8 @@
@@ -374,12 +374,10 @@ index 27b5833..545479d 100644
  struct LocalFormspecHandler : public TextDest
  {
  	LocalFormspecHandler(const std::string &formname)
-@@ -134,6 +173,16 @@ struct LocalFormspecHandler : public TextDest
+@@ -134,6 +173,14 @@ struct LocalFormspecHandler : public TextDest
  	void gotText(const StringMap &fields)
  	{
  		if (m_formname == "MT_PAUSE_MENU") {
-+			for (const auto &field : fields)
-+				infostream << "[CWM] Pause menu input: " << field.first << std::endl;
 +			const auto language = fields.find("cwm_product_language");
 +            const std::string chosen_language = fields.count("cwm_language_en") ? "en" : fields.count("cwm_language_it") ? "it" :
 +                language != fields.end() && language->second == "1" ? "en" : language != fields.end() && language->second == "2" ? "it" : "";
@@ -391,7 +389,7 @@ index 27b5833..545479d 100644
  			if (fields.find("btn_sound") != fields.end()) {
  				g_gamecallback->changeVolume();
  				return;
-@@ -443,12 +492,15 @@ class GameGlobalShaderConstantSetter : public IShaderConstantSetter
+@@ -443,12 +490,15 @@ class GameGlobalShaderConstantSetter : public IShaderConstantSetter
  		get_sunlight_color(&sunlight, daynight_ratio);
  		m_day_light.set(sunlight, services);
  
@@ -409,7 +407,7 @@ index 27b5833..545479d 100644
  		m_animation_timer_delta_vertex.set(&animation_timer_delta_f, services);
  		m_animation_timer_delta_pixel.set(&animation_timer_delta_f, services);
  
-@@ -932,6 +984,7 @@ class Game {
+@@ -932,6 +982,7 @@ class Game {
  	bool m_first_loop_after_window_activation = false;
  	bool m_camera_offset_changed = false;
  	bool m_game_focused = false;
@@ -417,7 +415,7 @@ index 27b5833..545479d 100644
  
  	bool m_does_lost_focus_pause_game = false;
  
-@@ -1009,6 +1062,8 @@ Game::Game() :
+@@ -1009,6 +1060,8 @@ Game::Game() :
  
  Game::~Game()
  {
@@ -426,7 +424,7 @@ index 27b5833..545479d 100644
  	delete client;
  	delete soundmaker;
  	sound_manager.reset();
-@@ -1181,6 +1236,13 @@ void Game::run()
+@@ -1181,6 +1234,13 @@ void Game::run()
  		updateCamera(dtime);
  		updateSound(dtime);
  		processPlayerInteraction(dtime, m_game_ui->m_flags.show_hud);
@@ -440,7 +438,7 @@ index 27b5833..545479d 100644
  		updateFrame(&graph, &stats, dtime, cam_view);
  		updateProfilerGraphs(&graph);
  
-@@ -1239,6 +1301,8 @@ void Game::shutdown()
+@@ -1239,6 +1299,8 @@ void Game::shutdown()
  		}
  	}
  
@@ -449,7 +447,7 @@ index 27b5833..545479d 100644
  	delete client;
  	client = nullptr;
  	delete soundmaker;
-@@ -2046,14 +2110,38 @@ void Game::processUserInput(f32 dtime)
+@@ -2046,14 +2108,38 @@ void Game::processUserInput(f32 dtime)
  	if (m_cache_doubletap_jump && runData.jump_timer_down <= 0.4f)
  		runData.jump_timer_down += dtime;
  
@@ -491,7 +489,7 @@ index 27b5833..545479d 100644
  		dropSelectedItem(isKeyDown(KeyType::SNEAK));
  	} else if (wasKeyDown(KeyType::AUTOFORWARD)) {
  		toggleAutoforward();
-@@ -2063,6 +2151,8 @@ void Game::processKeyInput()
+@@ -2063,6 +2149,8 @@ void Game::processKeyInput()
  	} else if (wasKeyDown(KeyType::INVENTORY)) {
  		openInventory();
  	} else if (input->cancelPressed()) {
@@ -500,7 +498,7 @@ index 27b5833..545479d 100644
  #ifdef __ANDROID__
  		m_android_chat_open = false;
  #endif
-@@ -2083,7 +2173,8 @@ void Game::processKeyInput()
+@@ -2083,7 +2171,8 @@ void Game::processKeyInput()
  	} else if (wasKeyDown(KeyType::FREEMOVE)) {
  		toggleFreeMove();
  	} else if (wasKeyDown(KeyType::JUMP)) {
@@ -510,7 +508,7 @@ index 27b5833..545479d 100644
  	} else if (wasKeyDown(KeyType::PITCHMOVE)) {
  		togglePitchMove();
  	} else if (wasKeyDown(KeyType::FASTMOVE)) {
-@@ -2137,12 +2228,13 @@ void Game::processKeyInput()
+@@ -2137,12 +2226,13 @@ void Game::processKeyInput()
  		toggleMinimap(isKeyDown(KeyType::SNEAK));
  	} else if (wasKeyPressed(KeyType::TOGGLE_CHAT)) {
  		m_game_ui->toggleChat(client);
@@ -526,7 +524,7 @@ index 27b5833..545479d 100644
  	} else if (wasKeyPressed(KeyType::TOGGLE_PROFILER)) {
  		m_game_ui->toggleProfiler();
  	} else if (wasKeyDown(KeyType::INCREASE_VIEWING_RANGE)) {
-@@ -2154,9 +2246,17 @@ void Game::processKeyInput()
+@@ -2154,9 +2244,17 @@ void Game::processKeyInput()
  	} else if (wasKeyDown(KeyType::ZOOM)) {
  		checkZoomEnabled();
  	} else if (wasKeyDown(KeyType::QUICKTUNE_NEXT)) {
@@ -546,7 +544,7 @@ index 27b5833..545479d 100644
  	} else if (wasKeyDown(KeyType::QUICKTUNE_INC)) {
  		quicktune->inc();
  	} else if (wasKeyDown(KeyType::QUICKTUNE_DEC)) {
-@@ -2178,6 +2278,22 @@ void Game::processItemSelection(u16 *new_playeritem)
+@@ -2178,6 +2276,22 @@ void Game::processItemSelection(u16 *new_playeritem)
  	LocalPlayer *player = client->getEnv().getLocalPlayer();
  
  	*new_playeritem = player->getWieldIndex();
@@ -569,7 +567,7 @@ index 27b5833..545479d 100644
  	u16 max_item = player->getMaxHotbarItemcount();
  	if (max_item == 0)
  		return;
-@@ -2238,6 +2354,18 @@ void Game::dropSelectedItem(bool single_item)
+@@ -2238,6 +2352,18 @@ void Game::dropSelectedItem(bool single_item)
  
  void Game::openInventory()
  {
@@ -588,7 +586,7 @@ index 27b5833..545479d 100644
  	/*
  	 * Don't permit to open inventory is CAO or player doesn't exists.
  	 * This prevent showing an empty inventory at player load
-@@ -2737,8 +2865,68 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
+@@ -2737,8 +2863,68 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
  		control.aux1 = control.aux1 ^ true;
  	}
  
@@ -657,7 +655,7 @@ index 27b5833..545479d 100644
  	//tt.stop();
  }
  
-@@ -2784,6 +2972,73 @@ inline void Game::step(f32 dtime)
+@@ -2784,6 +2970,73 @@ inline void Game::step(f32 dtime)
  
  	if (!m_is_paused)
  		client->step(dtime);
@@ -726,12 +724,12 @@ index 27b5833..545479d 100644
 +                new FormspecFormSource(decision_update),new CwmDecisionFormHandler(bridge.getMetrics().pending_decision,bridge.decisionDialogConnection()),"",sound_manager.get());
 +            form->allowClose(false); // Only an explicit native cancellation may dismiss it.
 +        }
-+		bridge.renderDebugOverlay(m_rendering_engine->get_gui_env());
++		bridge.renderDebugOverlay(m_rendering_engine->get_gui_env(), g_menumgr.menuCount() > 0);
 +	}
  }
  
  static void pauseNodeAnimation(PausedNodesList &paused, scene::ISceneNode *node) {
-@@ -3246,6 +3501,7 @@ void Game::updateCamera(f32 dtime)
+@@ -3246,6 +3499,7 @@ void Game::updateCamera(f32 dtime)
  	tool_reload_ratio = MYMIN(tool_reload_ratio, 1.0);
  	camera->update(player, dtime, tool_reload_ratio);
  	camera->step(dtime);
@@ -739,7 +737,7 @@ index 27b5833..545479d 100644
  
  	f32 camera_fov = camera->getFovMax();
  	v3s16 camera_offset = camera->getOffset();
-@@ -3262,6 +3518,7 @@ void Game::updateCamera(f32 dtime)
+@@ -3262,6 +3516,7 @@ void Game::updateCamera(f32 dtime)
  		if (m_camera_offset_changed) {
  			client->updateCameraOffset(camera_offset);
  			client->getEnv().updateCameraOffset(camera_offset);
@@ -747,7 +745,7 @@ index 27b5833..545479d 100644
  
  			if (clouds)
  				clouds->updateCameraOffset(camera_offset);
-@@ -3314,6 +3571,8 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
+@@ -3314,6 +3569,8 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
  
  	const ItemDefinition &selected_def = selected_item.getDefinition(itemdef_manager);
  	f32 d = getToolRange(selected_item, hand_item, itemdef_manager);
@@ -756,7 +754,7 @@ index 27b5833..545479d 100644
  
  	core::line3d<f32> shootline;
  
-@@ -3365,6 +3624,52 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
+@@ -3365,6 +3622,52 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
  	// but the halo rendering code is already inefficient so there's no point in optimizing it here
  	hud->updateSelectionMesh(camera_offset);
  
@@ -809,7 +807,7 @@ index 27b5833..545479d 100644
  	// Allow digging again if button is not pressed
  	if (runData.digging_blocked && !isKeyDown(KeyType::DIG))
  		runData.digging_blocked = false;
-@@ -4247,7 +4552,8 @@ void Game::updateClouds(float dtime)
+@@ -4247,7 +4550,8 @@ void Game::updateClouds(float dtime)
  {
  	if (this->sky->getCloudsVisible()) {
  		this->clouds->setVisible(true);
@@ -819,7 +817,7 @@ index 27b5833..545479d 100644
  		// this->camera->getPosition is not enough for third-person camera.
  		v3f camera_node_position = this->camera->getCameraNode()->getPosition();
  		v3s16 camera_offset      = this->camera->getOffset();
-@@ -4319,7 +4625,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
+@@ -4319,7 +4623,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
  	/*
  		Fog
  	*/
@@ -833,7 +831,7 @@ index 27b5833..545479d 100644
  		this->driver->setFog(
  				fog_color,
  				video::EFT_FOG_LINEAR,
-@@ -4518,6 +4829,12 @@ void Game::showPauseMenu()
+@@ -4518,6 +4827,12 @@ void Game::showPauseMenu()
  		<< strgettext("Exit to Menu") << "]";
  	os		<< "button_exit[4," << (ypos++) << ";3,0.5;btn_exit_os;"
  		<< strgettext("Exit to OS")   << "]";
@@ -1025,7 +1023,7 @@ index 7758c96..def39c0 100644
  	settings->setDefault("keymap_camera_mode", "KEY_KEY_C");
  	settings->setDefault("keymap_screenshot", "KEY_F12");
 diff --git a/src/gui/guiFormSpecMenu.cpp b/src/gui/guiFormSpecMenu.cpp
-index ed1c300..98dc768 100644
+index ed1c300..c51099d 100644
 --- a/src/gui/guiFormSpecMenu.cpp
 +++ b/src/gui/guiFormSpecMenu.cpp
 @@ -1,3 +1,5 @@
@@ -1350,15 +1348,6 @@ index ed1c300..98dc768 100644
  		if (event.GUIEvent.EventType == gui::EGET_TAB_CHANGED
  				&& isVisible()) {
  			// find the element that was clicked
-@@ -4808,6 +5031,8 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
- 					continue;
- 
- 				if (s.ftype == f_Button || s.ftype == f_CheckBox) {
-+					if (m_text_dst && m_text_dst->m_formname == "MT_PAUSE_MENU")
-+						infostream << "[CWM] Pause button: " << s.fname << " exit=" << s.is_exit << std::endl;
- 					if (!s.sound.empty() && m_sound_manager)
- 						m_sound_manager->playSound(0, SoundSpec(s.sound, 1.0f));
- 
 diff --git a/src/gui/guiFormSpecMenu.h b/src/gui/guiFormSpecMenu.h
 index 5c3fcd8..0d8487e 100644
 --- a/src/gui/guiFormSpecMenu.h
@@ -1960,10 +1949,10 @@ index 0000000..e1e7236
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..7b42943
+index 0000000..912a2d3
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,3178 @@
+@@ -0,0 +1,3194 @@
 +#include "cwm/product_language.hpp"
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
@@ -4814,8 +4803,24 @@ index 0000000..7b42943
 +} // namespace cdda_client
 +
 +namespace cdda_client {
-+void CddaBridge::renderDebugOverlay(irr::gui::IGUIEnvironment* guienv) {
++void CddaBridge::renderDebugOverlay(irr::gui::IGUIEnvironment* guienv, bool menu_open) {
 +    if (!guienv || !pimpl_) return;
++    // Passive root-level HUD elements also participate in Irrlicht hit testing,
++    // even when disabled. In particular the fullscreen darkness tint must not
++    // turn a click on a modal button into an outside click / Escape. The menu
++    // manager covers engine menus as well as CWM forms, including the pause UI.
++    if (menu_open) {
++        irr::gui::IGUIElement* widgets[] = {
++            pimpl_->environment_tint_, pimpl_->environment_text_, pimpl_->cue_text_,
++            pimpl_->clock_text_, pimpl_->survival_text_, pimpl_->possessions_text_,
++            pimpl_->debug_text_, pimpl_->safety_text_, pimpl_->posture_text_,
++            pimpl_->vertical_text_, pimpl_->item_hint_text_, pimpl_->inventory_work_text_,
++            pimpl_->work_progress_, pimpl_->terrain_text_
++        };
++        for (auto* widget : widgets) if (widget) widget->setVisible(false);
++        for (auto* image : pimpl_->hud_images_) image->setVisible(false);
++        return;
++    }
 +
 +    const auto screen = guienv->getVideoDriver()->getScreenSize();
 +    const bool in_menu = pimpl_->ground_container_open_ || pimpl_->body_form_open_ ||
@@ -5144,7 +5149,7 @@ index 0000000..7b42943
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.h b/src/cdda/cdda_bridge.h
 new file mode 100644
-index 0000000..551cb62
+index 0000000..d0a6c1a
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.h
 @@ -0,0 +1,183 @@
@@ -5321,7 +5326,7 @@ index 0000000..551cb62
 +    void useQuickSlot();
 +
 +    // F3 Debug Overlay
-+    void renderDebugOverlay(irr::gui::IGUIEnvironment* guienv);
++    void renderDebugOverlay(irr::gui::IGUIEnvironment* guienv, bool menu_open);
 +
 +
 +private:

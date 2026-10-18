@@ -1,5 +1,11 @@
 # Validazioni manuali del playable core
 
+Nuovo riscontro dopo `91393f7`: **28 PENDING + 1 FAIL manuale aperto**.
+**LANG-01.2 riaperto:** English dal menu Esc chiude il menu e al riavvio
+resta Italiano. I PASS della versione precedente sono storici; il fix richiede
+un ricontrollo personale, non un PASS dedotto dalle prove automatiche.
+[Riscontro originale](../source/language-regression-2026-10-18.md).
+
 Stato dopo la lettura nativa: **28 PENDING, nessun FAIL manuale aperto**.
 Quattro nuove prove rinviabili di lettura sono in fondo; i precedenti 24 punti
 restano invariati. Nessun PASS personale viene dedotto dai test automatici.
@@ -558,7 +564,7 @@ nel [report UX-03](../fixes/interactive-quickbar.md); non costituiscono PASS
 manuali. La lingua ha ora la checklist separata sotto; mira RMB, UV/rig,
 animazioni e suoni restano nel piano.
 
-## LANG-01 — Lingua del prodotto — VALIDATA: 1–2 PASS (2026-10-18)
+## LANG-01 — Lingua del prodotto — 1 PASS; 2 FAIL riaperto dopo `91393f7`
 
 Disponibile dal normale `./start.sh`; non serve fare queste prove oggi.
 I PASS precedenti rimangono accettati. Le prove automatiche delle due lingue
