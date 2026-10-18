@@ -1,6 +1,37 @@
 # Implementation status
 
-Current scoped delivery: **three consecutive core follow-ups**, CWM **2.23 unchanged**,
+Current scoped delivery: **ten consecutive core feedback slices**, CWM **2.24**,
+installed in ordinary `start.sh` with paired rollback runtimes. Native melee/fire
+and inflicted damage drive attack/reaction cues; the native hearing path supplies
+captions and provisional audio, with OpenAL enabled. The actual wielded object's
+mapped art appears in first person with held aim/native-shot pose. Explicit
+canine, spider and ground-bird families reuse pinned Mineclonia rigs/cycles.
+Native illumination and underwater state supply nonmodal environment cues.
+Diagnostic panels default off; rebindable F3 toggles them (old configs may use
+F5), retaining pause/recovery/threat/decision/work cues. No new AI, gameplay/time
+costs, visibility rule or canonical save state.
+[Contract](docs/design/core-feedback-ten-steps.md),
+[delivery](docs/fixes/core-feedback-ten.md),
+[exact evidence](docs/fixes/core-feedback-ten-evidence.json).
+
+Scoped verification: **98 native cases / 65,402 assertions**, 309 client tests /
+47 modules plus 648 Catch assertions / 4 cases, 12 protocol tests, 9 language
+checks and 6 launcher checks. **231 renderer/canonical checks** across reconstructed
+and installed runs verify real combat/audio dispatch, native reload/save,
+materials/frames/families, held object, cues, recovery and faithful clothing pause.
+Incremental reconstructed builds; not a cold clean build. Five opt-in statistical
+melee cases still fail; all five reproduce against the previous independent
+runtime. These failures remain recorded; the expanded suite is not promoted.
+
+Backlog **28 PENDING + 1 manual FAIL**, including ten new deferred checks; no
+personal gate or inferred acceptance. Full SAVE-001 OPEN; historical M5.5 FAILED;
+mapping batch60 unchanged. Generic art, complete creature coverage, unsupported
+special attack/damage paths and remaining SFX (including reload) are follow-ups.
+Next functional core slice: native reading/disassembly and related item work,
+using the established activity/decision/pause interfaces. M6 and spatial choices
+remain separate.
+
+Previous scoped delivery: **three consecutive core follow-ups**, CWM **2.23 unchanged**,
 installed in ordinary `start.sh`, with the previous runtime pair retained.
 Single loose non-container stacks, including counted rocks/ammunition, now
 use direct native pickup. Real storage/containers/multi-item piles keep their

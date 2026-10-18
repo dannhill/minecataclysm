@@ -1,0 +1,1030 @@
+{
+  "scope": "Ten consecutive core presentation slices; no global conformance promotion",
+  "protocol": "2.24",
+  "environment": {
+    "system": "Linux-7.0.11-76070011-generic-x86_64-with-glibc2.35",
+    "python": "3.10.12",
+    "graphics": "Private Xvfb, Mesa software renderer",
+    "audio_tests": "OpenAL null driver; physical listening deferred"
+  },
+  "current_commit": "240b1581da81ead31c2da90b0f734aef67744132",
+  "source_trees": {
+    "cdda": {
+      "url": "https://github.com/CleverRaven/Cataclysm-DDA.git",
+      "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+      "shallow": true,
+      "patch": "baseline/patches/cdda.patch",
+      "patch_sha256": "27a58887e9e33114db4b029efe0f0728a3fd99cb3470a3abe818995417f3afd8",
+      "tree_inventory": "baseline/trees/cdda.json",
+      "tree_sha256": "d16dd54e6e7f877db852027c29021a64ed86e27f38a9d5587137f58d5814e0f0",
+      "file_count": 8588,
+      "original_status": " M src/CMakeLists.txt\n M src/activity_actor.cpp\n M src/avatar.cpp\n M src/avatar_action.cpp\n M src/avatar_action.h\n M src/character.cpp\n M src/character_body.cpp\n M src/character_inventory.cpp\n M src/craft_command.cpp\n M src/craft_command.h\n M src/crafting.cpp\n M src/crafting.h\n M src/creature.cpp\n M src/do_turn.cpp\n M src/do_turn.h\n M src/game.cpp\n M src/game.h\n M src/handle_action.cpp\n M src/iexamine.cpp\n M src/inventory.cpp\n M src/inventory.h\n M src/item.cpp\n M src/iuse_actor.cpp\n M src/melee.cpp\n M src/monster.cpp\n M src/output.cpp\n M src/pickup.cpp\n M src/ranged.cpp\n M src/ranged.h\n M src/recipe.cpp\n M src/recipe.h\n M src/sounds.cpp\n M src/translations.cpp\n M src/ui.cpp\n M src/vehicle_use.cpp\n M src/vpart_position.h\n M tests/CMakeLists.txt\n M tests/melee_test.cpp\n M tests/test_main.cpp\n?? src/cwm/cwm_crafting.h\n?? src/cwm/cwm_hotbar.h\n?? src/cwm/cwm_inventory.h\n?? src/cwm/cwm_main.cpp\n?? src/cwm/cwm_map_exporter.cpp\n?? src/cwm/cwm_map_exporter.h\n?? src/cwm/cwm_presentation.h\n?? src/cwm/cwm_ranged.h\n?? src/cwm/cwm_server.cpp\n?? src/cwm/cwm_server.h\n?? src/cwm/cwm_status_gauges.h\n?? src/cwm_motion.cpp\n?? src/cwm_motion.h\n?? src/safe_mode_actions.h\n?? tests/cwm_pickup_test.cpp\n?? tests/cwm_projection_test.cpp\n?? tests/cwm_runtime_test.cpp\n"
+    },
+    "luanti": {
+      "url": "https://github.com/luanti-org/luanti.git",
+      "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
+      "shallow": true,
+      "patch": "baseline/patches/luanti.patch",
+      "patch_sha256": "01d331a48386804d2c86033c4f98c891e46424d70a320aa3e1848a6c08ee4b10",
+      "tree_inventory": "baseline/trees/luanti.json",
+      "tree_sha256": "31aaf28ab0fec9a956d4c4b560192f8049afc0fc836690f7b215f8d1080a7a1f",
+      "file_count": 2265,
+      "original_status": " M builtin/mainmenu/settings/dlg_settings.lua\n M builtin/settingtypes.txt\n M src/CMakeLists.txt\n M src/client/CMakeLists.txt\n M src/client/camera.cpp\n M src/client/camera.h\n M src/client/client.cpp\n M src/client/clientenvironment.cpp\n M src/client/content_cao.cpp\n M src/client/game.cpp\n M src/client/hud.cpp\n M src/client/inputhandler.cpp\n M src/client/keys.h\n M src/client/mesh_generator_thread.cpp\n M src/client/mesh_generator_thread.h\n M src/defaultsettings.cpp\n M src/gui/guiFormSpecMenu.cpp\n M src/gui/guiFormSpecMenu.h\n M src/gui/guiScene.cpp\n M src/network/clientpackethandler.cpp\n M src/server/player_sao.cpp\n M src/unittest/test_mapblock.cpp\n?? src/cdda/aim_input.h\n?? src/cdda/avatar_status.h\n?? src/cdda/cdda_bridge.cpp\n?? src/cdda/cdda_bridge.h\n?? src/cdda/crafting_inventory.h\n?? src/cdda/creature_visual.h\n?? src/cdda/decision_dialog.h\n?? src/cdda/decision_input.h\n?? src/cdda/decision_text.h\n?? src/cdda/equipment_inventory.h\n?? src/cdda/ground_item_formspec.h\n?? src/cdda/ground_item_projection.h\n?? src/cdda/ground_item_visual.h\n?? src/cdda/humanoid_animation.h\n?? src/cdda/posture_input.h\n?? src/cdda/quickbar.h\n"
+    },
+    "mineclonia": {
+      "url": "https://github.com/mark-wiemer/mineclonia.git",
+      "commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+      "shallow": true,
+      "patch": "baseline/patches/mineclonia.patch",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree_inventory": "baseline/trees/mineclonia.json",
+      "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36",
+      "file_count": 9359,
+      "original_status": ""
+    }
+  },
+  "builds": {
+    "client-refresh-debug": {
+      "receipt": "artifacts/core-feedback-20261018/client-refresh-debug.json",
+      "sha256": "3f88a8a9324e542aca86dadeead8faa58bd121cb7d0b71d71a3ac1d6d9b74e14",
+      "commit": "3b208f2349dca33fd213b77c0b490d61bd853985",
+      "trees": {
+        "cdda": {
+          "tree_sha256": "b563f8d67c5f245218a52d8ee341c4cb5e4595d08873ed80455525c7d64cc60c",
+          "files": 8588,
+          "changed": 1,
+          "status": "PASS"
+        },
+        "luanti": {
+          "tree_sha256": "31aaf28ab0fec9a956d4c4b560192f8049afc0fc836690f7b215f8d1080a7a1f",
+          "files": 2265,
+          "changed": 2,
+          "status": "PASS"
+        },
+        "mineclonia": {
+          "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36",
+          "files": 9359,
+          "changed": 0,
+          "status": "PASS"
+        }
+      }
+    },
+    "native-refresh-hearing": {
+      "receipt": "artifacts/core-feedback-20261018/native-refresh-hearing.json",
+      "sha256": "5d5e0c6d192dcfa27fa052ca634a7a512eae8751ced35e81a0a3c97432b80d6f",
+      "commit": "240b1581da81ead31c2da90b0f734aef67744132",
+      "trees": {
+        "cdda": {
+          "tree_sha256": "d16dd54e6e7f877db852027c29021a64ed86e27f38a9d5587137f58d5814e0f0",
+          "files": 8588,
+          "changed": 1,
+          "status": "PASS"
+        },
+        "luanti": {
+          "tree_sha256": "31aaf28ab0fec9a956d4c4b560192f8049afc0fc836690f7b215f8d1080a7a1f",
+          "files": 2265,
+          "changed": 0,
+          "status": "PASS"
+        },
+        "mineclonia": {
+          "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36",
+          "files": 9359,
+          "changed": 0,
+          "status": "PASS"
+        }
+      }
+    },
+    "native-refresh-final": {
+      "receipt": "artifacts/core-feedback-20261018/native-refresh-final.json",
+      "sha256": "1bb28f895ee90c0ad6920b8881eb4768fe7e5e14a3fe3d1e7ef6cf18fe30c4f7",
+      "commit": "3fcf174bc926b836235086086e98f13c1de3d676",
+      "trees": {
+        "cdda": {
+          "tree_sha256": "b563f8d67c5f245218a52d8ee341c4cb5e4595d08873ed80455525c7d64cc60c",
+          "files": 8588,
+          "changed": 2,
+          "status": "PASS"
+        },
+        "luanti": {
+          "tree_sha256": "93000efa49831dc196b6d2ae09b6e3c18d23098caf298f1ca3ef5b1e67ae0e1a",
+          "files": 2265,
+          "changed": 1,
+          "status": "PASS"
+        },
+        "mineclonia": {
+          "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36",
+          "files": 9359,
+          "changed": 0,
+          "status": "PASS"
+        }
+      }
+    },
+    "native_production_sources_match_installed_build": true
+  },
+  "verification": {
+    "feedback-renderer-v3": {
+      "checks": 46,
+      "result": "PASS",
+      "results": "artifacts/core-feedback-20261018/feedback-renderer-v3/checks.json",
+      "sha256": "ea5436d1a7cff913508698dfd77eec71c2a3095f0e1d4564a04d8613328c1c1a",
+      "assertions": {
+        "diagnostics_default_off": true,
+        "rebindable_debug_action_enables_diagnostics": true,
+        "debug_action_disables_diagnostics_again": true,
+        "native_attack_cue_selects_actual_punch_frames": true,
+        "pause_freezes_native_attack_pose": true,
+        "native_damage_cue_tints_actual_skin": true,
+        "player_injury_has_explicit_native_cue": true,
+        "injury_tint_clears_without_changing_target": true,
+        "heard_sound_reaches_audio_manager": true,
+        "full_resync_does_not_replay_old_sound_identity": true,
+        "native_low_light_reaches_presentation": true,
+        "native_underwater_state_reaches_presentation": true,
+        "actual_native_hand_resolves_first_person_texture": true,
+        "native_shot_drives_visual_kick": true,
+        "canine_uses_real_pinned_mesh_and_skin": true,
+        "canine_cycles_on_authoritative_motion": true,
+        "spider_uses_real_pinned_mesh_and_skin": true,
+        "spider_cycles_on_authoritative_motion": true,
+        "bird_uses_real_pinned_mesh_and_skin": true,
+        "bird_cycles_on_authoritative_motion": true,
+        "real_zombie_and_npc_meshes_created": true,
+        "zombie_skin_does_not_cover_armour_geometry": true,
+        "npc_skin_and_empty_overlays_use_separate_materials": true,
+        "integrated_avatar_is_voxel_mesh": true,
+        "avatar_and_npc_use_humanoid_world_scale": true,
+        "idle_cycle_changes_actual_mesh_frame": true,
+        "pause_freezes_avatar_and_creature_frames": true,
+        "idle_cycle_obeys_authoritative_time_scale": true,
+        "motion_preserves_owned_nodes": true,
+        "perceived_motion_interpolates_confirmed_positions": true,
+        "confirmed_motion_uses_walk_cycle": true,
+        "walking_faces_confirmed_motion": true,
+        "origin_rebase_preserves_actor_scene_position": true,
+        "native_unperceived_state_hides_all_actor_nodes": true,
+        "reappearance_does_not_animate_unseen_path": true,
+        "visibility_toggle_reuses_single_mesh": true,
+        "archetype_change_replaces_mesh_without_orphan": true,
+        "kind_alias_is_rejected_before_scene_mutation": true,
+        "correlated_full_resync_restores_actor_roster": true,
+        "transport_loss_hides_creatures": true,
+        "same_session_reconnect_does_not_duplicate_meshes": true,
+        "new_session_discards_old_scene_nodes": true,
+        "despawn_removes_actual_irrlicht_nodes": true,
+        "returning_persistent_ids_create_one_mesh_each": true,
+        "graphical_client_clean_exit": true,
+        "controlled_peer_has_no_errors": true
+      },
+      "command.json": {
+        "path": "artifacts/core-feedback-20261018/feedback-renderer-v3/command.json",
+        "sha256": "d91efa937fbae0ad3490307990006f4fb120e243741d7434bb33218eb32f323d"
+      }
+    },
+    "native-melee": {
+      "checks": 24,
+      "result": "PASS",
+      "results": "artifacts/core-feedback-20261018/native-melee/checks.json",
+      "sha256": "597a5a54502c89e684b04648881ff551e97ba7a7e3cba6e2241a3d47869a9635",
+      "assertions": {
+        "actual_start_ready": true,
+        "actual_native_target_pointed": true,
+        "demo_weapon_pre_equipped_without_pickup": true,
+        "pause_blocks_attack_and_native_time": true,
+        "paused_click_not_replayed_on_resume": true,
+        "empty_pointing_sends_no_attack": true,
+        "held_mouse_sends_exactly_one_attack": true,
+        "request_targets_the_actual_pointed_identity": true,
+        "actual_native_attack_acknowledged_including_a_miss": true,
+        "actual_native_melee_emits_presentation_event": true,
+        "actual_native_strike_animates_player": true,
+        "full_recovery_does_not_repeat_attack": true,
+        "pointed_attacks_do_not_move_player": true,
+        "actual_native_damage_animates_perceived_target": true,
+        "native_death_removes_target": true,
+        "dead_target_cannot_be_attacked_again": true,
+        "actual_runtime_survives": true,
+        "byte_relay_completed_without_errors": true,
+        "combat_save_readable_by_pristine_native_core": true,
+        "native_monster_death_persisted": true,
+        "specific_native_corpse_created_at_target": true,
+        "native_save_preserves_final_authoritative_anchor": true,
+        "native_time_paid_for_combat": true,
+        "weapon_remains_native_and_equipped": true
+      },
+      "summary.json": {
+        "path": "artifacts/core-feedback-20261018/native-melee/summary.json",
+        "sha256": "1a682613f95552438d610f1e323ecd2eae021ce759b15090eeaab59bb346e7c6"
+      }
+    },
+    "native-ranged": {
+      "checks": 43,
+      "result": "PASS",
+      "results": "artifacts/core-feedback-20261018/native-ranged/checks.json",
+      "sha256": "08f27228f291cab3b71478e5793e0b11a86e6dbba0eb80127f435a83e7c06422",
+      "assertions": {
+        "actual_start_ready": true,
+        "native_loaded_weapon_visible": true,
+        "manual_pause_blocks_aim_fire_reload_and_time": true,
+        "paused_keys_not_replayed": true,
+        "rmb_held_across_pause_requires_release": true,
+        "reading_does_not_aim_for_free": true,
+        "rmb_held_across_menu_is_not_replayed": true,
+        "held_aim_uses_native_paid_steps": true,
+        "single_fire_waits_only_for_current_paid_aim_step": true,
+        "menu_cancels_deferred_shot_without_native_ammo_loss": true,
+        "held_rmb_resumes_paid_aim_after_single_shot": true,
+        "rmb_release_stops_new_aim_steps": true,
+        "held_mouse_fires_exactly_once": true,
+        "native_shot_acknowledged": true,
+        "shot_does_not_move_player": true,
+        "native_target_takes_damage": true,
+        "actual_native_gunshot_reaches_audio_manager": true,
+        "actual_native_shot_animates_wielded_weapon": true,
+        "actual_native_gun_hand_has_visual": true,
+        "empty_reticle_sends_no_shot": true,
+        "empty_reticle_does_not_send_paid_aim": true,
+        "friendly_creature_not_accepted_as_ranged_target": true,
+        "friendly_reticle_does_not_send_paid_aim": true,
+        "held_rmb_not_replayed_after_real_reconnect": true,
+        "native_reload_choices_exclude_incompatible_ammo": true,
+        "cancel_ammo_choice_keeps_rounds": true,
+        "native_reload_confirmation": true,
+        "decline_reload_keeps_rounds": true,
+        "reload_blocks_movement_aim_and_fire": true,
+        "inventory_freezes_native_reload": true,
+        "cancel_native_reload_preserves_rounds": true,
+        "reconnect_discards_old_weapon_handle_without_replaying_fire": true,
+        "new_reload_has_fresh_activity_token": true,
+        "native_reload_transfers_ammo_once": true,
+        "actual_runtime_survives_native_ranged_combat": true,
+        "byte_relay_completed_without_errors": true,
+        "ranged_save_readable_by_pristine_native_core": true,
+        "native_gun_instance_persists_once": true,
+        "canonical_ammunition_conserved_except_one_fired_round": true,
+        "ranged-other_untouched": true,
+        "ranged-wrong_untouched": true,
+        "completed_reload_has_no_pending_activity": true,
+        "canonical_ranged_save_has_no_luanti_inventory": true
+      },
+      "summary.json": {
+        "path": "artifacts/core-feedback-20261018/native-ranged/summary.json",
+        "sha256": "ab6f1e4862ef2bb7bb9f0500786d69f6cf42922c120043484bd87ddaaceef0a7"
+      }
+    },
+    "installed-feedback": {
+      "checks": 47,
+      "result": "PASS",
+      "results": "artifacts/core-feedback-20261018/installed-feedback/checks.json",
+      "sha256": "8be9ea0c049fe1feac48cae418e40e2603e4656bc858cd0f05d6b84160f1dd48",
+      "assertions": {
+        "diagnostics_default_off": true,
+        "rebindable_debug_action_enables_diagnostics": true,
+        "debug_action_disables_diagnostics_again": true,
+        "native_attack_cue_selects_actual_punch_frames": true,
+        "pause_freezes_native_attack_pose": true,
+        "native_damage_cue_tints_actual_skin": true,
+        "player_injury_has_explicit_native_cue": true,
+        "injury_tint_clears_without_changing_target": true,
+        "heard_sound_reaches_audio_manager": true,
+        "full_resync_does_not_replay_old_sound_identity": true,
+        "native_low_light_reaches_presentation": true,
+        "native_underwater_state_reaches_presentation": true,
+        "actual_native_hand_resolves_first_person_texture": true,
+        "native_shot_drives_visual_kick": true,
+        "native_unwield_clears_first_person_object": true,
+        "canine_uses_real_pinned_mesh_and_skin": true,
+        "canine_cycles_on_authoritative_motion": true,
+        "spider_uses_real_pinned_mesh_and_skin": true,
+        "spider_cycles_on_authoritative_motion": true,
+        "bird_uses_real_pinned_mesh_and_skin": true,
+        "bird_cycles_on_authoritative_motion": true,
+        "real_zombie_and_npc_meshes_created": true,
+        "zombie_skin_does_not_cover_armour_geometry": true,
+        "npc_skin_and_empty_overlays_use_separate_materials": true,
+        "integrated_avatar_is_voxel_mesh": true,
+        "avatar_and_npc_use_humanoid_world_scale": true,
+        "idle_cycle_changes_actual_mesh_frame": true,
+        "pause_freezes_avatar_and_creature_frames": true,
+        "idle_cycle_obeys_authoritative_time_scale": true,
+        "motion_preserves_owned_nodes": true,
+        "perceived_motion_interpolates_confirmed_positions": true,
+        "confirmed_motion_uses_walk_cycle": true,
+        "walking_faces_confirmed_motion": true,
+        "origin_rebase_preserves_actor_scene_position": true,
+        "native_unperceived_state_hides_all_actor_nodes": true,
+        "reappearance_does_not_animate_unseen_path": true,
+        "visibility_toggle_reuses_single_mesh": true,
+        "archetype_change_replaces_mesh_without_orphan": true,
+        "kind_alias_is_rejected_before_scene_mutation": true,
+        "correlated_full_resync_restores_actor_roster": true,
+        "transport_loss_hides_creatures": true,
+        "same_session_reconnect_does_not_duplicate_meshes": true,
+        "new_session_discards_old_scene_nodes": true,
+        "despawn_removes_actual_irrlicht_nodes": true,
+        "returning_persistent_ids_create_one_mesh_each": true,
+        "graphical_client_clean_exit": true,
+        "controlled_peer_has_no_errors": true
+      },
+      "command.json": {
+        "path": "artifacts/core-feedback-20261018/installed-feedback/command.json",
+        "sha256": "7ea6d7f1e3a690578413c8814c942f2ba9059273c438abe9b4b08dfbae6764b8"
+      }
+    },
+    "installed-clothing": {
+      "checks": 28,
+      "result": "PASS",
+      "results": "artifacts/core-feedback-20261018/installed-clothing/checks.json",
+      "sha256": "d03048b17bf909f13f49e8691c2cb121c103f794ec66de00e0355767268b1a7c",
+      "assertions": {
+        "actual_start_ready": true,
+        "native_inventory_opened": true,
+        "inspection_opens_before_ack_2": true,
+        "garment_applied_atomically_2": true,
+        "native_debit_not_an_activity_2": true,
+        "inspection_freezes_time_and_debit_2": true,
+        "close_resumes_same_debit_and_panel_2": true,
+        "no_fractional_clothing_progress_bar_2": true,
+        "inspection_does_not_force_return_2": true,
+        "paid_state_still_has_expected_garment_2": true,
+        "native_wire_debit_monotonic_2": true,
+        "inspection_opens_before_ack_3": true,
+        "garment_applied_atomically_3": true,
+        "native_debit_not_an_activity_3": true,
+        "inspection_freezes_time_and_debit_3": true,
+        "close_resumes_same_debit_and_panel_3": true,
+        "no_fractional_clothing_progress_bar_3": true,
+        "inspection_does_not_force_return_3": true,
+        "paid_state_still_has_expected_garment_3": true,
+        "native_wire_debit_monotonic_3": true,
+        "next_equipment_action_uses_fresh_inventory": true,
+        "byte_relay_completed_without_errors": true,
+        "equipment_save_readable_by_pristine_native_core": true,
+        "canonical_save_has_each_fixture_item_once": true,
+        "canonical_save_records_expected_weapon": true,
+        "canonical_save_records_backpack_worn": true,
+        "canonical_clothing_change_not_rolled_back_by_inspection": true,
+        "canonical_clothing_operations_pay_native_time": true
+      },
+      "summary.json": {
+        "path": "artifacts/core-feedback-20261018/installed-clothing/summary.json",
+        "sha256": "f4c11439b8b1592ad699085bfe05ee4cf74ec2adf1c6bea65a3b6a6d41cad8f3"
+      }
+    },
+    "installed-ranged-final": {
+      "checks": 43,
+      "result": "PASS",
+      "results": "artifacts/core-feedback-20261018/installed-ranged-final/checks.json",
+      "sha256": "08f27228f291cab3b71478e5793e0b11a86e6dbba0eb80127f435a83e7c06422",
+      "assertions": {
+        "actual_start_ready": true,
+        "native_loaded_weapon_visible": true,
+        "manual_pause_blocks_aim_fire_reload_and_time": true,
+        "paused_keys_not_replayed": true,
+        "rmb_held_across_pause_requires_release": true,
+        "reading_does_not_aim_for_free": true,
+        "rmb_held_across_menu_is_not_replayed": true,
+        "held_aim_uses_native_paid_steps": true,
+        "single_fire_waits_only_for_current_paid_aim_step": true,
+        "menu_cancels_deferred_shot_without_native_ammo_loss": true,
+        "held_rmb_resumes_paid_aim_after_single_shot": true,
+        "rmb_release_stops_new_aim_steps": true,
+        "held_mouse_fires_exactly_once": true,
+        "native_shot_acknowledged": true,
+        "shot_does_not_move_player": true,
+        "native_target_takes_damage": true,
+        "actual_native_gunshot_reaches_audio_manager": true,
+        "actual_native_shot_animates_wielded_weapon": true,
+        "actual_native_gun_hand_has_visual": true,
+        "empty_reticle_sends_no_shot": true,
+        "empty_reticle_does_not_send_paid_aim": true,
+        "friendly_creature_not_accepted_as_ranged_target": true,
+        "friendly_reticle_does_not_send_paid_aim": true,
+        "held_rmb_not_replayed_after_real_reconnect": true,
+        "native_reload_choices_exclude_incompatible_ammo": true,
+        "cancel_ammo_choice_keeps_rounds": true,
+        "native_reload_confirmation": true,
+        "decline_reload_keeps_rounds": true,
+        "reload_blocks_movement_aim_and_fire": true,
+        "inventory_freezes_native_reload": true,
+        "cancel_native_reload_preserves_rounds": true,
+        "reconnect_discards_old_weapon_handle_without_replaying_fire": true,
+        "new_reload_has_fresh_activity_token": true,
+        "native_reload_transfers_ammo_once": true,
+        "actual_runtime_survives_native_ranged_combat": true,
+        "byte_relay_completed_without_errors": true,
+        "ranged_save_readable_by_pristine_native_core": true,
+        "native_gun_instance_persists_once": true,
+        "canonical_ammunition_conserved_except_one_fired_round": true,
+        "ranged-other_untouched": true,
+        "ranged-wrong_untouched": true,
+        "completed_reload_has_no_pending_activity": true,
+        "canonical_ranged_save_has_no_luanti_inventory": true
+      },
+      "summary.json": {
+        "path": "artifacts/core-feedback-20261018/installed-ranged-final/summary.json",
+        "sha256": "17b4e6ea7d777ffec4454457d4c958d2e9ebbeb25e6520bea4e11b1192f07e74"
+      }
+    },
+    "native_active": {
+      "log": "artifacts/core-feedback-20261018/native-active-complete.log",
+      "sha256": "b88c5067f835ea3b770a3c065aefe77b11133908c04a4427661642bb500bf1a1",
+      "result": "PASS",
+      "assertions": 65402,
+      "test_cases": 98
+    },
+    "client_unit": {
+      "log": "artifacts/core-feedback-20261018/installed-unit-tests.log",
+      "sha256": "1fa7d463036fb59df2bb5357c4e9696d652f39dbf05d2175f42a0e31ea9646b6",
+      "result": "PASS"
+    },
+    "protocol": {
+      "log": "artifacts/core-feedback-20261018/protocol-tests.log",
+      "sha256": "a30159b9884b64411d4f8095bfb2ee3ba60e0676ac8d4f3415b6fee089f36643",
+      "result": "PASS"
+    },
+    "language": {
+      "log": "artifacts/core-feedback-20261018/language-tests.log",
+      "sha256": "b0d4294a3d48953ce473ada1f9863072b519bbee51bdee9346b91f92ab2b9868",
+      "result": "PASS"
+    },
+    "supervisor": {
+      "log": "artifacts/core-feedback-20261018/supervisor-root-installed.log",
+      "sha256": "eaf720be128d0474ea9880cc16ef438cd6dc0e75fc4d20e775751117882c7a85",
+      "result": "PASS"
+    },
+    "optional_expanded": {
+      "result": "KNOWN FAIL, not promoted",
+      "log": "artifacts/core-feedback-20261018/native-regression-final.log",
+      "sha256": "098823a2359f96808385ac30c3c95309caf235bbd4dc96e023d53135ed55089f",
+      "summary": [
+        "test cases:   101 |    96 passed |  5 failed",
+        "assertions: 65412 | 65401 passed | 11 failed"
+      ]
+    },
+    "baseline_equipped": {
+      "result": "KNOWN FAIL, not promoted",
+      "log": "artifacts/core-feedback-20261018/baseline-statistics.log",
+      "sha256": "9752715ba500e55bb12ea39a38f47f2259d50a4281ed3062f104caae17bb10ce",
+      "summary": [
+        "test cases: 2 | 2 failed",
+        "assertions: 3 | 1 passed | 2 failed"
+      ]
+    },
+    "baseline_other": {
+      "result": "KNOWN FAIL, not promoted",
+      "log": "artifacts/core-feedback-20261018/baseline-other-statistics.log",
+      "sha256": "013935d1fce28228f12bb80899c1e9b55a2b214d88c0ab7afc3866ef050195b2",
+      "summary": [
+        "test cases:  3 |  0 passed | 3 failed",
+        "assertions: 23 | 16 passed | 7 failed"
+      ]
+    }
+  },
+  "limitations": [
+    "Full SAVE-001 OPEN",
+    "Historical M5.5 FAILED",
+    "28 PENDING + 1 manual FAIL",
+    "Opt-in statistical melee suite: 5 cases/11 assertions fail; same five cases fail in earlier runtime",
+    "Incremental reconstructed builds, not a cold clean build",
+    "Generic art, provisional sound timbres; not full creature/SFX coverage"
+  ],
+  "runtimes": {
+    "protocol": "2.24",
+    "previous": {
+      "native": "a69a6361741194697adcdfce717161e9acba1025a0c92c44a61fb0d47b7378b2",
+      "client": "8d3b07e8673e4f556780cb25b7da74e49ce1618402fc534207c01c50fe05fc41"
+    },
+    "installed": {
+      "native": {
+        "file": "cdda/build/src/cdda-server",
+        "source": "artifacts/fnd03-session/workspace/cdda/build/src/cdda-server",
+        "sha256": "f9506b075e1d452169112cd3d1767206c897b77cafe22df224c81cfc1706be42"
+      },
+      "client": {
+        "file": "luanti/bin/luanti",
+        "source": "artifacts/language-20261011/workspace/luanti/bin/luanti",
+        "sha256": "ba7d4a8932dbeff5bd4a37b83a9e9c26a36ad71c45f0fd876f6ee48128a789d9"
+      }
+    },
+    "backups": {
+      "native": "artifacts/core-feedback-20261018/native-previous-runtime",
+      "client": "artifacts/core-feedback-20261018/client-previous-runtime"
+    }
+  },
+  "graphical_checks": 231,
+  "audio_development_packages": [
+    {
+      "file": "artifacts/core-feedback-20261018/deps/libogg-dev_1.3.5-0ubuntu3_amd64.deb",
+      "sha256": "025590a5b96a12f3145baf9782145c81e6a096dc17d5035b415445fdf4d42133"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/deps/libopenal-dev_1%3a1.19.1-2build3_amd64.deb",
+      "sha256": "7ef8d988607da1efa698d20ae6d29ba9b1aa53c441c6bca82114d4a95188d6bd"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/deps/libvorbis-dev_1.3.7-1build2_amd64.deb",
+      "sha256": "e2528de05b7857fa5d1177a5b8f23370dbd54889ba256b94f402ee99822edc97"
+    }
+  ],
+  "media_manifest": {
+    "file": "game/mods/cdda_entities/presentation-assets.json",
+    "sha256": "901ad3d0ce3dcfc393acca433b28a0474446cc49e3a322f9af79b5f48512e864"
+  },
+  "screenshots": [
+    {
+      "file": "artifacts/core-feedback-20261018/feedback-renderer-v3/attack.png",
+      "sha256": "2fdaa08c50d53f2c95449b2504196eb93661ab2f9149d6bf3088a34bde1833b8"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/feedback-renderer-v3/avatar-back.png",
+      "sha256": "c043456202b8ead98654851d9dbed8e0b8a0e8a88691ae5e1361a77aa7f70054"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/feedback-renderer-v3/avatar-front.png",
+      "sha256": "efa59b965785be677e1141ccd56f0456080a2cc9ed6f9ffbf73a04f08cdde7f2"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/feedback-renderer-v3/bird.png",
+      "sha256": "69bfc3f22e6d145aab48b3459a797689d7bd299b486940d50ed9edec3b74cd72"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/feedback-renderer-v3/canine.png",
+      "sha256": "7a7660192656a1a9a61923096c81f51bbf5c41a09cb3536452d71d3f38c64f34"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/feedback-renderer-v3/darkness.png",
+      "sha256": "3b89c6631a5c7f2267d9987b0d45078642f8c3dcf00b4d603496c487ecfa5a44"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/feedback-renderer-v3/diagnostics-on.png",
+      "sha256": "f9bc86797b10c179188ec765fa846967a206a19e0b68bac4dfb2c4e1cb805b87"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/feedback-renderer-v3/held-firearm.png",
+      "sha256": "9bbbafa4038d483c717002e9c15b5b5e434e80697ac43a240f4fdc9e7dad7ab3"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/feedback-renderer-v3/hurt.png",
+      "sha256": "ae3e096670723caa955e3cdd681c55be6d93d4d78685b8a23bf46e4ecac53025"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/feedback-renderer-v3/initial.png",
+      "sha256": "4641d663bec4a7555e5f08367d9933c7f609e6d6dcc6e158b026d88032b95f80"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/feedback-renderer-v3/removed.png",
+      "sha256": "7127cffca64496902782d811803029e03e2636a0c2ea0da1ab73ecf92c244691"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/feedback-renderer-v3/returned.png",
+      "sha256": "4c6baf7b2b3a5d45a2e131bf2e0bd5c66828d273f0fad208aac9f3c4abfbcc49"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/feedback-renderer-v3/sound-caption.png",
+      "sha256": "cf1b8c4f71815d4ee024a8294f68d86c28f619cf6f11409240393ad2f9d5344a"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/feedback-renderer-v3/spider.png",
+      "sha256": "c6e03c89b4627025f205691c70457b5dbea5a71ca31286dda5300e82449ba84a"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/feedback-renderer-v3/underwater.png",
+      "sha256": "0a94fc4567e7fb0f8aaf8c3998c40f2695be579089ed7ecbac10bff3f59aa36d"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/native-melee/after-native-strike.png",
+      "sha256": "875f161855581d585115fdfb1e1b814f3bd1d51ef86d633a1c686975634f712f"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/native-melee/native-corpse.png",
+      "sha256": "64e2713633971844ae80dca2d34e364f82807e59c3a86a8397bc75638527cf47"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/native-melee/pointed-target.png",
+      "sha256": "5f0bf9952321c18a13d58d7bec12881fd765e46f6b2456def9bba3150c395733"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/native-ranged/aimed.png",
+      "sha256": "f29d7fce6be9790c29fd8c4478d083eecbc1c3b8c3f23359ab7001a6ca8eaf70"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/native-ranged/ammo-choices.png",
+      "sha256": "6dc4ba70a48f3b6dd93f0dff4c49a3613b74eaa5519c1ae427dc476409d09820"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/native-ranged/pointed-target.png",
+      "sha256": "7a9f8aa0126dab6bd87f0fc2f72ef382252a3bf7ebca94f38b044b1be3c21e76"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/native-ranged/reload-complete.png",
+      "sha256": "6636d5dd2de04a651b3ac05a3e3b68a307380ea7218111ccbcc0d214699e76a7"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/native-ranged/reload-confirmation.png",
+      "sha256": "000acc4fb1d88775951a2abae726fee49a960b833cf0ece619e6eba1b7b01efb"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/native-ranged/reload-paused.png",
+      "sha256": "9a17a270c50b58a9b394752da2596de6ec7d6370c3e3da109e7c7a78fee2450f"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/installed-feedback/attack.png",
+      "sha256": "10b099b60d04e2f447336295bbaac094beed267bf8f15cca65999c988874a925"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/installed-feedback/avatar-back.png",
+      "sha256": "e7079153ee3157852e5f8f34d3d5569a2c2b89cc1b220abd961e40bc739d6453"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/installed-feedback/avatar-front.png",
+      "sha256": "fe5f53c4c042854930c3cd62a98e435b772f8661c184d6fcc6c42ec828eafcc6"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/installed-feedback/bird.png",
+      "sha256": "fbed0dc39887d594363cce6063c57662188604675be86f3b6b3db324fb395bfd"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/installed-feedback/canine.png",
+      "sha256": "d6fb465e34777ffd41c58176a012972e13fb15e68bd5b860fa4ae006c352deb3"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/installed-feedback/darkness.png",
+      "sha256": "09f3e954c671630cf4eabc515e231e50bdec7df943205fe7537431eeccba781c"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/installed-feedback/diagnostics-on.png",
+      "sha256": "6d2e5c79bdd366333327bd804175f7e136c1799c4886815beef10b101b32e9a4"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/installed-feedback/held-firearm.png",
+      "sha256": "9050b42e80a318cf714097217c65bd06e9ea712ad23c4ec7d594810e3334ce43"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/installed-feedback/hurt.png",
+      "sha256": "89e1d4673679dc8ff9d55a4f37a4f7fa7ebd18b518196b61c43a55bc463987ee"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/installed-feedback/initial.png",
+      "sha256": "b08994351ff48bedd289e705d8dc5a53880affbc065ad382550d49caa3b6a97f"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/installed-feedback/removed.png",
+      "sha256": "9aa7e55ed9de92c6b8ab00e0c6272d5b432d1e60681ebe6ccc6e7f44ff384165"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/installed-feedback/returned.png",
+      "sha256": "4f47189af6052c06435bf3de242379b695e967e0b7731d6fb03c154f9a52c528"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/installed-feedback/sound-caption.png",
+      "sha256": "b3ec9d46365fa382322c67340fc345605db81a86a28a55476e1782250e5f89e2"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/installed-feedback/spider.png",
+      "sha256": "068954ba6905be19404fb93e11a6053757b5a70852ede564319d1b20b4a7de7c"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/installed-feedback/underwater.png",
+      "sha256": "d5f5332b9c8507b2f78df13e50ca993faacc3e3a95c645d292e7bb1416ad2348"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/installed-clothing/atomic-inspect-2.png",
+      "sha256": "34f5ccf214ed8976fe1c5dbc79f956ed1dc093f3cf195f7242e1eef6b56570d3"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/installed-clothing/atomic-inspect-3.png",
+      "sha256": "7355154d8378810e55f69eaec3649561e184667185d26867a8876d252de65f2a"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/installed-clothing/atomic-time-2.png",
+      "sha256": "85479e326346f52762796a965618fdf95ee90e88d9c4f091831c3545a28d0726"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/installed-clothing/atomic-time-3.png",
+      "sha256": "75b2a1db8d85cd7e73c66d61041e61baf2b6d9303bba3d670a2e3da4bef467ec"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/installed-clothing/inventory.png",
+      "sha256": "78447cd15386de9a159f8b5eefb3fe95d1bc54cf775dace8ac0a48f330c2b07c"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/installed-ranged-final/aimed.png",
+      "sha256": "8cf26637d42119dd5fc9115d9c590bdddec465da10c0740a1ca98595d8a5f6a7"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/installed-ranged-final/ammo-choices.png",
+      "sha256": "39a848c431a98aef9a51b104a5e6848ec84e3abd5e62b689cff975d17a969287"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/installed-ranged-final/pointed-target.png",
+      "sha256": "8c2b30e756baa922f66e4f51115be8f9291c56dc9e77fda12b33bd9c2b1f7b38"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/installed-ranged-final/reload-complete.png",
+      "sha256": "0241f48422cb758c51364eba39c2bcf5ad663c42b15a550afd691f5e4bac1abb"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/installed-ranged-final/reload-confirmation.png",
+      "sha256": "f93a7fa325afc59582cee5106e300ab6f385e55599c29d00de5202a99a439918"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/installed-ranged-final/reload-paused.png",
+      "sha256": "e15b782d2ddd23f97f9d1ebb17b8d030cacbb2a4df0e8132a957b1beff81ae51"
+    }
+  ],
+  "logs": [
+    {
+      "file": "artifacts/core-feedback-20261018/baseline-check.log",
+      "sha256": "c4d8c80b3fafd0382a1d6f4c33fc92f64fb2f7a135abcf3b442dfa50ae92fba1"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/baseline-final.log",
+      "sha256": "c4d8c80b3fafd0382a1d6f4c33fc92f64fb2f7a135abcf3b442dfa50ae92fba1"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/baseline-other-statistics.log",
+      "sha256": "013935d1fce28228f12bb80899c1e9b55a2b214d88c0ab7afc3866ef050195b2"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/baseline-statistics.log",
+      "sha256": "9752715ba500e55bb12ea39a38f47f2259d50a4281ed3062f104caae17bb10ce"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/capture-debug-binding.log",
+      "sha256": "fd3b5352605120bd9797e5c0cd62f2f557fbab7ab1a8b5c0e839f6d5dec5c8c9"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/capture-feedback-tests.log",
+      "sha256": "efe60120ef84f9d18c58f48f9453fbf185e052dc973199d07a1f9525acbd6cfb"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/capture-native-hearing-cache.log",
+      "sha256": "20c2d5aca9af7235f969c43bfe7aba4b639aafc216af3e4909821cb93bc5a25c"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/capture-native-test-diagnostic.log",
+      "sha256": "da46011eede5f8860c55f3b93e21db7efdf3108f058952bc758a2dffcaafe859"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/capture-native-visibility-cache.log",
+      "sha256": "ec0c150886ae45b315bbf3cb799cf8235ec0ff4ea857485dd0a0ba879ee52f18"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/capture-session-dedup.log",
+      "sha256": "ce21e92b65071c139df9af39aab1cf63bbbb5ee6e36103e62db3bd228fa6b18d"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/capture-tests.log",
+      "sha256": "9d2a9c94c2bd71201da7e823b778b1658c0825c196978b72b022bac6cc78c56b"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/capture-visibility-fixture.log",
+      "sha256": "461b98ae45d3607a06fe7bb42d667fa09ef18838fd2b2538937ef6420674f435"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/capture.log",
+      "sha256": "6550fb5711e3c8668a6acec98f9d59f9ce315296fde28abd6a43468a54eba9b2"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/client-build-debug.log",
+      "sha256": "232338c85c4a5f7f068582faf6c76dce243dff0cbd5529ac77ed1e621409a402"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/client-build-final.log",
+      "sha256": "25c5a031ab4439be5e6ff0f0dd2cf9051ff1e93d4dd97f4209aa522c4affc4e3"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/client-build.log",
+      "sha256": "1b44bb878fde3f13e335d252dab1951a8d073f20dc9c902167c67ef456d585de"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/client-configure.log",
+      "sha256": "0bd2fcf07ccd326f7769cdf318d5fb15a2aa5471a1f126c33a92ee259e3258f0"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/client-refresh-debug.log",
+      "sha256": "3068cba8287787ebc575d7352ed5c9d6fcc1ccb859e7756ecf96b4fe8a6c3173"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/client-refresh-final.log",
+      "sha256": "94f717f4e772149857aa032f51203fc52881204a13d4348bac9fce5acce14561"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/client-refresh-tests.log",
+      "sha256": "7a887fd9d509cd9e587339dfe4ca0d14dc0b724f18d5842e4682a61807f1bd9f"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/client-unit-tests.log",
+      "sha256": "fd2c1503a109941f95871e3eb9cc60c12126016d8831139d70c0fcd769e9b12b"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/feedback-renderer-v2-xvfb.log",
+      "sha256": "19346bc9201dc177c7ada0a9ccfebc2bfbfc1faecd3fbddd79ef126bf525b556"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/feedback-renderer-v2.log",
+      "sha256": "9bfdf6430b1a319b7227d13e92b53440869bc678612a36da414dc67cb100ddc8"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/feedback-renderer-v3-xvfb.log",
+      "sha256": "19346bc9201dc177c7ada0a9ccfebc2bfbfc1faecd3fbddd79ef126bf525b556"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/feedback-renderer-v3.log",
+      "sha256": "f170d89474aea3f4cba26198df0c2ab2ba07858e16697f034ef7e7cdfbf6dbec"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/feedback-renderer-xvfb.log",
+      "sha256": "982ea04f30c9b29eccbb1ad3f11d5455978d921acd5a40be3b626ef8ec3166f6"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/feedback-renderer.log",
+      "sha256": "60171e1b3625757d639903c7a040562c14b0b95fd9f5af96f48f7d35e8561c61"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/installed-clothing-xvfb.log",
+      "sha256": "982ea04f30c9b29eccbb1ad3f11d5455978d921acd5a40be3b626ef8ec3166f6"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/installed-clothing.log",
+      "sha256": "4371ab699eeb6478ffd4a7e0d7a0d634487e26d4596869d427406341172608d2"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/installed-feedback-xvfb.log",
+      "sha256": "3291747ac9e2f074aaf5d80d917ba644f6b777e27c04b7a9557db652c1416389"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/installed-feedback.log",
+      "sha256": "edf3ad93f203516fc69b1ff3dbeae79733426e6b2f7a2a7330d282b5c3b9c648"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/installed-ranged-final-xvfb.log",
+      "sha256": "3291747ac9e2f074aaf5d80d917ba644f6b777e27c04b7a9557db652c1416389"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/installed-ranged-final.log",
+      "sha256": "78b1ec00e6ec86f9e33cb0a8d5b82a2b8f9df78ef61bfd7b91c341faacf9ee47"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/installed-ranged-xvfb.log",
+      "sha256": "19346bc9201dc177c7ada0a9ccfebc2bfbfc1faecd3fbddd79ef126bf525b556"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/installed-ranged.log",
+      "sha256": "eae323c6f67064ee50ed67cce06e7f1410b6432fdc8864008649cd9c400ba005"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/installed-unit-tests.log",
+      "sha256": "1fa7d463036fb59df2bb5357c4e9696d652f39dbf05d2175f42a0e31ea9646b6"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/language-tests.log",
+      "sha256": "b0d4294a3d48953ce473ada1f9863072b519bbee51bdee9346b91f92ab2b9868"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/native-active-complete.log",
+      "sha256": "b88c5067f835ea3b770a3c065aefe77b11133908c04a4427661642bb500bf1a1"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/native-active-final.log",
+      "sha256": "b66c297988b0f985273dcc26d9949ba5a0cfe521ff3855bb1cdf6e909ab33ac2"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/native-active.log",
+      "sha256": "c2de699ba0b28342843fbf904178d547ef768884ffeb7e4abd6a6f2984b71724"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/native-build-final.log",
+      "sha256": "6c1589bc6a20be67edfe6c62d03f7e41ed71635700afc3f2cd744c4f64b5d4a0"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/native-build-hearing.log",
+      "sha256": "43bc51c818b5c5cae840eaeb70eecf8216a1f1980081319ec154bf8aad1d03ee"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/native-build-namespace.log",
+      "sha256": "65da8df419c1dacc204ae3f5c2e767b353e15c153d65e4dead2ba20f77db9c4e"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/native-build-sight.log",
+      "sha256": "5bc27bee5db37cfbbe17d1ab454c6ecc3c7ad63bbd3f1ad724da9f04ffde1f6c"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/native-build.log",
+      "sha256": "86c3ab8d35e5541ebb051f616d6e84f8ff2e199e14fb62fba4f88f09e2475c76"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/native-melee-xvfb.log",
+      "sha256": "3291747ac9e2f074aaf5d80d917ba644f6b777e27c04b7a9557db652c1416389"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/native-melee.log",
+      "sha256": "f946ce4150dfd3c14633f357b4b05e90b43f531d407a4b03bfaaa6725547153f"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/native-presentation-final.log",
+      "sha256": "879aba03aaaf67627a34a9d66314d1f6b870a41bf6787b559d705985def76be9"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/native-presentation-tests-v2.log",
+      "sha256": "f313f4c33da9069a416c12614340ed7efbf3af308e11bd92964faf73c14099b5"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/native-presentation-tests.log",
+      "sha256": "823d6a7e82422fce84095a6195e8eb34e2441ac2e61f1d381a6795fb36b8dceb"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/native-ranged-xvfb.log",
+      "sha256": "982ea04f30c9b29eccbb1ad3f11d5455978d921acd5a40be3b626ef8ec3166f6"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/native-ranged.log",
+      "sha256": "78b1ec00e6ec86f9e33cb0a8d5b82a2b8f9df78ef61bfd7b91c341faacf9ee47"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/native-refresh-final.log",
+      "sha256": "f87d11b6172e72bb8f7a14f9911102d55c642e12a13c0fab4730f74c8f16a15e"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/native-refresh-hearing.log",
+      "sha256": "b3d62b66cef0700f9022415a38b61c19ffb6bc2c097e49f5899d245896cf4149"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/native-refresh-namespace.log",
+      "sha256": "de596c72ab9b05a7338420fcc26eee113b70a8acbe7cfbe1cdcb47bf3181e57c"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/native-refresh-sight.log",
+      "sha256": "52fd67ac2c0913e4759f0043cab39fc2d4baf13dea70a37ab4378d07fcd898b0"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/native-refresh-tests.log",
+      "sha256": "7a887fd9d509cd9e587339dfe4ca0d14dc0b724f18d5842e4682a61807f1bd9f"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/native-regression-final.log",
+      "sha256": "098823a2359f96808385ac30c3c95309caf235bbd4dc96e023d53135ed55089f"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/native-regression-tests-v2.log",
+      "sha256": "3535346b3510646fa1192cc1d5f4c25883c7a07886195ddab8044feac260d5f7"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/native-regression-tests.log",
+      "sha256": "823d6a7e82422fce84095a6195e8eb34e2441ac2e61f1d381a6795fb36b8dceb"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/protocol-build.log",
+      "sha256": "d75a556eabfe0bebfa61593ab9ff308d678ca6e80e958e06b8efb1ec8651d337"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/protocol-configure.log",
+      "sha256": "e0592107dce3d83e6a76f1b9bdd315d306f2102599dfc925b18148f5c064f96e"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/protocol-tests.log",
+      "sha256": "a30159b9884b64411d4f8095bfb2ee3ba60e0676ac8d4f3415b6fee089f36643"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/supervisor-correct-root.log",
+      "sha256": "11e1461cee252e2f971f13122a816f1f0981144a14005b610042c16e5cfa8b47"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/supervisor-final.log",
+      "sha256": "11e1461cee252e2f971f13122a816f1f0981144a14005b610042c16e5cfa8b47"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/supervisor-root-installed.log",
+      "sha256": "eaf720be128d0474ea9880cc16ef438cd6dc0e75fc4d20e775751117882c7a85"
+    },
+    {
+      "file": "artifacts/core-feedback-20261018/supervisor-tests.log",
+      "sha256": "9f24c4cd94e773d467b53045084b7c1ad8bf54bab3131c2de2f27b7ff5b3b0ca"
+    }
+  ],
+  "runner": {
+    "file": "artifacts/core-feedback-20261018/run-gui.py",
+    "sha256": "d86ab28d67d41ff6ee63bb0bf4302a193f6a4bc3aa91b7b7bd0a5f689280d421"
+  },
+  "commands": [
+    "python3 tools/takeover_baseline.py check",
+    "python3 tools/refresh_verification_workspace.py --workspace artifacts/language-20261011/workspace --receipt <new-client-receipt.json>",
+    "python3 tools/refresh_verification_workspace.py --workspace artifacts/fnd03-session/workspace --receipt <new-native-receipt.json>",
+    "cmake -S artifacts/language-20261011/workspace/luanti -B artifacts/language-20261011/workspace/luanti/build -DENABLE_SOUND=ON -DOPENAL_INCLUDE_DIR=/home/dannhill/Projects/cdda-mineclonia/artifacts/core-feedback-20261018/deps/sysroot/usr/include -DOPENAL_LIBRARY=/lib/x86_64-linux-gnu/libopenal.so.1 -DOGG_INCLUDE_DIR=/home/dannhill/Projects/cdda-mineclonia/artifacts/core-feedback-20261018/deps/sysroot/usr/include -DVORBIS_INCLUDE_DIR=/home/dannhill/Projects/cdda-mineclonia/artifacts/core-feedback-20261018/deps/sysroot/usr/include -DOGG_LIBRARY=/lib/x86_64-linux-gnu/libogg.so.0 -DVORBIS_LIBRARY=/lib/x86_64-linux-gnu/libvorbis.so.0 -DVORBISFILE_LIBRARY=/lib/x86_64-linux-gnu/libvorbisfile.so.3",
+    "cmake --build artifacts/language-20261011/workspace/luanti/build --target luanti -j3",
+    "cmake --build artifacts/fnd03-session/workspace/cdda/build --target cdda-server cata_test -j3",
+    "(cd artifacts/fnd03-session/workspace/cdda && ./build/tests/cata_test '[cwm],[melee]~[.],[ranged]~[.]' --rng-seed 42 --user-dir=<new-isolated-absolute-dir>)",
+    "ALSOFT_DRIVERS=null luanti/bin/luanti --run-unittests --config <isolated-empty-config> --logfile <isolated-log>",
+    "cmake -S protocol -B artifacts/core-feedback-20261018/protocol-build",
+    "cmake --build artifacts/core-feedback-20261018/protocol-build -j3",
+    "ctest --test-dir artifacts/core-feedback-20261018/protocol-build --output-on-failure",
+    "python3 tests/product_language_test.py",
+    "python3 tests/supervisor_test.py --project-root . --launcher-build artifacts/fnd03-session/launcher-build --coordinator-build artifacts/fnd03-session/coordinator-build --artifacts <new-isolated-output>",
+    "python3 artifacts/core-feedback-20261018/run-gui.py actor_gui_test.py - <new-output> --feedback",
+    "python3 artifacts/core-feedback-20261018/run-gui.py pointed_melee_gui_test.py artifacts/playable-core-melee-20261008/fixture/user <new-output> --feedback",
+    "python3 artifacts/core-feedback-20261018/run-gui.py ranged_gui_test.py artifacts/native-ranged-20261008/fixture/user <new-output> --held-rmb --feedback",
+    "CWM_TEST_INSTALLED=1 python3 artifacts/core-feedback-20261018/run-gui.py actor_gui_test.py - <new-output> --feedback",
+    "CWM_TEST_INSTALLED=1 python3 artifacts/core-feedback-20261018/run-gui.py equipment_gui_test.py artifacts/native-equipment-20261008/fixture/user <new-output> --native-equipment-time",
+    "CWM_TEST_INSTALLED=1 python3 artifacts/core-feedback-20261018/run-gui.py ranged_gui_test.py artifacts/native-ranged-20261008/fixture/user <new-output> --held-rmb --feedback"
+  ]
+}

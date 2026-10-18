@@ -22,8 +22,13 @@ espliciti di famiglie selezionate, non copertura completa del bestiario.
 
 CWM 2.24 raccoglie eventi effimeri filtrati dentro CDDA e li pubblica nei batch:
 nessuna inferenza di attacco/danno nel client, nessuna nuova autorità o save.
-Build, verifica e installazione sono in corso. Le prove personali si aggiungono
-al backlog, senza gate oggi. Non finalizzare nebbia/panorama, controller o M6.
+[Implementazione e installazione](docs/fixes/core-feedback-ten.md) verificate in
+modo mirato: 98 casi nativi / 65.402 assert, 309 test client, 12 test protocollo
+e 231 controlli GUI/canonici tra ricostruzione e `start.sh` installato. Restano
+cinque casi statistici opzionali fallenti, riprodotti nell'eseguibile precedente;
+non dichiarare PASS la suite estesa. Backlog **28 PENDING + 1 FAIL manuale**, senza
+gate oggi. Prossima fetta funzionale: lettura/smontaggio e lavorazioni native.
+Non finalizzare nebbia/panorama, controller o M6; SAVE-001 OPEN, M5.5 FAILED.
 
 ## Tre passi consecutivi del core — 2026-10-18
 
