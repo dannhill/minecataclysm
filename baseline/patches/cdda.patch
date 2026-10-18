@@ -3862,7 +3862,7 @@ index 0000000..d077b2c
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..ed9138b
+index 0000000..fb12ddd
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
 @@ -0,0 +1,1107 @@
@@ -4396,7 +4396,7 @@ index 0000000..ed9138b
 +        // Native placement may store/drop an already-created craft without
 +        // starting ACT_CRAFT. Publish that canonical mutation even with zero work.
 +        ++world_revision_;
-+        result_ = Result{command.id, accepted, accepted ? "" : !valid ? "Unsupported language code." : ::cwm::tr("No work started; check for unfinished crafts in K.", "Nessun lavoro avviato; controlla gli eventuali incompleti in K.")};
++        result_ = Result{command.id, accepted, accepted ? "" : ::cwm::tr("No work started; check for unfinished crafts in K.", "Nessun lavoro avviato; controlla gli eventuali incompleti in K.")};
 +        return acted;
 +    } else if (command.transfer_action >= 0) {
 +        auto error = inventory_selection_.validate_transfer(u, command.inventory_view,
@@ -4419,7 +4419,7 @@ index 0000000..ed9138b
 +            u.assign_activity(insert_item_activity_actor(destination, {{source, command.transfer_quantity}}, false));
 +        }
 +        const bool accepted = bool(u.activity);
-+        result_ = Result{command.id, accepted, accepted ? "" : !valid ? "Unsupported language code." : ::cwm::tr("Native transfer did not start.", "Trasferimento nativo non avviato.")};
++        result_ = Result{command.id, accepted, accepted ? "" : ::cwm::tr("Native transfer did not start.", "Trasferimento nativo non avviato.")};
 +        if (accepted) ++world_revision_;
 +        return accepted;
 +    } else if (command.equipment_action >= 0) {
@@ -4468,7 +4468,7 @@ index 0000000..ed9138b
 +        }
 +        const bool acted = accepted || u.moves != before_moves;
 +        if (acted) ++world_revision_;
-+        result_ = Result{command.id, accepted, accepted ? "" : !valid ? "Unsupported language code." : ::cwm::tr("Native action was cancelled or failed.", "Azione nativa annullata o non riuscita.")};
++        result_ = Result{command.id, accepted, accepted ? "" : ::cwm::tr("Native action was cancelled or failed.", "Azione nativa annullata o non riuscita.")};
 +        return acted; // Native action debt/turns, never a Luanti inventory mutation.
 +    } else if (command.movement_mode >= 0) {
 +        if (!valid_mode(command.movement_mode) || (realtime_ && pause_reasons(g))) {
