@@ -1,6 +1,8 @@
 # Validazioni manuali del playable core
 
-Stato corrente dopo i tre seguiti core del 2026-10-18: **18 PENDING + 1 FAIL manuale**.
+Stato corrente dopo i dieci seguiti core del 2026-10-18: **28 PENDING + 1 FAIL manuale**.
+Dieci nuove prove rinviabili sono in fondo: feedback, famiglie, ambiente e F3.
+Prima di questa consegna erano **18 PENDING + 1 FAIL manuale**.
 I tre passi autorizzati consecutivamente aggiungono nove prove rinviabili in
 fondo al file: raccolta sfusa, materiali/avatar, animazioni. Nessun gate oggi.
 Al secondo riscontro del 2026-10-18 erano **9 PENDING + 1 FAIL manuale**.
@@ -804,3 +806,46 @@ sul menu 9×3 per oggetti sfusi è nel seguito; non revoca il PASS funzionale.
    corsa e sdraio. La posa segue lo stato confermato e si ferma nei menu.
    Creature che diventano visibili o tornano dopo il caricamento non devono
    percorrere una vecchia traiettoria invisibile o lasciare doppi modelli.
+
+## Feedback del core — dieci passi — PENDING (10), rinviabili
+
+Nessun obbligo adesso. Avvio normale `./start.sh`; per una scena già pronta
+puoi usare `./combat-demo.sh --fresh` o `./ranged-demo.sh --fresh`. Aspetto dei
+vestiti e timbri audio sono ancora provvisori; bestiario completo non dichiarato.
+
+1. **Attacchi:** osserva un attacco tuo in terza persona (C) e uno zombie che
+   attacca davvero. Deve partire un gesto breve anche quando manca; non deve
+   attaccare solo perché vicino. F7/I fermano la posa insieme alla simulazione.
+2. **Danni:** un colpo effettivo produce una breve reazione/tinta sul bersaglio;
+   se vieni ferito compare una tinta lieve sullo schermo, senza scuotere la
+   camera né spostarti. Un colpo mancato non deve simulare un danno riuscito.
+3. **Audio:** con volume attivo prova sparo, colpi e rumori di lavoro/movimento.
+   Devono arrivare suoni e didascalie quando CDDA li rende udibili. Giudica anche
+   il volume: il colpo d'arma usa ancora un timbro provvisorio. Niente ripetizione
+   dei vecchi suoni dopo pausa/reconnect. La sordità nativa resta vincolante.
+4. **Prima persona:** impugna/disimpugna un oggetto e una pistola. Deve vedersi
+   l'oggetto effettivo, usando l'icona estrusa come proxy, indipendente dallo slot
+   rapido selezionato. Destro mantenuto alza la posa, sparare dà un breve rinculo
+   visivo dell'oggetto; non deve sembrare il pugno/mining di Minecraft. Non è una
+   nuova regola di mira o un modello 3D definitivo di tutte le armi.
+5. **Canidi:** quando incontri cane/lupo/coyote nella partita, controlla modello
+   a quattro zampe, scala, pelle e ciclo di cammino; in pausa rimane fermo.
+   Forme mutate/zombie non incluse conservano il fallback. Prova rinviabile fino
+   a un incontro naturale, senza dover modificare il salvataggio per trovarli.
+6. **Ragni:** quando incontri un ragno supportato controlla zampe, scala piccola
+   o grande e cammino. Il proxy non deve comparire per una specie sconosciuta,
+   né rivelare ragni che CDDA non percepisce. Anche questa prova può attendere.
+7. **Uccelli terrestri:** gallina/gallo cedrone e pulcini supportati hanno un
+   modello piccolo riconoscibile e si animano sul movimento confermato. Non si
+   dichiara ancora volo o sagoma specifica di ogni uccello. Rinviabile all'incontro.
+8. **Oscurità:** in una stanza buia compare un segnale «Low light» e una lieve
+   velatura; uscendo alla luce si toglie. Nessuna creatura nascosta deve diventare
+   visibile. È un'indicazione della luce nativa, non il futuro panorama/nebbia.
+9. **Immersione:** quando CDDA conferma che sei sott'acqua compare una tinta blu
+   e l'indicazione «Underwater». Emergere li rimuove. Non promette visibilità
+   dove CDDA non esporta terreno; il messaggio deve rendere comprensibile anche
+   una zona completamente buia. Niente ossigeno/danno inventato dal client.
+10. **Diagnostica:** all'avvio niente grandi pannelli tecnici persistenti. Il
+    tasto debug (default F3, riconfigurabile) li mostra/nasconde. Pausa, perdita
+    connessione, minaccia, scelte native e lavoro devono restare comprensibili
+    anche a diagnostica spenta. Le vecchie configurazioni possono avere F5.

@@ -764,3 +764,24 @@ chooses the inverse of the last authoritative projected opening state; it never
 changes that state optimistically. Paused pickup input is discarded, not queued
 for a later RESUME. Shift-click and off-window drag are local presentation
 gestures resolving to the existing guarded ItemTransfer requests.
+
+## CWM 2.24 — transient presentation and local illumination
+
+Exact-version handshake remains required. WorldSnapshot appends low_light
+(native ambient illumination at the avatar) and up to 128 PresentationEvent
+records. ATTACK/SHOT originate in native melee/fire paths, HURT after actual
+inflicted damage, DEATH at native monster death. Only perceived actors or the
+avatar are identified. Unpublished monsters are not allocated IDs by the event
+recorder. Unsupported special attacks do not invent an event.
+
+SOUND is collected only after native attenuation, deafness, sleep and NPC gates.
+It carries actor=0, heard_volume clamped to 0..200, semantic sound_category and
+a native description with compass direction for unseen sounds. No coordinates
+or hidden source identity/type are included. Audio timbres are provisional.
+
+Nonzero cue IDs increase within the native runtime; batches drain once. Events
+are transient, not canonical save state. Full/resync snapshots have no events;
+a new client does not replay missed sounds. The client de-duplicates IDs within
+the same session, clears poses on full state and freezes effect clocks during
+pause/menu/recovery. Bounded event/text/enum validation is part of admission.
+Client visual effects do not modify position, injury, perception, recoil or AI.

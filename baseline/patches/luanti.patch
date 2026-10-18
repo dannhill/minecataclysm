@@ -1856,10 +1856,10 @@ index 0000000..e1e7236
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..0fa2a68
+index 0000000..f566a88
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,3091 @@
+@@ -0,0 +1,3092 @@
 +#include "cwm/product_language.hpp"
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
@@ -1986,7 +1986,7 @@ index 0000000..0fa2a68
 +    irr::gui::IGUIStaticText* debug_text_{nullptr};
 +    irr::gui::IGUIStaticText *environment_tint_{nullptr}, *environment_text_{nullptr}, *cue_text_{nullptr};
 +    bool diagnostics_{false}, low_light_{false};
-+    uint64_t last_cue_{0}, cues_received_{0}, sounds_played_{0};
++    uint64_t last_cue_{0}, cue_session_{0}, cues_received_{0}, sounds_played_{0};
 +    std::wstring cue_caption_;
 +    float caption_seconds_{0.f};
 +    irr::gui::IGUIStaticText* safety_text_{nullptr};
@@ -2705,7 +2705,7 @@ index 0000000..0fa2a68
 +        origin_valid_ = false;
 +        pending_move_ = 0; metrics_.pending_decision = 0;
 +        player_feet_offset_ = player_eye_offset_ = 0.f;
-+        last_cue_ = 0; caption_seconds_ = 0; low_light_ = false;
++        caption_seconds_ = 0; low_light_ = false;
 +        posture_input_ = {}; aim_input_ = {}; deferred_ranged_.reset(); last_aim_command_ = 0; posture_command_ = 0; deferred_opening_.reset();
 +    }
 +
@@ -3343,6 +3343,7 @@ index 0000000..0fa2a68
 +                    }
 +                }
 +                if (!session_.commit(*snap, *connection_)) { connection_->close(); return; }
++                if (cue_session_ != session_.identity.session) { last_cue_ = 0; cue_session_ = session_.identity.session; }
 +                low_light_ = snap->low_light();
 +                if (snap->full()) for (auto& pair : entities_) {
 +                    pair.second.attack_seconds = pair.second.hurt_seconds = 0;
@@ -3364,7 +3365,7 @@ index 0000000..0fa2a68
 +                        const auto category = cue->sound_category()->str();
 +                        const char* sound = category == "gunfire" ? "cwm_gunfire" : category == "combat" ? "cwm_combat" :
 +                            category == "movement" ? "cwm_movement" : category == "activity" ? "cwm_activity" : nullptr;
-+                        if (sound) {
++                        if (sound && cue->heard_volume()>0) {
 +                            const float gain = std::clamp(cue->heard_volume()/100.f,.04f,.65f) * (category == "gunfire" ? .35f : 1.f);
 +                            client_->sound()->playSound(0,SoundSpec(sound,gain)); ++sounds_played_;
 +                        }

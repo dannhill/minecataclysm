@@ -10,6 +10,21 @@ un panorama più ampio; nebbia, memoria distante e rilievo restano da scegliere.
 Lo [stato implementato](IMPLEMENTATION_STATUS.md) e le evidenze restano separati
 dagli obiettivi. La roadmap originale M0–M9 conserva i propri significati.
 
+## Dieci passi consecutivi del core — 2026-10-18
+
+Richiesta esplicita: dieci passi autonomi, prove personali rinviate. Il
+[contratto operativo](docs/design/core-feedback-ten-steps.md) segue il debito di
+presentazione già pianificato: (1) attacchi nativi, (2) reazioni ai danni,
+(3) suoni effettivamente uditi e didascalie, (4) oggetto reale in prima persona
+con posa di mira/sparo, (5) canidi, (6) ragni, (7) piccoli uccelli terrestri,
+(8) oscurità, (9) immersione, (10) diagnostica opzionale. I modelli restano proxy
+espliciti di famiglie selezionate, non copertura completa del bestiario.
+
+CWM 2.24 raccoglie eventi effimeri filtrati dentro CDDA e li pubblica nei batch:
+nessuna inferenza di attacco/danno nel client, nessuna nuova autorità o save.
+Build, verifica e installazione sono in corso. Le prove personali si aggiungono
+al backlog, senza gate oggi. Non finalizzare nebbia/panorama, controller o M6.
+
 ## Tre passi consecutivi del core — 2026-10-18
 
 Dopo Indossa/Togli l'utente autorizza altri tre o quattro passi senza attendere
