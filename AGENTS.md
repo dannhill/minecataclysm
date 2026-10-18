@@ -21,6 +21,9 @@ silently finalized by an agent.
   identifiers or infer gameplay rules from translated labels. Language changes
   use the acknowledged presentation request, without restarting gameplay,
   replaying open native decisions, or rewriting native options/saves.
+  Language definitions/catalogs live in `localization/`; regenerate shared
+  metadata with `tools/generate_product_languages.py`. Add future languages
+  through that registry/catalog path, not bilingual enums or menu branches.
 - A missing delta requires a full authoritative resynchronization; never infer missing state.
 - Preserve the upstream pins and complete patches in `baseline/manifest.json`.
   The ignored fork directories are working copies, not root-repository source history.

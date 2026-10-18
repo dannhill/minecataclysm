@@ -1,6 +1,40 @@
 # Implementation status
 
-Current scoped follow-up: **selected-language notice in Esc**. The notice
+Current scoped delivery: **live language selection and extensible catalogs**.
+Esc applies the acknowledged language in the running native/client pair,
+refreshing the whole menu and native labels without restarting the game.
+A shared registry owns codes, endonyms, native/engine locale mappings, catalogs
+and WIP status; adding a language does not require a new protocol enum or UI
+branch. [Contract](docs/design/product-language.md),
+[adding languages](localization/README.md),
+[delivery](docs/fixes/live-product-language.md),
+[exact evidence](docs/fixes/live-product-language-evidence.json).
+
+CWM **2.26**, paired verified runtimes installed in normal `start.sh` with
+rollback copies. The native coordinator changes its translator on the owner
+thread; the client applies/persists only a matching acknowledgement. No time,
+activity restart or canonical option/save write; pending decisions are not
+replayed. Original-language recorded messages and Italian WIP fallback remain.
+Mapping batch60 unchanged. One quit/relaunch loads this delivery; changing the
+language thereafter needs no restart.
+
+Scoped PASS: **114 native cases / 65,738 assertions**, isolated language **1/14**;
+**309 client tests / 47 modules**, 648 Catch assertions / 4 cases; **13 protocol**,
+**9 launcher**, **3 extensible-registry tests**. **99 actual renderer/canonical
+checks**, both directions and an installed run, with the same native connection,
+preserved pause and independent readback. The temporary third-locale registry
+probe verifies generation/catalog fallback and menu metadata, not a third-language
+renderer. Incremental reconstructed builds, not cold builds; full SAVE-001 OPEN
+and historical M5.5 FAILED remain unchanged.
+
+The human accepted the previous selected-language notice after `a0bbf43`.
+**30 PENDING, no open manual FAIL**: previous 28 unchanged plus two deferred
+LANG-02 checks for the newly changed behavior, with no personal acceptance inferred
+from automation. [Human directive](docs/source/live-language-feedback-2026-10-18.md),
+[manual ledger](docs/validation/pending-manual.md). Native disassembly remains the
+next functional core slice.
+
+Previous scoped follow-up: **selected-language notice in Esc**. The notice
 updates immediately to Active / Next start and the selected language; an Italian
 incompleteness note appears only with Italian selected. A restart instruction
 appears only when the choice differs from the active session. Text still uses

@@ -1,0 +1,319 @@
+{
+  "scope": "Live presentation-language selection without restarting gameplay; extensible registry/catalogs",
+  "date": "2026-10-18",
+  "source_commit": "bd900c81ea337d9590fb93a6562215977236fb03",
+  "protocol": "CWM 2.26; paired runtimes required",
+  "baseline": {
+    "path": "artifacts/live-language-20261018/baseline-check-delivery.log",
+    "sha256": "49f383d7e894d9a9a1cf46572682ff279998b6683b186f6aaba05b0b56d4ba8f"
+  },
+  "source_trees": {
+    "cdda": {
+      "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+      "patch_sha256": "dd2b1d70ebdfa94a659d25f347ed237cc2c60d0ac7d9dc2f7bc94f85898ca55f",
+      "tree_sha256": "e2b82510876446a809d07e6e2e837f8a252722518a6dd80958f1607c68e20852"
+    },
+    "luanti": {
+      "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
+      "patch_sha256": "16778d7a45a4fb3a17626c211b430268053e2be0a581db534aaf25b942abcdc3",
+      "tree_sha256": "420effc6eeb486dfc08a13fc560cc50caafecfddf3e2ec6ccc1eabc16cbb1bfe"
+    },
+    "mineclonia": {
+      "commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36"
+    }
+  },
+  "build_mode": "Incremental owned reconstructions with retained caches, not cold builds",
+  "client": {
+    "tests": 309,
+    "modules": 47,
+    "catch_assertions": 648,
+    "catch_cases": 4,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/live-language-20261018/client-unit.log",
+      "sha256": "237076be6d80e9836642dfed0ba77c1ec7eaa76de6be159a6caf422e406a08d4"
+    },
+    "build": {
+      "path": "artifacts/live-language-20261018/build-client-generalized.log",
+      "sha256": "5f18e1af6f648b4d0ef85fd246a3d659349eea071ba0b0fb68ba9f25cf7c8abc"
+    },
+    "refresh": {
+      "path": "artifacts/live-language-20261018/refresh-client-final.json",
+      "sha256": "5112382773f54277d9dccdae1ca865d1aa1853d213e319dfc0cc938538c05737"
+    },
+    "source_commit": "4677c787c88344285e09335440107e2c39889605"
+  },
+  "native": {
+    "cases": 114,
+    "assertions": 65738,
+    "result": "PASS",
+    "regression": {
+      "path": "artifacts/live-language-20261018/native-regression-final.log",
+      "sha256": "a627a7cffd4fe8bcae578bc976941cd097293b8bdab5997b1cac7dba3e8896dc"
+    },
+    "language_cases": 1,
+    "language_assertions": 14,
+    "language": {
+      "path": "artifacts/live-language-20261018/native-language-final.log",
+      "sha256": "d308e48c169ff39540c739181b4116cf23cc3600c3b1bd42d1a3c0503cb5d9f2"
+    },
+    "build": {
+      "path": "artifacts/live-language-20261018/build-native-verified.log",
+      "sha256": "474223c603e540e4ee4bf822ca1f52459dcd56f4428eb96593fee05a45475233"
+    },
+    "refresh": {
+      "path": "artifacts/live-language-20261018/refresh-native-verified.json",
+      "sha256": "ad0ff1398618ba133dc2f89dc8a0be0461634e3720436a800b26da01dbec1df0"
+    },
+    "production_source_commit": "295ef52b650a8e0992a528af9e250be993a424c7",
+    "fixture_refresh": {
+      "path": "artifacts/live-language-20261018/refresh-test-fixture.json",
+      "sha256": "adc9b183f99b37f9ccd7ff07ef5f461f5061fe4e17ac3ae7c8c7e6c3d0ae73a8"
+    },
+    "fixture_build": {
+      "path": "artifacts/live-language-20261018/build-native-test-fixture.log",
+      "sha256": "3d29300e8d13c6c79d14876448013a6f49c6017eeb43d08ec12fc5ca28104b86"
+    },
+    "fixture_note": "Only the unit cap fixture changed after the production build: clear a random named variant. Production sources/root build inputs are retained; all fork inventories validated."
+  },
+  "protocol_tests": {
+    "tests": 13,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/live-language-20261018/protocol-tests-final.log",
+      "sha256": "930048ea092e1ebae649722af0ce0db4ffbb4ecadbdf781f5312ee4dbcee13b9"
+    }
+  },
+  "launcher_tests": {
+    "tests": 9,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/live-language-20261018/language-unit-final.log",
+      "sha256": "147133b12342b9e3d6524cdc25c8a8a1e7af27d63e2c15ae820399baadad28c4"
+    }
+  },
+  "registry_tests": {
+    "tests": 3,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/live-language-20261018/registry-unit-final.log",
+      "sha256": "91c407d9dba82dbbd1c06b8cb7f5c9e4e88ffefdd5d501f5acb60de093fefbd2"
+    },
+    "scope": "Temporary third locale generated and compiled: catalog translation, per-message English fallback, native/engine mappings, setting/menu inclusion, invalid/duplicate rejection; not an enabled third-language renderer run"
+  },
+  "gui": {
+    "live-en-it-final": {
+      "checks": 33,
+      "result": "PASS",
+      "checks_file": {
+        "path": "artifacts/live-language-20261018/live-en-it-final/checks.json",
+        "sha256": "4b54a9f3c67fc4f08e0dc82ad595e2ed1678ee886d6f414d4b75e9bf46af6e89"
+      },
+      "summary": {
+        "path": "artifacts/live-language-20261018/live-en-it-final/summary.json",
+        "sha256": "86802a5d9a832de032d8fb6a76ab60058d4096902e12bbdcb6d7aaa051a10363"
+      },
+      "native_readback": {
+        "path": "artifacts/live-language-20261018/live-en-it-final/native.json",
+        "sha256": "886cd842e43f41fc7a6b02cbfebccb04bc1e5fe9bd0a62f6a198d344478e0e8a"
+      },
+      "pause_menu": {
+        "path": "artifacts/live-language-20261018/live-en-it-final/pause-language-selected.png",
+        "sha256": "c4222ff3f9f0bf4775276c5fefde53d6cd1c3e5c99b6905b25a6cd9c84383f84"
+      },
+      "inventory": {
+        "path": "artifacts/live-language-20261018/live-en-it-final/live-language-inventory.png",
+        "sha256": "886ab0faacbf5fb1e8e63366df857490314900d60c891a930c10796611afd900"
+      },
+      "native_decision": {
+        "path": "artifacts/live-language-20261018/live-en-it-final/live-language-native-choice.png",
+        "sha256": "1a33f13f6d2d969c27f5738db9453820464bacc5624c0670f4808ef16b8a6275"
+      }
+    },
+    "live-it-en-final": {
+      "checks": 33,
+      "result": "PASS",
+      "checks_file": {
+        "path": "artifacts/live-language-20261018/live-it-en-final/checks.json",
+        "sha256": "4b54a9f3c67fc4f08e0dc82ad595e2ed1678ee886d6f414d4b75e9bf46af6e89"
+      },
+      "summary": {
+        "path": "artifacts/live-language-20261018/live-it-en-final/summary.json",
+        "sha256": "361c24d8120365992635beaea72bd1750bc4283820f0dbcd990bbe4d2ff7f4c7"
+      },
+      "native_readback": {
+        "path": "artifacts/live-language-20261018/live-it-en-final/native.json",
+        "sha256": "fcf0599df9922e7799b954cde33fc926d3d7fdfcaa2ec8637230982c0c811b37"
+      },
+      "pause_menu": {
+        "path": "artifacts/live-language-20261018/live-it-en-final/pause-language-selected.png",
+        "sha256": "b7d341b7241e7b6378426902e322a8a7795fd18c7beb98acb31d31c9bec487c3"
+      },
+      "inventory": {
+        "path": "artifacts/live-language-20261018/live-it-en-final/live-language-inventory.png",
+        "sha256": "fd92195661e640c35d40ca5f691dfc8e287b5051e4b3bcd413254b3fe7a1bc0e"
+      },
+      "native_decision": {
+        "path": "artifacts/live-language-20261018/live-it-en-final/live-language-native-choice.png",
+        "sha256": "fa5381c5366dc9d4dca1a9f8cb5a35f76da16b7cd49358ae9e1e4f2cc96aeeb3"
+      }
+    },
+    "installed-en-it": {
+      "checks": 33,
+      "result": "PASS",
+      "checks_file": {
+        "path": "artifacts/live-language-20261018/installed-en-it/checks.json",
+        "sha256": "4b54a9f3c67fc4f08e0dc82ad595e2ed1678ee886d6f414d4b75e9bf46af6e89"
+      },
+      "summary": {
+        "path": "artifacts/live-language-20261018/installed-en-it/summary.json",
+        "sha256": "c3ebb0dc7efcbebbd558d2e0d88fd1c1b9ab53775e0dde914b7b9b889206cd41"
+      },
+      "native_readback": {
+        "path": "artifacts/live-language-20261018/installed-en-it/native.json",
+        "sha256": "5a9db7b0a42b56ab9c5b6be806143412d490a9ff8e3161ac16612a3585d416f4"
+      },
+      "pause_menu": {
+        "path": "artifacts/live-language-20261018/installed-en-it/pause-language-selected.png",
+        "sha256": "15164cfd1b9dafadab73b885d988763b4e2c839e1506de631501bef00b20a39c"
+      },
+      "inventory": {
+        "path": "artifacts/live-language-20261018/installed-en-it/live-language-inventory.png",
+        "sha256": "dfb94f76a2385170cdf8d372fe36d17d04b8bc248893a2b72a920830653be873"
+      },
+      "native_decision": {
+        "path": "artifacts/live-language-20261018/installed-en-it/live-language-native-choice.png",
+        "sha256": "520c4c70f17ff76a39786b5ce5d6913f0d57d727a9d830afaa4350f97d7ef5cd"
+      }
+    }
+  },
+  "gui_checks": 99,
+  "gui_environment": "Private Xvfb, Mesa software, 1280x800 at 96 DPI, OpenAL null backend; isolated configs/saves",
+  "harness": {
+    "path": "tests/equipment_gui_test.py",
+    "sha256": "9d225a75743b4d2d089827c87af23d54ea5d34340a8d174c62d07beaf01b05da"
+  },
+  "gui_harness_source_commit": "3c2f7e8939c3dfb1fc815cf25f92a6ef41f58f6c",
+  "canonical_reader": {
+    "path": "artifacts/native-reading-20261018/native-save-reader",
+    "sha256": "8bff89f6ca3d3afc0cec9024c380969f1885a1844743270e9045f6a4c5e646f5"
+  },
+  "catalogs": [
+    {
+      "path": "cdda/lang/mo/it_IT/LC_MESSAGES/cataclysm-dda.mo",
+      "sha256": "f1f11ecbeda860d664338d92406faccb39cc8a821f2a1758789f5f41ec53b609"
+    },
+    {
+      "path": "luanti/locale/it/LC_MESSAGES/luanti.mo",
+      "sha256": "e6090e6ff7d07257c16411d5f64bbda471ad76df1643220a81c79477c5cf7bf0"
+    }
+  ],
+  "installation": {
+    "protocol": "2.26",
+    "mode": "Exact tested runtime pair installed; preferences and worlds untouched",
+    "runtimes": [
+      {
+        "name": "native",
+        "source": "artifacts/fnd03-session/workspace/cdda/build/src/cdda-server",
+        "target": "cdda/build/src/cdda-server",
+        "backup": "artifacts/live-language-20261018/native-before-live",
+        "before_sha256": "340f044d8ab98a421980f8706bacc21100af15679053221bd1a041201254a266",
+        "after_sha256": "d8d17c0b111c7c4f8723b74c01914c3f1c43ff7d07a852c29f8f476d2f0a1571",
+        "source_commit": "295ef52b650a8e0992a528af9e250be993a424c7"
+      },
+      {
+        "name": "client",
+        "source": "artifacts/language-20261011/workspace/luanti/bin/luanti",
+        "target": "luanti/bin/luanti",
+        "backup": "artifacts/live-language-20261018/client-before-live",
+        "before_sha256": "915af485f0ff902f710b0bdd052a721c818d07cb0fa6bab431a1d80cdaa46bf2",
+        "after_sha256": "4f4c654f8896a0ff8678686323aab2f189e38239f14f9cfc65be5e91794dd841",
+        "source_commit": "4677c787c88344285e09335440107e2c39889605"
+      }
+    ]
+  },
+  "manual": {
+    "pending": 30,
+    "open_fail": 0,
+    "previous_notice": "Human accepted after a0bbf43; that one pending check is closed",
+    "unchanged_previous": 28,
+    "new_live_pending": 2,
+    "human_source": "docs/source/live-language-feedback-2026-10-18.md"
+  },
+  "investigation_attempts": [
+    {
+      "artifact": {
+        "path": "artifacts/live-language-20261018/build-native-generalized.log",
+        "sha256": "48bcc6b09700b5cd61c4c318457200c2247d5ec7d9eedeb0de3c337ff81af35b"
+      },
+      "outcome": "Compile failure caught an overbroad edit to three unrelated action-error branches; restored those branches before final native build"
+    },
+    {
+      "artifact": {
+        "path": "artifacts/live-language-20261018/native-language-unit.log",
+        "sha256": "9307bec6a43c4e57a242bd8ea93833e4b07d5af3dd8ddafbd46c1e354c747028"
+      },
+      "outcome": "Early attempt matched no test cases and is not counted"
+    },
+    {
+      "artifact": {
+        "path": "artifacts/live-language-20261018/gui-en-it.log",
+        "sha256": "5eb4fa95ddcbb050491dffcf6b2693bd92d0648f01ff9f9855aa01d65f42457a"
+      },
+      "outcome": "Harness wrongly assumed the fixture cap was worn; compare actual before/after roles instead"
+    },
+    {
+      "artifact": {
+        "path": "artifacts/live-language-20261018/gui-it-en.log",
+        "sha256": "5eb4fa95ddcbb050491dffcf6b2693bd92d0648f01ff9f9855aa01d65f42457a"
+      },
+      "outcome": "Same erroneous fixture-role assumption; final renderer runs pass"
+    },
+    {
+      "artifact": {
+        "path": "artifacts/live-language-20261018/native-language-verified.log",
+        "sha256": "b30c8593463cc4634a79a273be09845c5902370438289747e4b46d9cfe7e5bc6"
+      },
+      "outcome": "Isolated native test selected a different random fan-cap translation; clear the fixture variant, then isolated and full final tests pass"
+    }
+  ],
+  "limits": [
+    "No new global conformance claim: full SAVE-001 OPEN and historical M5.5 FAILED. Five previously recorded optional statistical melee failures remain outside this scoped native selection.",
+    "Historical messages and already-open native questions are not replayed; native decision-time changes are deferred/rejected until answered.",
+    "Italian remains incomplete. Only English/Italian enabled; additional locales use the registry/catalog path and need their upstream catalogs and builds.",
+    "Preference persists on orderly launcher exit; an explicit unchanged startup override remains temporary.",
+    "Linux live gettext behavior verified; no claim of cross-platform runtime-locale verification. Item mapping batch60 unchanged."
+  ],
+  "commands": [
+    "python3 tools/generate_product_languages.py --check",
+    "python3 tools/takeover_baseline.py check",
+    "cmake --build artifacts/language-20261011/workspace/luanti/build --target luanti -j3",
+    "cmake --build artifacts/fnd03-session/workspace/cdda/build --target cdda-server cata_test -j3",
+    "artifacts/language-20261011/workspace/luanti/bin/luanti --run-unittests --logfile artifacts/live-language-20261018/client-unit-engine.log",
+    "CDDA_LOCALE_DIR=/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/cdda/lang/mo ./build/tests/cata_test '[cwm][language]' --rng-seed 42 --user-dir=/home/dannhill/Projects/cdda-mineclonia/artifacts/live-language-20261018/native-language-final # cwd: /home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/cdda",
+    "CDDA_LOCALE_DIR=/home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/cdda/lang/mo ./build/tests/cata_test '[cwm],[reading]~[.],[melee]~[.],[ranged]~[.]' --rng-seed 42 --user-dir=/home/dannhill/Projects/cdda-mineclonia/artifacts/live-language-20261018/native-regression-final # cwd: /home/dannhill/Projects/cdda-mineclonia/artifacts/fnd03-session/workspace/cdda",
+    "ctest --test-dir artifacts/language-20261011/workspace/build/protocol --output-on-failure",
+    "python3 artifacts/language-20261011/workspace/tests/product_language_test.py",
+    "python3 artifacts/language-20261011/workspace/tests/product_language_registry_test.py",
+    "python3 artifacts/live-language-20261018/run-gui.py equipment_gui_test.py artifacts/language-menu-20261018/fixture-en/user live-en-it-final --language-smoke en --use-saved-language --language-menu-change it",
+    "python3 artifacts/live-language-20261018/run-gui.py equipment_gui_test.py artifacts/language-menu-20261018/fixture/user live-it-en-final --language-smoke it --use-saved-language --language-menu-change en",
+    "python3 artifacts/live-language-20261018/install.py",
+    "CWM_TEST_INSTALLED=1 python3 artifacts/live-language-20261018/run-gui.py equipment_gui_test.py artifacts/language-menu-20261018/fixture-en/user installed-en-it --language-smoke en --use-saved-language --language-menu-change it"
+  ],
+  "helpers": [
+    {
+      "path": "artifacts/live-language-20261018/run-gui.py",
+      "sha256": "54b8c4b316a21584fc52f3cbcfe53d06d26522ce629de54278d39652e416d999"
+    },
+    {
+      "path": "artifacts/live-language-20261018/install.py",
+      "sha256": "64a9907f69288dc67260088cbfdbbd76f5fb2e775ae65243ae868b415ee89fcb"
+    },
+    {
+      "path": "artifacts/live-language-20261018/refresh-test-fixture.py",
+      "sha256": "aa2a611fd5c28d94c646c9509022a951c4dc4ae7d7f6695e946668b5f08f1ae2"
+    }
+  ]
+}
