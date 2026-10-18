@@ -290,7 +290,8 @@ def main():
                     ammo=find(view,'9mm',False);select_item(ammo,view);amount(4);view=shift_move(ammo,view)
                     check('shift_click_deposits_to_opposite_pane',find(view,'9mm',True,0).Charges()==26)
                     for loose_type,quantity in (('bat',1),('rock',1),('9mm',7)):
-                        loose=find(view,loose_type,False);select_item(loose,view);amount(quantity)
+                        loose=next(e for e in entries(view) if not e.External() and e.TypeId().decode()==loose_type and (loose_type!='9mm' or e.Charges()>=quantity))
+                        select_item(loose,view);amount(quantity)
                         drag(loose,view,(-1,4));view=finish()
                         check('outside_drop_reaches_ground_'+loose_type,not any(e.TypeId().decode()==loose_type for e in entries(view)) if loose_type!='9mm' else sum(e.Charges() for e in entries(view) if not e.External() and e.TypeId().decode()=='9mm')==15)
                         tap('Escape');wait(lambda r:int(r['equipment_form'])==0)

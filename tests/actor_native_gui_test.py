@@ -73,7 +73,7 @@ def main():
         def arrived(x,y,z):
             return until(lambda data: [float(data[1]['target_'+k]) for k in ('x','y','z')]==[x,y,z])
         with (folder/'launcher.log').open('w') as log:
-            proc=subprocess.Popen([str(ws/'start.sh'),'--go','--name','actor_native_tester','--info'],
+            proc=subprocess.Popen([str(ws/'start.sh'),'--go','--name','actor_native_tester','--port',str(port),'--info'],
                 env=env,stdout=log,stderr=subprocess.STDOUT,start_new_session=True)
             try:
                 state=until(lambda data: len(data)>=4 and data[1]['ready']=='1',85)
