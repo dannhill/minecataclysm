@@ -239,6 +239,27 @@ index b6ae675..9e33201 100644
  	for (; steps > 0; --steps) {
  		/*
  			Local player handling
+diff --git a/src/client/content_cao.cpp b/src/client/content_cao.cpp
+index 16ceda4..20bd596 100644
+--- a/src/client/content_cao.cpp
++++ b/src/client/content_cao.cpp
+@@ -3,6 +3,7 @@
+ // Copyright (C) 2010-2013 celeron55, Perttu Ahola <celeron55@gmail.com>
+ 
+ #include "content_cao.h"
++#include "cdda/cdda_bridge.h"
+ #include <IBillboardSceneNode.h>
+ #include <ICameraSceneNode.h>
+ #include <IMeshManipulator.h>
+@@ -1027,7 +1028,7 @@ void GenericCAO::step(float dtime, ClientEnvironment *env)
+ 		m_rotation.Y = wrapDegrees_0_360(player->getYaw());
+ 		rot_translator.val_current = m_rotation;
+ 
+-		if (m_is_visible) {
++		if (m_is_visible && !cdda_client::CddaBridge::getInstance().ownsPlayer(m_client)) {
+ 			LocalPlayerAnimation old_anim = player->last_animation;
+ 			float old_anim_speed = player->last_animation_speed;
+ 			m_velocity = v3f(0,0,0);
 diff --git a/src/client/game.cpp b/src/client/game.cpp
 index 27b5833..92386ae 100644
 --- a/src/client/game.cpp
@@ -1761,10 +1782,10 @@ index 0000000..e1e7236
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..e70a067
+index 0000000..054327e
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,2929 @@
+@@ -0,0 +1,2963 @@
 +#include "cwm/product_language.hpp"
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
@@ -1782,6 +1803,7 @@ index 0000000..e70a067
 +#include "avatar_status.h"
 +#include "posture_input.h"
 +#include "aim_input.h"
++#include "humanoid_animation.h"
 +#include <IGUIImage.h>
 +#include <IGUISkin.h>
 +#include <IGUIFont.h>
@@ -2297,11 +2319,24 @@ index 0000000..e70a067
 +    }
 +
 +    void render_entity(VisualEntity& ent) {
-+        if (!client_ || ent.id == 1) return;
++        if (!client_) return;
++        const bool zombie = ent.type_id.find("mon_zombie") == 0;
++        const auto cycle = humanoidCycle(zombie, ent.walking, ent.state_flags);
++        const auto animate = [&](irr::scene::IAnimatedMeshSceneNode* body) {
++            if (!body) return;
++            body->setAnimationSpeed(0); // Irrlicht wall time must not unpause it.
++            body->setFrameLoop(cycle.first, cycle.last);
++            body->setCurrentFrame(humanoidFrame(cycle, ent.animation_seconds));
++            body->animateJoints();
++        };
++        if (ent.id == 1) {
++            auto* avatar = client_->getEnv().getLocalPlayer()->getCAO();
++            if (avatar) animate(avatar->getAnimatedMeshSceneNode());
++            return;
++        }
 +        if (!smgr_) smgr_ = client_->getSceneManager();
 +        if (!smgr_) return;
 +        if (!ent.scene_node && ent.perceived) {
-+            const bool zombie = ent.type_id.find("mon_zombie") == 0;
 +            irr::scene::ISceneNode* node = nullptr;
 +            if (zombie || ent.humanoid) {
 +                auto* mesh = client_->getMesh(zombie ? "zombie.b3d" : "character.b3d");
@@ -2359,7 +2394,9 @@ index 0000000..e70a067
 +            node->setVisible(session_.ready() && ent.perceived);
 +            node->setPosition((ent.current_pos + v3f(0, .5f, 0) - v3f(offset.X, offset.Y, offset.Z)) * 10.0f +
 +                              v3f(0, ent.model_y_offset, 0));
-+            node->setRotation(v3f(0, -ent.rotation, 0));
++            node->setRotation(v3f(0, ent.presentation_yaw, 0));
++            if (node->getType() == irr::scene::ESNT_ANIMATED_MESH)
++                animate(static_cast<irr::scene::IAnimatedMeshSceneNode*>(node));
 +        }
 +    }
 +
@@ -2701,6 +2738,13 @@ index 0000000..e70a067
 +
 +        // Interpolate visual entities
 +        for (auto& [id, ent] : entities_) {
++            if (!frozen) {
++                const auto delta = ent.target_pos - ent.current_pos;
++                const bool walking = ent.perceived && delta.X * delta.X + delta.Z * delta.Z > 0.000001f;
++                if (walking != ent.walking) ent.animation_seconds = 0.;
++                ent.walking = walking;
++                ent.animation_seconds += visual_animation_delta_;
++            }
 +            const float elapsed = frozen ? 0.f : dtime;
 +            ent.interpolation_time = std::min(ent.motion_seconds, ent.interpolation_time + elapsed);
 +            ent.current_pos = ent.start_pos + (ent.target_pos - ent.start_pos) *
@@ -3127,6 +3171,7 @@ index 0000000..e70a067
 +                            ve.target_pos = target;
 +                            ve.start_pos = target;
 +                            ve.rotation = ent_state->rotation();
++                            ve.presentation_yaw = -ve.rotation;
 +                            ve.hp_percent = ent_state->hp_percent();
 +                            ve.state_flags = ent_state->state_flags();
 +                            ve.perceived = ent_state->perceived();
@@ -3143,6 +3188,8 @@ index 0000000..e70a067
 +                                it->second.scene_node = nullptr;
 +                                it->second.node_generation = 0;
 +                                it->second.type_id = type_id;
++                                it->second.animation_seconds = 0.;
++                                it->second.walking = false;
 +                            }
 +                            it->second.name = ent_state->name() ? ent_state->name()->str() : "";
 +                            it->second.humanoid = ent_state->type() == CDDA::CWM::EntityType::NPC;
@@ -3154,9 +3201,17 @@ index 0000000..e70a067
 +                                it->second.current_pos = target;
 +                                it->second.start_pos = target;
 +                                it->second.interpolation_time = it->second.motion_seconds;
++                                it->second.animation_seconds = 0.;
++                                it->second.walking = false;
++                                it->second.presentation_yaw = -ent_state->rotation();
 +                            } else if (target != it->second.target_pos) {
++                                const auto direction = target - it->second.current_pos;
++                                if (direction.X * direction.X + direction.Z * direction.Z > 0.000001f)
++                                    it->second.presentation_yaw = std::atan2(direction.X, direction.Z) * 180.f / 3.14159265358979323846f;
 +                                it->second.start_pos = it->second.current_pos;
 +                                it->second.interpolation_time = 0.0f;
++                            } else if (it->second.rotation != ent_state->rotation()) {
++                                it->second.presentation_yaw = -ent_state->rotation();
 +                            }
 +                            it->second.target_pos = target;
 +                            it->second.rotation = ent_state->rotation();
@@ -4696,10 +4751,10 @@ index 0000000..e70a067
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.h b/src/cdda/cdda_bridge.h
 new file mode 100644
-index 0000000..7d23811
+index 0000000..33f42a9
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.h
-@@ -0,0 +1,171 @@
+@@ -0,0 +1,174 @@
 +// Luanti C++ CWM Presentation Bridge
 +// Licensed under Apache-2.0
 +#pragma once
@@ -4760,6 +4815,9 @@ index 0000000..7d23811
 +    void* scene_node{nullptr};
 +    uint64_t node_generation{0};
 +    float model_y_offset{0.0f};
++    float presentation_yaw{0.f};
++    double animation_seconds{0.};
++    bool walking{false};
 +};
 +
 +class CddaBridge {
@@ -5687,6 +5745,34 @@ index 0000000..a550994
 +	return "cdda_items:i_" + suffix;
 +}
 +
++} // namespace cdda_client
+diff --git a/src/cdda/humanoid_animation.h b/src/cdda/humanoid_animation.h
+new file mode 100644
+index 0000000..7d869d1
+--- /dev/null
++++ b/src/cdda/humanoid_animation.h
+@@ -0,0 +1,22 @@
++#pragma once
++#include "cwm/tile_semantics.hpp"
++#include <cmath>
++#include <cstdint>
++
++namespace cdda_client {
++struct HumanoidCycle { int first, last; float fps; };
++
++// Frame ranges from pinned Mineclonia mobs_mc/zombie.lua and
++// mcl_armor/player.lua. These select presentation only, never gameplay.
++inline HumanoidCycle humanoidCycle(bool zombie, bool walking, uint32_t flags) {
++    if (zombie) return walking ? HumanoidCycle{0,39,25} : HumanoidCycle{40,49,2};
++    if (flags & cdda::cwm::PRONE) return {162,166,8};
++    if (flags & cdda::cwm::CROUCHING)
++        return walking ? HumanoidCycle{304,323,30} : HumanoidCycle{222,302,30};
++    if (walking && (flags & cdda::cwm::RUNNING)) return {440,459,30};
++    return walking ? HumanoidCycle{168,187,30} : HumanoidCycle{0,79,30};
++}
++inline float humanoidFrame(HumanoidCycle cycle, double seconds) {
++    return cycle.first + std::fmod(seconds * cycle.fps, cycle.last - cycle.first + 1);
++}
 +} // namespace cdda_client
 diff --git a/src/cdda/posture_input.h b/src/cdda/posture_input.h
 new file mode 100644

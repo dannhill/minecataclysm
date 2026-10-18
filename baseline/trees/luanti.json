@@ -7242,12 +7242,12 @@
   {
     "path": "src/cdda/cdda_bridge.cpp",
     "mode": "100644",
-    "sha256": "e90cd7370485427017bb9f05bbedfd4af3406bc059b116473158e945b23d7ce0"
+    "sha256": "2f00fd10e88567b168d00c2dcf4031b1dfa5dd137e3b96465734f1deefb0156d"
   },
   {
     "path": "src/cdda/cdda_bridge.h",
     "mode": "100644",
-    "sha256": "fb49fa80f836430a822fabdc9398a6f21849de265944b9e17f85d6822c811182"
+    "sha256": "7adf91159cc8eaff1ee492dadfaec8ccd776dd9fa402817a39d67897a48603d1"
   },
   {
     "path": "src/cdda/crafting_inventory.h",
@@ -7288,6 +7288,11 @@
     "path": "src/cdda/ground_item_visual.h",
     "mode": "100644",
     "sha256": "f41e6eb40154716e2a2664743608ba05c646620997aad222cd59fcdf60656e6d"
+  },
+  {
+    "path": "src/cdda/humanoid_animation.h",
+    "mode": "100644",
+    "sha256": "c322578f5c3f8f458a0c4f0f1dfa4dbd1035e2c8c1bf972d1682e85a3b125cd9"
   },
   {
     "path": "src/cdda/posture_input.h",
@@ -7427,7 +7432,7 @@
   {
     "path": "src/client/content_cao.cpp",
     "mode": "100644",
-    "sha256": "b5e416177db42cc9457085831edb6b7bba40c50492e12191a0025286d118f754"
+    "sha256": "ebd3c5bd29d26df44465de01e2906a299f424827ff753791c984566fcdc8a540"
   },
   {
     "path": "src/client/content_cao.h",
