@@ -1,5 +1,10 @@
 # Validazioni manuali del playable core
 
+Stato dopo la lettura nativa: **28 PENDING, nessun FAIL manuale aperto**.
+Quattro nuove prove rinviabili di lettura sono in fondo; i precedenti 24 punti
+restano invariati. Nessun PASS personale viene dedotto dai test automatici.
+I sette gate T1–T7 già provati dall'unico sviluppatore restano accettati.
+
 Stato corrente dopo i sette gate personali del 2026-10-18: **24 PENDING, nessun FAIL manuale aperto**.
 T1–T7 sono **PASS riferiti dall'unico sviluppatore umano**; i bug e i commenti
 non sono stati cancellati dai PASS. Il vecchio FAIL Indossa/Togli è superato.
@@ -893,3 +898,40 @@ non PASS dedotti dalle prove automatiche. Disponibili anche in `./start.sh`.
    velocità F8 non deve accelerare l'adattamento visivo. Il tetto può ancora
    causare poca luce secondo CDDA: questa modifica non cambia chi puoi vedere
    e non aggiunge ancora illuminazione 3D laterale. Valuta il comfort visivo.
+
+
+## READ-01 — Libri cartacei e studio nativo — PENDING (4), rinviabili
+
+Disponibile in `./start.sh` con libri realmente posseduti. Scena separata:
+`./reading-demo.sh --fresh`. Nello zaino ci sono un breve libro di svago sui
+gatti non identificato e una rivista sulle armi già identificata. La lampada
+atomica assicura luce nella scena. Rilancia senza `--fresh` per riprendere il
+save della demo. Questa prima fetta esclude e-reader, libri con usi speciali e
+hint del guidebook; il menu ne indica il limite. Nessun gate personale oggi.
+
+1. **Sfogliare e conoscere:** I, seleziona il libro non identificato. Leggere
+   i dettagli deve mantenere tempo fermo e non rivelare gratis il contenuto.
+   Premi **Skim book / Sfoglia libro**: il lavoro richiede tempo; solo al
+   termine il libro diventa noto e il pulsante cambia in **Read / Leggi**.
+   Nome, icona e istruzioni devono essere comprensibili; la scelta non deve
+   far sparire il libro o produrne uno nuovo.
+2. **Studiare davvero:** seleziona la rivista nota, Leggi. Nella scelta nativa
+   puoi annullare, leggere una volta oppure fino al livello teorico successivo.
+   Annulla una volta: nessun capitolo completato o esperienza gratuita. Poi
+   scegli un capitolo e completalo: nei dettagli cresce la progressione teorica
+   nativa. La durata dipende dal lettore: circa sette minuti CDDA,
+   circa 100–105 secondi a 4x nella scena;
+   questa consegna non introduce ancora un'accelerazione dedicata alle attività.
+3. **Pausa e ripresa:** avvia lo studio, premi I e attendi: progresso e mondo
+   restano fermi. Chiudi per riprendere, poi riapri e usa **Interrupt reading /
+   Interrompi lettura**. Non si assegna un capitolo completo per un'interruzione.
+   Leggendo di nuovo lo stesso libro con lo stesso modo, CDDA riprende il lavoro
+   eleggibile già pagato, senza ricominciare da zero. F7 non deve accodare un
+   vecchio clic di lettura da eseguire alla ripresa.
+4. **Save/load del capitolo:** esci con studio in corso e I aperto. Rilancia la
+   demo senza `--fresh`: il vero capitolo riparte dal progresso salvato, non
+   duplica libri o esperienza. Come per il crafting, I e la sua pausa non sono
+   persistiti; puoi premere I di nuovo per fermarti. Prova anche i testi in
+   Italiano WIP dopo il riavvio con la lingua scelta; manca ancora la traduzione
+   di alcune descrizioni native. Valuta leggibilità del pannello e del pulsante
+   Leggi senza sovrapposizioni con Interrompi.
