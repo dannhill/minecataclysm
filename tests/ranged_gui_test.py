@@ -30,6 +30,7 @@ def main():
     parser.add_argument('--resume-only', action='store_true')
     parser.add_argument('--save-active', action='store_true')
     parser.add_argument('--resume-active', action='store_true')
+    parser.add_argument('--feedback',action='store_true')
     args = parser.parse_args()
     if args.resume_active: args.resume_only = True
     ws, out = args.workspace.resolve(), args.artifacts.resolve()
@@ -307,6 +308,11 @@ def main():
                 check('shot_does_not_move_player',all(abs(float(latest()[k])-float(before[k]))<.02 for k in ('target_x','target_y','target_z')))
                 # Native ballistic hit/miss is authoritative; deterministic skill-rich fixture checks real damage.
                 check('native_target_takes_damage',int(latest()['attack_target_hp'])<100)
+                if args.feedback:
+                    check('actual_native_gunshot_reaches_audio_manager',int(latest()['sounds_dispatched'])>0)
+                    with (out/'actors.csv').open() as stream: visual=list(csv.DictReader(stream))
+                    check('actual_native_shot_animates_wielded_weapon',any(r['id']=='1' and float(r['attack_seconds'])>0 for r in visual))
+                    check('actual_native_gun_hand_has_visual',bool(latest()['wield_texture']))
                 turn(180,0);wait(lambda r:int(r['combat_hover'])==0);sent=latest()['fire_sent'];xdo('click','1');time.sleep(.3)
                 check('empty_reticle_sends_no_shot',latest()['fire_sent']==sent)
                 if args.held_rmb:

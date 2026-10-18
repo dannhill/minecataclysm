@@ -25,6 +25,7 @@ def main():
     for name in ('workspace', 'fixture', 'native-reader', 'artifacts'):
         parser.add_argument('--' + name, type=Path, required=True)
     parser.add_argument('--action-driven', action='store_true', help='Verify ordinary start.sh mode without the real-time scheduler')
+    parser.add_argument('--feedback',action='store_true')
     args = parser.parse_args()
     ws, out = args.workspace.resolve(), args.artifacts.resolve()
     out.mkdir(parents=True, exist_ok=False)
@@ -120,6 +121,7 @@ def main():
             time.sleep(.05)
         raise RuntimeError('GUI condition not reached; inspect trace/logs')
     def xdo(*argv):
+        if os.environ.get('CWM_GUI_NO_WM')=='1' and argv[0]=='windowactivate': argv=('windowfocus',*argv[1:])
         subprocess.run(['xdotool', *argv], check=True, capture_output=True, timeout=5)
     def tap(key, sneak=False):
         if sneak:
@@ -150,7 +152,7 @@ def main():
         time.sleep(.4)
     window = None
     with (out / 'launcher.log').open('w') as log:
-        proc = subprocess.Popen([str(ws / 'start.sh'), '--go', '--name', 'melee_tester', '--info'],
+        proc = subprocess.Popen([str(ws / 'start.sh'), '--go', '--name', 'melee_tester', '--port', str(port), '--info'],
                                 env=env, stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
         try:
             deadline = time.monotonic() + 85
@@ -213,6 +215,10 @@ def main():
             check('held_mouse_sends_exactly_one_attack', int(latest()['attacks_sent']) == int(sent) + 1)
             check('request_targets_the_actual_pointed_identity', latest()['attack_target'] == target)
             check('actual_native_attack_acknowledged_including_a_miss', int(latest()['attack_result']) == 1)
+            if args.feedback:
+                check('actual_native_melee_emits_presentation_event',int(latest()['presentation_cues'])>0)
+                with (out/'actors.csv').open() as stream: visual=list(csv.DictReader(stream))
+                check('actual_native_strike_animates_player',any(r['id']=='1' and float(r['attack_seconds'])>0 for r in visual))
             shot('after-native-strike.png')
             connection_id = latest()['connection_id']
             drop.set()
@@ -269,6 +275,9 @@ def main():
                                           for k in ('target_x','target_y','target_z'))
             check('pointed_attacks_do_not_move_player', not clicks_moved_player)
             final_position = [float(latest()[k]) for k in ('target_x','target_y','target_z')]
+            if args.feedback:
+                with (out/'actors.csv').open() as stream: visual=list(csv.DictReader(stream))
+                check('actual_native_damage_animates_perceived_target',any(r['id']==target and float(r['hurt_seconds'])>0 for r in visual))
             check('native_death_removes_target', int(latest()['attack_target_hp']) == -1)
             time.sleep(.4)
             sent = latest()['attacks_sent']
