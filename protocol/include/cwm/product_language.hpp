@@ -5,7 +5,7 @@
 
 namespace cwm {
 // Product text only: no gameplay rules, item identities or wire structures.
-// Set once during process startup; changing language requires a restart.
+// Main-thread presentation preference. Native language is acknowledged before UI activation.
 enum class ProductLanguage { English, Italian };
 inline ProductLanguage& product_language_storage() {
     static ProductLanguage value = ProductLanguage::English;

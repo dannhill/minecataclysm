@@ -3862,10 +3862,10 @@ index 0000000..d077b2c
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..1a2775d
+index 0000000..d0e2aae
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,1082 @@
+@@ -0,0 +1,1107 @@
 +#include "cwm/product_language.hpp"
 +#include "cwm_motion.h"
 +// CDDA CWM IPC Server Implementation
@@ -3895,6 +3895,7 @@ index 0000000..1a2775d
 +#include "monster.h"
 +#include "mtype.h"
 +#include "overmap.h"
++#include "translations.h"
 +
 +namespace cwm {
 +namespace {
@@ -4609,6 +4610,30 @@ index 0000000..1a2775d
 +    if (!ready_ &&
 +        msg->payload_type() != Payload::ContinuousIntentRequest)
 +        return; // Spatial authority waits for installed full state.
++    if (const auto* request = msg->payload_as_LanguageRequest()) {
++        const std::string code = request->code() ? request->code()->str() : "";
++        const bool valid = request->request_id() && (code == "en" || code == "it");
++        const bool accepted = valid && !pending_decision_;
++        // Never replay an open native question to obtain translated text:
++        // entry effects and choices must execute exactly once.
++        if (accepted && (code == "it") !=
++            (::cwm::product_language_storage() == ::cwm::ProductLanguage::Italian)) {
++            set_language(code == "it" ? "it_IT" : "en");
++            ::cwm::set_product_language(code);
++        }
++        cdda::cwm::MessageBuilder reply(sequence_counter_, world_revision_, identity_);
++        const auto bytes = reply.finish_message(Payload::LanguageState,
++            CDDA::CWM::CreateLanguageStateDirect(reply.builder(), request->request_id(),
++                ::cwm::product_language_storage() == ::cwm::ProductLanguage::Italian ? "it" : "en",
++                accepted, accepted ? "" : ::cwm::tr(
++                    "Finish the open decision before changing language.",
++                    "Concludi la scelta aperta prima di cambiare lingua.")).Union());
++        emit(bytes);
++        // Refresh native item/status labels at the same world revision, with
++        // no turn, movement, activity restart or canonical option write.
++        if (accepted) send_state(u, m, g);
++        return;
++    }
 +    if (msg->payload_type() == Payload::DecisionResponse) {
 +        const auto* response = msg->payload_as_DecisionResponse();
 +        if (response && pending_decision_ && !decision_answer_ &&
@@ -5428,11 +5453,13 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..9765a78
+index 0000000..5c4df18
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,2157 @@
+@@ -0,0 +1,2204 @@
 +#include "cata_catch.h"
++#include "translations.h"
++#include "options.h"
 +#include "avatar.h"
 +#include "move_mode.h"
 +#include "cwm_motion.h"
@@ -5470,6 +5497,13 @@ index 0000000..9765a78
 +// Exercise the actual wire admission, queue and native executor. Only the
 +// handshake is preinstalled, so these tests do not need a running renderer.
 +struct CwmServerTestAccess {
++    static void language(CwmServer& server,const std::string& code,bool decision=false) {
++        cdda::cwm::MessageBuilder wire(server.received_sequence_+1,server.world_revision_,server.identity_);
++        server.pending_decision_=decision?55:0;
++        const auto bytes=wire.finish_message(CDDA::CWM::Payload::LanguageRequest,
++            CDDA::CWM::CreateLanguageRequestDirect(wire.builder(),7,code.c_str()).Union());
++        server.handle_client_message(bytes.data(),bytes.size(),get_avatar(),get_map(),*g);
++    }
 +    static void ready( CwmServer &server ) {
 +        server.negotiated_ = server.ready_ = true;
 +        server.client_id_ = 31;
@@ -7588,6 +7622,44 @@ index 0000000..9765a78
 +    cwm::CwmServerTestAccess::opening(server,target,false,3);REQUIRE(server.has_queued_action());
 +    cwm::CwmServerTestAccess::execute(server);CHECK(m.ter(target)==ter_str_id("t_door_o"));
 +    REQUIRE(cwm_motion::advance(u,m,1,0,.1).distance>0);
++}
++
++TEST_CASE("cwm_live_language_invalidates_native_labels_without_gameplay", "[cwm][language]")
++{
++    clear_avatar();
++    avatar& u=get_avatar();
++    cwm::CwmServer server("/tmp/unused-language-unit.sock");
++    cwm::CwmServerTestAccess::ready(server);
++    const auto time=calendar::turn;
++    u.assign_activity(activity_id("ACT_WAIT"),1000);
++    const int moves=u.moves;
++    const auto pos=u.pos();
++    const auto revision=server.world_revision();
++    const auto option=get_option<std::string>("USE_LANG");
++    const item cap(itype_id("hat_ball"),calendar::turn);
++    struct Restore {
++        ~Restore(){set_language("en");::cwm::set_product_language("en");}
++    } restore;
++    set_language("en");::cwm::set_product_language("en");
++    const auto english=cap.tname();
++    cwm::CwmServerTestAccess::language(server,"it");
++    CHECK(::cwm::product_language_storage()==::cwm::ProductLanguage::Italian);
++    CHECK(cap.tname().find("cappello da baseball")!=std::string::npos);
++    cwm::CwmServerTestAccess::language(server,"en",true);
++    CHECK(::cwm::product_language_storage()==::cwm::ProductLanguage::Italian);
++    cwm::CwmServerTestAccess::language(server,"fr");
++    CHECK(::cwm::product_language_storage()==::cwm::ProductLanguage::Italian);
++    cwm::CwmServerTestAccess::language(server,"en");
++    CHECK(cap.tname()==english);
++    CHECK(::cwm::product_language_storage()==::cwm::ProductLanguage::English);
++    CHECK(calendar::turn==time);
++    CHECK(u.moves==moves);
++    CHECK(u.pos()==pos);
++    CHECK(server.world_revision()==revision);
++    CHECK(u.activity.id()==activity_id("ACT_WAIT"));
++    CHECK(u.activity.moves_left==1000);
++    CHECK_FALSE(server.has_queued_action());
++    CHECK(get_option<std::string>("USE_LANG")==option);
 +}
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644

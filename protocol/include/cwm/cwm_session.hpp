@@ -389,6 +389,17 @@ public:
             if (!valid_inventory(msg.payload_as_InventoryView())) { request_resync(channel); return false; }
             return true;
         }
+        if (ready() && msg.payload_type() == Payload::LanguageState) {
+            const auto* value = msg.payload_as_LanguageState();
+            if (!value || !value->request_id() || !value->code() ||
+                (value->code()->str() != "en" && value->code()->str() != "it") ||
+                !value->error() || value->error()->size() > 2048 ||
+                value->error()->str().find('\0') != std::string::npos ||
+                value->accepted() == bool(value->error()->size())) {
+                request_resync(channel); return false;
+            }
+            return true;
+        }
         if (msg.payload_type() == Payload::HeartbeatAck) return true;
         if (ready() && msg.payload_type() == Payload::DecisionPrompt) {
             if(!valid_decision(msg.payload_as_DecisionPrompt())) {request_resync(channel);return false;}

@@ -19,7 +19,8 @@ silently finalized by an agent.
   Follow `docs/design/product-language.md`: native text uses CDDA's translator,
   integration UI uses the shared presentation helper. Never translate wire/type
   identifiers or infer gameplay rules from translated labels. Language changes
-  require a supervised restart and must not rewrite native options or saves.
+  use the acknowledged presentation request, without restarting gameplay,
+  replaying open native decisions, or rewriting native options/saves.
 - A missing delta requires a full authoritative resynchronization; never infer missing state.
 - Preserve the upstream pins and complete patches in `baseline/manifest.json`.
   The ignored fork directories are working copies, not root-repository source history.

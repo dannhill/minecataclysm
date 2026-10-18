@@ -217,6 +217,12 @@ struct DecisionPromptBuilder;
 struct DecisionResponse;
 struct DecisionResponseBuilder;
 
+struct LanguageRequest;
+struct LanguageRequestBuilder;
+
+struct LanguageState;
+struct LanguageStateBuilder;
+
 struct ResyncRequest;
 struct ResyncRequestBuilder;
 
@@ -691,11 +697,13 @@ enum class Payload : uint8_t {
   InventoryArrangeRequest = 44,
   CraftingFavoriteRequest = 45,
   CancelReadingRequest = 46,
+  LanguageRequest = 47,
+  LanguageState = 48,
   MIN = NONE,
-  MAX = CancelReadingRequest
+  MAX = LanguageState
 };
 
-inline const Payload (&EnumValuesPayload())[47] {
+inline const Payload (&EnumValuesPayload())[49] {
   static const Payload values[] = {
     Payload::NONE,
     Payload::HelloRequest,
@@ -743,13 +751,15 @@ inline const Payload (&EnumValuesPayload())[47] {
     Payload::QuickbarSwapRequest,
     Payload::InventoryArrangeRequest,
     Payload::CraftingFavoriteRequest,
-    Payload::CancelReadingRequest
+    Payload::CancelReadingRequest,
+    Payload::LanguageRequest,
+    Payload::LanguageState
   };
   return values;
 }
 
 inline const char * const *EnumNamesPayload() {
-  static const char * const names[48] = {
+  static const char * const names[50] = {
     "NONE",
     "HelloRequest",
     "HelloResponse",
@@ -797,13 +807,15 @@ inline const char * const *EnumNamesPayload() {
     "InventoryArrangeRequest",
     "CraftingFavoriteRequest",
     "CancelReadingRequest",
+    "LanguageRequest",
+    "LanguageState",
     nullptr
   };
   return names;
 }
 
 inline const char *EnumNamePayload(Payload e) {
-  if (::flatbuffers::IsOutRange(e, Payload::NONE, Payload::CancelReadingRequest)) return "";
+  if (::flatbuffers::IsOutRange(e, Payload::NONE, Payload::LanguageState)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesPayload()[index];
 }
@@ -994,6 +1006,14 @@ template<> struct PayloadTraits<CDDA::CWM::CraftingFavoriteRequest> {
 
 template<> struct PayloadTraits<CDDA::CWM::CancelReadingRequest> {
   static const Payload enum_value = Payload::CancelReadingRequest;
+};
+
+template<> struct PayloadTraits<CDDA::CWM::LanguageRequest> {
+  static const Payload enum_value = Payload::LanguageRequest;
+};
+
+template<> struct PayloadTraits<CDDA::CWM::LanguageState> {
+  static const Payload enum_value = Payload::LanguageState;
 };
 
 bool VerifyPayload(::flatbuffers::Verifier &verifier, const void *obj, Payload type);
@@ -8345,6 +8365,176 @@ inline ::flatbuffers::Offset<DecisionResponse> CreateDecisionResponse(
   return builder_.Finish();
 }
 
+struct LanguageRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef LanguageRequestBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_REQUEST_ID = 4,
+    VT_CODE = 6
+  };
+  uint64_t request_id() const {
+    return GetField<uint64_t>(VT_REQUEST_ID, 0);
+  }
+  bool mutate_request_id(uint64_t _request_id = 0) {
+    return SetField<uint64_t>(VT_REQUEST_ID, _request_id, 0);
+  }
+  const ::flatbuffers::String *code() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_CODE);
+  }
+  ::flatbuffers::String *mutable_code() {
+    return GetPointer<::flatbuffers::String *>(VT_CODE);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_REQUEST_ID, 8) &&
+           VerifyOffset(verifier, VT_CODE) &&
+           verifier.VerifyString(code()) &&
+           verifier.EndTable();
+  }
+};
+
+struct LanguageRequestBuilder {
+  typedef LanguageRequest Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_request_id(uint64_t request_id) {
+    fbb_.AddElement<uint64_t>(LanguageRequest::VT_REQUEST_ID, request_id, 0);
+  }
+  void add_code(::flatbuffers::Offset<::flatbuffers::String> code) {
+    fbb_.AddOffset(LanguageRequest::VT_CODE, code);
+  }
+  explicit LanguageRequestBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<LanguageRequest> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<LanguageRequest>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<LanguageRequest> CreateLanguageRequest(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t request_id = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> code = 0) {
+  LanguageRequestBuilder builder_(_fbb);
+  builder_.add_request_id(request_id);
+  builder_.add_code(code);
+  return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<LanguageRequest> CreateLanguageRequestDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t request_id = 0,
+    const char *code = nullptr) {
+  auto code__ = code ? _fbb.CreateString(code) : 0;
+  return CDDA::CWM::CreateLanguageRequest(
+      _fbb,
+      request_id,
+      code__);
+}
+
+struct LanguageState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef LanguageStateBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_REQUEST_ID = 4,
+    VT_CODE = 6,
+    VT_ACCEPTED = 8,
+    VT_ERROR = 10
+  };
+  uint64_t request_id() const {
+    return GetField<uint64_t>(VT_REQUEST_ID, 0);
+  }
+  bool mutate_request_id(uint64_t _request_id = 0) {
+    return SetField<uint64_t>(VT_REQUEST_ID, _request_id, 0);
+  }
+  const ::flatbuffers::String *code() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_CODE);
+  }
+  ::flatbuffers::String *mutable_code() {
+    return GetPointer<::flatbuffers::String *>(VT_CODE);
+  }
+  bool accepted() const {
+    return GetField<uint8_t>(VT_ACCEPTED, 0) != 0;
+  }
+  bool mutate_accepted(bool _accepted = 0) {
+    return SetField<uint8_t>(VT_ACCEPTED, static_cast<uint8_t>(_accepted), 0);
+  }
+  const ::flatbuffers::String *error() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_ERROR);
+  }
+  ::flatbuffers::String *mutable_error() {
+    return GetPointer<::flatbuffers::String *>(VT_ERROR);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_REQUEST_ID, 8) &&
+           VerifyOffset(verifier, VT_CODE) &&
+           verifier.VerifyString(code()) &&
+           VerifyField<uint8_t>(verifier, VT_ACCEPTED, 1) &&
+           VerifyOffset(verifier, VT_ERROR) &&
+           verifier.VerifyString(error()) &&
+           verifier.EndTable();
+  }
+};
+
+struct LanguageStateBuilder {
+  typedef LanguageState Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_request_id(uint64_t request_id) {
+    fbb_.AddElement<uint64_t>(LanguageState::VT_REQUEST_ID, request_id, 0);
+  }
+  void add_code(::flatbuffers::Offset<::flatbuffers::String> code) {
+    fbb_.AddOffset(LanguageState::VT_CODE, code);
+  }
+  void add_accepted(bool accepted) {
+    fbb_.AddElement<uint8_t>(LanguageState::VT_ACCEPTED, static_cast<uint8_t>(accepted), 0);
+  }
+  void add_error(::flatbuffers::Offset<::flatbuffers::String> error) {
+    fbb_.AddOffset(LanguageState::VT_ERROR, error);
+  }
+  explicit LanguageStateBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<LanguageState> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<LanguageState>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<LanguageState> CreateLanguageState(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t request_id = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> code = 0,
+    bool accepted = false,
+    ::flatbuffers::Offset<::flatbuffers::String> error = 0) {
+  LanguageStateBuilder builder_(_fbb);
+  builder_.add_request_id(request_id);
+  builder_.add_error(error);
+  builder_.add_code(code);
+  builder_.add_accepted(accepted);
+  return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<LanguageState> CreateLanguageStateDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t request_id = 0,
+    const char *code = nullptr,
+    bool accepted = false,
+    const char *error = nullptr) {
+  auto code__ = code ? _fbb.CreateString(code) : 0;
+  auto error__ = error ? _fbb.CreateString(error) : 0;
+  return CDDA::CWM::CreateLanguageState(
+      _fbb,
+      request_id,
+      code__,
+      accepted,
+      error__);
+}
+
 struct ResyncRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef ResyncRequestBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
@@ -8652,6 +8842,12 @@ struct CwmMessage FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const CDDA::CWM::CancelReadingRequest *payload_as_CancelReadingRequest() const {
     return payload_type() == CDDA::CWM::Payload::CancelReadingRequest ? static_cast<const CDDA::CWM::CancelReadingRequest *>(payload()) : nullptr;
   }
+  const CDDA::CWM::LanguageRequest *payload_as_LanguageRequest() const {
+    return payload_type() == CDDA::CWM::Payload::LanguageRequest ? static_cast<const CDDA::CWM::LanguageRequest *>(payload()) : nullptr;
+  }
+  const CDDA::CWM::LanguageState *payload_as_LanguageState() const {
+    return payload_type() == CDDA::CWM::Payload::LanguageState ? static_cast<const CDDA::CWM::LanguageState *>(payload()) : nullptr;
+  }
   void *mutable_payload() {
     return GetPointer<void *>(VT_PAYLOAD);
   }
@@ -8870,6 +9066,14 @@ template<> inline const CDDA::CWM::CraftingFavoriteRequest *CwmMessage::payload_
 
 template<> inline const CDDA::CWM::CancelReadingRequest *CwmMessage::payload_as<CDDA::CWM::CancelReadingRequest>() const {
   return payload_as_CancelReadingRequest();
+}
+
+template<> inline const CDDA::CWM::LanguageRequest *CwmMessage::payload_as<CDDA::CWM::LanguageRequest>() const {
+  return payload_as_LanguageRequest();
+}
+
+template<> inline const CDDA::CWM::LanguageState *CwmMessage::payload_as<CDDA::CWM::LanguageState>() const {
+  return payload_as_LanguageState();
 }
 
 struct CwmMessageBuilder {
@@ -9120,6 +9324,14 @@ inline bool VerifyPayload(::flatbuffers::Verifier &verifier, const void *obj, Pa
     }
     case Payload::CancelReadingRequest: {
       auto ptr = reinterpret_cast<const CDDA::CWM::CancelReadingRequest *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::LanguageRequest: {
+      auto ptr = reinterpret_cast<const CDDA::CWM::LanguageRequest *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::LanguageState: {
+      auto ptr = reinterpret_cast<const CDDA::CWM::LanguageState *>(obj);
       return verifier.VerifyTable(ptr);
     }
     default: return true;

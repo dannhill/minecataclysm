@@ -6,10 +6,20 @@ captured implementation; it does not approve its gaps. The executable schema
 is [cwm.fbs](cwm.fbs). Audit findings and evidence are in
 [M5.5](../docs/audits/M5.5.md).
 
-The current runtime requires **CWM 2.25**. This breaks the old negotiation
+The current runtime requires **CWM 2.26**. This breaks the old negotiation
 contract; schema fields and union members are appended without changing the
 existing FlatBuffers offsets. Both executables must be rebuilt together.
 The historical coverage table below is retained as audit evidence.
+
+CWM 2.26 appends `LanguageRequest` (47) and `LanguageState` (48).
+Request IDs are presentation correlations, separate from gameplay command IDs.
+Only en/it are supported; the reply carries the active code and an explicit
+accept/reject outcome. The client activates/persists a choice only after its
+matching reply. Switching refreshes the native translator and projection at the
+same world revision, without a turn or native options/save write. Native pending
+decisions reject the switch: they are never re-entered to regenerate their text.
+Reconnect reapplies the client preference after full-state acknowledgement;
+sequence gaps still require normal authoritative resynchronization.
 
 CWM 2.18 appends `QuickbarSwapRequest` (43), `InventoryArrangeRequest` (44)
 and `InventoryEntry.ui_order`. Swap compares both exact expected bindings

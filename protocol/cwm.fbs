@@ -494,6 +494,10 @@ table DecisionResponse {
     choice: uint16;
 }
 
+// Presentation preference, independent of gameplay command IDs and saves.
+table LanguageRequest { request_id: uint64; code: string; }
+table LanguageState { request_id: uint64; code: string; accepted: bool; error: string; }
+
 table ResyncRequest { request_id: uint64; }
 table WorldReset { request_id: uint64; }
 table SnapshotAck { state_id: uint64; }
@@ -545,6 +549,8 @@ union Payload {
     ,InventoryArrangeRequest
     ,CraftingFavoriteRequest
     ,CancelReadingRequest
+    ,LanguageRequest
+    ,LanguageState
 }
 
 table CwmMessage {

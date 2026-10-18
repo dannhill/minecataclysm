@@ -206,5 +206,19 @@ int main() {
             if(!valid) CHECK(!s.ready() && s.revision==5 && s.resync_count==1);
         }
     });
+    test("language_reply_is_scoped_validated_and_preserves_command_ids",[]{
+        for(int defect=0; defect<7; ++defect) {
+            ClientSession s; MemoryChannel c; handshake(s,c);
+            const auto command=s.next_command;
+            MessageBuilder b(4,5,{11,22,33});
+            const auto reply=CreateLanguageStateDirect(b.builder(),defect==1?0:7,
+                defect==2?"fr":defect==3?nullptr:"it",defect!=4,
+                defect==4?"Busy":defect==5?"Unexpected error":defect==6?nullptr:"");
+            auto bytes=b.finish_message(Payload::LanguageState,reply.Union());
+            CHECK(accept(s,c,bytes)==(defect==0 || defect==4));
+            CHECK(s.next_command==command && s.revision==5);
+            if(defect!=0 && defect!=4)CHECK(!s.ready() && s.resync_count==1);
+        }
+    });
     return failed?1:0;
 }

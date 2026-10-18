@@ -232,7 +232,7 @@ def main():
                         v = InventoryView(); v.Init(msg.Payload().Bytes,msg.Payload().Pos)
                         if v.ViewId(): found.append(v)
                 return found
-            def cancel_choice():
+            def cancel_choice(active_language=None):
                 from CDDA.CWM.DecisionPrompt import DecisionPrompt
                 buf = (out / 'server-wire.bin').read_bytes(); offset = 0; options = []
                 while offset + 4 <= len(buf):
@@ -242,7 +242,7 @@ def main():
                     if msg.PayloadType() == Payload.DecisionPrompt:
                         prompt = DecisionPrompt();prompt.Init(msg.Payload().Bytes,msg.Payload().Pos)
                         options = [prompt.Choices(i).decode() for i in range(prompt.ChoicesLength())]
-                assert options and options[-1] == ('Annulla' if args.language_smoke == 'it' else 'Cancel') and len(options) <= 9, options
+                assert options and options[-1] == ('Annulla' if (active_language or args.language_smoke) == 'it' else 'Cancel') and len(options) <= 9, options
                 return str(len(options))
             def open_inventory():
                 if int(latest()['equipment_form']) == 1 and int(latest()['inventory_view']) > 0:
@@ -399,9 +399,37 @@ def main():
                           latest()['simulation_time']==paused_time and int(latest()['pause_reasons'])==2)
                     tap('Escape');wait(lambda r:int(r['pause_reasons'])==0)
                     view=open_inventory()
-                    check('menu_change_keeps_current_native_language_until_restart',
-                          item(view,'hat_ball').Name().decode() == '++\u00a0' + ('cappello da baseball' if language == 'it' else 'baseball cap'))
+                    target=args.language_menu_change
+                    check('live_change_refreshes_native_item_without_restart',
+                          item(view,'hat_ball').Name().decode() == '++\u00a0' + ('cappello da baseball' if target == 'it' else 'baseball cap'))
+                    check('live_change_preserves_native_item_roles',item(view,'bat').Wielded() and item(view,'hat_ball').Worn())
+                    shot('live-language-inventory.png')
+                    select_item(item(view,'bat'));action(1)
+                    wait(lambda r:int(r['pending_decision'])>0)
+                    shot('live-language-native-choice.png')
+                    choice=cancel_choice(target)
+                    check('live_change_translates_subsequent_native_decisions',True)
+                    tap(choice);finish_action()
+                    view=open_inventory()
+                    check('live_change_native_cancel_still_preserves_weapon',item(view,'bat').Wielded())
                     tap('Escape');wait(lambda r:int(r['equipment_form'])==0)
+                    tap('h');wait(lambda r:int(r['body_form'])==1);shot('live-language-body.png')
+                    tap('Escape');wait(lambda r:int(r['body_form'])==0)
+                    tap('k');wait(lambda r:int(r['crafting_form'])==1 and int(r['crafting_view'])>0)
+                    shot('live-language-crafting.png')
+                    tap('Escape');wait(lambda r:int(r['crafting_form'])==0)
+                    buf=(out/'server-wire.bin').read_bytes();offset=0;identities=set();status=None
+                    while offset+4<=len(buf):
+                        size=struct.unpack('>I',buf[offset:offset+4])[0];offset+=4
+                        if offset+size>len(buf):break
+                        msg=CwmMessage.GetRootAs(buf[offset:offset+size]);offset+=size
+                        if msg.SessionId():identities.add((msg.SessionId(),msg.ConnectionId()))
+                        if msg.PayloadType()==Payload.WorldSnapshot:
+                            state=WorldSnapshot();state.Init(msg.Payload().Bytes,msg.Payload().Pos)
+                            if state.AvatarStatus():status=state.AvatarStatus()
+                    check('live_change_keeps_same_native_session_and_connection',len(identities)==1)
+                    check('live_change_refreshes_native_status_labels',status is not None and
+                        next(status.Needs(n).Label().decode() for n in range(status.NeedsLength()) if status.Needs(n).Id()==b'thirst')==('Sete' if target=='it' else 'Thirst'))
             elif args.quickbar or args.quickbar_resume:
                 from CDDA.CWM.WorldSnapshot import WorldSnapshot
                 def states():

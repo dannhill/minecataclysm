@@ -43,7 +43,7 @@ def save(config, preferences, initial):
     descriptor, temporary = tempfile.mkstemp(prefix=".presentation-language-", dir=preferences.parent)
     try:
         with os.fdopen(descriptor, "w", encoding="utf-8") as output:
-            output.write("# Presentation preference; restart required. Italian is WIP.\n")
+            output.write("# Presentation language preference. Italian is WIP.\n")
             output.write(f"cwm_language = {value}\n")
             output.flush()
             os.fsync(output.fileno())

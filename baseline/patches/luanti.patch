@@ -88,7 +88,7 @@ index 57e5a13..499e52c 100644
  
  	get_setting_info("touch_controls").option_labels = {
 diff --git a/builtin/settingtypes.txt b/builtin/settingtypes.txt
-index 728eaf4..33f96c6 100644
+index 728eaf4..e2368c4 100644
 --- a/builtin/settingtypes.txt
 +++ b/builtin/settingtypes.txt
 @@ -666,9 +666,9 @@ mute_sound (Mute sound) bool false
@@ -98,8 +98,8 @@ index 728eaf4..33f96c6 100644
 -#    Set the language. By default, the system language is used.
 -#    A restart is required after changing this.
 -language (Language) enum   ,be,bg,ca,cs,da,de,el,en,eo,es,et,eu,fi,fr,gd,gl,hu,id,it,ja,jbo,kk,ko,lt,lv,ms,nb,nl,nn,pl,pt,pt_BR,ro,ru,sk,sl,sr_Cyrl,sr_Latn,sv,sw,tr,uk,vi,zh_CN,zh_TW
-+#    Product language for CDDA and the 3D interface. Restart through start.sh
-+#    after changing this setting. Italian is WIP; missing translations use English.
++#    Product language for CDDA and the 3D interface. During play use Esc to
++#    apply immediately. Italian is WIP; missing translations use English.
 +cwm_language (Language) enum en en,it
  
  [**GUI]
@@ -318,19 +318,20 @@ index 16ceda4..20bd596 100644
  			float old_anim_speed = player->last_animation_speed;
  			m_velocity = v3f(0,0,0);
 diff --git a/src/client/game.cpp b/src/client/game.cpp
-index 27b5833..85f0056 100644
+index 27b5833..7b06949 100644
 --- a/src/client/game.cpp
 +++ b/src/client/game.cpp
-@@ -8,6 +8,8 @@
+@@ -8,6 +8,9 @@
  #include "IAttributes.h"
  #include "client/renderingengine.h"
  #include "camera.h"
 +#include "cdda/cdda_bridge.h"
 +#include "cwm/product_language.hpp"
++#include <functional>
  #include "client.h"
  #include "client/clientevent.h"
  #include "client/gameui.h"
-@@ -118,6 +120,74 @@ struct TextDestPlayerInventory : public TextDest
+@@ -118,6 +121,67 @@ struct TextDestPlayerInventory : public TextDest
  	Client *m_client;
  };
  
@@ -371,41 +372,34 @@ index 27b5833..85f0056 100644
 +	}
 +};
 +
-+// Rebuild only the presentation text when a pending language changes. The
-+// session translator remains fixed until the supervised restart.
++// getForm is read by the next GUI draw, never rebuilding inside a click handler.
 +class CwmPauseFormSource : public FormspecFormSource
 +{
 +public:
-+    explicit CwmPauseFormSource(const std::string &form) : FormspecFormSource(form) {}
-+
++    explicit CwmPauseFormSource(std::function<std::string()> build) :
++        FormspecFormSource(""), m_build(std::move(build)) {}
 +    const std::string &getForm() const override
 +    {
-+        const std::string selected = g_settings->get("cwm_language");
-+        if (m_rendered.empty() || selected != m_selected) {
-+            const bool italian = selected == "it";
-+            const bool active = italian == (::cwm::product_language_storage() == ::cwm::ProductLanguage::Italian);
-+            std::string notice = active ? ::cwm::tr("Active: ", "Attiva: ") :
-+                ::cwm::tr("Next start: ", "Prossimo avvio: ");
-+            notice += italian ? "Italiano (WIP)" : "English";
-+            if (!active)
-+                notice += ::cwm::tr("\nRestart start.sh to apply.", "\nRiavvia start.sh per applicare.");
-+            if (italian)
-+                notice += ::cwm::tr("\nTranslation incomplete.", "\nTraduzione incompleta.");
-+            str_formspec_escape(notice);
-+            m_rendered = m_formspec + "textarea[7.5,2.7;3.1,2.8;;;" + notice + "]";
-+            m_selected = selected;
++        const std::string notice = cdda_client::CddaBridge::getInstance().productLanguageNotice();
++        const auto language = ::cwm::product_language_storage();
++        if (m_rendered.empty() || notice != m_notice || language != m_language) {
++            std::string escaped = notice;
++            str_formspec_escape(escaped);
++            m_rendered = m_build() + "textarea[7.5,2.7;3.1,2.8;;;" + escaped + "]";
++            m_notice = notice; m_language = language;
 +        }
 +        return m_rendered;
 +    }
-+
 +private:
-+    mutable std::string m_selected, m_rendered;
++    std::function<std::string()> m_build;
++    mutable std::string m_notice, m_rendered;
++    mutable ::cwm::ProductLanguage m_language{::cwm::ProductLanguage::English};
 +};
 +
  struct LocalFormspecHandler : public TextDest
  {
  	LocalFormspecHandler(const std::string &formname)
-@@ -134,6 +204,14 @@ struct LocalFormspecHandler : public TextDest
+@@ -134,6 +198,12 @@ struct LocalFormspecHandler : public TextDest
  	void gotText(const StringMap &fields)
  	{
  		if (m_formname == "MT_PAUSE_MENU") {
@@ -413,14 +407,12 @@ index 27b5833..85f0056 100644
 +            const std::string chosen_language = fields.count("cwm_language_en") ? "en" : fields.count("cwm_language_it") ? "it" :
 +                language != fields.end() && language->second == "1" ? "en" : language != fields.end() && language->second == "2" ? "it" : "";
 +			if (!chosen_language.empty()) {
-+				g_settings->set("cwm_language", chosen_language);
-+				if (!g_settings_path.empty())
-+					g_settings->updateConfigFile(g_settings_path.c_str());
++				cdda_client::CddaBridge::getInstance().requestProductLanguage(chosen_language);
 +			}
  			if (fields.find("btn_sound") != fields.end()) {
  				g_gamecallback->changeVolume();
  				return;
-@@ -443,12 +521,15 @@ class GameGlobalShaderConstantSetter : public IShaderConstantSetter
+@@ -443,12 +513,15 @@ class GameGlobalShaderConstantSetter : public IShaderConstantSetter
  		get_sunlight_color(&sunlight, daynight_ratio);
  		m_day_light.set(sunlight, services);
  
@@ -438,7 +430,15 @@ index 27b5833..85f0056 100644
  		m_animation_timer_delta_vertex.set(&animation_timer_delta_f, services);
  		m_animation_timer_delta_pixel.set(&animation_timer_delta_f, services);
  
-@@ -932,6 +1013,7 @@ class Game {
+@@ -811,6 +884,7 @@ class Game {
+ 
+ 	void showDeathFormspecLegacy();
+ 	void showPauseMenu();
++	std::string pauseMenuForm();
+ 
+ 	void pauseAnimation();
+ 	void resumeAnimation();
+@@ -932,6 +1006,7 @@ class Game {
  	bool m_first_loop_after_window_activation = false;
  	bool m_camera_offset_changed = false;
  	bool m_game_focused = false;
@@ -446,7 +446,7 @@ index 27b5833..85f0056 100644
  
  	bool m_does_lost_focus_pause_game = false;
  
-@@ -1009,6 +1091,8 @@ Game::Game() :
+@@ -1009,6 +1084,8 @@ Game::Game() :
  
  Game::~Game()
  {
@@ -455,7 +455,7 @@ index 27b5833..85f0056 100644
  	delete client;
  	delete soundmaker;
  	sound_manager.reset();
-@@ -1181,6 +1265,13 @@ void Game::run()
+@@ -1181,6 +1258,13 @@ void Game::run()
  		updateCamera(dtime);
  		updateSound(dtime);
  		processPlayerInteraction(dtime, m_game_ui->m_flags.show_hud);
@@ -469,7 +469,7 @@ index 27b5833..85f0056 100644
  		updateFrame(&graph, &stats, dtime, cam_view);
  		updateProfilerGraphs(&graph);
  
-@@ -1239,6 +1330,8 @@ void Game::shutdown()
+@@ -1239,6 +1323,8 @@ void Game::shutdown()
  		}
  	}
  
@@ -478,7 +478,7 @@ index 27b5833..85f0056 100644
  	delete client;
  	client = nullptr;
  	delete soundmaker;
-@@ -2046,14 +2139,38 @@ void Game::processUserInput(f32 dtime)
+@@ -2046,14 +2132,38 @@ void Game::processUserInput(f32 dtime)
  	if (m_cache_doubletap_jump && runData.jump_timer_down <= 0.4f)
  		runData.jump_timer_down += dtime;
  
@@ -520,7 +520,7 @@ index 27b5833..85f0056 100644
  		dropSelectedItem(isKeyDown(KeyType::SNEAK));
  	} else if (wasKeyDown(KeyType::AUTOFORWARD)) {
  		toggleAutoforward();
-@@ -2063,6 +2180,8 @@ void Game::processKeyInput()
+@@ -2063,6 +2173,8 @@ void Game::processKeyInput()
  	} else if (wasKeyDown(KeyType::INVENTORY)) {
  		openInventory();
  	} else if (input->cancelPressed()) {
@@ -529,7 +529,7 @@ index 27b5833..85f0056 100644
  #ifdef __ANDROID__
  		m_android_chat_open = false;
  #endif
-@@ -2083,7 +2202,8 @@ void Game::processKeyInput()
+@@ -2083,7 +2195,8 @@ void Game::processKeyInput()
  	} else if (wasKeyDown(KeyType::FREEMOVE)) {
  		toggleFreeMove();
  	} else if (wasKeyDown(KeyType::JUMP)) {
@@ -539,7 +539,7 @@ index 27b5833..85f0056 100644
  	} else if (wasKeyDown(KeyType::PITCHMOVE)) {
  		togglePitchMove();
  	} else if (wasKeyDown(KeyType::FASTMOVE)) {
-@@ -2137,12 +2257,13 @@ void Game::processKeyInput()
+@@ -2137,12 +2250,13 @@ void Game::processKeyInput()
  		toggleMinimap(isKeyDown(KeyType::SNEAK));
  	} else if (wasKeyPressed(KeyType::TOGGLE_CHAT)) {
  		m_game_ui->toggleChat(client);
@@ -555,7 +555,7 @@ index 27b5833..85f0056 100644
  	} else if (wasKeyPressed(KeyType::TOGGLE_PROFILER)) {
  		m_game_ui->toggleProfiler();
  	} else if (wasKeyDown(KeyType::INCREASE_VIEWING_RANGE)) {
-@@ -2154,9 +2275,17 @@ void Game::processKeyInput()
+@@ -2154,9 +2268,17 @@ void Game::processKeyInput()
  	} else if (wasKeyDown(KeyType::ZOOM)) {
  		checkZoomEnabled();
  	} else if (wasKeyDown(KeyType::QUICKTUNE_NEXT)) {
@@ -575,7 +575,7 @@ index 27b5833..85f0056 100644
  	} else if (wasKeyDown(KeyType::QUICKTUNE_INC)) {
  		quicktune->inc();
  	} else if (wasKeyDown(KeyType::QUICKTUNE_DEC)) {
-@@ -2178,6 +2307,22 @@ void Game::processItemSelection(u16 *new_playeritem)
+@@ -2178,6 +2300,22 @@ void Game::processItemSelection(u16 *new_playeritem)
  	LocalPlayer *player = client->getEnv().getLocalPlayer();
  
  	*new_playeritem = player->getWieldIndex();
@@ -598,7 +598,7 @@ index 27b5833..85f0056 100644
  	u16 max_item = player->getMaxHotbarItemcount();
  	if (max_item == 0)
  		return;
-@@ -2238,6 +2383,18 @@ void Game::dropSelectedItem(bool single_item)
+@@ -2238,6 +2376,18 @@ void Game::dropSelectedItem(bool single_item)
  
  void Game::openInventory()
  {
@@ -617,7 +617,7 @@ index 27b5833..85f0056 100644
  	/*
  	 * Don't permit to open inventory is CAO or player doesn't exists.
  	 * This prevent showing an empty inventory at player load
-@@ -2737,8 +2894,68 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
+@@ -2737,8 +2887,68 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
  		control.aux1 = control.aux1 ^ true;
  	}
  
@@ -686,7 +686,7 @@ index 27b5833..85f0056 100644
  	//tt.stop();
  }
  
-@@ -2784,6 +3001,73 @@ inline void Game::step(f32 dtime)
+@@ -2784,6 +2994,73 @@ inline void Game::step(f32 dtime)
  
  	if (!m_is_paused)
  		client->step(dtime);
@@ -760,7 +760,7 @@ index 27b5833..85f0056 100644
  }
  
  static void pauseNodeAnimation(PausedNodesList &paused, scene::ISceneNode *node) {
-@@ -3246,6 +3530,7 @@ void Game::updateCamera(f32 dtime)
+@@ -3246,6 +3523,7 @@ void Game::updateCamera(f32 dtime)
  	tool_reload_ratio = MYMIN(tool_reload_ratio, 1.0);
  	camera->update(player, dtime, tool_reload_ratio);
  	camera->step(dtime);
@@ -768,7 +768,7 @@ index 27b5833..85f0056 100644
  
  	f32 camera_fov = camera->getFovMax();
  	v3s16 camera_offset = camera->getOffset();
-@@ -3262,6 +3547,7 @@ void Game::updateCamera(f32 dtime)
+@@ -3262,6 +3540,7 @@ void Game::updateCamera(f32 dtime)
  		if (m_camera_offset_changed) {
  			client->updateCameraOffset(camera_offset);
  			client->getEnv().updateCameraOffset(camera_offset);
@@ -776,7 +776,7 @@ index 27b5833..85f0056 100644
  
  			if (clouds)
  				clouds->updateCameraOffset(camera_offset);
-@@ -3314,6 +3600,8 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
+@@ -3314,6 +3593,8 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
  
  	const ItemDefinition &selected_def = selected_item.getDefinition(itemdef_manager);
  	f32 d = getToolRange(selected_item, hand_item, itemdef_manager);
@@ -785,7 +785,7 @@ index 27b5833..85f0056 100644
  
  	core::line3d<f32> shootline;
  
-@@ -3365,6 +3653,52 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
+@@ -3365,6 +3646,52 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
  	// but the halo rendering code is already inefficient so there's no point in optimizing it here
  	hud->updateSelectionMesh(camera_offset);
  
@@ -838,7 +838,7 @@ index 27b5833..85f0056 100644
  	// Allow digging again if button is not pressed
  	if (runData.digging_blocked && !isKeyDown(KeyType::DIG))
  		runData.digging_blocked = false;
-@@ -4247,7 +4581,8 @@ void Game::updateClouds(float dtime)
+@@ -4247,7 +4574,8 @@ void Game::updateClouds(float dtime)
  {
  	if (this->sky->getCloudsVisible()) {
  		this->clouds->setVisible(true);
@@ -848,7 +848,7 @@ index 27b5833..85f0056 100644
  		// this->camera->getPosition is not enough for third-person camera.
  		v3f camera_node_position = this->camera->getCameraNode()->getPosition();
  		v3s16 camera_offset      = this->camera->getOffset();
-@@ -4319,7 +4654,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
+@@ -4319,7 +4647,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
  	/*
  		Fog
  	*/
@@ -862,7 +862,16 @@ index 27b5833..85f0056 100644
  		this->driver->setFog(
  				fog_color,
  				video::EFT_FOG_LINEAR,
-@@ -4518,6 +4858,9 @@ void Game::showPauseMenu()
+@@ -4470,7 +4803,7 @@ void Game::showDeathFormspecLegacy()
+ }
+ 
+ #define GET_KEY_NAME(KEY) gettext(getKeySetting(#KEY).name())
+-void Game::showPauseMenu()
++std::string Game::pauseMenuForm()
+ {
+ 	std::string control_text;
+ 
+@@ -4518,6 +4851,9 @@ void Game::showPauseMenu()
  		<< strgettext("Exit to Menu") << "]";
  	os		<< "button_exit[4," << (ypos++) << ";3,0.5;btn_exit_os;"
  		<< strgettext("Exit to OS")   << "]";
@@ -872,12 +881,31 @@ index 27b5833..85f0056 100644
  	if (!control_text.empty()) {
  	os		<< "textarea[7.5,0.25;3.9,6.25;;" << control_text << ";]";
  	}
-@@ -4562,7 +4905,7 @@ void Game::showPauseMenu()
+@@ -4536,8 +4872,8 @@ void Game::showPauseMenu()
+ 	}
+ 	os << "\n";
+ 	if (simple_singleplayer_mode || address.empty()) {
+-		static const std::string on = strgettext("On");
+-		static const std::string off = strgettext("Off");
++		const std::string on = strgettext("On");
++		const std::string off = strgettext("Off");
+ 		// Note: Status of enable_damage and creative_mode settings is intentionally
+ 		// NOT shown here because the game might roll its own damage system and/or do
+ 		// a per-player Creative Mode, in which case writing it here would mislead.
+@@ -4559,10 +4895,15 @@ void Game::showPauseMenu()
+ 	}
+ 	os << ";]";
+ 
++	return os.str();
++}
++
++void Game::showPauseMenu()
++{
  	/* Create menu */
  	/* Note: FormspecFormSource and LocalFormspecHandler  *
  	 * are deleted by guiFormSpecMenu                     */
 -	FormspecFormSource *fs_src = new FormspecFormSource(os.str());
-+	FormspecFormSource *fs_src = new CwmPauseFormSource(os.str());
++	FormspecFormSource *fs_src = new CwmPauseFormSource([this] { return pauseMenuForm(); });
  	LocalFormspecHandler *txt_dst = new LocalFormspecHandler("MT_PAUSE_MENU");
  
  	auto *&formspec = m_game_ui->getFormspecGUI();
@@ -1059,6 +1087,40 @@ index 7758c96..def39c0 100644
  	settings->setDefault("keymap_toggle_profiler", "KEY_F6");
  	settings->setDefault("keymap_camera_mode", "KEY_KEY_C");
  	settings->setDefault("keymap_screenshot", "KEY_F12");
+diff --git a/src/gettext.cpp b/src/gettext.cpp
+index 59ce240..74e60a1 100644
+--- a/src/gettext.cpp
++++ b/src/gettext.cpp
+@@ -225,3 +225,15 @@ void init_gettext(const char *path, const std::string &configured_language,
+ 	infostream << "Message locale is now set to: "
+ 			<< setlocale(LC_ALL, 0) << std::endl;
+ }
++
++void set_gettext_language(const std::string &language)
++{
++#if USE_GETTEXT
++    // GNU gettext caches LANGUAGE until LC_MESSAGES changes. Invalidate that
++    // cache on the UI thread, preserving numeric parsing and all other locales.
++    const std::string previous = setlocale(LC_MESSAGES, nullptr);
++    setenv("LANGUAGE", language.c_str(), 1);
++    setlocale(LC_MESSAGES, "C");
++    setlocale(LC_MESSAGES, previous == "C" || previous == "POSIX" ? "C.UTF-8" : previous.c_str());
++#endif
++}
+diff --git a/src/gettext.h b/src/gettext.h
+index ca47c12..eac711d 100644
+--- a/src/gettext.h
++++ b/src/gettext.h
+@@ -29,6 +29,9 @@
+ #define gettext_noop(String) (String)
+ #define N_(String) gettext_noop((String))
+ 
++// Refresh only message localization; numeric/time locale is unchanged.
++void set_gettext_language(const std::string &language);
++
+ void init_gettext(const char *path, const std::string &configured_language,
+ 	int argc, char *argv[]);
+ 
 diff --git a/src/gui/guiFormSpecMenu.cpp b/src/gui/guiFormSpecMenu.cpp
 index ed1c300..c51099d 100644
 --- a/src/gui/guiFormSpecMenu.cpp
@@ -1986,15 +2048,16 @@ index 0000000..e1e7236
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..912a2d3
+index 0000000..a12a838
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,3194 @@
+@@ -0,0 +1,3252 @@
 +#include "cwm/product_language.hpp"
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
 +
 +#include "cdda_bridge.h"
++#include "gettext.h"
 +#include "ground_item_projection.h"
 +#include "ground_item_visual.h"
 +#include "ground_item_formspec.h"
@@ -2081,6 +2144,20 @@ index 0000000..912a2d3
 +    float sent_intent_x_{0}, sent_intent_y_{0};
 +    bool intent_needs_release_{false};
 +    int sent_menu_pause_{-1};
++    std::string desired_language_, language_error_;
++    uint64_t next_language_request_{1}, language_request_{0}, language_connection_{0};
++
++    void sync_language() {
++        if (desired_language_.empty()) desired_language_ = g_settings->get("cwm_language");
++        const std::string active = ::cwm::product_language_storage() == ::cwm::ProductLanguage::Italian ? "it" : "en";
++        if (!session_.ready() || !player_ready_ || language_request_ || metrics_.pending_decision ||
++            (language_connection_ == session_.identity.connection && desired_language_ == active)) return;
++        auto builder = session_.builder();
++        language_request_ = next_language_request_++;
++        const auto bytes = builder.finish_message(CDDA::CWM::Payload::LanguageRequest,
++            CDDA::CWM::CreateLanguageRequestDirect(builder.builder(), language_request_, desired_language_.c_str()).Union());
++        if (!connection_->send_message(bytes.data(), bytes.size())) language_request_ = 0;
++    }
 +    irr::gui::IGUIStaticText* clock_text_{nullptr};
 +    AvatarStatusView avatar_status_;
 +    bool body_form_open_{false}, body_close_requested_{false};
@@ -2914,6 +2991,7 @@ index 0000000..912a2d3
 +    }
 +
 +    void disconnected() {
++        language_request_ = language_connection_ = 0;
 +        session_.disconnected();
 +        body_close_requested_ = true;
 +        cancel_pickup_selection(); cancel_equipment();
@@ -2958,6 +3036,7 @@ index 0000000..912a2d3
 +        }
 +
 +        player_ready_ = session_.ready() && entities_.count(1);
++        sync_language();
 +        // A cosmetic adaptation over wall time, independent of simulation
 +        // speed. Native perception and ambient-light decisions are unchanged.
 +        low_light_blend_ += (float(low_light_) - low_light_blend_) *
@@ -3106,6 +3185,7 @@ index 0000000..912a2d3
 +        metrics_.connected = true;
 +        if (session_.clear_world) { clear_world(); session_.clear_world = false; }
 +        if (msg->payload_type() == CDDA::CWM::Payload::WorldReset) {
++            language_request_ = language_connection_ = 0;
 +            cancel_pickup_selection(); cancel_equipment();
 +            body_close_requested_ = true;
 +            player_ready_ = false;
@@ -3114,6 +3194,27 @@ index 0000000..912a2d3
 +        }
 +
 +        switch (msg->payload_type()) {
++            case CDDA::CWM::Payload::LanguageState: {
++                const auto* reply = msg->payload_as_LanguageState();
++                if (reply->request_id() != language_request_) break;
++                language_request_ = 0;
++                language_connection_ = session_.identity.connection;
++                const std::string code = reply->code()->str();
++                if (reply->accepted()) {
++                    ::cwm::set_product_language(code);
++                    set_gettext_language(code);
++                    g_settings->set("cwm_language", code);
++                    g_settings->set("language", code);
++                    if (!g_settings_path.empty()) g_settings->updateConfigFile(g_settings_path.c_str());
++                    caption_seconds_ = 0; hover_hint_.clear();
++                    equipment_notice_.clear(); crafting_notice_.clear();
++                    equipment_dirty_ = crafting_dirty_ = true;
++                } else {
++                    language_error_ = reply->error()->str();
++                    desired_language_ = code;
++                }
++                break;
++            }
 +            case CDDA::CWM::Payload::CraftingView: {
 +                const auto* view = msg->payload_as_CraftingView();
 +                if (crafting_open_ && view->query_id() == crafting_query_) {
@@ -3809,6 +3910,25 @@ index 0000000..912a2d3
 +
 +bool CddaBridge::ownsPlayer(const Client* client) const {
 +    return pimpl_ && pimpl_->client_ == client;
++}
++
++void CddaBridge::requestProductLanguage(const std::string &code)
++{
++    if (!pimpl_ || (code != "en" && code != "it")) return;
++    pimpl_->desired_language_ = code;
++    pimpl_->language_error_.clear();
++}
++
++std::string CddaBridge::productLanguageNotice() const
++{
++    const std::string active = ::cwm::product_language_storage() == ::cwm::ProductLanguage::Italian ? "it" : "en";
++    const std::string selected = pimpl_ && !pimpl_->desired_language_.empty() ? pimpl_->desired_language_ : active;
++    std::string notice = selected == active && (!pimpl_ || !pimpl_->language_request_) ?
++        ::cwm::tr("Active: ", "Attiva: ") : ::cwm::tr("Applying: ", "Applicazione: ");
++    notice += selected == "it" ? "Italiano (WIP)" : "English";
++    if (selected == "it") notice += ::cwm::tr("\nTranslation incomplete.", "\nTraduzione incompleta.");
++    if (pimpl_ && !pimpl_->language_error_.empty()) notice += "\n" + pimpl_->language_error_;
++    return notice;
 +}
 +
 +void CddaBridge::toggleDiagnostics() {
@@ -5186,10 +5306,10 @@ index 0000000..912a2d3
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.h b/src/cdda/cdda_bridge.h
 new file mode 100644
-index 0000000..d0a6c1a
+index 0000000..fb7e976
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.h
-@@ -0,0 +1,183 @@
+@@ -0,0 +1,185 @@
 +// Luanti C++ CWM Presentation Bridge
 +// Licensed under Apache-2.0
 +#pragma once
@@ -5281,6 +5401,8 @@ index 0000000..d0a6c1a
 +    bool aiming() const;
 +    float shotKick() const;
 +    void toggleDiagnostics();
++    void requestProductLanguage(const std::string &code);
++    std::string productLanguageNotice() const;
 +    bool terrainComparisonEnabled() const;
 +    void toggleTerrainStyle();
 +    void toggleTerrainFog();
