@@ -1745,10 +1745,10 @@ index 0000000..e1e7236
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..1f02ba7
+index 0000000..97d3cb4
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,2906 @@
+@@ -0,0 +1,2909 @@
 +#include "cwm/product_language.hpp"
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
@@ -3836,7 +3836,10 @@ index 0000000..1f02ba7
 +    const bool storage=impl.ground_items_.storage(*impl.pointed_ground_);
 +    if (!storage && (!items || items->empty())) return {};
 +    impl.last_ground_target_ = *impl.pointed_ground_;
-+    if (!storage && items->size()==1 && !items->front().count_by_charges && !items->front().container) {
++    // One loose native stack is one explicit pickup, including charged items.
++    // Its exact type/index/charges still go through native revalidation. Real
++    // containers and multi-item piles retain the storage/quantity interface.
++    if (!storage && items->size()==1 && !items->front().container) {
 +        impl.queue_pickup(*impl.pointed_ground_,items->front());return {};
 +    }
 +    if(impl.equipment_open_ || impl.body_form_open_ || impl.crafting_open_ || impl.activity_token_ || impl.metrics_.pending_decision)return {};
