@@ -148,6 +148,8 @@ def main():
             reason=b.CreateString(''); Gun.RangedWeaponStateStart(b);Gun.RangedWeaponStateAddToken(b,1)
             Gun.RangedWeaponStateAddName(b,name);Gun.RangedWeaponStateAddReason(b,reason)
             Gun.RangedWeaponStateAddAmmo(b,10);Gun.RangedWeaponStateAddRange(b,10);gun=Gun.RangedWeaponStateEnd(b)
+        if not wield[0]:
+            World.WorldSnapshotStartOwnedItemsVector(b,0);owned=b.EndVector()
         World.WorldSnapshotStart(b); wire.world_fields(b,full,empty)
         World.WorldSnapshotAddPresentationEvents(b,cues);World.WorldSnapshotAddLowLight(b,environment[0])
         if owned: World.WorldSnapshotAddOwnedItems(b,owned);World.WorldSnapshotAddRangedWeapon(b,gun)
@@ -298,6 +300,7 @@ def main():
                     until(lambda d:int(d[1]['revision'])==rev and float(d[1]['attack_seconds'])>.35)
                     check('native_shot_drives_visual_kick',float(camera_latest()['shot_kick'])>0)
                     update('wield',False);time.sleep(.6)
+                    check('native_unwield_clears_first_person_object',camera_latest()['wield_texture']=='')
                     original=[dict(a) for a in actors]
                     for family,kind,skin,height in [('canine','mon_wolf','mobs_mc_wolf.png',8.4),('spider','mon_spider_web','mobs_mc_spider.png',7),('bird','mon_chicken','mobs_mc_chicken.png',5)]:
                         rev=update('actors',[dict(original[0],type=kind),original[1]])
