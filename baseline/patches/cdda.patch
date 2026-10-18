@@ -5453,10 +5453,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..84193df
+index 0000000..603e151
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,2204 @@
+@@ -0,0 +1,2205 @@
 +#include "cata_catch.h"
 +#include "translations.h"
 +#include "options.h"
@@ -7636,7 +7636,8 @@ index 0000000..84193df
 +    const auto pos=u.pos();
 +    const auto revision=server.world_revision();
 +    const auto option=get_option<std::string>("USE_LANG");
-+    const item cap(itype_id("hat_ball"),calendar::turn);
++    item cap(itype_id("hat_ball"),calendar::turn);
++    cap.clear_itype_variant(); // Do not let a random fan-cap variant select another translation.
 +    struct Restore {
 +        ~Restore(){set_language("en");::cwm::set_product_language("en");}
 +    } restore;
