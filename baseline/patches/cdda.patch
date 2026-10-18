@@ -1556,7 +1556,7 @@ index 6e66b47..1d12175 100644
  
  enum class recipe_time_flag : int {
 diff --git a/src/sounds.cpp b/src/sounds.cpp
-index 48f747f..229e2da 100644
+index 48f747f..d49deea 100644
 --- a/src/sounds.cpp
 +++ b/src/sounds.cpp
 @@ -1,3 +1,4 @@
@@ -1570,7 +1570,7 @@ index 48f747f..229e2da 100644
  
 +        const std::string cue_description = pos == you->pos() || you->sees(pos) ? description :
 +            direction_name(direction_from(you->pos(), pos)) + ": " + description;
-+        cwm::record_heard_sound(cue_description, sound.id == "gunfire" ? "gunfire" : enum_to_string(sound.category), heard_volume);
++        cwm::record_heard_sound(cue_description, sound.id == "gunfire" ? "gunfire" : io::enum_to_string(sound.category), heard_volume);
 +
          if( sound.category == sound_t::music ) {
              music::activate_music_id( music::music_id::sound );

@@ -976,10 +976,10 @@ index d6e2863..239953a 100644
  	std::vector<std::unique_ptr<MeshUpdateWorkerThread>> m_workers;
  };
 diff --git a/src/defaultsettings.cpp b/src/defaultsettings.cpp
-index 7758c96..031c33e 100644
+index 7758c96..a440125 100644
 --- a/src/defaultsettings.cpp
 +++ b/src/defaultsettings.cpp
-@@ -166,6 +166,19 @@ void set_default_settings()
+@@ -166,12 +166,25 @@ void set_default_settings()
  	settings->setDefault("keymap_toggle_hud", "KEY_F1");
  	settings->setDefault("keymap_toggle_chat", "KEY_F2");
  	settings->setDefault("keymap_toggle_fog", "KEY_F3");
@@ -999,6 +999,13 @@ index 7758c96..031c33e 100644
  #ifndef NDEBUG
  	settings->setDefault("keymap_toggle_update_camera", "KEY_F4");
  #else
+ 	settings->setDefault("keymap_toggle_update_camera", "");
+ #endif
+-	settings->setDefault("keymap_toggle_debug", "KEY_F5");
++	settings->setDefault("keymap_toggle_debug", "KEY_F3");
+ 	settings->setDefault("keymap_toggle_profiler", "KEY_F6");
+ 	settings->setDefault("keymap_camera_mode", "KEY_KEY_C");
+ 	settings->setDefault("keymap_screenshot", "KEY_F12");
 diff --git a/src/gui/guiFormSpecMenu.cpp b/src/gui/guiFormSpecMenu.cpp
 index ed1c300..c7aa073 100644
 --- a/src/gui/guiFormSpecMenu.cpp

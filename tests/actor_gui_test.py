@@ -23,6 +23,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for key in ('workspace', 'artifacts'):
         parser.add_argument('--' + key, type=Path, required=True)
+    parser.add_argument('--feedback',action='store_true')
     args = parser.parse_args()
     ws, out = args.workspace.resolve(), args.artifacts.resolve()
     out.mkdir(parents=True, exist_ok=False)
@@ -32,7 +33,7 @@ def main():
     from CDDA.CWM import CwmMessage, Payload, HelloResponse, ResyncRequest
     from CDDA.CWM import WorldSnapshot as World, ChunkSnapshot as Chunk, CwmBlock as Block
     from CDDA.CWM import EntityState as Entity, Vec3f, Coord3i
-    from CDDA.CWM import SimulationState
+    from CDDA.CWM import SimulationState, PresentationEvent as Cue, GroundItemState as Item, RangedWeaponState as Gun
     monster_id, npc_id = (1 << 62) | 2, (1 << 63) | 3
     actors = [{'id':monster_id, 'kind':2, 'type':'mon_zombie', 'pos':[8,8,0], 'seen':True},
               {'id':npc_id, 'kind':1, 'type':'npc', 'pos':[6,8,0], 'seen':True}]
@@ -40,6 +41,7 @@ def main():
     stop, errors, checks = threading.Event(), [], {}
     trace, camera = out / 'actors.csv', out / 'camera.csv'
     origin = [0,0]
+    pending_cues=[]; environment=[False,0]; wield=[False]; cue_serial=[0]
     clock = [0,1.0] # Authoritative pause reasons / global time scale.
     old_window = subprocess.run(['xdotool','getactivewindow'],capture_output=True,text=True).stdout.strip()
 
@@ -113,6 +115,7 @@ def main():
             Entity.EntityStateAddTypeId(b,type_name)
             Entity.EntityStateAddHpPercent(b,100)
             Entity.EntityStateAddPerceived(b,actor['seen'])
+            if actor['id']==1: Entity.EntityStateAddStateFlags(b,environment[1])
             Entity.EntityStateAddPos(b,Vec3f.CreateVec3f(b,actor['pos'][0]-origin[0],actor['pos'][1]-origin[1],actor['pos'][2]))
             states.append(Entity.EntityStateEnd(b))
         World.WorldSnapshotStartEntitiesVector(b,len(states))
@@ -123,7 +126,31 @@ def main():
         SimulationState.SimulationStateAddPauseReasons(b,clock[0])
         SimulationState.SimulationStateAddTimeScale(b,clock[1])
         state_clock=SimulationState.SimulationStateEnd(b)
+        cue_offsets=[]
+        if not full:
+            for kind,actor,description,category,volume in pending_cues:
+                cue_serial[0]+=1
+                description=b.CreateString(description); category=b.CreateString(category)
+                Cue.PresentationEventStart(b); Cue.PresentationEventAddId(b,cue_serial[0])
+                Cue.PresentationEventAddKind(b,kind); Cue.PresentationEventAddActor(b,actor)
+                Cue.PresentationEventAddDescription(b,description); Cue.PresentationEventAddSoundCategory(b,category)
+                Cue.PresentationEventAddHeardVolume(b,volume); cue_offsets.append(Cue.PresentationEventEnd(b))
+        pending_cues.clear()
+        World.WorldSnapshotStartPresentationEventsVector(b,len(cue_offsets))
+        for cue in reversed(cue_offsets): b.PrependUOffsetTRelative(cue)
+        cues=b.EndVector(); owned=0; gun=0
+        if wield[0]:
+            item_type=b.CreateString('glock_19'); name=b.CreateString('Glock 19'); category=b.CreateString('guns')
+            Item.GroundItemStateStart(b); Item.GroundItemStateAddTypeId(b,item_type)
+            Item.GroundItemStateAddName(b,name); Item.GroundItemStateAddCategory(b,category)
+            Item.GroundItemStateAddWielded(b,True); item=Item.GroundItemStateEnd(b)
+            World.WorldSnapshotStartOwnedItemsVector(b,1);b.PrependUOffsetTRelative(item);owned=b.EndVector()
+            reason=b.CreateString(''); Gun.RangedWeaponStateStart(b);Gun.RangedWeaponStateAddToken(b,1)
+            Gun.RangedWeaponStateAddName(b,name);Gun.RangedWeaponStateAddReason(b,reason)
+            Gun.RangedWeaponStateAddAmmo(b,10);Gun.RangedWeaponStateAddRange(b,10);gun=Gun.RangedWeaponStateEnd(b)
         World.WorldSnapshotStart(b); wire.world_fields(b,full,empty)
+        World.WorldSnapshotAddPresentationEvents(b,cues);World.WorldSnapshotAddLowLight(b,environment[0])
+        if owned: World.WorldSnapshotAddOwnedItems(b,owned);World.WorldSnapshotAddRangedWeapon(b,gun)
         World.WorldSnapshotAddClock(b,state_clock)
         World.WorldSnapshotAddEntities(b,roster)
         World.WorldSnapshotAddOrigin(b,Coord3i.CreateCoord3i(b,84000+origin[0],-42000+origin[1],-1))
@@ -185,6 +212,9 @@ def main():
                             if action=='actors': actors=value
                             if action=='rebase': origin[:]=value
                             if action=='clock': clock[:]=value
+                            if action=='cues': pending_cues.extend(value)
+                            if action=='environment': environment[:]=value
+                            if action=='wield': wield[0]=value
                             c.sendall(frame(snapshot(wire, action=='rebase', action=='bad-kind')))
                             receipts.put(wire.revision)
                         last_revision=wire.revision
@@ -213,6 +243,67 @@ def main():
                 window=found.stdout.splitlines()[0]
                 focus='windowfocus' if os.environ.get('CWM_GUI_NO_WM')=='1' else 'windowactivate'
                 subprocess.run(['xdotool',focus,'--sync',window],check=True,capture_output=True)
+                if args.feedback:
+                    def camera_latest():
+                        values=rows(camera)
+                        return values[-1] if values else {}
+                    def screen(name):
+                        subprocess.run(['import','-window',window,str(out/name)],check=True)
+                    check('diagnostics_default_off',camera_latest()['diagnostics']=='0')
+                    subprocess.run(['xdotool','key','--window',window,'F3'],check=True);time.sleep(.2)
+                    check('rebindable_debug_action_enables_diagnostics',camera_latest()['diagnostics']=='1')
+                    screen('diagnostics-on.png')
+                    subprocess.run(['xdotool','key','--window',window,'F3'],check=True);time.sleep(.2)
+                    check('debug_action_disables_diagnostics_again',camera_latest()['diagnostics']=='0')
+                    rev=update('cues',[(0,monster_id,'','',0)])
+                    strike=until(lambda d:int(d[1]['revision'])==rev and float(d[monster_id]['attack_seconds'])>0)
+                    check('native_attack_cue_selects_actual_punch_frames',50<=float(strike[monster_id]['model_frame'])<=59)
+                    screen('attack.png')
+                    # An event already in progress must freeze with simulation pause.
+                    rev=update('clock',[2,1.0]);paused=until(lambda d:int(d[1]['revision'])==rev)
+                    time.sleep(.35);frozen=until(lambda d:int(d[1]['revision'])==rev)
+                    check('pause_freezes_native_attack_pose',paused[monster_id]['model_frame']==frozen[monster_id]['model_frame'])
+                    update('clock',[0,1.0]);time.sleep(.6)
+                    rev=update('cues',[(1,monster_id,'','',0),(1,1,'','',0)])
+                    hurt=until(lambda d:int(d[1]['revision'])==rev and float(d[monster_id]['hurt_seconds'])>0)
+                    check('native_damage_cue_tints_actual_skin', 'colorize' in hurt[monster_id]['material1'])
+                    check('player_injury_has_explicit_native_cue',float(hurt[1]['hurt_seconds'])>0)
+                    screen('hurt.png');time.sleep(.45)
+                    cleared=until(lambda d:float(d[monster_id]['hurt_seconds'])==0)
+                    check('injury_tint_clears_without_changing_target',cleared[monster_id]['material1'].endswith('zombie.png'))
+                    rev=update('cues',[(4,0,'East: bang','gunfire',50)])
+                    until(lambda d:int(d[1]['revision'])==rev);time.sleep(.15)
+                    check('heard_sound_reaches_audio_manager',int(camera_latest()['sounds_dispatched'])>=1)
+                    screen('sound-caption.png')
+                    rev=update('environment',[True,0]);until(lambda d:int(d[1]['revision'])==rev);time.sleep(.1)
+                    check('native_low_light_reaches_presentation',camera_latest()['low_light']=='1');screen('darkness.png')
+                    # UNDERWATER from the shared semantic flag, not a Luanti water node.
+                    from pathlib import Path as _Path
+                    import re as _re
+                    semantics=(ws/'protocol/include/cwm/tile_semantics.hpp').read_text()
+                    shift=int(_re.search(r'UNDERWATER\s*=\s*1u?\s*<<\s*(\d+)',semantics)[1])
+                    rev=update('environment',[False,1<<shift]);until(lambda d:int(d[1]['revision'])==rev);time.sleep(.1)
+                    check('native_underwater_state_reaches_presentation',camera_latest()['underwater']=='1');screen('underwater.png')
+                    update('environment',[False,0]);rev=update('wield',True)
+                    until(lambda d:int(d[1]['revision'])==rev);time.sleep(.2)
+                    check('actual_native_hand_resolves_first_person_texture',bool(camera_latest()['wield_texture']))
+                    screen('held-firearm.png')
+                    rev=update('cues',[(3,1,'','',0)])
+                    until(lambda d:int(d[1]['revision'])==rev and float(d[1]['attack_seconds'])>.35)
+                    check('native_shot_drives_visual_kick',float(camera_latest()['shot_kick'])>0)
+                    update('wield',False);time.sleep(.6)
+                    original=[dict(a) for a in actors]
+                    for family,kind,skin,height in [('canine','mon_wolf','mobs_mc_wolf.png',8.4),('spider','mon_spider_web','mobs_mc_spider.png',7),('bird','mon_chicken','mobs_mc_chicken.png',5)]:
+                        rev=update('actors',[dict(original[0],type=kind),original[1]])
+                        family_scene=until(lambda d:int(d[1]['revision'])==rev and d[monster_id]['material0'].endswith(skin))
+                        check(family+'_uses_real_pinned_mesh_and_skin',int(family_scene[monster_id]['node_materials'])>0 and abs(float(family_scene[monster_id]['model_height'])-height)<.1)
+                        screen(family+'.png')
+                        moved=[dict(a,pos=[a['pos'][0]+1,a['pos'][1],a['pos'][2]]) for a in actors]
+                        rev=update('actors',moved)
+                        family_walk=until(lambda d:int(d[1]['revision'])==rev and float(d[monster_id]['model_frame'])>0)
+                        check(family+'_cycles_on_authoritative_motion',float(family_walk[monster_id]['model_frame'])>0)
+                    update('actors',original);time.sleep(.5)
+                    initial=until(lambda d:d[monster_id]['material1'].endswith('zombie.png'))
                 generations={i:initial[i]['node_generation'] for i in (monster_id,npc_id)}
                 check('real_zombie_and_npc_meshes_created', initial[1]['scene_actors']=='2')
                 check('zombie_skin_does_not_cover_armour_geometry',initial[monster_id]['material0'].endswith('blank.png') and initial[monster_id]['material1'].endswith('zombie.png'))
