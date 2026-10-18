@@ -11,7 +11,8 @@ std::vector<uint8_t> reading_world(int bad) {
     const auto title=f.CreateString(name),progress=bad==6 ? flatbuffers::Offset<flatbuffers::String>{} : f.CreateString("");
     const auto reading=CreateReadingState(f,bad==1?0:42,bad==2?0:100,bad==3?-1:bad==4?101:50,title,progress,true);
     const auto other=bad==9 ? CreateConsumptionState(f,43,100,50) : flatbuffers::Offset<ConsumptionState>{};
-    std::vector<flatbuffers::Offset<EntityState>> entities;
+    Vec3f pos(0,0,0);
+    std::vector<flatbuffers::Offset<EntityState>> entities{CreateEntityState(f,1,EntityType::PLAYER,0,&pos)};
     std::vector<flatbuffers::Offset<VehicleState>> vehicles;
     std::vector<flatbuffers::Offset<FieldState>> fields;
     const auto e=f.CreateVector(entities);const auto v=f.CreateVector(vehicles);const auto s=f.CreateVector(fields);
