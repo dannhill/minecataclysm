@@ -7248,10 +7248,10 @@ index 0000000..27ea42c
 +}
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644
-index 0000000..d1c13dc
+index 0000000..0a657c3
 --- /dev/null
 +++ b/tests/cwm_projection_test.cpp
-@@ -0,0 +1,786 @@
+@@ -0,0 +1,787 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "move_mode.h"
@@ -7998,9 +7998,10 @@ index 0000000..d1c13dc
 +    CHECK(cues.front().actor==1); CHECK(cues.back().id>cues.front().id);
 +    CHECK(cwm::drain_presentation().empty());
 +    CHECK(rng_get_engine()==rng); CHECK(calendar::turn==turn); CHECK(u.moves==moves);
-+    auto* mon=g->place_critter_at(mtype_id("mon_zombie"),tripoint(61,60,0)); REQUIRE(mon);
++    auto* mon=g->place_critter_at(mtype_id("mon_zombie"),tripoint(65,60,0)); REQUIRE(mon);
 +    mon->set_value("cwm_monster_id","600");
 +    u.add_effect(efftype_id("blind"),1_hours);
++    REQUIRE_FALSE(u.sees(*mon)); // Native adjacent awareness is not invisibility.
 +    cwm::record_presentation(cwm::CueKind::Attack,*mon);
 +    CHECK(cwm::drain_presentation().empty());
 +    u.remove_effect(efftype_id("blind"));
