@@ -7492,7 +7492,7 @@
   {
     "path": "src/client/game.cpp",
     "mode": "100644",
-    "sha256": "ef3ea50351c52fa4a1fdfa07d5c48236a1a0271554f66aad93ad7c211d344735"
+    "sha256": "bed251190f3becfc71fd65964496b55cf9ffc2474e4e40059092165be36d1af0"
   },
   {
     "path": "src/client/game.h",
@@ -8402,7 +8402,7 @@
   {
     "path": "src/gui/guiFormSpecMenu.cpp",
     "mode": "100644",
-    "sha256": "e4e363117614e116a7572c1f913363ba8692e4f4e167ed40bfb92c64177973d2"
+    "sha256": "b8e91f3c414b5e7f3ab70218a6463e06f162c607d651952db35272e2e9cf3f50"
   },
   {
     "path": "src/gui/guiFormSpecMenu.h",
