@@ -299,7 +299,7 @@ def main():
                 if args.held_rmb:
                     wait(lambda r:int(r['aim_sent'])>aim_at_shot)
                     check('held_rmb_resumes_paid_aim_after_single_shot',True)
-                time.sleep(.8);xdo('mouseup','1');aim_up();wait(lambda r:int(r['pending_move'])==0)
+                time.sleep(.8);xdo('mouseup','1');aim_up();wait(lambda r:int(r['pending_move'])==0 and (not args.held_rmb or int(r['aim_held'])==0))
                 if args.held_rmb:
                     stopped=latest()['aim_sent'];time.sleep(.4)
                     check('rmb_release_stops_new_aim_steps',latest()['aim_sent']==stopped)
