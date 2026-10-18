@@ -1,6 +1,9 @@
 # Validazioni manuali del playable core
 
-Stato corrente dopo il secondo riscontro del 2026-10-18: **9 PENDING + 1 FAIL manuale**.
+Stato corrente dopo i tre seguiti core del 2026-10-18: **18 PENDING + 1 FAIL manuale**.
+I tre passi autorizzati consecutivamente aggiungono nove prove rinviabili in
+fondo al file: raccolta sfusa, materiali/avatar, animazioni. Nessun gate oggi.
+Al secondo riscontro del 2026-10-18 erano **9 PENDING + 1 FAIL manuale**.
 Acquisiti 13 nuovi PASS: EXT4, dialoghi UX-04A 1–4, ricontrolli 1 e 3,
 LANG-01.2, scheda medica UX-04B 1–4 e UX-05.1. Il ricontrollo Indossa/Togli
 resta FAIL per la pausa con I; l'utente ha scelto la semantica nativa atomica,
@@ -761,3 +764,43 @@ al consolidamento delle interfacce, ma queste prove possono ancora essere rinvia
 **EXT4 — PASS ricevuto il 2026-10-18:** accettata l'assenza di raccolta
 rinviata dopo F7. Non duplicare questo punto nei contatori. Il commento UX
 sul menu 9×3 per oggetti sfusi è nel seguito; non revoca il PASS funzionale.
+
+## Raccolta sfusa diretta — PENDING (3), rinviabili
+
+1. **Un oggetto:** nella partita o `./storage-demo.sh --fresh`, deposita un
+   oggetto da solo ai piedi del personaggio, chiudi I e punta il drop. RMB lo
+   raccoglie senza aprire il menu 9×3. Anche un singolo sasso è raccolta diretta.
+2. **Una pila:** deposita solo alcune munizioni (es. 7) su una casella vuota.
+   RMB raccoglie tutta quella pila senza menu, rispettando spazio/costo CDDA.
+   Niente duplicazioni o perdita del resto rimasto nell'inventario.
+3. **Pausa e contenitori:** F7, prova RMB sul drop, riprendi senza cliccare:
+   non parte una vecchia raccolta. Un nuovo clic funziona. Mobili, zaini a terra
+   e più oggetti insieme mantengono il menu con quantità e contenuti nativi.
+
+## Modelli e materiali umanoidi — PENDING (3), rinviabili
+
+1. **NPC:** osserva l'NPC dello spawn da vicino, davanti e dietro. Pelle,
+   volto, torso e arti devono appartenere a un omino voxel riconoscibile, senza
+   la pelle ripetuta sui volumi dell'armatura. Aspetto generico: non rappresenta
+   ancora esattamente vestiti, mutazioni o anatomia CDDA.
+2. **Zombie:** osserva uno zombie comune. Volto e vestiti devono essere
+   riconoscibili, senza texture spalmata sul guscio dell'armatura. La bassa
+   risoluzione pixel art è quella degli asset Mineclonia; non è un pack HD.
+3. **Terza persona:** premi C per vedere il personaggio dietro/davanti, poi
+   torna alla prima persona. Deve esserci un modello voxel, non una sagoma 2D
+   verde; piedi e altezza devono risultare plausibili. I conserva l'anteprima.
+
+## Orientamento e animazioni di movimento — PENDING (3), rinviabili
+
+1. **Movimento:** osserva zombie/NPC che camminano e cambiano direzione.
+   Gli arti si animano e il modello segue la direzione degli spostamenti;
+   quando si ferma passa alla posa idle. Non è una nuova AI. I cubi delle
+   famiglie senza rig rimangono placeholder. Attacchi/reazioni richiedono
+   eventi nativi dedicati e non fanno parte di questa animazione locomotoria.
+2. **Tempo:** apri I/H o F7 mentre una creatura è in movimento: la posa deve
+   congelarsi insieme al mondo. Chiudendo/riprendendo non recupera animazioni
+   saltate. F8 scala anche le animazioni, senza cambiamenti alla velocità nativa.
+3. **Giocatore e riapparizioni:** C, cammina/fermati, poi prova accovacciato,
+   corsa e sdraio. La posa segue lo stato confermato e si ferma nei menu.
+   Creature che diventano visibili o tornano dopo il caricamento non devono
+   percorrere una vecchia traiettoria invisibile o lasciare doppi modelli.
