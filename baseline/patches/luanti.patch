@@ -318,7 +318,7 @@ index 16ceda4..20bd596 100644
  			float old_anim_speed = player->last_animation_speed;
  			m_velocity = v3f(0,0,0);
 diff --git a/src/client/game.cpp b/src/client/game.cpp
-index 27b5833..fa78eed 100644
+index 27b5833..85f0056 100644
 --- a/src/client/game.cpp
 +++ b/src/client/game.cpp
 @@ -8,6 +8,8 @@
@@ -390,9 +390,9 @@ index 27b5833..fa78eed 100644
 +            if (!active)
 +                notice += ::cwm::tr("\nRestart start.sh to apply.", "\nRiavvia start.sh per applicare.");
 +            if (italian)
-+                notice += ::cwm::tr("\nThe Italian translation is incomplete.", "\nLa traduzione italiana è incompleta.");
++                notice += ::cwm::tr("\nTranslation incomplete.", "\nTraduzione incompleta.");
 +            str_formspec_escape(notice);
-+            m_rendered = m_formspec + "textarea[7.5,2.7;3.1,2.35;;;" + notice + "]";
++            m_rendered = m_formspec + "textarea[7.5,2.7;3.1,2.8;;;" + notice + "]";
 +            m_selected = selected;
 +        }
 +        return m_rendered;

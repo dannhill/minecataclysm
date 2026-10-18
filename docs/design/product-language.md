@@ -12,6 +12,10 @@ The normal `./start.sh` opens the world directly. Press **Esc**, click
 again. The current session retains its startup language: changing a preference
 does not reinterpret an open native decision or restart an activity.
 Selecting a language keeps the pause menu open and the simulation paused.
+Its notice refreshes immediately: **Next start: English / Italiano (WIP)**,
+with the restart instruction only when the choice differs from this session.
+A matching choice says **Active**. The incomplete-translation note appears only
+when Italian is selected; notice wording stays in the current session language.
 Passive bridge HUD/tint widgets are hidden while any modal menu is open,
 including engine menus. Disabled Irrlicht widgets still participate in hit
 testing; a fullscreen darkness/underwater tint must never intercept these clicks.
@@ -77,7 +81,9 @@ catalog hashes and limits. Full SAVE-001 and M5.5 are not recertified by languag
 checks. Future feature UI must follow these same language boundaries.
 
 UX-04B (2026-10-13) replaces the pause dropdown with explicit language buttons.
-The user's renewed Italian → English FAIL after `91393f7` stays in manual review;
-[the overlay repair](../fixes/pause-language-menu.md) has scoped automated
-menu/restart evidence, which does not constitute personal acceptance. Live language switching is
-deferred; all clinical and decision text remains in the startup language.
+The user accepted the repaired Italian → English logic after `971579f`:
+[human confirmation and wording feedback](../source/language-notice-feedback-2026-10-18.md).
+[The overlay repair](../fixes/pause-language-menu.md) retains its historical
+evidence. The new selected-language notice has a separate deferred readability
+check. Live language switching is deferred; all clinical and decision text
+remains in the startup language.
