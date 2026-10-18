@@ -7242,7 +7242,7 @@
   {
     "path": "src/cdda/cdda_bridge.cpp",
     "mode": "100644",
-    "sha256": "8bdd37bea6af0a3d9e58551d5076248c30e5f2173257bbc2d7316979b5039eba"
+    "sha256": "e90cd7370485427017bb9f05bbedfd4af3406bc059b116473158e945b23d7ce0"
   },
   {
     "path": "src/cdda/cdda_bridge.h",
@@ -9962,7 +9962,7 @@
   {
     "path": "src/server/player_sao.cpp",
     "mode": "100644",
-    "sha256": "c190b63be8eece798f5f76d2ae44c773c29725c9b117189552ef628b854543bb"
+    "sha256": "7b551ab77536617c579df9a3ba2a6f0c6b6138208bb57d35fe11e2d964d74338"
   },
   {
     "path": "src/server/player_sao.h",

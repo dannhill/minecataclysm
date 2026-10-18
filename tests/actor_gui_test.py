@@ -205,6 +205,9 @@ def main():
                 subprocess.run(['xdotool','windowactivate','--sync',window],check=True,capture_output=True)
                 generations={i:initial[i]['node_generation'] for i in (monster_id,npc_id)}
                 check('real_zombie_and_npc_meshes_created', initial[1]['scene_actors']=='2')
+                check('zombie_skin_does_not_cover_armour_geometry',initial[monster_id]['material0'].endswith('blank.png') and initial[monster_id]['material1'].endswith('zombie.png'))
+                check('npc_skin_and_empty_overlays_use_separate_materials',initial[npc_id]['material0'].endswith('mcl_skins_character_1.png') and initial[npc_id]['material1'].endswith('blank.png') and initial[npc_id]['material2'].endswith('blank.png'))
+                check('integrated_avatar_is_voxel_mesh',int(initial[1]['node_materials'])>=3 and float(initial[1]['model_frame'])>=0 and initial[1]['material0'].endswith('mcl_skins_character_1.png'))
                 subprocess.run(['import','-window',window,str(out/'initial.png')],check=True)
                 moved=[dict(a,pos=[a['pos'][0]+1,a['pos'][1],a['pos'][2]]) for a in actors]
                 rev=update('actors',moved)

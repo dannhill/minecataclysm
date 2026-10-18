@@ -5,7 +5,7 @@ minetest.register_entity("cdda_entities:player", {
     initial_properties = {
         visual = "mesh",
         mesh = "character.b3d",
-        textures = {"character.png"},
+        textures = {"mcl_skins_character_1.png", "blank.png", "blank.png"},
         visual_size = {x = 1, y = 1},
         collisionbox = {-0.3, 0.0, -0.3, 0.3, 1.8, 0.3},
         physical = false, -- CDDA is physical authority!
@@ -20,7 +20,7 @@ minetest.register_entity("cdda_entities:zombie", {
     initial_properties = {
         visual = "mesh",
         mesh = "zombie.b3d",
-        textures = {"zombie.png"},
+        textures = {"blank.png", "zombie.png"},
         visual_size = {x = 1, y = 1},
         collisionbox = {-0.3, 0.0, -0.3, 0.3, 1.8, 0.3},
         physical = false, -- CDDA is physical authority!

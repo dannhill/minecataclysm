@@ -1271,10 +1271,26 @@ index 9f987cc..005fbfb 100644
  
  	*pkt >> added_pos;
 diff --git a/src/server/player_sao.cpp b/src/server/player_sao.cpp
-index 5d6b891..48c0d59 100644
+index 5d6b891..d50c79f 100644
 --- a/src/server/player_sao.cpp
 +++ b/src/server/player_sao.cpp
-@@ -631,6 +631,17 @@ void PlayerSAO::setMaxSpeedOverride(const v3f &vel)
+@@ -38,6 +38,15 @@ PlayerSAO::PlayerSAO(ServerEnvironment *env_, RemotePlayer *player_, session_t p
+ 	// End of default appearance
+ 	m_prop.is_visible = true;
+ 	m_prop.backface_culling = false;
++	std::string cwm_socket_path;
++	if (g_settings->getNoEx("cwm_socket_path", cwm_socket_path) && !cwm_socket_path.empty()) {
++		// Integrated player appearance is a voxel presentation proxy. Native
++		// body/equipment state remains CDDA; no Mineclonia player logic runs.
++		m_prop.visual = "mesh";
++		m_prop.mesh = "character.b3d";
++		m_prop.visual_size = v3f(1, 1, 1);
++		m_prop.textures = {"mcl_skins_character_1.png", "blank.png", "blank.png"};
++	}
+ 	m_prop.makes_footstep_sound = true;
+ 	m_prop.stepheight = PLAYER_DEFAULT_STEPHEIGHT * BS;
+ 	m_prop.show_on_minimap = true;
+@@ -631,6 +640,17 @@ void PlayerSAO::setMaxSpeedOverride(const v3f &vel)
  
  bool PlayerSAO::checkMovementCheat()
  {
@@ -1745,10 +1761,10 @@ index 0000000..e1e7236
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..97d3cb4
+index 0000000..e70a067
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,2909 @@
+@@ -0,0 +1,2929 @@
 +#include "cwm/product_language.hpp"
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
@@ -1785,6 +1801,7 @@ index 0000000..97d3cb4
 +#include "client/clientmap.h"
 +#include "client/clientenvironment.h"
 +#include "client/localplayer.h"
++#include "client/content_cao.h"
 +#include "mapblock.h"
 +#include "mapsector.h"
 +#include "nodedef.h"
@@ -2300,10 +2317,19 @@ index 0000000..97d3cb4
 +                        ent.model_y_offset = -box.MinEdge.Y * scale;
 +                        setMeshColor(mesh, irr::video::SColor(255, 255, 255, 255));
 +                        node = body;
++                        unsigned layer = 0;
 +                        node->forEachMaterial([&](auto& material) {
++                            // Mineclonia zombie: armour, skin. Character:
++                            // skin, armour, clothing overlay. Never paint the
++                            // skin onto the empty overlay geometry as well.
++                            const bool skin = zombie ? layer == 1 : layer == 0;
 +                            material.setTexture(0, client_->getTextureSource()->getTextureForMesh(
-+                                zombie ? "zombie.png" : "character.png"));
++                                skin ? (zombie ? "zombie.png" : "mcl_skins_character_1.png") : "blank.png"));
 +                            material.MaterialType = irr::video::EMT_TRANSPARENT_ALPHA_CHANNEL_REF;
++                            material.UseMipMaps = false;
++                            material.TextureLayers[0].MinFilter = irr::video::ETMINF_NEAREST_MIPMAP_NEAREST;
++                            material.TextureLayers[0].MagFilter = irr::video::ETMAGF_NEAREST;
++                            ++layer;
 +                        });
 +                    }
 +                    mesh->drop();
@@ -3386,7 +3412,7 @@ index 0000000..97d3cb4
 +    }
 +    if (g_settings->getNoEx("cwm_entity_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->entity_trace_.open(trace_path);
-+        pimpl_->entity_trace_ << "time_ns,revision,session_id,connection_id,id,type,perceived,ready,current_x,current_y,current_z,target_x,target_y,target_z,node_generation,node_visible,node_x,node_y,node_z,scene_actors,visible_actors\n";
++        pimpl_->entity_trace_ << "time_ns,revision,session_id,connection_id,id,type,perceived,ready,current_x,current_y,current_z,target_x,target_y,target_z,node_generation,node_visible,node_x,node_y,node_z,scene_actors,visible_actors,node_materials,material0,material1,material2,model_frame,model_yaw\n";
 +    }
 +    return pimpl_->connect();
 +}
@@ -3469,8 +3495,16 @@ index 0000000..97d3cb4
 +            }
 +        }
 +        for (const auto& [id, ent] : pimpl_->entities_) {
-+            const auto* node = static_cast<irr::scene::ISceneNode*>(ent.scene_node);
++            auto* node = static_cast<irr::scene::ISceneNode*>(ent.scene_node);
++            if (id == 1 && pimpl_->client_->getEnv().getLocalPlayer()->getCAO())
++                node = pimpl_->client_->getEnv().getLocalPlayer()->getCAO()->getSceneNode();
 +            const auto pos = node ? node->getPosition() : v3f();
++            const auto texture = [&](unsigned layer) -> std::string {
++                if (!node || layer >= node->getMaterialCount() || !node->getMaterial(layer).getTexture(0)) return {};
++                return node->getMaterial(layer).getTexture(0)->getName().getPath().c_str();
++            };
++            const auto* animated = node && node->getType() == irr::scene::ESNT_ANIMATED_MESH ?
++                static_cast<irr::scene::IAnimatedMeshSceneNode*>(node) : nullptr;
 +            pimpl_->entity_trace_ << now << ',' << pimpl_->metrics_.current_revision << ','
 +                << pimpl_->session_.identity.session << ',' << pimpl_->session_.identity.connection << ','
 +                << id << ',' << (ent.humanoid ? "npc" : id == 1 ? "player" : "monster") << ','
@@ -3478,7 +3512,9 @@ index 0000000..97d3cb4
 +                << ent.current_pos.X << ',' << ent.current_pos.Y << ',' << ent.current_pos.Z << ','
 +                << ent.target_pos.X << ',' << ent.target_pos.Y << ',' << ent.target_pos.Z << ','
 +                << ent.node_generation << ',' << (node && node->isVisible()) << ','
-+                << pos.X << ',' << pos.Y << ',' << pos.Z << ',' << scene_actors << ',' << visible_actors << '\n';
++                << pos.X << ',' << pos.Y << ',' << pos.Z << ',' << scene_actors << ',' << visible_actors
++                << ',' << (node ? node->getMaterialCount() : 0) << ',' << texture(0) << ',' << texture(1) << ',' << texture(2)
++                << ',' << (animated ? animated->getFrameNr() : -1.f) << ',' << (node ? node->getRotation().Y : 0.f) << '\n';
 +        }
 +        pimpl_->entity_trace_.flush();
 +    }
