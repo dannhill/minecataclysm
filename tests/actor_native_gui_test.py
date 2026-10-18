@@ -59,6 +59,8 @@ def main():
                 time.sleep(.03)
             raise RuntimeError('Native GUI actor condition timed out; inspect traces and logs')
         def xdo(*argv):
+            if os.environ.get('CWM_GUI_NO_WM')=='1' and argv[0]=='windowactivate':
+                argv=('windowfocus',*argv[1:])
             subprocess.run(['xdotool',*argv],check=True,capture_output=True,timeout=8)
         def tap(key,sneak=False):
             if sneak: xdo('keydown','Shift_L'); time.sleep(.1)

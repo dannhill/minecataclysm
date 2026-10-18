@@ -211,7 +211,8 @@ def main():
                     all(data[i]['node_visible']=='1' for i in (monster_id,npc_id)),85)
                 found=subprocess.run(['xdotool','search','--onlyvisible','--pid',str(proc.pid)],capture_output=True,text=True)
                 window=found.stdout.splitlines()[0]
-                subprocess.run(['xdotool','windowactivate','--sync',window],check=True,capture_output=True)
+                focus='windowfocus' if os.environ.get('CWM_GUI_NO_WM')=='1' else 'windowactivate'
+                subprocess.run(['xdotool',focus,'--sync',window],check=True,capture_output=True)
                 generations={i:initial[i]['node_generation'] for i in (monster_id,npc_id)}
                 check('real_zombie_and_npc_meshes_created', initial[1]['scene_actors']=='2')
                 check('zombie_skin_does_not_cover_armour_geometry',initial[monster_id]['material0'].endswith('blank.png') and initial[monster_id]['material1'].endswith('zombie.png'))
