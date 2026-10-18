@@ -5,6 +5,12 @@ native equipment repair, deferring all personal checks. Deliver these three
 existing core/presentation items, with automatic verification and a shared
 manual backlog. No new personal gate and no M6 driving decision.
 
+Source, user message during implementation:
+
+> Quando passerai questo punto, vai avanti di 3 o 4 passi subito consecutivi
+> seguendo la roadmap e il piano. Se trovi cose che io devo testare direttamente
+> fa niente, mettine le backlog dei test e continua diritto.
+
 1. **Loose pickup UX.** RMB on one loose non-container native stack collects
    it directly, including counted rocks/ammunition. Index/type/exact charges,
    costs and capacity remain native. Real containers, furniture and multi-item

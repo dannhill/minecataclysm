@@ -10,6 +10,28 @@ un panorama più ampio; nebbia, memoria distante e rilievo restano da scegliere.
 Lo [stato implementato](IMPLEMENTATION_STATUS.md) e le evidenze restano separati
 dagli obiettivi. La roadmap originale M0–M9 conserva i propri significati.
 
+## Tre passi consecutivi del core — 2026-10-18
+
+Dopo Indossa/Togli l'utente autorizza altri tre o quattro passi senza attendere
+prove personali. Scelti e implementati questi tre elementi già nel piano:
+
+1. Raccolta diretta di un singolo stack sfuso, anche conteggiato: RMB richiede
+   il pickup nativo completo senza menu 9×3. Mobili, contenitori e più oggetti
+   conservano la selezione delle quantità; nessuna raccolta automatica/in pausa.
+2. Materiali umanoidi e avatar voxel: pelle separata dalle superfici armatura
+   vuote, filtro pixel art, terza persona con rig Mineclonia e scala/piedi coerenti.
+   È un aspetto generico, non la ricostruzione completa dei vestiti/anatomie CDDA.
+3. Posa idle/cammino, orientamento sul movimento confermato e postura del
+   giocatore sulla stessa cronologia visiva scalata/ferma. Nessun recupero di
+   traiettorie nascoste, nuova AI o movimento autorevole nel renderer.
+
+[Contratto](docs/design/core-presentation-followups.md). Nove prove aggiunte al
+[backlog](docs/validation/pending-manual.md): **18 PENDING + 1 FAIL manuale**,
+incluso il ricontrollo della pausa Indossa/Togli. Nessun gate personale oggi.
+Le animazioni d'attacco/reazione aspettano eventi nativi dedicati; non dedurle
+da distanza o perdita HP. Audio, posa dell'arma e famiglie del bestiario restano
+i prossimi elementi di presentazione, prima di espandere veicoli/M6.
+
 ## Indossa/Togli — semantica nativa e pausa — 2026-10-18
 
 L'utente sceglie esplicitamente la [soluzione fedele al codice nativo](docs/source/manual-validation-followup-2026-10-18.md):
