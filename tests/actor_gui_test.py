@@ -32,6 +32,7 @@ def main():
     from CDDA.CWM import CwmMessage, Payload, HelloResponse, ResyncRequest
     from CDDA.CWM import WorldSnapshot as World, ChunkSnapshot as Chunk, CwmBlock as Block
     from CDDA.CWM import EntityState as Entity, Vec3f, Coord3i
+    from CDDA.CWM import SimulationState
     monster_id, npc_id = (1 << 62) | 2, (1 << 63) | 3
     actors = [{'id':monster_id, 'kind':2, 'type':'mon_zombie', 'pos':[8,8,0], 'seen':True},
               {'id':npc_id, 'kind':1, 'type':'npc', 'pos':[6,8,0], 'seen':True}]
@@ -39,6 +40,7 @@ def main():
     stop, errors, checks = threading.Event(), [], {}
     trace, camera = out / 'actors.csv', out / 'camera.csv'
     origin = [0,0]
+    clock = [0,1.0] # Authoritative pause reasons / global time scale.
     old_window = subprocess.run(['xdotool','getactivewindow'],capture_output=True,text=True).stdout.strip()
 
     def check(name, ok):
@@ -116,7 +118,13 @@ def main():
         World.WorldSnapshotStartEntitiesVector(b,len(states))
         for state in reversed(states): b.PrependUOffsetTRelative(state)
         roster=b.EndVector(); empty=wire.empty_vectors(b)
+        SimulationState.SimulationStateStart(b)
+        SimulationState.SimulationStateAddRealtime(b,True)
+        SimulationState.SimulationStateAddPauseReasons(b,clock[0])
+        SimulationState.SimulationStateAddTimeScale(b,clock[1])
+        state_clock=SimulationState.SimulationStateEnd(b)
         World.WorldSnapshotStart(b); wire.world_fields(b,full,empty)
+        World.WorldSnapshotAddClock(b,state_clock)
         World.WorldSnapshotAddEntities(b,roster)
         World.WorldSnapshotAddOrigin(b,Coord3i.CreateCoord3i(b,84000+origin[0],-42000+origin[1],-1))
         if full: World.WorldSnapshotAddChunks(b,chunks)
@@ -176,6 +184,7 @@ def main():
                                 receipts.put(wire.revision); break
                             if action=='actors': actors=value
                             if action=='rebase': origin[:]=value
+                            if action=='clock': clock[:]=value
                             c.sendall(frame(snapshot(wire, action=='rebase', action=='bad-kind')))
                             receipts.put(wire.revision)
                         last_revision=wire.revision
@@ -208,6 +217,19 @@ def main():
                 check('zombie_skin_does_not_cover_armour_geometry',initial[monster_id]['material0'].endswith('blank.png') and initial[monster_id]['material1'].endswith('zombie.png'))
                 check('npc_skin_and_empty_overlays_use_separate_materials',initial[npc_id]['material0'].endswith('mcl_skins_character_1.png') and initial[npc_id]['material1'].endswith('blank.png') and initial[npc_id]['material2'].endswith('blank.png'))
                 check('integrated_avatar_is_voxel_mesh',int(initial[1]['node_materials'])>=3 and float(initial[1]['model_frame'])>=0 and initial[1]['material0'].endswith('mcl_skins_character_1.png'))
+                idle_frame=float(initial[monster_id]['model_frame']);time.sleep(.65)
+                idle=until(lambda data:data[1]['ready']=='1')
+                check('idle_cycle_changes_actual_mesh_frame',abs(float(idle[monster_id]['model_frame'])-idle_frame)>.2)
+                rev=update('clock',[2,1.0]);paused=until(lambda data:int(data[1]['revision'])==rev)
+                frozen_frames={i:row['model_frame'] for i,row in paused.items()}
+                time.sleep(.7)
+                frozen=until(lambda data:int(data[1]['revision'])==rev)
+                check('pause_freezes_avatar_and_creature_frames',all(frozen[i]['model_frame']==frozen_frames[i] for i in frozen_frames))
+                rev=update('clock',[0,2.0]);fast=until(lambda data:int(data[1]['revision'])==rev)
+                time.sleep(.7);later=until(lambda data:int(data[1]['revision'])==rev)
+                seconds=(int(later[monster_id]['time_ns'])-int(fast[monster_id]['time_ns']))/1e9
+                frames=(float(later[monster_id]['model_frame'])-float(fast[monster_id]['model_frame']))%10
+                check('idle_cycle_obeys_authoritative_time_scale',seconds>.4 and abs(frames/seconds-4)<.8)
                 subprocess.run(['import','-window',window,str(out/'initial.png')],check=True)
                 moved=[dict(a,pos=[a['pos'][0]+1,a['pos'][1],a['pos'][2]]) for a in actors]
                 rev=update('actors',moved)
@@ -215,6 +237,8 @@ def main():
                 check('motion_preserves_owned_nodes', all(settled[i]['node_generation']==generations[i] for i in generations))
                 movement=[r for r in rows(trace) if int(r['id'])==monster_id and int(r['revision'])==rev]
                 check('perceived_motion_interpolates_confirmed_positions', any(coords(r,'current')!=coords(r,'target') for r in movement))
+                check('confirmed_motion_uses_walk_cycle',any(0<=float(r['model_frame'])<40 for r in movement))
+                check('walking_faces_confirmed_motion',abs(float(settled[monster_id]['model_yaw'])-90)<.1)
                 target=coords(settled[monster_id],'target')
                 rev=update('rebase',[12,0])
                 rebased=until(lambda data: int(data[1]['revision'])==rev)
