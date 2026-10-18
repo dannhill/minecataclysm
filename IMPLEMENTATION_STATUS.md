@@ -1,6 +1,29 @@
 # Implementation status
 
-Current scoped delivery: **INT-01 interaction feedback**, CWM **2.23**, installed
+Current scoped delivery: **native atomic equipment time**, CWM **2.23 unchanged**,
+installed in ordinary `start.sh`, with the previous runtime pair retained.
+Wear/takeoff keep native atomic garment changes and move costs. I pauses even
+with the equipment result in flight; the read-only query follows settlement.
+Closing inspection resumes the same native debt and preserves feedback, with
+remaining game seconds instead of a fractional clothing progress bar. Native
+actor interruption remains available for treatment/crafting/transfers/etc.
+No clothing cancellation or new gameplay/save rule is introduced.
+[Design](docs/design/native-equipment-time.md), [evidence](docs/fixes/native-equipment-time.md).
+
+Scoped verification: 309 client tests / 47 modules, 648 Catch assertions / 4 cases,
+115 renderer/canonical checks including installed `start.sh`, delayed reply,
+frozen/resumed debt, treatment interruption, automatic return and reconnect.
+Incremental reconstructed client build; native runtime unchanged. Full SAVE-001
+OPEN; historical M5.5 FAILED; mapping batch60 unchanged.
+
+Recorded 13 new personal PASS; backlog **9 PENDING + 1 manual FAIL** (I pause
+clothing recheck). Cancellation of a single garment is superseded by the explicit
+native-semantics decision. No acceptance inferred from automation.
+[Backlog](docs/validation/pending-manual.md). The user authorizes the next three
+roadmap slices consecutively: loose pickup UX, humanoid materials/rig, then
+movement orientation/animations. Manual checks remain deferred.
+
+Previous scoped delivery: **INT-01 interaction feedback**, CWM **2.23**, installed
 in ordinary `start.sh` with paired rollback runtimes. RMB toggles projected
 openings using their last authoritative state; Shift is posture only. Shift-click
 moves to the opposite external pane or the selected owned container. Dropping

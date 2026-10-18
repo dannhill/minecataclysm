@@ -1,0 +1,146 @@
+{
+  "scope": "Native atomic clothing time and immediate paused inspection",
+  "protocol": "2.23 unchanged",
+  "gameplay_changes": false,
+  "build_source_commit": "13fb21c",
+  "verification_workspace_commit": "1ed9ac741ca9f5e6ba97b82455dc387b452dd3dd",
+  "gui_harness_commit": "9d94f94",
+  "fork_sources": {
+    "cdda": {
+      "url": "https://github.com/CleverRaven/Cataclysm-DDA.git",
+      "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+      "shallow": true,
+      "patch": "baseline/patches/cdda.patch",
+      "patch_sha256": "7a384a44ab91ff67c0b731b08644d3111e8fbe119f83208857161aabdc15e27b",
+      "tree_inventory": "baseline/trees/cdda.json",
+      "tree_sha256": "de55f55a3c466e31a8925e18dfeb3927bb0f06a41f09a0ec538c24de1121e230",
+      "file_count": 8587,
+      "original_status": " M src/CMakeLists.txt\n M src/activity_actor.cpp\n M src/avatar.cpp\n M src/avatar_action.cpp\n M src/avatar_action.h\n M src/character.cpp\n M src/character_body.cpp\n M src/character_inventory.cpp\n M src/craft_command.cpp\n M src/craft_command.h\n M src/crafting.cpp\n M src/crafting.h\n M src/do_turn.cpp\n M src/do_turn.h\n M src/game.cpp\n M src/game.h\n M src/handle_action.cpp\n M src/iexamine.cpp\n M src/inventory.cpp\n M src/inventory.h\n M src/item.cpp\n M src/iuse_actor.cpp\n M src/melee.cpp\n M src/output.cpp\n M src/pickup.cpp\n M src/ranged.cpp\n M src/ranged.h\n M src/recipe.cpp\n M src/recipe.h\n M src/translations.cpp\n M src/ui.cpp\n M src/vehicle_use.cpp\n M src/vpart_position.h\n M tests/CMakeLists.txt\n M tests/test_main.cpp\n?? src/cwm/cwm_crafting.h\n?? src/cwm/cwm_hotbar.h\n?? src/cwm/cwm_inventory.h\n?? src/cwm/cwm_main.cpp\n?? src/cwm/cwm_map_exporter.cpp\n?? src/cwm/cwm_map_exporter.h\n?? src/cwm/cwm_ranged.h\n?? src/cwm/cwm_server.cpp\n?? src/cwm/cwm_server.h\n?? src/cwm/cwm_status_gauges.h\n?? src/cwm_motion.cpp\n?? src/cwm_motion.h\n?? src/safe_mode_actions.h\n?? tests/cwm_pickup_test.cpp\n?? tests/cwm_projection_test.cpp\n?? tests/cwm_runtime_test.cpp\n"
+    },
+    "luanti": {
+      "url": "https://github.com/luanti-org/luanti.git",
+      "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
+      "shallow": true,
+      "patch": "baseline/patches/luanti.patch",
+      "patch_sha256": "c0c70eb9ba7669ffa189a5e01dc0a9f558360c50149225b20db3f0ed222df743",
+      "tree_inventory": "baseline/trees/luanti.json",
+      "tree_sha256": "058fff0da57f850f89c80bc40b6064becccf9aac33547d01dad2d01628078b4d",
+      "file_count": 2263,
+      "original_status": " M builtin/mainmenu/settings/dlg_settings.lua\n M builtin/settingtypes.txt\n M src/CMakeLists.txt\n M src/client/CMakeLists.txt\n M src/client/client.cpp\n M src/client/clientenvironment.cpp\n M src/client/game.cpp\n M src/client/hud.cpp\n M src/client/inputhandler.cpp\n M src/client/keys.h\n M src/client/mesh_generator_thread.cpp\n M src/client/mesh_generator_thread.h\n M src/defaultsettings.cpp\n M src/gui/guiFormSpecMenu.cpp\n M src/gui/guiFormSpecMenu.h\n M src/gui/guiScene.cpp\n M src/network/clientpackethandler.cpp\n M src/server/player_sao.cpp\n M src/unittest/test_mapblock.cpp\n?? src/cdda/aim_input.h\n?? src/cdda/avatar_status.h\n?? src/cdda/cdda_bridge.cpp\n?? src/cdda/cdda_bridge.h\n?? src/cdda/crafting_inventory.h\n?? src/cdda/decision_dialog.h\n?? src/cdda/decision_input.h\n?? src/cdda/decision_text.h\n?? src/cdda/equipment_inventory.h\n?? src/cdda/ground_item_formspec.h\n?? src/cdda/ground_item_projection.h\n?? src/cdda/ground_item_visual.h\n?? src/cdda/posture_input.h\n?? src/cdda/quickbar.h\n"
+    },
+    "mineclonia": {
+      "url": "https://github.com/mark-wiemer/mineclonia.git",
+      "commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+      "shallow": true,
+      "patch": "baseline/patches/mineclonia.patch",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree_inventory": "baseline/trees/mineclonia.json",
+      "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36",
+      "file_count": 9359,
+      "original_status": ""
+    }
+  },
+  "installed_runtime": {
+    "cdda/build/src/cdda-server": {
+      "sha256": "a69a6361741194697adcdfce717161e9acba1025a0c92c44a61fb0d47b7378b2",
+      "previous_sha256": "a69a6361741194697adcdfce717161e9acba1025a0c92c44a61fb0d47b7378b2",
+      "rollback": "artifacts/native-clothing-time-20261018/cdda-previous-runtime",
+      "built_from": "cdda/build/src/cdda-server"
+    },
+    "luanti/bin/luanti": {
+      "sha256": "b69fcfbbf254703c62f6f45956aac85535994d6c3b48c200d717db82bb4c701d",
+      "previous_sha256": "9bb258e8024b95ef99667628c49da695a81fe8e3e59a98027f311d0f768e0ec1",
+      "rollback": "artifacts/native-clothing-time-20261018/luanti-previous-runtime",
+      "built_from": "artifacts/language-20261011/workspace/luanti/bin/luanti"
+    }
+  },
+  "environment": {
+    "platform": "Linux-7.0.11-76070011-generic-x86_64-with-glibc2.35",
+    "build": "Incremental reconstructed Release/LTO client; native runtime reused unchanged",
+    "renderer": "Private Xvfb1280x800, Mesa software GL, xdotool, byte-transparent relay, isolated saves"
+  },
+  "checks": {
+    "client": {
+      "tests": 309,
+      "modules": 47,
+      "catch_assertions": 648,
+      "catch_cases": 4,
+      "log": "artifacts/native-clothing-time-20261018/unit-delivery.log"
+    },
+    "actual_renderer": {
+      "reconstructed-final": {
+        "checks": 28,
+        "summary": "artifacts/native-clothing-time-20261018/reconstructed-final/summary.json",
+        "summary_sha256": "04522fef306d3072b0c98f69462a8e42e41c3fac97117654faec4336a2478878",
+        "native_sha256": "cf6b79f754fc4b7d0c2186f893d1733ac16201580344f28ea8f8a7b0c03b81db",
+        "wire_sha256": {
+          "client-wire.bin": "fbfbd2e3b549e28f33049491271e77d194ac9a6fe7410db567d5bdc1f593b5d1",
+          "server-wire.bin": "5ad0231b3c7d716b8c6eacb7b022fac2914a201d7a7e37199227712d2aafc731"
+        }
+      },
+      "medicine": {
+        "checks": 33,
+        "summary": "artifacts/native-clothing-time-20261018/medicine/summary.json",
+        "summary_sha256": "9805a8cca8dc1037fdb1249a81d3ee9a3549ac6908914617fb39dafb4f8086d2",
+        "native_sha256": "b0af80aadff674f353d39d3fb15d27750ca2f5bd8f40a791d53c8ec0cedb6efd",
+        "wire_sha256": {
+          "client-wire.bin": "505eab34a332b9a810196dca46dab7eaa1a8449f449b4421461db4776a680f95",
+          "server-wire.bin": "153e918db7696ea71314fb5aba7fd67f8262c00c8eaf90c2ce6bd851a834d2f1"
+        }
+      },
+      "sequential-final": {
+        "checks": 26,
+        "summary": "artifacts/native-clothing-time-20261018/sequential-final/summary.json",
+        "summary_sha256": "9c122be850358319c6e84e36a22bb0520c4474a3e517c48bfed467b36a55e1c8",
+        "native_sha256": "5f93cc602ae6051bc93b13aa532488d64de5f0503576140834b10344753a4c76",
+        "wire_sha256": {
+          "client-wire.bin": "596a52e56ad94fb65bb10601ba0a2a212def9a233904c55190421d084fb27bda",
+          "server-wire.bin": "c93ba7ab46bb9e9fbee253402124d920aa789c8f1fcc6ce1ee13ec297188e4a1"
+        }
+      },
+      "installed": {
+        "checks": 28,
+        "summary": "artifacts/native-clothing-time-20261018/installed/summary.json",
+        "summary_sha256": "f98bc3bba66166f0eff71035f44e8ef4fab56b4e9af2a71d39f23f7de7288113",
+        "native_sha256": "5ff16002bf3f1fbba10c2373eada691a02e48581954ff9d5ff11ae45ce4323f7",
+        "wire_sha256": {
+          "client-wire.bin": "db6f72ea769c23ca598e90290ef4e64de05cbce58ecd21d03e348144111b7984",
+          "server-wire.bin": "3ec079a71eb734cbab4f370b828275ac378bbd75c4b1f3575d80dbfa8a373f06"
+        }
+      }
+    },
+    "total_renderer_checks": 115
+  },
+  "native_reader": {
+    "path": "artifacts/inventory-feedback-20261009/native-save-reader",
+    "sha256": "d65889a6cf0c36db31d493bba915a89bc7424d60f0ddb9800992fd0d4f39958a"
+  },
+  "manual": {
+    "new_pass": 13,
+    "pending": 9,
+    "fail": 1
+  },
+  "limits": [
+    "No clean build or native rebuild in this scope.",
+    "Full SAVE-001 OPEN; historical M5.5 FAILED.",
+    "Personal acceptance remains deferred.",
+    "Mapping through batch60 unchanged."
+  ],
+  "retained_failures": {
+    "baseline": "Harness import shadowed struct before first use; handshake did not occur.",
+    "baseline-v2": "Previous installed runtime reproduces ignored I with in-flight equipment result.",
+    "reconstructed": "Clothing checks passed; final wield fixture needed explicit native stow answer.",
+    "sequential": "Harness misclassified native decision MENU_OPEN as inventory return; assert now uses actual InventoryQueryRequest, preserving paid revision requirement."
+  },
+  "commands": [
+    "python3 tools/takeover_baseline.py capture; commit before reconstruction refresh",
+    "python3 tools/refresh_verification_workspace.py --workspace artifacts/language-20261011/workspace --receipt artifacts/native-clothing-time-20261018/client-refresh-delivery.json",
+    "cmake --build artifacts/language-20261011/workspace/luanti/build --target luanti -j3",
+    "artifacts/language-20261011/workspace/luanti/bin/luanti --run-unittests --config /home/dannhill/Projects/cdda-mineclonia/artifacts/native-clothing-time-20261018/unit.conf --logfile /home/dannhill/Projects/cdda-mineclonia/artifacts/native-clothing-time-20261018/unit-delivery-engine.log",
+    "python3 tools/refresh_verification_workspace.py --workspace artifacts/language-20261011/workspace --receipt artifacts/native-clothing-time-20261018/client-refresh-verification.json",
+    "python3 artifacts/native-clothing-time-20261018/run-gui.py equipment_gui_test.py artifacts/native-equipment-20261008/fixture/user reconstructed-final --native-equipment-time",
+    "python3 artifacts/native-clothing-time-20261018/run-gui.py medicine_gui_test.py artifacts/native-medicine-20261008/fixture/user medicine",
+    "python3 artifacts/native-clothing-time-20261018/run-gui.py equipment_gui_test.py artifacts/native-equipment-20261008/fixture/user sequential-final --sequential",
+    "CWM_TEST_INSTALLED=1 python3 artifacts/native-clothing-time-20261018/run-gui.py equipment_gui_test.py artifacts/native-equipment-20261008/fixture/user installed --native-equipment-time"
+  ]
+}
