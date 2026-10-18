@@ -1,0 +1,248 @@
+{
+  "scope": "Three authorized core follow-ups: direct loose pickup; humanoid materials/avatar; motion animation",
+  "protocol": "2.23 unchanged",
+  "build_source_commit": "63e08282cce9b57e7054ee922c584e0aa1b010ef",
+  "verification_workspace_commit": "061044ddd31184913d0af0134726642aa74d9c51",
+  "gui_harness_commit": "549b709",
+  "fork_sources": {
+    "cdda": {
+      "url": "https://github.com/CleverRaven/Cataclysm-DDA.git",
+      "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+      "shallow": true,
+      "patch": "baseline/patches/cdda.patch",
+      "patch_sha256": "7a384a44ab91ff67c0b731b08644d3111e8fbe119f83208857161aabdc15e27b",
+      "tree_inventory": "baseline/trees/cdda.json",
+      "tree_sha256": "de55f55a3c466e31a8925e18dfeb3927bb0f06a41f09a0ec538c24de1121e230",
+      "file_count": 8587,
+      "original_status": " M src/CMakeLists.txt\n M src/activity_actor.cpp\n M src/avatar.cpp\n M src/avatar_action.cpp\n M src/avatar_action.h\n M src/character.cpp\n M src/character_body.cpp\n M src/character_inventory.cpp\n M src/craft_command.cpp\n M src/craft_command.h\n M src/crafting.cpp\n M src/crafting.h\n M src/do_turn.cpp\n M src/do_turn.h\n M src/game.cpp\n M src/game.h\n M src/handle_action.cpp\n M src/iexamine.cpp\n M src/inventory.cpp\n M src/inventory.h\n M src/item.cpp\n M src/iuse_actor.cpp\n M src/melee.cpp\n M src/output.cpp\n M src/pickup.cpp\n M src/ranged.cpp\n M src/ranged.h\n M src/recipe.cpp\n M src/recipe.h\n M src/translations.cpp\n M src/ui.cpp\n M src/vehicle_use.cpp\n M src/vpart_position.h\n M tests/CMakeLists.txt\n M tests/test_main.cpp\n?? src/cwm/cwm_crafting.h\n?? src/cwm/cwm_hotbar.h\n?? src/cwm/cwm_inventory.h\n?? src/cwm/cwm_main.cpp\n?? src/cwm/cwm_map_exporter.cpp\n?? src/cwm/cwm_map_exporter.h\n?? src/cwm/cwm_ranged.h\n?? src/cwm/cwm_server.cpp\n?? src/cwm/cwm_server.h\n?? src/cwm/cwm_status_gauges.h\n?? src/cwm_motion.cpp\n?? src/cwm_motion.h\n?? src/safe_mode_actions.h\n?? tests/cwm_pickup_test.cpp\n?? tests/cwm_projection_test.cpp\n?? tests/cwm_runtime_test.cpp\n"
+    },
+    "luanti": {
+      "url": "https://github.com/luanti-org/luanti.git",
+      "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
+      "shallow": true,
+      "patch": "baseline/patches/luanti.patch",
+      "patch_sha256": "ad6ebabf297c3ec62a4ef1a7a4e233c9e943a3ecfee5ac36dffbe74a758ee53a",
+      "tree_inventory": "baseline/trees/luanti.json",
+      "tree_sha256": "78aea3d83568a7af49826297d46eab9687860c7b389a1dcd3efd95d3f0514e61",
+      "file_count": 2264,
+      "original_status": " M builtin/mainmenu/settings/dlg_settings.lua\n M builtin/settingtypes.txt\n M src/CMakeLists.txt\n M src/client/CMakeLists.txt\n M src/client/client.cpp\n M src/client/clientenvironment.cpp\n M src/client/content_cao.cpp\n M src/client/game.cpp\n M src/client/hud.cpp\n M src/client/inputhandler.cpp\n M src/client/keys.h\n M src/client/mesh_generator_thread.cpp\n M src/client/mesh_generator_thread.h\n M src/defaultsettings.cpp\n M src/gui/guiFormSpecMenu.cpp\n M src/gui/guiFormSpecMenu.h\n M src/gui/guiScene.cpp\n M src/network/clientpackethandler.cpp\n M src/server/player_sao.cpp\n M src/unittest/test_mapblock.cpp\n?? src/cdda/aim_input.h\n?? src/cdda/avatar_status.h\n?? src/cdda/cdda_bridge.cpp\n?? src/cdda/cdda_bridge.h\n?? src/cdda/crafting_inventory.h\n?? src/cdda/decision_dialog.h\n?? src/cdda/decision_input.h\n?? src/cdda/decision_text.h\n?? src/cdda/equipment_inventory.h\n?? src/cdda/ground_item_formspec.h\n?? src/cdda/ground_item_projection.h\n?? src/cdda/ground_item_visual.h\n?? src/cdda/humanoid_animation.h\n?? src/cdda/posture_input.h\n?? src/cdda/quickbar.h\n"
+    },
+    "mineclonia": {
+      "url": "https://github.com/mark-wiemer/mineclonia.git",
+      "commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+      "shallow": true,
+      "patch": "baseline/patches/mineclonia.patch",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree_inventory": "baseline/trees/mineclonia.json",
+      "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36",
+      "file_count": 9359,
+      "original_status": ""
+    }
+  },
+  "environment": {
+    "platform": "Linux-7.0.11-76070011-generic-x86_64-with-glibc2.35",
+    "mode": "Incremental reconstructed Release/LTO build, not cold clean build",
+    "renderer": "Private Xvfb/Mesa, xdotool, isolated worlds/saves and private ports"
+  },
+  "installed_runtime": {
+    "cdda/build/src/cdda-server": {
+      "sha256": "a69a6361741194697adcdfce717161e9acba1025a0c92c44a61fb0d47b7378b2",
+      "previous_sha256": "a69a6361741194697adcdfce717161e9acba1025a0c92c44a61fb0d47b7378b2",
+      "rollback": "artifacts/core-presentation-20261018/cdda-previous-runtime",
+      "built_from": "cdda/build/src/cdda-server"
+    },
+    "luanti/bin/luanti": {
+      "sha256": "8d3b07e8673e4f556780cb25b7da74e49ce1618402fc534207c01c50fe05fc41",
+      "previous_sha256": "b69fcfbbf254703c62f6f45956aac85535994d6c3b48c200d717db82bb4c701d",
+      "rollback": "artifacts/core-presentation-20261018/luanti-previous-runtime",
+      "built_from": "artifacts/language-20261011/workspace/luanti/bin/luanti"
+    }
+  },
+  "checks": {
+    "client": {
+      "tests": 309,
+      "modules": 47,
+      "catch_assertions": 648,
+      "catch_cases": 4,
+      "log": "artifacts/core-presentation-20261018/unit.log"
+    },
+    "renderer": {
+      "actors-final": {
+        "scope": "controlled renderer",
+        "checks": 26,
+        "hashes": {
+          "artifacts/core-presentation-20261018/actors-final/checks.json": "fd18d3d29086971735b8ad208c4a57347ccc1cbd0c2c656184236fec14f57d6b",
+          "artifacts/core-presentation-20261018/actors-final/avatar-back.png": "5f408d83251a5ecf0db1c469af094694eb6e6ea04723ed18ff986c2e7b593661",
+          "artifacts/core-presentation-20261018/actors-final/avatar-front.png": "4bc2c7a6c7bef08a26d21aed63ebb359b2323f1030dc05f6e98f5ca15d208f12",
+          "artifacts/core-presentation-20261018/actors-final/initial.png": "6d97f934260df406314653c9147dff3b2b92a9054b924abdc4ee445c5c7461f9",
+          "artifacts/core-presentation-20261018/actors-final/removed.png": "1922cdeecfad4e059f6e3499c4468955b77a3b28c81a346d5865a566e3eca5ee",
+          "artifacts/core-presentation-20261018/actors-final/returned.png": "1922cdeecfad4e059f6e3499c4468955b77a3b28c81a346d5865a566e3eca5ee",
+          "artifacts/core-presentation-20261018/actors-final/actors.csv": "feebee891ddae728aeefc41e2ee424c41c9624f32dd3265f2300a4e9a8affd80"
+        }
+      },
+      "native-actors-private": {
+        "scope": "native tile fixture",
+        "checks": 15,
+        "hashes": {
+          "artifacts/core-presentation-20261018/native-actors-private/checks.json": "3e227b15b9f77fd2040628282211fe438f3049239487eeacf936c3a9357e8f5e",
+          "artifacts/core-presentation-20261018/native-actors-private/canonical.json": "19a0c63237734d3f843ce571ba84f4bdfaace2b61e9e4367abac8388e8a5c871"
+        }
+      },
+      "storage-final": {
+        "scope": "native continuous storage",
+        "checks": 50,
+        "hashes": {
+          "artifacts/core-presentation-20261018/storage-final/checks.json": "03f00c7655b3d09c248bb81eb3b3a190b0623c3a08aa96bd321a408585d1cf68",
+          "artifacts/core-presentation-20261018/storage-final/capacity-error.png": "18288fed34ec967ae07881166bd3b07f3625b8d97dbdccceb669af2dfe4e9e18",
+          "artifacts/core-presentation-20261018/storage-final/outside-drag-ground-drop.png": "07a35384d93769284a31fc8a9a1d9e687ec32674395a947cbefb7116570a13b7",
+          "artifacts/core-presentation-20261018/storage-final/sealed-storage.png": "a4cdef06fb3fc7fc934c3e6ce7233e5929125f258586aaaa1405c5c9ba9429a3",
+          "artifacts/core-presentation-20261018/storage-final/selected-seven.png": "9a13025ec1f5415ea2f2721bc756916608a3124b1bc2e7b38371a66522d18ef0",
+          "artifacts/core-presentation-20261018/storage-final/storage.png": "62f8cecce6983107035227877c365975970c936ee46d71c15e93bd07b72b8c67",
+          "artifacts/core-presentation-20261018/storage-final/native.json": "429ef2b4276ff29b379c7a46cd36990260aa2ccc4df631325e40daa23d933e36",
+          "artifacts/core-presentation-20261018/storage-final/server-wire.bin": "3b46659d6eaf5a48b8fc7610b66d23740f5b12830f87075a41907d5f178faf29",
+          "artifacts/core-presentation-20261018/storage-final/client-wire.bin": "3d2c94ab4d3950b02f34b192e9067a5617c70ede27ee1216316a865758d104b1"
+        }
+      },
+      "installed-actors": {
+        "scope": "installed controlled renderer",
+        "checks": 26,
+        "hashes": {
+          "artifacts/core-presentation-20261018/installed-actors/checks.json": "fd18d3d29086971735b8ad208c4a57347ccc1cbd0c2c656184236fec14f57d6b",
+          "artifacts/core-presentation-20261018/installed-actors/avatar-back.png": "d6ba48840872cd3ad85d15d8c20ffbd439bb545757616d61f055e1a43e5e3f8a",
+          "artifacts/core-presentation-20261018/installed-actors/avatar-front.png": "207c858132fdbc7f17a60d288a3eaefc78c2dc548a0ad666785417e70414982a",
+          "artifacts/core-presentation-20261018/installed-actors/initial.png": "99c68f0c7586ca5be2eddcd66776bf163b892aeea712a1c5005d2862cf07941c",
+          "artifacts/core-presentation-20261018/installed-actors/removed.png": "0689067b211a861c4e4ee3a8530b16d5f10e25890d82ea3e7c8d6ebcc35e3d0f",
+          "artifacts/core-presentation-20261018/installed-actors/returned.png": "ec3bad55b4d5f8be4c343661f7a9ad11c5a7e22f43bd0627ea370397f4b78bea",
+          "artifacts/core-presentation-20261018/installed-actors/actors.csv": "dd2ce681bfde268229172bcc4aa89efb656381f792a3ad84c37d2bf6e18b4ab0"
+        }
+      },
+      "installed-storage": {
+        "scope": "installed native continuous storage",
+        "checks": 50,
+        "hashes": {
+          "artifacts/core-presentation-20261018/installed-storage/checks.json": "03f00c7655b3d09c248bb81eb3b3a190b0623c3a08aa96bd321a408585d1cf68",
+          "artifacts/core-presentation-20261018/installed-storage/capacity-error.png": "e07717f04f26986cd13e3a07397663b0ecbe02adda9601e55b5a721c2cc154dd",
+          "artifacts/core-presentation-20261018/installed-storage/outside-drag-ground-drop.png": "5a8bd06d10bca6806e66114307fb008e03e35cbfe4e4b58734daa1a94e1c3d1f",
+          "artifacts/core-presentation-20261018/installed-storage/sealed-storage.png": "4182222d3678dce9098263ab3543f596ce5612e2b02870e4accaa31cb61dfae1",
+          "artifacts/core-presentation-20261018/installed-storage/selected-seven.png": "7adad9d2da285978a166e33e0d7cd7cb09eb978ad723340b55d290b819faa6a5",
+          "artifacts/core-presentation-20261018/installed-storage/storage.png": "ec4c7ed6e66071b57801fee6ebab577abad2f19a7c8ff81db54c6f7e558cf2ba",
+          "artifacts/core-presentation-20261018/installed-storage/native.json": "288de5628571ca0302f8daa5b45c5b986efb3a5f0b0ce3f4fa68d5384ae93093",
+          "artifacts/core-presentation-20261018/installed-storage/server-wire.bin": "c307ad863d033619f5eefa72ca8564e95350cc731d21ab64cc4dd961beefdcf2",
+          "artifacts/core-presentation-20261018/installed-storage/client-wire.bin": "1bc5811bc7ecb29e39df8fb2759cbe88059ef7c245bfd453ecb155671afc3c06"
+        }
+      },
+      "installed-clothing": {
+        "scope": "installed native equipment regression",
+        "checks": 28,
+        "hashes": {
+          "artifacts/core-presentation-20261018/installed-clothing/checks.json": "d03048b17bf909f13f49e8691c2cb121c103f794ec66de00e0355767268b1a7c",
+          "artifacts/core-presentation-20261018/installed-clothing/atomic-inspect-2.png": "19c43327be10b4f2dfabb7b4add30cc42f77316a1fc9fd555ce8e23aee3bd604",
+          "artifacts/core-presentation-20261018/installed-clothing/atomic-inspect-3.png": "4cd36f215c34b835aee352924b7f79619515e96f828205f7de31355946543ef1",
+          "artifacts/core-presentation-20261018/installed-clothing/atomic-time-2.png": "341ce51707c5df8a4edbd3704141933574437e27aa3affdd34deb5f3e3b8d40e",
+          "artifacts/core-presentation-20261018/installed-clothing/atomic-time-3.png": "2251c89c30eee29658667becec9f214a7dab48078dd669128ced9452e45755c6",
+          "artifacts/core-presentation-20261018/installed-clothing/inventory.png": "83e46f1b701a3365b1962fd9aec96db67ae75f4a7bd88750d186d444bc596765",
+          "artifacts/core-presentation-20261018/installed-clothing/native.json": "ab135294a65b49e3c36a230ec41013375c68eccbb41c2c82f5f39672a748c433",
+          "artifacts/core-presentation-20261018/installed-clothing/server-wire.bin": "c95389ce2b78f708e7c0a74cca6e9a801b75c753058d934bc5da8f2aa49c9a0e",
+          "artifacts/core-presentation-20261018/installed-clothing/client-wire.bin": "bcb8cf5af7330fa8ffa49605cb5609c94d9480dbf33fa90373cf690d586f5fbe"
+        }
+      }
+    },
+    "renderer_total": 195
+  },
+  "assets_reused": [
+    {
+      "target": "game/mods/cdda_entities/models/character.b3d",
+      "source": "mineclonia/mods/ITEMS/mcl_armor/models/mcl_armor_character.b3d",
+      "sha256": "9f7414c8604c323d266ff54c966ff59d3ba0981743b7b59e15ea05c3168217d1"
+    },
+    {
+      "target": "game/mods/cdda_entities/models/zombie.b3d",
+      "source": "mineclonia/mods/ENTITIES/mobs_mc/models/mobs_mc_zombie.b3d",
+      "sha256": "d528d2c47cc18db391e6c184c8716e61c0b8e44fa4e0901f00e9d8ce3b31d1e2"
+    },
+    {
+      "target": "game/mods/cdda_entities/textures/mcl_skins_character_1.png",
+      "source": "mineclonia/mods/PLAYER/mcl_skins/textures/mcl_skins_character_1.png",
+      "sha256": "bb708cae24508a86095e8b0a52922a333c2e08e4be9094021eb9c98ceda6f060"
+    },
+    {
+      "target": "game/mods/cdda_entities/textures/zombie.png",
+      "source": "mineclonia/mods/ENTITIES/mobs_mc/textures/mobs_mc_zombie.png",
+      "sha256": "97e3861e1ede094600fa452fa44d8ae09dede6d07749db27b304f709a0213472"
+    }
+  ],
+  "manual": {
+    "pending": 18,
+    "fail": 1,
+    "new_checks": 9,
+    "personal_acceptance_inferred": false
+  },
+  "native": {
+    "runtime_changed": false,
+    "reader": "artifacts/inventory-feedback-20261009/native-save-reader",
+    "reader_sha256": "d65889a6cf0c36db31d493bba915a89bc7424d60f0ddb9800992fd0d4f39958a"
+  },
+  "limits": [
+    "No CDDA gameplay, protocol or canonical-save schema changes.",
+    "The controlled peer verifies rendering and clock interpretation, not native AI.",
+    "Native exact-step perception/stairs scene explicitly uses tile mode; storage and equipment use ordinary continuous real time.",
+    "Generic humanoid proxies; full clothing/body variants, attack reactions, weapon pose and audio remain future work.",
+    "Full SAVE-001 OPEN; historical M5.5 FAILED; mapping batch60 unchanged."
+  ],
+  "retained_failures": {
+    "actors": "Test assumed a third material from the Lua texture list. Actual pinned B3D exposes two; exact two-material roles now asserted.",
+    "native-actors": "Legacy route expected exact tile steps while launcher default is continuous. Fixture now explicitly declares tile mode; default continuous has separate end-to-end storage/equipment coverage.",
+    "native-actors-final": "Old harness omitted private port on the launcher CLI, so its config port was overwritten and bind failed. CLI now passes the private port.",
+    "storage": "Test selected a 2-round native stack and requested 7 despite another separate 20-round stack. Existing native quantity rejection was correct; fixture now selects a real stack with sufficient charges."
+  },
+  "commands": [
+    "python3 tools/takeover_baseline.py capture; commit before refreshing the owned reconstruction",
+    "python3 tools/refresh_verification_workspace.py --workspace artifacts/language-20261011/workspace --receipt artifacts/core-presentation-20261018/refresh.json",
+    "cmake --build artifacts/language-20261011/workspace/luanti/build --target luanti -j3",
+    "python3 tools/refresh_verification_workspace.py --workspace artifacts/language-20261011/workspace --receipt artifacts/core-presentation-20261018/refresh-tests.json",
+    "artifacts/language-20261011/workspace/luanti/bin/luanti --run-unittests --config /home/dannhill/Projects/cdda-mineclonia/artifacts/native-clothing-time-20261018/unit.conf --logfile /home/dannhill/Projects/cdda-mineclonia/artifacts/core-presentation-20261018/unit-engine.log",
+    "python3 artifacts/core-presentation-20261018/run-gui.py actor_gui_test.py - actors-final",
+    "python3 artifacts/core-presentation-20261018/run-gui.py actor_native_gui_test.py artifacts/fnd04-actors/fixture-user native-actors-private --action-driven",
+    "python3 artifacts/core-presentation-20261018/run-gui.py external_storage_gui_test.py artifacts/external-20261012/fixture/user storage-final --feedback",
+    "CWM_TEST_INSTALLED=1 python3 artifacts/core-presentation-20261018/run-gui.py actor_gui_test.py - installed-actors",
+    "CWM_TEST_INSTALLED=1 python3 artifacts/core-presentation-20261018/run-gui.py external_storage_gui_test.py artifacts/external-20261012/fixture/user installed-storage --feedback",
+    "CWM_TEST_INSTALLED=1 python3 artifacts/core-presentation-20261018/run-gui.py equipment_gui_test.py artifacts/native-equipment-20261008/fixture/user installed-clothing --native-equipment-time",
+    "python3 tools/takeover_baseline.py check"
+  ],
+  "artifact_hashes": {
+    "artifacts/core-presentation-20261018/actors-final-xvfb.log": "3291747ac9e2f074aaf5d80d917ba644f6b777e27c04b7a9557db652c1416389",
+    "artifacts/core-presentation-20261018/actors-final.log": "e12218c8ab24abdd97d3023b57f7818aaabbebc8cc34ada3ffd8881d0add2f45",
+    "artifacts/core-presentation-20261018/actors-xvfb.log": "19346bc9201dc177c7ada0a9ccfebc2bfbfc1faecd3fbddd79ef126bf525b556",
+    "artifacts/core-presentation-20261018/actors.log": "4c2f6e43d47cb7a38ade8b98d4001824bc0595802a0cd9c62ce53c3b96d68272",
+    "artifacts/core-presentation-20261018/baseline-check.log": "51a566562da4952e5b26106e330f8af06c13feb9b3e9e24f8bd6ccbc352435ac",
+    "artifacts/core-presentation-20261018/build.log": "3909daf62bcd6a657d0dc9a3738487eca428153d9d8900b3c303b08091b2bf90",
+    "artifacts/core-presentation-20261018/capture-animation.log": "d48550997bf476963afd791f3dcadefc98bc5fd63ba70c51eeba4da2cd121491",
+    "artifacts/core-presentation-20261018/capture-delivery.log": "886ec53b8fe7190be5f0d4fddec6306a30a16d114aa12099461aeb7aaa22351e",
+    "artifacts/core-presentation-20261018/capture-materials.log": "e83aa5cd7a8a81a65dee7bc795619c2ec13c4867cdfd322685b87fb0e9e9e063",
+    "artifacts/core-presentation-20261018/capture-pickup.log": "6cb57be765cbebc113531a438bd7758f4f9c3d22b44eeb53fe2a0813a7f662c5",
+    "artifacts/core-presentation-20261018/installed-actors-xvfb.log": "19346bc9201dc177c7ada0a9ccfebc2bfbfc1faecd3fbddd79ef126bf525b556",
+    "artifacts/core-presentation-20261018/installed-actors.log": "e12218c8ab24abdd97d3023b57f7818aaabbebc8cc34ada3ffd8881d0add2f45",
+    "artifacts/core-presentation-20261018/installed-clothing-xvfb.log": "3291747ac9e2f074aaf5d80d917ba644f6b777e27c04b7a9557db652c1416389",
+    "artifacts/core-presentation-20261018/installed-clothing.log": "4371ab699eeb6478ffd4a7e0d7a0d634487e26d4596869d427406341172608d2",
+    "artifacts/core-presentation-20261018/installed-storage-xvfb.log": "982ea04f30c9b29eccbb1ad3f11d5455978d921acd5a40be3b626ef8ec3166f6",
+    "artifacts/core-presentation-20261018/installed-storage.log": "21435816dff510284ac969badebf40a122fd1837cca868ce9371e2f637719d2a",
+    "artifacts/core-presentation-20261018/native-actors-final-xvfb.log": "982ea04f30c9b29eccbb1ad3f11d5455978d921acd5a40be3b626ef8ec3166f6",
+    "artifacts/core-presentation-20261018/native-actors-final.log": "d5708a43155e2bc535ae84ec13c1924b5209c3d6f9585bf583954ff0609cae83",
+    "artifacts/core-presentation-20261018/native-actors-private-xvfb.log": "982ea04f30c9b29eccbb1ad3f11d5455978d921acd5a40be3b626ef8ec3166f6",
+    "artifacts/core-presentation-20261018/native-actors-private.log": "7c6444eac8b553ae7e638caccc482ad2a6cf59fdecb30dd22d34e6ba6b55eb11",
+    "artifacts/core-presentation-20261018/native-actors-xvfb.log": "3291747ac9e2f074aaf5d80d917ba644f6b777e27c04b7a9557db652c1416389",
+    "artifacts/core-presentation-20261018/native-actors.log": "b02278882b48d4b1d54fb08ef7b4cfddd954a6df9e1c1d3b5ecafb9305f407b2",
+    "artifacts/core-presentation-20261018/refresh-tests.log": "7e0b10ab43d1fa9e8b5056a9f87fbf3c17f5f043dd31883430ca589c983d4f7f",
+    "artifacts/core-presentation-20261018/refresh.log": "b0f7d6a96516f769fcb905a8275c4338154e23afde412469092f035423de33b2",
+    "artifacts/core-presentation-20261018/storage-final-xvfb.log": "3291747ac9e2f074aaf5d80d917ba644f6b777e27c04b7a9557db652c1416389",
+    "artifacts/core-presentation-20261018/storage-final.log": "21435816dff510284ac969badebf40a122fd1837cca868ce9371e2f637719d2a",
+    "artifacts/core-presentation-20261018/storage-xvfb.log": "982ea04f30c9b29eccbb1ad3f11d5455978d921acd5a40be3b626ef8ec3166f6",
+    "artifacts/core-presentation-20261018/storage.log": "26cf5e27f961d72416f18f322eb1b8e9ade8a64c7961c951c1d41595d570b420",
+    "artifacts/core-presentation-20261018/unit-engine.log": "4f7d89f5b30f44d18c6e436c62ea807a0f255708f6fd0bd2c9389030da8eb53e",
+    "artifacts/core-presentation-20261018/unit.log": "486b09ea084563d65bb48f28f720d6d553a9343bf37efcb5e1433eb9762f7ccc",
+    "artifacts/core-presentation-20261018/install.json": "38a4f7d2226a61ab891e0f4c2332c79fd70a550083c86ac941ba7f47ff43e336",
+    "artifacts/core-presentation-20261018/refresh-tests.json": "09d0f011b9bcb0c734c4f6f3272fbfed7672d61d0692c4d99108ca1ba3da6dbb",
+    "artifacts/core-presentation-20261018/refresh.json": "f38526032760c002a0b816bcc4d55f4438e67cab2cebac6718b5dcd74f99bc30",
+    "artifacts/core-presentation-20261018/run-gui.py": "5706a91c7690cc88a32a8dd2c91fa1216503ba8d5ab8f28cb8cc3836be2b20f1"
+  }
+}

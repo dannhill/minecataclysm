@@ -1,6 +1,34 @@
 # Implementation status
 
-Current scoped delivery: **native atomic equipment time**, CWM **2.23 unchanged**,
+Current scoped delivery: **three consecutive core follow-ups**, CWM **2.23 unchanged**,
+installed in ordinary `start.sh`, with the previous runtime pair retained.
+Single loose non-container stacks, including counted rocks/ammunition, now
+use direct native pickup. Real storage/containers/multi-item piles keep their
+quantity UI. Paused clicks are not deferred; costs/capacity/identities stay CDDA.
+
+Humanoid skin is bound separately from empty armour layers. Zombie and character
+rigs expose their actual two materials; existing Mineclonia art is reused.
+The integrated third-person player is a voxel mesh with coherent scale/feet.
+Idle/walk and player posture cycles use the paused/scaled presentation clock;
+perceived confirmed movement supplies facing, without changing coordinates or AI.
+Native actor visibility, recovery and lifecycle remain authoritative.
+[Design](docs/design/core-presentation-followups.md), [delivery/evidence](docs/fixes/core-presentation.md).
+
+Scoped verification: 309 client tests / 47 modules, 648 Catch assertions / 4 cases;
+195 renderer/canonical checks including installed default continuous `start.sh`,
+controlled renderer clocks and the explicit historical native tile fixture.
+Incremental reconstructed Release/LTO build, not a cold clean build; native core
+and runtime unchanged. Full SAVE-001 OPEN; historical M5.5 FAILED; batch60 unchanged.
+The earlier faithful equipment fix remains verified by 28 installed regressions.
+
+Backlog **18 PENDING + 1 manual FAIL**, including nine new graphical checks and
+the existing equipment-pause personal recheck. No personal acceptance inferred.
+No manual gate today. Generic humanoid appearance, attack reactions, weapon pose,
+audio and additional creature families remain follow-ups; the delivered animation
+scope is idle/movement/posture, without inferred attacks.
+[Deferred checklist](docs/validation/pending-manual.md).
+
+Previous scoped delivery: **native atomic equipment time**, CWM **2.23 unchanged**,
 installed in ordinary `start.sh`, with the previous runtime pair retained.
 Wear/takeoff keep native atomic garment changes and move costs. I pauses even
 with the equipment result in flight; the read-only query follows settlement.
