@@ -1,5 +1,10 @@
 # Validazioni manuali del playable core
 
+Ultimo riscontro: **29 PENDING, nessun FAIL manuale aperto**. La conferma umana
+«ora la logica funziona» accetta il fix LANG-01.2; i precedenti 28 punti restano
+invariati. Un solo nuovo ricontrollo rinviabile riguarda la dicitura della lingua
+selezionata, in fondo al file. [Riscontro](../source/language-notice-feedback-2026-10-18.md).
+
 Nuovo riscontro dopo `91393f7`: **28 PENDING + 1 FAIL manuale aperto**.
 **LANG-01.2 riaperto:** English dal menu Esc chiude il menu e al riavvio
 resta Italiano. I PASS della versione precedente sono storici; il fix richiede
@@ -564,7 +569,7 @@ nel [report UX-03](../fixes/interactive-quickbar.md); non costituiscono PASS
 manuali. La lingua ha ora la checklist separata sotto; mira RMB, UV/rig,
 animazioni e suoni restano nel piano.
 
-## LANG-01 — Lingua del prodotto — 1 PASS; 2 FAIL riaperto dopo `91393f7`
+## LANG-01 — Lingua del prodotto — 1–2 PASS; logica riconfermata dopo `971579f`
 
 Disponibile dal normale `./start.sh`; non serve fare queste prove oggi.
 I PASS precedenti rimangono accettati. Le prove automatiche delle due lingue
@@ -592,12 +597,14 @@ non attestano la tua accettazione della leggibilità e del menu.
    viene cambiato in italiano, ma poi nel menu a tendina se ripremo sulla freccetta
    e seleziono inglese non me lo cambia e se riavvio il gioco rimane in italiano)
 
-**Riparazione del nuovo FAIL LANG-01.2:** gli overlay del renderer vengono
+**Riparazione del FAIL LANG-01.2, poi accettata dall'utente:** gli overlay del renderer vengono
 ora nascosti per tutti i menu modali, incluso Esc. Il filtro del buio non deve
 intercettare il clic su English e convertirlo in una chiusura. Ricontrolla il
 punto 2 anche in un interno buio: clic su English, menu ancora aperto/tempo
-fermo, poi uscita e riavvio con lingua inglese. La riparazione automatica
-non chiude questo FAIL umano; non occorre ripetere tutti gli altri test.
+fermo, poi uscita e riavvio con lingua inglese. Dopo `971579f` l'utente conferma
+«ora la logica funziona»: il FAIL è chiuso per questo riscontro umano.
+La nota fissa poco chiara ha un ricontrollo distinto in fondo; non occorre
+ripetere tutti gli altri test.
 
 ## AIM-01 — Mira con destro mantenuto — VALIDATA: 1–3 PASS (2026-10-18)
 
@@ -948,3 +955,14 @@ hint del guidebook; il menu ne indica il limite. Nessun gate personale oggi.
    Italiano WIP dopo il riavvio con la lingua scelta; manca ancora la traduzione
    di alcune descrizioni native. Valuta leggibilità del pannello e del pulsante
    Leggi senza sovrapposizioni con Interrompi.
+
+
+## LANG-01 — Dicitura della lingua selezionata — PENDING (1), rinviabile
+
+1. Nel menu Esc, scegli English: compare **Prossimo avvio: English** se la
+   sessione è italiana, oppure **Active: English** se è già inglese. La nota
+   sulla traduzione italiana incompleta non compare con English selezionato.
+   Scegli Italiano: il testo indica **Italiano (WIP)** e la sua incompletezza.
+   Torna a English senza chiudere il menu: la dicitura si aggiorna e il tempo
+   rimane fermo. Il testo segue sempre la lingua della sessione fino al riavvio.
+   Questo è solo un controllo di chiarezza; la logica è già accettata dall'utente.

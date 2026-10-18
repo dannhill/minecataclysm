@@ -380,6 +380,23 @@ def main():
                     check('language_click_keeps_pause_menu_open',
                           latest()['simulation_time']==paused_time and int(latest()['pause_reasons'])==2)
                     shot('pause-language-selected.png')
+                    from PIL import ImageChops
+                    notice_rect=(760,390,975,560)
+                    initial_notice=Image.open(out/'pause-language-selector.png').convert('RGB').crop(notice_rect)
+                    changed_notice=Image.open(out/'pause-language-selected.png').convert('RGB').crop(notice_rect)
+                    check('selected_language_notice_updates_without_closing_menu',
+                          ImageChops.difference(initial_notice,changed_notice).getbbox() is not None)
+                    xdo('mousemove','--window',window,'875','365' if language=='it' else '320');xdo('click','1');time.sleep(.4)
+                    shot('pause-language-active.png')
+                    active_notice=Image.open(out/'pause-language-active.png').convert('RGB').crop(notice_rect)
+                    check('returning_to_session_language_restores_active_notice',
+                          configured_language(actual_config)==language and
+                          ImageChops.difference(initial_notice,active_notice).getbbox() is None and
+                          latest()['simulation_time']==paused_time and int(latest()['pause_reasons'])==2)
+                    xdo('mousemove','--window',window,'875','365' if args.language_menu_change=='it' else '320');xdo('click','1');time.sleep(.4)
+                    check('notice_refresh_keeps_language_buttons_and_pause_functional',
+                          configured_language(actual_config)==args.language_menu_change and
+                          latest()['simulation_time']==paused_time and int(latest()['pause_reasons'])==2)
                     tap('Escape');wait(lambda r:int(r['pause_reasons'])==0)
                     view=open_inventory()
                     check('menu_change_keeps_current_native_language_until_restart',
