@@ -65,6 +65,26 @@
       "file": "game/mods/cdda_entities/media-notices/mcl_tnt-README.txt",
       "source": "mineclonia/mods/ITEMS/mcl_tnt/README.txt",
       "sha256": "931de7adb80f7f7adb8ec66873b4682b1200e8791224a8381d45cdb01e03e7ee"
+    },
+    {
+      "file": "game/mods/cdda_entities/media-notices/mobs_mc-LICENSE-media.md",
+      "source": "mineclonia/mods/ENTITIES/mobs_mc/LICENSE-media.md",
+      "sha256": "5bb1ba1bf9e45725a8f2c7821c65c605488527012cb5f74e8875994576a102fa"
+    },
+    {
+      "file": "game/mods/cdda_entities/media-notices/mobs_mc-CREDITS.md",
+      "source": "mineclonia/mods/ENTITIES/mobs_mc/CREDITS.md",
+      "sha256": "5bb6b5e59f80aecbafac9310f4439b90ad66a83d74b4519446fdffc6d42aad13"
+    },
+    {
+      "file": "game/mods/cdda_entities/media-notices/mcl_mobs-readme.MD",
+      "source": "mineclonia/mods/ENTITIES/mcl_mobs/readme.MD",
+      "sha256": "52520337d891f5f7481b8f695c36ca3be2f170e0ff2a177a846b0689f43094ff"
+    },
+    {
+      "file": "game/mods/cdda_entities/media-notices/mcl_mobs-license.old",
+      "source": "mineclonia/mods/ENTITIES/mcl_mobs/license.old",
+      "sha256": "c4a2ff16718d4131961bd259656c2fa994f4ca8627db30f0d1c5e0b37f8372ef"
     }
   ]
 }
