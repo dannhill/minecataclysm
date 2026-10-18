@@ -31,6 +31,7 @@ def main():
     parser.add_argument('--drag-equipment', action='store_true')
     parser.add_argument('--sequential', action='store_true', help='Exercise UX-02 paid completion and automatic return')
     parser.add_argument('--native-equipment-time', action='store_true', help='Atomic clothing, inspection during delayed ACK, frozen/resumed native debit')
+    parser.add_argument('--live-search', action='store_true')
     parser.add_argument('--quickbar', action='store_true', help='Verify UX-03 shortcuts, focus, native costs, pause and persistence')
     parser.add_argument('--quickbar-resume', action='store_true', help='Verify the saved UX-03 shortcut identities after actual reload')
     parser.add_argument('--presentation-only', action='store_true', help='Exercise paging, layering and search without gameplay mutations')
@@ -299,6 +300,19 @@ def main():
                      (int(r['equipment_form']) == 1 and int(r['native_work_settled']) == 1)))
             def item(v, name):
                 return next(e for e in entries(v) if e.TypeId().decode() == name)
+            if args.live_search:
+                clock,sent=latest()['simulation_time'],latest()['equipment_sent']
+                click(2,4.95);xdo('type','--delay','180','cap');time.sleep(.3)
+                click(1.025,5.975)
+                wait(lambda r:int(r['equipment_selected'])==item(view,'hat_ball').Id())
+                check('live_inventory_search_filters_without_enter',True)
+                click(2,4.95);xdo('key','Home','Right');xdo('type','X');time.sleep(.3)
+                shot('inventory-live-middle-edit.png')
+                xdo('key','BackSpace');time.sleep(.3);click(1.025,5.975)
+                wait(lambda r:int(r['equipment_selected'])==item(view,'hat_ball').Id())
+                check('live_inventory_search_preserves_middle_caret',True)
+                check('live_inventory_search_neither_advances_nor_equips',latest()['simulation_time']==clock and latest()['equipment_sent']==sent)
+                click(7.7,4.95)
             if args.language_smoke:
                 language = args.language_smoke
                 from CDDA.CWM.WorldSnapshot import WorldSnapshot

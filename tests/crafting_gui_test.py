@@ -268,7 +268,9 @@ def main():
                 raise RuntimeError('Unexpected native crafting decision loop')
             def set_batch(number):
                 old=latest()['crafting_view'];click(9,1.325)
-                xdo('key','Home');xdo('key',*(['Down']*(number-1)));xdo('key','Return')
+                xdo('key','Home')
+                if number>1:xdo('key',*(['Down']*(number-1)))
+                xdo('key','Return')
                 wait(lambda r:int(r['crafting_view'])>0 and r['crafting_view']!=old)
                 return catalog()
             if args.catalog_feedback:
