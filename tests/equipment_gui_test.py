@@ -363,6 +363,9 @@ def main():
                 check('localized_native_cancel_preserves_wielded_item', item(view,'bat').Wielded())
                 tap('Escape');wait(lambda r:int(r['equipment_form'])==0)
                 if args.language_menu_change:
+                    def roles(v):
+                        return sorted((e.TypeId(),e.Wielded(),e.Worn(),e.Charges(),e.ParentId()) for e in entries(v))
+                    before_language_roles=roles(view)
                     tap('Escape');wait(lambda r:int(r['pause_reasons'])==2)
                     paused_time=latest()['simulation_time']
                     check('pause_language_reproduces_low_light_overlay',float(latest()['low_light_blend'])>.5)
@@ -402,7 +405,7 @@ def main():
                     target=args.language_menu_change
                     check('live_change_refreshes_native_item_without_restart',
                           item(view,'hat_ball').Name().decode() == '++\u00a0' + ('cappello da baseball' if target == 'it' else 'baseball cap'))
-                    check('live_change_preserves_native_item_roles',item(view,'bat').Wielded() and item(view,'hat_ball').Worn())
+                    check('live_change_preserves_native_item_roles',roles(view)==before_language_roles)
                     shot('live-language-inventory.png')
                     select_item(item(view,'bat'));action(1)
                     wait(lambda r:int(r['pending_decision'])>0)
