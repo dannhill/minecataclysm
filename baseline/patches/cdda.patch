@@ -594,6 +594,23 @@ index 52b63dc..ad5585d 100644
  template <typename E> struct enum_traits;
  
  enum class craft_flags : int {
+diff --git a/src/creature.cpp b/src/creature.cpp
+index 6b60d4c..65e919c 100644
+--- a/src/creature.cpp
++++ b/src/creature.cpp
+@@ -1,3 +1,4 @@
++#include "cwm/cwm_presentation.h"
+ #include "creature.h"
+ 
+ #include <algorithm>
+@@ -1224,6 +1225,7 @@ dealt_damage_instance Creature::deal_damage( Creature *source, bodypart_id bp,
+     mod_pain( total_pain );
+ 
+     apply_damage( source, bp, total_damage );
++    if (total_damage > 0) cwm::record_presentation(cwm::CueKind::Hurt, *this);
+ 
+     if( wp != nullptr ) {
+         wp->apply_effects( *this, total_damage, attack_copy );
 diff --git a/src/do_turn.cpp b/src/do_turn.cpp
 index 2455a6f..32c0e4a 100644
 --- a/src/do_turn.cpp
@@ -1190,16 +1207,17 @@ index 248ed42..51a1c39 100644
      int cost = move_cost;
      cost = p->has_proficiency( proficiency_prof_wound_care_expert ) ? cost / 2 : cost;
 diff --git a/src/melee.cpp b/src/melee.cpp
-index da5b265..6bfd418 100644
+index da5b265..9d2c9e3 100644
 --- a/src/melee.cpp
 +++ b/src/melee.cpp
-@@ -1,4 +1,5 @@
+@@ -1,4 +1,6 @@
++#include "cwm/cwm_presentation.h"
  #include "melee.h"
 +#include "do_turn.h"
  
  #include <algorithm>
  #include <array>
-@@ -618,7 +619,16 @@ bool Character::melee_attack_abstract( Creature &t, bool allow_special,
+@@ -618,7 +620,16 @@ bool Character::melee_attack_abstract( Creature &t, bool allow_special,
      }
  
      if( is_avatar() && move_cost > 1000 && calendar::turn > melee_warning_turn ) {
@@ -1217,7 +1235,7 @@ index da5b265..6bfd418 100644
                                      .context( "CANCEL_ACTIVITY_OR_IGNORE_QUERY" )
                                      .message( _( "<color_light_red>Attacking with your %1$s will take a long time.  "
                                                "Are you sure you want to continue?</color>" ),
-@@ -628,6 +638,7 @@ bool Character::melee_attack_abstract( Creature &t, bool allow_special,
+@@ -628,6 +639,7 @@ bool Character::melee_attack_abstract( Creature &t, bool allow_special,
                                      .option( "IGNORE" )
                                      .query()
                                      .action;
@@ -1225,6 +1243,39 @@ index da5b265..6bfd418 100644
  
          if( action == "NO" ) {
              return false;
+@@ -639,6 +651,7 @@ bool Character::melee_attack_abstract( Creature &t, bool allow_special,
+         }
+     }
+ 
++    cwm::record_presentation(cwm::CueKind::Attack, *this);
+     const bool hits = hit_spread >= 0;
+ 
+     if( monster *m = t.as_monster() ) {
+diff --git a/src/monster.cpp b/src/monster.cpp
+index 7498f9e..37448f6 100644
+--- a/src/monster.cpp
++++ b/src/monster.cpp
+@@ -1,3 +1,4 @@
++#include "cwm/cwm_presentation.h"
+ #include "monster.h"
+ 
+ #include <algorithm>
+@@ -1865,6 +1866,7 @@ bool monster::melee_attack( Creature &target, float accuracy )
+         return false;
+     }
+ 
++    cwm::record_presentation(cwm::CueKind::Attack, *this);
+     const int monster_hit_roll = melee::melee_hit_range( accuracy );
+     int hitspread = target.deal_melee_attack( this, monster_hit_roll );
+     if( type->melee_dice == 0 ) {
+@@ -2699,6 +2701,7 @@ void monster::die( Creature *nkiller )
+     if( has_effect( effect_ridden ) && mounted_player ) {
+         mounted_player->forced_dismount();
+     }
++    cwm::record_presentation(cwm::CueKind::Death, *this);
+     g->set_critter_died();
+     dead = true;
+     set_killer( nkiller );
 diff --git a/src/output.cpp b/src/output.cpp
 index 38b1d71..e5b7a12 100644
 --- a/src/output.cpp
@@ -1327,10 +1378,23 @@ index 183628b..a767b51 100644
          option = STASH;
      }
 diff --git a/src/ranged.cpp b/src/ranged.cpp
-index 6973ff1..c4eaffb 100644
+index 6973ff1..352b6b2 100644
 --- a/src/ranged.cpp
 +++ b/src/ranged.cpp
-@@ -1532,6 +1532,15 @@ static void do_aim( Character &you, const item &relevant, const double min_recoi
+@@ -1,3 +1,4 @@
++#include "cwm/cwm_presentation.h"
+ #include "ranged.h"
+ 
+ #include <algorithm>
+@@ -936,6 +937,7 @@ int Character::fire_gun( const tripoint &target, int shots, item &gun )
+ 
+         // Add gunshot noise
+         make_gun_sound_effect( *this, shots > 1, &gun );
++        cwm::record_presentation(cwm::CueKind::Shot, *this);
+         sfx::generate_gun_sound( *this, gun );
+ 
+         weakpoint_attack wp_attack;
+@@ -1532,6 +1534,15 @@ static void do_aim( Character &you, const item &relevant, const double min_recoi
      }
  }
  
@@ -1346,7 +1410,16 @@ index 6973ff1..c4eaffb 100644
  struct confidence_rating {
      double aim_level;
      char symbol;
-@@ -3241,48 +3250,56 @@ void target_ui::update_turrets_in_range()
+@@ -2166,7 +2177,7 @@ void make_gun_sound_effect( const Character &p, bool burst, item *weapon )
+     const item::sound_data data = weapon->gun_noise( burst );
+     if( data.volume > 0 ) {
+         sounds::sound( p.pos(), data.volume, sounds::sound_t::combat,
+-                       data.sound.empty() ? _( "Bang!" ) : data.sound );
++                       data.sound.empty() ? _( "Bang!" ) : data.sound, false, "gunfire" );
+     }
+     p.add_msg_if_player( _( "You shoot your %1$s.  %2$s" ), weapon->tname( 1, false, 0, false ),
+                          uppercase_first_letter( data.sound ) );
+@@ -3241,48 +3252,56 @@ void target_ui::update_turrets_in_range()
      }
  }
  
@@ -1482,6 +1555,26 @@ index 6e66b47..1d12175 100644
  };
  
  enum class recipe_time_flag : int {
+diff --git a/src/sounds.cpp b/src/sounds.cpp
+index 48f747f..229e2da 100644
+--- a/src/sounds.cpp
++++ b/src/sounds.cpp
+@@ -1,3 +1,4 @@
++#include "cwm/cwm_presentation.h"
+ #include "sounds.h"
+ 
+ #include <algorithm>
+@@ -642,6 +643,10 @@ void sounds::process_sound_markers( Character *you )
+             continue;
+         }
+ 
++        const std::string cue_description = pos == you->pos() || you->sees(pos) ? description :
++            direction_name(direction_from(you->pos(), pos)) + ": " + description;
++        cwm::record_heard_sound(cue_description, sound.id == "gunfire" ? "gunfire" : enum_to_string(sound.category), heard_volume);
++
+         if( sound.category == sound_t::music ) {
+             music::activate_music_id( music::music_id::sound );
+         }
 diff --git a/src/translations.cpp b/src/translations.cpp
 index e0f257a..82690b4 100644
 --- a/src/translations.cpp
@@ -2702,10 +2795,10 @@ index 0000000..c273bf2
 +}
 diff --git a/src/cwm/cwm_map_exporter.cpp b/src/cwm/cwm_map_exporter.cpp
 new file mode 100644
-index 0000000..597f9c9
+index 0000000..1d4d4a6
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.cpp
-@@ -0,0 +1,663 @@
+@@ -0,0 +1,714 @@
 +#include "cwm/product_language.hpp"
 +#include "cwm_motion.h"
 +// CDDA CWM Map & Entity Exporter Implementation
@@ -2715,6 +2808,8 @@ index 0000000..597f9c9
 +#include "cwm_crafting.h"
 +#include "cwm_ranged.h"
 +#include "cwm_hotbar.h"
++#include "cwm_presentation.h"
++#include "lightmap.h"
 +#include "cwm_status_gauges.h"
 +#include "cwm/tile_semantics.hpp"
 +#include "mapdata.h"
@@ -2778,6 +2873,44 @@ index 0000000..597f9c9
 +uint64_t CwmMapExporter::monster_entity_id(const monster& critter) {
 +    const int id = stored_monster_id(critter);
 +    return id ? monster_namespace | uint64_t(id) : 0;
++}
++
++namespace {
++bool presentation_enabled = false;
++uint64_t cue_id = 0;
++std::vector<PresentationCue> pending_cues;
++void append_cue(CueKind kind, uint64_t actor, std::string text, std::string category = {}, int volume = 0) {
++    if (pending_cues.size() >= 128) return; // Drop presentation, never block gameplay.
++    pending_cues.push_back({++cue_id, kind, actor, std::move(text), std::move(category), std::clamp(volume, 0, 200)});
++}
++}
++void enable_presentation(bool enabled) {
++    presentation_enabled = enabled;
++    if (!enabled) pending_cues.clear();
++}
++void record_presentation(CueKind kind, const Creature& actor) {
++    if (!presentation_enabled) return;
++    const avatar& viewer = get_avatar();
++    if (!actor.is_avatar() && !viewer.sees(actor)) return;
++    uint64_t id = actor.is_avatar() ? 1 : 0;
++    if (const auto* mon = actor.as_monster()) {
++        if (mon->is_hallucination()) return;
++        id = CwmMapExporter::monster_entity_id(*mon);
++    } else if (const auto* person = actor.as_character()) {
++        if (!actor.is_avatar()) id = (uint64_t(1) << 63) | uint64_t(person->getID().get_value());
++    }
++    if (!id) return; // Newly spawned, unpublished identities are not invented here.
++    std::string text;
++    if (kind == CueKind::Death) text = actor.disp_name() + ::cwm::tr(" dies.", " muore.");
++    append_cue(kind, id, text);
++}
++void record_heard_sound(const std::string& description, const std::string& category, int volume) {
++    if (presentation_enabled) append_cue(CueKind::Sound, 0, description, category, volume);
++}
++std::vector<PresentationCue> drain_presentation() {
++    std::vector<PresentationCue> result;
++    result.swap(pending_cues);
++    return result;
 +}
 +
 +flatbuffers::Offset<CDDA::CWM::AvatarStatus> CwmMapExporter::export_avatar_status(
@@ -2898,6 +3031,7 @@ index 0000000..597f9c9
 +    uint64_t base_revision, uint64_t state_id, uint64_t resync_id,
 +    uint64_t completed_command_id, const ClockView* clock, uint64_t activity_token, uint64_t weapon_token, uint64_t inventory_work_command, bool inventory_work_settled, uint32_t work_total_ms, uint32_t work_remaining_ms
 +) {
++    enable_presentation(true);
 +    cdda::cwm::MessageBuilder builder(sequence_num, world_rev, identity);
 +    auto& fbb = builder.builder();
 +    fbb.ForceDefaults(true);
@@ -3307,6 +3441,16 @@ index 0000000..597f9c9
 +        flatbuffers::Offset<CDDA::CWM::ItemTransferState>{};
 +    const auto inventory_work = inventory_work_command ? CDDA::CWM::CreateInventoryWorkState(
 +        fbb, inventory_work_command, inventory_work_settled, work_total_ms, work_remaining_ms) : flatbuffers::Offset<CDDA::CWM::InventoryWorkState>{};
++    std::vector<flatbuffers::Offset<CDDA::CWM::PresentationEvent>> cues;
++    for (const auto& cue : drain_presentation()) {
++        // A full/recovery publication is state, never a replay of old sounds.
++        if (include_chunks) continue;
++        cues.push_back(CDDA::CWM::CreatePresentationEventDirect(fbb, cue.id,
++            static_cast<CDDA::CWM::PresentationKind>(cue.kind), cue.actor,
++            cue.description.c_str(), cue.category.c_str(), cue.volume));
++    }
++    const auto cue_vector = fbb.CreateVector(cues);
++    const bool low_light = m.ambient_light_at(u.pos()) < LIGHT_AMBIENT_LIT;
 +    auto world_snap = CDDA::CWM::CreateWorldSnapshot(
 +        fbb,
 +        world_rev,
@@ -3320,7 +3464,7 @@ index 0000000..597f9c9
 +        g.safe_mode == SAFE_MODE_STOP || u.has_effect(efftype_id("laserlocked")) ||
 +            (clock && (clock->pause_reasons & 4)),
 +        include_chunks, base_revision, state_id, resync_id, completed_command_id,
-+        spawned_vec, removed_vec, clock_state, ground_items_vec, owned_items_vec, avatar_status, consumption, first_aid, crafting, ranged, reload, transfer, inventory_work, quick_slots_vec
++        spawned_vec, removed_vec, clock_state, ground_items_vec, owned_items_vec, avatar_status, consumption, first_aid, crafting, ranged, reload, transfer, inventory_work, quick_slots_vec, cue_vector, low_light
 +    );
 +
 +    return builder.finish_message(CDDA::CWM::Payload::WorldSnapshot, world_snap.Union());
@@ -3442,6 +3586,33 @@ index 0000000..b8dd82d
 +};
 +
 +} // namespace cwm
+diff --git a/src/cwm/cwm_presentation.h b/src/cwm/cwm_presentation.h
+new file mode 100644
+index 0000000..ba86a11
+--- /dev/null
++++ b/src/cwm/cwm_presentation.h
+@@ -0,0 +1,21 @@
++#pragma once
++#include <cstdint>
++#include <string>
++#include <vector>
++class Creature;
++namespace cwm {
++enum class CueKind { Attack, Hurt, Death, Shot, Sound };
++struct PresentationCue {
++    uint64_t id;
++    CueKind kind;
++    uint64_t actor;
++    std::string description, category;
++    int volume;
++};
++// Simulation-thread only. Disabled outside the integrated runtime; bounded and
++// observational. Neither the recorder nor the drain allocates native identities.
++void enable_presentation(bool enabled);
++void record_presentation(CueKind kind, const Creature& actor);
++void record_heard_sound(const std::string& description, const std::string& category, int volume);
++std::vector<PresentationCue> drain_presentation();
++}
 diff --git a/src/cwm/cwm_ranged.h b/src/cwm/cwm_ranged.h
 new file mode 100644
 index 0000000..bb65c87

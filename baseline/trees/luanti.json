@@ -1232,7 +1232,7 @@
   {
     "path": "builtin/settingtypes.txt",
     "mode": "100644",
-    "sha256": "eb45cfa1a38fb03e669f9fccc82d08ccf4e4fb48803087952a9221571a7efdd1"
+    "sha256": "d8ffb270aa9f46b020c121bd65d98e56fdd102494016d84d40d3df5959d4eba4"
   },
   {
     "path": "client/serverlist/.gitignore",
@@ -7242,17 +7242,22 @@
   {
     "path": "src/cdda/cdda_bridge.cpp",
     "mode": "100644",
-    "sha256": "529765f8cebdcd75c902c2eedfb3250d90b068a3ed91df815ad2e581b4d9a072"
+    "sha256": "032b95533707964700a3174ae452fa0619f5f6f0a317b08c89016e2b9f7fcacb"
   },
   {
     "path": "src/cdda/cdda_bridge.h",
     "mode": "100644",
-    "sha256": "6a876afde000e1efc1589b1a1ed078a41f488e9f78b73525b1f7fe27da6a8e0e"
+    "sha256": "4a3a7faf7bc3911d8fe7024c2c04f2741ab8c530b02c54aa3092f87b09f6a0df"
   },
   {
     "path": "src/cdda/crafting_inventory.h",
     "mode": "100644",
     "sha256": "cd448a4d999d6c190e0e26dbc711a19272bf12470b2e0a5459fef448b9129309"
+  },
+  {
+    "path": "src/cdda/creature_visual.h",
+    "mode": "100644",
+    "sha256": "8462c7f1b70d470716ac83bb509f63c04e5bce2663a1a0262ee896802b193c9f"
   },
   {
     "path": "src/cdda/decision_dialog.h",
@@ -7342,12 +7347,12 @@
   {
     "path": "src/client/camera.cpp",
     "mode": "100644",
-    "sha256": "cc9033c3ac377dcaf0159014bf96fb421b0d6f684dece828b9edb662892a3850"
+    "sha256": "dafec86506bd53fb99ed8cdeed0a3808431c9139f263c2d46bf9886c9d53959b"
   },
   {
     "path": "src/client/camera.h",
     "mode": "100644",
-    "sha256": "2199468a2742011f5b84f0599d44dbe9e4c62762af6e91eabdc032bf3d7d01a2"
+    "sha256": "86e7f875f49128a7c5c5f82613f129767c8677e57796a4fece489ac146b0891b"
   },
   {
     "path": "src/client/client.cpp",
@@ -7487,7 +7492,7 @@
   {
     "path": "src/client/game.cpp",
     "mode": "100644",
-    "sha256": "06c2c9568b25c4954e64686223d92f878a0a908a1300d13a4b7c627887c4a127"
+    "sha256": "012e4a36b80f2c2cbc9352bea93fffd065d22fada65296f4ddd3b5590565b148"
   },
   {
     "path": "src/client/game.h",
@@ -8182,7 +8187,7 @@
   {
     "path": "src/defaultsettings.cpp",
     "mode": "100644",
-    "sha256": "9072c0255a8dd6407643dc5be7e05c6e951b764a5a28b31fbace98c4e89125f4"
+    "sha256": "e588f24bf431d7c74b6a1ee500878d7f1dae1c376240d3ffb3ea53ca6e00023b"
   },
   {
     "path": "src/defaultsettings.h",

@@ -440,8 +440,40 @@ class WorldSnapshot(object):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(58))
         return o == 0
 
+    # WorldSnapshot
+    def PresentationEvents(self, j):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(60))
+        if o != 0:
+            x = self._tab.Vector(o)
+            x += flatbuffers.number_types.UOffsetTFlags.py_type(j) * 4
+            x = self._tab.Indirect(x)
+            from CDDA.CWM.PresentationEvent import PresentationEvent
+            obj = PresentationEvent()
+            obj.Init(self._tab.Bytes, x)
+            return obj
+        return None
+
+    # WorldSnapshot
+    def PresentationEventsLength(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(60))
+        if o != 0:
+            return self._tab.VectorLen(o)
+        return 0
+
+    # WorldSnapshot
+    def PresentationEventsIsNone(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(60))
+        return o == 0
+
+    # WorldSnapshot
+    def LowLight(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(62))
+        if o != 0:
+            return bool(self._tab.Get(flatbuffers.number_types.BoolFlags, o + self._tab.Pos))
+        return False
+
 def WorldSnapshotStart(builder):
-    builder.StartObject(28)
+    builder.StartObject(30)
 
 def Start(builder):
     WorldSnapshotStart(builder)
@@ -673,6 +705,24 @@ def WorldSnapshotStartQuickSlotsVector(builder, numElems):
 
 def StartQuickSlotsVector(builder, numElems):
     return WorldSnapshotStartQuickSlotsVector(builder, numElems)
+
+def WorldSnapshotAddPresentationEvents(builder, presentationEvents):
+    builder.PrependUOffsetTRelativeSlot(28, flatbuffers.number_types.UOffsetTFlags.py_type(presentationEvents), 0)
+
+def AddPresentationEvents(builder, presentationEvents):
+    WorldSnapshotAddPresentationEvents(builder, presentationEvents)
+
+def WorldSnapshotStartPresentationEventsVector(builder, numElems):
+    return builder.StartVector(4, numElems, 4)
+
+def StartPresentationEventsVector(builder, numElems):
+    return WorldSnapshotStartPresentationEventsVector(builder, numElems)
+
+def WorldSnapshotAddLowLight(builder, lowLight):
+    builder.PrependBoolSlot(29, lowLight, 0)
+
+def AddLowLight(builder, lowLight):
+    WorldSnapshotAddLowLight(builder, lowLight)
 
 def WorldSnapshotEnd(builder):
     return builder.EndObject()

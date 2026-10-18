@@ -104,8 +104,24 @@ inline bool valid_crafting(const CDDA::CWM::CraftingView* view) {
 }
 enum class SessionState { Disconnected, HelloSent, Accepted, Syncing, Running, Resyncing, Rejected };
 
+inline bool valid_presentation(const CDDA::CWM::WorldSnapshot* world) {
+    const auto* cues = world->presentation_events();
+    if (!cues) return true;
+    if (cues->size()>128 || (world->full() && cues->size())) return false;
+    uint64_t previous=0;
+    for (const auto* cue : *cues) {
+        if (!cue || cue->id()<=previous || cue->kind()<CDDA::CWM::PresentationKind::ATTACK ||
+            cue->kind()>CDDA::CWM::PresentationKind::SOUND || cue->heard_volume()>200 ||
+            !cue->description() || cue->description()->size()>4096 || !cue->sound_category() ||
+            cue->sound_category()->size()>128 || cue->description()->str().find('\0')!=std::string::npos ||
+            cue->sound_category()->str().find('\0')!=std::string::npos) return false;
+        if (cue->kind()==CDDA::CWM::PresentationKind::SOUND ? cue->actor()!=0 : cue->actor()==0) return false;
+        previous=cue->id();
+    }
+    return true;
+}
 inline bool valid_world(const CDDA::CWM::WorldSnapshot* world) {
-    if (!world || !world->origin() || !world->state_id() || !world->entities() ||
+    if (!world || !valid_presentation(world) || !world->origin() || !world->state_id() || !world->entities() ||
         !world->vehicles() || !world->fields() || world->entities()->size() > 8192 ||
         world->vehicles()->size() > 8192 || world->fields()->size() > 65536) return false;
     if (world->full() && (!world->chunks() || !world->chunks()->size() || world->chunks()->size() > 1024)) return false;

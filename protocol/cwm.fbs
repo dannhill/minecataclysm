@@ -192,6 +192,17 @@ table AvatarStatus {
     body_parts: [BodyPartStatus];
 }
 
+// Transient, perception-filtered presentation cues. Never gameplay commands.
+enum PresentationKind : byte { ATTACK = 0, HURT = 1, DEATH = 2, SHOT = 3, SOUND = 4 }
+table PresentationEvent {
+    id: uint64;
+    kind: PresentationKind;
+    actor: uint64; // 0 for audio/unidentified source; never reveal hidden actors.
+    description: string;
+    sound_category: string;
+    heard_volume: uint16;
+}
+
 table WorldSnapshot {
     world_revision: uint64;
     origin: Coord3i;
@@ -228,6 +239,10 @@ table WorldSnapshot {
     // Native completion after activity, move debt and paced cost are paid.
     inventory_work: InventoryWorkState;
     quick_slots: [QuickSlot];
+    presentation_events: [PresentationEvent];
+    // Native illumination at the player, not a client visibility rule.
+    low_light: bool;
+
 }
 
 table InventoryWorkState {

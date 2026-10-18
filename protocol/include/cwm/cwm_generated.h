@@ -73,6 +73,9 @@ struct BodyPartStatusBuilder;
 struct AvatarStatus;
 struct AvatarStatusBuilder;
 
+struct PresentationEvent;
+struct PresentationEventBuilder;
+
 struct WorldSnapshot;
 struct WorldSnapshotBuilder;
 
@@ -362,6 +365,45 @@ inline const char *EnumNameInteractAction(InteractAction e) {
   if (::flatbuffers::IsOutRange(e, InteractAction::EXAMINE, InteractAction::USE)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesInteractAction()[index];
+}
+
+enum class PresentationKind : int8_t {
+  ATTACK = 0,
+  HURT = 1,
+  DEATH = 2,
+  SHOT = 3,
+  SOUND = 4,
+  MIN = ATTACK,
+  MAX = SOUND
+};
+
+inline const PresentationKind (&EnumValuesPresentationKind())[5] {
+  static const PresentationKind values[] = {
+    PresentationKind::ATTACK,
+    PresentationKind::HURT,
+    PresentationKind::DEATH,
+    PresentationKind::SHOT,
+    PresentationKind::SOUND
+  };
+  return values;
+}
+
+inline const char * const *EnumNamesPresentationKind() {
+  static const char * const names[6] = {
+    "ATTACK",
+    "HURT",
+    "DEATH",
+    "SHOT",
+    "SOUND",
+    nullptr
+  };
+  return names;
+}
+
+inline const char *EnumNamePresentationKind(PresentationKind e) {
+  if (::flatbuffers::IsOutRange(e, PresentationKind::ATTACK, PresentationKind::SOUND)) return "";
+  const size_t index = static_cast<size_t>(e);
+  return EnumNamesPresentationKind()[index];
 }
 
 enum class SimulationControl : int8_t {
@@ -2812,6 +2854,137 @@ inline ::flatbuffers::Offset<AvatarStatus> CreateAvatarStatusDirect(
       body_parts__);
 }
 
+struct PresentationEvent FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef PresentationEventBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_ID = 4,
+    VT_KIND = 6,
+    VT_ACTOR = 8,
+    VT_DESCRIPTION = 10,
+    VT_SOUND_CATEGORY = 12,
+    VT_HEARD_VOLUME = 14
+  };
+  uint64_t id() const {
+    return GetField<uint64_t>(VT_ID, 0);
+  }
+  bool mutate_id(uint64_t _id = 0) {
+    return SetField<uint64_t>(VT_ID, _id, 0);
+  }
+  CDDA::CWM::PresentationKind kind() const {
+    return static_cast<CDDA::CWM::PresentationKind>(GetField<int8_t>(VT_KIND, 0));
+  }
+  bool mutate_kind(CDDA::CWM::PresentationKind _kind = static_cast<CDDA::CWM::PresentationKind>(0)) {
+    return SetField<int8_t>(VT_KIND, static_cast<int8_t>(_kind), 0);
+  }
+  uint64_t actor() const {
+    return GetField<uint64_t>(VT_ACTOR, 0);
+  }
+  bool mutate_actor(uint64_t _actor = 0) {
+    return SetField<uint64_t>(VT_ACTOR, _actor, 0);
+  }
+  const ::flatbuffers::String *description() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_DESCRIPTION);
+  }
+  ::flatbuffers::String *mutable_description() {
+    return GetPointer<::flatbuffers::String *>(VT_DESCRIPTION);
+  }
+  const ::flatbuffers::String *sound_category() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_SOUND_CATEGORY);
+  }
+  ::flatbuffers::String *mutable_sound_category() {
+    return GetPointer<::flatbuffers::String *>(VT_SOUND_CATEGORY);
+  }
+  uint16_t heard_volume() const {
+    return GetField<uint16_t>(VT_HEARD_VOLUME, 0);
+  }
+  bool mutate_heard_volume(uint16_t _heard_volume = 0) {
+    return SetField<uint16_t>(VT_HEARD_VOLUME, _heard_volume, 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_ID, 8) &&
+           VerifyField<int8_t>(verifier, VT_KIND, 1) &&
+           VerifyField<uint64_t>(verifier, VT_ACTOR, 8) &&
+           VerifyOffset(verifier, VT_DESCRIPTION) &&
+           verifier.VerifyString(description()) &&
+           VerifyOffset(verifier, VT_SOUND_CATEGORY) &&
+           verifier.VerifyString(sound_category()) &&
+           VerifyField<uint16_t>(verifier, VT_HEARD_VOLUME, 2) &&
+           verifier.EndTable();
+  }
+};
+
+struct PresentationEventBuilder {
+  typedef PresentationEvent Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_id(uint64_t id) {
+    fbb_.AddElement<uint64_t>(PresentationEvent::VT_ID, id, 0);
+  }
+  void add_kind(CDDA::CWM::PresentationKind kind) {
+    fbb_.AddElement<int8_t>(PresentationEvent::VT_KIND, static_cast<int8_t>(kind), 0);
+  }
+  void add_actor(uint64_t actor) {
+    fbb_.AddElement<uint64_t>(PresentationEvent::VT_ACTOR, actor, 0);
+  }
+  void add_description(::flatbuffers::Offset<::flatbuffers::String> description) {
+    fbb_.AddOffset(PresentationEvent::VT_DESCRIPTION, description);
+  }
+  void add_sound_category(::flatbuffers::Offset<::flatbuffers::String> sound_category) {
+    fbb_.AddOffset(PresentationEvent::VT_SOUND_CATEGORY, sound_category);
+  }
+  void add_heard_volume(uint16_t heard_volume) {
+    fbb_.AddElement<uint16_t>(PresentationEvent::VT_HEARD_VOLUME, heard_volume, 0);
+  }
+  explicit PresentationEventBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<PresentationEvent> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<PresentationEvent>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<PresentationEvent> CreatePresentationEvent(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t id = 0,
+    CDDA::CWM::PresentationKind kind = CDDA::CWM::PresentationKind::ATTACK,
+    uint64_t actor = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> description = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> sound_category = 0,
+    uint16_t heard_volume = 0) {
+  PresentationEventBuilder builder_(_fbb);
+  builder_.add_actor(actor);
+  builder_.add_id(id);
+  builder_.add_sound_category(sound_category);
+  builder_.add_description(description);
+  builder_.add_heard_volume(heard_volume);
+  builder_.add_kind(kind);
+  return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<PresentationEvent> CreatePresentationEventDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t id = 0,
+    CDDA::CWM::PresentationKind kind = CDDA::CWM::PresentationKind::ATTACK,
+    uint64_t actor = 0,
+    const char *description = nullptr,
+    const char *sound_category = nullptr,
+    uint16_t heard_volume = 0) {
+  auto description__ = description ? _fbb.CreateString(description) : 0;
+  auto sound_category__ = sound_category ? _fbb.CreateString(sound_category) : 0;
+  return CDDA::CWM::CreatePresentationEvent(
+      _fbb,
+      id,
+      kind,
+      actor,
+      description__,
+      sound_category__,
+      heard_volume);
+}
+
 struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef WorldSnapshotBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
@@ -2842,7 +3015,9 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_RELOAD = 52,
     VT_ITEM_TRANSFER = 54,
     VT_INVENTORY_WORK = 56,
-    VT_QUICK_SLOTS = 58
+    VT_QUICK_SLOTS = 58,
+    VT_PRESENTATION_EVENTS = 60,
+    VT_LOW_LIGHT = 62
   };
   uint64_t world_revision() const {
     return GetField<uint64_t>(VT_WORLD_REVISION, 0);
@@ -3012,6 +3187,18 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::QuickSlot>> *mutable_quick_slots() {
     return GetPointer<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::QuickSlot>> *>(VT_QUICK_SLOTS);
   }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::PresentationEvent>> *presentation_events() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::PresentationEvent>> *>(VT_PRESENTATION_EVENTS);
+  }
+  ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::PresentationEvent>> *mutable_presentation_events() {
+    return GetPointer<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::PresentationEvent>> *>(VT_PRESENTATION_EVENTS);
+  }
+  bool low_light() const {
+    return GetField<uint8_t>(VT_LOW_LIGHT, 0) != 0;
+  }
+  bool mutate_low_light(bool _low_light = 0) {
+    return SetField<uint8_t>(VT_LOW_LIGHT, static_cast<uint8_t>(_low_light), 0);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint64_t>(verifier, VT_WORLD_REVISION, 8) &&
@@ -3071,6 +3258,10 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_QUICK_SLOTS) &&
            verifier.VerifyVector(quick_slots()) &&
            verifier.VerifyVectorOfTables(quick_slots()) &&
+           VerifyOffset(verifier, VT_PRESENTATION_EVENTS) &&
+           verifier.VerifyVector(presentation_events()) &&
+           verifier.VerifyVectorOfTables(presentation_events()) &&
+           VerifyField<uint8_t>(verifier, VT_LOW_LIGHT, 1) &&
            verifier.EndTable();
   }
 };
@@ -3163,6 +3354,12 @@ struct WorldSnapshotBuilder {
   void add_quick_slots(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::QuickSlot>>> quick_slots) {
     fbb_.AddOffset(WorldSnapshot::VT_QUICK_SLOTS, quick_slots);
   }
+  void add_presentation_events(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::PresentationEvent>>> presentation_events) {
+    fbb_.AddOffset(WorldSnapshot::VT_PRESENTATION_EVENTS, presentation_events);
+  }
+  void add_low_light(bool low_light) {
+    fbb_.AddElement<uint8_t>(WorldSnapshot::VT_LOW_LIGHT, static_cast<uint8_t>(low_light), 0);
+  }
   explicit WorldSnapshotBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -3203,7 +3400,9 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshot(
     ::flatbuffers::Offset<CDDA::CWM::ReloadState> reload = 0,
     ::flatbuffers::Offset<CDDA::CWM::ItemTransferState> item_transfer = 0,
     ::flatbuffers::Offset<CDDA::CWM::InventoryWorkState> inventory_work = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::QuickSlot>>> quick_slots = 0) {
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::QuickSlot>>> quick_slots = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::PresentationEvent>>> presentation_events = 0,
+    bool low_light = false) {
   WorldSnapshotBuilder builder_(_fbb);
   builder_.add_completed_command_id(completed_command_id);
   builder_.add_resync_id(resync_id);
@@ -3211,6 +3410,7 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshot(
   builder_.add_base_revision(base_revision);
   builder_.add_simulation_time_seconds(simulation_time_seconds);
   builder_.add_world_revision(world_revision);
+  builder_.add_presentation_events(presentation_events);
   builder_.add_quick_slots(quick_slots);
   builder_.add_inventory_work(inventory_work);
   builder_.add_item_transfer(item_transfer);
@@ -3231,6 +3431,7 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshot(
   builder_.add_entities(entities);
   builder_.add_chunks(chunks);
   builder_.add_origin(origin);
+  builder_.add_low_light(low_light);
   builder_.add_full(full);
   builder_.add_safety_stop(safety_stop);
   return builder_.Finish();
@@ -3265,7 +3466,9 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshotDirect(
     ::flatbuffers::Offset<CDDA::CWM::ReloadState> reload = 0,
     ::flatbuffers::Offset<CDDA::CWM::ItemTransferState> item_transfer = 0,
     ::flatbuffers::Offset<CDDA::CWM::InventoryWorkState> inventory_work = 0,
-    const std::vector<::flatbuffers::Offset<CDDA::CWM::QuickSlot>> *quick_slots = nullptr) {
+    const std::vector<::flatbuffers::Offset<CDDA::CWM::QuickSlot>> *quick_slots = nullptr,
+    const std::vector<::flatbuffers::Offset<CDDA::CWM::PresentationEvent>> *presentation_events = nullptr,
+    bool low_light = false) {
   auto chunks__ = chunks ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::ChunkSnapshot>>(*chunks) : 0;
   auto entities__ = entities ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::EntityState>>(*entities) : 0;
   auto vehicles__ = vehicles ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::VehicleState>>(*vehicles) : 0;
@@ -3276,6 +3479,7 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshotDirect(
   auto ground_item_tiles__ = ground_item_tiles ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::GroundItemTileState>>(*ground_item_tiles) : 0;
   auto owned_items__ = owned_items ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::GroundItemState>>(*owned_items) : 0;
   auto quick_slots__ = quick_slots ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::QuickSlot>>(*quick_slots) : 0;
+  auto presentation_events__ = presentation_events ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::PresentationEvent>>(*presentation_events) : 0;
   return CDDA::CWM::CreateWorldSnapshot(
       _fbb,
       world_revision,
@@ -3305,7 +3509,9 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshotDirect(
       reload,
       item_transfer,
       inventory_work,
-      quick_slots__);
+      quick_slots__,
+      presentation_events__,
+      low_light);
 }
 
 struct InventoryWorkState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {

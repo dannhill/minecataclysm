@@ -37277,7 +37277,7 @@
   {
     "path": "src/creature.cpp",
     "mode": "100644",
-    "sha256": "6ed9317ea59ce7b214cb2a9c90a4235d399f97d61e7295b7f06424b8d16be553"
+    "sha256": "49caa596fed5329a202b31597f54f202382df9ebf0d47b8da956e2e63d262185"
   },
   {
     "path": "src/creature.h",
@@ -37342,12 +37342,17 @@
   {
     "path": "src/cwm/cwm_map_exporter.cpp",
     "mode": "100644",
-    "sha256": "bde87a94f455ef1e3866ca53dbc297c56bedfae3beed67ff7fd4317e957d4a72"
+    "sha256": "91e8cef39a9253ec15d87cbb00ee1639f22727e08ee3aa659a7f9e8c26c06279"
   },
   {
     "path": "src/cwm/cwm_map_exporter.h",
     "mode": "100644",
     "sha256": "bb801dba65a7cb0dbaa223e940ceb695684733f5ed5ac98a7f456f30a27de3b0"
+  },
+  {
+    "path": "src/cwm/cwm_presentation.h",
+    "mode": "100644",
+    "sha256": "6b467784edaae1804a542631705c4248ffc13c200dd045fe8fa06c8e5ee9a95a"
   },
   {
     "path": "src/cwm/cwm_ranged.h",
@@ -38702,7 +38707,7 @@
   {
     "path": "src/melee.cpp",
     "mode": "100644",
-    "sha256": "8da12ff5782bc1ff94020e9bb2409aece6d1b3c374ad901690b6bf41fcbd00fc"
+    "sha256": "4ef8fd5d74b0209ab366e120d6587563bb01cbd37c11b953afbb8df920a4cf5e"
   },
   {
     "path": "src/melee.h",
@@ -38897,7 +38902,7 @@
   {
     "path": "src/monster.cpp",
     "mode": "100644",
-    "sha256": "fe82df2bd79bd6f0ee749ef6a674157d586636e7c136e91b064f498870a31e14"
+    "sha256": "7f6e5133a81256814fc8fe8c36244aaac5c54a1861573551d72bdd394b2038ca"
   },
   {
     "path": "src/monster.h",
@@ -39412,7 +39417,7 @@
   {
     "path": "src/ranged.cpp",
     "mode": "100644",
-    "sha256": "5bee7836cfafdabe43b158befbc832ffed0b872a43d0bf385b968a7eb79ed9d7"
+    "sha256": "36f7d9a55dab72488825e5b9f0839dfee7be3d081455e44462c7236388f61913"
   },
   {
     "path": "src/ranged.h",
@@ -39772,7 +39777,7 @@
   {
     "path": "src/sounds.cpp",
     "mode": "100644",
-    "sha256": "a7c3f290ece26936a301fb98f708009faa41a68d628f0b6a2148736092cfddbf"
+    "sha256": "0aada808b4d3c0f655e8cafae3cbbb2a32aace787b16c5317a37ea73f79148ae"
   },
   {
     "path": "src/sounds.h",

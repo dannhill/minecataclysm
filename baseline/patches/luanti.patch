@@ -88,7 +88,7 @@ index 57e5a13..499e52c 100644
  
  	get_setting_info("touch_controls").option_labels = {
 diff --git a/builtin/settingtypes.txt b/builtin/settingtypes.txt
-index 728eaf4..d57fb16 100644
+index 728eaf4..b788fcf 100644
 --- a/builtin/settingtypes.txt
 +++ b/builtin/settingtypes.txt
 @@ -666,9 +666,9 @@ mute_sound (Mute sound) bool false
@@ -104,7 +104,7 @@ index 728eaf4..d57fb16 100644
  
  [**GUI]
  
-@@ -2557,3 +2557,18 @@ keymap_increase_viewing_range_min (View range increase key) key +
+@@ -2557,3 +2557,19 @@ keymap_increase_viewing_range_min (View range increase key) key +
  
  #    Key for decreasing the viewing range.
  keymap_decrease_viewing_range_min (View range decrease key) key -
@@ -112,6 +112,7 @@ index 728eaf4..d57fb16 100644
 +[CDDA controls]
 +
 +# Hold by default; enable to toggle on each physical press.
++cwm_show_diagnostics (CDDA: diagnostic panels, toggled by debug key) bool false
 +cwm_run_toggle (CDDA: toggle running) bool false
 +cwm_crouch_toggle (CDDA: toggle crouching) bool false
 +keymap_cdda_run (CDDA: run key) string KEY_LCONTROL
@@ -148,6 +149,61 @@ index d451d09..eb8db1d 100644
 +	${CMAKE_CURRENT_SOURCE_DIR}/../cdda/cdda_bridge.cpp
  	PARENT_SCOPE
  )
+diff --git a/src/client/camera.cpp b/src/client/camera.cpp
+index 4abe062..b101989 100644
+--- a/src/client/camera.cpp
++++ b/src/client/camera.cpp
+@@ -3,6 +3,7 @@
+ // Copyright (C) 2010-2013 celeron55, Perttu Ahola <celeron55@gmail.com>
+ 
+ #include "camera.h"
++#include "cdda/cdda_bridge.h"
+ #include "debug.h"
+ #include "client.h"
+ #include "config.h"
+@@ -114,6 +115,8 @@ inline f32 my_modf(f32 x)
+ 
+ void Camera::step(f32 dtime)
+ {
++    auto& bridge = cdda_client::CddaBridge::getInstance();
++    if (bridge.ownsPlayer(m_client)) dtime = bridge.visualAnimationDelta();
+ 	if(m_view_bobbing_fall > 0)
+ 	{
+ 		m_view_bobbing_fall -= 3 * dtime;
+@@ -536,6 +539,21 @@ void Camera::update(LocalPlayer* player, f32 frametime, f32 tool_reload_ratio)
+ 		wield_position.X -= std::sin(bobfrac*M_PI*2.0) * 3.0;
+ 		wield_position.Y += std::sin(my_modf(bobfrac*2.0)*M_PI) * 3.0;
+ 	}
++    auto& bridge = cdda_client::CddaBridge::getInstance();
++    if (bridge.ownsPlayer(m_client)) {
++        const auto texture = bridge.wieldedTexture();
++        if (texture != m_cwm_wield_texture) {
++            m_cwm_wield_texture = texture;
++            if (texture.empty()) m_wieldnode->setItem(ItemStack(),m_client);
++            else m_wieldnode->setExtruded(texture,"",v3f(1.f),m_client->getTextureSource(),1);
++        }
++        if (bridge.firearmWielded()) {
++            const bool aim = bridge.aiming();
++            const float kick = bridge.shotKick();
++            wield_position = v3f(aim ? 10.f : 38.f, aim ? -22.f : -34.f, 65.f + kick*6.f);
++            wield_rotation = v3f(-100.f - kick*12.f,120.f,-100.f);
++        }
++    }
+ 	m_wieldnode->setPosition(wield_position);
+ 	m_wieldnode->setRotation(wield_rotation);
+ 
+diff --git a/src/client/camera.h b/src/client/camera.h
+index 9a8e2d3..9d71e70 100644
+--- a/src/client/camera.h
++++ b/src/client/camera.h
+@@ -264,6 +264,7 @@ class Camera
+ 	// Animation when changing wielded item
+ 	f32 m_wield_change_timer = 0.125f;
+ 	ItemStack m_wield_item_next;
++    std::string m_cwm_wield_texture;
+ 
+ 	CameraMode m_camera_mode = CAMERA_MODE_FIRST;
+ 
 diff --git a/src/client/client.cpp b/src/client/client.cpp
 index 6d42e75..df01ef1 100644
 --- a/src/client/client.cpp
@@ -261,7 +317,7 @@ index 16ceda4..20bd596 100644
  			float old_anim_speed = player->last_animation_speed;
  			m_velocity = v3f(0,0,0);
 diff --git a/src/client/game.cpp b/src/client/game.cpp
-index 27b5833..92386ae 100644
+index 27b5833..8b2f031 100644
 --- a/src/client/game.cpp
 +++ b/src/client/game.cpp
 @@ -8,6 +8,8 @@
@@ -451,7 +507,17 @@ index 27b5833..92386ae 100644
  	} else if (wasKeyDown(KeyType::PITCHMOVE)) {
  		togglePitchMove();
  	} else if (wasKeyDown(KeyType::FASTMOVE)) {
-@@ -2154,9 +2243,17 @@ void Game::processKeyInput()
+@@ -2142,7 +2231,8 @@ void Game::processKeyInput()
+ 	} else if (wasKeyDown(KeyType::TOGGLE_UPDATE_CAMERA)) {
+ 		toggleUpdateCamera();
+ 	} else if (wasKeyPressed(KeyType::TOGGLE_DEBUG)) {
+-		toggleDebug();
++        auto& bridge = cdda_client::CddaBridge::getInstance();
++        if (bridge.ownsPlayer(client)) bridge.toggleDiagnostics(); else toggleDebug();
+ 	} else if (wasKeyPressed(KeyType::TOGGLE_PROFILER)) {
+ 		m_game_ui->toggleProfiler();
+ 	} else if (wasKeyDown(KeyType::INCREASE_VIEWING_RANGE)) {
+@@ -2154,9 +2244,17 @@ void Game::processKeyInput()
  	} else if (wasKeyDown(KeyType::ZOOM)) {
  		checkZoomEnabled();
  	} else if (wasKeyDown(KeyType::QUICKTUNE_NEXT)) {
@@ -471,7 +537,7 @@ index 27b5833..92386ae 100644
  	} else if (wasKeyDown(KeyType::QUICKTUNE_INC)) {
  		quicktune->inc();
  	} else if (wasKeyDown(KeyType::QUICKTUNE_DEC)) {
-@@ -2178,6 +2275,22 @@ void Game::processItemSelection(u16 *new_playeritem)
+@@ -2178,6 +2276,22 @@ void Game::processItemSelection(u16 *new_playeritem)
  	LocalPlayer *player = client->getEnv().getLocalPlayer();
  
  	*new_playeritem = player->getWieldIndex();
@@ -494,7 +560,7 @@ index 27b5833..92386ae 100644
  	u16 max_item = player->getMaxHotbarItemcount();
  	if (max_item == 0)
  		return;
-@@ -2238,6 +2351,18 @@ void Game::dropSelectedItem(bool single_item)
+@@ -2238,6 +2352,18 @@ void Game::dropSelectedItem(bool single_item)
  
  void Game::openInventory()
  {
@@ -513,7 +579,7 @@ index 27b5833..92386ae 100644
  	/*
  	 * Don't permit to open inventory is CAO or player doesn't exists.
  	 * This prevent showing an empty inventory at player load
-@@ -2737,8 +2862,68 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
+@@ -2737,8 +2863,68 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
  		control.aux1 = control.aux1 ^ true;
  	}
  
@@ -582,7 +648,7 @@ index 27b5833..92386ae 100644
  	//tt.stop();
  }
  
-@@ -2784,6 +2969,73 @@ inline void Game::step(f32 dtime)
+@@ -2784,6 +2970,73 @@ inline void Game::step(f32 dtime)
  
  	if (!m_is_paused)
  		client->step(dtime);
@@ -656,7 +722,7 @@ index 27b5833..92386ae 100644
  }
  
  static void pauseNodeAnimation(PausedNodesList &paused, scene::ISceneNode *node) {
-@@ -3246,6 +3498,7 @@ void Game::updateCamera(f32 dtime)
+@@ -3246,6 +3499,7 @@ void Game::updateCamera(f32 dtime)
  	tool_reload_ratio = MYMIN(tool_reload_ratio, 1.0);
  	camera->update(player, dtime, tool_reload_ratio);
  	camera->step(dtime);
@@ -664,7 +730,7 @@ index 27b5833..92386ae 100644
  
  	f32 camera_fov = camera->getFovMax();
  	v3s16 camera_offset = camera->getOffset();
-@@ -3262,6 +3515,7 @@ void Game::updateCamera(f32 dtime)
+@@ -3262,6 +3516,7 @@ void Game::updateCamera(f32 dtime)
  		if (m_camera_offset_changed) {
  			client->updateCameraOffset(camera_offset);
  			client->getEnv().updateCameraOffset(camera_offset);
@@ -672,7 +738,7 @@ index 27b5833..92386ae 100644
  
  			if (clouds)
  				clouds->updateCameraOffset(camera_offset);
-@@ -3314,6 +3568,8 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
+@@ -3314,6 +3569,8 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
  
  	const ItemDefinition &selected_def = selected_item.getDefinition(itemdef_manager);
  	f32 d = getToolRange(selected_item, hand_item, itemdef_manager);
@@ -681,7 +747,7 @@ index 27b5833..92386ae 100644
  
  	core::line3d<f32> shootline;
  
-@@ -3365,6 +3621,48 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
+@@ -3365,6 +3622,48 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
  	// but the halo rendering code is already inefficient so there's no point in optimizing it here
  	hud->updateSelectionMesh(camera_offset);
  
@@ -730,7 +796,7 @@ index 27b5833..92386ae 100644
  	// Allow digging again if button is not pressed
  	if (runData.digging_blocked && !isKeyDown(KeyType::DIG))
  		runData.digging_blocked = false;
-@@ -4247,7 +4545,8 @@ void Game::updateClouds(float dtime)
+@@ -4247,7 +4546,8 @@ void Game::updateClouds(float dtime)
  {
  	if (this->sky->getCloudsVisible()) {
  		this->clouds->setVisible(true);
@@ -740,7 +806,7 @@ index 27b5833..92386ae 100644
  		// this->camera->getPosition is not enough for third-person camera.
  		v3f camera_node_position = this->camera->getCameraNode()->getPosition();
  		v3s16 camera_offset      = this->camera->getOffset();
-@@ -4319,7 +4618,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
+@@ -4319,7 +4619,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
  	/*
  		Fog
  	*/
@@ -754,7 +820,7 @@ index 27b5833..92386ae 100644
  		this->driver->setFog(
  				fog_color,
  				video::EFT_FOG_LINEAR,
-@@ -4518,6 +4822,12 @@ void Game::showPauseMenu()
+@@ -4518,6 +4823,12 @@ void Game::showPauseMenu()
  		<< strgettext("Exit to Menu") << "]";
  	os		<< "button_exit[4," << (ypos++) << ";3,0.5;btn_exit_os;"
  		<< strgettext("Exit to OS")   << "]";
@@ -910,10 +976,10 @@ index d6e2863..239953a 100644
  	std::vector<std::unique_ptr<MeshUpdateWorkerThread>> m_workers;
  };
 diff --git a/src/defaultsettings.cpp b/src/defaultsettings.cpp
-index 7758c96..f5783bf 100644
+index 7758c96..031c33e 100644
 --- a/src/defaultsettings.cpp
 +++ b/src/defaultsettings.cpp
-@@ -166,6 +166,18 @@ void set_default_settings()
+@@ -166,6 +166,19 @@ void set_default_settings()
  	settings->setDefault("keymap_toggle_hud", "KEY_F1");
  	settings->setDefault("keymap_toggle_chat", "KEY_F2");
  	settings->setDefault("keymap_toggle_fog", "KEY_F3");
@@ -925,6 +991,7 @@ index 7758c96..f5783bf 100644
 +	settings->setDefault("keymap_cdda_run", "KEY_LCONTROL");
 +	settings->setDefault("keymap_cdda_crouch", "KEY_LSHIFT");
 +	settings->setDefault("keymap_cdda_prone", "KEY_KEY_X");
++	settings->setDefault("cwm_show_diagnostics", "false");
 +	settings->setDefault("cwm_run_toggle", "false");
 +	settings->setDefault("cwm_language", "en");
 +	settings->setDefault("cwm_crouch_toggle", "false");
@@ -1782,10 +1849,10 @@ index 0000000..e1e7236
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..359522a
+index 0000000..0fa2a68
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,2975 @@
+@@ -0,0 +1,3091 @@
 +#include "cwm/product_language.hpp"
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
@@ -1804,6 +1871,9 @@ index 0000000..359522a
 +#include "posture_input.h"
 +#include "aim_input.h"
 +#include "humanoid_animation.h"
++#include "creature_visual.h"
++#include "client/sound.h"
++#include "sound.h"
 +#include <IGUIImage.h>
 +#include <IGUISkin.h>
 +#include <IGUIFont.h>
@@ -1907,6 +1977,11 @@ index 0000000..359522a
 +    std::unordered_map<uint64_t, VisualEntity> entities_;
 +    std::unordered_map<uint64_t, VisualVehicle> vehicles_;
 +    irr::gui::IGUIStaticText* debug_text_{nullptr};
++    irr::gui::IGUIStaticText *environment_tint_{nullptr}, *environment_text_{nullptr}, *cue_text_{nullptr};
++    bool diagnostics_{false}, low_light_{false};
++    uint64_t last_cue_{0}, cues_received_{0}, sounds_played_{0};
++    std::wstring cue_caption_;
++    float caption_seconds_{0.f};
 +    irr::gui::IGUIStaticText* safety_text_{nullptr};
 +    
 +    irr::gui::IGUIStaticText* posture_text_{nullptr};
@@ -2321,12 +2396,19 @@ index 0000000..359522a
 +    void render_entity(VisualEntity& ent) {
 +        if (!client_) return;
 +        const bool zombie = ent.type_id.find("mon_zombie") == 0;
-+        const auto cycle = humanoidCycle(zombie, ent.walking, ent.state_flags);
++        const auto visual = creatureVisual(ent.type_id, ent.humanoid);
++        const bool human = zombie || ent.humanoid || ent.id == 1;
++        auto cycle = human ? humanoidCycle(zombie, ent.walking, ent.state_flags) : (ent.walking ? visual.walk : visual.idle);
++        const bool attacking = ent.attack_seconds > 0.f;
++        if (attacking && human) cycle = zombie ? HumanoidCycle{50,59,20} : HumanoidCycle{189,198,30};
 +        const auto animate = [&](irr::scene::IAnimatedMeshSceneNode* body) {
 +            if (!body) return;
 +            body->setAnimationSpeed(0); // Irrlicht wall time must not unpause it.
 +            body->setFrameLoop(cycle.first, cycle.last);
-+            body->setCurrentFrame(humanoidFrame(cycle, ent.animation_seconds));
++            const float frame = attacking && human ?
++                std::min(float(cycle.last), cycle.first + (.5f - ent.attack_seconds) * cycle.fps) :
++                humanoidFrame(cycle, ent.animation_seconds);
++            body->setCurrentFrame(frame);
 +            body->animateJoints();
 +        };
 +        if (ent.id == 1) {
@@ -2349,14 +2431,14 @@ index 0000000..359522a
 +        if (!smgr_) return;
 +        if (!ent.scene_node && ent.perceived) {
 +            irr::scene::ISceneNode* node = nullptr;
-+            if (zombie || ent.humanoid) {
-+                auto* mesh = client_->getMesh(zombie ? "zombie.b3d" : "character.b3d");
++            if (visual.mesh) {
++                auto* mesh = client_->getMesh(visual.mesh);
 +                if (mesh) {
 +                    auto* body = smgr_->addAnimatedMeshSceneNode(mesh);
 +                    if (body) {
 +                        const auto box = mesh->getBoundingBox();
 +                        const float height = box.MaxEdge.Y - box.MinEdge.Y;
-+                        const float scale = height > 0.001f ? 18.0f / height : 1.0f;
++                        const float scale = height > 0.001f ? visual.height / height : 1.0f;
 +                        body->setScale(v3f(scale, scale, scale));
 +                        body->setFrameLoop(0, 0);
 +                        body->setAnimationSpeed(0);
@@ -2368,9 +2450,9 @@ index 0000000..359522a
 +                            // Mineclonia zombie: armour, skin. Character:
 +                            // skin, armour, clothing overlay. Never paint the
 +                            // skin onto the empty overlay geometry as well.
-+                            const bool skin = zombie ? layer == 1 : layer == 0;
++                            const bool skin = int(layer) == visual.skin_layer;
 +                            material.setTexture(0, client_->getTextureSource()->getTextureForMesh(
-+                                skin ? (zombie ? "zombie.png" : "mcl_skins_character_1.png") : "blank.png"));
++                                skin ? visual.skin : "blank.png"));
 +                            material.MaterialType = irr::video::EMT_TRANSPARENT_ALPHA_CHANNEL_REF;
 +                            material.UseMipMaps = false;
 +                            material.TextureLayers[0].MinFilter = irr::video::ETMINF_NEAREST_MIPMAP_NEAREST;
@@ -2405,7 +2487,16 @@ index 0000000..359522a
 +            node->setVisible(session_.ready() && ent.perceived);
 +            node->setPosition((ent.current_pos + v3f(0, .5f, 0) - v3f(offset.X, offset.Y, offset.Z)) * 10.0f +
 +                              v3f(0, ent.model_y_offset, 0));
-+            node->setRotation(v3f(0, ent.presentation_yaw, 0));
++            // A brief pose/skin cue, never an authoritative knockback or turn.
++            node->setRotation(v3f(ent.hurt_seconds > 0 ? -7.f : 0.f, ent.presentation_yaw, 0));
++            if (visual.mesh) {
++                unsigned layer = 0;
++                node->forEachMaterial([&](auto& material) {
++                    const std::string texture = int(layer++) == visual.skin_layer ?
++                        std::string(visual.skin) + (ent.hurt_seconds > 0 ? "^[colorize:#FF5555:120" : "") : "blank.png";
++                    material.setTexture(0,client_->getTextureSource()->getTextureForMesh(texture));
++                });
++            }
 +            if (node->getType() == irr::scene::ESNT_ANIMATED_MESH)
 +                animate(static_cast<irr::scene::IAnimatedMeshSceneNode*>(node));
 +        }
@@ -2607,6 +2698,7 @@ index 0000000..359522a
 +        origin_valid_ = false;
 +        pending_move_ = 0; metrics_.pending_decision = 0;
 +        player_feet_offset_ = player_eye_offset_ = 0.f;
++        last_cue_ = 0; caption_seconds_ = 0; low_light_ = false;
 +        posture_input_ = {}; aim_input_ = {}; deferred_ranged_.reset(); last_aim_command_ = 0; posture_command_ = 0; deferred_opening_.reset();
 +    }
 +
@@ -2746,6 +2838,7 @@ index 0000000..359522a
 +            metrics_.pending_decision || sent_menu_pause_ == 1 || body_form_open_ || ground_container_open_ || equipment_open_;
 +        visual_animation_delta_ = frozen ? 0.f : dtime * (metrics_.realtime ? metrics_.time_scale : 1.f);
 +        visual_animation_time_ += visual_animation_delta_;
++        if (!frozen) caption_seconds_ = std::max(0.f, caption_seconds_ - dtime);
 +
 +        // Interpolate visual entities
 +        for (auto& [id, ent] : entities_) {
@@ -2755,6 +2848,8 @@ index 0000000..359522a
 +                if (walking != ent.walking) ent.animation_seconds = 0.;
 +                ent.walking = walking;
 +                ent.animation_seconds += visual_animation_delta_;
++                ent.attack_seconds = std::max(0.f,ent.attack_seconds - visual_animation_delta_);
++                ent.hurt_seconds = std::max(0.f,ent.hurt_seconds - visual_animation_delta_);
 +            }
 +            const float elapsed = frozen ? 0.f : dtime;
 +            ent.interpolation_time = std::min(ent.motion_seconds, ent.interpolation_time + elapsed);
@@ -3229,6 +3324,7 @@ index 0000000..359522a
 +                            it->second.hp_percent = ent_state->hp_percent();
 +                            it->second.state_flags = ent_state->state_flags();
 +                            it->second.perceived = ent_state->perceived();
++                            if (!it->second.perceived) it->second.attack_seconds = it->second.hurt_seconds = 0.f;
 +                        }
 +                    }
 +                    for (auto it = entities_.begin(); it != entities_.end();) {
@@ -3240,6 +3336,33 @@ index 0000000..359522a
 +                    }
 +                }
 +                if (!session_.commit(*snap, *connection_)) { connection_->close(); return; }
++                low_light_ = snap->low_light();
++                if (snap->full()) for (auto& pair : entities_) {
++                    pair.second.attack_seconds = pair.second.hurt_seconds = 0;
++                }
++                if (!snap->full() && snap->presentation_events()) for (const auto* cue : *snap->presentation_events()) {
++                    if (cue->id() <= last_cue_) continue;
++                    last_cue_ = cue->id(); ++cues_received_;
++                    auto actor = entities_.find(cue->actor());
++                    if (actor != entities_.end() && actor->second.perceived) {
++                        if (cue->kind() == CDDA::CWM::PresentationKind::ATTACK || cue->kind() == CDDA::CWM::PresentationKind::SHOT)
++                            actor->second.attack_seconds = .5f;
++                        if (cue->kind() == CDDA::CWM::PresentationKind::HURT) actor->second.hurt_seconds = .35f;
++                    }
++                    if (cue->description() && cue->description()->size()) {
++                        cue_caption_ = utf8_to_wide(decisionPlainText(cue->description()->str()));
++                        caption_seconds_ = 3.f;
++                    }
++                    if (cue->kind() == CDDA::CWM::PresentationKind::SOUND) {
++                        const auto category = cue->sound_category()->str();
++                        const char* sound = category == "gunfire" ? "cwm_gunfire" : category == "combat" ? "cwm_combat" :
++                            category == "movement" ? "cwm_movement" : category == "activity" ? "cwm_activity" : nullptr;
++                        if (sound) {
++                            const float gain = std::clamp(cue->heard_volume()/100.f,.04f,.65f) * (category == "gunfire" ? .35f : 1.f);
++                            client_->sound()->playSound(0,SoundSpec(sound,gain)); ++sounds_played_;
++                        }
++                    }
++                }
 +                metrics_.current_revision = session_.revision;
 +                player_ready_ = session_.ready() && entities_.count(1) != 0;
 +                if (!player_ready_ || entities_.at(1).hp_percent == 0) dismiss_inventory_work();
@@ -3463,6 +3586,7 @@ index 0000000..359522a
 +        ::cwm::set_product_language("en");
 +    pimpl_ = std::make_unique<Impl>();
 +    pimpl_->client_ = client;
++    pimpl_->diagnostics_ = g_settings->getBool("cwm_show_diagnostics");
 +    pimpl_->socket_path_ = socket_path;
 +    pimpl_->terrain_demo_ = g_settings->exists("cdda_terrain_comparison") &&
 +                            g_settings->getBool("cdda_terrain_comparison");
@@ -3474,17 +3598,20 @@ index 0000000..359522a
 +    std::string trace_path;
 +    if (g_settings->getNoEx("cwm_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->trace_.open(trace_path);
-+        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog,ipc_connected,ipc_input,ipc_output,ipc_read_bytes,ipc_write_bytes,ipc_frames,ipc_dispatch_bytes,ipc_read_calls,ipc_write_calls,session_state,input_ready,session_id,player_id,connection_id,sequence,resync_count,entity_cache,vehicle_cache,scene_origin_x,scene_origin_y,simulation_time,realtime,pause_reasons,time_scale,sent_intent,continuous_motion,intent_x,intent_y,ipc_latency_ms,projection_ms,ground_tiles,owned_items,ground_container,ground_hover,queued_pickup,ground_visual_nodes,ground_hover_items,ground_target_items,ground_target_visual_nodes,ground_target_first_type,status_available,body_form,survival_visible,status_stamina,status_head,status_arm_l,combat_hover,attacks_sent,attack_target,attack_target_hp,attack_result,player_state_flags,player_eye_offset,visual_animation_time,visual_animation_delta,ground_item_rotation,status_hunger_level,status_thirst_level,status_fatigue_level,status_pain_level,hud_images_active,equipment_form,inventory_view,inventory_entries,equipment_selected,equipment_sent,pending_decision,consumption_token,consumption_total,consumption_remaining,cancel_consumption_sent,first_aid_token,first_aid_total,first_aid_remaining,crafting_form,crafting_view,crafting_selected,crafting_sent,crafting_token,crafting_progress,weapon_token,weapon_ammo,weapon_recoil,aim_sent,fire_sent,reload_sent,reload_token,reload_total,reload_remaining,transfer_form,transfers_sent,transfer_token,transfer_total,transfer_remaining,inventory_work_command,native_work_command,native_work_settled,inventory_return,inventory_work_visible,equipment_page,equipment_filter,equipment_search_open,quick_slot,quick_count,quick_wielded,quick_use_sent,quick_bind_command,aim_held,ranged_deferred,external_form,external_entries,decision_waiting,native_work_total_ms,native_work_remaining_ms,work_progress_visible\n";
++        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog,ipc_connected,ipc_input,ipc_output,ipc_read_bytes,ipc_write_bytes,ipc_frames,ipc_dispatch_bytes,ipc_read_calls,ipc_write_calls,session_state,input_ready,session_id,player_id,connection_id,sequence,resync_count,entity_cache,vehicle_cache,scene_origin_x,scene_origin_y,simulation_time,realtime,pause_reasons,time_scale,sent_intent,continuous_motion,intent_x,intent_y,ipc_latency_ms,projection_ms,ground_tiles,owned_items,ground_container,ground_hover,queued_pickup,ground_visual_nodes,ground_hover_items,ground_target_items,ground_target_visual_nodes,ground_target_first_type,status_available,body_form,survival_visible,status_stamina,status_head,status_arm_l,combat_hover,attacks_sent,attack_target,attack_target_hp,attack_result,player_state_flags,player_eye_offset,visual_animation_time,visual_animation_delta,ground_item_rotation,status_hunger_level,status_thirst_level,status_fatigue_level,status_pain_level,hud_images_active,equipment_form,inventory_view,inventory_entries,equipment_selected,equipment_sent,pending_decision,consumption_token,consumption_total,consumption_remaining,cancel_consumption_sent,first_aid_token,first_aid_total,first_aid_remaining,crafting_form,crafting_view,crafting_selected,crafting_sent,crafting_token,crafting_progress,weapon_token,weapon_ammo,weapon_recoil,aim_sent,fire_sent,reload_sent,reload_token,reload_total,reload_remaining,transfer_form,transfers_sent,transfer_token,transfer_total,transfer_remaining,inventory_work_command,native_work_command,native_work_settled,inventory_return,inventory_work_visible,equipment_page,equipment_filter,equipment_search_open,quick_slot,quick_count,quick_wielded,quick_use_sent,quick_bind_command,aim_held,ranged_deferred,external_form,external_entries,decision_waiting,native_work_total_ms,native_work_remaining_ms,work_progress_visible,presentation_cues,sounds_dispatched,low_light,underwater,diagnostics,wield_texture,shot_kick\n";
 +    }
 +    if (g_settings->getNoEx("cwm_entity_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->entity_trace_.open(trace_path);
-+        pimpl_->entity_trace_ << "time_ns,revision,session_id,connection_id,id,type,perceived,ready,current_x,current_y,current_z,target_x,target_y,target_z,node_generation,node_visible,node_x,node_y,node_z,scene_actors,visible_actors,node_materials,material0,material1,material2,model_frame,model_yaw,model_height\n";
++        pimpl_->entity_trace_ << "time_ns,revision,session_id,connection_id,id,type,perceived,ready,current_x,current_y,current_z,target_x,target_y,target_z,node_generation,node_visible,node_x,node_y,node_z,scene_actors,visible_actors,node_materials,material0,material1,material2,model_frame,model_yaw,model_height,attack_seconds,hurt_seconds\n";
 +    }
 +    return pimpl_->connect();
 +}
 +
 +void CddaBridge::shutdown() {
 +    if (pimpl_) {
++        if (pimpl_->environment_tint_) pimpl_->environment_tint_->remove();
++        if (pimpl_->environment_text_) pimpl_->environment_text_->remove();
++        if (pimpl_->cue_text_) pimpl_->cue_text_->remove();
 +        if (pimpl_->debug_text_) pimpl_->debug_text_->remove();
 +        if (pimpl_->item_hint_text_) pimpl_->item_hint_text_->remove();
 +        if (pimpl_->survival_text_) pimpl_->survival_text_->remove();
@@ -3514,6 +3641,30 @@ index 0000000..359522a
 +
 +bool CddaBridge::ownsPlayer(const Client* client) const {
 +    return pimpl_ && pimpl_->client_ == client;
++}
++
++void CddaBridge::toggleDiagnostics() {
++    if (!pimpl_) return;
++    pimpl_->diagnostics_ = !pimpl_->diagnostics_;
++    g_settings->setBool("cwm_show_diagnostics",pimpl_->diagnostics_);
++}
++std::string CddaBridge::wieldedTexture() const {
++    if (!pimpl_ || !pimpl_->session_.ready()) return {};
++    for (const auto& item : pimpl_->owned_items_) if (item.wielded) {
++        const auto name = pimpl_->ground_item_visual_name(item.type_id);
++        const auto& def = pimpl_->client_->getItemDefManager()->get(name);
++        EquipmentEntry e; e.category=item.category;
++        auto texture = name == "cdda_items:fallback_generic" || def.inventory_image.empty() ? equipmentCategoryIcon(e) : def.inventory_image;
++        return texture + (item.rotten ? "^[colorize:#667322:110" : "");
++    }
++    return {};
++}
++bool CddaBridge::firearmWielded() const { return pimpl_ && pimpl_->session_.ready() && pimpl_->weapon_token_; }
++bool CddaBridge::aiming() const { return pimpl_ && pimpl_->aim_input_.aiming(); }
++float CddaBridge::shotKick() const {
++    if (!pimpl_) return 0.f;
++    const auto player=pimpl_->entities_.find(1);
++    return player==pimpl_->entities_.end() ? 0.f : std::max(0.f,(player->second.attack_seconds-.35f)/.15f);
 +}
 +
 +bool CddaBridge::terrainComparisonEnabled() const {
@@ -3581,7 +3732,7 @@ index 0000000..359522a
 +                << pos.X << ',' << pos.Y << ',' << pos.Z << ',' << scene_actors << ',' << visible_actors
 +                << ',' << (node ? node->getMaterialCount() : 0) << ',' << texture(0) << ',' << texture(1) << ',' << texture(2)
 +                << ',' << (animated ? animated->getFrameNr() : -1.f) << ',' << (node ? node->getRotation().Y : 0.f)
-+                << ',' << (node ? node->getBoundingBox().getExtent().Y * node->getScale().Y : 0.f) << '\n';
++                << ',' << (node ? node->getBoundingBox().getExtent().Y * node->getScale().Y : 0.f) << ',' << ent.attack_seconds << ',' << ent.hurt_seconds << '\n';
 +        }
 +        pimpl_->entity_trace_.flush();
 +    }
@@ -3673,7 +3824,9 @@ index 0000000..359522a
 +        << ',' << pimpl_->quick_use_sent_ << ',' << pimpl_->quick_bind_command_ << ',' << pimpl_->aim_input_.aiming() << ',' << (pimpl_->deferred_ranged_ ? pimpl_->deferred_ranged_->action : -1) << ',' << pimpl_->external_anchor_.has_value()
 +        << ',' << std::count_if(pimpl_->equipment_view_.entries.begin(),pimpl_->equipment_view_.entries.end(),[](const auto& e){return e.external;}) << ',' << pimpl_->decision_dialog_.submitted
 +        << ',' << pimpl_->native_work_total_ms_ << ',' << pimpl_->native_work_remaining_ms_
-+        << ',' << (pimpl_->work_progress_ && pimpl_->work_progress_->isVisible()) << '\n';
++        << ',' << (pimpl_->work_progress_ && pimpl_->work_progress_->isVisible()) << ',' << pimpl_->cues_received_ << ',' << pimpl_->sounds_played_ << ',' << pimpl_->low_light_
++        << ',' << bool(entity.state_flags & cdda::cwm::UNDERWATER) << ',' << pimpl_->diagnostics_
++        << ',' << wieldedTexture() << ',' << shotKick() << '\n';
 +    pimpl_->trace_.flush();
 +}
 +
@@ -4471,6 +4624,36 @@ index 0000000..359522a
 +    if (!guienv || !pimpl_) return;
 +
 +    const auto screen = guienv->getVideoDriver()->getScreenSize();
++    const bool in_menu = pimpl_->ground_container_open_ || pimpl_->body_form_open_ ||
++        pimpl_->equipment_open_ || pimpl_->crafting_open_ || pimpl_->metrics_.pending_decision;
++    const auto player_cue = pimpl_->entities_.find(1);
++    const bool submerged = player_cue != pimpl_->entities_.end() && (player_cue->second.state_flags & cdda::cwm::UNDERWATER);
++    const bool hurt = player_cue != pimpl_->entities_.end() && player_cue->second.hurt_seconds > 0;
++    if (!pimpl_->environment_tint_) {
++        pimpl_->environment_tint_=guienv->addStaticText(L"",irr::core::rect<irr::s32>(),false,false,nullptr,-1,true);
++        pimpl_->environment_tint_->setEnabled(false);
++        pimpl_->environment_text_=guienv->addStaticText(L"",irr::core::rect<irr::s32>(),false,true);
++        pimpl_->environment_text_->setOverrideColor(irr::video::SColor(255,210,235,250));
++        pimpl_->environment_text_->setEnabled(false);
++        pimpl_->cue_text_=guienv->addStaticText(L"",irr::core::rect<irr::s32>(),false,true);
++        pimpl_->cue_text_->setOverrideColor(irr::video::SColor(255,255,225,160));
++        pimpl_->cue_text_->setEnabled(false);
++    }
++    pimpl_->environment_tint_->setRelativePosition(irr::core::rect<irr::s32>(0,0,screen.Width,screen.Height));
++    pimpl_->environment_tint_->setBackgroundColor(hurt ? irr::video::SColor(42,165,25,25) :
++        submerged ? irr::video::SColor(65,15,75,130) : irr::video::SColor(48,5,8,18));
++    pimpl_->environment_tint_->setVisible(pimpl_->session_.ready() && !in_menu && (hurt || submerged || pimpl_->low_light_));
++    std::wstring environment;
++    if (!pimpl_->session_.ready()) environment=::cwm::wide("Connecting / synchronizing…", "Connessione / sincronizzazione…");
++    else if (pimpl_->metrics_.pause_reasons) environment=::cwm::wide("Paused — F7: resume", "In pausa — F7: riprendi");
++    if (submerged) environment += L"  " + ::cwm::wide("Underwater", "Sott'acqua");
++    else if (pimpl_->low_light_) environment += L"  " + ::cwm::wide("Low light — perception is limited", "Poca luce — percezione limitata");
++    pimpl_->environment_text_->setRelativePosition(irr::core::rect<irr::s32>(screen.Width/2-230,8,screen.Width/2+300,38));
++    pimpl_->environment_text_->setText(environment.c_str());
++    pimpl_->environment_text_->setVisible(!in_menu && !environment.empty());
++    pimpl_->cue_text_->setRelativePosition(irr::core::rect<irr::s32>(screen.Width/2-250,42,screen.Width/2+300,92));
++    pimpl_->cue_text_->setText(pimpl_->cue_caption_.c_str());
++    pimpl_->cue_text_->setVisible(pimpl_->session_.ready() && !in_menu && pimpl_->caption_seconds_>0);
 +    if (!pimpl_->posture_text_) {
 +        pimpl_->posture_text_ = guienv->addStaticText(L"", irr::core::rect<irr::s32>(), true, true, nullptr, -1, true);
 +        pimpl_->posture_text_->setOverrideColor(irr::video::SColor(255, 240, 245, 238));
@@ -4532,7 +4715,7 @@ index 0000000..359522a
 +    const std::wstring mode_text = std::wstring(posture) + L"\n" + key_label("keymap_cdda_run") + (::cwm::wide(": run (", ": corsa (")) + std::wstring(g_settings->getBool("cwm_run_toggle") ? L"toggle" : ::cwm::wide("hold", "tieni")) +
 +        L") | " + key_label("keymap_cdda_crouch") + (::cwm::wide(": crouch (", ": accovacciati (")) + std::wstring(g_settings->getBool("cwm_crouch_toggle") ? L"toggle" : ::cwm::wide("hold", "tieni")) + L") | " + key_label("keymap_cdda_prone") + (::cwm::wide(": prone", ": a terra"));
 +    pimpl_->posture_text_->setText(mode_text.c_str());
-+    pimpl_->posture_text_->setVisible(pimpl_->session_.ready() && player != pimpl_->entities_.end() &&
++    pimpl_->posture_text_->setVisible(pimpl_->diagnostics_ && pimpl_->session_.ready() && player != pimpl_->entities_.end() &&
 +        !pimpl_->ground_container_open_ && !pimpl_->body_form_open_ && !pimpl_->equipment_open_ && !pimpl_->crafting_open_ && !pimpl_->metrics_.pending_decision);
 +
 +    // Compact Minecraft-style rows above the possessions strip. All fills
@@ -4671,7 +4854,7 @@ index 0000000..359522a
 +        swprintf(text, 256, clock_format.c_str(), pimpl_->metrics_.time_scale,
 +            pause_state.c_str(), movement_state.c_str());
 +        pimpl_->clock_text_->setText(text);
-+        pimpl_->clock_text_->setVisible(!pimpl_->ground_container_open_ && !pimpl_->body_form_open_ && !pimpl_->equipment_open_ && !pimpl_->crafting_open_ && !pimpl_->metrics_.pending_decision);
++        pimpl_->clock_text_->setVisible(pimpl_->diagnostics_ && !pimpl_->ground_container_open_ && !pimpl_->body_form_open_ && !pimpl_->equipment_open_ && !pimpl_->crafting_open_ && !pimpl_->metrics_.pending_decision);
 +    } else if (pimpl_->clock_text_) pimpl_->clock_text_->setVisible(false);
 +
 +    if (pimpl_->terrain_demo_) {
@@ -4756,17 +4939,17 @@ index 0000000..359522a
 +                 pimpl_->metrics_.vehicles_count);
 +
 +        pimpl_->debug_text_->setText(text);
-+        pimpl_->debug_text_->setVisible(!pimpl_->ground_container_open_ && !pimpl_->body_form_open_ && !pimpl_->equipment_open_ && !pimpl_->crafting_open_ && !pimpl_->metrics_.pending_decision);
++        pimpl_->debug_text_->setVisible(pimpl_->diagnostics_ && !pimpl_->ground_container_open_ && !pimpl_->body_form_open_ && !pimpl_->equipment_open_ && !pimpl_->crafting_open_ && !pimpl_->metrics_.pending_decision);
 +    }
 +}
 +
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.h b/src/cdda/cdda_bridge.h
 new file mode 100644
-index 0000000..9558b4c
+index 0000000..c551dfb
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.h
-@@ -0,0 +1,175 @@
+@@ -0,0 +1,181 @@
 +// Luanti C++ CWM Presentation Bridge
 +// Licensed under Apache-2.0
 +#pragma once
@@ -4831,6 +5014,7 @@ index 0000000..9558b4c
 +    float presentation_yaw{0.f};
 +    double animation_seconds{0.};
 +    bool walking{false};
++    float attack_seconds{0.f}, hurt_seconds{0.f};
 +};
 +
 +class CddaBridge {
@@ -4851,6 +5035,11 @@ index 0000000..9558b4c
 +    bool ownsPlayer(const Client* client) const;
 +    void traceCamera(const v3f& position, const v3f& direction);
 +    void updateScenePositions();
++    std::string wieldedTexture() const;
++    bool firearmWielded() const;
++    bool aiming() const;
++    float shotKick() const;
++    void toggleDiagnostics();
 +    bool terrainComparisonEnabled() const;
 +    void toggleTerrainStyle();
 +    void toggleTerrainFog();
@@ -5028,6 +5217,38 @@ index 0000000..b837757
 +    return f;
 +}
 +} // namespace cdda_client
+diff --git a/src/cdda/creature_visual.h b/src/cdda/creature_visual.h
+new file mode 100644
+index 0000000..d02b91f
+--- /dev/null
++++ b/src/cdda/creature_visual.h
+@@ -0,0 +1,26 @@
++#pragma once
++#include "humanoid_animation.h"
++#include <string>
++namespace cdda_client {
++struct CreatureVisual {
++    const char* mesh; const char* skin; float height; int skin_layer;
++    HumanoidCycle idle, walk;
++};
++// Bounded, explicit proxies for pinned native archetypes. Exotic/mutated
++// anatomy keeps the honest fallback. No inference from translated names.
++inline CreatureVisual creatureVisual(const std::string& id, bool humanoid) {
++    if (id.rfind("mon_zombie",0)==0) return {"zombie.b3d","zombie.png",18,1,{40,49,2},{0,39,25}};
++    if (humanoid || id=="avatar") return {"character.b3d","mcl_skins_character_1.png",18,0,{0,79,30},{168,187,30}};
++    if (id=="mon_dog" || id=="mon_wolf" || id=="mon_coyote")
++        return {"cwm_wolf.b3d","mobs_mc_wolf.png",8.4f,0,{0,0,1},{0,40,30}};
++    if (id=="mon_spider_web" || id=="mon_spider_widow_giant" || id=="mon_spider_jumping_giant")
++        return {"cwm_spider.b3d","mobs_mc_spider.png",7,0,{20,40,10},{0,20,25}};
++    if (id=="mon_spider_web_small" || id=="mon_spider_widow_small" || id=="mon_spider_jumping_small")
++        return {"cwm_spider.b3d","mobs_mc_spider.png",3,0,{20,40,10},{0,20,25}};
++    if (id=="mon_chicken" || id=="mon_grouse")
++        return {"cwm_chicken.b3d","mobs_mc_chicken.png",5,0,{0,0,1},{0,20,40}};
++    if (id=="mon_chicken_chick" || id=="mon_grouse_chick")
++        return {"cwm_chicken.b3d","mobs_mc_chicken.png",2.5f,0,{0,0,1},{0,20,40}};
++    return {nullptr,nullptr,10,0,{0,0,1},{0,0,1}};
++}
++}
 diff --git a/src/cdda/decision_dialog.h b/src/cdda/decision_dialog.h
 new file mode 100644
 index 0000000..74ce5f0

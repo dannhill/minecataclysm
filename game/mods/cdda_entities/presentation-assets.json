@@ -1,0 +1,70 @@
+{
+  "scope": "Presentation only. Generic proxy models and provisional sound timbres. Unmodified pinned assets; upstream notices retained.",
+  "files": [
+    {
+      "file": "game/mods/cdda_entities/models/cwm_wolf.b3d",
+      "source": "mineclonia/mods/ENTITIES/mobs_mc/models/mobs_mc_wolf.b3d",
+      "sha256": "6445f4286c8cdb3aaf92de21336fb777b7fbc8440ed02f2940dfa93060da3ec8"
+    },
+    {
+      "file": "game/mods/cdda_entities/textures/mobs_mc_wolf.png",
+      "source": "mineclonia/mods/ENTITIES/mobs_mc/textures/mobs_mc_wolf.png",
+      "sha256": "92a66c2a5bd8562d2d954386cc3421ffb6ad229a7983298e458e2f990c3e5b89"
+    },
+    {
+      "file": "game/mods/cdda_entities/models/cwm_spider.b3d",
+      "source": "mineclonia/mods/ENTITIES/mobs_mc/models/mobs_mc_spider.b3d",
+      "sha256": "b430c65ebd2b5776587a48a6602a78b7bc67877610f7a69dcf0226f1bb976d07"
+    },
+    {
+      "file": "game/mods/cdda_entities/textures/mobs_mc_spider.png",
+      "source": "mineclonia/mods/ENTITIES/mobs_mc/textures/mobs_mc_spider.png",
+      "sha256": "75d6049ae938c5a9871315013b0b48a6374bbd48b391f170da151f4a547898df"
+    },
+    {
+      "file": "game/mods/cdda_entities/models/cwm_chicken.b3d",
+      "source": "mineclonia/mods/ENTITIES/mobs_mc/models/mobs_mc_chicken.b3d",
+      "sha256": "3d995e4e48a87395bdc08b8bba5674b69afc0d7c3bde594a595b1c292f971126"
+    },
+    {
+      "file": "game/mods/cdda_entities/textures/mobs_mc_chicken.png",
+      "source": "mineclonia/mods/ENTITIES/mobs_mc/textures/mobs_mc_chicken.png",
+      "sha256": "958a64dff586c5b130cb8fb1aeb80e824b93cb8eb34b719bc85a61f337b6c0ea"
+    },
+    {
+      "file": "game/mods/cdda_entities/sounds/cwm_combat.ogg",
+      "source": "mineclonia/mods/ENTITIES/mcl_mobs/sounds/default_punch.ogg",
+      "sha256": "afe6131ae4b144b3f8d45f5211e43fa992e701c964d9a724f6c36f72b2bcb3b8"
+    },
+    {
+      "file": "game/mods/cdda_entities/sounds/cwm_gunfire.ogg",
+      "source": "mineclonia/mods/ITEMS/mcl_tnt/sounds/tnt_explode.ogg",
+      "sha256": "d17b69bf43492bab55312f0e46d79267a04fea4632e6d054d96afca51981363e"
+    },
+    {
+      "file": "game/mods/cdda_entities/sounds/cwm_activity.ogg",
+      "source": "mineclonia/mods/CORE/mcl_sounds/sounds/mcl_sounds_cloth.1.ogg",
+      "sha256": "5dd169ca835ca83f10b33bf805501c4148b5e694f115a2d57011d303236ae934"
+    },
+    {
+      "file": "game/mods/cdda_entities/sounds/cwm_movement.ogg",
+      "source": "mineclonia/mods/CORE/mcl_sounds/sounds/default_hard_footstep.1.ogg",
+      "sha256": "6603ea5f4382610b95f3947d3b79b945cc7b7fe2875cbbdafe0089ee3ed12a36"
+    },
+    {
+      "file": "game/mods/cdda_entities/media-notices/Mineclonia-LEGAL.md",
+      "source": "mineclonia/LEGAL.md",
+      "sha256": "684009341ffe409d84f6ec22b2dadc697eb30313e4bb015a6883debf06d4b463"
+    },
+    {
+      "file": "game/mods/cdda_entities/media-notices/mcl_sounds-README.txt",
+      "source": "mineclonia/mods/CORE/mcl_sounds/README.txt",
+      "sha256": "d1f66ccb1da5b676d36b0da7dd76a7886c58a38447f1546c59dda43689fe2b37"
+    },
+    {
+      "file": "game/mods/cdda_entities/media-notices/mcl_tnt-README.txt",
+      "source": "mineclonia/mods/ITEMS/mcl_tnt/README.txt",
+      "sha256": "931de7adb80f7f7adb8ec66873b4682b1200e8791224a8381d45cdb01e03e7ee"
+    }
+  ]
+}
