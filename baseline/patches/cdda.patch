@@ -1676,6 +1676,22 @@ index bfe0773..66ca653 100644
          if (LOCALIZE)
              add_dependencies(cata_test test_mo)
          endif()
+diff --git a/tests/melee_test.cpp b/tests/melee_test.cpp
+index a598c88..7803c5a 100644
+--- a/tests/melee_test.cpp
++++ b/tests/melee_test.cpp
+@@ -61,7 +61,10 @@ static std::string full_attack_details( const Character &dude )
+     ss << "Details for " << dude.disp_name() << std::endl;
+     ss << "get_hit() == " << dude.get_hit() << std::endl;
+     ss << "get_melee_hit_base() == " << dude.get_melee_hit_base() << std::endl;
+-    ss << "get_hit_weapon() == " << dude.get_hit_weapon( *dude.get_wielded_item() ) << std::endl;
++    // Unarmed sections have no wielded location. This diagnostic must not
++    // dereference null before the statistical assertions even run.
++    const auto wielded = dude.get_wielded_item();
++    ss << "get_hit_weapon() == " << (wielded ? dude.get_hit_weapon(*wielded) : dude.get_hit()) << std::endl;
+     return ss.str();
+ }
+ 
 diff --git a/tests/test_main.cpp b/tests/test_main.cpp
 index 09a7711..9b0c484 100644
 --- a/tests/test_main.cpp
