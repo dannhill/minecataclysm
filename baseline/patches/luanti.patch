@@ -1949,7 +1949,7 @@ index 0000000..e1e7236
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..37ca157
+index 0000000..7b42943
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
 @@ -0,0 +1,3178 @@
@@ -5019,7 +5019,7 @@ index 0000000..37ca157
 +        std::wstring consumption_hint;
 +        if (pimpl_->activity_token_ && pimpl_->activity_total_ > 0) {
 +            const int percent = int(100LL * (pimpl_->activity_total_ - pimpl_->activity_remaining_) / pimpl_->activity_total_);
-+            consumption_hint = (pimpl_->transferring_ ? (::cwm::wide("Transfer in progress: ", "Trasferimento in corso: ")) : pimpl_->crafting_ ? (::cwm::wide("Crafting in progress: ", "Crafting in corso: ")) : pimpl_->first_aid_ ? (::cwm::wide("Treatment in progress: ", "Trattamento in corso: ")) : pimpl_->reloading_ ? (::cwm::wide("Reload in progress: ", "Ricarica in corso: ")) : (::cwm::wide("Consumption in progress: ", "Consumo in corso: "))) + std::to_wstring(percent) + (::cwm::wide("% - I: inspect / pause", "% - I: consulta / pausa"));
++            consumption_hint = (pimpl_->reading_ ? (pimpl_->reading_skimming_ ? ::cwm::wide("Skimming in progress: ", "Sfoglio in corso: ") : ::cwm::wide("Reading in progress: ", "Lettura in corso: ")) : pimpl_->transferring_ ? (::cwm::wide("Transfer in progress: ", "Trasferimento in corso: ")) : pimpl_->crafting_ ? (::cwm::wide("Crafting in progress: ", "Crafting in corso: ")) : pimpl_->first_aid_ ? (::cwm::wide("Treatment in progress: ", "Trattamento in corso: ")) : pimpl_->reloading_ ? (::cwm::wide("Reload in progress: ", "Ricarica in corso: ")) : (::cwm::wide("Consumption in progress: ", "Consumo in corso: "))) + std::to_wstring(percent) + (::cwm::wide("% - I: inspect / pause", "% - I: consulta / pausa"));
 +        }
 +        if (pimpl_->transferring_ && !pimpl_->activity_total_) consumption_hint = (::cwm::wide("Transfer in progress - I: inspect / pause", "Trasferimento in corso - I: consulta / pausa"));
 +        const auto plain_hint = utf8_to_wide(decisionPlainText(wide_to_utf8(consumption_hint.empty() ? hint : consumption_hint)));

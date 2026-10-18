@@ -10,6 +10,26 @@ un panorama più ampio; nebbia, memoria distante e rilievo restano da scegliere.
 Lo [stato implementato](IMPLEMENTATION_STATUS.md) e le evidenze restano separati
 dagli obiettivi. La roadmap originale M0–M9 conserva i propri significati.
 
+## Lettura cartacea e studio nativo — 2026-10-18
+
+Prossimo passo funzionale eseguito senza un nuovo gate manuale: I permette di
+sfogliare i veri libri posseduti e studiare quelli noti, con lettore, luce,
+costi di accesso, durata, esperienza teorica e scelte di CDDA. Nessuna conoscenza
+gratis consultando il menu. I ferma il capitolo; Interrompi usa la cancellazione
+e la ripresa native. Il save conserva ACT_READ e le conoscenze, non la pausa del
+menu. Riconnessione e caricamento riprendono lo stato autorevole senza duplicare
+la richiesta. [Contratto](docs/design/native-reading.md),
+[consegna e verifiche](docs/fixes/native-reading.md).
+
+CWM 2.25 richiede i due eseguibili abbinati; i libri con usi speciali, guidebook
+ed e-reader restano esplicitamente fuori da questa prima fetta. Nessun nuovo
+moltiplicatore per accelerare lo studio. `./reading-demo.sh --fresh` crea una
+sessione separata. **28 PENDING, nessun FAIL manuale aperto**: quattro nuove prove
+READ-01 rinviabili, precedenti 24 invariati. Nessun PASS umano dedotto dalle
+prove automatiche. Prossimo passo funzionale: smontaggio/lavorazioni native,
+riusando attività, requisiti, scelte, interruzione e save. SAVE-001 OPEN e
+M5.5 FAILED rimangono invariati; nessuna promozione a M6.
+
 ## Sette gate umani e consolidamento del crafting — 2026-10-18
 
 T1–T7 PASS personali, con i bug e commenti conservati nel

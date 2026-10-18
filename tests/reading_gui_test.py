@@ -239,6 +239,7 @@ def main():
                 remaining=latest()['reading_remaining'];clock=latest()['simulation_time'];time.sleep(.7)
                 check('inspection_freezes_loaded_native_reading',latest()['reading_remaining']==remaining and latest()['simulation_time']==clock)
                 tap('Escape');wait(lambda r:int(r['equipment_form'])==0)
+                shot('loaded-reading-progress.png')
                 wait(lambda r:int(r['reading_token'])==0,timeout=180)
                 check('loaded_reading_completes_without_reissuing_read',int(latest()['equipment_sent'])==0)
                 book=select_book('mag_guns')

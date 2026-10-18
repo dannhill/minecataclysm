@@ -6,7 +6,7 @@ captured implementation; it does not approve its gaps. The executable schema
 is [cwm.fbs](cwm.fbs). Audit findings and evidence are in
 [M5.5](../docs/audits/M5.5.md).
 
-The current runtime requires **CWM 2.18**. This breaks the old negotiation
+The current runtime requires **CWM 2.25**. This breaks the old negotiation
 contract; schema fields and union members are appended without changing the
 existing FlatBuffers offsets. Both executables must be rebuilt together.
 The historical coverage table below is retained as audit evidence.
@@ -785,3 +785,39 @@ a new client does not replay missed sounds. The client de-duplicates IDs within
 the same session, clears poses on full state and freezes effect clocks during
 pause/menu/recovery. Bounded event/text/enum validation is part of admission.
 Client visual effects do not modify position, injury, perception, recoil or AI.
+
+## Native paper-book reading (2.25)
+
+EquipmentAction appends READ=6. Inventory and quick-slot action masks now allow
+bits 0–6; an InventoryEntry carries exactly seven per-action reasons. READ uses
+the exact current native item location, obtains it with the native access cost,
+then invokes avatar::read. Stale, paused, busy, duplicate or newly inaccessible
+requests cannot start extra work. Owned ordinary paper books are supported;
+special-use books, guidebook hints and digital readers need separate interfaces.
+
+InventoryEntry optionally appends BookInfo: native identified state,
+chapter_moves (the current reader-adjusted skim/chapter duration; zero when no
+reader is available) and a bounded summary. Only already identified books reveal
+their native skill requirements/range and the avatar's theoretical progression.
+Queries do not identify books, award experience, advance time or consume RNG.
+An enabled READ requires BookInfo with positive chapter_moves.
+
+WorldSnapshot optionally appends ReadingState: nonzero activity token, positive
+total_moves, remaining_moves in 0..total_moves, nonempty book_name, progress and
+skimming. Name/progress are NUL-free and bounded to 16384/2048 bytes. It is mutually
+exclusive with consumption, first aid, crafting, reload and item-transfer state.
+These are actual ACT_READ moves; the client does not calculate reading speed.
+Native chapter restart/progress reset rotates the token. Loaded reading is
+exported even without an originating command in the current connection.
+
+CancelReadingRequest is appended to the Payload union. It carries a command ID
+and expected activity token. The native bounded ledger handles retransmission;
+type/token/pause are revalidated before native cancel_activity. Interruption and
+resume eligibility follow the native activity/backlog rules, without XP refunds
+or invented progress. Existing native choices preserve Read once / Read until a
+level, participants and explicit safe Cancel; translated labels are not rules.
+
+Exact paired version 2.25 is required. Canonical ACT_READ serialization, book
+identification, chapter effects and theoretical experience remain native. I/menu
+pause is transient and not written into the character save. No Luanti-specific
+data, new save fields or client-owned learning state are introduced.
