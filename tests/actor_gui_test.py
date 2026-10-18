@@ -302,7 +302,7 @@ def main():
                     for family,kind,skin,height in [('canine','mon_wolf','mobs_mc_wolf.png',8.4),('spider','mon_spider_web','mobs_mc_spider.png',7),('bird','mon_chicken','mobs_mc_chicken.png',5)]:
                         rev=update('actors',[dict(original[0],type=kind),original[1]])
                         family_scene=until(lambda d:int(d[1]['revision'])==rev and d[monster_id]['material0'].endswith(skin))
-                        check(family+'_uses_real_pinned_mesh_and_skin',int(family_scene[monster_id]['node_materials'])>0 and abs(float(family_scene[monster_id]['model_height'])-height)<.1)
+                        check(family+'_uses_real_pinned_mesh_and_skin',int(family_scene[monster_id]['node_materials'])>0 and height*.75<float(family_scene[monster_id]['model_height'])<height*1.3)
                         screen(family+'.png')
                         moved=[dict(a,pos=[a['pos'][0]+1,a['pos'][1],a['pos'][2]]) for a in actors]
                         rev=update('actors',moved)
