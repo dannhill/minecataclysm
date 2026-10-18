@@ -1,6 +1,30 @@
 # Implementation status
 
-Current scoped repair: **English selection from Esc in low light**. Passive
+Current scoped follow-up: **selected-language notice in Esc**. The notice
+updates immediately to Active / Next start and the selected language; an Italian
+incompleteness note appears only with Italian selected. A restart instruction
+appears only when the choice differs from the active session. Text still uses
+the session language until restart. Verified client installed in normal start.sh;
+native runtime, CWM 2.25, persistence and mapping batch60 unchanged.
+[Delivery](docs/fixes/language-selection-notice.md),
+[exact evidence](docs/fixes/language-selection-notice-evidence.json).
+
+Scoped PASS: **309 client tests / 47 modules**, 648 Catch assertions / 4 cases,
+**9 language tests** and **56 functional renderer/canonical checks**, then **42
+focused final GUI checks** across both startup languages and repeated
+selection/active-notice restoration with pause intact. Functional runs plus two
+focused final layout renderer runs; exact tested client copied/hash-checked in
+the normal runtime. Incremental builds, not cold builds. Full SAVE-001 OPEN and
+historical M5.5 FAILED remain unchanged.
+
+The sole human developer confirmed the language logic now works after `971579f`:
+LANG-01.2 is accepted by that report. **29 PENDING, no open manual FAIL**: one
+new optional wording recheck plus the previous 28 unchanged; no personal
+acceptance inferred for this new notice. [Human confirmation](docs/source/language-notice-feedback-2026-10-18.md),
+[manual ledger](docs/validation/pending-manual.md).
+Next functional core slice remains native disassembly/related item work.
+
+Previous scoped repair: **English selection from Esc in low light**. Passive
 root-level tint/HUD widgets no longer intercept modal clicks. The engine menu
 manager controls overlay suppression for every modal, including Esc. Language
 selection keeps the menu open and time paused; the existing launcher persists

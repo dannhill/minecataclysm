@@ -1,0 +1,276 @@
+{
+  "scope": "Pause-menu selected-language wording; no live translation or gameplay changes",
+  "date": "2026-10-18",
+  "source_commit": "1ee4fdc0eaa407bffdb48ac29944246567016a1c",
+  "protocol": "CWM 2.25 unchanged",
+  "native_unchanged": true,
+  "source_trees": {
+    "cdda": {
+      "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+      "patch_sha256": "675f39601ffd3ffb8394512f5b5982ee2abb0f9751dc213763945891452db2af",
+      "tree_sha256": "9eee694f0affad5f7ee3d6f43eaa69a4dc4ebd58d05de046b78ba5a6115e9286"
+    },
+    "luanti": {
+      "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
+      "patch_sha256": "711f595151bcfef7356e053a9929ef01ca18a92c9c0f3c1088201c7d724f33a5",
+      "tree_sha256": "8c4c2eda92a9169545b175ebda9243abc7f36aad0e2baefaae90c83f93ec2c76"
+    },
+    "mineclonia": {
+      "commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36"
+    }
+  },
+  "build": {
+    "path": "artifacts/language-notice-20261018/build-layout.log",
+    "sha256": "7a1410c38515d31dd0e51e1804cc0547d71cc7cffcb296b7bd594505314a9a6d"
+  },
+  "refresh": {
+    "path": "artifacts/language-notice-20261018/refresh-layout.json",
+    "sha256": "d42d24dc9e5ab51379f2c7dc17ef922f233bd99c313440d714d69f764ceb22c6"
+  },
+  "baseline": {
+    "path": "artifacts/language-notice-20261018/baseline-check-final.log",
+    "sha256": "c5c806eba66eaa0aab12a62970ae9b708a07424de82f70379712e2e89f1de56a"
+  },
+  "functional_build": {
+    "path": "artifacts/language-notice-20261018/build.log",
+    "sha256": "e5f5a7c47f30ae97555ce503218b89836e188e6be06f705db1986f70e4d3b4c7"
+  },
+  "functional_refresh": {
+    "path": "artifacts/language-notice-20261018/refresh.json",
+    "sha256": "3b36f53274a8ff622eb0c27864c0e73028692446e63b5a777b15920703a46658"
+  },
+  "build_mode": "Incremental owned reconstruction, retained caches, Release/LTO/audio enabled; not a cold build",
+  "client": {
+    "tests": 309,
+    "modules": 47,
+    "catch_assertions": 648,
+    "catch_cases": 4,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/language-notice-20261018/client-unit-layout.log",
+      "sha256": "c2c46bb395875747d37fbf14f3420bb0e27112b012375b4174e692025cc0588f"
+    }
+  },
+  "language": {
+    "tests": 9,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/language-notice-20261018/language-unit.log",
+      "sha256": "e9ee90638e2bbde79f0f708aedaa9800bfe67b4afbf396f74d707f930f1657c3"
+    }
+  },
+  "gui": {
+    "notice-en-it": {
+      "source_commit": "b842f8e0261315d9f1943070b106d1ea823fac1f",
+      "checks": 28,
+      "result": "PASS",
+      "assertions": {
+        "actual_start_ready": true,
+        "native_inventory_opened": true,
+        "integration_status_labels_use_selected_language": true,
+        "native_item_name_uses_selected_catalog": true,
+        "native_nested_backpack_name_uses_selected_catalog": true,
+        "native_category_ids_are_language_independent": true,
+        "translated_filter_resolves_semantic_container_selection": true,
+        "actual_launcher_selects_same_language_in_renderer": true,
+        "localized_inventory_remains_read_only_and_paused": true,
+        "native_decision_cancel_uses_selected_catalog": true,
+        "localized_native_cancel_preserves_wielded_item": true,
+        "pause_language_reproduces_low_light_overlay": true,
+        "pause_menu_hides_passive_hud": true,
+        "real_pause_menu_updates_product_preference": true,
+        "language_preference_is_free_and_keeps_simulation_paused": true,
+        "language_click_keeps_pause_menu_open": true,
+        "selected_language_notice_updates_without_closing_menu": true,
+        "returning_to_session_language_restores_active_notice": true,
+        "notice_refresh_keeps_language_buttons_and_pause_functional": true,
+        "menu_change_keeps_current_native_language_until_restart": true,
+        "byte_relay_completed_without_errors": true,
+        "equipment_save_readable_by_pristine_native_core": true,
+        "canonical_save_has_each_fixture_item_once": true,
+        "canonical_save_records_expected_weapon": true,
+        "canonical_save_records_backpack_worn": true,
+        "readonly_inventory_preserves_canonical_items": true,
+        "presentation_language_does_not_rewrite_native_options": true,
+        "normal_launcher_persists_actual_menu_change": true
+      },
+      "checks_file": {
+        "path": "artifacts/language-notice-20261018/notice-en-it/checks.json",
+        "sha256": "f99affe5338e1c0a16a199d06d05ca081039b195b3dd02213a9ee754a4b5aa7e"
+      },
+      "summary": {
+        "path": "artifacts/language-notice-20261018/notice-en-it/summary.json",
+        "sha256": "746ac6f25e230f422b968e42d00f58c10f174bd4a705d604e25c7e4622c777ab"
+      },
+      "canonical": {
+        "path": "artifacts/language-notice-20261018/notice-en-it/native.json",
+        "sha256": "f6957eee5f5426f0d42e35a101456ef632c595fc7589a954df8165a457206003"
+      },
+      "active_notice": {
+        "path": "artifacts/language-notice-20261018/notice-en-it/pause-language-active.png",
+        "sha256": "13285e926906935882575714ee14cf6fe1a8378b5add27f990474b0d8e525dfa"
+      },
+      "next_start_notice": {
+        "path": "artifacts/language-notice-20261018/notice-en-it/pause-language-selected.png",
+        "sha256": "89b933bf69d470eb3d431d9103ee30853dc1adc42a5f4617ef1cf897eba3ea2b"
+      }
+    },
+    "notice-it-en": {
+      "source_commit": "b842f8e0261315d9f1943070b106d1ea823fac1f",
+      "checks": 28,
+      "result": "PASS",
+      "assertions": {
+        "actual_start_ready": true,
+        "native_inventory_opened": true,
+        "integration_status_labels_use_selected_language": true,
+        "native_item_name_uses_selected_catalog": true,
+        "native_nested_backpack_name_uses_selected_catalog": true,
+        "native_category_ids_are_language_independent": true,
+        "translated_filter_resolves_semantic_container_selection": true,
+        "actual_launcher_selects_same_language_in_renderer": true,
+        "localized_inventory_remains_read_only_and_paused": true,
+        "native_decision_cancel_uses_selected_catalog": true,
+        "localized_native_cancel_preserves_wielded_item": true,
+        "pause_language_reproduces_low_light_overlay": true,
+        "pause_menu_hides_passive_hud": true,
+        "real_pause_menu_updates_product_preference": true,
+        "language_preference_is_free_and_keeps_simulation_paused": true,
+        "language_click_keeps_pause_menu_open": true,
+        "selected_language_notice_updates_without_closing_menu": true,
+        "returning_to_session_language_restores_active_notice": true,
+        "notice_refresh_keeps_language_buttons_and_pause_functional": true,
+        "menu_change_keeps_current_native_language_until_restart": true,
+        "byte_relay_completed_without_errors": true,
+        "equipment_save_readable_by_pristine_native_core": true,
+        "canonical_save_has_each_fixture_item_once": true,
+        "canonical_save_records_expected_weapon": true,
+        "canonical_save_records_backpack_worn": true,
+        "readonly_inventory_preserves_canonical_items": true,
+        "presentation_language_does_not_rewrite_native_options": true,
+        "normal_launcher_persists_actual_menu_change": true
+      },
+      "checks_file": {
+        "path": "artifacts/language-notice-20261018/notice-it-en/checks.json",
+        "sha256": "f99affe5338e1c0a16a199d06d05ca081039b195b3dd02213a9ee754a4b5aa7e"
+      },
+      "summary": {
+        "path": "artifacts/language-notice-20261018/notice-it-en/summary.json",
+        "sha256": "7f41a3fec01d97809f6d40264f8c187588fe251149ce06788d9fbbd0de3079d4"
+      },
+      "canonical": {
+        "path": "artifacts/language-notice-20261018/notice-it-en/native.json",
+        "sha256": "814f56535a89bf2ad44b4f1de45494c4112f8819b7508401524e8e359173e80d"
+      },
+      "active_notice": {
+        "path": "artifacts/language-notice-20261018/notice-it-en/pause-language-active.png",
+        "sha256": "015686cce7153fddb716ef85eb9dc47193dbe57bcca1d4e630a6d68ec09cb86f"
+      },
+      "next_start_notice": {
+        "path": "artifacts/language-notice-20261018/notice-it-en/pause-language-selected.png",
+        "sha256": "86099853dddac7100cfe199adc49cf30633abc11f9712973c9354a950828aea4"
+      }
+    }
+  },
+  "gui_checks": 56,
+  "final_layout_gui": {
+    "layout-en-it": {
+      "checks": 21,
+      "checks_file": {
+        "path": "artifacts/language-notice-20261018/layout-en-it/checks.json",
+        "sha256": "93c793976b7d4c82f1c909c1fb7526de712c3944488b63f639674e71b7a159e2"
+      },
+      "summary": {
+        "path": "artifacts/language-notice-20261018/layout-en-it/summary.json",
+        "sha256": "2d14f8d7c603da766f936570240b092d2f99668dce7cacf8905acda0e49ff3df"
+      },
+      "active_notice": {
+        "path": "artifacts/language-notice-20261018/layout-en-it/pause-language-active.png",
+        "sha256": "e01200864823db876f5902f9c2d3aa8d9b6d1e009e21fffacb948e2f51d306c8"
+      },
+      "next_start_notice": {
+        "path": "artifacts/language-notice-20261018/layout-en-it/pause-language-selected.png",
+        "sha256": "39fa72a2c85e7cbe55b11ef099652f7f3fd0d242a1abf41df1da99573b635fc8"
+      }
+    },
+    "layout-it-en": {
+      "checks": 21,
+      "checks_file": {
+        "path": "artifacts/language-notice-20261018/layout-it-en/checks.json",
+        "sha256": "93c793976b7d4c82f1c909c1fb7526de712c3944488b63f639674e71b7a159e2"
+      },
+      "summary": {
+        "path": "artifacts/language-notice-20261018/layout-it-en/summary.json",
+        "sha256": "2d14f8d7c603da766f936570240b092d2f99668dce7cacf8905acda0e49ff3df"
+      },
+      "active_notice": {
+        "path": "artifacts/language-notice-20261018/layout-it-en/pause-language-active.png",
+        "sha256": "d2ddeca42d1e5bb79dc553feb868693c5d9f53fc5983152a6b604e44dc9bb142"
+      },
+      "next_start_notice": {
+        "path": "artifacts/language-notice-20261018/layout-it-en/pause-language-selected.png",
+        "sha256": "ecbbc57691fcc160d910e7bb267256ca2234464905d3d79bec6baaf08b1e78d3"
+      }
+    }
+  },
+  "layout_harness": {
+    "path": "artifacts/language-notice-20261018/layout-gui.py",
+    "sha256": "6660d962386a94e5482e0d5459cbdb6fc9a1b81012a1d0b4663ca02af3ef5e4f"
+  },
+  "layout_followup": "Agent inspection found a scrollbar in the first Italian notice. Shortened the incomplete-translation message and enlarged its area; final renderer runs repeat presentation/modal checks only, without another unchanged native readback.",
+  "gui_environment": "Private Xvfb, Mesa software, 1280x800 at 96 DPI; OpenAL null backend",
+  "installation": {
+    "protocol": "2.25 unchanged",
+    "native_unchanged_sha256": "340f044d8ab98a421980f8706bacc21100af15679053221bd1a041201254a266",
+    "source_commit": "1ee4fdc0eaa407bffdb48ac29944246567016a1c",
+    "client": {
+      "source": "artifacts/language-20261011/workspace/luanti/bin/luanti",
+      "target": "luanti/bin/luanti",
+      "backup": "artifacts/language-notice-20261018/client-before-notice",
+      "before_sha256": "3e183b225c9169a25523107b4e4c3604917e4a955b2bb2fa1124e63cd220c1a4",
+      "after_sha256": "915af485f0ff902f710b0bdd052a721c818d07cb0fa6bab431a1d80cdaa46bf2"
+    }
+  },
+  "canonical_reader": {
+    "path": "artifacts/native-reading-20261018/native-save-reader",
+    "sha256": "8bff89f6ca3d3afc0cec9024c380969f1885a1844743270e9045f6a4c5e646f5"
+  },
+  "harness": {
+    "path": "tests/equipment_gui_test.py",
+    "sha256": "4fb07413cf6812e8cecae10d824610782594f48b884a1b423448c60083251915"
+  },
+  "manual": {
+    "pending": 29,
+    "open_fail": 0,
+    "logic_acceptance": "The sole human developer explicitly confirmed the selection/persistence logic after 971579f; LANG-01.2 is accepted by that report, not inferred from automation.",
+    "new_pending": 1,
+    "new_pending_scope": "Selected-language notice readability; previous 28 unchanged",
+    "source": "docs/source/language-notice-feedback-2026-10-18.md"
+  },
+  "limits": [
+    "Functional/canonical and final focused renderer runs use the reconstructed client; the exact verified binary is then copied to normal start.sh and hash-checked. No additional installed renderer run for this wording-only follow-up.",
+    "Live translation remains deferred; captions use the startup language",
+    "Full SAVE-001 OPEN; historical M5.5 FAILED; item mapping batch60 unchanged"
+  ],
+  "commands": [
+    "cmake --build artifacts/language-20261011/workspace/luanti/build --target luanti -j3",
+    "artifacts/language-20261011/workspace/luanti/bin/luanti --run-unittests --logfile artifacts/language-notice-20261018/client-unit-layout-engine.log",
+    "python3 artifacts/language-20261011/workspace/tests/product_language_test.py",
+    "python3 artifacts/language-notice-20261018/run-gui.py equipment_gui_test.py artifacts/language-menu-20261018/fixture-en/user notice-en-it --language-smoke en --use-saved-language --language-menu-change it",
+    "python3 artifacts/language-notice-20261018/run-gui.py equipment_gui_test.py artifacts/language-menu-20261018/fixture/user notice-it-en --language-smoke it --use-saved-language --language-menu-change en",
+    "PYTHONPATH=tests python3 artifacts/language-notice-20261018/run-gui.py /home/dannhill/Projects/cdda-mineclonia/artifacts/language-notice-20261018/layout-gui.py artifacts/language-menu-20261018/fixture-en/user layout-en-it --language-smoke en --use-saved-language --language-menu-change it",
+    "PYTHONPATH=tests python3 artifacts/language-notice-20261018/run-gui.py /home/dannhill/Projects/cdda-mineclonia/artifacts/language-notice-20261018/layout-gui.py artifacts/language-menu-20261018/fixture/user layout-it-en --language-smoke it --use-saved-language --language-menu-change en",
+    "python3 artifacts/language-notice-20261018/install.py"
+  ],
+  "helpers": [
+    {
+      "path": "artifacts/language-notice-20261018/run-gui.py",
+      "sha256": "54b8c4b316a21584fc52f3cbcfe53d06d26522ce629de54278d39652e416d999"
+    },
+    {
+      "path": "artifacts/language-notice-20261018/install.py",
+      "sha256": "ead8d55ef8c14aeb7b4be431c2b6411274d47066f2fc0919b49485b92a9bd307"
+    }
+  ]
+}
