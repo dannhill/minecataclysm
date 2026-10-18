@@ -1782,10 +1782,10 @@ index 0000000..e1e7236
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..054327e
+index 0000000..359522a
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,2963 @@
+@@ -0,0 +1,2975 @@
 +#include "cwm/product_language.hpp"
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
@@ -2331,7 +2331,18 @@ index 0000000..054327e
 +        };
 +        if (ent.id == 1) {
 +            auto* avatar = client_->getEnv().getLocalPlayer()->getCAO();
-+            if (avatar) animate(avatar->getAnimatedMeshSceneNode());
++            auto* body = avatar ? avatar->getAnimatedMeshSceneNode() : nullptr;
++            if (body) {
++                if (!ent.avatar_model_scale) {
++                    const auto box = body->getMesh()->getBoundingBox();
++                    const float height = box.MaxEdge.Y - box.MinEdge.Y;
++                    ent.avatar_model_scale = height > .001f ? 18.f / height : 1.f;
++                    ent.model_y_offset = -box.MinEdge.Y * ent.avatar_model_scale;
++                }
++                body->setScale(v3f(ent.avatar_model_scale));
++                body->setPosition(v3f(0,ent.model_y_offset,0));
++                animate(body);
++            }
 +            return;
 +        }
 +        if (!smgr_) smgr_ = client_->getSceneManager();
@@ -3467,7 +3478,7 @@ index 0000000..054327e
 +    }
 +    if (g_settings->getNoEx("cwm_entity_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->entity_trace_.open(trace_path);
-+        pimpl_->entity_trace_ << "time_ns,revision,session_id,connection_id,id,type,perceived,ready,current_x,current_y,current_z,target_x,target_y,target_z,node_generation,node_visible,node_x,node_y,node_z,scene_actors,visible_actors,node_materials,material0,material1,material2,model_frame,model_yaw\n";
++        pimpl_->entity_trace_ << "time_ns,revision,session_id,connection_id,id,type,perceived,ready,current_x,current_y,current_z,target_x,target_y,target_z,node_generation,node_visible,node_x,node_y,node_z,scene_actors,visible_actors,node_materials,material0,material1,material2,model_frame,model_yaw,model_height\n";
 +    }
 +    return pimpl_->connect();
 +}
@@ -3569,7 +3580,8 @@ index 0000000..054327e
 +                << ent.node_generation << ',' << (node && node->isVisible()) << ','
 +                << pos.X << ',' << pos.Y << ',' << pos.Z << ',' << scene_actors << ',' << visible_actors
 +                << ',' << (node ? node->getMaterialCount() : 0) << ',' << texture(0) << ',' << texture(1) << ',' << texture(2)
-+                << ',' << (animated ? animated->getFrameNr() : -1.f) << ',' << (node ? node->getRotation().Y : 0.f) << '\n';
++                << ',' << (animated ? animated->getFrameNr() : -1.f) << ',' << (node ? node->getRotation().Y : 0.f)
++                << ',' << (node ? node->getBoundingBox().getExtent().Y * node->getScale().Y : 0.f) << '\n';
 +        }
 +        pimpl_->entity_trace_.flush();
 +    }
@@ -4751,10 +4763,10 @@ index 0000000..054327e
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.h b/src/cdda/cdda_bridge.h
 new file mode 100644
-index 0000000..33f42a9
+index 0000000..9558b4c
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.h
-@@ -0,0 +1,174 @@
+@@ -0,0 +1,175 @@
 +// Luanti C++ CWM Presentation Bridge
 +// Licensed under Apache-2.0
 +#pragma once
@@ -4815,6 +4827,7 @@ index 0000000..33f42a9
 +    void* scene_node{nullptr};
 +    uint64_t node_generation{0};
 +    float model_y_offset{0.0f};
++    float avatar_model_scale{0.f};
 +    float presentation_yaw{0.f};
 +    double animation_seconds{0.};
 +    bool walking{false};

@@ -217,6 +217,7 @@ def main():
                 check('zombie_skin_does_not_cover_armour_geometry',initial[monster_id]['material0'].endswith('blank.png') and initial[monster_id]['material1'].endswith('zombie.png'))
                 check('npc_skin_and_empty_overlays_use_separate_materials',initial[npc_id]['material0'].endswith('mcl_skins_character_1.png') and initial[npc_id]['material1'].endswith('blank.png') and initial[npc_id]['material2'].endswith('blank.png'))
                 check('integrated_avatar_is_voxel_mesh',int(initial[1]['node_materials'])>=3 and float(initial[1]['model_frame'])>=0 and initial[1]['material0'].endswith('mcl_skins_character_1.png'))
+                check('avatar_and_npc_use_humanoid_world_scale',all(14<float(initial[i]['model_height'])<22 for i in (1,npc_id)))
                 idle_frame=float(initial[monster_id]['model_frame']);time.sleep(.65)
                 idle=until(lambda data:data[1]['ready']=='1')
                 check('idle_cycle_changes_actual_mesh_frame',abs(float(idle[monster_id]['model_frame'])-idle_frame)>.2)
@@ -230,6 +231,10 @@ def main():
                 seconds=(int(later[monster_id]['time_ns'])-int(fast[monster_id]['time_ns']))/1e9
                 frames=(float(later[monster_id]['model_frame'])-float(fast[monster_id]['model_frame']))%10
                 check('idle_cycle_obeys_authoritative_time_scale',seconds>.4 and abs(frames/seconds-4)<.8)
+                for view in ('avatar-back.png','avatar-front.png'):
+                    subprocess.run(['xdotool','key','--window',window,'c'],check=True)
+                    time.sleep(.3);subprocess.run(['import','-window',window,str(out/view)],check=True)
+                subprocess.run(['xdotool','key','--window',window,'c'],check=True);time.sleep(.3)
                 subprocess.run(['import','-window',window,str(out/'initial.png')],check=True)
                 moved=[dict(a,pos=[a['pos'][0]+1,a['pos'][1],a['pos'][2]]) for a in actors]
                 rev=update('actors',moved)
