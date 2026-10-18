@@ -121,6 +121,15 @@ struct CraftingStateBuilder;
 struct CancelCraftingRequest;
 struct CancelCraftingRequestBuilder;
 
+struct ReadingState;
+struct ReadingStateBuilder;
+
+struct CancelReadingRequest;
+struct CancelReadingRequestBuilder;
+
+struct BookInfo;
+struct BookInfoBuilder;
+
 struct CraftingQueryRequest;
 struct CraftingQueryRequestBuilder;
 
@@ -527,37 +536,40 @@ enum class EquipmentAction : int8_t {
   TAKEOFF = 3,
   CONSUME = 4,
   TREAT = 5,
+  READ = 6,
   MIN = WIELD,
-  MAX = TREAT
+  MAX = READ
 };
 
-inline const EquipmentAction (&EnumValuesEquipmentAction())[6] {
+inline const EquipmentAction (&EnumValuesEquipmentAction())[7] {
   static const EquipmentAction values[] = {
     EquipmentAction::WIELD,
     EquipmentAction::STOW,
     EquipmentAction::WEAR,
     EquipmentAction::TAKEOFF,
     EquipmentAction::CONSUME,
-    EquipmentAction::TREAT
+    EquipmentAction::TREAT,
+    EquipmentAction::READ
   };
   return values;
 }
 
 inline const char * const *EnumNamesEquipmentAction() {
-  static const char * const names[7] = {
+  static const char * const names[8] = {
     "WIELD",
     "STOW",
     "WEAR",
     "TAKEOFF",
     "CONSUME",
     "TREAT",
+    "READ",
     nullptr
   };
   return names;
 }
 
 inline const char *EnumNameEquipmentAction(EquipmentAction e) {
-  if (::flatbuffers::IsOutRange(e, EquipmentAction::WIELD, EquipmentAction::TREAT)) return "";
+  if (::flatbuffers::IsOutRange(e, EquipmentAction::WIELD, EquipmentAction::READ)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesEquipmentAction()[index];
 }
@@ -678,11 +690,12 @@ enum class Payload : uint8_t {
   QuickbarSwapRequest = 43,
   InventoryArrangeRequest = 44,
   CraftingFavoriteRequest = 45,
+  CancelReadingRequest = 46,
   MIN = NONE,
-  MAX = CraftingFavoriteRequest
+  MAX = CancelReadingRequest
 };
 
-inline const Payload (&EnumValuesPayload())[46] {
+inline const Payload (&EnumValuesPayload())[47] {
   static const Payload values[] = {
     Payload::NONE,
     Payload::HelloRequest,
@@ -729,13 +742,14 @@ inline const Payload (&EnumValuesPayload())[46] {
     Payload::QuickbarUseRequest,
     Payload::QuickbarSwapRequest,
     Payload::InventoryArrangeRequest,
-    Payload::CraftingFavoriteRequest
+    Payload::CraftingFavoriteRequest,
+    Payload::CancelReadingRequest
   };
   return values;
 }
 
 inline const char * const *EnumNamesPayload() {
-  static const char * const names[47] = {
+  static const char * const names[48] = {
     "NONE",
     "HelloRequest",
     "HelloResponse",
@@ -782,13 +796,14 @@ inline const char * const *EnumNamesPayload() {
     "QuickbarSwapRequest",
     "InventoryArrangeRequest",
     "CraftingFavoriteRequest",
+    "CancelReadingRequest",
     nullptr
   };
   return names;
 }
 
 inline const char *EnumNamePayload(Payload e) {
-  if (::flatbuffers::IsOutRange(e, Payload::NONE, Payload::CraftingFavoriteRequest)) return "";
+  if (::flatbuffers::IsOutRange(e, Payload::NONE, Payload::CancelReadingRequest)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesPayload()[index];
 }
@@ -975,6 +990,10 @@ template<> struct PayloadTraits<CDDA::CWM::InventoryArrangeRequest> {
 
 template<> struct PayloadTraits<CDDA::CWM::CraftingFavoriteRequest> {
   static const Payload enum_value = Payload::CraftingFavoriteRequest;
+};
+
+template<> struct PayloadTraits<CDDA::CWM::CancelReadingRequest> {
+  static const Payload enum_value = Payload::CancelReadingRequest;
 };
 
 bool VerifyPayload(::flatbuffers::Verifier &verifier, const void *obj, Payload type);
@@ -3017,7 +3036,8 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_INVENTORY_WORK = 56,
     VT_QUICK_SLOTS = 58,
     VT_PRESENTATION_EVENTS = 60,
-    VT_LOW_LIGHT = 62
+    VT_LOW_LIGHT = 62,
+    VT_READING = 64
   };
   uint64_t world_revision() const {
     return GetField<uint64_t>(VT_WORLD_REVISION, 0);
@@ -3199,6 +3219,12 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   bool mutate_low_light(bool _low_light = 0) {
     return SetField<uint8_t>(VT_LOW_LIGHT, static_cast<uint8_t>(_low_light), 0);
   }
+  const CDDA::CWM::ReadingState *reading() const {
+    return GetPointer<const CDDA::CWM::ReadingState *>(VT_READING);
+  }
+  CDDA::CWM::ReadingState *mutable_reading() {
+    return GetPointer<CDDA::CWM::ReadingState *>(VT_READING);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint64_t>(verifier, VT_WORLD_REVISION, 8) &&
@@ -3262,6 +3288,8 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyVector(presentation_events()) &&
            verifier.VerifyVectorOfTables(presentation_events()) &&
            VerifyField<uint8_t>(verifier, VT_LOW_LIGHT, 1) &&
+           VerifyOffset(verifier, VT_READING) &&
+           verifier.VerifyTable(reading()) &&
            verifier.EndTable();
   }
 };
@@ -3360,6 +3388,9 @@ struct WorldSnapshotBuilder {
   void add_low_light(bool low_light) {
     fbb_.AddElement<uint8_t>(WorldSnapshot::VT_LOW_LIGHT, static_cast<uint8_t>(low_light), 0);
   }
+  void add_reading(::flatbuffers::Offset<CDDA::CWM::ReadingState> reading) {
+    fbb_.AddOffset(WorldSnapshot::VT_READING, reading);
+  }
   explicit WorldSnapshotBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -3402,7 +3433,8 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshot(
     ::flatbuffers::Offset<CDDA::CWM::InventoryWorkState> inventory_work = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::QuickSlot>>> quick_slots = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::PresentationEvent>>> presentation_events = 0,
-    bool low_light = false) {
+    bool low_light = false,
+    ::flatbuffers::Offset<CDDA::CWM::ReadingState> reading = 0) {
   WorldSnapshotBuilder builder_(_fbb);
   builder_.add_completed_command_id(completed_command_id);
   builder_.add_resync_id(resync_id);
@@ -3410,6 +3442,7 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshot(
   builder_.add_base_revision(base_revision);
   builder_.add_simulation_time_seconds(simulation_time_seconds);
   builder_.add_world_revision(world_revision);
+  builder_.add_reading(reading);
   builder_.add_presentation_events(presentation_events);
   builder_.add_quick_slots(quick_slots);
   builder_.add_inventory_work(inventory_work);
@@ -3468,7 +3501,8 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshotDirect(
     ::flatbuffers::Offset<CDDA::CWM::InventoryWorkState> inventory_work = 0,
     const std::vector<::flatbuffers::Offset<CDDA::CWM::QuickSlot>> *quick_slots = nullptr,
     const std::vector<::flatbuffers::Offset<CDDA::CWM::PresentationEvent>> *presentation_events = nullptr,
-    bool low_light = false) {
+    bool low_light = false,
+    ::flatbuffers::Offset<CDDA::CWM::ReadingState> reading = 0) {
   auto chunks__ = chunks ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::ChunkSnapshot>>(*chunks) : 0;
   auto entities__ = entities ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::EntityState>>(*entities) : 0;
   auto vehicles__ = vehicles ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::VehicleState>>(*vehicles) : 0;
@@ -3511,7 +3545,8 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshotDirect(
       inventory_work,
       quick_slots__,
       presentation_events__,
-      low_light);
+      low_light,
+      reading);
 }
 
 struct InventoryWorkState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -4503,6 +4538,278 @@ inline ::flatbuffers::Offset<CancelCraftingRequest> CreateCancelCraftingRequest(
   return builder_.Finish();
 }
 
+struct ReadingState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef ReadingStateBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_TOKEN = 4,
+    VT_TOTAL_MOVES = 6,
+    VT_REMAINING_MOVES = 8,
+    VT_BOOK_NAME = 10,
+    VT_PROGRESS = 12,
+    VT_SKIMMING = 14
+  };
+  uint64_t token() const {
+    return GetField<uint64_t>(VT_TOKEN, 0);
+  }
+  bool mutate_token(uint64_t _token = 0) {
+    return SetField<uint64_t>(VT_TOKEN, _token, 0);
+  }
+  int32_t total_moves() const {
+    return GetField<int32_t>(VT_TOTAL_MOVES, 0);
+  }
+  bool mutate_total_moves(int32_t _total_moves = 0) {
+    return SetField<int32_t>(VT_TOTAL_MOVES, _total_moves, 0);
+  }
+  int32_t remaining_moves() const {
+    return GetField<int32_t>(VT_REMAINING_MOVES, 0);
+  }
+  bool mutate_remaining_moves(int32_t _remaining_moves = 0) {
+    return SetField<int32_t>(VT_REMAINING_MOVES, _remaining_moves, 0);
+  }
+  const ::flatbuffers::String *book_name() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_BOOK_NAME);
+  }
+  ::flatbuffers::String *mutable_book_name() {
+    return GetPointer<::flatbuffers::String *>(VT_BOOK_NAME);
+  }
+  const ::flatbuffers::String *progress() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_PROGRESS);
+  }
+  ::flatbuffers::String *mutable_progress() {
+    return GetPointer<::flatbuffers::String *>(VT_PROGRESS);
+  }
+  bool skimming() const {
+    return GetField<uint8_t>(VT_SKIMMING, 0) != 0;
+  }
+  bool mutate_skimming(bool _skimming = 0) {
+    return SetField<uint8_t>(VT_SKIMMING, static_cast<uint8_t>(_skimming), 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_TOKEN, 8) &&
+           VerifyField<int32_t>(verifier, VT_TOTAL_MOVES, 4) &&
+           VerifyField<int32_t>(verifier, VT_REMAINING_MOVES, 4) &&
+           VerifyOffset(verifier, VT_BOOK_NAME) &&
+           verifier.VerifyString(book_name()) &&
+           VerifyOffset(verifier, VT_PROGRESS) &&
+           verifier.VerifyString(progress()) &&
+           VerifyField<uint8_t>(verifier, VT_SKIMMING, 1) &&
+           verifier.EndTable();
+  }
+};
+
+struct ReadingStateBuilder {
+  typedef ReadingState Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_token(uint64_t token) {
+    fbb_.AddElement<uint64_t>(ReadingState::VT_TOKEN, token, 0);
+  }
+  void add_total_moves(int32_t total_moves) {
+    fbb_.AddElement<int32_t>(ReadingState::VT_TOTAL_MOVES, total_moves, 0);
+  }
+  void add_remaining_moves(int32_t remaining_moves) {
+    fbb_.AddElement<int32_t>(ReadingState::VT_REMAINING_MOVES, remaining_moves, 0);
+  }
+  void add_book_name(::flatbuffers::Offset<::flatbuffers::String> book_name) {
+    fbb_.AddOffset(ReadingState::VT_BOOK_NAME, book_name);
+  }
+  void add_progress(::flatbuffers::Offset<::flatbuffers::String> progress) {
+    fbb_.AddOffset(ReadingState::VT_PROGRESS, progress);
+  }
+  void add_skimming(bool skimming) {
+    fbb_.AddElement<uint8_t>(ReadingState::VT_SKIMMING, static_cast<uint8_t>(skimming), 0);
+  }
+  explicit ReadingStateBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<ReadingState> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<ReadingState>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<ReadingState> CreateReadingState(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t token = 0,
+    int32_t total_moves = 0,
+    int32_t remaining_moves = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> book_name = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> progress = 0,
+    bool skimming = false) {
+  ReadingStateBuilder builder_(_fbb);
+  builder_.add_token(token);
+  builder_.add_progress(progress);
+  builder_.add_book_name(book_name);
+  builder_.add_remaining_moves(remaining_moves);
+  builder_.add_total_moves(total_moves);
+  builder_.add_skimming(skimming);
+  return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<ReadingState> CreateReadingStateDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t token = 0,
+    int32_t total_moves = 0,
+    int32_t remaining_moves = 0,
+    const char *book_name = nullptr,
+    const char *progress = nullptr,
+    bool skimming = false) {
+  auto book_name__ = book_name ? _fbb.CreateString(book_name) : 0;
+  auto progress__ = progress ? _fbb.CreateString(progress) : 0;
+  return CDDA::CWM::CreateReadingState(
+      _fbb,
+      token,
+      total_moves,
+      remaining_moves,
+      book_name__,
+      progress__,
+      skimming);
+}
+
+struct CancelReadingRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef CancelReadingRequestBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_COMMAND_ID = 4,
+    VT_ACTIVITY_TOKEN = 6
+  };
+  uint64_t command_id() const {
+    return GetField<uint64_t>(VT_COMMAND_ID, 0);
+  }
+  bool mutate_command_id(uint64_t _command_id = 0) {
+    return SetField<uint64_t>(VT_COMMAND_ID, _command_id, 0);
+  }
+  uint64_t activity_token() const {
+    return GetField<uint64_t>(VT_ACTIVITY_TOKEN, 0);
+  }
+  bool mutate_activity_token(uint64_t _activity_token = 0) {
+    return SetField<uint64_t>(VT_ACTIVITY_TOKEN, _activity_token, 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_COMMAND_ID, 8) &&
+           VerifyField<uint64_t>(verifier, VT_ACTIVITY_TOKEN, 8) &&
+           verifier.EndTable();
+  }
+};
+
+struct CancelReadingRequestBuilder {
+  typedef CancelReadingRequest Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_command_id(uint64_t command_id) {
+    fbb_.AddElement<uint64_t>(CancelReadingRequest::VT_COMMAND_ID, command_id, 0);
+  }
+  void add_activity_token(uint64_t activity_token) {
+    fbb_.AddElement<uint64_t>(CancelReadingRequest::VT_ACTIVITY_TOKEN, activity_token, 0);
+  }
+  explicit CancelReadingRequestBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<CancelReadingRequest> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<CancelReadingRequest>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<CancelReadingRequest> CreateCancelReadingRequest(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t command_id = 0,
+    uint64_t activity_token = 0) {
+  CancelReadingRequestBuilder builder_(_fbb);
+  builder_.add_activity_token(activity_token);
+  builder_.add_command_id(command_id);
+  return builder_.Finish();
+}
+
+struct BookInfo FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef BookInfoBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_IDENTIFIED = 4,
+    VT_CHAPTER_MOVES = 6,
+    VT_SUMMARY = 8
+  };
+  bool identified() const {
+    return GetField<uint8_t>(VT_IDENTIFIED, 0) != 0;
+  }
+  bool mutate_identified(bool _identified = 0) {
+    return SetField<uint8_t>(VT_IDENTIFIED, static_cast<uint8_t>(_identified), 0);
+  }
+  int32_t chapter_moves() const {
+    return GetField<int32_t>(VT_CHAPTER_MOVES, 0);
+  }
+  bool mutate_chapter_moves(int32_t _chapter_moves = 0) {
+    return SetField<int32_t>(VT_CHAPTER_MOVES, _chapter_moves, 0);
+  }
+  const ::flatbuffers::String *summary() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_SUMMARY);
+  }
+  ::flatbuffers::String *mutable_summary() {
+    return GetPointer<::flatbuffers::String *>(VT_SUMMARY);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint8_t>(verifier, VT_IDENTIFIED, 1) &&
+           VerifyField<int32_t>(verifier, VT_CHAPTER_MOVES, 4) &&
+           VerifyOffset(verifier, VT_SUMMARY) &&
+           verifier.VerifyString(summary()) &&
+           verifier.EndTable();
+  }
+};
+
+struct BookInfoBuilder {
+  typedef BookInfo Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_identified(bool identified) {
+    fbb_.AddElement<uint8_t>(BookInfo::VT_IDENTIFIED, static_cast<uint8_t>(identified), 0);
+  }
+  void add_chapter_moves(int32_t chapter_moves) {
+    fbb_.AddElement<int32_t>(BookInfo::VT_CHAPTER_MOVES, chapter_moves, 0);
+  }
+  void add_summary(::flatbuffers::Offset<::flatbuffers::String> summary) {
+    fbb_.AddOffset(BookInfo::VT_SUMMARY, summary);
+  }
+  explicit BookInfoBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<BookInfo> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<BookInfo>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<BookInfo> CreateBookInfo(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    bool identified = false,
+    int32_t chapter_moves = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> summary = 0) {
+  BookInfoBuilder builder_(_fbb);
+  builder_.add_summary(summary);
+  builder_.add_chapter_moves(chapter_moves);
+  builder_.add_identified(identified);
+  return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<BookInfo> CreateBookInfoDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    bool identified = false,
+    int32_t chapter_moves = 0,
+    const char *summary = nullptr) {
+  auto summary__ = summary ? _fbb.CreateString(summary) : 0;
+  return CDDA::CWM::CreateBookInfo(
+      _fbb,
+      identified,
+      chapter_moves,
+      summary__);
+}
+
 struct CraftingQueryRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef CraftingQueryRequestBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
@@ -5211,7 +5518,8 @@ struct InventoryEntry FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_QUICK_SLOT = 46,
     VT_ROTTEN = 48,
     VT_UI_ORDER = 50,
-    VT_EXTERNAL = 52
+    VT_EXTERNAL = 52,
+    VT_BOOK = 54
   };
   uint32_t id() const {
     return GetField<uint32_t>(VT_ID, 0);
@@ -5363,6 +5671,12 @@ struct InventoryEntry FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   bool mutate_external(bool _external = 0) {
     return SetField<uint8_t>(VT_EXTERNAL, static_cast<uint8_t>(_external), 0);
   }
+  const CDDA::CWM::BookInfo *book() const {
+    return GetPointer<const CDDA::CWM::BookInfo *>(VT_BOOK);
+  }
+  CDDA::CWM::BookInfo *mutable_book() {
+    return GetPointer<CDDA::CWM::BookInfo *>(VT_BOOK);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_ID, 4) &&
@@ -5398,6 +5712,8 @@ struct InventoryEntry FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyField<uint8_t>(verifier, VT_ROTTEN, 1) &&
            VerifyField<uint32_t>(verifier, VT_UI_ORDER, 4) &&
            VerifyField<uint8_t>(verifier, VT_EXTERNAL, 1) &&
+           VerifyOffset(verifier, VT_BOOK) &&
+           verifier.VerifyTable(book()) &&
            verifier.EndTable();
   }
 };
@@ -5481,6 +5797,9 @@ struct InventoryEntryBuilder {
   void add_external(bool external) {
     fbb_.AddElement<uint8_t>(InventoryEntry::VT_EXTERNAL, static_cast<uint8_t>(external), 0);
   }
+  void add_book(::flatbuffers::Offset<CDDA::CWM::BookInfo> book) {
+    fbb_.AddOffset(InventoryEntry::VT_BOOK, book);
+  }
   explicit InventoryEntryBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -5518,11 +5837,13 @@ inline ::flatbuffers::Offset<InventoryEntry> CreateInventoryEntry(
     uint8_t quick_slot = 0,
     bool rotten = false,
     uint32_t ui_order = 0,
-    bool external = false) {
+    bool external = false,
+    ::flatbuffers::Offset<CDDA::CWM::BookInfo> book = 0) {
   InventoryEntryBuilder builder_(_fbb);
   builder_.add_length_mm(length_mm);
   builder_.add_volume_ml(volume_ml);
   builder_.add_weight_grams(weight_grams);
+  builder_.add_book(book);
   builder_.add_ui_order(ui_order);
   builder_.add_transfer_reason(transfer_reason);
   builder_.add_consume_warning(consume_warning);
@@ -5574,7 +5895,8 @@ inline ::flatbuffers::Offset<InventoryEntry> CreateInventoryEntryDirect(
     uint8_t quick_slot = 0,
     bool rotten = false,
     uint32_t ui_order = 0,
-    bool external = false) {
+    bool external = false,
+    ::flatbuffers::Offset<CDDA::CWM::BookInfo> book = 0) {
   auto type_id__ = type_id ? _fbb.CreateString(type_id) : 0;
   auto name__ = name ? _fbb.CreateString(name) : 0;
   auto category__ = category ? _fbb.CreateString(category) : 0;
@@ -5608,7 +5930,8 @@ inline ::flatbuffers::Offset<InventoryEntry> CreateInventoryEntryDirect(
       quick_slot,
       rotten,
       ui_order,
-      external);
+      external,
+      book);
 }
 
 struct InventoryPocket FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -8326,6 +8649,9 @@ struct CwmMessage FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const CDDA::CWM::CraftingFavoriteRequest *payload_as_CraftingFavoriteRequest() const {
     return payload_type() == CDDA::CWM::Payload::CraftingFavoriteRequest ? static_cast<const CDDA::CWM::CraftingFavoriteRequest *>(payload()) : nullptr;
   }
+  const CDDA::CWM::CancelReadingRequest *payload_as_CancelReadingRequest() const {
+    return payload_type() == CDDA::CWM::Payload::CancelReadingRequest ? static_cast<const CDDA::CWM::CancelReadingRequest *>(payload()) : nullptr;
+  }
   void *mutable_payload() {
     return GetPointer<void *>(VT_PAYLOAD);
   }
@@ -8540,6 +8866,10 @@ template<> inline const CDDA::CWM::InventoryArrangeRequest *CwmMessage::payload_
 
 template<> inline const CDDA::CWM::CraftingFavoriteRequest *CwmMessage::payload_as<CDDA::CWM::CraftingFavoriteRequest>() const {
   return payload_as_CraftingFavoriteRequest();
+}
+
+template<> inline const CDDA::CWM::CancelReadingRequest *CwmMessage::payload_as<CDDA::CWM::CancelReadingRequest>() const {
+  return payload_as_CancelReadingRequest();
 }
 
 struct CwmMessageBuilder {
@@ -8786,6 +9116,10 @@ inline bool VerifyPayload(::flatbuffers::Verifier &verifier, const void *obj, Pa
     }
     case Payload::CraftingFavoriteRequest: {
       auto ptr = reinterpret_cast<const CDDA::CWM::CraftingFavoriteRequest *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::CancelReadingRequest: {
+      auto ptr = reinterpret_cast<const CDDA::CWM::CancelReadingRequest *>(obj);
       return verifier.VerifyTable(ptr);
     }
     default: return true;

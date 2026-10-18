@@ -9,3 +9,4 @@ class EquipmentAction(object):
     TAKEOFF = 3
     CONSUME = 4
     TREAT = 5
+    READ = 6

@@ -47,7 +47,7 @@ index cd1b709..339624b 100644
          } else if( who.is_worn( *loc ) ) {
              who.takeoff( loc, &res );
 diff --git a/src/avatar.cpp b/src/avatar.cpp
-index 83ae79c..99e0e65 100644
+index 83ae79c..9694a55 100644
 --- a/src/avatar.cpp
 +++ b/src/avatar.cpp
 @@ -1,4 +1,6 @@
@@ -57,7 +57,54 @@ index 83ae79c..99e0e65 100644
  
  #include <algorithm>
  #include <array>
-@@ -1232,6 +1234,11 @@ bool avatar::cant_see( const tripoint &p )
+@@ -414,6 +416,28 @@ diary *avatar::get_avatar_diary()
+     return a_diary.get();
+ }
+ 
++// Reading has native participant and study-mode choices. Export just this
++// menu, without constructing curses windows or changing its return values.
++static void reading_menu_query( uilist &menu )
++{
++    if( !external_ui_active() ) { menu.query( true ); return; }
++    std::vector<std::string> labels;
++    std::vector<int> returns;
++    std::string text = menu.title + "\n" + menu.text;
++    for( size_t i = 0; i < menu.entries.size(); ++i ) {
++        const auto &entry = menu.entries[i];
++        if( entry.enabled ) {
++            labels.push_back( remove_color_tags( entry.txt + ( entry.desc.empty() ? "" : "\n" + entry.desc ) ) );
++            returns.push_back( entry.retval == -1 ? int( i ) : entry.retval );
++        } else if( !entry.txt.empty() ) {
++            text += "\n" + entry.txt;
++        }
++    }
++    labels.push_back( _( "Cancel" ) );
++    const int choice = external_ui_choice( remove_color_tags( text ), labels );
++    menu.ret = choice >= 0 && size_t( choice ) < returns.size() ? returns[choice] : UILIST_CANCEL;
++}
++
+ bool avatar::read( item_location &book, item_location ereader )
+ {
+     if( !book ) {
+@@ -584,7 +608,7 @@ bool avatar::read( item_location &book, item_location ereader )
+             }
+         }
+ 
+-        menu.query( true );
++        reading_menu_query( menu );
+         if( menu.ret == UILIST_CANCEL ) {
+             add_msg( m_info, _( "Never mind." ) );
+             return false;
+@@ -606,7 +630,7 @@ bool avatar::read( item_location &book, item_location ereader )
+                                     martial_art_learned_from( *book->type )->name );
+         menu.addentry( 1, true, '1', _( "Train once" ) );
+         menu.addentry( 2, true, '0', _( "Train until tired or success" ) );
+-        menu.query( true );
++        reading_menu_query( menu );
+         if( menu.ret == UILIST_CANCEL ) {
+             add_msg( m_info, _( "Never mind." ) );
+             return false;
+@@ -1232,6 +1256,11 @@ bool avatar::cant_see( const tripoint &p )
  
  void avatar::rebuild_aim_cache()
  {
@@ -69,7 +116,7 @@ index 83ae79c..99e0e65 100644
      double pi = 2 * acos( 0.0 );
  
      const tripoint local_last_target = get_map().getlocal( last_target_pos.value() );
-@@ -1247,7 +1254,7 @@ void avatar::rebuild_aim_cache()
+@@ -1247,7 +1276,7 @@ void avatar::rebuild_aim_cache()
      // todo: this is not the correct weapon when aiming with fake items
      item *weapon = get_wielded_item() ? &*get_wielded_item() : &null_item_reference();
      // calc steadiness with player recoil (like they are taking a regular shot not careful etc.
@@ -78,7 +125,7 @@ index 83ae79c..99e0e65 100644
  
      // pin between pi and negative pi
      float upper_bound = base_angle + range;
-@@ -1459,6 +1466,33 @@ item::reload_option avatar::select_ammo( const item_location &base, bool prompt,
+@@ -1459,6 +1488,33 @@ item::reload_option avatar::select_ammo( const item_location &base, bool prompt,
          return item::reload_option();
      }
  
@@ -2052,10 +2099,10 @@ index 0000000..0866007
 +} // namespace cwm
 diff --git a/src/cwm/cwm_inventory.h b/src/cwm/cwm_inventory.h
 new file mode 100644
-index 0000000..fe41b5c
+index 0000000..d56deed
 --- /dev/null
 +++ b/src/cwm/cwm_inventory.h
-@@ -0,0 +1,332 @@
+@@ -0,0 +1,335 @@
 +#pragma once
 +#include "cwm/product_language.hpp"
 +#include <algorithm>
@@ -2078,6 +2125,7 @@ index 0000000..fe41b5c
 +#include "units.h"
 +#include "visitable.h"
 +#include "cwm/cwm_protocol.hpp"
++#include "cwm_reading.h"
 +
 +namespace cwm {
 +// Bounded, ephemeral selection view. Native safe item_locations retain identity;
@@ -2144,10 +2192,11 @@ index 0000000..fe41b5c
 +    static std::string action_error(avatar& u, item_location location, int action) {
 +        if (!location || !location.held_by(u) || !u.has_item(*location))
 +            return ::cwm::tr("Item is no longer owned.", "Oggetto non piu posseduto.");
-+        if (action < 0 || action > 5) return ::cwm::tr("Equipment action is unsupported.", "Azione equipaggiamento non supportata.");
++        if (action < 0 || action > 6) return ::cwm::tr("Equipment action is unsupported.", "Azione equipaggiamento non supportata.");
 +        if (u.activity) return ::cwm::tr("Wait for the native activity to finish.", "Attendi la conclusione dell'attivita nativa.");
 +        const auto access = access_error(location);
 +        if (!access.empty()) return access;
++        if (action == 6) return reading_error(u, *location);
 +        const bool worn = u.is_worn(*location), wielded = u.is_wielding(*location);
 +        if (action == 0) {
 +            if (wielded) return ::cwm::tr("Item is already wielded.", "Oggetto gia impugnato.");
@@ -2332,7 +2381,7 @@ index 0000000..fe41b5c
 +                }
 +                uint8_t actions = 0;
 +                std::vector<flatbuffers::Offset<flatbuffers::String>> reasons;
-+                for (int action = 0; action < 6; ++action) {
++                for (int action = 0; action < 7; ++action) {
 +                    const auto reason = action_error(u, location, action);
 +                    if (reason.empty()) actions |= 1 << action;
 +                    reasons.push_back(fbb.CreateString(reason));
@@ -2348,13 +2397,14 @@ index 0000000..fe41b5c
 +                const auto quick_identity = it->get_var("cwm_quick_identity");
 +                if (quick_identity.size() == 32) for (unsigned n = 1; n <= 9; ++n)
 +                    if (u.get_value("cwm_quick_slot_" + std::to_string(n)) == quick_identity) quick_slot = n;
++                const auto book=export_book_info(fbb,u,*it);
 +                entries.push_back(CDDA::CWM::CreateInventoryEntryDirect(fbb, id, parent_id, pocket_index,
 +                    it->typeId().str().c_str(), remove_color_tags(it->tname()).c_str(), it->get_category_shallow().get_id().str().c_str(),
 +                    it->charges, it->count_by_charges(), worn, wielded,
 +                    units::to_gram<int64_t>(it->weight()), units::to_milliliter<int64_t>(it->volume()),
 +                    units::to_millimeter<int64_t>(it->length()), access, actions, &reasons, consume_moves, consume_label, remove_color_tags(warning).c_str(), (exporting_external ? external_source_error(u,location) : transfer_source_error(u, location)).c_str(),
 +                    std::any_of(container_pockets.begin(), container_pockets.end(),
-+                        [](const auto* p) { return p->is_type(pocket_type::CONTAINER); }), exporting_external ? 0 : quick_slot, it->rotten(), exporting_external ? 0 : ui_order(*it), exporting_external));
++                        [](const auto* p) { return p->is_type(pocket_type::CONTAINER); }), exporting_external ? 0 : quick_slot, it->rotten(), exporting_external ? 0 : ui_order(*it), exporting_external, book));
 +                bindings_.push_back({location, exporting_external ? external_parents(location) : ancestors, it->typeId().str(), it->charges,
 +                                     it->count_by_charges(), worn, wielded, exporting_external});
 +                ids[it] = id;
@@ -2814,10 +2864,10 @@ index 0000000..c273bf2
 +}
 diff --git a/src/cwm/cwm_map_exporter.cpp b/src/cwm/cwm_map_exporter.cpp
 new file mode 100644
-index 0000000..1d4d4a6
+index 0000000..bcc8746
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.cpp
-@@ -0,0 +1,714 @@
+@@ -0,0 +1,724 @@
 +#include "cwm/product_language.hpp"
 +#include "cwm_motion.h"
 +// CDDA CWM Map & Entity Exporter Implementation
@@ -3422,7 +3472,7 @@ index 0000000..1d4d4a6
 +    for (unsigned n = 1; n <= 9; ++n) {
 +        const auto location = quick_items[n - 1];
 +        uint8_t actions = 0;
-+        if (location) for (int action = 0; action < 6; ++action)
++        if (location) for (int action = 0; action < 7; ++action)
 +            if (InventorySelection::action_error(const_cast<avatar&>(u), location, action).empty()) actions |= 1 << action;
 +        quick_slots.push_back(CDDA::CWM::CreateQuickSlotDirect(fbb, n,
 +            u.get_value(Hotbar::slot_key(n)).c_str(), location ? location->typeId().str().c_str() : "",
@@ -3447,6 +3497,16 @@ index 0000000..1d4d4a6
 +        u.activity.moves_total > 0 && u.activity.moves_left > 0 ?
 +        CDDA::CWM::CreateFirstAidState(fbb, activity_token, u.activity.moves_total, u.activity.moves_left) :
 +        flatbuffers::Offset<CDDA::CWM::FirstAidState>{};
++    flatbuffers::Offset<CDDA::CWM::ReadingState> reading;
++    if (activity_token && u.activity.id()==activity_id("ACT_READ") && u.activity.moves_total>0 && !u.activity.targets.empty()) {
++        const auto& book=u.activity.targets.front();
++        if(book && book->is_book()) {
++            const auto progress=u.activity.actor ? remove_color_tags(u.activity.actor->get_progress_message(u.activity)) : "";
++            reading=CDDA::CWM::CreateReadingStateDirect(fbb,activity_token,u.activity.moves_total,
++                std::clamp(u.activity.moves_left,0,u.activity.moves_total),remove_color_tags(book->tname()).substr(0,16384).c_str(),
++                progress.substr(0,2048).c_str(),!u.has_identified(book->typeId()));
++        }
++    }
 +    const auto work = active_craft(u);
 +    const auto crafting = activity_token && work ?
 +        CDDA::CWM::CreateCraftingState(fbb, activity_token, std::clamp(work->item_counter, 0, 10000000)) :
@@ -3483,7 +3543,7 @@ index 0000000..1d4d4a6
 +        g.safe_mode == SAFE_MODE_STOP || u.has_effect(efftype_id("laserlocked")) ||
 +            (clock && (clock->pause_reasons & 4)),
 +        include_chunks, base_revision, state_id, resync_id, completed_command_id,
-+        spawned_vec, removed_vec, clock_state, ground_items_vec, owned_items_vec, avatar_status, consumption, first_aid, crafting, ranged, reload, transfer, inventory_work, quick_slots_vec, cue_vector, low_light
++        spawned_vec, removed_vec, clock_state, ground_items_vec, owned_items_vec, avatar_status, consumption, first_aid, crafting, ranged, reload, transfer, inventory_work, quick_slots_vec, cue_vector, low_light, reading
 +    );
 +
 +    return builder.finish_message(CDDA::CWM::Payload::WorldSnapshot, world_snap.Union());
@@ -3742,12 +3802,65 @@ index 0000000..bb65c87
 +        mode ? std::max(0,mode->gun_range(&u)) : 0,std::clamp(u.recoil,0.0,double(MAX_RECOIL)),why,ranged_weapon_error(u,2).empty());
 +}
 +} // namespace cwm
+diff --git a/src/cwm/cwm_reading.h b/src/cwm/cwm_reading.h
+new file mode 100644
+index 0000000..684ea0e
+--- /dev/null
++++ b/src/cwm/cwm_reading.h
+@@ -0,0 +1,47 @@
++#pragma once
++#include "avatar.h"
++#include "item.h"
++#include "itype.h"
++#include "skill.h"
++#include "output.h"
++#include "cwm/cwm_protocol.hpp"
++#include "cwm/product_language.hpp"
++#include <climits>
++#include <algorithm>
++#include <vector>
++#include <string>
++
++namespace cwm {
++inline std::string reading_error(const avatar& u, const item& book) {
++    if (!book.is_book()) return ::cwm::tr("Select a paper book.", "Seleziona un libro cartaceo.");
++    if (book.type->has_use() || book.typeId() == itype_id("guidebook"))
++        return ::cwm::tr("Special-use books need a dedicated interaction.", "Libri con uso speciale: serve un'interazione dedicata.");
++    std::vector<std::string> reasons;
++    if (!u.get_book_reader(book, reasons)) {
++        std::string text;
++        for (const auto& reason : reasons) { if (!text.empty()) text += "\n"; text += remove_color_tags(reason); }
++        return text.empty() ? ::cwm::tr("Reading is unavailable.", "Lettura non disponibile.") : text.substr(0,2048);
++    }
++    return {};
++}
++inline flatbuffers::Offset<CDDA::CWM::BookInfo> export_book_info(
++        flatbuffers::FlatBufferBuilder& wire, const avatar& u, const item& book) {
++    if (!book.is_book()) return {};
++    const bool identified=u.has_identified(book.typeId());
++    std::string summary;
++    if (!identified) summary=::cwm::tr("Skim first to discover the contents. No knowledge is granted by inspection.",
++        "Sfoglia prima per scoprire il contenuto. Consultare non assegna conoscenze.");
++    else if (const auto& skill=book.type->book->skill; !skill.is_null()) {
++        summary=skill.obj().name()+" — "+::cwm::tr("theory ","teoria ")+std::to_string(u.get_knowledge_level(skill))+
++            "; "+::cwm::tr("book levels ","livelli del libro ")+std::to_string(book.type->book->req)+
++            "–"+std::to_string(book.type->book->level)+"\n"+
++            ::cwm::tr("Read one chapter or study until a level; native conditions apply.",
++                "Leggi un capitolo o studia fino al prossimo livello; valgono i requisiti nativi.");
++    } else summary=::cwm::tr("Known leisure book. Chapter and morale effects remain native.",
++        "Libro di svago noto. Capitoli ed effetti sul morale restano nativi.");
++    std::vector<std::string> reasons;
++    const Character* reader=u.get_book_reader(book,reasons);
++    const int moves=reader ? int(std::clamp<int64_t>(to_moves<int64_t>(u.time_to_read(book,*reader)),0,INT_MAX)) : 0;
++    return CDDA::CWM::CreateBookInfoDirect(wire,identified,moves,summary.substr(0,2048).c_str());
++}
++} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..9f92ba3
+index 0000000..1a2775d
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,1070 @@
+@@ -0,0 +1,1082 @@
 +#include "cwm/product_language.hpp"
 +#include "cwm_motion.h"
 +// CDDA CWM IPC Server Implementation
@@ -3865,7 +3978,7 @@ index 0000000..9f92ba3
 +        activity_remaining_ = std::clamp(u.activity.moves_left, 0, activity_total_);
 +        return;
 +    }
-+    if ((u.activity.id() != activity_id("ACT_CONSUME") && u.activity.id() != activity_id("ACT_FIRSTAID") && u.activity.id() != activity_id("ACT_RELOAD")) ||
++    if ((u.activity.id() != activity_id("ACT_CONSUME") && u.activity.id() != activity_id("ACT_FIRSTAID") && u.activity.id() != activity_id("ACT_RELOAD") && u.activity.id() != activity_id("ACT_READ")) ||
 +            u.activity.moves_total <= 0 || u.activity.moves_left <= 0) {
 +        activity_token_ = 0; activity_total_ = activity_remaining_ = 0;
 +        return;
@@ -4337,6 +4450,15 @@ index 0000000..9f92ba3
 +                }
 +                refresh_activity(u);
 +                break;
++            case 6:
++                activity_token_ = 0;
++                // Native read key obtains the selected book from its pocket
++                // before avatar::read, paying the actual access cost.
++                location = location.obtain(u);
++                accepted = location && u.read(location);
++                accepted = accepted && u.activity.id() == activity_id("ACT_READ") && u.activity.moves_left > 0;
++                refresh_activity(u);
++                break;
 +        }
 +        const bool acted = accepted || u.moves != before_moves;
 +        if (acted) ++world_revision_;
@@ -4543,6 +4665,8 @@ index 0000000..9f92ba3
 +        id = request->command_id(); signature = "craft:" + std::to_string(request->view_id()) + ":" + std::to_string(request->entry_id());
 +    } else if (const auto* request = msg->payload_as_CancelCraftingRequest()) {
 +        id = request->command_id(); signature = "cancel-craft:" + std::to_string(request->activity_token());
++    } else if (const auto* request = msg->payload_as_CancelReadingRequest()) {
++        id = request->command_id(); signature = "cancel-reading:" + std::to_string(request->activity_token());
 +    } else if (const auto* request = msg->payload_as_CancelFirstAidRequest()) {
 +        id = request->command_id(); signature = "cancel-first-aid:" + std::to_string(request->activity_token());
 +    } else if (const auto* request = msg->payload_as_CancelConsumptionRequest()) {
@@ -4634,17 +4758,18 @@ index 0000000..9f92ba3
 +        send_result({id, error.empty(), error}, u, m, g);
 +        return; // UI assignment has no action, move debit or calendar advancement.
 +    }
-+    if (msg->payload_as_CancelConsumptionRequest() || msg->payload_as_CancelFirstAidRequest() || msg->payload_as_CancelCraftingRequest() || msg->payload_as_CancelReloadRequest() || msg->payload_as_CancelItemTransferRequest()) {
++    if (msg->payload_as_CancelConsumptionRequest() || msg->payload_as_CancelFirstAidRequest() || msg->payload_as_CancelCraftingRequest() || msg->payload_as_CancelReloadRequest() || msg->payload_as_CancelItemTransferRequest() || msg->payload_as_CancelReadingRequest()) {
 +        const auto* meal = msg->payload_as_CancelConsumptionRequest();
 +        const auto* aid = msg->payload_as_CancelFirstAidRequest();
 +        const auto* craft = msg->payload_as_CancelCraftingRequest();
 +        const auto* reload = msg->payload_as_CancelReloadRequest();
 +        const auto* transfer = msg->payload_as_CancelItemTransferRequest();
-+        const auto token = transfer ? transfer->activity_token() : meal ? meal->activity_token() : aid ? aid->activity_token() : craft ? craft->activity_token() : reload->activity_token();
++        const auto* reading = msg->payload_as_CancelReadingRequest();
++        const auto token = reading ? reading->activity_token() : transfer ? transfer->activity_token() : meal ? meal->activity_token() : aid ? aid->activity_token() : craft ? craft->activity_token() : reload->activity_token();
 +        refresh_activity(u);
 +        const bool valid = activity_token_ && token == activity_token_ &&
 +            (transfer ? (u.activity.id() == activity_id("ACT_DROP") || u.activity.id() == activity_id("ACT_INSERT_ITEM") || u.activity.id() == activity_id("ACT_PICKUP")) :
-+             u.activity.id() == activity_id(meal ? "ACT_CONSUME" : aid ? "ACT_FIRSTAID" : craft ? "ACT_CRAFT" : "ACT_RELOAD")) &&
++             u.activity.id() == activity_id(reading ? "ACT_READ" : meal ? "ACT_CONSUME" : aid ? "ACT_FIRSTAID" : craft ? "ACT_CRAFT" : "ACT_RELOAD")) &&
 +            u.activity.is_interruptible() && (!realtime_ || !pause_reasons(g));
 +        if (valid) {
 +            u.cancel_activity(); // Native interruption/backlog rules, no refund.
@@ -5298,10 +5423,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..ffc322a
+index 0000000..9765a78
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,2033 @@
+@@ -0,0 +1,2157 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "move_mode.h"
@@ -5332,6 +5457,7 @@ index 0000000..ffc322a
 +#include "cwm/cwm_server.h"
 +#include "cwm/cwm_hotbar.h"
 +#include "json_loader.h"
++#include "skill.h"
 +#include <sstream>
 +#include "cwm/ipc_transport.hpp"
 +
@@ -5473,6 +5599,11 @@ index 0000000..ffc322a
 +    static void interrupt_crafting( CwmServer &server, uint64_t token, uint64_t id ) {
 +        cdda::cwm::MessageBuilder wire(server.received_sequence_+1,1,server.identity_);
 +        const auto bytes=wire.build_cancel_crafting(id,token);
++        server.handle_client_message(bytes.data(),bytes.size(),get_avatar(),get_map(),*g);
++    }
++    static void interrupt_reading(CwmServer& server,uint64_t token,uint64_t id) {
++        cdda::cwm::MessageBuilder wire(server.received_sequence_+1,1,server.identity_);
++        const auto bytes=wire.build_cancel_reading(id,token);
 +        server.handle_client_message(bytes.data(),bytes.size(),get_avatar(),get_map(),*g);
 +    }
 +    static void cancel( CwmServer &server ) { server.cancel_connection(); }
@@ -6517,6 +6648,124 @@ index 0000000..ffc322a
 +    CHECK_FALSE( selection.validate(u,old,1).empty() );
 +    selection.clear(); CHECK_FALSE(selection.validate(u,old,1).empty());
 +    CHECK_FALSE(selection.validate(u,old,0).empty());
++}
++
++static item_location reading_fixture(const char* type,bool known=false) {
++    clear_avatar();clear_map();clear_creatures();
++    avatar& u=get_avatar();u.setpos(tripoint(60,60,0));
++    REQUIRE(u.wear_item(item(itype_id("backpack_hiking"))));
++    u.i_add(item(itype_id("atomic_lamp")));
++    auto book=u.i_add(item(itype_id(type)));REQUIRE(book);
++    book->set_var("uid","native-reading-book");
++    if(known)u.identify(*book);
++    calendar::turn=calendar::turn_zero+36_hours;
++    get_weather().update_weather();u.recalc_sight_limits();g->reset_light_level();
++    get_map().build_map_cache(0);get_map().invalidate_visibility_cache();get_map().update_visibility_cache(0);
++    g->new_game=false;g->uquit=QUIT_NO;g->set_safe_mode(SAFE_MODE_OFF);u.moves=100;
++    REQUIRE(u.fine_detail_vision_mod()==1);
++    return book;
++}
++
++TEST_CASE("cwm_reading_inspection_preserves_knowledge_time_items_and_rng", "[cwm][reading]") {
++    auto book=reading_fixture("mag_guns");avatar& u=get_avatar();
++    const auto time=calendar::turn;const int moves=u.moves;
++    const auto rng=rng_get_engine();
++    cwm::InventorySelection selection;cdda::cwm::MessageBuilder wire(1,1,{101,102,103});
++    auto bytes=selection.query(u,1,wire);
++    const auto* view=CDDA::CWM::GetCwmMessage(bytes.data())->payload_as_InventoryView();
++    REQUIRE(cdda::cwm::valid_inventory(view));bool found=false;
++    for(const auto* row:*view->entries())if(row->type_id()->str()=="mag_guns") {
++        found=true;REQUIRE(row->book());CHECK_FALSE(row->book()->identified());
++        CHECK(row->actions() & 64);CHECK(row->book()->chapter_moves()>0);
++        CHECK(row->reasons()->size()==7);CHECK(row->reasons()->Get(6)->str().empty());
++        CHECK(row->book()->summary()->str().find("theory")==std::string::npos);
++    }
++    CHECK(found);CHECK_FALSE(u.has_identified(book->typeId()));CHECK_FALSE(u.activity);
++    CHECK(u.moves==moves);CHECK(calendar::turn==time);CHECK(rng_get_engine()==rng);
++    CHECK(u.get_knowledge_level(skill_id("gun"))==0);
++    CHECK_FALSE(cwm::InventorySelection::action_error(u,u.i_add(item(itype_id("rock"))),6).empty());
++    CHECK_FALSE(cwm::reading_error(u,item(itype_id("guidebook"))).empty());
++}
++
++TEST_CASE("cwm_native_reading_skims_then_pays_for_a_real_theory_chapter", "[cwm][reading]") {
++    auto book=reading_fixture("mag_guns");avatar& u=get_avatar();
++    const override_option autosave("AUTOSAVE","false");
++    cwm::CwmServer server("/unused-reading");cwm::CwmServerTestAccess::ready(server);
++    const auto view=cwm::CwmServerTestAccess::inventory(server);
++    const auto selected=cwm::CwmServerTestAccess::item_id(server,*book);REQUIRE(selected);
++    cwm::CwmServerTestAccess::equipment(server,view,selected,6,1);REQUIRE(server.has_queued_action());
++    bool entered=false;u.moves=100;
++    do_turn_with_action([&](){entered=true;u.moves=100;CHECK(cwm::CwmServerTestAccess::execute(server));finish_external_action_phase();return false;},
++        [](const auto&,const auto&){return 0;});
++    REQUIRE(entered);REQUIRE(u.activity.id()==activity_id("ACT_READ"));
++    CHECK_FALSE(u.has_identified(book->typeId()));CHECK(u.activity.moves_total==to_moves<int>(u.time_to_read(*book,u)));
++    cwm::CwmServerTestAccess::complete(server);
++    const auto token=cwm::CwmServerTestAccess::consumption(server);REQUIRE(token);
++    // Repeating the start cannot identify or consume a second chapter.
++    cwm::CwmServerTestAccess::equipment(server,view,selected,6,1);CHECK_FALSE(server.has_queued_action());
++    const auto bytes=cwm::CwmMapExporter::export_world_snapshot(1,1,u,get_map(),*g,true,nullptr,{},0,1,0,0,nullptr,token);
++    const auto* state=CDDA::CWM::GetCwmMessage(bytes.data())->payload_as_WorldSnapshot();
++    REQUIRE(cdda::cwm::valid_world(state));REQUIRE(state->reading());CHECK(state->reading()->skimming());CHECK_FALSE(state->consumption());
++    process_activity(u);CHECK_FALSE(u.activity);REQUIRE(u.has_identified(book->typeId()));
++    CHECK(u.get_skill_level_object(skill_id("gun")).knowledgeExperience()==0);
++    bool cancel=false;
++    SECTION("cancel native study menu") {cancel=true;}
++    SECTION("read one actual chapter") {}
++    const auto next_view=cwm::CwmServerTestAccess::inventory(server);
++    const auto next_item=cwm::CwmServerTestAccess::item_id(server,*book);
++    cwm::CwmServerTestAccess::equipment(server,next_view,next_item,6,2);REQUIRE(server.has_queued_action());
++    bool prompted=false;u.moves=100;entered=false;
++    do_turn_with_action([&](){entered=true;u.moves=100;cwm::CwmServerTestAccess::execute(server);finish_external_action_phase();return false;},
++        [&](const std::string& text,const std::vector<std::string>& options){
++            prompted=true;CHECK(text.find("Reading")!=std::string::npos);
++            REQUIRE(options.size()>=3);CHECK(options.front().find("Read once")!=std::string::npos);
++            CHECK(options.back()=="Cancel");return cancel ? int(options.size()-1) : 0;
++        });
++    REQUIRE(entered);CHECK(prompted);
++    if(cancel){CHECK_FALSE(u.activity);CHECK(u.get_skill_level_object(skill_id("gun")).knowledgeExperience()==0);return;}
++    REQUIRE(u.activity.id()==activity_id("ACT_READ"));
++    CHECK(u.activity.moves_total==to_moves<int>(u.time_to_read(*book,u)));
++    const int before_chapters=book->get_remaining_chapters(u);
++    process_activity(u);CHECK_FALSE(u.activity);
++    CHECK(u.get_skill_level_object(skill_id("gun")).knowledgeExperience()>0);
++    if(before_chapters)CHECK(book->get_remaining_chapters(u)==before_chapters-1);
++    CHECK(character_has_item_with_var_val(u,"uid","native-reading-book"));
++}
++
++TEST_CASE("cwm_reading_cancel_is_typed_deduplicated_and_native_resumable", "[cwm][reading]") {
++    auto book=reading_fixture("mag_guns",true);avatar& u=get_avatar();
++    const override_option autosave("AUTOSAVE","false");
++    bool entered=false;
++    do_turn_with_action([&](){entered=true;u.moves=100;CHECK(u.read(book));finish_external_action_phase();return false;},
++        [](const auto&,const auto&){return 0;});
++    REQUIRE(entered);REQUIRE(u.activity.id()==activity_id("ACT_READ"));
++    for(int n=0;n<5;++n){u.moves=100;u.activity.do_turn(u);}
++    const int left=u.activity.moves_left;REQUIRE(left<u.activity.moves_total);
++    cwm::CwmServer server("/unused-reading-cancel");cwm::CwmServerTestAccess::ready(server);
++    const auto token=cwm::CwmServerTestAccess::consumption(server);REQUIRE(token);
++    cwm::CwmServerTestAccess::interrupt(server,token,1);CHECK(u.activity.id()==activity_id("ACT_READ"));
++    cwm::CwmServerTestAccess::interrupt_reading(server,token+1,2);CHECK(u.activity.id()==activity_id("ACT_READ"));
++    cwm::CwmServerTestAccess::interrupt_reading(server,token,3);CHECK_FALSE(u.activity);
++    CHECK(u.get_skill_level_object(skill_id("gun")).knowledgeExperience()==0);
++    cwm::CwmServerTestAccess::interrupt_reading(server,token,3);CHECK_FALSE(u.activity);
++    u.moves=100;entered=false;
++    do_turn_with_action([&](){entered=true;u.moves=100;CHECK(u.read(book));finish_external_action_phase();return false;},
++        [](const auto&,const auto&){return 0;});
++    REQUIRE(entered);REQUIRE(u.activity.id()==activity_id("ACT_READ"));
++    CHECK(u.activity.moves_left<=left);CHECK(u.activity.moves_left>0);
++    CHECK(cwm::CwmServerTestAccess::consumption(server)!=token);
++}
++
++TEST_CASE("cwm_reading_rechecks_native_vision_after_admission", "[cwm][reading]") {
++    auto book=reading_fixture("mag_guns");avatar& u=get_avatar();
++    cwm::CwmServer server("/unused-reading-stale");cwm::CwmServerTestAccess::ready(server);
++    const auto view=cwm::CwmServerTestAccess::inventory(server);
++    const auto id=cwm::CwmServerTestAccess::item_id(server,*book);
++    cwm::CwmServerTestAccess::equipment(server,view,id,6,1);REQUIRE(server.has_queued_action());
++    REQUIRE(u.wear_item(item(itype_id("blindfold"))));u.recalc_sight_limits();
++    REQUIRE_FALSE(cwm::InventorySelection::action_error(u,book,6).empty());
++    CHECK_FALSE(cwm::CwmServerTestAccess::execute(server));CHECK_FALSE(u.activity);
++    CHECK_FALSE(u.has_identified(book->typeId()));
 +}
 +
 +TEST_CASE("cwm_crafting_categories_cannot_be_executed_as_zero_time_recipes", "[cwm][crafting]")

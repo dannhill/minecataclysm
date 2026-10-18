@@ -472,8 +472,19 @@ class WorldSnapshot(object):
             return bool(self._tab.Get(flatbuffers.number_types.BoolFlags, o + self._tab.Pos))
         return False
 
+    # WorldSnapshot
+    def Reading(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(64))
+        if o != 0:
+            x = self._tab.Indirect(o + self._tab.Pos)
+            from CDDA.CWM.ReadingState import ReadingState
+            obj = ReadingState()
+            obj.Init(self._tab.Bytes, x)
+            return obj
+        return None
+
 def WorldSnapshotStart(builder):
-    builder.StartObject(30)
+    builder.StartObject(31)
 
 def Start(builder):
     WorldSnapshotStart(builder)
@@ -723,6 +734,12 @@ def WorldSnapshotAddLowLight(builder, lowLight):
 
 def AddLowLight(builder, lowLight):
     WorldSnapshotAddLowLight(builder, lowLight)
+
+def WorldSnapshotAddReading(builder, reading):
+    builder.PrependUOffsetTRelativeSlot(30, flatbuffers.number_types.UOffsetTFlags.py_type(reading), 0)
+
+def AddReading(builder, reading):
+    WorldSnapshotAddReading(builder, reading)
 
 def WorldSnapshotEnd(builder):
     return builder.EndObject()

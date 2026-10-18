@@ -82,3 +82,7 @@ add_test(NAME test_decision COMMAND test_decision)
 add_executable(test_presentation tests/test_presentation.cpp)
 target_link_libraries(test_presentation PRIVATE cwm_protocol)
 add_test(NAME test_presentation COMMAND test_presentation)
+
+add_executable(test_reading tests/test_reading.cpp)
+target_link_libraries(test_reading PRIVATE cwm_protocol)
+add_test(NAME test_reading COMMAND test_reading)

@@ -60,15 +60,18 @@ inline bool valid_inventory(const CDDA::CWM::InventoryView* view) {
         if (!entry || entry->id() != ++id || entry->parent_id() >= id || entry->pocket_index() < -1 ||
             (!entry->parent_id() && entry->pocket_index() != -1) ||
             (entry->parent_id() && (entry->worn() || entry->wielded())) ||
-            (entry->worn() && entry->wielded()) || (entry->actions() & ~63) || entry->quick_slot() > 9 || entry->ui_order() > 2048 ||
+            (entry->worn() && entry->wielded()) || (entry->actions() & ~127) || entry->quick_slot() > 9 || entry->ui_order() > 2048 ||
             entry->weight_grams() < 0 || entry->volume_ml() < 0 || entry->length_mm() < 0 || entry->access_moves() < 0 ||
             !text(entry->type_id(), 1024, false) || !text(entry->name(), 16384, false) || !text(entry->category(), 1024) ||
-            !entry->reasons() || entry->reasons()->size() != 6 || entry->consume_moves() < 0 ||
+            !entry->reasons() || entry->reasons()->size() != 7 || entry->consume_moves() < 0 ||
             !text(entry->consume_label(), 128) || !text(entry->consume_warning(), 2048) || !text(entry->transfer_reason(), 2048)) return false;
-        for (unsigned i = 0; i < 6; ++i)
+        for (unsigned i = 0; i < 7; ++i)
             if (!text(entry->reasons()->Get(i), 2048) ||
                 bool(entry->actions() & (1 << i)) == bool(entry->reasons()->Get(i)->size())) return false;
         if ((entry->actions() & 16) && (!entry->consume_moves() || !entry->consume_label()->size())) return false;
+        if ((entry->actions() & 64) && (!entry->book() || !entry->book()->chapter_moves())) return false;
+        if (const auto* book=entry->book())
+            if(book->chapter_moves()<0 || !text(book->summary(),2048,false))return false;
         if (entry->external() && (!view->external_coord() || entry->worn() || entry->wielded() || entry->actions() || entry->quick_slot() || entry->ui_order())) return false;
         if(entry->parent_id() && entry->external()!=external[entry->parent_id()])return false;
         external.push_back(entry->external());
@@ -134,7 +137,7 @@ inline bool valid_world(const CDDA::CWM::WorldSnapshot* world) {
         unsigned n = 0;
         for (const auto* slot : *slots) {
             if (!slot || slot->slot() != ++n || !slot->binding_id() || !slot->type_id() ||
-                !slot->name() || !slot->category() || (slot->actions() & ~63) ||
+                !slot->name() || !slot->category() || (slot->actions() & ~127) ||
                 (slot->worn() && slot->wielded()) || slot->type_id()->size() > 1024 ||
                 slot->category()->size() > 1024 || slot->name()->size() > 16384) return false;
             const auto id = slot->binding_id()->str();
@@ -161,7 +164,15 @@ inline bool valid_world(const CDDA::CWM::WorldSnapshot* world) {
         if (!consumption->token() || consumption->total_moves() <= 0 ||
             consumption->remaining_moves() < 0 || consumption->remaining_moves() > consumption->total_moves()) return false;
     }
-    if (int(bool(world->consumption())) + int(bool(world->first_aid())) + int(bool(world->crafting())) + int(bool(world->reload())) + int(bool(world->item_transfer())) > 1) return false;
+    if (int(bool(world->consumption())) + int(bool(world->first_aid())) + int(bool(world->crafting())) + int(bool(world->reload())) + int(bool(world->item_transfer())) + int(bool(world->reading())) > 1) return false;
+    if (const auto* reading=world->reading()) {
+        const auto text=[](const auto* value,size_t max,bool empty=true) {
+            return value && value->size()<=max && (empty || value->size()) && value->str().find('\0')==std::string::npos;
+        };
+        if(!reading->token() || reading->total_moves()<=0 || reading->remaining_moves()<0 ||
+            reading->remaining_moves()>reading->total_moves() || !text(reading->book_name(),16384,false) ||
+            !text(reading->progress(),2048))return false;
+    }
     if (const auto* transfer = world->item_transfer()) {
         if (!transfer->token() || transfer->total_moves() < 0 || transfer->remaining_moves() < 0 ||
             transfer->remaining_moves() > transfer->total_moves() || (transfer->inserting() && !transfer->total_moves())) return false;

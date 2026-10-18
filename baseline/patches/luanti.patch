@@ -1486,7 +1486,7 @@ index 5d6b891..d50c79f 100644
  		g_settings->getFlagStr("anticheat_flags", flagdesc_anticheat, nullptr);
  
 diff --git a/src/unittest/test_mapblock.cpp b/src/unittest/test_mapblock.cpp
-index 7f3f860..f722d4c 100644
+index 7f3f860..142a710 100644
 --- a/src/unittest/test_mapblock.cpp
 +++ b/src/unittest/test_mapblock.cpp
 @@ -10,6 +10,17 @@
@@ -1525,7 +1525,7 @@ index 7f3f860..f722d4c 100644
  };
  
  static TestMapBlock g_test_instance;
-@@ -44,9 +64,237 @@ void TestMapBlock::runTests(IGameDef *gamedef)
+@@ -44,9 +64,248 @@ void TestMapBlock::runTests(IGameDef *gamedef)
  	TEST(testSave29, gamedef);
  	TEST(testLoad29, gamedef);
  	TEST(testLoad20, gamedef);
@@ -1629,6 +1629,17 @@ index 7f3f860..f722d4c 100644
 +    UASSERT(meal.find(";action_4;Mangia]") != std::string::npos);
 +    UASSERT(meal.find(";cancel_consume;") != std::string::npos);
 +    UASSERT(meal.find("spoiled\\]\\;button\\[") != std::string::npos);
++    auto& book=view.entries[1];book.book=true;book.actions=65;book.book_identified=false;
++    book.book_summary="Unknown];button[0,0;1,1;inject;click";book.chapter_moves=600;
++    auto reading=equipmentForm(view,0,2,"",0,"",[](const auto&) { return "known:book"; });
++    UASSERT(reading.find(";action_6;Skim book]")!=std::string::npos);
++    UASSERT(reading.find("Unknown\\]\\;button\\[")!=std::string::npos);
++    book.book_identified=true;
++    reading=equipmentForm(view,0,2,"",0,"",[](const auto&) { return "known:book"; });
++    UASSERT(reading.find(";action_6;Read...]")!=std::string::npos);
++    reading=equipmentForm(view,0,2,"",0,"",[](const auto&) { return "known:book"; },42);
++    UASSERT(reading.find(";action_6;")==std::string::npos); // No overlap with Interrupt.
++    UASSERT(reading.find(";cancel_consume;")!=std::string::npos);
 +}
 +
 +void TestMapBlock::testCddaBodyStatusEscaping()
@@ -1938,10 +1949,10 @@ index 0000000..e1e7236
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..d3b2855
+index 0000000..37ca157
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,3164 @@
+@@ -0,0 +1,3178 @@
 +#include "cwm/product_language.hpp"
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
@@ -2117,7 +2128,8 @@ index 0000000..d3b2855
 +    uint64_t activity_token_{0}, cancel_activity_sent_{0};
 +    int activity_total_{0}, activity_remaining_{0};
 +    bool first_aid_{false}, crafting_{false};
-+    bool reloading_{false};
++    bool reloading_{false}, reading_{false}, reading_skimming_{false}, reading_panel_hidden_{false};
++    std::string reading_book_, reading_progress_;
 +    uint64_t weapon_token_{0}, aim_sent_{0}, fire_sent_{0}, reload_sent_{0};
 +    uint64_t last_aim_command_{0};
 +    struct DeferredRanged {
@@ -2194,7 +2206,7 @@ index 0000000..d3b2855
 +            destination_page_, transfer_quantity_, equipment_notice_, [&](const auto& type) { return ground_item_visual_name(type); }, activity_token_);
 +        return equipmentForm(equipment_view_, equipment_page_, equipment_selected_, equipment_search_,
 +            equipment_filter_, equipment_notice_, [&](const auto& type) { return ground_item_visual_name(type); }, activity_token_, first_aid_, crafting_, reloading_, transferring_,
-+            equipment_search_open_, equipment_details_open_, equipment_worn_page_, equipment_focus_search_, quick_slot_, inventory_time_pending() && !inventory_work_rejected_);
++            equipment_search_open_, equipment_details_open_, equipment_worn_page_, equipment_focus_search_, quick_slot_, inventory_time_pending() && !inventory_work_rejected_, reading_);
 +    }
 +    void cancel_equipment() {
 +        inventory_inspection_pending_ = false;
@@ -2204,7 +2216,7 @@ index 0000000..d3b2855
 +        crafting_search_due_.reset();
 +        crafting_query_pending_=crafting_favorite_refresh_=false;crafting_favorite_command_=0;
 +        crafting_close_ = crafting_open_;
-+        queued_cancel_activity_.reset(); activity_token_ = 0; weapon_token_ = 0; reloading_ = false;
++        queued_cancel_activity_.reset(); activity_token_ = 0; weapon_token_ = 0; reloading_ = reading_ = reading_panel_hidden_ = false; reading_book_.clear(); reading_progress_.clear();
 +        activity_total_ = activity_remaining_ = 0;
 +        queued_equipment_.reset(); queued_transfer_.reset(); external_anchor_.reset(); transferring_ = false; inventory_query_ = 0; equipment_view_ = {};
 +        equipment_close_ = equipment_open_;
@@ -2234,7 +2246,7 @@ index 0000000..d3b2855
 +        auto wire = session_.builder();
 +        const uint64_t id = session_.next_command++;
 +        const bool cancel = queued_cancel_activity_.has_value();
-+        const auto bytes = cancel ? (transferring_ ? wire.build_cancel_item_transfer(id, *queued_cancel_activity_) : crafting_ ? wire.build_cancel_crafting(id, *queued_cancel_activity_) : first_aid_ ? wire.build_cancel_first_aid(id, *queued_cancel_activity_) : reloading_ ? wire.build_cancel_reload(id, *queued_cancel_activity_) : wire.build_cancel_consumption(id, *queued_cancel_activity_)) : queued_transfer_ ? wire.build_item_transfer(id, queued_transfer_->view, queued_transfer_->item,
++        const auto bytes = cancel ? (reading_ ? wire.build_cancel_reading(id, *queued_cancel_activity_) : transferring_ ? wire.build_cancel_item_transfer(id, *queued_cancel_activity_) : crafting_ ? wire.build_cancel_crafting(id, *queued_cancel_activity_) : first_aid_ ? wire.build_cancel_first_aid(id, *queued_cancel_activity_) : reloading_ ? wire.build_cancel_reload(id, *queued_cancel_activity_) : wire.build_cancel_consumption(id, *queued_cancel_activity_)) : queued_transfer_ ? wire.build_item_transfer(id, queued_transfer_->view, queued_transfer_->item,
 +            queued_transfer_->quantity, queued_transfer_->destination, static_cast<CDDA::CWM::ItemTransferAction>(queued_transfer_->action)) : queued_crafting_ ?
 +            wire.build_crafting_request(id, queued_crafting_->view, queued_crafting_->entry) : wire.build_equipment_request(id, queued_equipment_->view, queued_equipment_->item,
 +                static_cast<CDDA::CWM::EquipmentAction>(queued_equipment_->action));
@@ -2248,7 +2260,7 @@ index 0000000..d3b2855
 +            else if (transfer && queued_transfer_->action == 3) inventory_work_label_ = ::cwm::wide("Deposit in storage", "Deposita nel contenitore");
 +            else if (transfer) inventory_work_label_ = queued_transfer_->action ? (::cwm::wide("Stow in container", "Riponi nel contenitore")) : (::cwm::wide("Drop on ground", "Deposita a terra"));
 +            else {
-+                const std::array<std::wstring,6> labels{{(::cwm::wide("Wield", "Impugna")), (::cwm::wide("Stow", "Riponi")), (::cwm::wide("Wear", "Indossa")), (::cwm::wide("Take off", "Togli")), (::cwm::wide("Eat / drink", "Mangia / bevi")), (::cwm::wide("Treat", "Medica"))}};
++                const std::array<std::wstring,7> labels{{(::cwm::wide("Wield", "Impugna")), (::cwm::wide("Stow", "Riponi")), (::cwm::wide("Wear", "Indossa")), (::cwm::wide("Take off", "Togli")), (::cwm::wide("Eat / drink", "Mangia / bevi")), (::cwm::wide("Treat", "Medica")), (::cwm::wide("Read", "Leggi"))}};
 +                inventory_work_label_ = labels[queued_equipment_->action];
 +                if (const auto* selected = equipment_view_.entry(queued_equipment_->item)) inventory_work_label_ += L": " + utf8_to_wide(selected->name);
 +            }
@@ -3145,9 +3157,14 @@ index 0000000..d3b2855
 +                const auto* aid = snap->first_aid();
 +                const auto* craft = snap->crafting(); crafting_ = craft != nullptr;
 +                first_aid_ = aid != nullptr;
-+                activity_token_ = transfer ? transfer->token() : reload ? reload->token() : craft ? craft->token() : aid ? aid->token() : consumption ? consumption->token() : 0;
-+                activity_total_ = transfer ? transfer->total_moves() : reload ? reload->total_moves() : craft ? 10000000 : aid ? aid->total_moves() : consumption ? consumption->total_moves() : 0;
-+                activity_remaining_ = transfer ? transfer->remaining_moves() : reload ? reload->remaining_moves() : craft ? 10000000 - craft->progress() : aid ? aid->remaining_moves() : consumption ? consumption->remaining_moves() : 0;
++                const auto* reading=snap->reading();reading_=reading!=nullptr;
++                reading_book_=reading ? reading->book_name()->str() : "";
++                reading_progress_=reading ? reading->progress()->str() : "";
++                reading_skimming_=reading && reading->skimming();
++                activity_token_ = reading ? reading->token() : transfer ? transfer->token() : reload ? reload->token() : craft ? craft->token() : aid ? aid->token() : consumption ? consumption->token() : 0;
++                activity_total_ = reading ? reading->total_moves() : transfer ? transfer->total_moves() : reload ? reload->total_moves() : craft ? 10000000 : aid ? aid->total_moves() : consumption ? consumption->total_moves() : 0;
++                activity_remaining_ = reading ? reading->remaining_moves() : transfer ? transfer->remaining_moves() : reload ? reload->remaining_moves() : craft ? 10000000 - craft->progress() : aid ? aid->remaining_moves() : consumption ? consumption->remaining_moves() : 0;
++                if(previous_consumption!=activity_token_)reading_panel_hidden_=false;
 +                if (previous_consumption != activity_token_ && equipment_open_) equipment_dirty_ = true;
 +                if (previous_consumption != activity_token_ && crafting_open_) crafting_dirty_ = true;
 +                const auto projection_started = std::chrono::steady_clock::now();
@@ -3712,7 +3729,7 @@ index 0000000..d3b2855
 +    std::string trace_path;
 +    if (g_settings->getNoEx("cwm_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->trace_.open(trace_path);
-+        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog,ipc_connected,ipc_input,ipc_output,ipc_read_bytes,ipc_write_bytes,ipc_frames,ipc_dispatch_bytes,ipc_read_calls,ipc_write_calls,session_state,input_ready,session_id,player_id,connection_id,sequence,resync_count,entity_cache,vehicle_cache,scene_origin_x,scene_origin_y,simulation_time,realtime,pause_reasons,time_scale,sent_intent,continuous_motion,intent_x,intent_y,ipc_latency_ms,projection_ms,ground_tiles,owned_items,ground_container,ground_hover,queued_pickup,ground_visual_nodes,ground_hover_items,ground_target_items,ground_target_visual_nodes,ground_target_first_type,status_available,body_form,survival_visible,status_stamina,status_head,status_arm_l,combat_hover,attacks_sent,attack_target,attack_target_hp,attack_result,player_state_flags,player_eye_offset,visual_animation_time,visual_animation_delta,ground_item_rotation,status_hunger_level,status_thirst_level,status_fatigue_level,status_pain_level,hud_images_active,equipment_form,inventory_view,inventory_entries,equipment_selected,equipment_sent,pending_decision,consumption_token,consumption_total,consumption_remaining,cancel_consumption_sent,first_aid_token,first_aid_total,first_aid_remaining,crafting_form,crafting_view,crafting_selected,crafting_sent,crafting_token,crafting_progress,weapon_token,weapon_ammo,weapon_recoil,aim_sent,fire_sent,reload_sent,reload_token,reload_total,reload_remaining,transfer_form,transfers_sent,transfer_token,transfer_total,transfer_remaining,inventory_work_command,native_work_command,native_work_settled,inventory_return,inventory_work_visible,equipment_page,equipment_filter,equipment_search_open,quick_slot,quick_count,quick_wielded,quick_use_sent,quick_bind_command,aim_held,ranged_deferred,external_form,external_entries,decision_waiting,native_work_total_ms,native_work_remaining_ms,work_progress_visible,presentation_cues,sounds_dispatched,low_light,underwater,diagnostics,wield_texture,shot_kick,low_light_blend\n";
++        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog,ipc_connected,ipc_input,ipc_output,ipc_read_bytes,ipc_write_bytes,ipc_frames,ipc_dispatch_bytes,ipc_read_calls,ipc_write_calls,session_state,input_ready,session_id,player_id,connection_id,sequence,resync_count,entity_cache,vehicle_cache,scene_origin_x,scene_origin_y,simulation_time,realtime,pause_reasons,time_scale,sent_intent,continuous_motion,intent_x,intent_y,ipc_latency_ms,projection_ms,ground_tiles,owned_items,ground_container,ground_hover,queued_pickup,ground_visual_nodes,ground_hover_items,ground_target_items,ground_target_visual_nodes,ground_target_first_type,status_available,body_form,survival_visible,status_stamina,status_head,status_arm_l,combat_hover,attacks_sent,attack_target,attack_target_hp,attack_result,player_state_flags,player_eye_offset,visual_animation_time,visual_animation_delta,ground_item_rotation,status_hunger_level,status_thirst_level,status_fatigue_level,status_pain_level,hud_images_active,equipment_form,inventory_view,inventory_entries,equipment_selected,equipment_sent,pending_decision,consumption_token,consumption_total,consumption_remaining,cancel_consumption_sent,first_aid_token,first_aid_total,first_aid_remaining,crafting_form,crafting_view,crafting_selected,crafting_sent,crafting_token,crafting_progress,weapon_token,weapon_ammo,weapon_recoil,aim_sent,fire_sent,reload_sent,reload_token,reload_total,reload_remaining,transfer_form,transfers_sent,transfer_token,transfer_total,transfer_remaining,inventory_work_command,native_work_command,native_work_settled,inventory_return,inventory_work_visible,equipment_page,equipment_filter,equipment_search_open,quick_slot,quick_count,quick_wielded,quick_use_sent,quick_bind_command,aim_held,ranged_deferred,external_form,external_entries,decision_waiting,native_work_total_ms,native_work_remaining_ms,work_progress_visible,presentation_cues,sounds_dispatched,low_light,underwater,diagnostics,wield_texture,shot_kick,low_light_blend,reading_token,reading_total,reading_remaining,reading_skimming\n";
 +    }
 +    if (g_settings->getNoEx("cwm_entity_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->entity_trace_.open(trace_path);
@@ -3917,7 +3934,7 @@ index 0000000..d3b2855
 +        << ',' << pimpl_->equipment_open_ << ',' << pimpl_->equipment_view_.view
 +        << ',' << pimpl_->equipment_view_.entries.size() << ',' << pimpl_->equipment_selected_
 +        << ',' << pimpl_->equipment_sent_ << ',' << pimpl_->metrics_.pending_decision
-+        << ',' << ((pimpl_->first_aid_ || pimpl_->crafting_ || pimpl_->reloading_ || pimpl_->transferring_) ? 0 : pimpl_->activity_token_) << ',' << ((pimpl_->first_aid_ || pimpl_->crafting_ || pimpl_->reloading_ || pimpl_->transferring_) ? 0 : pimpl_->activity_total_) << ',' << ((pimpl_->first_aid_ || pimpl_->crafting_ || pimpl_->reloading_ || pimpl_->transferring_) ? 0 : pimpl_->activity_remaining_)
++        << ',' << ((pimpl_->first_aid_ || pimpl_->crafting_ || pimpl_->reloading_ || pimpl_->transferring_ || pimpl_->reading_) ? 0 : pimpl_->activity_token_) << ',' << ((pimpl_->first_aid_ || pimpl_->crafting_ || pimpl_->reloading_ || pimpl_->transferring_ || pimpl_->reading_) ? 0 : pimpl_->activity_total_) << ',' << ((pimpl_->first_aid_ || pimpl_->crafting_ || pimpl_->reloading_ || pimpl_->transferring_ || pimpl_->reading_) ? 0 : pimpl_->activity_remaining_)
 +        << ',' << pimpl_->cancel_activity_sent_
 +        << ',' << (pimpl_->first_aid_ ? pimpl_->activity_token_ : 0) << ',' << (pimpl_->first_aid_ ? pimpl_->activity_total_ : 0) << ',' << (pimpl_->first_aid_ ? pimpl_->activity_remaining_ : 0)
 +        << ',' << pimpl_->crafting_open_ << ',' << pimpl_->crafting_view_.view << ',' << pimpl_->crafting_selected_
@@ -3940,7 +3957,9 @@ index 0000000..d3b2855
 +        << ',' << pimpl_->native_work_total_ms_ << ',' << pimpl_->native_work_remaining_ms_
 +        << ',' << (pimpl_->work_progress_ && pimpl_->work_progress_->isVisible()) << ',' << pimpl_->cues_received_ << ',' << pimpl_->sounds_played_ << ',' << pimpl_->low_light_
 +        << ',' << bool(entity.state_flags & cdda::cwm::UNDERWATER) << ',' << pimpl_->diagnostics_
-+        << ',' << wieldedTexture() << ',' << shotKick() << ',' << pimpl_->low_light_blend_ << '\n';
++        << ',' << wieldedTexture() << ',' << shotKick() << ',' << pimpl_->low_light_blend_ << ',' << (pimpl_->reading_ ? pimpl_->activity_token_ : 0)
++        << ',' << (pimpl_->reading_ ? pimpl_->activity_total_ : 0) << ',' << (pimpl_->reading_ ? pimpl_->activity_remaining_ : 0)
++        << ',' << pimpl_->reading_skimming_ << '\n';
 +    pimpl_->trace_.flush();
 +}
 +
@@ -4442,7 +4461,9 @@ index 0000000..d3b2855
 +}
 +
 +bool CddaBridge::dismissInventoryWork() {
-+    if (!pimpl_ || (!pimpl_->inventory_work_command_ && !pimpl_->inventory_return_armed_)) return false;
++    if (!pimpl_ || (!pimpl_->inventory_work_command_ && !pimpl_->inventory_return_armed_ &&
++        !(pimpl_->reading_ && !pimpl_->reading_panel_hidden_))) return false;
++    if(pimpl_->reading_)pimpl_->reading_panel_hidden_=true;
 +    if (pimpl_->inventory_return_armed_) {
 +        pimpl_->queued_equipment_.reset(); pimpl_->queued_transfer_.reset(); pimpl_->queued_cancel_activity_.reset();
 +    }
@@ -4469,7 +4490,7 @@ index 0000000..d3b2855
 +    if (!i.connection_->send_message(bytes.data(), bytes.size())) return;
 +    i.dismiss_inventory_work();
 +    i.inventory_work_command_ = id;
-+    const std::array<std::wstring,6> names{{(::cwm::wide("Wield", "Impugna")),(::cwm::wide("Stow", "Riponi")),(::cwm::wide("Wear", "Indossa")),(::cwm::wide("Take off", "Togli")),(::cwm::wide("Consume", "Consuma")),(::cwm::wide("Treat", "Medica"))}};
++    const std::array<std::wstring,7> names{{(::cwm::wide("Wield", "Impugna")),(::cwm::wide("Stow", "Riponi")),(::cwm::wide("Wear", "Indossa")),(::cwm::wide("Take off", "Togli")),(::cwm::wide("Consume", "Consuma")),(::cwm::wide("Treat", "Medica")), (::cwm::wide("Read", "Leggi"))}};
 +    i.inventory_work_label_ = names[action] + L": " + utf8_to_wide(slot.item.name);
 +    i.pending_move_ = id; i.move_acked_ = false; i.sent_move_ = std::chrono::steady_clock::now();
 +    ++i.quick_use_sent_;
@@ -4727,7 +4748,7 @@ index 0000000..d3b2855
 +        i.equipment_dirty_ = true; return;
 +    }
 +    if (const auto* selected = i.equipment_view_.entry(i.equipment_selected_)) {
-+        for (int action = 0; action < 6; ++action) if (fields.count("action_" + std::to_string(action))) {
++        for (int action = 0; action < 7; ++action) if (fields.count("action_" + std::to_string(action))) {
 +            if (!(selected->actions & (1 << action))) i.equipment_notice_ = selected->reasons[action];
 +            else if (i.metrics_.pause_reasons & ~uint32_t(2)) i.equipment_notice_ = (::cwm::text("Resume the game before equipping.", "Riprendi il gioco prima di equipaggiare."));
 +            else if (!i.session_.ready() || i.pending_move_) i.equipment_notice_ = (::cwm::text("Wait for the updated state and reopen the inventory.", "Attendi lo stato aggiornato e riapri l'inventario."));
@@ -4831,7 +4852,9 @@ index 0000000..d3b2855
 +    const int work_left = std::max(10, (int(screen.Width) - work_width) / 2);
 +    const int work_top = std::max(165, int(screen.Height) - 270);
 +    pimpl_->inventory_work_text_->setRelativePosition(irr::core::rect<irr::s32>(work_left, work_top, work_left + work_width, work_top + 78));
-+    std::wstring work_text = pimpl_->inventory_work_label_;
++    std::wstring work_text = pimpl_->reading_ ?
++        (pimpl_->reading_skimming_ ? ::cwm::wide("Skimming: ","Sfoglio: ") : ::cwm::wide("Reading: ","Lettura: "))+
++        utf8_to_wide(pimpl_->reading_book_) : pimpl_->inventory_work_label_;
 +    if (pimpl_->inventory_time_pending()) {
 +        // Upstream wear/takeoff (and wield/stow) mutate atomically and debit
 +        // moves. This is remaining native time, not cancellable actor progress.
@@ -4845,9 +4868,11 @@ index 0000000..d3b2855
 +    } else if (pimpl_->activity_token_ && pimpl_->activity_total_ > 0) work_text += L"  " + std::to_wstring(
 +        std::clamp(100 - int(100.0 * pimpl_->activity_remaining_ / pimpl_->activity_total_), 0, 100)) + L"%";
 +    else work_text += pimpl_->inventory_work_settled_ ? (::cwm::wide(" — finished", " — conclusa")) : (::cwm::wide(" — waiting for CDDA", " — attesa di CDDA"));
++    if(pimpl_->reading_ && !pimpl_->reading_progress_.empty())work_text+=L"\n"+utf8_to_wide(pimpl_->reading_progress_);
 +    work_text += (L"\n" + ::cwm::wide("I: inspect (pauses) · Esc: hide this panel", "I: consulta (pausa) · Esc: nascondi questo pannello"));
 +    pimpl_->inventory_work_text_->setText(work_text.c_str());
-+    pimpl_->inventory_work_text_->setVisible(pimpl_->inventory_work_command_ && pimpl_->session_.ready() &&
++    pimpl_->inventory_work_text_->setVisible((pimpl_->inventory_work_command_ ||
++        (pimpl_->reading_ && !pimpl_->reading_panel_hidden_)) && pimpl_->session_.ready() &&
 +        !pimpl_->equipment_open_ && !pimpl_->crafting_open_ && !pimpl_->body_form_open_ &&
 +        !pimpl_->ground_container_open_ && !pimpl_->metrics_.pending_decision);
 +    if(!pimpl_->work_progress_) {
@@ -5577,10 +5602,10 @@ index 0000000..15c7818
 +} // namespace cdda_client
 diff --git a/src/cdda/equipment_inventory.h b/src/cdda/equipment_inventory.h
 new file mode 100644
-index 0000000..df2a349
+index 0000000..322bee4
 --- /dev/null
 +++ b/src/cdda/equipment_inventory.h
-@@ -0,0 +1,405 @@
+@@ -0,0 +1,421 @@
 +#pragma once
 +#include "cwm/product_language.hpp"
 +#include "avatar_status.h"
@@ -5601,10 +5626,11 @@ index 0000000..df2a349
 +    int charges{}, access{}; bool counted{}, worn{}, wielded{};
 +    int64_t weight{}, volume{}, length{};
 +    uint8_t actions{};
-+    std::array<std::string, 6> reasons;
++    std::array<std::string, 7> reasons;
 +    int consume_moves{}; std::string consume_label, consume_warning;
 +    std::string transfer_reason; bool container{};
 +    unsigned quick_slot{}; bool rotten{}; uint32_t ui_order{}; bool external{};
++    bool book{}, book_identified{}; int chapter_moves{}; std::string book_summary;
 +};
 +struct EquipmentPocket {
 +    uint32_t owner{}, index{}; std::string name;
@@ -5629,7 +5655,11 @@ index 0000000..df2a349
 +            EquipmentEntry entry{e->id(), e->parent_id(), e->pocket_index(),
 +                e->type_id()->str(), e->name()->str(), e->category()->str(), e->charges(), e->access_moves(),
 +                e->count_by_charges(), e->worn(), e->wielded(), e->weight_grams(), e->volume_ml(), e->length_mm(), e->actions(), {}, e->consume_moves(), e->consume_label()->str(), e->consume_warning()->str(), e->transfer_reason()->str(), e->container(), e->quick_slot(), e->rotten(), e->ui_order(), e->external()};
-+            for (unsigned i = 0; i < 6; ++i) entry.reasons[i] = e->reasons()->Get(i)->str();
++            for (unsigned i = 0; i < 7; ++i) entry.reasons[i] = e->reasons()->Get(i)->str();
++            if (const auto* book=e->book()) {
++                entry.book=true;entry.book_identified=book->identified();
++                entry.chapter_moves=book->chapter_moves();entry.book_summary=book->summary()->str();
++            }
 +            entries.push_back(std::move(entry));
 +        }
 +        for (const auto* p : *source.pockets()) pockets.push_back({p->owner_id(), p->index(), p->name()->str(),
@@ -5784,7 +5814,7 @@ index 0000000..df2a349
 +        const std::function<std::string(const std::string&)>& icon, uint64_t consumption_token = 0,
 +        bool first_aid = false, bool crafting = false, bool reloading = false, bool transferring = false,
 +        bool search_open = false, bool details_open = false, size_t worn_page = 0, bool focus_search = false, unsigned quick_slot = 1,
-+        bool action_time_pending = false) {
++        bool action_time_pending = false, bool reading = false) {
 +    (void)search_open;
 +    std::string f = "formspec_version[4]size[16,11]no_prepend[]bgcolor[#00000000]"
 +        "background9[0,0;16,11;mcl_base_textures_background9.png;false;7]"
@@ -5887,6 +5917,12 @@ index 0000000..df2a349
 +        const auto pocket_count = std::count_if(view.pockets.begin(),view.pockets.end(),[&](const auto& p) { return p.owner == selected; });
 +        if (pocket_count) detail += ("\n<b>" + ::cwm::text("Pockets", "Tasche") + "</b>  ") + std::to_string(pocket_count) + (::cwm::text(" (see details)", " (vedi dettagli)"));
 +        if (!e->consume_warning.empty()) detail += ("\n\n<style color=#963F25><b>" + ::cwm::text("Warning", "Avviso") + "</b></style>\n") + equipmentMarkup(e->consume_warning);
++        if(e->book) {
++            detail+="\n\n<style color=#25647A><b>"+::cwm::text("Reading","Lettura")+"</b></style>\n"+
++                equipmentMarkup(e->book_summary);
++            if(e->chapter_moves>0)detail+="\n"+::cwm::text("Estimated chapter / skim: ","Stima capitolo / sfoglio: ")+
++                std::to_string((int64_t(e->chapter_moves)+99)/100)+::cwm::text(" game s"," s di gioco");
++        }
 +        if (details_open) {
 +            detail += ("\n\n<b>" + ::cwm::text("Native details", "Dettagli nativi") + "</b>\n" + ::cwm::text("Length ", "Lunghezza ")) + std::to_string(e->length) + (" mm\n" + ::cwm::text("Access ", "Accesso ")) + std::to_string(e->access) + (::cwm::text(" moves", " mosse"));
 +            if (e->consume_moves) detail += "\n" + equipmentMarkup(e->consume_label) + ": " + std::to_string(e->consume_moves) + (::cwm::text(" moves / serving", " mosse / porzione"));
@@ -5914,12 +5950,17 @@ index 0000000..df2a349
 +                    "tooltip[" + position + ";1.95,0.6;" + statusEscape(names[i] + ": " + e->reasons[i]) + "]";
 +            }
 +        }
++        if(e->book && !consumption_token) {
++            const auto label=e->book_identified ? ::cwm::text("Read...","Leggi...") : ::cwm::text("Skim book","Sfoglia libro");
++            if(e->actions & 64)f+="button[11.35,10.1;4.15,0.6;action_6;"+label+"]";
++            else f+="label[11.45,10.4;"+label+"]tooltip[11.35,10.1;4.15,0.6;"+statusEscape(e->reasons[6])+"]";
++        }
 +    } else f += ("textarea[11.35,3.1;4.15,2.4;;;" + ::cwm::text("Select an item.", "Seleziona un oggetto.") + "\n\n" + ::cwm::text("Clicking icons only selects.", "Clic sulle icone: solo selezione.") + "\n" + ::cwm::text("Available actions appear here.", "Le azioni disponibili appaiono qui.") + "]");
 +    if(consumption_token && notice.empty())f+="tooltip[close;"+::cwm::text("Close resumes native work. Use Interrupt to cancel it.","Chiudere riprende il lavoro nativo. Usa Interrompi per annullarlo.")+"]label[0.5,10.65;"+::cwm::text("Work paused · Close resumes · Interrupt cancels","Lavoro in pausa · Chiudi riprende · Interrompi annulla")+"]";
 +    if (action_time_pending && notice.empty()) f += "label[0.5,10.65;" + ::cwm::text(
 +        "Applied · Time paused · Close resumes · Cannot undo",
 +        "Applicata · Tempo in pausa · Chiudi riprende · Non annullabile") + "]";
-+    if (consumption_token) f += "button[11.35,10.1;4.15,0.5;cancel_consume;" + std::string(transferring ? (::cwm::text("Interrupt transfer", "Interrompi trasferimento")) : crafting ? (::cwm::text("Interrupt crafting", "Interrompi crafting")) : first_aid ? (::cwm::text("Interrupt treatment", "Interrompi trattamento")) : reloading ? (::cwm::text("Interrupt reload", "Interrompi ricarica")) : (::cwm::text("Interrupt consumption", "Interrompi consumo"))) + "]";
++    if (consumption_token) f += "button[11.35,10.1;4.15,0.5;cancel_consume;" + std::string(reading ? (::cwm::text("Interrupt reading", "Interrompi lettura")) : transferring ? (::cwm::text("Interrupt transfer", "Interrompi trasferimento")) : crafting ? (::cwm::text("Interrupt crafting", "Interrompi crafting")) : first_aid ? (::cwm::text("Interrupt treatment", "Interrompi trattamento")) : reloading ? (::cwm::text("Interrupt reload", "Interrompi ricarica")) : (::cwm::text("Interrupt consumption", "Interrompi consumo"))) + "]";
 +    if (!notice.empty()) f += "box[0.4,10.57;10.5,0.4;#F2CEAAFF]hypertext[0.5,10.58;10.3,0.4;;" +
 +        statusEscape("<global color=#6B2915 size=18><b>" + equipmentMarkup(notice) + "</b>") + "]";
 +    else if (view.truncated) f += ("label[0.5,10.8;" + ::cwm::text("Limited view: some contents are not shown.", "Vista limitata: parte dei contenuti non mostrata.") + "]");
@@ -6229,7 +6270,7 @@ index 0000000..ca45474
 +} // namespace cdda_client
 diff --git a/src/cdda/quickbar.h b/src/cdda/quickbar.h
 new file mode 100644
-index 0000000..5996ded
+index 0000000..2338ed6
 --- /dev/null
 +++ b/src/cdda/quickbar.h
 @@ -0,0 +1,16 @@
@@ -6245,7 +6286,7 @@ index 0000000..5996ded
 +inline int quickDefaultAction(const EquipmentEntry& item) {
 +    // Native action availability decides eligibility; selection itself is free.
 +    if (item.worn && (item.actions & 8)) return 3;
-+    for (int action : {4, 2, 5, 0, 1, 3}) if (item.actions & (1 << action)) return action;
++    for (int action : {4, 6, 2, 5, 0, 1, 3}) if (item.actions & (1 << action)) return action;
 +    return -1;
 +}
 +} // namespace cdda_client

@@ -7242,7 +7242,7 @@
   {
     "path": "src/cdda/cdda_bridge.cpp",
     "mode": "100644",
-    "sha256": "cf2a88b7f7d7da14b84423621d92a21bebf19e3aa65efc3a6b2863af90aa523d"
+    "sha256": "0fa80de5bb5549adbd94e87951939e1b3a2f6d666491a7e67452a3c54e7801d5"
   },
   {
     "path": "src/cdda/cdda_bridge.h",
@@ -7277,7 +7277,7 @@
   {
     "path": "src/cdda/equipment_inventory.h",
     "mode": "100644",
-    "sha256": "a74717f39d461364dbdcdb265cce915eac6f5a55817441b23ea7e84b4518739d"
+    "sha256": "7d95300f29e3153c05bfd91ea2ee94f9810f8ae5376f435cdbd1cba38738b638"
   },
   {
     "path": "src/cdda/ground_item_formspec.h",
@@ -7307,7 +7307,7 @@
   {
     "path": "src/cdda/quickbar.h",
     "mode": "100644",
-    "sha256": "7556378313f94b42bac55d1795eb29b81586ee54724ac69ef4e45473b9dc5b0e"
+    "sha256": "232dca560b58833fa823f3a83c71b855357e8bb110a39a228869f4a8c8de5d1b"
   },
   {
     "path": "src/chat.cpp",
@@ -10352,7 +10352,7 @@
   {
     "path": "src/unittest/test_mapblock.cpp",
     "mode": "100644",
-    "sha256": "da9695680c4d7b24873d389bdb993a2b3f20d2302e699bcb44b32a9beeeaf55b"
+    "sha256": "35d538b8236ff68791084efb336aa669d60bf21f3523f61fde474947f48c3bba"
   },
   {
     "path": "src/unittest/test_mapnode.cpp",

@@ -212,8 +212,19 @@ class InventoryEntry(object):
             return bool(self._tab.Get(flatbuffers.number_types.BoolFlags, o + self._tab.Pos))
         return False
 
+    # InventoryEntry
+    def Book(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(54))
+        if o != 0:
+            x = self._tab.Indirect(o + self._tab.Pos)
+            from CDDA.CWM.BookInfo import BookInfo
+            obj = BookInfo()
+            obj.Init(self._tab.Bytes, x)
+            return obj
+        return None
+
 def InventoryEntryStart(builder):
-    builder.StartObject(25)
+    builder.StartObject(26)
 
 def Start(builder):
     InventoryEntryStart(builder)
@@ -373,6 +384,12 @@ def InventoryEntryAddExternal(builder, external):
 
 def AddExternal(builder, external):
     InventoryEntryAddExternal(builder, external)
+
+def InventoryEntryAddBook(builder, book):
+    builder.PrependUOffsetTRelativeSlot(25, flatbuffers.number_types.UOffsetTFlags.py_type(book), 0)
+
+def AddBook(builder, book):
+    InventoryEntryAddBook(builder, book)
 
 def InventoryEntryEnd(builder):
     return builder.EndObject()
