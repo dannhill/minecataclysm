@@ -306,8 +306,8 @@ def main():
                         screen(family+'.png')
                         moved=[dict(a,pos=[a['pos'][0]+1,a['pos'][1],a['pos'][2]]) for a in actors]
                         rev=update('actors',moved)
-                        family_walk=until(lambda d:int(d[1]['revision'])==rev and float(d[monster_id]['model_frame'])>0)
-                        check(family+'_cycles_on_authoritative_motion',float(family_walk[monster_id]['model_frame'])>0)
+                        family_walk=until(lambda d:int(d[1]['revision'])==rev and coords(d[monster_id],'current')!=coords(d[monster_id],'target') and 0<float(d[monster_id]['model_frame'])<(40 if family=='canine' else 20))
+                        check(family+'_cycles_on_authoritative_motion',coords(family_walk[monster_id],'current')!=coords(family_walk[monster_id],'target'))
                     update('actors',original);time.sleep(.5)
                     initial=until(lambda d:d[monster_id]['material1'].endswith('zombie.png'))
                 generations={i:initial[i]['node_generation'] for i in (monster_id,npc_id)}
