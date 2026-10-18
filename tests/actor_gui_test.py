@@ -213,6 +213,7 @@ def main():
                             if action=='rebase': origin[:]=value
                             if action=='clock': clock[:]=value
                             if action=='cues': pending_cues.extend(value)
+                            if action=='repeat-cues': cue_serial[0]-=1; pending_cues.extend(value)
                             if action=='environment': environment[:]=value
                             if action=='wield': wield[0]=value
                             c.sendall(frame(snapshot(wire, action=='rebase', action=='bad-kind')))
@@ -275,6 +276,11 @@ def main():
                     until(lambda d:int(d[1]['revision'])==rev);time.sleep(.15)
                     check('heard_sound_reaches_audio_manager',int(camera_latest()['sounds_dispatched'])>=1)
                     screen('sound-caption.png')
+                    sounds=camera_latest()['sounds_dispatched']
+                    rev=update('rebase',[0,0]);until(lambda d:int(d[1]['revision'])==rev)
+                    rev=update('repeat-cues',[(4,0,'East: bang','gunfire',50)])
+                    until(lambda d:int(d[1]['revision'])==rev);time.sleep(.1)
+                    check('full_resync_does_not_replay_old_sound_identity',camera_latest()['sounds_dispatched']==sounds)
                     rev=update('environment',[True,0]);until(lambda d:int(d[1]['revision'])==rev);time.sleep(.1)
                     check('native_low_light_reaches_presentation',camera_latest()['low_light']=='1');screen('darkness.png')
                     # UNDERWATER from the shared semantic flag, not a Luanti water node.
