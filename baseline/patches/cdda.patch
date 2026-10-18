@@ -7248,10 +7248,10 @@ index 0000000..27ea42c
 +}
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644
-index 0000000..d45e687
+index 0000000..d1c13dc
 --- /dev/null
 +++ b/tests/cwm_projection_test.cpp
-@@ -0,0 +1,727 @@
+@@ -0,0 +1,786 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "move_mode.h"
@@ -7978,6 +7978,65 @@ index 0000000..d45e687
 +            CHECK_FALSE(cdda::cwm::valid_world(bad));
 +        }
 +    }
++}
++
++#include "cwm/cwm_presentation.h"
++#include "sounds.h"
++#include "damage.h"
++TEST_CASE("cwm_presentation_is_bounded_perceived_and_observational", "[cwm][presentation]")
++{
++    clear_avatar(); clear_map(); clear_creatures();
++    avatar& u=get_avatar(); u.setpos(tripoint(60,60,0));
++    cwm::enable_presentation(false);
++    cwm::record_presentation(cwm::CueKind::Attack,u);
++    CHECK(cwm::drain_presentation().empty());
++    cwm::enable_presentation(true);
++    const auto rng=rng_get_engine(); const auto turn=calendar::turn; const int moves=u.moves;
++    for (int i=0;i<140;++i) cwm::record_presentation(cwm::CueKind::Attack,u);
++    const auto cues=cwm::drain_presentation();
++    REQUIRE(cues.size()==128);
++    CHECK(cues.front().actor==1); CHECK(cues.back().id>cues.front().id);
++    CHECK(cwm::drain_presentation().empty());
++    CHECK(rng_get_engine()==rng); CHECK(calendar::turn==turn); CHECK(u.moves==moves);
++    auto* mon=g->place_critter_at(mtype_id("mon_zombie"),tripoint(61,60,0)); REQUIRE(mon);
++    mon->set_value("cwm_monster_id","600");
++    u.add_effect(efftype_id("blind"),1_hours);
++    cwm::record_presentation(cwm::CueKind::Attack,*mon);
++    CHECK(cwm::drain_presentation().empty());
++    u.remove_effect(efftype_id("blind"));
++    // Player damage is an explicit native result, not inferred from HP deltas.
++    u.deal_damage(mon,bodypart_id("torso"),damage_instance(damage_type_id("bash"),10));
++    auto hurt=cwm::drain_presentation();
++    CHECK(std::any_of(hurt.begin(),hurt.end(),[](const auto& cue){return cue.actor==1 && cue.kind==cwm::CueKind::Hurt;}));
++    cwm::record_presentation(cwm::CueKind::Attack,u);
++    auto full=cwm::CwmMapExporter::export_world_snapshot(1,1,u,get_map(),*g,true);
++    CHECK(CDDA::CWM::GetCwmMessage(full.data())->payload_as_WorldSnapshot()->presentation_events()->size()==0);
++    cwm::record_presentation(cwm::CueKind::Attack,u);
++    auto delta=cwm::CwmMapExporter::export_world_snapshot(2,2,u,get_map(),*g,false);
++    CHECK(CDDA::CWM::GetCwmMessage(delta.data())->payload_as_WorldSnapshot()->presentation_events()->size()==1);
++    auto next=cwm::CwmMapExporter::export_world_snapshot(3,3,u,get_map(),*g,false);
++    CHECK(CDDA::CWM::GetCwmMessage(next.data())->payload_as_WorldSnapshot()->presentation_events()->size()==0);
++    cwm::enable_presentation(false); clear_creatures();
++}
++TEST_CASE("cwm_audio_follows_native_hearing_and_never_exports_source", "[cwm][presentation]")
++{
++    clear_avatar(); clear_map(); clear_creatures(); sounds::reset_sounds();
++    avatar& u=get_avatar(); u.setpos(tripoint(60,60,0));
++    cwm::enable_presentation(true);
++    u.add_effect(efftype_id("deaf"),1_hours);
++    sounds::sound(u.pos(),20,sounds::sound_t::combat,"test",true,"gunfire");
++    sounds::process_sound_markers(&u);
++    CHECK(cwm::drain_presentation().empty());
++    sounds::reset_sounds(); u.remove_effect(efftype_id("deaf"));
++    u.add_effect(efftype_id("blind"),1_hours);
++    sounds::sound(u.pos()+tripoint(3,0,0),30,sounds::sound_t::combat,"test",true,"gunfire");
++    sounds::process_sound_markers(&u);
++    const auto cues=cwm::drain_presentation();
++    REQUIRE(cues.size()==1); CHECK(cues[0].kind==cwm::CueKind::Sound);
++    CHECK(cues[0].actor==0); CHECK(cues[0].volume>0); CHECK(cues[0].category=="gunfire");
++    CHECK(cues[0].description.find("test")!=std::string::npos);
++    CHECK(cues[0].description!="test"); // Native compass direction for unseen audio.
++    cwm::enable_presentation(false); sounds::reset_sounds();
 +}
 diff --git a/tests/cwm_runtime_test.cpp b/tests/cwm_runtime_test.cpp
 new file mode 100644
