@@ -88,7 +88,7 @@ index 57e5a13..499e52c 100644
  
  	get_setting_info("touch_controls").option_labels = {
 diff --git a/builtin/settingtypes.txt b/builtin/settingtypes.txt
-index 728eaf4..b788fcf 100644
+index 728eaf4..33f96c6 100644
 --- a/builtin/settingtypes.txt
 +++ b/builtin/settingtypes.txt
 @@ -666,9 +666,9 @@ mute_sound (Mute sound) bool false
@@ -104,7 +104,7 @@ index 728eaf4..b788fcf 100644
  
  [**GUI]
  
-@@ -2557,3 +2557,19 @@ keymap_increase_viewing_range_min (View range increase key) key +
+@@ -2557,3 +2557,20 @@ keymap_increase_viewing_range_min (View range increase key) key +
  
  #    Key for decreasing the viewing range.
  keymap_decrease_viewing_range_min (View range decrease key) key -
@@ -124,6 +124,7 @@ index 728eaf4..b788fcf 100644
 +keymap_cdda_aim (CDDA held aim keyboard fallback) key KEY_KEY_F
 +keymap_cdda_reload (CDDA native reload) key KEY_KEY_R
 +keymap_cdda_quick_use (CDDA selected quick slot: use or equip) key KEY_KEY_G
++keymap_cdda_close (CDDA close the pointed opening or curtains) key KEY_KEY_O
 diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
 index 65e5ab6..a8494d2 100644
 --- a/src/CMakeLists.txt
@@ -317,7 +318,7 @@ index 16ceda4..20bd596 100644
  			float old_anim_speed = player->last_animation_speed;
  			m_velocity = v3f(0,0,0);
 diff --git a/src/client/game.cpp b/src/client/game.cpp
-index 27b5833..970d5d3 100644
+index 27b5833..6718fde 100644
 --- a/src/client/game.cpp
 +++ b/src/client/game.cpp
 @@ -8,6 +8,8 @@
@@ -753,7 +754,7 @@ index 27b5833..970d5d3 100644
  
  	core::line3d<f32> shootline;
  
-@@ -3365,6 +3622,48 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
+@@ -3365,6 +3622,52 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
  	// but the halo rendering code is already inefficient so there's no point in optimizing it here
  	hud->updateSelectionMesh(camera_offset);
  
@@ -767,6 +768,10 @@ index 27b5833..970d5d3 100644
 +		bool items_pointed = bridge.pointGroundItems(item_ray);
 +        if(pointed.type == POINTEDTHING_NODE && bridge.pointStorageNode(pointed.node_undersurface)) items_pointed=true;
 +		bridge.pointCombatTarget(item_ray);
++        const auto opening = bridge.pointOpening(item_ray);
++        const bool close_pressed = wasKeyPressed(KeyType::CDDA_CLOSE);
++        if (close_pressed && opening && !bridge.getMetrics().pending_decision)
++            bridge.handlePointedOpening(*opening, true);
 +        const bool reload_pressed = wasKeyDown(KeyType::CDDA_RELOAD);
 +        const bool fire_pressed = wasKeyPressed(KeyType::DIG);
 +        if (reload_pressed) bridge.reloadWeapon();
@@ -774,12 +779,12 @@ index 27b5833..970d5d3 100644
 +				bridge.attackPointedTarget()) camera->setDigging(0);
 +        const bool right_pressed = wasKeyPressed(KeyType::PLACE);
 +        const bool context = !bridge.hasPointedRangedTarget() && (items_pointed ||
-+            (pointed.type == POINTEDTHING_NODE && bridge.isPointedOpening(pointed.node_undersurface)));
++            opening.has_value());
 +        const bool context_pressed = bridge.handleAimInput(isKeyDown(KeyType::PLACE), right_pressed,
 +            isKeyDown(KeyType::CDDA_AIM), context,
 +            device->isWindowActive() && device->isWindowFocused() && !isMenuActive() &&
 +                !guienv->hasFocus(gui_chat_console.get()), fire_pressed, reload_pressed);
-+		if (!bridge.getMetrics().pending_decision && context_pressed) {
++		if (!bridge.getMetrics().pending_decision && context_pressed && !close_pressed) {
 +			if (items_pointed) {
 +				const auto form = bridge.activateGroundItems();
 +				if (!form.empty()) {
@@ -788,8 +793,8 @@ index 27b5833..970d5d3 100644
 +						&input->joystick, new FormspecFormSource(form),
 +						new CwmGroundFormHandler(), "", sound_manager.get());
 +				}
-+			} else if (pointed.type == POINTEDTHING_NODE && bridge.isPointedOpening(pointed.node_undersurface))
-+				bridge.handlePointedOpening(pointed.node_undersurface, isKeyDown(KeyType::SNEAK));
++			} else if (opening)
++				bridge.handlePointedOpening(*opening, false);
 +		}
 +		runData.pointed_old = pointed;
 +		input->clearWasKeyPressed();
@@ -802,7 +807,7 @@ index 27b5833..970d5d3 100644
  	// Allow digging again if button is not pressed
  	if (runData.digging_blocked && !isKeyDown(KeyType::DIG))
  		runData.digging_blocked = false;
-@@ -4247,7 +4546,8 @@ void Game::updateClouds(float dtime)
+@@ -4247,7 +4550,8 @@ void Game::updateClouds(float dtime)
  {
  	if (this->sky->getCloudsVisible()) {
  		this->clouds->setVisible(true);
@@ -812,7 +817,7 @@ index 27b5833..970d5d3 100644
  		// this->camera->getPosition is not enough for third-person camera.
  		v3f camera_node_position = this->camera->getCameraNode()->getPosition();
  		v3s16 camera_offset      = this->camera->getOffset();
-@@ -4319,7 +4619,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
+@@ -4319,7 +4623,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
  	/*
  		Fog
  	*/
@@ -826,7 +831,7 @@ index 27b5833..970d5d3 100644
  		this->driver->setFog(
  				fog_color,
  				video::EFT_FOG_LINEAR,
-@@ -4518,6 +4823,12 @@ void Game::showPauseMenu()
+@@ -4518,6 +4827,12 @@ void Game::showPauseMenu()
  		<< strgettext("Exit to Menu") << "]";
  	os		<< "button_exit[4," << (ypos++) << ";3,0.5;btn_exit_os;"
  		<< strgettext("Exit to OS")   << "]";
@@ -864,7 +869,7 @@ index 2da9efa..93b5bcd 100644
  		v2s32 pos(floor(e->pos.X * (float) m_screensize.X + 0.5),
  				floor(e->pos.Y * (float) m_screensize.Y + 0.5));
 diff --git a/src/client/inputhandler.cpp b/src/client/inputhandler.cpp
-index 88969f0..37b1943 100644
+index 88969f0..207a07f 100644
 --- a/src/client/inputhandler.cpp
 +++ b/src/client/inputhandler.cpp
 @@ -3,6 +3,7 @@
@@ -875,7 +880,7 @@ index 88969f0..37b1943 100644
  #include "settings.h"
  #include "util/numeric.h"
  #include "inputhandler.h"
-@@ -63,6 +64,14 @@ void KeyCache::populate()
+@@ -63,6 +64,15 @@ void KeyCache::populate()
  			getKeySetting("keymap_decrease_viewing_range_min");
  	key[KeyType::RANGESELECT] = getKeySetting("keymap_rangeselect");
  	key[KeyType::ZOOM] = getKeySetting("keymap_zoom");
@@ -884,13 +889,14 @@ index 88969f0..37b1943 100644
 +    key[KeyType::CDDA_RELOAD] = getKeySetting("keymap_cdda_reload");
 +    key[KeyType::CDDA_QUICK_USE] = getKeySetting("keymap_cdda_quick_use");
 +    key[KeyType::CDDA_CRAFTING] = getKeySetting("keymap_cdda_crafting");
++    key[KeyType::CDDA_CLOSE] = getKeySetting("keymap_cdda_close");
 +	key[KeyType::CDDA_RUN] = getKeySetting("keymap_cdda_run");
 +	key[KeyType::CDDA_CROUCH] = getKeySetting("keymap_cdda_crouch");
 +	key[KeyType::CDDA_PRONE] = getKeySetting("keymap_cdda_prone");
  
  	key[KeyType::QUICKTUNE_NEXT] = getKeySetting("keymap_quicktune_next");
  	key[KeyType::QUICKTUNE_PREV] = getKeySetting("keymap_quicktune_prev");
-@@ -109,7 +118,11 @@ bool MyEventReceiver::OnEvent(const SEvent &event)
+@@ -109,7 +119,11 @@ bool MyEventReceiver::OnEvent(const SEvent &event)
  		return true;
  	}
  
@@ -904,15 +910,16 @@ index 88969f0..37b1943 100644
  		const KeyPress keyCode(event.KeyInput);
  		if (keyCode == getKeySetting("keymap_fullscreen")) {
 diff --git a/src/client/keys.h b/src/client/keys.h
-index 4bce131..f2c9cbf 100644
+index 4bce131..c780fe5 100644
 --- a/src/client/keys.h
 +++ b/src/client/keys.h
-@@ -56,6 +56,14 @@ class KeyType
+@@ -56,6 +56,15 @@ class KeyType
  		DECREASE_VIEWING_RANGE,
  		RANGESELECT,
  		ZOOM,
 +		CDDA_BODY,
 +        CDDA_CRAFTING,
++        CDDA_CLOSE,
 +        CDDA_AIM,
 +        CDDA_RELOAD,
 +        CDDA_QUICK_USE,
@@ -982,10 +989,10 @@ index d6e2863..239953a 100644
  	std::vector<std::unique_ptr<MeshUpdateWorkerThread>> m_workers;
  };
 diff --git a/src/defaultsettings.cpp b/src/defaultsettings.cpp
-index 7758c96..7fda020 100644
+index 7758c96..def39c0 100644
 --- a/src/defaultsettings.cpp
 +++ b/src/defaultsettings.cpp
-@@ -165,13 +165,26 @@ void set_default_settings()
+@@ -165,13 +165,27 @@ void set_default_settings()
  	settings->setDefault("keymap_toggle_block_bounds", "");
  	settings->setDefault("keymap_toggle_hud", "KEY_F1");
  	settings->setDefault("keymap_toggle_chat", "KEY_F2");
@@ -996,6 +1003,7 @@ index 7758c96..7fda020 100644
 +    settings->setDefault("keymap_cdda_reload", "KEY_KEY_R");
 +    settings->setDefault("keymap_cdda_quick_use", "KEY_KEY_G");
 +    settings->setDefault("keymap_cdda_crafting", "KEY_KEY_K");
++    settings->setDefault("keymap_cdda_close", "KEY_KEY_O");
 +	settings->setDefault("keymap_cdda_run", "KEY_LCONTROL");
 +	settings->setDefault("keymap_cdda_crouch", "KEY_LSHIFT");
 +	settings->setDefault("keymap_cdda_prone", "KEY_KEY_X");
@@ -1015,7 +1023,7 @@ index 7758c96..7fda020 100644
  	settings->setDefault("keymap_camera_mode", "KEY_KEY_C");
  	settings->setDefault("keymap_screenshot", "KEY_F12");
 diff --git a/src/gui/guiFormSpecMenu.cpp b/src/gui/guiFormSpecMenu.cpp
-index ed1c300..c7aa073 100644
+index ed1c300..c51099d 100644
 --- a/src/gui/guiFormSpecMenu.cpp
 +++ b/src/gui/guiFormSpecMenu.cpp
 @@ -1,3 +1,5 @@
@@ -1035,7 +1043,33 @@ index ed1c300..c7aa073 100644
  	// Set initial focus according to following order of precedence:
  	// 1. first empty editbox
  	// 2. first editbox
-@@ -2922,6 +2928,31 @@ void GUIFormSpecMenu::parseElement(parserData* data, const std::string &element)
+@@ -1526,7 +1532,15 @@ void GUIFormSpecMenu::createTextField(parserData *data, FieldSpec &spec,
+ 	}
+ 
+ 	gui::IGUIEditBox *e = nullptr;
+-	if (is_multiline) {
++    const bool restore_search = !is_multiline && spec.fname == "search" && m_cwm_search_restore;
++    if (restore_search) {
++        e = m_cwm_search_restore;
++        m_cwm_search_restore = nullptr;
++        data->current_parent->addChild(e);
++        e->setID(spec.fid);
++        e->setRelativePosition(rect);
++        if (std::wstring(e->getText()) != spec.fdefault) e->setText(spec.fdefault.c_str());
++    } else if (is_multiline) {
+ 		e = new GUIEditBoxWithScrollBar(spec.fdefault.c_str(), true, Environment,
+ 				data->current_parent, spec.fid, rect, m_tsrc, is_editable, true);
+ 	} else if (is_editable) {
+@@ -1545,7 +1559,7 @@ void GUIFormSpecMenu::createTextField(parserData *data, FieldSpec &spec,
+ 			e->setMultiLine(true);
+ 			e->setWordWrap(true);
+ 			e->setTextAlignment(gui::EGUIA_UPPERLEFT, gui::EGUIA_UPPERLEFT);
+-		} else {
++		} else if (!restore_search) {
+ 			irr::SEvent evt;
+ 			evt.EventType            = EET_KEY_INPUT_EVENT;
+ 			evt.KeyInput.Key         = KEY_END;
+@@ -2922,6 +2936,31 @@ void GUIFormSpecMenu::parseElement(parserData* data, const std::string &element)
  	// They remain here due to bool flags, for now
  	data->type = type;
  
@@ -1067,7 +1101,24 @@ index ed1c300..c7aa073 100644
  	auto it = element_parsers.find(type);
  	if (it != element_parsers.end()) {
  		it->second(this, data, description);
-@@ -2989,6 +3020,11 @@ void GUIFormSpecMenu::regenerateGui(v2u32 screensize)
+@@ -2945,6 +2984,16 @@ void GUIFormSpecMenu::regenerateGui(v2u32 screensize)
+ 
+ 	// Preserve stuff only on same form, not on a new form.
+ 	if (m_text_dst->m_formname == m_last_formname) {
++        if (m_text_dst->m_formname == "CWM_CRAFTING" || m_text_dst->m_formname == "CWM_EQUIPMENT") {
++            for (const auto &field : m_fields) if (field.fname == "search") {
++                auto *element = getElementFromId(field.fid, true);
++                if (element && element->getType() == gui::EGUIET_EDIT_BOX) {
++                    m_cwm_search_restore = static_cast<gui::IGUIEditBox*>(element);
++                    m_cwm_search_restore->grab();
++                    break;
++                }
++            }
++        }
+ 		// Preserve tables/textlists
+ 		for (auto &m_table : m_tables) {
+ 			std::string tablename = m_table.first.fname;
+@@ -2989,6 +3038,11 @@ void GUIFormSpecMenu::regenerateGui(v2u32 screensize)
  	m_tables.clear();
  	m_checkboxes.clear();
  	m_scrollbars.clear();
@@ -1079,7 +1130,18 @@ index ed1c300..c7aa073 100644
  	m_fields.clear();
  	m_tooltips.clear();
  	m_tooltip_rects.clear();
-@@ -3577,6 +3613,7 @@ void GUIFormSpecMenu::drawMenu()
+@@ -3269,6 +3323,10 @@ void GUIFormSpecMenu::regenerateGui(v2u32 screensize)
+ 	}
+ 
+ 	// Set initial focus if parser didn't set it
++    if (m_cwm_search_restore) {
++        m_cwm_search_restore->drop();
++        m_cwm_search_restore = nullptr;
++    }
+ 	gui::IGUIElement *focused_element = Environment->getFocus();
+ 	if (!focused_element
+ 			|| !isMyChild(focused_element)
+@@ -3577,6 +3635,7 @@ void GUIFormSpecMenu::drawMenu()
  		Draw dragged item stack
  	*/
  	drawSelectedItem();
@@ -1087,7 +1149,7 @@ index ed1c300..c7aa073 100644
  
  	skin->setFont(old_font);
  }
-@@ -3900,13 +3937,137 @@ void GUIFormSpecMenu::acceptInput(FormspecQuitMode quitmode)
+@@ -3900,13 +3959,137 @@ void GUIFormSpecMenu::acceptInput(FormspecQuitMode quitmode)
  	}
  }
  
@@ -1225,7 +1287,7 @@ index ed1c300..c7aa073 100644
  	// The IGUITabControl renders visually using the skin's selected
  	// font, which we override for the duration of form drawing,
  	// but computes tab hotspots based on how it would have rendered
-@@ -3990,6 +4151,15 @@ bool GUIFormSpecMenu::preprocessEvent(const SEvent& event)
+@@ -3990,6 +4173,15 @@ bool GUIFormSpecMenu::preprocessEvent(const SEvent& event)
  
  void GUIFormSpecMenu::tryClose()
  {
@@ -1241,7 +1303,7 @@ index ed1c300..c7aa073 100644
  	if (m_allowclose) {
  		doPause = false;
  		acceptInput(quit_mode_cancel);
-@@ -4001,6 +4171,21 @@ void GUIFormSpecMenu::tryClose()
+@@ -4001,6 +4193,21 @@ void GUIFormSpecMenu::tryClose()
  
  bool GUIFormSpecMenu::OnEvent(const SEvent& event)
  {
@@ -1263,10 +1325,18 @@ index ed1c300..c7aa073 100644
  	if (event.EventType==EET_KEY_INPUT_EVENT) {
  		KeyPress kp(event.KeyInput);
  		if (event.KeyInput.PressedDown && (
-@@ -4757,6 +4942,14 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
+@@ -4757,6 +4964,22 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
  	}
  
  	if (event.EventType == EET_GUI_EVENT) {
++        if (m_text_dst && (m_text_dst->m_formname == "CWM_CRAFTING" || m_text_dst->m_formname == "CWM_EQUIPMENT") &&
++            event.GUIEvent.EventType == gui::EGET_EDITBOX_CHANGED && isVisible()) {
++            for (const auto &field : m_fields) if (field.fname == "search" && field.fid == event.GUIEvent.Caller->getID()) {
++                m_text_dst->gotText(StringMap{{"search_changed", "true"},
++                    {"search", wide_to_utf8(event.GUIEvent.Caller->getText())}});
++                return true;
++            }
++        }
 +        if (m_text_dst && m_text_dst->m_formname == "CWM_EQUIPMENT" &&
 +            (event.GUIEvent.EventType == gui::EGET_ELEMENT_FOCUSED || event.GUIEvent.EventType == gui::EGET_ELEMENT_FOCUS_LOST)) {
 +            for (const auto& field : m_fields) if (field.fname == "search" && event.GUIEvent.Caller->getID() == field.fid) {
@@ -1279,12 +1349,16 @@ index ed1c300..c7aa073 100644
  				&& isVisible()) {
  			// find the element that was clicked
 diff --git a/src/gui/guiFormSpecMenu.h b/src/gui/guiFormSpecMenu.h
-index 5c3fcd8..4c4ef26 100644
+index 5c3fcd8..0d8487e 100644
 --- a/src/gui/guiFormSpecMenu.h
 +++ b/src/gui/guiFormSpecMenu.h
-@@ -334,6 +334,22 @@ class GUIFormSpecMenu : public GUIModalMenu
+@@ -333,7 +333,26 @@ class GUIFormSpecMenu : public GUIModalMenu
+ 	std::vector<ListRingSpec> m_inventory_rings;
  	std::unordered_map<std::string, bool> field_enter_after_edit;
  	std::unordered_map<std::string, bool> field_close_on_enter;
++    // Retain the integrated live-search widget during same-form updates, so
++    // asynchronous results cannot reset the caret, selection or latest text.
++    gui::IGUIEditBox *m_cwm_search_restore = nullptr;
  	std::unordered_map<std::string, bool> m_dropdown_index_event;
 +    struct CwmDragZone {
 +        std::string name, visual;
@@ -1864,10 +1938,10 @@ index 0000000..e1e7236
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..f566a88
+index 0000000..d3b2855
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,3092 @@
+@@ -0,0 +1,3164 @@
 +#include "cwm/product_language.hpp"
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
@@ -1932,6 +2006,7 @@ index 0000000..f566a88
 +#include <map>
 +#include <unordered_map>
 +#include <array>
++#include "client/keycode.h"
 +
 +namespace cdda_client {
 +
@@ -1994,6 +2069,7 @@ index 0000000..f566a88
 +    irr::gui::IGUIStaticText* debug_text_{nullptr};
 +    irr::gui::IGUIStaticText *environment_tint_{nullptr}, *environment_text_{nullptr}, *cue_text_{nullptr};
 +    bool diagnostics_{false}, low_light_{false};
++    float low_light_blend_{0};
 +    uint64_t last_cue_{0}, cue_session_{0}, cues_received_{0}, sounds_played_{0};
 +    std::wstring cue_caption_;
 +    float caption_seconds_{0.f};
@@ -2059,11 +2135,12 @@ index 0000000..f566a88
 +    uint64_t crafting_favorite_command_{0}; bool crafting_favorite_refresh_{false},crafting_query_pending_{false};
 +    uint32_t crafting_selected_{0}; size_t crafting_page_{0}; unsigned crafting_batch_{1};
 +    std::string crafting_search_, crafting_notice_;
++    std::optional<std::chrono::steady_clock::time_point> crafting_search_due_;
 +    struct QueuedCrafting { uint64_t view; uint32_t entry; };
 +    std::optional<QueuedCrafting> queued_crafting_;
 +    std::string crafting_form() const {
 +        return craftingForm(crafting_view_, crafting_page_, crafting_selected_, crafting_search_, crafting_batch_,
-+            crafting_notice_, [&](const auto& type) { return ground_item_visual_name(type); }, crafting_ && activity_token_,crafting_filter_,crafting_query_pending_ || crafting_favorite_command_);
++            crafting_notice_, [&](const auto& type) { return ground_item_visual_name(type); }, crafting_ && activity_token_,crafting_filter_,crafting_query_pending_ || crafting_favorite_command_ || crafting_search_due_.has_value());
 +    }
 +    bool query_crafting(bool preserve_view=false) {
 +        if (!session_.ready() || !player_ready_ || metrics_.pending_decision || pending_move_) return false;
@@ -2124,6 +2201,7 @@ index 0000000..f566a88
 +        dismiss_inventory_work(); native_work_command_ = 0; native_work_settled_ = false;
 +        quick_slots_ = {}; quick_bind_command_ = 0; quick_bind_refresh_ = false;
 +        queued_crafting_.reset(); crafting_query_ = 0; crafting_view_ = {};
++        crafting_search_due_.reset();
 +        crafting_query_pending_=crafting_favorite_refresh_=false;crafting_favorite_command_=0;
 +        crafting_close_ = crafting_open_;
 +        queued_cancel_activity_.reset(); activity_token_ = 0; weapon_token_ = 0; reloading_ = false;
@@ -2713,7 +2791,7 @@ index 0000000..f566a88
 +        origin_valid_ = false;
 +        pending_move_ = 0; metrics_.pending_decision = 0;
 +        player_feet_offset_ = player_eye_offset_ = 0.f;
-+        caption_seconds_ = 0; low_light_ = false;
++        caption_seconds_ = 0; low_light_ = false; low_light_blend_ = 0;
 +        posture_input_ = {}; aim_input_ = {}; deferred_ranged_.reset(); last_aim_command_ = 0; posture_command_ = 0; deferred_opening_.reset();
 +    }
 +
@@ -2831,6 +2909,10 @@ index 0000000..f566a88
 +        }
 +
 +        player_ready_ = session_.ready() && entities_.count(1);
++        // A cosmetic adaptation over wall time, independent of simulation
++        // speed. Native perception and ambient-light decisions are unchanged.
++        low_light_blend_ += (float(low_light_) - low_light_blend_) *
++            (1.f - std::exp(-std::max(0.f, dtime) / .45f));
 +        if (deferred_opening_) {
 +            if (!session_.ready() || !player_ready_ || metrics_.pause_reasons || metrics_.pending_decision ||
 +                sent_menu_pause_ == 1 || body_form_open_ || ground_container_open_ || equipment_open_ ||
@@ -2986,7 +3068,23 @@ index 0000000..f566a88
 +            case CDDA::CWM::Payload::CraftingView: {
 +                const auto* view = msg->payload_as_CraftingView();
 +                if (crafting_open_ && view->query_id() == crafting_query_) {
-+                    crafting_view_.read(*view); crafting_filter_=view->filter();crafting_dirty_ = true;crafting_query_pending_=false;crafting_selected_=0;
++                    crafting_query_pending_=false;
++                    // A newer edit is waiting: never install intermediate
++                    // results/handles as though they matched the latest text.
++                    if (crafting_search_due_) break;
++                    const auto* old = crafting_view_.entry(crafting_selected_);
++                    const std::string recipe = old ? old->recipe : "";
++                    const bool resume = old && old->resume;
++                    crafting_view_.read(*view); crafting_filter_=view->filter();crafting_dirty_ = true;crafting_selected_=0;
++                    // Row IDs are view-local. Rebind only an unambiguous
++                    // semantic selection (several unfinished works can share
++                    // a recipe), never carry the old handle to the new view.
++                    unsigned matches=0;
++                    for (const auto& entry : crafting_view_.entries) if (entry.recipe==recipe && entry.resume==resume) {
++                        crafting_selected_=entry.id; ++matches;
++                    }
++                    if(matches!=1)crafting_selected_=0;
++                    if(crafting_selected_)crafting_page_=(crafting_selected_-1)/36;
 +                }
 +                break;
 +            }
@@ -3614,7 +3712,7 @@ index 0000000..f566a88
 +    std::string trace_path;
 +    if (g_settings->getNoEx("cwm_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->trace_.open(trace_path);
-+        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog,ipc_connected,ipc_input,ipc_output,ipc_read_bytes,ipc_write_bytes,ipc_frames,ipc_dispatch_bytes,ipc_read_calls,ipc_write_calls,session_state,input_ready,session_id,player_id,connection_id,sequence,resync_count,entity_cache,vehicle_cache,scene_origin_x,scene_origin_y,simulation_time,realtime,pause_reasons,time_scale,sent_intent,continuous_motion,intent_x,intent_y,ipc_latency_ms,projection_ms,ground_tiles,owned_items,ground_container,ground_hover,queued_pickup,ground_visual_nodes,ground_hover_items,ground_target_items,ground_target_visual_nodes,ground_target_first_type,status_available,body_form,survival_visible,status_stamina,status_head,status_arm_l,combat_hover,attacks_sent,attack_target,attack_target_hp,attack_result,player_state_flags,player_eye_offset,visual_animation_time,visual_animation_delta,ground_item_rotation,status_hunger_level,status_thirst_level,status_fatigue_level,status_pain_level,hud_images_active,equipment_form,inventory_view,inventory_entries,equipment_selected,equipment_sent,pending_decision,consumption_token,consumption_total,consumption_remaining,cancel_consumption_sent,first_aid_token,first_aid_total,first_aid_remaining,crafting_form,crafting_view,crafting_selected,crafting_sent,crafting_token,crafting_progress,weapon_token,weapon_ammo,weapon_recoil,aim_sent,fire_sent,reload_sent,reload_token,reload_total,reload_remaining,transfer_form,transfers_sent,transfer_token,transfer_total,transfer_remaining,inventory_work_command,native_work_command,native_work_settled,inventory_return,inventory_work_visible,equipment_page,equipment_filter,equipment_search_open,quick_slot,quick_count,quick_wielded,quick_use_sent,quick_bind_command,aim_held,ranged_deferred,external_form,external_entries,decision_waiting,native_work_total_ms,native_work_remaining_ms,work_progress_visible,presentation_cues,sounds_dispatched,low_light,underwater,diagnostics,wield_texture,shot_kick\n";
++        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog,ipc_connected,ipc_input,ipc_output,ipc_read_bytes,ipc_write_bytes,ipc_frames,ipc_dispatch_bytes,ipc_read_calls,ipc_write_calls,session_state,input_ready,session_id,player_id,connection_id,sequence,resync_count,entity_cache,vehicle_cache,scene_origin_x,scene_origin_y,simulation_time,realtime,pause_reasons,time_scale,sent_intent,continuous_motion,intent_x,intent_y,ipc_latency_ms,projection_ms,ground_tiles,owned_items,ground_container,ground_hover,queued_pickup,ground_visual_nodes,ground_hover_items,ground_target_items,ground_target_visual_nodes,ground_target_first_type,status_available,body_form,survival_visible,status_stamina,status_head,status_arm_l,combat_hover,attacks_sent,attack_target,attack_target_hp,attack_result,player_state_flags,player_eye_offset,visual_animation_time,visual_animation_delta,ground_item_rotation,status_hunger_level,status_thirst_level,status_fatigue_level,status_pain_level,hud_images_active,equipment_form,inventory_view,inventory_entries,equipment_selected,equipment_sent,pending_decision,consumption_token,consumption_total,consumption_remaining,cancel_consumption_sent,first_aid_token,first_aid_total,first_aid_remaining,crafting_form,crafting_view,crafting_selected,crafting_sent,crafting_token,crafting_progress,weapon_token,weapon_ammo,weapon_recoil,aim_sent,fire_sent,reload_sent,reload_token,reload_total,reload_remaining,transfer_form,transfers_sent,transfer_token,transfer_total,transfer_remaining,inventory_work_command,native_work_command,native_work_settled,inventory_return,inventory_work_visible,equipment_page,equipment_filter,equipment_search_open,quick_slot,quick_count,quick_wielded,quick_use_sent,quick_bind_command,aim_held,ranged_deferred,external_form,external_entries,decision_waiting,native_work_total_ms,native_work_remaining_ms,work_progress_visible,presentation_cues,sounds_dispatched,low_light,underwater,diagnostics,wield_texture,shot_kick,low_light_blend\n";
 +    }
 +    if (g_settings->getNoEx("cwm_entity_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->entity_trace_.open(trace_path);
@@ -3842,7 +3940,7 @@ index 0000000..f566a88
 +        << ',' << pimpl_->native_work_total_ms_ << ',' << pimpl_->native_work_remaining_ms_
 +        << ',' << (pimpl_->work_progress_ && pimpl_->work_progress_->isVisible()) << ',' << pimpl_->cues_received_ << ',' << pimpl_->sounds_played_ << ',' << pimpl_->low_light_
 +        << ',' << bool(entity.state_flags & cdda::cwm::UNDERWATER) << ',' << pimpl_->diagnostics_
-+        << ',' << wieldedTexture() << ',' << shotKick() << '\n';
++        << ',' << wieldedTexture() << ',' << shotKick() << ',' << pimpl_->low_light_blend_ << '\n';
 +    pimpl_->trace_.flush();
 +}
 +
@@ -3862,6 +3960,11 @@ index 0000000..f566a88
 +            }
 +        }
 +        auto& i = *pimpl_;
++        if (i.crafting_open_ && i.crafting_search_due_ && !i.crafting_query_pending_ &&
++            !i.crafting_favorite_command_ && !i.pending_move_ &&
++            std::chrono::steady_clock::now() >= *i.crafting_search_due_) {
++            if (i.query_crafting(true)) i.crafting_search_due_.reset();
++        }
 +        // I pauses immediately even while the equipment result is in flight.
 +        // Read only after that result, so inspection cannot retain a pre-action
 +        // inventory. MENU_OPEN can also reject a command not yet executed.
@@ -3914,7 +4017,7 @@ index 0000000..f566a88
 +    const auto tile = luantiToCddaCoord(node);
 +    const auto opening = pimpl_->opening_tiles_.find(cddaToLuantiCoord(tile.X, tile.Y, tile.Z));
 +    if (opening == pimpl_->opening_tiles_.end()) return false;
-+    close = opening->second; // Toggle the last authoritative state; never predict the change.
++    close = close || opening->second; // Explicit close, otherwise authoritative toggle.
 +    return handleInteract(tile.X, tile.Y, tile.Z, static_cast<int>(close ?
 +        CDDA::CWM::InteractAction::CLOSE : CDDA::CWM::InteractAction::OPEN));
 +}
@@ -4030,6 +4133,36 @@ index 0000000..f566a88
 +    // Presentation eligibility only. CDDA still validates current range/state.
 +    return base.Y == std::round(p.Y) &&
 +        std::abs(base.X - std::round(p.X)) <= 1 && std::abs(base.Z - std::round(p.Z)) <= 1;
++}
++
++std::optional<v3s16> CddaBridge::pointOpening(const irr::core::line3d<float>& ray) {
++    std::optional<v3s16> result;
++    if (!pimpl_ || !pimpl_->session_.ready()) return result;
++    float closest=1.f;
++    // The pane disappears on opening. Hit the semantic two-node opening,
++    // using the already occlusion-limited world ray, not just solid voxels.
++    for (const auto& [base, open] : pimpl_->opening_tiles_) {
++        if (!isPointedOpening(base)) continue;
++        const v3f start=ray.start/10.f, delta=ray.getVector()/10.f;
++        const float origin[]={start.X,start.Y,start.Z};
++        const float dir[]={delta.X,delta.Y,delta.Z};
++        const float lo[]={base.X-.5f,base.Y+.5f,base.Z-.5f};
++        const float hi[]={base.X+.5f,base.Y+2.5f,base.Z+.5f};
++        float begin=0.f,end=1.f; bool hit=true;
++        for(int axis=0;axis<3 && hit;++axis) {
++            if(std::abs(dir[axis])<1e-6f)hit=origin[axis]>=lo[axis] && origin[axis]<=hi[axis];
++            else {
++                float a=(lo[axis]-origin[axis])/dir[axis],b=(hi[axis]-origin[axis])/dir[axis];
++                if(a>b)std::swap(a,b);
++                begin=std::max(begin,a);end=std::min(end,b);hit=begin<=end;
++            }
++        }
++        if(hit && begin<=closest){closest=begin;result=base;}
++    }
++    if(result) pimpl_->hover_hint_=::cwm::wide("Opening — right click: open / close; ",
++        "Apertura — destro: apri / chiudi; ")+utf8_to_wide(getKeySetting("keymap_cdda_close").name())+
++        ::cwm::wide(": close / draw curtains", ": chiudi / tira le tende");
++    return result;
 +}
 +
 +bool CddaBridge::handleAimInput(bool right, bool pressed, bool fallback, bool context,
@@ -4229,6 +4362,7 @@ index 0000000..f566a88
 +    auto& i = *pimpl_;
 +    i.crafting_open_ = true; i.crafting_close_ = false;
 +    i.crafting_search_.clear(); i.crafting_batch_ = 1; i.crafting_filter_=CDDA::CWM::CraftingFilter::AUTO;
++    i.crafting_search_due_.reset();
 +    setMenuPause(true);
 +    if (!i.query_crafting()) i.crafting_view_.error = (::cwm::text("Catalog unavailable: try again.", "Catalogo non disponibile: riprova."));
 +    return i.crafting_form();
@@ -4238,9 +4372,23 @@ index 0000000..f566a88
 +    auto& i = *pimpl_;
 +    if (fields.count("quit")) {
 +        i.crafting_open_ = i.crafting_close_ = i.crafting_dirty_ = false;
-+        i.crafting_view_ = {}; i.crafting_query_ = 0; i.crafting_query_pending_=false;i.queued_crafting_.reset(); return;
++        i.crafting_view_ = {}; i.crafting_query_ = 0; i.crafting_query_pending_=false;i.crafting_search_due_.reset();i.queued_crafting_.reset(); return;
 +    }
-+    if(i.crafting_query_pending_ || i.crafting_favorite_command_)return;
++    if (fields.count("search_changed")) {
++        const auto found=fields.find("search");
++        if(found!=fields.end() && found->second.substr(0,256)!=i.crafting_search_) {
++            i.crafting_search_=found->second.substr(0,256);i.crafting_page_=0;
++            i.crafting_search_due_=std::chrono::steady_clock::now()+std::chrono::milliseconds(120);
++        }
++        return;
++    }
++    bool batch_change=false;
++    if (const auto found=fields.find("batch");found!=fields.end())
++        for(unsigned n=1;n<=20;++n)if(found->second==std::to_string(n) && i.crafting_batch_!=n){i.crafting_batch_=n;batch_change=true;break;}
++    if(i.crafting_query_pending_ || i.crafting_favorite_command_){
++        if(batch_change)i.crafting_search_due_=std::chrono::steady_clock::now();
++        return;
++    }
 +    if(fields.count("favorite_recipe")) {
 +        const auto* e=i.crafting_view_.entry(i.crafting_selected_);
 +        if(!e || !i.session_.ready() || i.pending_move_ || i.metrics_.pending_decision)return;
@@ -4260,15 +4408,12 @@ index 0000000..f566a88
 +        else { i.queued_cancel_activity_ = i.activity_token_; i.crafting_close_ = true; return; }
 +        i.crafting_dirty_ = true; return;
 +    }
-+    bool refresh = tab_change || fields.count("refresh") || fields.count("find") || fields.count("key_enter_field");
-+    if (const auto found = fields.find("batch"); found != fields.end()) {
-+        for (unsigned n = 1; n <= 20; ++n) if (found->second == std::to_string(n) && i.crafting_batch_ != n) {
-+            i.crafting_batch_ = n; refresh = true; break;
-+        }
-+    }
++    bool refresh = batch_change || tab_change || fields.count("refresh") || fields.count("find") || fields.count("key_enter_field");
 +    if (refresh) {
 +        if (const auto found = fields.find("search"); found != fields.end()) i.crafting_search_ = found->second.substr(0, 256);
-+        i.query_crafting(); return;
++        i.crafting_search_due_.reset();
++        if(tab_change){i.crafting_selected_=0;i.crafting_page_=0;}
++        i.query_crafting(true); return;
 +    }
 +    if (fields.count("prev") && i.crafting_page_) --i.crafting_page_;
 +    if (fields.count("next") && (i.crafting_page_+1)*36 < i.crafting_view_.entries.size()) ++i.crafting_page_;
@@ -4276,6 +4421,7 @@ index 0000000..f566a88
 +        if (fields.count("recipe_"+std::to_string(e.id))) i.crafting_selected_ = e.id;
 +    if (fields.count("start")) if (const auto* e = i.crafting_view_.entry(i.crafting_selected_)) {
 +        if (!e->reason.empty()) i.crafting_notice_ = e->reason;
++        else if (i.crafting_search_due_) return;
 +        else if (i.activity_token_) i.crafting_notice_ = (::cwm::text("Interrupt the activity before acting.", "Interrompi l'attivita prima di agire."));
 +        else if (i.metrics_.pause_reasons & ~uint32_t(2)) i.crafting_notice_ = (::cwm::text("Resume the game before crafting.", "Riprendi il gioco prima di creare."));
 +        else if (!i.session_.ready() || i.pending_move_) i.crafting_notice_ = (::cwm::text("Wait for the updated state.", "Attendi lo stato aggiornato."));
@@ -4537,7 +4683,7 @@ index 0000000..f566a88
 +    if (fields.count("worn_prev") && i.equipment_worn_page_) --i.equipment_worn_page_;
 +    const auto worn_count = std::count_if(i.equipment_view_.entries.begin(), i.equipment_view_.entries.end(), [](const auto& e) { return e.worn; });
 +    if (fields.count("worn_next") && (i.equipment_worn_page_ + 1) * 10 < size_t(worn_count)) ++i.equipment_worn_page_;
-+    if (fields.count("find") || fields.count("key_enter_field")) {
++    if (fields.count("find") || fields.count("key_enter_field") || fields.count("search_changed")) {
 +        const auto search = fields.find("search");
 +        if (search != fields.end()) i.equipment_search_ = search->second.substr(0, 256);
 +        i.equipment_page_ = 0;
@@ -4657,13 +4803,13 @@ index 0000000..f566a88
 +    }
 +    pimpl_->environment_tint_->setRelativePosition(irr::core::rect<irr::s32>(0,0,screen.Width,screen.Height));
 +    pimpl_->environment_tint_->setBackgroundColor(hurt ? irr::video::SColor(42,165,25,25) :
-+        submerged ? irr::video::SColor(65,15,75,130) : irr::video::SColor(48,5,8,18));
-+    pimpl_->environment_tint_->setVisible(pimpl_->session_.ready() && !in_menu && (hurt || submerged || pimpl_->low_light_));
++        submerged ? irr::video::SColor(65,15,75,130) : irr::video::SColor(std::lround(48*pimpl_->low_light_blend_),5,8,18));
++    pimpl_->environment_tint_->setVisible(pimpl_->session_.ready() && !in_menu && (hurt || submerged || pimpl_->low_light_blend_>.01f));
 +    std::wstring environment;
 +    if (!pimpl_->session_.ready()) environment=::cwm::wide("Connecting / synchronizing…", "Connessione / sincronizzazione…");
 +    else if (pimpl_->metrics_.pause_reasons) environment=::cwm::wide("Paused — F7: resume", "In pausa — F7: riprendi");
 +    if (submerged) environment += L"  " + ::cwm::wide("Underwater", "Sott'acqua");
-+    else if (pimpl_->low_light_) environment += L"  " + ::cwm::wide("Low light — perception is limited", "Poca luce — percezione limitata");
++    else if (pimpl_->low_light_blend_>.5f) environment += L"  " + ::cwm::wide("Low ambient light", "Poca luce ambientale");
 +    pimpl_->environment_text_->setRelativePosition(irr::core::rect<irr::s32>(screen.Width/2-230,8,screen.Width/2+300,38));
 +    pimpl_->environment_text_->setText(environment.c_str());
 +    pimpl_->environment_text_->setVisible(!in_menu && !environment.empty());
@@ -4962,16 +5108,17 @@ index 0000000..f566a88
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.h b/src/cdda/cdda_bridge.h
 new file mode 100644
-index 0000000..c551dfb
+index 0000000..551cb62
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.h
-@@ -0,0 +1,181 @@
+@@ -0,0 +1,183 @@
 +// Luanti C++ CWM Presentation Bridge
 +// Licensed under Apache-2.0
 +#pragma once
 +
 +#include <string>
 +#include <memory>
++#include <optional>
 +#include <vector>
 +#include <unordered_map>
 +#include <cstdint>
@@ -5073,6 +5220,7 @@ index 0000000..c551dfb
 +    bool attackPointedTarget();
 +    bool hasPointedRangedTarget() const;
 +    bool isPointedOpening(const v3s16& node) const;
++    std::optional<v3s16> pointOpening(const irr::core::line3d<float>& ray);
 +    bool handleAimInput(bool right, bool pressed, bool fallback, bool context,
 +                        bool focused, bool fire, bool reload);
 +    bool reloadWeapon();
@@ -5149,7 +5297,7 @@ index 0000000..c551dfb
 +} // namespace cdda_client
 diff --git a/src/cdda/crafting_inventory.h b/src/cdda/crafting_inventory.h
 new file mode 100644
-index 0000000..b837757
+index 0000000..4584bd7
 --- /dev/null
 +++ b/src/cdda/crafting_inventory.h
 @@ -0,0 +1,80 @@
@@ -5229,7 +5377,7 @@ index 0000000..b837757
 +        if(!updating)f+="button[8,9.8;7.5,0.65;favorite_recipe;"+std::string(e->favorite?::cwm::text("Remove recipe favorite","Rimuovi ricetta preferita"): ::cwm::text("Add recipe favorite","Aggiungi ricetta preferita"))+"]";
 +    }
 +    f += "label[0.5,10.75;"+statusEscape(notice.substr(0,160))+"]";
-+    if (view.truncated) f += ("label[0.5,2.1;" + ::cwm::text("Too many results: narrow the search.", "Troppi risultati: restringi la ricerca.") + "]");
++    if (view.truncated && notice.empty()) f += ("label[0.5,10.75;" + ::cwm::text("Too many results: narrow the search.", "Troppi risultati: restringi la ricerca.") + "]");
 +    return f;
 +}
 +} // namespace cdda_client

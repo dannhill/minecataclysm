@@ -1715,10 +1715,10 @@ index 09a7711..9b0c484 100644
          DebugLog( D_INFO, DC_ALL ) <<
 diff --git a/src/cwm/cwm_crafting.h b/src/cwm/cwm_crafting.h
 new file mode 100644
-index 0000000..56bbc99
+index 0000000..d94c308
 --- /dev/null
 +++ b/src/cwm/cwm_crafting.h
-@@ -0,0 +1,217 @@
+@@ -0,0 +1,220 @@
 +#pragma once
 +#include "cwm/product_language.hpp"
 +#include "avatar.h"
@@ -1760,6 +1760,7 @@ index 0000000..56bbc99
 +        return s;
 +    }
 +    static std::string availability(avatar& u, const recipe& rec, int batch, bool continuing = false) {
++        if (rec.is_nested()) return ::cwm::tr("Choose an actual recipe, not a recipe category.", "Scegli una ricetta effettiva, non una categoria.");
 +        if (u.activity) return ::cwm::tr("Interrupt or finish the activity before crafting.", "Interrompi o concludi l'attivita prima di creare.");
 +        if (u.is_mounted() || u.is_underwater()) return ::cwm::tr("Crafting is unavailable at this location.", "Crafting non disponibile in questa posizione.");
 +        if (rec.category == "CC_BUILDING" || rec.is_practice()) return ::cwm::tr("This process requires a dedicated interface in a later update.", "Lavorazione dedicata prevista in seguito.");
@@ -1791,7 +1792,7 @@ index 0000000..56bbc99
 +        for(const auto* pseudo:u.get_pseudo_items())sources.add_item(*pseudo,false,false);
 +        const auto helpers=u.get_crafting_group();
 +        const auto available=u.get_available_recipes(sources,&helpers);
-+        if(!*rec || rec->obsolete || std::find(available.begin(),available.end(),rec)==available.end())
++        if(!*rec || rec->obsolete || rec->is_nested() || std::find(available.begin(),available.end(),rec)==available.end())
 +            return ::cwm::tr("Recipe is no longer known or accessible.","Ricetta non piu nota o accessibile.");
 +        const bool current=uistate.favorite_recipes.count(rec->ident());
 +        if(current!=expected)return ::cwm::tr("Favorite changed: refresh the catalog.","Preferita cambiata: aggiorna il catalogo.");
@@ -1816,7 +1817,9 @@ index 0000000..56bbc99
 +            auto available = u.get_available_recipes(inv, &helpers);
 +            std::vector<Selection> candidates;
 +            const auto include = [&](const recipe& rec,item_location work) {
-+                if (!rec || rec.obsolete) return;
++                // Native nested categories are navigation, never executable
++                // recipes. Their children are already in available_recipes.
++                if (!rec || rec.obsolete || (!work && rec.is_nested())) return;
 +                if(filter==CDDA::CWM::CraftingFilter::UNFINISHED && !work)return;
 +                if(filter==CDDA::CWM::CraftingFilter::FAVORITES && !uistate.favorite_recipes.count(rec.ident()))return;
 +                if(filter==CDDA::CWM::CraftingFilter::RECENT && !recent_rank(rec))return;
@@ -5295,10 +5298,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..27ea42c
+index 0000000..7301147
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,1963 @@
+@@ -0,0 +1,2032 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "move_mode.h"
@@ -6514,6 +6517,75 @@ index 0000000..27ea42c
 +    CHECK_FALSE( selection.validate(u,old,1).empty() );
 +    selection.clear(); CHECK_FALSE(selection.validate(u,old,1).empty());
 +    CHECK_FALSE(selection.validate(u,old,0).empty());
++}
++
++TEST_CASE("cwm_crafting_categories_cannot_be_executed_as_zero_time_recipes", "[cwm][crafting]")
++{
++    clear_avatar(); clear_map(); clear_creatures();
++    avatar& u=get_avatar();u.setpos(tripoint(60,60,0));
++    REQUIRE(u.wear_item(item(itype_id("backpack_hiking"))));
++    u.learn_recipe(&recipe_id("bandages_makeshift").obj());
++    u.learn_recipe(&recipe_id("bandages").obj());
++    REQUIRE(recipe_id("nested_bandages").obj().is_nested());
++    // Reproduce the misleading historical Recent entry without modifying saves.
++    const auto previous=uistate.recent_recipes;
++    uistate.recent_recipes.push_back(recipe_id("nested_bandages"));
++    cwm::CraftingSelection selection;
++    cdda::cwm::MessageBuilder wire(1,1,{101,102,103});
++    const auto bytes=selection.query(u,1,"bandage",4,wire);
++    const auto* view=CDDA::CWM::GetCwmMessage(bytes.data())->payload_as_CraftingView();
++    REQUIRE(cdda::cwm::valid_crafting(view));
++    bool actual=false;
++    for(const auto* row:*view->entries()) {
++        CHECK_FALSE(recipe_id(row->recipe_id()->str()).obj().is_nested());
++        if(row->recipe_id()->str()=="bandages") {
++            actual=true; CHECK_FALSE(row->reason()->str().empty());
++            CHECK_FALSE(selection.validate(u,view->view_id(),row->id()).empty());
++        }
++    }
++    CHECK(actual); CHECK_FALSE(u.activity);
++    uistate.recent_recipes=previous;
++}
++
++TEST_CASE("cwm_real_bandage_batches_pay_native_work_and_produce_results", "[cwm][crafting]")
++{
++    clear_avatar(); clear_map(); clear_creatures();
++    avatar& u=get_avatar();u.setpos(tripoint(60,60,0));
++    REQUIRE(u.wear_item(item(itype_id("backpack_hiking"))));
++    const recipe& rec=recipe_id("bandages").obj();u.learn_recipe(&rec);
++    u.set_skill_level(skill_id("firstaid"),5);
++    int batch=1;
++    SECTION("single batch"){}
++    SECTION("four batches"){batch=4;}
++    for(int i=0;i<3*batch;++i)u.i_add(item(itype_id("cotton_patchwork")));
++    item tape(itype_id("medical_tape"));tape.charges=5*batch;u.i_add(tape);
++    item liquid(itype_id("disinfectant"));liquid.charges=5*batch;
++    u.i_add(liquid.in_container(itype_id("bottle_plastic")));
++    calendar::turn=calendar::turn_zero+36_hours;
++    get_weather().update_weather();u.recalc_sight_limits();g->reset_light_level();
++    get_map().build_map_cache(0);get_map().invalidate_visibility_cache();get_map().update_visibility_cache(0);
++    g->new_game=false;g->uquit=QUIT_NO;g->set_safe_mode(SAFE_MODE_OFF);
++    const override_option autosave("AUTOSAVE","false");
++    cwm::CraftingSelection selection;cdda::cwm::MessageBuilder wire(1,1,{101,102,103});
++    auto bytes=selection.query(u,1,"bandages",batch,wire);
++    const auto* view=CDDA::CWM::GetCwmMessage(bytes.data())->payload_as_CraftingView();
++    uint32_t id=0;
++    for(const auto* row:*view->entries())if(row->recipe_id()->str()=="bandages") {
++        REQUIRE(row->reason()->str().empty());CHECK(row->expected_moves()>=3000*batch);id=row->id();
++    }
++    REQUIRE(id);
++    do_turn_with_action([&]() {
++        u.moves=100;CHECK(selection.execute(u,view->view_id(),id));finish_external_action_phase();return false;
++    },[](const auto&,const auto&){return 0;});
++    REQUIRE(u.activity.id()==activity_id("ACT_CRAFT"));
++    auto work=cwm::active_craft(u);REQUIRE(work);
++    u.moves=100;u.activity.do_turn(u);REQUIRE(u.activity);
++    CHECK(work->item_counter>0);CHECK(work->item_counter<10000000);
++    for(int turn=0;turn<500 && u.activity;++turn){u.moves=100;u.activity.do_turn(u);}
++    CHECK_FALSE(u.activity);
++    int results=u.amount_of(itype_id("bandages"));
++    for(const auto& it:get_map().i_at(u.pos()))if(it.typeId()==itype_id("bandages"))results+=it.count();
++    CHECK(results==3*batch);
 +}
 +
 +TEST_CASE( "cwm_native_crafting_confirms_components_and_preserves_canceled_work", "[cwm][crafting]" )

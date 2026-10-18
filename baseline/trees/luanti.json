@@ -1232,7 +1232,7 @@
   {
     "path": "builtin/settingtypes.txt",
     "mode": "100644",
-    "sha256": "d8ffb270aa9f46b020c121bd65d98e56fdd102494016d84d40d3df5959d4eba4"
+    "sha256": "66356a38cfab38c0ee4af346721979696febfb09b0c9c01ee664d8ba5fc3860f"
   },
   {
     "path": "client/serverlist/.gitignore",
@@ -7242,17 +7242,17 @@
   {
     "path": "src/cdda/cdda_bridge.cpp",
     "mode": "100644",
-    "sha256": "626ec4ebd2cfd2bc1ff1a567bf3194c98f6c56c76245f18433ef869c6306caa1"
+    "sha256": "cf2a88b7f7d7da14b84423621d92a21bebf19e3aa65efc3a6b2863af90aa523d"
   },
   {
     "path": "src/cdda/cdda_bridge.h",
     "mode": "100644",
-    "sha256": "4a3a7faf7bc3911d8fe7024c2c04f2741ab8c530b02c54aa3092f87b09f6a0df"
+    "sha256": "e14b6dbee8dd46ab607916c71987d9b521609a7942691f89ab1bd796b06ac304"
   },
   {
     "path": "src/cdda/crafting_inventory.h",
     "mode": "100644",
-    "sha256": "cd448a4d999d6c190e0e26dbc711a19272bf12470b2e0a5459fef448b9129309"
+    "sha256": "d44fe7aa071a66466d317f4dbc27c409dd7c1ad4ced1f5b97215c98dcc32f59d"
   },
   {
     "path": "src/cdda/creature_visual.h",
@@ -7492,7 +7492,7 @@
   {
     "path": "src/client/game.cpp",
     "mode": "100644",
-    "sha256": "3220f79265c554e46cf848e175873d6d25194960897395c86a4d661b7712eef9"
+    "sha256": "ef3ea50351c52fa4a1fdfa07d5c48236a1a0271554f66aad93ad7c211d344735"
   },
   {
     "path": "src/client/game.h",
@@ -7552,7 +7552,7 @@
   {
     "path": "src/client/inputhandler.cpp",
     "mode": "100644",
-    "sha256": "2a91274db23cf718a65231b290f63edf0e691d21e5e273b09e11ec9fb14157b2"
+    "sha256": "f551fadf263eb8688470de73ba57b9039278771648eac9b5892201a80f2397fe"
   },
   {
     "path": "src/client/inputhandler.h",
@@ -7582,7 +7582,7 @@
   {
     "path": "src/client/keys.h",
     "mode": "100644",
-    "sha256": "4cf8b1cd3cc21f5f0633cf603c7d65b69d598cbadf4e7cd58f6bea842c1c5867"
+    "sha256": "c0fd84985d72841c7facf5c5ca7388ece38972d2a93a5e7dc9d7c141816a8729"
   },
   {
     "path": "src/client/localplayer.cpp",
@@ -8187,7 +8187,7 @@
   {
     "path": "src/defaultsettings.cpp",
     "mode": "100644",
-    "sha256": "5d74c65ccbf8018f11c2017d63a56146d681d91a12a0ee5e6038dee1cbd777f6"
+    "sha256": "e203443426f7571b8e91cb7d8cfccc7fc43c7fa4330d80718366a818c4cdbb45"
   },
   {
     "path": "src/defaultsettings.h",
@@ -8402,12 +8402,12 @@
   {
     "path": "src/gui/guiFormSpecMenu.cpp",
     "mode": "100644",
-    "sha256": "103632d0dbd32357471f1b97ec1a8e2e9ad3f83448fde1b8000381ca95abc464"
+    "sha256": "e4e363117614e116a7572c1f913363ba8692e4f4e167ed40bfb92c64177973d2"
   },
   {
     "path": "src/gui/guiFormSpecMenu.h",
     "mode": "100644",
-    "sha256": "2f59af4c2af5a0075fd4ce0110c7f22df9e83c0e85e2c3e77616b9efea29b247"
+    "sha256": "901d0a703e387572bcd6d2f2f538ba2080b0d501bbc3efe0b45b66dd790ecc5f"
   },
   {
     "path": "src/gui/guiHyperText.cpp",

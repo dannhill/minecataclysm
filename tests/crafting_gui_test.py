@@ -27,6 +27,7 @@ def main():
         parser.add_argument('--' + name, type=Path, required=True)
     parser.add_argument('--action-driven', action='store_true', help='Verify ordinary start.sh mode without the real-time scheduler')
     parser.add_argument('--recipe-shortcuts', action='store_true')
+    parser.add_argument('--catalog-feedback', action='store_true')
     parser.add_argument('--resume-only', action='store_true')
     parser.add_argument('--save-active', action='store_true')
     parser.add_argument('--resume-active', action='store_true')
@@ -270,6 +271,33 @@ def main():
                 xdo('key','Home');xdo('key',*(['Down']*(number-1)));xdo('key','Return')
                 wait(lambda r:int(r['crafting_view'])>0 and r['crafting_view']!=old)
                 return catalog()
+            if args.catalog_feedback:
+                view=tab(0)
+                check('navigation_categories_are_not_craftable_rows',all(not e.RecipeId().startswith(b'nested_') for e in entries(view)))
+                frozen=latest()['simulation_time'];sent=latest()['crafting_sent']
+                click(2,1.3)
+                text=''
+                for character in 'band':
+                    old=latest()['crafting_view'];text+=character
+                    xdo('type','--clearmodifiers',character)
+                    wait(lambda r:int(r['crafting_view'])>0 and r['crafting_view']!=old)
+                    view=catalog()
+                    check('live_partial_search_'+text,bool(entries(view)) and all(text in (e.Name().decode()+' '+e.RecipeId().decode()).lower() for e in entries(view)))
+                old=latest()['crafting_view']
+                xdo('key','Home','Right','Right');xdo('type','X')
+                wait(lambda r:int(r['crafting_view'])>0 and r['crafting_view']!=old)
+                check('live_edit_keeps_middle_caret',catalog().EntriesLength()==0)
+                old=latest()['crafting_view'];xdo('key','BackSpace')
+                wait(lambda r:int(r['crafting_view'])>0 and r['crafting_view']!=old)
+                check('live_delete_restores_partial_results',bool(entries(catalog())))
+                check('live_search_does_not_advance_or_start_work',latest()['simulation_time']==frozen and latest()['crafting_sent']==sent)
+                view=search();select_recipe(view)
+                view=set_batch(2)
+                selected=next(e for e in entries(view) if e.RecipeId()==b'bandages_makeshift' and not e.Resume())
+                check('batch_refresh_rebinds_selected_recipe',int(latest()['crafting_selected'])==selected.Id() and view.Batch()==2)
+                shot('live-search-selected-batch.png')
+                view=set_batch(1)
+                check('batch_one_keeps_selected_recipe',int(latest()['crafting_selected'])==next(e.Id() for e in entries(view) if e.RecipeId()==b'bandages_makeshift' and not e.Resume()))
             if args.recipe_shortcuts and args.resume_only:
                 view=tab(1);check('favorite_survives_native_save_and_reload',any(e.RecipeId()==b'bandages_makeshift' and e.Favorite() for e in entries(view)))
                 view=tab(2);check('recent_survives_native_save_and_reload',any(e.RecipeId()==b'bandages_makeshift' and e.RecentRank()==1 for e in entries(view)))

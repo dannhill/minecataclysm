@@ -284,14 +284,20 @@ def main():
                     until(lambda d:int(d[1]['revision'])==rev);time.sleep(.1)
                     check('full_resync_does_not_replay_old_sound_identity',camera_latest()['sounds_dispatched']==sounds)
                     rev=update('environment',[True,0]);until(lambda d:int(d[1]['revision'])==rev);time.sleep(.1)
-                    check('native_low_light_reaches_presentation',camera_latest()['low_light']=='1');screen('darkness.png')
+                    check('native_low_light_reaches_presentation',camera_latest()['low_light']=='1')
+                    check('low_light_fades_in_over_real_time',0<float(camera_latest()['low_light_blend'])<.95)
+                    time.sleep(1.3)
+                    check('stable_low_light_reaches_target',float(camera_latest()['low_light_blend'])>.95)
+                    screen('darkness.png')
                     # UNDERWATER from the shared semantic flag, not a Luanti water node.
                     from pathlib import Path as _Path
                     import re as _re
                     semantics=(ws/'protocol/include/cwm/tile_semantics.hpp').read_text()
                     shift=int(_re.search(r'UNDERWATER\s*=\s*1u?\s*<<\s*(\d+)',semantics)[1])
                     rev=update('environment',[False,1<<shift]);until(lambda d:int(d[1]['revision'])==rev);time.sleep(.1)
-                    check('native_underwater_state_reaches_presentation',camera_latest()['underwater']=='1');screen('underwater.png')
+                    check('native_underwater_state_reaches_presentation',camera_latest()['underwater']=='1')
+                    check('low_light_fades_out_instead_of_popping',0<float(camera_latest()['low_light_blend'])<.95)
+                    screen('underwater.png')
                     update('environment',[False,0]);rev=update('wield',True)
                     until(lambda d:int(d[1]['revision'])==rev);time.sleep(.2)
                     check('actual_native_hand_resolves_first_person_texture',bool(camera_latest()['wield_texture']))
