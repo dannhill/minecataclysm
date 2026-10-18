@@ -216,8 +216,10 @@ def main():
                 generations={i:initial[i]['node_generation'] for i in (monster_id,npc_id)}
                 check('real_zombie_and_npc_meshes_created', initial[1]['scene_actors']=='2')
                 check('zombie_skin_does_not_cover_armour_geometry',initial[monster_id]['material0'].endswith('blank.png') and initial[monster_id]['material1'].endswith('zombie.png'))
-                check('npc_skin_and_empty_overlays_use_separate_materials',initial[npc_id]['material0'].endswith('mcl_skins_character_1.png') and initial[npc_id]['material1'].endswith('blank.png') and initial[npc_id]['material2'].endswith('blank.png'))
-                check('integrated_avatar_is_voxel_mesh',int(initial[1]['node_materials'])>=3 and float(initial[1]['model_frame'])>=0 and initial[1]['material0'].endswith('mcl_skins_character_1.png'))
+                # This pinned B3D exposes two rendered materials; Mineclonia's
+                # Lua player definition also declares an unused third texture.
+                check('npc_skin_and_empty_overlays_use_separate_materials',int(initial[npc_id]['node_materials'])==2 and initial[npc_id]['material0'].endswith('mcl_skins_character_1.png') and initial[npc_id]['material1'].endswith('blank.png'))
+                check('integrated_avatar_is_voxel_mesh',int(initial[1]['node_materials'])==2 and float(initial[1]['model_frame'])>=0 and initial[1]['material0'].endswith('mcl_skins_character_1.png') and initial[1]['material1'].endswith('blank.png'))
                 check('avatar_and_npc_use_humanoid_world_scale',all(14<float(initial[i]['model_height'])<22 for i in (1,npc_id)))
                 idle_frame=float(initial[monster_id]['model_frame']);time.sleep(.65)
                 idle=until(lambda data:data[1]['ready']=='1')

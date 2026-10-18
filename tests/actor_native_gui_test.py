@@ -16,6 +16,7 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     for key in ('workspace','fixture','native-reader','artifacts'):
         parser.add_argument('--'+key,type=Path,required=True)
+    parser.add_argument('--action-driven',action='store_true',help='Explicit native tile mode for the original exact-step perception/stairs fixture')
     args=parser.parse_args()
     ws,out=args.workspace.resolve(),args.artifacts.resolve()
     out.mkdir(parents=True,exist_ok=False)
@@ -46,6 +47,8 @@ def main():
             LUANTI_WORLD=str(folder/'world'),LUANTI_CONFIG=str(config),LOG_DIR=str(folder/'logs'),
             CDDA_BIN=str(ws/'cdda/build/src/cdda-server'),LUANTI_BIN=str(ws/'luanti/bin/luanti'))
         env.pop('CDDA_TERRAIN_DEMO',None)
+        if args.action_driven:
+            env['CDDA_CONTINUOUS']='0';env['CDDA_REALTIME']='0'
         def latest():
             data=read(actors)
             if not data: return {}
