@@ -5298,10 +5298,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..7301147
+index 0000000..ffc322a
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,2032 @@
+@@ -0,0 +1,2033 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "move_mode.h"
@@ -6574,10 +6574,11 @@ index 0000000..7301147
 +        REQUIRE(row->reason()->str().empty());CHECK(row->expected_moves()>=3000*batch);id=row->id();
 +    }
 +    REQUIRE(id);
++    bool acted=false;u.moves=100;
 +    do_turn_with_action([&]() {
-+        u.moves=100;CHECK(selection.execute(u,view->view_id(),id));finish_external_action_phase();return false;
++        acted=true;u.moves=100;CHECK(selection.execute(u,view->view_id(),id));finish_external_action_phase();return false;
 +    },[](const auto&,const auto&){return 0;});
-+    REQUIRE(u.activity.id()==activity_id("ACT_CRAFT"));
++    REQUIRE(acted);REQUIRE(u.activity.id()==activity_id("ACT_CRAFT"));
 +    auto work=cwm::active_craft(u);REQUIRE(work);
 +    u.moves=100;u.activity.do_turn(u);REQUIRE(u.activity);
 +    CHECK(work->item_counter>0);CHECK(work->item_counter<10000000);

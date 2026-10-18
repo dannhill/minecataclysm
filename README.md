@@ -1,3 +1,18 @@
+# Minecataclysm
+
+**Human-tested, AI-assisted development:** every manual `PASS` in
+[the testing ledger](docs/validation/pending-manual.md) was reported by the
+project's **sole human developer**, who also conducts extensive general
+playtesting to refine gameplay, fluidity and interfaces. The developer is not
+a UI/UX designer. **This notice and the [full testing/authorship statement](HUMAN_TESTING.md)
+were written by an LLM on the developer's direct, explicit instructions.**
+Automated verification and pending personal rechecks are recorded separately.
+
+[Human testing and AI authorship](HUMAN_TESTING.md) ·
+[Current implementation](IMPLEMENTATION_STATUS.md) ·
+[Full plan](IMPLEMENTATION_PLAN.md) ·
+[Manual PASS/FAIL and outstanding tests](docs/validation/pending-manual.md)
+
 This project aims to merge the 2D turn based videogame Cataclysm Dark Days Ahead(CDDA) with the 3D voxel real time game Mineclonia(as the name suggests, an open source minecraft clone) with the goal to provide CDDA with a 3D voxel engine.
 FAQ
 A: Why did you choose to make this?

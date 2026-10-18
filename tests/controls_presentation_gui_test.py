@@ -29,6 +29,7 @@ def main():
     parser.add_argument('--action-driven', action='store_true', help='Verify ordinary start.sh mode without the real-time scheduler')
     parser.add_argument('--resume-only', action='store_true')
     parser.add_argument('--toggle-controls', action='store_true')
+    parser.add_argument('--opening-feedback', action='store_true')
     args = parser.parse_args()
     ws, out = args.workspace.resolve(), args.artifacts.resolve()
     out.mkdir(parents=True, exist_ok=False)
@@ -252,7 +253,7 @@ def main():
                     xdo('keyup','Control_L')
                     wait(lambda r: int(r['player_state_flags']) & mask == 0)
                     check('crouch_priority_and_return_to_held_run', True)
-                turn(-90,-50)
+                turn(-90,0 if args.opening_feedback else -50)
                 xdo('click','3')
                 wait(lambda r: accepted_action(1) and int(r['pending_move']) == 0)
                 check('pointed_window_open_native_ack',True)
@@ -275,6 +276,17 @@ def main():
                     wait(lambda r: int(r['pending_move']) == 0 and int(r['player_state_flags']) & mask == 0)
                     wait(lambda r: accepted_action(2) == 2)
                     check('delayed_modifier_reply_does_not_swallow_close', accepted_action(1) == 2 and accepted_action(2) == 2)
+
+                if args.opening_feedback:
+                    turn(-90,0)
+                    opens,closes=accepted_action(1),accepted_action(2)
+                    xdo('click','3');wait(lambda r:accepted_action(1)==opens+1 and int(r['pending_move'])==0)
+                    time.sleep(.3)
+                    xdo('keydown','o');time.sleep(.35);xdo('keyup','o')
+                    wait(lambda r:accepted_action(2)==closes+1 and int(r['pending_move'])==0)
+                    check('keyboard_close_hits_empty_upper_window_without_sill',True)
+                    tap('o');time.sleep(.3)
+                    check('close_only_key_never_reopens_closed_window',accepted_action(1)==opens+1 and accepted_action(2)==closes+1)
 
                 if args.toggle_controls:
                     # The modifier press also latched crouch in toggle mode.

@@ -1,5 +1,14 @@
 # Validazioni manuali del playable core
 
+Stato corrente dopo i sette gate personali del 2026-10-18: **24 PENDING, nessun FAIL manuale aperto**.
+T1–T7 sono **PASS riferiti dall'unico sviluppatore umano**; i bug e i commenti
+non sono stati cancellati dai PASS. Il vecchio FAIL Indossa/Togli è superato.
+[Provenienza e riscontro](../source/manual-core-gates-2026-10-18.md),
+[dichiarazione pubblica di test umani e redazione LLM](../../HUMAN_TESTING.md).
+Tolti otto punti pendenti coperti dai gate e aggiunti quattro ricontrolli mirati
+in fondo; pila conteggiata, recenza/rifiuto, eccezioni UX-02 e altre prove
+non eseguite restano pendenti. Nessun obbligo di prove oggi.
+
 Stato corrente dopo i dieci seguiti core del 2026-10-18: **28 PENDING + 1 FAIL manuale**.
 Dieci nuove prove rinviabili sono in fondo: feedback, famiglie, ambiente e F3.
 Prima di questa consegna erano **18 PENDING + 1 FAIL manuale**.
@@ -670,13 +679,13 @@ I vecchi PASS rimangono. Le eccezioni UX-02 morte/IPC non provate restano nelle
 loro sezioni: queste prove e l'automazione non deducono la tua accettazione.
 
 
-## Ricontrolli commenti del 2026-10-13 — 1 e 3 PASS, 2 FAIL (2026-10-18)
+## Ricontrolli commenti del 2026-10-13 — VALIDATA: 1–3 PASS (2026-10-18)
 
 1. **DND senza vista vuota:** equipment-demo --fresh, I; riordina griglia,
    assegna/scambia/svuota hotbar. Durante l’attesa della risposta la griglia
    resta visibile, poi si aggiorna senza mostrare il pannello vuoto di lettura.
    Le azioni fisiche mantengono invece i costi nativi e la pausa/ritorno.
-2. **Indossa/Togli — FAIL, ricontrollo della correzione:** in
+2. **Indossa/Togli — PASS personale T1, supera il FAIL:** in
    `./equipment-demo.sh --fresh`, indossa e togli un capo. Il cambiamento è
    immediato; il pannello indica il tempo nativo restante in secondi di gioco,
    senza una barra di vestizione o pulsante Interrompi. Premi I anche subito
@@ -715,7 +724,7 @@ Prova isolata: `./medicine-demo.sh --fresh`; disponibile anche in start.sh.
    descrizioni inglesi dove manca la traduzione, ma stessi cuori e scelte.
 
 
-## UX-05 — Ricette recenti, preferite e incompleti — 1 PASS, 2–4 PENDING (2026-10-18)
+## UX-05 — 1, 3 e ripresa/persistenza 4 PASS; 2 PENDING (2026-10-18)
 
 Disponibile nel normale `./start.sh`; scena isolata `./crafting-demo.sh --fresh`.
 
@@ -729,20 +738,26 @@ Disponibile nel normale `./start.sh`; scena isolata `./crafting-demo.sh --fresh`
    Riaprendo K la scheda iniziale segue dati nativi: prima incompleti accessibili,
    poi recenti/preferite, altrimenti Tutte. I recenti indicano avvii, non completamenti.
    Una ricetta recente con materiali mancanti mostra il limite e non diventa gratis.
-3. **Incompleti:** avvia un lotto 2, apri K, interrompi e scegli il lavoro R
+3. **Incompleti — PASS personale T2:** avvia un lotto 2, apri K, interrompi e scegli il lavoro R
    nella scheda Incompleti. La ripresa conserva il progresso e chiede solo
    requisiti/ricambi nativi necessari; non riavvia un secondo lavoro né crea
    risultati duplicati. Prova in inglese: nessun controllo dipende dal testo italiano.
-4. **Persistenza e leggibilità:** lascia la ricetta preferita e un avvio recente,
+4. **Persistenza/ripresa — PASS personale T3 per lo scenario provato:** lascia la ricetta preferita e un avvio recente,
    esci e rilancia la demo senza --fresh. Schede, ricerca, lotti e marker devono
    restare leggibili e preferiti/recenti devono persistere. English e Italiano WIP
    devono conservare significato delle schede. Riavvio/ripresa non contano come
    nuovi completamenti; un elenco Più eseguite non è ancora presente.
 
+Il riscontro T3 accetta salvataggio/ripresa del lavoro; non estende da solo la
+copertura a tutte le lingue e ai metadati preferiti/recenti. Alla riapertura I
+non viene ripristinato: l'actor è canonico, il menu e la pausa sono transitori.
+T2 resta PASS con bug del falso crafting della categoria bandages: ricontrollo
+separato in fondo, senza attribuire il PASS a quella voce.
+
 Le vecchie validazioni restano accettate. Un playtest mirato del core è consigliato
 al consolidamento delle interfacce, ma queste prove possono ancora essere rinviate.
 
-## INT-01 — Gesti richiesti il 2026-10-18 — PENDING (3), rinviabili
+## INT-01 — Gesti — 1–3 PASS personali T4/T5/T6 (2026-10-18)
 
 1. **Porte e finestre:** RMB apre quelle chiuse e chiude quelle aperte, senza
    Shift; tieni il clic: un solo cambio. Prova anche accovacciato. Avvicinati
@@ -767,7 +782,7 @@ al consolidamento delle interfacce, ma queste prove possono ancora essere rinvia
 rinviata dopo F7. Non duplicare questo punto nei contatori. Il commento UX
 sul menu 9×3 per oggetti sfusi è nel seguito; non revoca il PASS funzionale.
 
-## Raccolta sfusa diretta — PENDING (3), rinviabili
+## Raccolta sfusa diretta — 1 e 3 PASS personali T5; 2 PENDING
 
 1. **Un oggetto:** nella partita o `./storage-demo.sh --fresh`, deposita un
    oggetto da solo ai piedi del personaggio, chiudi I e punta il drop. RMB lo
@@ -792,7 +807,7 @@ sul menu 9×3 per oggetti sfusi è nel seguito; non revoca il PASS funzionale.
    torna alla prima persona. Deve esserci un modello voxel, non una sagoma 2D
    verde; piedi e altezza devono risultare plausibili. I conserva l'anteprima.
 
-## Orientamento e animazioni di movimento — PENDING (3), rinviabili
+## Orientamento e animazioni di movimento — 2 PASS personale T7; 1 e 3 PENDING
 
 1. **Movimento:** osserva zombie/NPC che camminano e cambiano direzione.
    Gli arti si animano e il modello segue la direzione degli spostamenti;
@@ -849,3 +864,32 @@ vestiti e timbri audio sono ancora provvisori; bestiario completo non dichiarato
     tasto debug (default F3, riconfigurabile) li mostra/nasconde. Pausa, perdita
     connessione, minaccia, scelte native e lavoro devono restare comprensibili
     anche a diagnostica spenta. Le vecchie configurazioni possono avere F5.
+
+
+## Ricontrolli dopo i sette gate — PENDING (4), rinviabili
+
+I sette gate sono accettati; questi sono ricontrolli di modifiche successive,
+non PASS dedotti dalle prove automatiche. Disponibili anche in `./start.sh`.
+
+1. **Catalogo e ricerca dinamica:** `./crafting-demo.sh --fresh`, K, Tutte.
+   L'avviso dei troppi risultati resta nel margine inferiore e non copre le
+   schede. Scrivi lentamente `band`: risultati aggiornati senza Invio, campo
+   sempre modificabile. Inserisci/cancella un carattere nel mezzo: cursore e
+   ricerca non saltano alla fine. Lo stesso filtro dinamico è disponibile in I.
+2. **Ricette vere e lotto:** cerca `bandage`: la categoria navigazionale senza
+   risultato non è più avviabile. Seleziona `makeshift bandage` senza utensile,
+   cambia lotto a 2 o 4: la selezione resta, requisiti/durata si aggiornano e
+   puoi creare senza riselezionare. Con i materiali della demo un lotto 4 dà
+   otto makeshift bandages, dopo il lavoro nativo; nessun esito fantasma a 0%.
+   La vera `bandages` richiede materiali sanitari, nastro e disinfettante.
+3. **Vano e chiusura esplicita:** punta una finestra chiusa e usa RMB. Senza
+   abbassare la mira al davanzale, RMB deve richiedere la chiusura del vetro
+   aperto. **O** richiede soltanto CLOSE, anche per tirare le tende di una
+   finestra già chiusa; RMB le riapre dal lato consentito da CDDA. O è
+   riconfigurabile con `keymap_cdda_close`; Shift non serve. Stato, lato interno,
+   costo e rifiuto sul corpo restano nativi. Porte semplici conservano il toggle.
+4. **Buio graduale:** attraversa più volte una soglia luce/ombra nel mondo.
+   La tinta entra/esce progressivamente, senza un salto a ogni soglia; la
+   velocità F8 non deve accelerare l'adattamento visivo. Il tetto può ancora
+   causare poca luce secondo CDDA: questa modifica non cambia chi puoi vedere
+   e non aggiunge ancora illuminazione 3D laterale. Valuta il comfort visivo.

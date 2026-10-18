@@ -10,6 +10,28 @@ un panorama più ampio; nebbia, memoria distante e rilievo restano da scegliere.
 Lo [stato implementato](IMPLEMENTATION_STATUS.md) e le evidenze restano separati
 dagli obiettivi. La roadmap originale M0–M9 conserva i propri significati.
 
+## Sette gate umani e consolidamento del crafting — 2026-10-18
+
+T1–T7 PASS personali, con i bug e commenti conservati nel
+[riscontro](docs/source/manual-core-gates-2026-10-18.md). Il FAIL della pausa
+Indossa/Togli è superato. **24 PENDING, nessun FAIL manuale aperto**: otto
+punti preesistenti accettati e quattro ricontrolli delle modifiche successive.
+I PASS hanno origine umana; automazione e nuove modifiche non li estendono
+automaticamente. [Dichiarazione pubblica richiesta dallo sviluppatore](HUMAN_TESTING.md).
+
+Prima della lettura/smontaggio, correggere le regressioni emerse nei gate:
+categorie native erroneamente eseguibili, avviso sovrapposto, ricerca dinamica
+in K/I, selezione stabile al cambio lotto, puntamento del vano finestra e O
+di sola chiusura/tende. Rendere graduale la tinta di poca luce, senza cambiare
+il modello nativo. Verifica ricostruita e installazione precedono il push richiesto.
+
+Il menu e la pausa di ispezione non sono persistiti nel save: il lavoro nativo
+si riprende al caricamento. Una futura ripresa inizialmente in pausa è una
+decisione di presentazione distinta, senza annullare l'actor o il suo costo.
+Luce laterale più credibile, panorami/nebbia e scale real-time restano separati.
+Prossima espansione funzionale: lettura nativa, poi smontaggio/lavorazioni,
+riusando attività, scelte, pausa e persistenza già esistenti.
+
 ## Dieci passi consecutivi del core — 2026-10-18
 
 Richiesta esplicita: dieci passi autonomi, prove personali rinviate. Il
