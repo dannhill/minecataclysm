@@ -42,7 +42,8 @@ paths. The selection overrides native USE_LANG only in process memory.
 Luanti's engine menus use its existing gettext catalog.
 
 Operation IDs, type IDs, instance identities and enum values remain unchanged.
-No new wire field or protocol version is required (CWM remains 2.18).
+Language selection itself adds no wire field or protocol revision; see
+[the protocol contract](../../protocol/PROTOCOL.md) for the current paired version.
 Never choose gameplay behavior, mappings or item identity from translated names.
 Category metadata carries native category IDs in inventory, owned-item projection
 and quick slots. Generic art uses those IDs, independent of language; labels

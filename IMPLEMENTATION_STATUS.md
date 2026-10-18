@@ -1,6 +1,31 @@
 # Implementation status
 
-Current scoped delivery: **seven human core gates recorded; crafting and
+Current scoped delivery: **native paper-book reading and study**, CWM **2.25**,
+installed in normal `start.sh` with paired rollback runtimes. I offers Skim/Read;
+native CDDA owns access costs, conditions, helpers, chapter duration, knowledge
+and theoretical experience. I pauses; Interrupt follows native backlog/resume.
+Save/load and reconnect retain ACT_READ without reissuing the command. Unknown
+books reveal no free skill knowledge during inspection. Special-use books,
+guidebook hints and e-readers remain explicit follow-ups.
+[Design](docs/design/native-reading.md), [delivery](docs/fixes/native-reading.md),
+[exact evidence](docs/fixes/native-reading-evidence.json).
+
+Native **113 cases / 65,724 assertions PASS**; client **309 tests / 47 modules**
+plus 648 Catch assertions / 4 cases; protocol **13**, language **9**, launcher
+aliases **6**. **84 renderer/canonical checks PASS** across reconstructed and
+installed runs, with independent pristine-core save readback. Incremental builds,
+not cold builds; final client label correction rechecked. The scoped report
+records earlier investigation failures separately. Five historical opt-in melee
+failures remain excluded; full SAVE-001 OPEN, historical M5.5 FAILED.
+
+**28 PENDING, no open manual FAIL**: four new deferred READ-01 checks; the
+previous 24 and all human PASS provenance remain unchanged. No personal gate
+today and no acceptance inferred from automation. Mapping batch60 unchanged.
+[Manual ledger](docs/validation/pending-manual.md),
+[human-testing/LLM-authorship statement](HUMAN_TESTING.md).
+Next functional core slice: native disassembly/related item work.
+
+Previous scoped delivery: **seven human core gates recorded; crafting and
 interaction feedback repaired**, CWM **2.24 unchanged**, installed in normal
 `start.sh` with paired rollback runtimes. Navigation categories cannot start
 phantom crafts. K/I search dynamically; K retains selection across batch changes

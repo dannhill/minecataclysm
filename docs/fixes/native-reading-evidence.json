@@ -1,0 +1,446 @@
+{
+  "scope": "Owned ordinary paper books: native identification, study, interruption, reconnect and canonical save/load; not full conformance",
+  "date": "2026-10-18",
+  "protocol_version": "2.25 (paired update)",
+  "verification_harness_commit": "426e08f98f317455a63b556fc23099f953e9a78b",
+  "source_commits": {
+    "native": "4830c8572927166165b0d515e48ff228398a496e",
+    "client": "426e08f98f317455a63b556fc23099f953e9a78b",
+    "protocol_test_fixtures": "1a10931b85f2becff15817cb3479fa4697394c53"
+  },
+  "source_trees": {
+    "cdda": {
+      "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+      "patch_sha256": "675f39601ffd3ffb8394512f5b5982ee2abb0f9751dc213763945891452db2af",
+      "tree_sha256": "9eee694f0affad5f7ee3d6f43eaa69a4dc4ebd58d05de046b78ba5a6115e9286"
+    },
+    "luanti": {
+      "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
+      "patch_sha256": "922bdd3c58c7982b10b7ede0d0d658ae6988cbf7951760fc670380714373f431",
+      "tree_sha256": "eaccc69f0eb8a09a3e1c8540ba349061ca78d50f2a6dc95af7eda09299a64144"
+    },
+    "mineclonia": {
+      "commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36"
+    }
+  },
+  "baseline_check": {
+    "path": "artifacts/native-reading-20261018/baseline-check-final.log",
+    "sha256": "c5c806eba66eaa0aab12a62970ae9b708a07424de82f70379712e2e89f1de56a"
+  },
+  "environment": {
+    "platform": "Linux-7.0.11-76070011-generic-x86_64-with-glibc2.35",
+    "native_seed": 42,
+    "client": "Release / LTO / ENABLE_SOUND=ON",
+    "graphics": "Private Xvfb, Mesa software, 1280x800, 96 DPI",
+    "audio": "OpenAL null backend; human listening comfort remains deferred"
+  },
+  "refresh_receipts": [
+    {
+      "path": "artifacts/native-reading-20261018/native-refresh-progress.json",
+      "sha256": "ed3d12235cc3d2d466c95b699c1e8356c828c247e6be1348c022e64ef1c64271"
+    },
+    {
+      "path": "artifacts/native-reading-20261018/client-refresh.json",
+      "sha256": "5924852e432027c29965e6476e6c32e5a098b706fbdabff5241044bd9be0e5fd"
+    },
+    {
+      "path": "artifacts/native-reading-20261018/client-refresh-fixtures.json",
+      "sha256": "e4d1687e18b87823013ad95ab006dd731be35ad30b1fe6affa83431866434105"
+    },
+    {
+      "path": "artifacts/native-reading-20261018/client-refresh-hint.json",
+      "sha256": "58cb1b6a8a0c56520e4d7ca487120c82ef1c0b73625ca75e22eb6ba0c0fbb905"
+    }
+  ],
+  "builds": {
+    "native": {
+      "path": "artifacts/native-reading-20261018/native-build-progress.log",
+      "sha256": "80b3cb274beafe5c2a7ed8b563aa3b08e33b04d250600fe68a6e619f7185e2a6"
+    },
+    "client": {
+      "path": "artifacts/native-reading-20261018/client-build-hint.log",
+      "sha256": "c6bb175e62c0fed66ee5c45fa26d6f63826e2dad6f3c8fc4faea6b4df21278f1"
+    },
+    "protocol": {
+      "path": "artifacts/native-reading-20261018/protocol-build-fixtures.log",
+      "sha256": "fc56fc254a68cf2223bc788add5ac15d8a83ba3e5521710ec6e479dec1ccd6c4"
+    },
+    "mode": "Incremental owned reconstructions; caches retained, not cold builds"
+  },
+  "native": {
+    "cases": 113,
+    "assertions": 65724,
+    "result": "PASS",
+    "filter": "[cwm],[reading]~[.],[melee]~[.],[ranged]~[.]",
+    "log": {
+      "path": "artifacts/native-reading-20261018/native-regression.log",
+      "sha256": "6469e4bfd1603d9f0158a693170431d42d8e3f4fa0876d44570a82f0918d2ad3"
+    },
+    "focused_reading": {
+      "cases": 4,
+      "assertions": 114,
+      "log": {
+        "path": "artifacts/native-reading-20261018/native-reading-tests.log",
+        "sha256": "9a43515245b1f48dca9259fb066fc73abf2e9e71dc2c4de4a31eb35828f59252"
+      }
+    },
+    "exclusions": "Five previously recorded opt-in statistical melee failures remain outside the active filter; no repair or promotion claimed"
+  },
+  "client": {
+    "tests": 309,
+    "modules": 47,
+    "catch_assertions": 648,
+    "catch_cases": 4,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-reading-20261018/client-unit-final.log",
+      "sha256": "44cbf26ce291346b2d55c4d261a43bb4551915af14416dbda21c131a2564e07b"
+    }
+  },
+  "protocol": {
+    "tests": 13,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-reading-20261018/protocol-tests-final.log",
+      "sha256": "70591d308da254175d11f6b56ebc1ee81c27d8f6680cb7ae2d677ee806849c92"
+    }
+  },
+  "language": {
+    "tests": 9,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-reading-20261018/language-tests.log",
+      "sha256": "879d9c3f39c2bffe4898f2defd27277666439e1ccdfda1956d2ec25d29a52409"
+    }
+  },
+  "launcher": {
+    "tests": 6,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-reading-20261018/launcher-tests.log",
+      "sha256": "eaf720be128d0474ea9880cc16ef438cd6dc0e75fc4d20e775751117882c7a85"
+    },
+    "checks": {
+      "path": "artifacts/native-reading-20261018/launcher-tests/checks.json",
+      "sha256": "944e55ed386048e30b785bf557b55937b046f0dfbb564feaa9677a66804b825c"
+    }
+  },
+  "gui": {
+    "reading-save-final": {
+      "checks": 27,
+      "result": "PASS",
+      "runtime": "reconstructed",
+      "source_commit": "c531c5cd4b007b11b45e20dd38385a2bd5aa1c20",
+      "client_sha256": "191f81c458654b8b8dcd0190c410cf5e5e01610421ba877c6a9233b1b9880eae",
+      "checks_file": {
+        "path": "artifacts/native-reading-20261018/reading-save-final/checks.json",
+        "sha256": "56825caaf691fba380d1f77d86bb30f1b8a1ee3c1e85ceea0752ce71e77e43a6"
+      },
+      "summary": {
+        "path": "artifacts/native-reading-20261018/reading-save-final/summary.json",
+        "sha256": "8a746440a144545b34950299084a3e871bb721146abb40ab3e8692938ef5b9d2"
+      },
+      "canonical_projection": {
+        "path": "artifacts/native-reading-20261018/reading-save-final/native.json",
+        "sha256": "5c503cad4bf8925c32025852d05e41d6c751c4edf8e1435ec3c81095f99af1ec"
+      },
+      "assertions": {
+        "actual_start_ready": true,
+        "inspection_discloses_unidentified_book_without_free_knowledge": true,
+        "unidentified_book_has_no_skill_summary": true,
+        "book_inspection_is_paused_and_does_not_start_actor": true,
+        "manual_pause_does_not_queue_read": true,
+        "unpause_does_not_replay_rejected_read": true,
+        "skim_is_actual_native_work": true,
+        "completed_native_skim_identifies_book": true,
+        "known_book_exposes_native_theory": true,
+        "native_study_choices_are_exposed": true,
+        "cancelled_study_creates_no_actor": true,
+        "known_chapter_uses_native_duration": true,
+        "I_freezes_native_chapter_and_time": true,
+        "interrupt_reading_keeps_book": true,
+        "native_resume_keeps_paid_chapter_progress": true,
+        "reconnect_retains_native_reading_without_replay": true,
+        "quit_will_preserve_partial_native_chapter": true,
+        "actual_runtime_survives_native_reading": true,
+        "byte_relay_completed_without_errors": true,
+        "reading_save_readable_by_independent_pinned_core": true,
+        "canonical_books_are_preserved_exactly_once": true,
+        "native_skim_knowledge_is_canonical": true,
+        "canonical_save_contains_native_read_actor": true,
+        "saved_progress_matches_frozen_trace": true,
+        "incomplete_chapter_does_not_grant_early_experience": true,
+        "canonical_position_unchanged": true,
+        "no_luanti_reading_persistence": true
+      }
+    },
+    "reading-resume": {
+      "checks": 13,
+      "result": "PASS",
+      "runtime": "reconstructed",
+      "source_commit": "c531c5cd4b007b11b45e20dd38385a2bd5aa1c20",
+      "client_sha256": "191f81c458654b8b8dcd0190c410cf5e5e01610421ba877c6a9233b1b9880eae",
+      "checks_file": {
+        "path": "artifacts/native-reading-20261018/reading-resume/checks.json",
+        "sha256": "51ba869f4d8e2d935ba4cef544ec6aacd816fb0409e1493981d402c6f399d7a9"
+      },
+      "summary": {
+        "path": "artifacts/native-reading-20261018/reading-resume/summary.json",
+        "sha256": "e06b8021d6166c7afc0aa9facc02a51d0d6e8146c6ca0fc998b584c64e607357"
+      },
+      "canonical_projection": {
+        "path": "artifacts/native-reading-20261018/reading-resume/native.json",
+        "sha256": "9a67935ca1687952e9add8ec591038f97c112da568b1134000e02a5d5f2a1c22"
+      },
+      "assertions": {
+        "actual_start_ready": true,
+        "canonical_loaded_actor_is_native_reading": true,
+        "inspection_freezes_loaded_native_reading": true,
+        "loaded_reading_completes_without_reissuing_read": true,
+        "book_remains_known_after_native_reload": true,
+        "byte_relay_completed_without_errors": true,
+        "reading_save_readable_by_independent_pinned_core": true,
+        "canonical_books_are_preserved_exactly_once": true,
+        "native_skim_knowledge_is_canonical": true,
+        "canonical_reading_actor_finishes": true,
+        "completed_native_chapter_grants_theoretical_experience": true,
+        "canonical_position_unchanged": true,
+        "no_luanti_reading_persistence": true
+      }
+    },
+    "equipment": {
+      "checks": 31,
+      "result": "PASS",
+      "runtime": "reconstructed",
+      "source_commit": "c531c5cd4b007b11b45e20dd38385a2bd5aa1c20",
+      "client_sha256": "191f81c458654b8b8dcd0190c410cf5e5e01610421ba877c6a9233b1b9880eae",
+      "checks_file": {
+        "path": "artifacts/native-reading-20261018/equipment/checks.json",
+        "sha256": "d8ec8fbb6cda7f3f30d531e8853b77dc0ed587d0eeb03db8853fb6bc30a3220b"
+      },
+      "summary": {
+        "path": "artifacts/native-reading-20261018/equipment/summary.json",
+        "sha256": "033e97b4d92d0f8691f61bacec5ae23ccb6019c3552da81f8c0547cf2e762533"
+      },
+      "canonical_projection": {
+        "path": "artifacts/native-reading-20261018/equipment/native.json",
+        "sha256": "74a464370b125fa6ed0829aca350e14a5da0eda9d7a3785714588084b259f5bd"
+      },
+      "assertions": {
+        "actual_start_ready": true,
+        "native_inventory_opened": true,
+        "live_inventory_search_filters_without_enter": true,
+        "live_inventory_search_preserves_middle_caret": true,
+        "live_inventory_search_neither_advances_nor_equips": true,
+        "inspection_opens_before_ack_2": true,
+        "garment_applied_atomically_2": true,
+        "native_debit_not_an_activity_2": true,
+        "inspection_freezes_time_and_debit_2": true,
+        "close_resumes_same_debit_and_panel_2": true,
+        "no_fractional_clothing_progress_bar_2": true,
+        "inspection_does_not_force_return_2": true,
+        "paid_state_still_has_expected_garment_2": true,
+        "native_wire_debit_monotonic_2": true,
+        "inspection_opens_before_ack_3": true,
+        "garment_applied_atomically_3": true,
+        "native_debit_not_an_activity_3": true,
+        "inspection_freezes_time_and_debit_3": true,
+        "close_resumes_same_debit_and_panel_3": true,
+        "no_fractional_clothing_progress_bar_3": true,
+        "inspection_does_not_force_return_3": true,
+        "paid_state_still_has_expected_garment_3": true,
+        "native_wire_debit_monotonic_3": true,
+        "next_equipment_action_uses_fresh_inventory": true,
+        "byte_relay_completed_without_errors": true,
+        "equipment_save_readable_by_pristine_native_core": true,
+        "canonical_save_has_each_fixture_item_once": true,
+        "canonical_save_records_expected_weapon": true,
+        "canonical_save_records_backpack_worn": true,
+        "canonical_clothing_change_not_rolled_back_by_inspection": true,
+        "canonical_clothing_operations_pay_native_time": true
+      }
+    },
+    "installed-reading-final": {
+      "checks": 13,
+      "result": "PASS",
+      "runtime": "installed start.sh",
+      "source_commit": "426e08f98f317455a63b556fc23099f953e9a78b",
+      "client_sha256": "dfb6e086597976b023332bbdb7188d65224062aeba11737f9b7f64f31cd8917c",
+      "checks_file": {
+        "path": "artifacts/native-reading-20261018/installed-reading-final/checks.json",
+        "sha256": "51ba869f4d8e2d935ba4cef544ec6aacd816fb0409e1493981d402c6f399d7a9"
+      },
+      "summary": {
+        "path": "artifacts/native-reading-20261018/installed-reading-final/summary.json",
+        "sha256": "ad40e57ff6de322962ce0d27ef37ad35095a97f20682cdd3b26b7ec6b9887459"
+      },
+      "canonical_projection": {
+        "path": "artifacts/native-reading-20261018/installed-reading-final/native.json",
+        "sha256": "aef99877d72a6914e9316fe0d044f08251dd210e0a7e2915ba2b1062d54cdfc4"
+      },
+      "assertions": {
+        "actual_start_ready": true,
+        "canonical_loaded_actor_is_native_reading": true,
+        "inspection_freezes_loaded_native_reading": true,
+        "loaded_reading_completes_without_reissuing_read": true,
+        "book_remains_known_after_native_reload": true,
+        "byte_relay_completed_without_errors": true,
+        "reading_save_readable_by_independent_pinned_core": true,
+        "canonical_books_are_preserved_exactly_once": true,
+        "native_skim_knowledge_is_canonical": true,
+        "canonical_reading_actor_finishes": true,
+        "completed_native_chapter_grants_theoretical_experience": true,
+        "canonical_position_unchanged": true,
+        "no_luanti_reading_persistence": true
+      }
+    }
+  },
+  "agent_visual_inspection": {
+    "final_active_reading": {
+      "path": "artifacts/native-reading-20261018/installed-reading-final/loaded-reading-progress.png",
+      "sha256": "4966e95fab8d76f0c1c015413d36b86bb5b7d7b7ed119894fa96c8e2ea7bcfd5"
+    },
+    "note": "Agent inspected actual renderer output, separate from human developer acceptance; an earlier mislabeled screenshot remains in installed-reading-resume/active-reading-observed.png"
+  },
+  "gui_checks": 84,
+  "install": {
+    "protocol": "2.25 (paired update)",
+    "components": {
+      "native": {
+        "target": "cdda/build/src/cdda-server",
+        "source": "artifacts/fnd03-session/workspace/cdda/build/src/cdda-server",
+        "before_sha256": "1900dfa16018f758935fbf7a9656b5082aa7abfb37f37a59297299089762c49f",
+        "backup": "artifacts/native-reading-20261018/native-previous-runtime",
+        "after_sha256": "340f044d8ab98a421980f8706bacc21100af15679053221bd1a041201254a266"
+      },
+      "client": {
+        "target": "luanti/bin/luanti",
+        "source": "artifacts/language-20261011/workspace/luanti/bin/luanti",
+        "before_sha256": "9ee37fccd1a28a3fa84ee20df1761ae12c60407f5c77d5e7f74d6b543cd49f19",
+        "backup": "artifacts/native-reading-20261018/client-previous-runtime",
+        "after_sha256": "dfb6e086597976b023332bbdb7188d65224062aeba11737f9b7f64f31cd8917c",
+        "intermediate_before_context_hint_sha256": "191f81c458654b8b8dcd0190c410cf5e5e01610421ba877c6a9233b1b9880eae",
+        "intermediate_backup": "artifacts/native-reading-20261018/client-before-context-hint"
+      }
+    },
+    "context_hint_fix": "Client-only presentation follow-up within paired CWM 2.25; native unchanged"
+  },
+  "initial_paired_install": {
+    "path": "artifacts/native-reading-20261018/install.json",
+    "sha256": "01c8700e3b2dd6729b005c8554c3469714b77222b779a1db011dd9f6f3abcf29"
+  },
+  "canonical_reader": {
+    "pristine_core_pin": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+    "source": {
+      "path": "tests/takeover_save_reader.cpp",
+      "sha256": "f7c89287a7d99c8712fc6e35d7ee4edf1d6d5335015cc6e10fd961e8bc9944e5"
+    },
+    "binary": {
+      "path": "artifacts/native-reading-20261018/native-save-reader",
+      "sha256": "8bff89f6ca3d3afc0cec9024c380969f1885a1844743270e9045f6a4c5e646f5"
+    },
+    "build_recipe": {
+      "path": "artifacts/native-reading-20261018/reader-build.json",
+      "sha256": "29d86a9313eca8e1cda31402fdd73da61f924074d9f26394a913c031ac6fa6e7"
+    },
+    "pristine_source_status": {
+      "path": "artifacts/native-reading-20261018/native-reader-source-status.log",
+      "sha256": "666fcada769ef710f5465d6f694a3cbba1df442676b5bf52196132e989c243a3"
+    },
+    "baseline": {
+      "path": "artifacts/native-reading-20261018/fixture/before.json",
+      "sha256": "e87759653b54cca3ec501031b162048cf61bfeb106ee3e71dfaa1c1aefd87515"
+    },
+    "method": "Test-only reader object linked to pinned pristine native core; native gameplay and serialization unmodified. --create-reading creates the isolated canonical scene; ordinary reader uses game::load and serializes a projection without processing reading."
+  },
+  "test_harnesses": [
+    {
+      "path": "tests/reading_gui_test.py",
+      "sha256": "5d6cd44c04d6649f33682ff3165520f97205843a126d25d02e747879e969d5db"
+    },
+    {
+      "path": "tests/equipment_gui_test.py",
+      "sha256": "e16998f407fe28e179ed9b696a25e369b4916b2ca0b6948ac1cf39aa3d1a7a25"
+    },
+    {
+      "path": "tests/product_language_test.py",
+      "sha256": "d226cfc75039c0b9176e121c1b529e8f27d6fb5543aefefb41f6bd952d58fe82"
+    },
+    {
+      "path": "tests/supervisor_test.py",
+      "sha256": "eda3b83fd7dce970b701b24531997a13144d52d8488ec8aef5874ee6f1ff229a"
+    }
+  ],
+  "manual": {
+    "pending": 28,
+    "open_fail": 0,
+    "new_reading_checks": 4,
+    "ledger": "docs/validation/pending-manual.md",
+    "origin": "Existing PASS entries were reported by the sole human developer; new reading behavior has not been personally validated. No automation inferred as human acceptance."
+  },
+  "remaining_gates": [
+    "Full SAVE-001 OPEN",
+    "Historical M5.5 FAILED",
+    "Special-use books, guidebook hints and e-readers deferred",
+    "Dedicated activity acceleration not introduced",
+    "Five historical opt-in melee failures not repaired"
+  ],
+  "investigation_artifacts": [
+    {
+      "path": "artifacts/native-reading-20261018/native-build.log",
+      "sha256": "0d011b2a6adcf4e05d60e987a28031d8271a28a645a0da39efee2f9cbd7a389e"
+    },
+    {
+      "path": "artifacts/native-reading-20261018/protocol-tests.log",
+      "sha256": "a24bbb25a07097f5c0513ee034d4c99dc2cc92c1ab455c12301402ed4e2b3e24"
+    },
+    {
+      "path": "artifacts/native-reading-20261018/reading-save.log",
+      "sha256": "a5f2548d38406c1ab0a366b39af6e569b494fc30461eb3259dbf636ee59ef201"
+    },
+    {
+      "path": "artifacts/native-reading-20261018/installed-reading-resume/active-reading-observed.png",
+      "sha256": "59e69a7f7247db1acbfc07ca31f9429004306960820f6a026ec3f471495bfa67"
+    }
+  ],
+  "resolved_investigation": [
+    "Initial exporter compilation accessed the private actor; replaced with public player_activity::get_progress_message before final build",
+    "Initial external transfer protocol fixture still carried six reasons; updated to seven. Initial reading-world test lacked a player; corrected fixture. Final 13 protocol tests pass",
+    "An actual installed-renderer screenshot exposed a remaining Consumption label during reading. Fixed the contextual hint, captured and rebuilt the client, then rechecked installed reading with a screenshot",
+    "Initial GUI expected at least 42000 chapter moves; the native character reads this magazine in 39900 moves. Final GUI compares the native BookInfo duration directly; no native time was changed"
+  ],
+  "commands": [
+    "python3 tools/takeover_baseline.py check",
+    "cmake --build artifacts/fnd03-session/workspace/cdda/build --target cdda-server cata_test -j3",
+    "./build/tests/cata_test '[cwm][reading]' --rng-seed 42 --user-dir=/home/dannhill/Projects/cdda-mineclonia/artifacts/native-reading-20261018/native-reading-unit # cwd: reconstructed cdda",
+    "./build/tests/cata_test '[cwm],[reading]~[.],[melee]~[.],[ranged]~[.]' --rng-seed 42 --user-dir=/home/dannhill/Projects/cdda-mineclonia/artifacts/native-reading-20261018/native-regression # cwd: reconstructed cdda",
+    "cmake --build artifacts/language-20261011/workspace/luanti/build --target luanti -j3",
+    "artifacts/language-20261011/workspace/luanti/bin/luanti --run-unittests --logfile artifacts/native-reading-20261018/client-unit-final-engine.log",
+    "python3 artifacts/language-20261011/workspace/tests/product_language_test.py",
+    "python3 tests/supervisor_test.py --project-root artifacts/language-20261011/workspace --launcher-build artifacts/catalog-feedback-20261018/launcher-build --coordinator-build artifacts/catalog-feedback-20261018/coordinator-build --artifacts artifacts/native-reading-20261018/launcher-tests",
+    "ctest --test-dir artifacts/language-20261011/workspace/build/protocol --output-on-failure",
+    "python3 artifacts/native-reading-20261018/run-gui.py reading_gui_test.py artifacts/native-reading-20261018/fixture/user reading-save-final --save-active",
+    "python3 artifacts/native-reading-20261018/run-gui.py reading_gui_test.py artifacts/native-reading-20261018/reading-save-final/user reading-resume --resume-only",
+    "python3 artifacts/native-reading-20261018/run-gui.py equipment_gui_test.py artifacts/native-equipment-20261008/fixture/user equipment --native-equipment-time --live-search",
+    "python3 artifacts/native-reading-20261018/install-pair.py",
+    "python3 artifacts/native-reading-20261018/install-client-hint.py",
+    "CWM_TEST_INSTALLED=1 python3 artifacts/native-reading-20261018/run-gui.py reading_gui_test.py artifacts/native-reading-20261018/reading-save-final/user installed-reading-final --resume-only",
+    "./reading-demo.sh --help; bash -n reading-demo.sh start.sh; python3 -m py_compile tests/reading_gui_test.py tools/launch_reading_demo.py"
+  ],
+  "local_helpers": {
+    "gui_runner": {
+      "path": "artifacts/native-reading-20261018/run-gui.py",
+      "sha256": "54b8c4b316a21584fc52f3cbcfe53d06d26522ce629de54278d39652e416d999"
+    },
+    "installer": {
+      "path": "artifacts/native-reading-20261018/install-pair.py",
+      "sha256": "83c893e39daa6ad750db6d4b43dd72370c21c89928a13f256e4cfaed521dfa40"
+    },
+    "context_hint_installer": {
+      "path": "artifacts/native-reading-20261018/install-client-hint.py",
+      "sha256": "00f208df2c2296f1bbf792dd862c54b2186d39f8119fa574608c54d564736a76"
+    }
+  }
+}
