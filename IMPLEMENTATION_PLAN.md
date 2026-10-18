@@ -23,7 +23,9 @@ Prima della lettura/smontaggio, correggere le regressioni emerse nei gate:
 categorie native erroneamente eseguibili, avviso sovrapposto, ricerca dinamica
 in K/I, selezione stabile al cambio lotto, puntamento del vano finestra e O
 di sola chiusura/tende. Rendere graduale la tinta di poca luce, senza cambiare
-il modello nativo. Verifica ricostruita e installazione precedono il push richiesto.
+il modello nativo. [Verifica ricostruita e installazione](docs/fixes/core-gates-crafting.md):
+100 casi nativi / 65.437 assert, 309 client, 12 protocollo e 253 controlli GUI/canonici
+PASS. I ricontrolli personali restano pendenti; segue il push richiesto.
 
 Il menu e la pausa di ispezione non sono persistiti nel save: il lavoro nativo
 si riprende al caricamento. Una futura ripresa inizialmente in pausa è una

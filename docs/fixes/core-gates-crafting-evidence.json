@@ -1,0 +1,540 @@
+{
+  "scope": "Human core gates and crafting/opening/low-light feedback; not full conformance",
+  "date": "2026-10-18",
+  "protocol": {
+    "tests": 12,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/catalog-feedback-20261018/protocol-tests-12.log",
+      "sha256": "1e88d44d16ab1db153f84251a9c6d5ca5d3ed1288017de3ff97b1da8a6515c64"
+    }
+  },
+  "verification_harness_commit": "9e850b101d2b3f2e708d3763161f66f14884ba44",
+  "environment": {
+    "platform": "Linux-7.0.11-76070011-generic-x86_64-with-glibc2.35",
+    "client": "Release / LTO / ENABLE_SOUND=ON",
+    "graphics": "Private Xvfb displays, Mesa software, 1280x800, 96 DPI",
+    "audio": "OpenAL null backend; audible comfort remains human PENDING",
+    "native_seed": 42
+  },
+  "source_trees": {
+    "cdda": {
+      "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+      "patch_sha256": "8c3edaf96868b72013f9d7b4c2b5fa84a531bf772a6a6619fb1c7355cf354cab",
+      "tree_sha256": "3ccfa3342bfb3041889571df05e85bf6bc9012916b09d1d3b5e177ed6f90b3d7"
+    },
+    "luanti": {
+      "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
+      "patch_sha256": "bc208e107e03e8f21dc9ef131dd919d268a3390c44ccc8b8e38e7c6cb6ceea66",
+      "tree_sha256": "84513ee55e3a488aac7de5f7c9ab460a0f5c1b05223a9a0436c6c031560f8956"
+    },
+    "mineclonia": {
+      "commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36"
+    }
+  },
+  "refresh_receipts": [
+    {
+      "path": "artifacts/catalog-feedback-20261018/native-refresh-fixture.json",
+      "sha256": "b575e9038ef326b165d5fbf177576ae45d052ba85425f3c4c2b03bcd77e16e53"
+    },
+    {
+      "path": "artifacts/catalog-feedback-20261018/client-refresh.json",
+      "sha256": "963a40dee61ce18eca0f55b3334cc9dad9832d70437bdf05177333eaf4e8113a"
+    }
+  ],
+  "builds": {
+    "native": {
+      "path": "artifacts/catalog-feedback-20261018/native-build-fixture.log",
+      "sha256": "7f3704a82c1a62253c10c5f471958cd95d859d8d7a2228d05821e6d3556dad4f"
+    },
+    "client": {
+      "path": "artifacts/catalog-feedback-20261018/client-build.log",
+      "sha256": "7fd46f14991b70b8c593ca98d0d22874eb544a49498fc799b3b931d6a6a97760"
+    },
+    "mode": "Incremental owned reconstructions; caches retained, not cold builds"
+  },
+  "install": {
+    "protocol": "2.24 (unchanged)",
+    "components": {
+      "native": {
+        "target": "cdda/build/src/cdda-server",
+        "source": "artifacts/fnd03-session/workspace/cdda/build/src/cdda-server",
+        "before_sha256": "f9506b075e1d452169112cd3d1767206c897b77cafe22df224c81cfc1706be42",
+        "backup": "artifacts/catalog-feedback-20261018/native-previous-runtime",
+        "after_sha256": "1900dfa16018f758935fbf7a9656b5082aa7abfb37f37a59297299089762c49f"
+      },
+      "client": {
+        "target": "luanti/bin/luanti",
+        "source": "artifacts/language-20261011/workspace/luanti/bin/luanti",
+        "before_sha256": "ba7d4a8932dbeff5bd4a37b83a9e9c26a36ad71c45f0fd876f6ee48128a789d9",
+        "backup": "artifacts/catalog-feedback-20261018/client-previous-runtime",
+        "after_sha256": "9ee37fccd1a28a3fa84ee20df1761ae12c60407f5c77d5e7f74d6b543cd49f19"
+      }
+    }
+  },
+  "native": {
+    "cases": 100,
+    "assertions": 65437,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/catalog-feedback-20261018/native-tests-final.log",
+      "sha256": "d8cc55114c42fa74b4cb177d3a32ef4772188e5d09745e855a7fed2f66d0466a"
+    },
+    "filter": "[cwm],[melee]~[.],[ranged]~[.]",
+    "exclusions": "Previously recorded five opt-in statistical melee failures remain out of scope and are not promoted."
+  },
+  "client": {
+    "cases": 309,
+    "modules": 47,
+    "catch_assertions": 648,
+    "catch_cases": 4,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/catalog-feedback-20261018/client-unit.log",
+      "sha256": "c674954689c427b9a3b36aa8bdc56ca17067a0055fc4807e7493160c304353fa"
+    }
+  },
+  "language": {
+    "tests": 9,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/catalog-feedback-20261018/language-tests.log",
+      "sha256": "c3dee326fb94d01588ffb563085969702f93a349854a3f0bcb19296940cf18a5"
+    }
+  },
+  "launcher": {
+    "checks": 6,
+    "result": "PASS",
+    "checks_file": {
+      "path": "artifacts/catalog-feedback-20261018/launcher-reconstructed/checks.json",
+      "sha256": "944e55ed386048e30b785bf557b55937b046f0dfbb564feaa9677a66804b825c"
+    }
+  },
+  "gui": {
+    "crafting-final": {
+      "checks": 52,
+      "result": "PASS",
+      "checks_file": {
+        "path": "artifacts/catalog-feedback-20261018/crafting-final/checks.json",
+        "sha256": "fbeba5634058d86916a919528585e170c5b1157606943b6bb4bc107ebedc2c57"
+      },
+      "assertions": {
+        "actual_start_ready": true,
+        "native_crafting_catalog_opened": true,
+        "navigation_categories_are_not_craftable_rows": true,
+        "live_partial_search_b": true,
+        "live_partial_search_ba": true,
+        "live_partial_search_ban": true,
+        "live_partial_search_band": true,
+        "live_edit_keeps_middle_caret": true,
+        "live_delete_restores_partial_results": true,
+        "live_search_does_not_advance_or_start_work": true,
+        "batch_refresh_rebinds_selected_recipe": true,
+        "batch_one_keeps_selected_recipe": true,
+        "catalog_pauses_native_time": true,
+        "native_filter_2": true,
+        "fresh_recent_has_no_synthetic_history": true,
+        "native_filter_1": true,
+        "fresh_favorites_has_no_implicit_selection": true,
+        "native_filter_0": true,
+        "favorite_free_keeps_time_work_and_menu_True": true,
+        "favorite_result_True": true,
+        "favorites_only_include_native_marked_recipes": true,
+        "favorite_free_keeps_time_work_and_menu_False": true,
+        "favorite_result_False": true,
+        "removing_last_favorite_yields_empty_view": true,
+        "favoriting_does_not_create_recent_work": true,
+        "native_requirements_duration_and_available_recipe": true,
+        "native_component_sources_exposed": true,
+        "native_confirmation_names_recipe_components_and_quantity": true,
+        "declined_confirm_has_no_craft_activity": true,
+        "declined_craft_never_enters_recent": true,
+        "first_native_craft_completes": true,
+        "started_craft_enters_native_recent_without_search": true,
+        "batch_query_updates_native_duration": true,
+        "native_craft_counter_is_not_meal_or_firstaid_timer": true,
+        "crafting_does_not_queue_held_movement": true,
+        "menu_freezes_native_craft_counter": true,
+        "interrupted_work_is_native_resumable_item": true,
+        "resume_badge_selects_without_starting_work": true,
+        "resumed_work_has_fresh_token": true,
+        "batch_native_craft_completes": true,
+        "manually_paused_start_is_not_queued": true,
+        "recovery_discards_old_recipe_selection": true,
+        "recovery_restores_available_recipe": true,
+        "actual_runtime_survives_native_crafting": true,
+        "byte_relay_completed_without_errors": true,
+        "crafting_save_readable_by_pristine_native_core": true,
+        "favorite_component_preserved_by_native_save": true,
+        "native_results_created_exactly_once": true,
+        "completed_work_removes_native_craft_item": true,
+        "canonical_crafting_save_has_no_luanti_inventory": true,
+        "native_uistate_persists_favorite_recipe": true,
+        "native_uistate_has_unique_native_recency": true
+      },
+      "runtime": "reconstructed",
+      "scope": "Actual native peer / renderer / independent canonical reader",
+      "summary.json": {
+        "path": "artifacts/catalog-feedback-20261018/crafting-final/summary.json",
+        "sha256": "75507300d7dd5b95c1246089be8e8b1a669feb74723f0432f0a0fbaf68c0e502"
+      },
+      "native.json": {
+        "path": "artifacts/catalog-feedback-20261018/crafting-final/native.json",
+        "sha256": "ec4a23fe9a4dfe05dcf428660ed24eba550d223688786643c85a43144e0c3e20"
+      }
+    },
+    "openings": {
+      "checks": 34,
+      "result": "PASS",
+      "checks_file": {
+        "path": "artifacts/catalog-feedback-20261018/openings/checks.json",
+        "sha256": "ec3d3badd3db6d646f9400096045ab9ce2eb43cb015c8485630fbcf3f6b9dfdf"
+      },
+      "assertions": {
+        "actual_start_ready": true,
+        "starts_native_walking_in_shallow_water": true,
+        "native_perceived_gauges_ingested": true,
+        "compact_icon_hud_is_rendered": true,
+        "Control_L_physical_hold_no_autorepeat": true,
+        "Control_L_release_restores_walk": true,
+        "Shift_L_physical_hold_no_autorepeat": true,
+        "Shift_L_release_restores_walk": true,
+        "crouch_priority_and_return_to_held_run": true,
+        "pointed_window_open_native_ack": true,
+        "plain_rmb_closes_authoritatively_open_window": true,
+        "delayed_modifier_reply_does_not_swallow_close": true,
+        "keyboard_close_hits_empty_upper_window_without_sill": true,
+        "close_only_key_never_reopens_closed_window": true,
+        "prone_wading_eye_above_surface": true,
+        "posture_changes_preserve_native_coordinates": true,
+        "presentation_clock_and_pickups_advance_when_active": true,
+        "H_freezes_native_time_water_and_pickups": true,
+        "S_does_not_change_sheet_selection": true,
+        "visual_clock_resumes_without_catchup": true,
+        "rendered_water_pixels_frozen_in_manual_pause": true,
+        "paused_controls_and_animation_remain_stopped": true,
+        "paused_controls_not_replayed": true,
+        "recovery_preserves_native_prone": true,
+        "prone_water_exit_has_small_visual_step": true,
+        "prone_water_entry_has_small_visual_step": true,
+        "small_water_dip_never_exposes_underside": true,
+        "actual_runtime_survives": true,
+        "byte_relay_completed_without_errors": true,
+        "save_readable_by_pristine_native_core": true,
+        "prone_is_canonical_native_save_field": true,
+        "pointed_window_closed_in_canonical_save": true,
+        "canonical_native_anchor_preserved": true,
+        "visual_sheet_does_not_pickup_or_attack": true
+      },
+      "runtime": "reconstructed",
+      "scope": "Actual native peer / renderer / independent canonical reader",
+      "summary.json": {
+        "path": "artifacts/catalog-feedback-20261018/openings/summary.json",
+        "sha256": "b34dfad3c9912b978af806d47656bda251b5de8d2a61fca8d67a9ccb2ae8f25f"
+      },
+      "native.json": {
+        "path": "artifacts/catalog-feedback-20261018/openings/native.json",
+        "sha256": "75ec00b778ba0011a7259210a699210d00eb0f6aa35e1da803b125581526fd9d"
+      }
+    },
+    "actors": {
+      "checks": 50,
+      "result": "PASS",
+      "checks_file": {
+        "path": "artifacts/catalog-feedback-20261018/actors/checks.json",
+        "sha256": "59e7c9ded48a8b5cbeac1d4d25994c2490a3220adb06e0707f2ba79a5a75521e"
+      },
+      "assertions": {
+        "diagnostics_default_off": true,
+        "rebindable_debug_action_enables_diagnostics": true,
+        "debug_action_disables_diagnostics_again": true,
+        "native_attack_cue_selects_actual_punch_frames": true,
+        "pause_freezes_native_attack_pose": true,
+        "native_damage_cue_tints_actual_skin": true,
+        "player_injury_has_explicit_native_cue": true,
+        "injury_tint_clears_without_changing_target": true,
+        "heard_sound_reaches_audio_manager": true,
+        "full_resync_does_not_replay_old_sound_identity": true,
+        "native_low_light_reaches_presentation": true,
+        "low_light_fades_in_over_real_time": true,
+        "stable_low_light_reaches_target": true,
+        "native_underwater_state_reaches_presentation": true,
+        "low_light_fades_out_instead_of_popping": true,
+        "actual_native_hand_resolves_first_person_texture": true,
+        "native_shot_drives_visual_kick": true,
+        "native_unwield_clears_first_person_object": true,
+        "canine_uses_real_pinned_mesh_and_skin": true,
+        "canine_cycles_on_authoritative_motion": true,
+        "spider_uses_real_pinned_mesh_and_skin": true,
+        "spider_cycles_on_authoritative_motion": true,
+        "bird_uses_real_pinned_mesh_and_skin": true,
+        "bird_cycles_on_authoritative_motion": true,
+        "real_zombie_and_npc_meshes_created": true,
+        "zombie_skin_does_not_cover_armour_geometry": true,
+        "npc_skin_and_empty_overlays_use_separate_materials": true,
+        "integrated_avatar_is_voxel_mesh": true,
+        "avatar_and_npc_use_humanoid_world_scale": true,
+        "idle_cycle_changes_actual_mesh_frame": true,
+        "pause_freezes_avatar_and_creature_frames": true,
+        "idle_cycle_obeys_authoritative_time_scale": true,
+        "motion_preserves_owned_nodes": true,
+        "perceived_motion_interpolates_confirmed_positions": true,
+        "confirmed_motion_uses_walk_cycle": true,
+        "walking_faces_confirmed_motion": true,
+        "origin_rebase_preserves_actor_scene_position": true,
+        "native_unperceived_state_hides_all_actor_nodes": true,
+        "reappearance_does_not_animate_unseen_path": true,
+        "visibility_toggle_reuses_single_mesh": true,
+        "archetype_change_replaces_mesh_without_orphan": true,
+        "kind_alias_is_rejected_before_scene_mutation": true,
+        "correlated_full_resync_restores_actor_roster": true,
+        "transport_loss_hides_creatures": true,
+        "same_session_reconnect_does_not_duplicate_meshes": true,
+        "new_session_discards_old_scene_nodes": true,
+        "despawn_removes_actual_irrlicht_nodes": true,
+        "returning_persistent_ids_create_one_mesh_each": true,
+        "graphical_client_clean_exit": true,
+        "controlled_peer_has_no_errors": true
+      },
+      "runtime": "reconstructed",
+      "scope": "Controlled CWM peer / actual renderer"
+    },
+    "equipment": {
+      "checks": 31,
+      "result": "PASS",
+      "checks_file": {
+        "path": "artifacts/catalog-feedback-20261018/equipment/checks.json",
+        "sha256": "d8ec8fbb6cda7f3f30d531e8853b77dc0ed587d0eeb03db8853fb6bc30a3220b"
+      },
+      "assertions": {
+        "actual_start_ready": true,
+        "native_inventory_opened": true,
+        "live_inventory_search_filters_without_enter": true,
+        "live_inventory_search_preserves_middle_caret": true,
+        "live_inventory_search_neither_advances_nor_equips": true,
+        "inspection_opens_before_ack_2": true,
+        "garment_applied_atomically_2": true,
+        "native_debit_not_an_activity_2": true,
+        "inspection_freezes_time_and_debit_2": true,
+        "close_resumes_same_debit_and_panel_2": true,
+        "no_fractional_clothing_progress_bar_2": true,
+        "inspection_does_not_force_return_2": true,
+        "paid_state_still_has_expected_garment_2": true,
+        "native_wire_debit_monotonic_2": true,
+        "inspection_opens_before_ack_3": true,
+        "garment_applied_atomically_3": true,
+        "native_debit_not_an_activity_3": true,
+        "inspection_freezes_time_and_debit_3": true,
+        "close_resumes_same_debit_and_panel_3": true,
+        "no_fractional_clothing_progress_bar_3": true,
+        "inspection_does_not_force_return_3": true,
+        "paid_state_still_has_expected_garment_3": true,
+        "native_wire_debit_monotonic_3": true,
+        "next_equipment_action_uses_fresh_inventory": true,
+        "byte_relay_completed_without_errors": true,
+        "equipment_save_readable_by_pristine_native_core": true,
+        "canonical_save_has_each_fixture_item_once": true,
+        "canonical_save_records_expected_weapon": true,
+        "canonical_save_records_backpack_worn": true,
+        "canonical_clothing_change_not_rolled_back_by_inspection": true,
+        "canonical_clothing_operations_pay_native_time": true
+      },
+      "runtime": "reconstructed",
+      "scope": "Actual native peer / renderer / independent canonical reader",
+      "summary.json": {
+        "path": "artifacts/catalog-feedback-20261018/equipment/summary.json",
+        "sha256": "211aef488b1a6018b4d520d6cada31322b5bc9f6121dfed94f79b0b3629d06f3"
+      },
+      "native.json": {
+        "path": "artifacts/catalog-feedback-20261018/equipment/native.json",
+        "sha256": "aaf47aa63549ee6861b855a383cc49952ec019278bed69cf7da4f6d18319eae4"
+      }
+    },
+    "installed-crafting": {
+      "checks": 52,
+      "result": "PASS",
+      "checks_file": {
+        "path": "artifacts/catalog-feedback-20261018/installed-crafting/checks.json",
+        "sha256": "fbeba5634058d86916a919528585e170c5b1157606943b6bb4bc107ebedc2c57"
+      },
+      "assertions": {
+        "actual_start_ready": true,
+        "native_crafting_catalog_opened": true,
+        "navigation_categories_are_not_craftable_rows": true,
+        "live_partial_search_b": true,
+        "live_partial_search_ba": true,
+        "live_partial_search_ban": true,
+        "live_partial_search_band": true,
+        "live_edit_keeps_middle_caret": true,
+        "live_delete_restores_partial_results": true,
+        "live_search_does_not_advance_or_start_work": true,
+        "batch_refresh_rebinds_selected_recipe": true,
+        "batch_one_keeps_selected_recipe": true,
+        "catalog_pauses_native_time": true,
+        "native_filter_2": true,
+        "fresh_recent_has_no_synthetic_history": true,
+        "native_filter_1": true,
+        "fresh_favorites_has_no_implicit_selection": true,
+        "native_filter_0": true,
+        "favorite_free_keeps_time_work_and_menu_True": true,
+        "favorite_result_True": true,
+        "favorites_only_include_native_marked_recipes": true,
+        "favorite_free_keeps_time_work_and_menu_False": true,
+        "favorite_result_False": true,
+        "removing_last_favorite_yields_empty_view": true,
+        "favoriting_does_not_create_recent_work": true,
+        "native_requirements_duration_and_available_recipe": true,
+        "native_component_sources_exposed": true,
+        "native_confirmation_names_recipe_components_and_quantity": true,
+        "declined_confirm_has_no_craft_activity": true,
+        "declined_craft_never_enters_recent": true,
+        "first_native_craft_completes": true,
+        "started_craft_enters_native_recent_without_search": true,
+        "batch_query_updates_native_duration": true,
+        "native_craft_counter_is_not_meal_or_firstaid_timer": true,
+        "crafting_does_not_queue_held_movement": true,
+        "menu_freezes_native_craft_counter": true,
+        "interrupted_work_is_native_resumable_item": true,
+        "resume_badge_selects_without_starting_work": true,
+        "resumed_work_has_fresh_token": true,
+        "batch_native_craft_completes": true,
+        "manually_paused_start_is_not_queued": true,
+        "recovery_discards_old_recipe_selection": true,
+        "recovery_restores_available_recipe": true,
+        "actual_runtime_survives_native_crafting": true,
+        "byte_relay_completed_without_errors": true,
+        "crafting_save_readable_by_pristine_native_core": true,
+        "favorite_component_preserved_by_native_save": true,
+        "native_results_created_exactly_once": true,
+        "completed_work_removes_native_craft_item": true,
+        "canonical_crafting_save_has_no_luanti_inventory": true,
+        "native_uistate_persists_favorite_recipe": true,
+        "native_uistate_has_unique_native_recency": true
+      },
+      "runtime": "installed start.sh",
+      "scope": "Actual native peer / renderer / independent canonical reader",
+      "summary.json": {
+        "path": "artifacts/catalog-feedback-20261018/installed-crafting/summary.json",
+        "sha256": "60e54a642d090df79b45dda69ec3f7139ab6c1497f916968c655b8c774505c6e"
+      },
+      "native.json": {
+        "path": "artifacts/catalog-feedback-20261018/installed-crafting/native.json",
+        "sha256": "28f096f0cdd17eb84986f942eee4acb77a35ab640ea6ca9d3a7c44dc4b480741"
+      }
+    },
+    "installed-openings": {
+      "checks": 34,
+      "result": "PASS",
+      "checks_file": {
+        "path": "artifacts/catalog-feedback-20261018/installed-openings/checks.json",
+        "sha256": "ec3d3badd3db6d646f9400096045ab9ce2eb43cb015c8485630fbcf3f6b9dfdf"
+      },
+      "assertions": {
+        "actual_start_ready": true,
+        "starts_native_walking_in_shallow_water": true,
+        "native_perceived_gauges_ingested": true,
+        "compact_icon_hud_is_rendered": true,
+        "Control_L_physical_hold_no_autorepeat": true,
+        "Control_L_release_restores_walk": true,
+        "Shift_L_physical_hold_no_autorepeat": true,
+        "Shift_L_release_restores_walk": true,
+        "crouch_priority_and_return_to_held_run": true,
+        "pointed_window_open_native_ack": true,
+        "plain_rmb_closes_authoritatively_open_window": true,
+        "delayed_modifier_reply_does_not_swallow_close": true,
+        "keyboard_close_hits_empty_upper_window_without_sill": true,
+        "close_only_key_never_reopens_closed_window": true,
+        "prone_wading_eye_above_surface": true,
+        "posture_changes_preserve_native_coordinates": true,
+        "presentation_clock_and_pickups_advance_when_active": true,
+        "H_freezes_native_time_water_and_pickups": true,
+        "S_does_not_change_sheet_selection": true,
+        "visual_clock_resumes_without_catchup": true,
+        "rendered_water_pixels_frozen_in_manual_pause": true,
+        "paused_controls_and_animation_remain_stopped": true,
+        "paused_controls_not_replayed": true,
+        "recovery_preserves_native_prone": true,
+        "prone_water_exit_has_small_visual_step": true,
+        "prone_water_entry_has_small_visual_step": true,
+        "small_water_dip_never_exposes_underside": true,
+        "actual_runtime_survives": true,
+        "byte_relay_completed_without_errors": true,
+        "save_readable_by_pristine_native_core": true,
+        "prone_is_canonical_native_save_field": true,
+        "pointed_window_closed_in_canonical_save": true,
+        "canonical_native_anchor_preserved": true,
+        "visual_sheet_does_not_pickup_or_attack": true
+      },
+      "runtime": "installed start.sh",
+      "scope": "Actual native peer / renderer / independent canonical reader",
+      "summary.json": {
+        "path": "artifacts/catalog-feedback-20261018/installed-openings/summary.json",
+        "sha256": "f1d343b24b16ba42170be9adaa6acbe9f09fdbea4e631c0a1ab2631dd2550a8c"
+      },
+      "native.json": {
+        "path": "artifacts/catalog-feedback-20261018/installed-openings/native.json",
+        "sha256": "247c679a557ccaeba228e4dce75f1ecd28b0ee0204c95de6750c977a3e8143da"
+      }
+    }
+  },
+  "manual": {
+    "source": "docs/source/manual-core-gates-2026-10-18.md",
+    "accepted": "T1-T7: explicit human PASS with collateral bugs retained",
+    "pending": 24,
+    "open_manual_failures": 0,
+    "new_pending_rechecks": 4,
+    "human_provenance": "HUMAN_TESTING.md",
+    "automatic_acceptance_inferred": false
+  },
+  "canonical_reader": {
+    "path": "artifacts/inventory-feedback-20261009/native-save-reader",
+    "sha256": "d65889a6cf0c36db31d493bba915a89bc7424d60f0ddb9800992fd0d4f39958a"
+  },
+  "test_harnesses": [
+    {
+      "path": "tests/crafting_gui_test.py",
+      "sha256": "4eab67db73195158ba63dcc6c841aa119f007650f55f47a3a66b1d67548bd8ef"
+    },
+    {
+      "path": "tests/controls_presentation_gui_test.py",
+      "sha256": "df1d68c363d998fd6a2ab0782b92d03b9ccca54f51766610c477265e69fa5ff1"
+    },
+    {
+      "path": "tests/equipment_gui_test.py",
+      "sha256": "e16998f407fe28e179ed9b696a25e369b4916b2ca0b6948ac1cf39aa3d1a7a25"
+    },
+    {
+      "path": "tests/actor_gui_test.py",
+      "sha256": "ab157dd05aae56ea3971628895c15939927b685cc6fb69cfd72542e622184c97"
+    }
+  ],
+  "commands": [
+    "python3 tools/takeover_baseline.py capture",
+    "python3 tools/refresh_verification_workspace.py --workspace artifacts/fnd03-session/workspace --receipt artifacts/catalog-feedback-20261018/native-refresh-fixture.json",
+    "python3 tools/refresh_verification_workspace.py --workspace artifacts/language-20261011/workspace --receipt artifacts/catalog-feedback-20261018/client-refresh.json",
+    "cmake --build artifacts/fnd03-session/workspace/cdda/build --target cdda-server cata_test -j3",
+    "cd artifacts/fnd03-session/workspace/cdda && ./build/tests/cata_test '[cwm],[melee]~[.],[ranged]~[.]' --rng-seed 42 --user-dir=<new-isolated-dir>",
+    "cmake --build artifacts/language-20261011/workspace/luanti/build --target luanti -j3",
+    "ALSOFT_DRIVERS=null <workspace>/luanti/bin/luanti --run-unittests --config <isolated-empty-config> --logfile <isolated-log>",
+    "cmake -S artifacts/language-20261011/workspace/protocol -B artifacts/language-20261011/workspace/build/protocol",
+    "cmake --build artifacts/language-20261011/workspace/build/protocol -j3",
+    "ctest --test-dir artifacts/language-20261011/workspace/build/protocol --output-on-failure",
+    "python3 artifacts/language-20261011/workspace/tests/product_language_test.py",
+    "python3 tests/supervisor_test.py --project-root artifacts/language-20261011/workspace --launcher-build artifacts/catalog-feedback-20261018/launcher-build --coordinator-build artifacts/catalog-feedback-20261018/coordinator-build --artifacts <new-output>",
+    "python3 artifacts/catalog-feedback-20261018/run-gui.py crafting_gui_test.py artifacts/native-crafting-20261008/fixture/user crafting-final --catalog-feedback --recipe-shortcuts",
+    "python3 artifacts/catalog-feedback-20261018/run-gui.py controls_presentation_gui_test.py artifacts/controls-hud-20261008/fixture-indoor/user openings --opening-feedback",
+    "python3 artifacts/catalog-feedback-20261018/run-gui.py actor_gui_test.py - actors --feedback",
+    "python3 artifacts/catalog-feedback-20261018/run-gui.py equipment_gui_test.py artifacts/native-equipment-20261008/fixture/user equipment --native-equipment-time --live-search",
+    "CWM_TEST_INSTALLED=1 python3 artifacts/catalog-feedback-20261018/run-gui.py crafting_gui_test.py artifacts/native-crafting-20261008/fixture/user installed-crafting --catalog-feedback --recipe-shortcuts",
+    "CWM_TEST_INSTALLED=1 python3 artifacts/catalog-feedback-20261018/run-gui.py controls_presentation_gui_test.py artifacts/controls-hud-20261008/fixture-indoor/user installed-openings --opening-feedback",
+    "python3 tools/takeover_baseline.py check"
+  ],
+  "remaining_gates": {
+    "SAVE-001": "OPEN",
+    "M5.5": "Historical FAILED"
+  },
+  "artifacts": "Local ignored artifacts/catalog-feedback-20261018; artifact binaries and isolated saves are not Git-tracked",
+  "gui_checks": 253
+}

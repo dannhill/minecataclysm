@@ -1,6 +1,32 @@
 # Implementation status
 
-Current scoped delivery: **ten consecutive core feedback slices**, CWM **2.24**,
+Current scoped delivery: **seven human core gates recorded; crafting and
+interaction feedback repaired**, CWM **2.24 unchanged**, installed in normal
+`start.sh` with paired rollback runtimes. Navigation categories cannot start
+phantom crafts. K/I search dynamically; K retains selection across batch changes
+and its limit warning no longer overlaps tabs. Empty window panes can be pointed
+at directly; O requests close/curtains without Shift. Low-light tint transitions
+gradually over wall time; CDDA's perception/roof lighting is unchanged. Menu pause
+is transient across quit/load; the saved native activity resumes.
+[Delivery](docs/fixes/core-gates-crafting.md),
+[evidence](docs/fixes/core-gates-crafting-evidence.json).
+
+Native **100 cases / 65,437 assertions PASS**, client **309 tests / 47 modules**
+plus 648 Catch assertions / 4 cases, protocol **12**, language **9**, reconstructed
+launcher aliases **6**. **253 actual renderer/canonical checks PASS**, including
+installed-runtime rechecks, are recorded in the receipt. Incremental reconstructed builds, not
+cold builds. Prior opt-in statistical melee failures remain recorded outside the
+active filter; full SAVE-001 OPEN and historical M5.5 FAILED. Mapping unchanged.
+
+**The sole human developer reported T1–T7 PASS**, with collateral bugs retained;
+the old clothing-pause FAIL is superseded. **24 PENDING, no open manual FAIL**,
+including four new rechecks, with no acceptance inferred for changed behavior.
+[Human feedback](docs/source/manual-core-gates-2026-10-18.md),
+[manual ledger](docs/validation/pending-manual.md),
+[public human-testing/LLM-authorship statement](HUMAN_TESTING.md).
+Next functional core slice: native reading, then disassembly/related item work.
+
+Previous scoped delivery: **ten consecutive core feedback slices**, CWM **2.24**,
 installed in ordinary `start.sh` with paired rollback runtimes. Native melee/fire
 and inflicted damage drive attack/reaction cues; the native hearing path supplies
 captions and provisional audio, with OpenAL enabled. The actual wielded object's
