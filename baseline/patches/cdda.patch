@@ -2864,7 +2864,7 @@ index 0000000..c273bf2
 +}
 diff --git a/src/cwm/cwm_map_exporter.cpp b/src/cwm/cwm_map_exporter.cpp
 new file mode 100644
-index 0000000..bcc8746
+index 0000000..5bac00b
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.cpp
 @@ -0,0 +1,724 @@
@@ -3501,7 +3501,7 @@ index 0000000..bcc8746
 +    if (activity_token && u.activity.id()==activity_id("ACT_READ") && u.activity.moves_total>0 && !u.activity.targets.empty()) {
 +        const auto& book=u.activity.targets.front();
 +        if(book && book->is_book()) {
-+            const auto progress=u.activity.actor ? remove_color_tags(u.activity.actor->get_progress_message(u.activity)) : "";
++            const auto progress=remove_color_tags(u.activity.get_progress_message(u).value_or(""));
 +            reading=CDDA::CWM::CreateReadingStateDirect(fbb,activity_token,u.activity.moves_total,
 +                std::clamp(u.activity.moves_left,0,u.activity.moves_total),remove_color_tags(book->tname()).substr(0,16384).c_str(),
 +                progress.substr(0,2048).c_str(),!u.has_identified(book->typeId()));
@@ -3804,10 +3804,10 @@ index 0000000..bb65c87
 +} // namespace cwm
 diff --git a/src/cwm/cwm_reading.h b/src/cwm/cwm_reading.h
 new file mode 100644
-index 0000000..684ea0e
+index 0000000..d077b2c
 --- /dev/null
 +++ b/src/cwm/cwm_reading.h
-@@ -0,0 +1,47 @@
+@@ -0,0 +1,52 @@
 +#pragma once
 +#include "avatar.h"
 +#include "item.h"
@@ -3827,11 +3827,15 @@ index 0000000..684ea0e
 +    if (book.type->has_use() || book.typeId() == itype_id("guidebook"))
 +        return ::cwm::tr("Special-use books need a dedicated interaction.", "Libri con uso speciale: serve un'interazione dedicata.");
 +    std::vector<std::string> reasons;
-+    if (!u.get_book_reader(book, reasons)) {
++    const auto* reader=u.get_book_reader(book,reasons);
++    if (!reader) {
 +        std::string text;
 +        for (const auto& reason : reasons) { if (!text.empty()) text += "\n"; text += remove_color_tags(reason); }
 +        return text.empty() ? ::cwm::tr("Reading is unavailable.", "Lettura non disponibile.") : text.substr(0,2048);
 +    }
++    const auto moves=to_moves<int64_t>(u.time_to_read(book,*reader));
++    if(moves<=0 || moves>INT_MAX)return ::cwm::tr("Reading duration is outside this interface's supported range.",
++        "Durata di lettura fuori dall'intervallo supportato.");
 +    return {};
 +}
 +inline flatbuffers::Offset<CDDA::CWM::BookInfo> export_book_info(
@@ -3842,7 +3846,8 @@ index 0000000..684ea0e
 +    if (!identified) summary=::cwm::tr("Skim first to discover the contents. No knowledge is granted by inspection.",
 +        "Sfoglia prima per scoprire il contenuto. Consultare non assegna conoscenze.");
 +    else if (const auto& skill=book.type->book->skill; !skill.is_null()) {
-+        summary=skill.obj().name()+" — "+::cwm::tr("theory ","teoria ")+std::to_string(u.get_knowledge_level(skill))+
++        summary=skill.obj().name()+" — "+::cwm::tr("theory ","teoria ")+std::to_string(u.get_knowledge_level(skill))+" ("+
++            std::to_string(u.get_skill_level_object(skill).knowledgeExperience())+"%)"+
 +            "; "+::cwm::tr("book levels ","livelli del libro ")+std::to_string(book.type->book->req)+
 +            "–"+std::to_string(book.type->book->level)+"\n"+
 +            ::cwm::tr("Read one chapter or study until a level; native conditions apply.",
