@@ -1,5 +1,5 @@
 diff --git a/builtin/mainmenu/settings/dlg_settings.lua b/builtin/mainmenu/settings/dlg_settings.lua
-index 57e5a13..499e52c 100644
+index 57e5a13..0826756 100644
 --- a/builtin/mainmenu/settings/dlg_settings.lua
 +++ b/builtin/mainmenu/settings/dlg_settings.lua
 @@ -129,7 +129,7 @@ local function load()
@@ -11,7 +11,7 @@ index 57e5a13..499e52c 100644
  			{ heading = fgettext_ne("General") },
  			"font_size",
  			"chat_font_size",
-@@ -179,70 +179,11 @@ local function load()
+@@ -179,71 +179,10 @@ local function load()
  		table.insert(content, idx, note)
  	end
  
@@ -79,14 +79,14 @@ index 57e5a13..499e52c 100644
 -		vi = "Tiếng Việt [vi]",
 -		zh_CN = "中文 (简体) [zh_CN]",
 -		zh_TW = "正體中文 (繁體) [zh_TW]",
+-	}
 +	-- One product selector drives both processes on the next supervised launch.
 +	-- Keep names readable regardless of the active language.
-+	get_setting_info("cwm_language").option_labels = {
-+		en = "English",
-+		it = "Italiano (WIP)",
- 	}
++	get_setting_info("cwm_language").option_labels = dofile(core.get_mainmenu_path() ..
++        DIR_DELIM .. "settings" .. DIR_DELIM .. "product_languages.lua")
  
  	get_setting_info("touch_controls").option_labels = {
+ 		["auto"] = fgettext_ne("Auto"),
 diff --git a/builtin/settingtypes.txt b/builtin/settingtypes.txt
 index 728eaf4..e2368c4 100644
 --- a/builtin/settingtypes.txt
@@ -318,20 +318,21 @@ index 16ceda4..20bd596 100644
  			float old_anim_speed = player->last_animation_speed;
  			m_velocity = v3f(0,0,0);
 diff --git a/src/client/game.cpp b/src/client/game.cpp
-index 27b5833..7b06949 100644
+index 27b5833..0b44f07 100644
 --- a/src/client/game.cpp
 +++ b/src/client/game.cpp
-@@ -8,6 +8,9 @@
+@@ -8,6 +8,10 @@
  #include "IAttributes.h"
  #include "client/renderingengine.h"
  #include "camera.h"
 +#include "cdda/cdda_bridge.h"
 +#include "cwm/product_language.hpp"
 +#include <functional>
++#include <iterator>
  #include "client.h"
  #include "client/clientevent.h"
  #include "client/gameui.h"
-@@ -118,6 +121,67 @@ struct TextDestPlayerInventory : public TextDest
+@@ -118,6 +122,67 @@ struct TextDestPlayerInventory : public TextDest
  	Client *m_client;
  };
  
@@ -393,26 +394,24 @@ index 27b5833..7b06949 100644
 +private:
 +    std::function<std::string()> m_build;
 +    mutable std::string m_notice, m_rendered;
-+    mutable ::cwm::ProductLanguage m_language{::cwm::ProductLanguage::English};
++    mutable std::string m_language;
 +};
 +
  struct LocalFormspecHandler : public TextDest
  {
  	LocalFormspecHandler(const std::string &formname)
-@@ -134,6 +198,12 @@ struct LocalFormspecHandler : public TextDest
+@@ -134,6 +199,10 @@ struct LocalFormspecHandler : public TextDest
  	void gotText(const StringMap &fields)
  	{
  		if (m_formname == "MT_PAUSE_MENU") {
-+			const auto language = fields.find("cwm_product_language");
-+            const std::string chosen_language = fields.count("cwm_language_en") ? "en" : fields.count("cwm_language_it") ? "it" :
-+                language != fields.end() && language->second == "1" ? "en" : language != fields.end() && language->second == "2" ? "it" : "";
-+			if (!chosen_language.empty()) {
-+				cdda_client::CddaBridge::getInstance().requestProductLanguage(chosen_language);
-+			}
++            for (const auto &language : ::cwm::product_languages())
++                if (fields.count(std::string("cwm_language_") + language.code))
++                    cdda_client::CddaBridge::getInstance().requestProductLanguage(language.code);
++
  			if (fields.find("btn_sound") != fields.end()) {
  				g_gamecallback->changeVolume();
  				return;
-@@ -443,12 +513,15 @@ class GameGlobalShaderConstantSetter : public IShaderConstantSetter
+@@ -443,12 +512,15 @@ class GameGlobalShaderConstantSetter : public IShaderConstantSetter
  		get_sunlight_color(&sunlight, daynight_ratio);
  		m_day_light.set(sunlight, services);
  
@@ -430,7 +429,7 @@ index 27b5833..7b06949 100644
  		m_animation_timer_delta_vertex.set(&animation_timer_delta_f, services);
  		m_animation_timer_delta_pixel.set(&animation_timer_delta_f, services);
  
-@@ -811,6 +884,7 @@ class Game {
+@@ -811,6 +883,7 @@ class Game {
  
  	void showDeathFormspecLegacy();
  	void showPauseMenu();
@@ -438,7 +437,7 @@ index 27b5833..7b06949 100644
  
  	void pauseAnimation();
  	void resumeAnimation();
-@@ -932,6 +1006,7 @@ class Game {
+@@ -932,6 +1005,7 @@ class Game {
  	bool m_first_loop_after_window_activation = false;
  	bool m_camera_offset_changed = false;
  	bool m_game_focused = false;
@@ -446,7 +445,7 @@ index 27b5833..7b06949 100644
  
  	bool m_does_lost_focus_pause_game = false;
  
-@@ -1009,6 +1084,8 @@ Game::Game() :
+@@ -1009,6 +1083,8 @@ Game::Game() :
  
  Game::~Game()
  {
@@ -455,7 +454,7 @@ index 27b5833..7b06949 100644
  	delete client;
  	delete soundmaker;
  	sound_manager.reset();
-@@ -1181,6 +1258,13 @@ void Game::run()
+@@ -1181,6 +1257,13 @@ void Game::run()
  		updateCamera(dtime);
  		updateSound(dtime);
  		processPlayerInteraction(dtime, m_game_ui->m_flags.show_hud);
@@ -469,7 +468,7 @@ index 27b5833..7b06949 100644
  		updateFrame(&graph, &stats, dtime, cam_view);
  		updateProfilerGraphs(&graph);
  
-@@ -1239,6 +1323,8 @@ void Game::shutdown()
+@@ -1239,6 +1322,8 @@ void Game::shutdown()
  		}
  	}
  
@@ -478,7 +477,7 @@ index 27b5833..7b06949 100644
  	delete client;
  	client = nullptr;
  	delete soundmaker;
-@@ -2046,14 +2132,38 @@ void Game::processUserInput(f32 dtime)
+@@ -2046,14 +2131,38 @@ void Game::processUserInput(f32 dtime)
  	if (m_cache_doubletap_jump && runData.jump_timer_down <= 0.4f)
  		runData.jump_timer_down += dtime;
  
@@ -520,7 +519,7 @@ index 27b5833..7b06949 100644
  		dropSelectedItem(isKeyDown(KeyType::SNEAK));
  	} else if (wasKeyDown(KeyType::AUTOFORWARD)) {
  		toggleAutoforward();
-@@ -2063,6 +2173,8 @@ void Game::processKeyInput()
+@@ -2063,6 +2172,8 @@ void Game::processKeyInput()
  	} else if (wasKeyDown(KeyType::INVENTORY)) {
  		openInventory();
  	} else if (input->cancelPressed()) {
@@ -529,7 +528,7 @@ index 27b5833..7b06949 100644
  #ifdef __ANDROID__
  		m_android_chat_open = false;
  #endif
-@@ -2083,7 +2195,8 @@ void Game::processKeyInput()
+@@ -2083,7 +2194,8 @@ void Game::processKeyInput()
  	} else if (wasKeyDown(KeyType::FREEMOVE)) {
  		toggleFreeMove();
  	} else if (wasKeyDown(KeyType::JUMP)) {
@@ -539,7 +538,7 @@ index 27b5833..7b06949 100644
  	} else if (wasKeyDown(KeyType::PITCHMOVE)) {
  		togglePitchMove();
  	} else if (wasKeyDown(KeyType::FASTMOVE)) {
-@@ -2137,12 +2250,13 @@ void Game::processKeyInput()
+@@ -2137,12 +2249,13 @@ void Game::processKeyInput()
  		toggleMinimap(isKeyDown(KeyType::SNEAK));
  	} else if (wasKeyPressed(KeyType::TOGGLE_CHAT)) {
  		m_game_ui->toggleChat(client);
@@ -555,7 +554,7 @@ index 27b5833..7b06949 100644
  	} else if (wasKeyPressed(KeyType::TOGGLE_PROFILER)) {
  		m_game_ui->toggleProfiler();
  	} else if (wasKeyDown(KeyType::INCREASE_VIEWING_RANGE)) {
-@@ -2154,9 +2268,17 @@ void Game::processKeyInput()
+@@ -2154,9 +2267,17 @@ void Game::processKeyInput()
  	} else if (wasKeyDown(KeyType::ZOOM)) {
  		checkZoomEnabled();
  	} else if (wasKeyDown(KeyType::QUICKTUNE_NEXT)) {
@@ -575,7 +574,7 @@ index 27b5833..7b06949 100644
  	} else if (wasKeyDown(KeyType::QUICKTUNE_INC)) {
  		quicktune->inc();
  	} else if (wasKeyDown(KeyType::QUICKTUNE_DEC)) {
-@@ -2178,6 +2300,22 @@ void Game::processItemSelection(u16 *new_playeritem)
+@@ -2178,6 +2299,22 @@ void Game::processItemSelection(u16 *new_playeritem)
  	LocalPlayer *player = client->getEnv().getLocalPlayer();
  
  	*new_playeritem = player->getWieldIndex();
@@ -598,7 +597,7 @@ index 27b5833..7b06949 100644
  	u16 max_item = player->getMaxHotbarItemcount();
  	if (max_item == 0)
  		return;
-@@ -2238,6 +2376,18 @@ void Game::dropSelectedItem(bool single_item)
+@@ -2238,6 +2375,18 @@ void Game::dropSelectedItem(bool single_item)
  
  void Game::openInventory()
  {
@@ -617,7 +616,7 @@ index 27b5833..7b06949 100644
  	/*
  	 * Don't permit to open inventory is CAO or player doesn't exists.
  	 * This prevent showing an empty inventory at player load
-@@ -2737,8 +2887,68 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
+@@ -2737,8 +2886,68 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
  		control.aux1 = control.aux1 ^ true;
  	}
  
@@ -686,7 +685,7 @@ index 27b5833..7b06949 100644
  	//tt.stop();
  }
  
-@@ -2784,6 +2994,73 @@ inline void Game::step(f32 dtime)
+@@ -2784,6 +2993,73 @@ inline void Game::step(f32 dtime)
  
  	if (!m_is_paused)
  		client->step(dtime);
@@ -760,7 +759,7 @@ index 27b5833..7b06949 100644
  }
  
  static void pauseNodeAnimation(PausedNodesList &paused, scene::ISceneNode *node) {
-@@ -3246,6 +3523,7 @@ void Game::updateCamera(f32 dtime)
+@@ -3246,6 +3522,7 @@ void Game::updateCamera(f32 dtime)
  	tool_reload_ratio = MYMIN(tool_reload_ratio, 1.0);
  	camera->update(player, dtime, tool_reload_ratio);
  	camera->step(dtime);
@@ -768,7 +767,7 @@ index 27b5833..7b06949 100644
  
  	f32 camera_fov = camera->getFovMax();
  	v3s16 camera_offset = camera->getOffset();
-@@ -3262,6 +3540,7 @@ void Game::updateCamera(f32 dtime)
+@@ -3262,6 +3539,7 @@ void Game::updateCamera(f32 dtime)
  		if (m_camera_offset_changed) {
  			client->updateCameraOffset(camera_offset);
  			client->getEnv().updateCameraOffset(camera_offset);
@@ -776,7 +775,7 @@ index 27b5833..7b06949 100644
  
  			if (clouds)
  				clouds->updateCameraOffset(camera_offset);
-@@ -3314,6 +3593,8 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
+@@ -3314,6 +3592,8 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
  
  	const ItemDefinition &selected_def = selected_item.getDefinition(itemdef_manager);
  	f32 d = getToolRange(selected_item, hand_item, itemdef_manager);
@@ -785,7 +784,7 @@ index 27b5833..7b06949 100644
  
  	core::line3d<f32> shootline;
  
-@@ -3365,6 +3646,52 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
+@@ -3365,6 +3645,52 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
  	// but the halo rendering code is already inefficient so there's no point in optimizing it here
  	hud->updateSelectionMesh(camera_offset);
  
@@ -838,7 +837,7 @@ index 27b5833..7b06949 100644
  	// Allow digging again if button is not pressed
  	if (runData.digging_blocked && !isKeyDown(KeyType::DIG))
  		runData.digging_blocked = false;
-@@ -4247,7 +4574,8 @@ void Game::updateClouds(float dtime)
+@@ -4247,7 +4573,8 @@ void Game::updateClouds(float dtime)
  {
  	if (this->sky->getCloudsVisible()) {
  		this->clouds->setVisible(true);
@@ -848,7 +847,7 @@ index 27b5833..7b06949 100644
  		// this->camera->getPosition is not enough for third-person camera.
  		v3f camera_node_position = this->camera->getCameraNode()->getPosition();
  		v3s16 camera_offset      = this->camera->getOffset();
-@@ -4319,7 +4647,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
+@@ -4319,7 +4646,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
  	/*
  		Fog
  	*/
@@ -862,7 +861,7 @@ index 27b5833..7b06949 100644
  		this->driver->setFog(
  				fog_color,
  				video::EFT_FOG_LINEAR,
-@@ -4470,7 +4803,7 @@ void Game::showDeathFormspecLegacy()
+@@ -4470,7 +4802,7 @@ void Game::showDeathFormspecLegacy()
  }
  
  #define GET_KEY_NAME(KEY) gettext(getKeySetting(#KEY).name())
@@ -871,17 +870,30 @@ index 27b5833..7b06949 100644
  {
  	std::string control_text;
  
-@@ -4518,6 +4851,9 @@ void Game::showPauseMenu()
+@@ -4518,6 +4850,22 @@ void Game::showPauseMenu()
  		<< strgettext("Exit to Menu") << "]";
  	os		<< "button_exit[4," << (ypos++) << ";3,0.5;btn_exit_os;"
  		<< strgettext("Exit to OS")   << "]";
-+	os << "label[7.5,0.65;" << ::cwm::tr("Language", "Lingua") << "]"
-+        << "button[7.5,1.15;3.0,0.6;cwm_language_en;English]"
-+        << "button[7.5,1.9;3.0,0.6;cwm_language_it;Italiano (WIP)]";
++    os << "label[7.5,0.65;" << ::cwm::tr("Language", "Lingua") << "]";
++    // A scrollable choice area keeps additional registered languages usable.
++    const bool scroll_languages = std::size(::cwm::product_languages()) > 2;
++    if (scroll_languages)
++        os << "scrollbaroptions[max=" << (std::size(::cwm::product_languages()) - 2) * 8
++           << ";thumbsize=12]scrollbar[10.65,1.15;0.2,1.5;vertical;cwm_languages;0]"
++           << "scroll_container[7.5,1.15;3.05,1.5;cwm_languages;vertical;0.1]";
++    float language_y = scroll_languages ? 0.f : 1.15f;
++    for (const auto &language : ::cwm::product_languages()) {
++        std::string label = std::string(language.name) + (language.incomplete ? " (WIP)" : "");
++        str_formspec_escape(label);
++        os << "button[" << (scroll_languages ? 0.f : 7.5f) << "," << language_y
++           << ";3.0,0.6;cwm_language_" << language.code << ";" << label << "]";
++        language_y += .75f;
++    }
++    if (scroll_languages) os << "scroll_container_end[]";
  	if (!control_text.empty()) {
  	os		<< "textarea[7.5,0.25;3.9,6.25;;" << control_text << ";]";
  	}
-@@ -4536,8 +4872,8 @@ void Game::showPauseMenu()
+@@ -4536,8 +4884,8 @@ void Game::showPauseMenu()
  	}
  	os << "\n";
  	if (simple_singleplayer_mode || address.empty()) {
@@ -892,7 +904,7 @@ index 27b5833..7b06949 100644
  		// Note: Status of enable_damage and creative_mode settings is intentionally
  		// NOT shown here because the game might roll its own damage system and/or do
  		// a per-player Creative Mode, in which case writing it here would mislead.
-@@ -4559,10 +4895,15 @@ void Game::showPauseMenu()
+@@ -4559,10 +4907,15 @@ void Game::showPauseMenu()
  	}
  	os << ";]";
  
@@ -1874,6 +1886,17 @@ index 7f3f860..142a710 100644
  ////////////////////////////////////////////////////////////////////////////////
  
  void TestMapBlock::testSaveLoad(IGameDef *gamedef, const u8 version)
+diff --git a/builtin/mainmenu/settings/product_languages.lua b/builtin/mainmenu/settings/product_languages.lua
+new file mode 100644
+index 0000000..29ecbdd
+--- /dev/null
++++ b/builtin/mainmenu/settings/product_languages.lua
+@@ -0,0 +1,5 @@
++-- Generated by tools/generate_product_languages.py; edit localization/ instead.
++return {
++    ["en"] = "English",
++    ["it"] = "Italiano (WIP)",
++}
 diff --git a/src/cdda/aim_input.h b/src/cdda/aim_input.h
 new file mode 100644
 index 0000000..ff43f9c
@@ -2048,10 +2071,10 @@ index 0000000..e1e7236
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..a12a838
+index 0000000..f7bb8a1
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,3252 @@
+@@ -0,0 +1,3254 @@
 +#include "cwm/product_language.hpp"
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
@@ -2149,7 +2172,7 @@ index 0000000..a12a838
 +
 +    void sync_language() {
 +        if (desired_language_.empty()) desired_language_ = g_settings->get("cwm_language");
-+        const std::string active = ::cwm::product_language_storage() == ::cwm::ProductLanguage::Italian ? "it" : "en";
++        const std::string active = ::cwm::product_language_storage();
 +        if (!session_.ready() || !player_ready_ || language_request_ || metrics_.pending_decision ||
 +            (language_connection_ == session_.identity.connection && desired_language_ == active)) return;
 +        auto builder = session_.builder();
@@ -3202,9 +3225,9 @@ index 0000000..a12a838
 +                const std::string code = reply->code()->str();
 +                if (reply->accepted()) {
 +                    ::cwm::set_product_language(code);
-+                    set_gettext_language(code);
++                    set_gettext_language(::cwm::product_language(code)->engine_locale);
 +                    g_settings->set("cwm_language", code);
-+                    g_settings->set("language", code);
++                    g_settings->set("language", ::cwm::product_language(code)->engine_locale);
 +                    if (!g_settings_path.empty()) g_settings->updateConfigFile(g_settings_path.c_str());
 +                    caption_seconds_ = 0; hover_hint_.clear();
 +                    equipment_notice_.clear(); crafting_notice_.clear();
@@ -3914,19 +3937,21 @@ index 0000000..a12a838
 +
 +void CddaBridge::requestProductLanguage(const std::string &code)
 +{
-+    if (!pimpl_ || (code != "en" && code != "it")) return;
++    if (!pimpl_ || !::cwm::product_language(code)) return;
 +    pimpl_->desired_language_ = code;
 +    pimpl_->language_error_.clear();
 +}
 +
 +std::string CddaBridge::productLanguageNotice() const
 +{
-+    const std::string active = ::cwm::product_language_storage() == ::cwm::ProductLanguage::Italian ? "it" : "en";
++    const std::string active = ::cwm::product_language_storage();
 +    const std::string selected = pimpl_ && !pimpl_->desired_language_.empty() ? pimpl_->desired_language_ : active;
 +    std::string notice = selected == active && (!pimpl_ || !pimpl_->language_request_) ?
 +        ::cwm::tr("Active: ", "Attiva: ") : ::cwm::tr("Applying: ", "Applicazione: ");
-+    notice += selected == "it" ? "Italiano (WIP)" : "English";
-+    if (selected == "it") notice += ::cwm::tr("\nTranslation incomplete.", "\nTraduzione incompleta.");
++    const auto *language = ::cwm::product_language(selected);
++    notice += language ? language->name : selected;
++    if (language && language->incomplete) notice += " (WIP)";
++    if (language && language->incomplete) notice += ::cwm::tr("\nTranslation incomplete.", "\nTraduzione incompleta.");
 +    if (pimpl_ && !pimpl_->language_error_.empty()) notice += "\n" + pimpl_->language_error_;
 +    return notice;
 +}

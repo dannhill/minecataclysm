@@ -5,7 +5,10 @@ import os
 from pathlib import Path
 import tempfile
 
-LANGUAGES = ("en", "it")
+from generate_product_languages import load_registry
+
+LANGUAGE_DEFINITIONS = load_registry(Path(__file__).resolve().parents[1] / "localization/languages.json")
+LANGUAGES = tuple(entry["code"] for entry in LANGUAGE_DEFINITIONS)
 
 
 def configured_language(path):
@@ -25,7 +28,7 @@ def configured_language(path):
 def resolve(config, preferences, requested=None):
     if requested is not None:
         if requested not in LANGUAGES:
-            raise ValueError("CDDA_LANGUAGE must be en or it (Italian WIP)")
+            raise ValueError("CDDA_LANGUAGE must be one of: " + ", ".join(LANGUAGES))
         return requested
     for path in (preferences, config):
         value = configured_language(path)
@@ -43,7 +46,7 @@ def save(config, preferences, initial):
     descriptor, temporary = tempfile.mkstemp(prefix=".presentation-language-", dir=preferences.parent)
     try:
         with os.fdopen(descriptor, "w", encoding="utf-8") as output:
-            output.write("# Presentation language preference. Italian is WIP.\n")
+            output.write("# Presentation language preference.\n")
             output.write(f"cwm_language = {value}\n")
             output.flush()
             os.fsync(output.fileno())
@@ -56,14 +59,17 @@ def save(config, preferences, initial):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("action", choices=("resolve", "save"))
+    parser.add_argument("action", choices=("resolve", "save", "engine"))
     parser.add_argument("--config", type=Path, required=True)
     parser.add_argument("--preferences", type=Path, required=True)
     parser.add_argument("--requested")
     parser.add_argument("--initial", choices=LANGUAGES)
     args = parser.parse_args()
     try:
-        if args.action == "resolve":
+        if args.action == "engine":
+            code = resolve(args.config, args.preferences, args.requested)
+            print(next(entry["engine_locale"] for entry in LANGUAGE_DEFINITIONS if entry["code"] == code))
+        elif args.action == "resolve":
             print(resolve(args.config, args.preferences, args.requested))
         else:
             if args.initial is None:

@@ -10,6 +10,22 @@ un panorama più ampio; nebbia, memoria distante e rilievo restano da scegliere.
 Lo [stato implementato](IMPLEMENTATION_STATUS.md) e le evidenze restano separati
 dagli obiettivi. La roadmap originale M0–M9 conserva i propri significati.
 
+## Cambio lingua a caldo — 2026-10-18
+
+L'utente accetta l'avviso precedente e chiede di eliminare il riavvio.
+[Direttiva](docs/source/live-language-feedback-2026-10-18.md). Il vincolo LANG-01
+è superato: selezione Esc con richiesta di presentazione correlata e conferma
+nativa, invalidazione dei traduttori CDDA/gettext, refresh del menu e dei testi
+esportati. Niente turno, ripetizione delle scelte, nuova attività o scrittura
+alle opzioni/save canonici. Le decisioni aperte mantengono il testo fino alla
+risposta. CWM2.26 richiede i due eseguibili abbinati. [Contratto corrente](docs/design/product-language.md).
+
+Il precedente ricontrollo della dicitura è PASS personale; due nuove prove
+LANG-02 rinviabili portano il backlog a **30 PENDING, nessun FAIL manuale aperto**.
+I precedenti 28 restano invariati. Non serve un gate personale oggi; la prossima
+fetta funzionale rimane lo smontaggio nativo. SAVE-001 OPEN e M5.5 FAILED invariati.
+I requisiti di riavvio nelle consegne storiche sotto descrivono quelle versioni.
+
 ## Lettura cartacea e studio nativo — 2026-10-18
 
 Prossimo passo funzionale eseguito senza un nuovo gate manuale: I permette di

@@ -1,5 +1,12 @@
 # Validazioni manuali del playable core
 
+Ultimo riscontro: **30 PENDING, nessun FAIL manuale aperto**. La conferma
+«ok funziona perfettamente» accetta l'avviso LANG-01 dopo `a0bbf43`: il suo
+ricontrollo non è più pendente. I precedenti 28 restano invariati; due nuove
+prove rinviabili LANG-02 riguardano il successivo cambio lingua a caldo.
+[Provenienza umana e nuova richiesta](../source/live-language-feedback-2026-10-18.md).
+Nessun PASS personale della nuova implementazione dedotto dall'automazione.
+
 Ultimo riscontro: **29 PENDING, nessun FAIL manuale aperto**. La conferma umana
 «ora la logica funziona» accetta il fix LANG-01.2; i precedenti 28 punti restano
 invariati. Un solo nuovo ricontrollo rinviabile riguarda la dicitura della lingua
@@ -957,7 +964,12 @@ hint del guidebook; il menu ne indica il limite. Nessun gate personale oggi.
    Leggi senza sovrapposizioni con Interrompi.
 
 
-## LANG-01 — Dicitura della lingua selezionata — PENDING (1), rinviabile
+## LANG-01 — Dicitura della lingua selezionata — PASS (1), 2026-10-18
+
+L’unico sviluppatore conferma «ok funziona perfettamente» dopo `a0bbf43`.
+[Provenienza](../source/live-language-feedback-2026-10-18.md). Il testo del test
+seguente documenta la versione accettata; il cambio a caldo successivo ha le
+proprie prove LANG-02 e non eredita questo PASS.
 
 1. Nel menu Esc, scegli English: compare **Prossimo avvio: English** se la
    sessione è italiana, oppure **Active: English** se è già inglese. La nota
@@ -966,3 +978,19 @@ hint del guidebook; il menu ne indica il limite. Nessun gate personale oggi.
    Torna a English senza chiudere il menu: la dicitura si aggiorna e il tempo
    rimane fermo. Il testo segue sempre la lingua della sessione fino al riavvio.
    Questo è solo un controllo di chiarezza; la logica è già accettata dall'utente.
+
+
+## LANG-02 — Cambio lingua senza riavvio — PENDING (2), rinviabile
+
+1. In `./start.sh`, Esc → Italiano, poi English, ripetendo anche rapidamente.
+   La partita e il menu restano aperti, il tempo fermo. Il menu Esc cambia
+   subito lingua e indica quella attiva; WIP/incompletezza compaiono solo per
+   Italiano. Chiudi Esc e controlla I/H/K: etichette e nomi nativi cambiano,
+   oggetti/equipaggiamento e icone restano corretti. Una successiva domanda
+   nativa usa la nuova lingua; annullare resta possibile senza eseguire l'azione.
+   Descrizioni non tradotte possono restare inglesi con Italiano WIP.
+2. Con un lavoro lungo in corso, apri Esc, cambia lingua e attendi: il lavoro
+   resta fermo. Riprendi e verifica che continui dallo stesso punto senza
+   duplicazioni o riavvii. Esci normalmente e rilancia: la lingua scelta è
+   conservata. Le domande native già aperte conservano il testo originale fino
+   alla risposta; non devono ripresentarsi o applicare effetti due volte.

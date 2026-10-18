@@ -2440,7 +2440,7 @@ index 0000000..d56deed
 +} // namespace cwm
 diff --git a/src/cwm/cwm_main.cpp b/src/cwm/cwm_main.cpp
 new file mode 100644
-index 0000000..c273bf2
+index 0000000..c5246cc
 --- /dev/null
 +++ b/src/cwm/cwm_main.cpp
 @@ -0,0 +1,418 @@
@@ -2631,7 +2631,7 @@ index 0000000..c273bf2
 +                      << "  --userdir <path>      User directory for savegames and config (default: ./user)\n"
 +                      << "  --datadir <path>      Data directory (default: auto-detected)\n"
 +                      << "  --character <id>      Select a decoded save ID (or a name with --new-character)\n"
-+                      << "  --language <en|it>    Product language (default: en; Italian is WIP)\n"
++                      << "  --language <code>    Product language (default: en; Italian is WIP)\n"
 +                      << "  --new-character       Explicitly create a character; existing saves are preserved\n"
 +                      << "  --continuous         Native tile+offset prototype at global 4x\n"
 +                      << "  --realtime           Enable the isolated real-time scheduler prototype\n"
@@ -2646,12 +2646,12 @@ index 0000000..c273bf2
 +    }
 +
 +    if (!cwm::set_product_language(language)) {
-+        std::cerr << "--language requires en or it\n";
++        std::cerr << "Unsupported product language: " << language << "\n";
 +        return 2;
 +    }
 +#ifndef LOCALIZE
-+    if (language == "it") {
-+        std::cerr << "Italian requires a runtime built with LOCALIZE=ON\n";
++    if (language != "en") {
++        std::cerr << "Translations require a runtime built with LOCALIZE=ON\n";
 +        return 2;
 +    }
 +#endif
@@ -2718,8 +2718,8 @@ index 0000000..c273bf2
 +    get_options().load();
 +    // Override only this process's presentation preference. Never rewrite the
 +    // player's existing options or infer language from the system locale.
-+    get_options().get_option("USE_LANG").setValue(language == "it" ? "it_IT" : "en");
-+    set_language(language == "it" ? "it_IT" : "en");
++    get_options().get_option("USE_LANG").setValue(cwm::product_language(language)->native_locale);
++    set_language(cwm::product_language(language)->native_locale);
 +    init_colors();
 +
 +    g = std::make_unique<game>();
@@ -3862,7 +3862,7 @@ index 0000000..d077b2c
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..d0e2aae
+index 0000000..ed9138b
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
 @@ -0,0 +1,1107 @@
@@ -4396,7 +4396,7 @@ index 0000000..d0e2aae
 +        // Native placement may store/drop an already-created craft without
 +        // starting ACT_CRAFT. Publish that canonical mutation even with zero work.
 +        ++world_revision_;
-+        result_ = Result{command.id, accepted, accepted ? "" : ::cwm::tr("No work started; check for unfinished crafts in K.", "Nessun lavoro avviato; controlla gli eventuali incompleti in K.")};
++        result_ = Result{command.id, accepted, accepted ? "" : !valid ? "Unsupported language code." : ::cwm::tr("No work started; check for unfinished crafts in K.", "Nessun lavoro avviato; controlla gli eventuali incompleti in K.")};
 +        return acted;
 +    } else if (command.transfer_action >= 0) {
 +        auto error = inventory_selection_.validate_transfer(u, command.inventory_view,
@@ -4419,7 +4419,7 @@ index 0000000..d0e2aae
 +            u.assign_activity(insert_item_activity_actor(destination, {{source, command.transfer_quantity}}, false));
 +        }
 +        const bool accepted = bool(u.activity);
-+        result_ = Result{command.id, accepted, accepted ? "" : ::cwm::tr("Native transfer did not start.", "Trasferimento nativo non avviato.")};
++        result_ = Result{command.id, accepted, accepted ? "" : !valid ? "Unsupported language code." : ::cwm::tr("Native transfer did not start.", "Trasferimento nativo non avviato.")};
 +        if (accepted) ++world_revision_;
 +        return accepted;
 +    } else if (command.equipment_action >= 0) {
@@ -4468,7 +4468,7 @@ index 0000000..d0e2aae
 +        }
 +        const bool acted = accepted || u.moves != before_moves;
 +        if (acted) ++world_revision_;
-+        result_ = Result{command.id, accepted, accepted ? "" : ::cwm::tr("Native action was cancelled or failed.", "Azione nativa annullata o non riuscita.")};
++        result_ = Result{command.id, accepted, accepted ? "" : !valid ? "Unsupported language code." : ::cwm::tr("Native action was cancelled or failed.", "Azione nativa annullata o non riuscita.")};
 +        return acted; // Native action debt/turns, never a Luanti inventory mutation.
 +    } else if (command.movement_mode >= 0) {
 +        if (!valid_mode(command.movement_mode) || (realtime_ && pause_reasons(g))) {
@@ -4612,20 +4612,20 @@ index 0000000..d0e2aae
 +        return; // Spatial authority waits for installed full state.
 +    if (const auto* request = msg->payload_as_LanguageRequest()) {
 +        const std::string code = request->code() ? request->code()->str() : "";
-+        const bool valid = request->request_id() && (code == "en" || code == "it");
++        const auto *language = ::cwm::product_language(code);
++        const bool valid = request->request_id() && language;
 +        const bool accepted = valid && !pending_decision_;
 +        // Never replay an open native question to obtain translated text:
 +        // entry effects and choices must execute exactly once.
-+        if (accepted && (code == "it") !=
-+            (::cwm::product_language_storage() == ::cwm::ProductLanguage::Italian)) {
-+            set_language(code == "it" ? "it_IT" : "en");
++        if (accepted && code != ::cwm::product_language_storage()) {
++            set_language(language->native_locale);
 +            ::cwm::set_product_language(code);
 +        }
 +        cdda::cwm::MessageBuilder reply(sequence_counter_, world_revision_, identity_);
 +        const auto bytes = reply.finish_message(Payload::LanguageState,
 +            CDDA::CWM::CreateLanguageStateDirect(reply.builder(), request->request_id(),
-+                ::cwm::product_language_storage() == ::cwm::ProductLanguage::Italian ? "it" : "en",
-+                accepted, accepted ? "" : ::cwm::tr(
++                ::cwm::product_language_storage().c_str(),
++                accepted, accepted ? "" : !valid ? "Unsupported language code." : ::cwm::tr(
 +                    "Finish the open decision before changing language.",
 +                    "Concludi la scelta aperta prima di cambiare lingua.")).Union());
 +        emit(bytes);
@@ -5453,7 +5453,7 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..5c4df18
+index 0000000..84193df
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
 @@ -0,0 +1,2204 @@
@@ -7643,15 +7643,15 @@ index 0000000..5c4df18
 +    set_language("en");::cwm::set_product_language("en");
 +    const auto english=cap.tname();
 +    cwm::CwmServerTestAccess::language(server,"it");
-+    CHECK(::cwm::product_language_storage()==::cwm::ProductLanguage::Italian);
++    CHECK(::cwm::product_language_storage()=="it");
 +    CHECK(cap.tname().find("cappello da baseball")!=std::string::npos);
 +    cwm::CwmServerTestAccess::language(server,"en",true);
-+    CHECK(::cwm::product_language_storage()==::cwm::ProductLanguage::Italian);
++    CHECK(::cwm::product_language_storage()=="it");
 +    cwm::CwmServerTestAccess::language(server,"fr");
-+    CHECK(::cwm::product_language_storage()==::cwm::ProductLanguage::Italian);
++    CHECK(::cwm::product_language_storage()=="it");
 +    cwm::CwmServerTestAccess::language(server,"en");
 +    CHECK(cap.tname()==english);
-+    CHECK(::cwm::product_language_storage()==::cwm::ProductLanguage::English);
++    CHECK(::cwm::product_language_storage()=="en");
 +    CHECK(calendar::turn==time);
 +    CHECK(u.moves==moves);
 +    CHECK(u.pos()==pos);

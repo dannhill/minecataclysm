@@ -1,6 +1,7 @@
 // Backend-independent session state and bounded at-most-once command ledger.
 #pragma once
 #include "cwm_protocol.hpp"
+#include "product_language.hpp"
 #include "cwm_transport.hpp"
 #include "tile_semantics.hpp"
 #include <algorithm>
@@ -392,7 +393,7 @@ public:
         if (ready() && msg.payload_type() == Payload::LanguageState) {
             const auto* value = msg.payload_as_LanguageState();
             if (!value || !value->request_id() || !value->code() ||
-                (value->code()->str() != "en" && value->code()->str() != "it") ||
+                !::cwm::product_language(value->code()->str()) ||
                 !value->error() || value->error()->size() > 2048 ||
                 value->error()->str().find('\0') != std::string::npos ||
                 value->accepted() == bool(value->error()->size())) {

@@ -8,7 +8,7 @@ are never translated or inferred from labels.
 ## Live change during play
 
 In `./start.sh`, Esc → English / Italiano changes the active session without
-restarting either process. The native CWM coordinator accepts an en/it presentation
+restarting either process. The native CWM coordinator accepts a registered-code presentation
 request on its owner thread, calls CDDA's `set_language` to invalidate translation
 caches, then acknowledges the active language and refreshes native projection
 labels. The client activates its shared translator and engine gettext only after
@@ -77,3 +77,17 @@ and verify isolated native saves with the independent pinned-core reader.
 Automated evidence is distinct from human acceptance; deferred personal checks
 remain in the manual ledger. Incremental reconstruction and scoped readback are
 not a cold build or full SAVE-001/M5.5 certification.
+
+## Adding languages
+
+The shared registry is [localization/languages.json](../../localization/languages.json).
+It owns code, endonym, native/engine locale mapping, catalog and WIP status.
+Integration catalogs are UTF-8 JSON maps from English message to translation;
+missing/empty entries fall back to English. Existing inline Italian pairs are a
+migration fallback, not an extra parameter required for new languages.
+`tools/generate_product_languages.py` generates C++ metadata/catalogs, main-menu
+labels and the setting's supported codes. Esc derives its scrollable choices
+from that registry. The launcher resolves the engine locale from metadata;
+CDDA uses the corresponding native locale. Adding a registry/catalog entry and
+building the corresponding upstream catalogs requires no new wire enum, language
+branch or protocol revision. See [translator instructions](../../localization/README.md).

@@ -1,0 +1,4 @@
+[
+  {"code":"en", "name":"English", "native_locale":"en", "engine_locale":"en", "incomplete":false, "catalog":"en.json"},
+  {"code":"it", "name":"Italiano", "native_locale":"it_IT", "engine_locale":"it", "incomplete":true, "catalog":"it.json"}
+]

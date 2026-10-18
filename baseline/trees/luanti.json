@@ -1152,7 +1152,7 @@
   {
     "path": "builtin/mainmenu/settings/dlg_settings.lua",
     "mode": "100644",
-    "sha256": "3271868b3ac3672dc448e0066db37e0ca4c49ac2957ceea6edbe7e7dd44ff4d7"
+    "sha256": "a772efe28410c16ce2b7663105c5f21a95c9008d1ce8a21b7373acc1470e0ecd"
   },
   {
     "path": "builtin/mainmenu/settings/generate_from_settingtypes.lua",
@@ -1163,6 +1163,11 @@
     "path": "builtin/mainmenu/settings/init.lua",
     "mode": "100644",
     "sha256": "96d5dd5a7680e0383ca46e504437cb11b7d060cbf411cca5504ff98c8fe4da85"
+  },
+  {
+    "path": "builtin/mainmenu/settings/product_languages.lua",
+    "mode": "100644",
+    "sha256": "bff0f5977df98ff39a936cf6cee64e4ba67c81f44fbcf7af9aac19c5140fe2f4"
   },
   {
     "path": "builtin/mainmenu/settings/settingtypes.lua",
@@ -7242,7 +7247,7 @@
   {
     "path": "src/cdda/cdda_bridge.cpp",
     "mode": "100644",
-    "sha256": "9330384376cc62a639e0f0f31b95331a4e2bf35d61a4b44621d87a533a46e976"
+    "sha256": "292e7197fc9877a2ccd7de438d922fc27588a27b1bb522222676e73cec366676"
   },
   {
     "path": "src/cdda/cdda_bridge.h",
@@ -7492,7 +7497,7 @@
   {
     "path": "src/client/game.cpp",
     "mode": "100644",
-    "sha256": "edf2078790146e0b814e7e3b248dcce8b0e27c9b6bf72134f85a05c013ee3f0e"
+    "sha256": "36cd9b2d70ed9a0bf89dc1f92a05957d0db3a81b196461d1dcf6a98ae919de99"
   },
   {
     "path": "src/client/game.h",

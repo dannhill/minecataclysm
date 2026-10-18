@@ -13,7 +13,7 @@ The historical coverage table below is retained as audit evidence.
 
 CWM 2.26 appends `LanguageRequest` (47) and `LanguageState` (48).
 Request IDs are presentation correlations, separate from gameplay command IDs.
-Only en/it are supported; the reply carries the active code and an explicit
+Supported codes come from the shared product-language registry; the reply carries the active code and an explicit
 accept/reject outcome. The client activates/persists a choice only after its
 matching reply. Switching refreshes the native translator and projection at the
 same world revision, without a turn or native options/save write. Native pending

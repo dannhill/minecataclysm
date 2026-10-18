@@ -17,6 +17,8 @@ LANGUAGE_ARGS=()
 if [[ -v CDDA_LANGUAGE ]]; then LANGUAGE_ARGS+=(--requested "$CDDA_LANGUAGE"); fi
 PRODUCT_LANGUAGE="$(python3 "$PROJECT_DIR/tools/product_language.py" resolve \
     --config "$BASE_CONFIG" --preferences "$LANGUAGE_PREFERENCES" "${LANGUAGE_ARGS[@]}")"
+ENGINE_LANGUAGE="$(python3 "$PROJECT_DIR/tools/product_language.py" engine \
+    --config "$BASE_CONFIG" --preferences "$LANGUAGE_PREFERENCES" --requested "$PRODUCT_LANGUAGE")"
 export CDDA_LOCALE_DIR="$PROJECT_DIR/cdda/lang/mo"
 
 for binary in "$CDDA_BIN" "$LUANTI_BIN"; do
@@ -67,7 +69,7 @@ if [[ "${CDDA_REALTIME:-0}" == 1 || "${CDDA_CONTINUOUS:-0}" == 1 ]]; then
     printf '\nkeymap_quicktune_next = KEY_F7\nkeymap_quicktune_prev = KEY_F8\n' >> "$CLIENT_CONFIG"
 fi
 printf '\nbind_address = 127.0.0.1\ncwm_socket_path = %s\n' "$SOCKET_PATH" >> "$CLIENT_CONFIG"
-printf '\ncwm_language = %s\nlanguage = %s\n' "$PRODUCT_LANGUAGE" "$PRODUCT_LANGUAGE" >> "$CLIENT_CONFIG"
+printf '\ncwm_language = %s\nlanguage = %s\n' "$PRODUCT_LANGUAGE" "$ENGINE_LANGUAGE" >> "$CLIENT_CONFIG"
 
 # This is a disposable presentation world. Existing user worlds are untouched.
 if [[ ! -f "$LUANTI_WORLD/world.mt" ]]; then
