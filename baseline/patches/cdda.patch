@@ -12,7 +12,7 @@ index 9e05119..e7e7b82 100644
      message(STATUS "Searching for Curses library --")
      set(CURSES_NEED_NCURSES TRUE)
 diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
-index 6d5d148..d3b5dd1 100644
+index 6d5d148..9b24839 100644
 --- a/src/CMakeLists.txt
 +++ b/src/CMakeLists.txt
 @@ -1,3 +1,4 @@
@@ -46,6 +46,24 @@ index 6d5d148..d3b5dd1 100644
              if (LIBBACKTRACE)
                  target_link_libraries(cataclysm-tiles-common PUBLIC backtrace)
              endif ()
+@@ -163,7 +164,7 @@ if (CURSES)
+     target_link_libraries(cataclysm PRIVATE cataclysm-common)
+ 
+     if (LOCALIZE)
+-        target_include_directories(cataclysm-common PUBLIC
++        target_include_directories(cataclysm-common SYSTEM PUBLIC
+                 ${LIBINTL_INCLUDE_DIR}
+                 ${ICONV_INCLUDE_DIR})
+         target_link_libraries(cataclysm-common PUBLIC
+@@ -171,7 +172,7 @@ if (CURSES)
+                 ${ICONV_LIBRARIES})
+     endif ()
+ 
+-    target_include_directories(cataclysm-common PUBLIC ${CURSES_INCLUDE_DIR} ${ZLIB_INCLUDE_DIRS})
++    target_include_directories(cataclysm-common SYSTEM PUBLIC ${CURSES_INCLUDE_DIR} ${ZLIB_INCLUDE_DIRS})
+     target_link_libraries(cataclysm-common PUBLIC ${CURSES_LIBRARIES} ${ZLIB_LIBRARIES})
+ 
+     if (CMAKE_USE_PTHREADS_INIT)
 @@ -184,14 +185,14 @@ if (CURSES)
  
      if (WIN32)
