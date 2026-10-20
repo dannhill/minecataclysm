@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 project(cwm_protocol CXX)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cwm.cmake)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -28,7 +29,7 @@ add_library(cwm_protocol INTERFACE)
 target_include_directories(cwm_protocol INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/include/cwm
-    /home/dannhill/.local/include
+    ${CWM_FLATBUFFERS_INCLUDE_DIR}
 )
 add_dependencies(cwm_protocol generate_cwm_headers)
 

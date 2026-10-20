@@ -126,19 +126,32 @@ index 728eaf4..e2368c4 100644
 +keymap_cdda_quick_use (CDDA selected quick slot: use or equip) key KEY_KEY_G
 +keymap_cdda_close (CDDA close the pointed opening or curtains) key KEY_KEY_O
 diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
-index 65e5ab6..a8494d2 100644
+index 65e5ab6..351c98a 100644
 --- a/src/CMakeLists.txt
 +++ b/src/CMakeLists.txt
-@@ -547,6 +547,9 @@ include_directories(
+@@ -1,3 +1,4 @@
++include("${CMAKE_CURRENT_SOURCE_DIR}/../../protocol/cwm.cmake")
+ project(luanti)
+ 
+ INCLUDE(CheckTypeSize)
+@@ -547,6 +548,9 @@ include_directories(
  	${PROJECT_BINARY_DIR}
  	${PROJECT_SOURCE_DIR}
  	${PROJECT_SOURCE_DIR}/script
 +	${PROJECT_SOURCE_DIR}/cdda
 +	${PROJECT_SOURCE_DIR}/../../protocol/include
-+	/home/dannhill/.local/include
++	${CWM_FLATBUFFERS_INCLUDE_DIR}
  )
  include_directories(SYSTEM
  	${ZLIB_INCLUDE_DIR}
+@@ -1108,3 +1112,7 @@ elseif (USE_GETTEXT)
+ 
+ 	add_custom_target(translations ALL COMMENT "mo update" DEPENDS ${MO_FILES})
+ endif()
++
++if(WIN32 AND BUILD_CLIENT)
++    target_link_libraries(${PROJECT_NAME} advapi32)
++endif()
 diff --git a/src/client/CMakeLists.txt b/src/client/CMakeLists.txt
 index d451d09..eb8db1d 100644
 --- a/src/client/CMakeLists.txt
@@ -1100,10 +1113,10 @@ index 7758c96..def39c0 100644
  	settings->setDefault("keymap_camera_mode", "KEY_KEY_C");
  	settings->setDefault("keymap_screenshot", "KEY_F12");
 diff --git a/src/gettext.cpp b/src/gettext.cpp
-index 59ce240..74e60a1 100644
+index 59ce240..fba1814 100644
 --- a/src/gettext.cpp
 +++ b/src/gettext.cpp
-@@ -225,3 +225,15 @@ void init_gettext(const char *path, const std::string &configured_language,
+@@ -225,3 +225,16 @@ void init_gettext(const char *path, const std::string &configured_language,
  	infostream << "Message locale is now set to: "
  			<< setlocale(LC_ALL, 0) << std::endl;
  }
@@ -1113,7 +1126,8 @@ index 59ce240..74e60a1 100644
 +#if USE_GETTEXT
 +    // GNU gettext caches LANGUAGE until LC_MESSAGES changes. Invalidate that
 +    // cache on the UI thread, preserving numeric parsing and all other locales.
-+    const std::string previous = setlocale(LC_MESSAGES, nullptr);
++    const char *current = setlocale(LC_MESSAGES, nullptr);
++    const std::string previous = current ? current : "C";
 +    setenv("LANGUAGE", language.c_str(), 1);
 +    setlocale(LC_MESSAGES, "C");
 +    setlocale(LC_MESSAGES, previous == "C" || previous == "POSIX" ? "C.UTF-8" : previous.c_str());

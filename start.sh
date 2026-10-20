@@ -84,7 +84,7 @@ WORLD
 fi
 
 printf '[Launcher] Starting CDDA; logs: %s\n' "$LOG_DIR"
-printf '[Launcher] Product language: %s (Italian is WIP; menu changes apply after restart).\n' "$PRODUCT_LANGUAGE"
+printf '[Launcher] Product language: %s (menu changes apply immediately).\n' "$PRODUCT_LANGUAGE"
 cd -- "$PROJECT_DIR"
 SERVER_ARGS=(--language "$PRODUCT_LANGUAGE")
 if [[ -n "$CDDA_CHARACTER" ]]; then SERVER_ARGS+=(--character "$CDDA_CHARACTER"); fi
