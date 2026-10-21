@@ -63,7 +63,10 @@ def main():
         folder=licenses/component;folder.mkdir()
         for name in files:shutil.copy2(ws/component/name,folder/name)
     shutil.copy2(ws/'HUMAN_TESTING.md',licenses/'HUMAN_TESTING.md')
+    shutil.copy2(ws/'docs/validation/pending-manual.md',licenses/'manual-validation.md')
     shutil.copy2(deps/'toolchain/LICENSE.TXT',licenses/'LLVM-MinGW-LICENSE.txt')
+    mingw=licenses/'MinGW';mingw.mkdir()
+    for file in (deps/'toolchain/x86_64-w64-mingw32/share/mingw32').glob('COPYING*'):shutil.copy2(file,mingw/file.name)
     for name in ('dependencies-verified.json','license-sources.json'):
         shutil.copy2(builds/name,licenses/name)
     # Include complete corresponding application sources, with captured fork
