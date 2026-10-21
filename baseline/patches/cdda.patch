@@ -12,7 +12,7 @@ index 9e05119..e7e7b82 100644
      message(STATUS "Searching for Curses library --")
      set(CURSES_NEED_NCURSES TRUE)
 diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
-index 6d5d148..9b24839 100644
+index 6d5d148..19c15f4 100644
 --- a/src/CMakeLists.txt
 +++ b/src/CMakeLists.txt
 @@ -1,3 +1,4 @@
@@ -86,7 +86,7 @@ index 6d5d148..9b24839 100644
          endif ()
      elseif (APPLE)
          target_link_libraries(cataclysm-common PUBLIC "-framework CoreFoundation")
-@@ -204,6 +205,32 @@ if (CURSES)
+@@ -204,6 +205,31 @@ if (CURSES)
      if (RELEASE)
          install(TARGETS cataclysm RUNTIME)
      endif ()
@@ -113,8 +113,7 @@ index 6d5d148..9b24839 100644
 +    if(WIN32)
 +        target_link_libraries(cdda-server PRIVATE advapi32 shell32)
 +        if(MINGW)
-+            target_link_options(cdda-server PRIVATE -municode)
-+        endif()
++                endif()
 +    endif()
  endif ()
  
@@ -2543,10 +2542,10 @@ index 0000000..d56deed
 +} // namespace cwm
 diff --git a/src/cwm/cwm_main.cpp b/src/cwm/cwm_main.cpp
 new file mode 100644
-index 0000000..6e3363b
+index 0000000..12d6fbf
 --- /dev/null
 +++ b/src/cwm/cwm_main.cpp
-@@ -0,0 +1,466 @@
+@@ -0,0 +1,467 @@
 +// CDDA Headless CWM Server Entrypoint
 +// Licensed under Apache-2.0
 +
@@ -2693,7 +2692,25 @@ index 0000000..6e3363b
 +    std::cout << "[CDDA-Server] Terrain comparison ready: plaza 60,60; NW forest, NE field, SW street, SE shore.\n";
 +}
 +
-+static int cwm_main(int argc, const char* argv[]) {
++int main(int argc, const char* argv[]) {
++#ifdef _WIN32
++    // Preserve the native main friend boundary while reading Windows Unicode
++    // arguments directly; the CRT narrow argv can use a legacy code page.
++    int wide_argc = 0;
++    LPWSTR *wide_argv = CommandLineToArgvW(GetCommandLineW(), &wide_argc);
++    if (!wide_argv) return 2;
++    std::vector<std::string> values;
++    for (int i=0; i<wide_argc; ++i) {
++        const int size=WideCharToMultiByte(CP_UTF8,0,wide_argv[i],-1,nullptr,0,nullptr,nullptr);
++        std::string value(size, '\0');
++        WideCharToMultiByte(CP_UTF8,0,wide_argv[i],-1,value.data(),size,nullptr,nullptr);
++        value.pop_back(); values.push_back(std::move(value));
++    }
++    LocalFree(wide_argv);
++    std::vector<const char*> args; for (const auto &value:values) args.push_back(value.c_str()); args.push_back(nullptr);
++    argc=wide_argc; argv=args.data();
++    struct StopEventGuard { ~StopEventGuard() { if(cwm_stop_event) CloseHandle(cwm_stop_event); } } stop_guard;
++#endif
 +    std::string socket_path;
 +    std::string world_name = "cwm_world";
 +    std::string user_dir = "./user";
@@ -2996,23 +3013,6 @@ index 0000000..6e3363b
 +    return saved ? 0 : 1;
 +}
 +
-+#ifdef _WIN32
-+int wmain(int argc, wchar_t **wide_argv) {
-+    std::vector<std::string> values;
-+    for (int i=0; i<argc; ++i) {
-+        const int size=WideCharToMultiByte(CP_UTF8,0,wide_argv[i],-1,nullptr,0,nullptr,nullptr);
-+        std::string value(size,'\0');
-+        WideCharToMultiByte(CP_UTF8,0,wide_argv[i],-1,value.data(),size,nullptr,nullptr);
-+        value.pop_back(); values.push_back(std::move(value));
-+    }
-+    std::vector<const char*> args; for (const auto &value:values) args.push_back(value.c_str()); args.push_back(nullptr);
-+    const int result=cwm_main(argc,args.data());
-+    if(cwm_stop_event)CloseHandle(cwm_stop_event);
-+    return result;
-+}
-+#else
-+int main(int argc, const char **argv) { return cwm_main(argc,argv); }
-+#endif
 diff --git a/src/cwm/cwm_map_exporter.cpp b/src/cwm/cwm_map_exporter.cpp
 new file mode 100644
 index 0000000..5bac00b
