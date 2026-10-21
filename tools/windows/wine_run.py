@@ -12,11 +12,11 @@ def main():
   os.close(w)
   with os.fdopen(r) as ready:number=ready.readline().strip()
   if not number:raise RuntimeError('Private X display did not start')
-  env=dict(os.environ,DISPLAY=':'+number,WINEPREFIX=str(a.prefix.resolve()),WINEARCH='win64',WINEDEBUG='-all',WINEDLLOVERRIDES='mscoree,mshtml,winemenubuilder.exe,winegstreamer=',LIBGL_ALWAYS_SOFTWARE='1',ALSOFT_DRIVERS='null');env.pop('XAUTHORITY',None);env.pop('WAYLAND_DISPLAY',None);env['XDG_SESSION_TYPE']='x11'
+  env=dict(os.environ,DISPLAY=':'+number,WINEPREFIX=str(a.prefix.resolve()),WINEARCH='win64',WINEDEBUG=os.environ.get('CWM_WINE_DEBUG','-all'),WINEDLLOVERRIDES='mscoree,mshtml,winemenubuilder.exe,winegstreamer,winevulkan,wined3d,dxgi,d3d11=',ALSOFT_DRIVERS='null');env.pop('XAUTHORITY',None);env.pop('WAYLAND_DISPLAY',None);env.pop('LD_LIBRARY_PATH',None);env['XDG_SESSION_TYPE']='x11';env['__GLX_VENDOR_LIBRARY_NAME']='mesa'
   try:
    with a.log.open('w') as log:result=subprocess.run(a.command,env=env,stdout=log,stderr=subprocess.STDOUT,timeout=a.timeout)
   finally:
-   subprocess.run(['wineserver','-k'],env=env,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,timeout=10)
+   subprocess.run([env.get('WINESERVER','wineserver'),'-k'],env=env,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,timeout=10)
    display.terminate();display.wait(timeout=10)
  return result.returncode
 if __name__=='__main__':raise SystemExit(main())

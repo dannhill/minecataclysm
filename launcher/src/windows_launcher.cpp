@@ -61,7 +61,7 @@ struct Handle {
     ~Handle(){if(value && value!=INVALID_HANDLE_VALUE)CloseHandle(value);}
     Handle(const Handle&)=delete;Handle&operator=(const Handle&)=delete;
 };
-struct Process {Handle process;DWORD id{0};};
+struct Process {Handle process;DWORD thread_id{0};};
 static void spawn(Process &child,const fs::path &exe,const std::vector<std::wstring> &args,const fs::path &cwd,const fs::path &log,HANDLE job) {
     SECURITY_ATTRIBUTES sa{sizeof(sa),nullptr,TRUE};
     Handle output(CreateFileW(log.c_str(),GENERIC_WRITE,FILE_SHARE_READ|FILE_SHARE_WRITE,&sa,CREATE_ALWAYS,FILE_ATTRIBUTE_NORMAL,nullptr));
@@ -72,7 +72,7 @@ static void spawn(Process &child,const fs::path &exe,const std::vector<std::wstr
     PROCESS_INFORMATION pi{};
     if(!CreateProcessW(exe.c_str(),command.data(),nullptr,nullptr,TRUE,CREATE_NO_WINDOW|CREATE_SUSPENDED,nullptr,cwd.c_str(),&si,&pi))
         throw std::runtime_error("Cannot start a bundled game component (Windows error "+std::to_string(GetLastError())+").");
-    child.process.value=pi.hProcess;child.id=pi.dwProcessId;Handle thread(pi.hThread);
+    child.process.value=pi.hProcess;child.thread_id=pi.dwThreadId;Handle thread(pi.hThread);
     if(!AssignProcessToJobObject(job,pi.hProcess)){TerminateProcess(pi.hProcess,1);throw std::runtime_error("Cannot supervise the game processes.");}
     ResumeThread(pi.hThread);
 }
@@ -142,7 +142,7 @@ int WINAPI wWinMain(HINSTANCE instance,HINSTANCE,LPWSTR,int) {
             if(!alive(server.process.value)){
                 // Death is a native successful shutdown. A native failure must
                 // be surfaced instead of silently leaving a frozen client.
-                if(exit_code(server.process.value)==0){PostThreadMessageW(client.id,WM_QUIT,0,0);Sleep(250);if(alive(client.process.value))TerminateProcess(client.process.value,0);break;}
+                if(exit_code(server.process.value)==0){PostThreadMessageW(client.thread_id,WM_QUIT,0,0);Sleep(250);if(alive(client.process.value))TerminateProcess(client.process.value,0);break;}
                 throw std::runtime_error("The simulation stopped unexpectedly. See the game logs.");
             }Sleep(50);
         }

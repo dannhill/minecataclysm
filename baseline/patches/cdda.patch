@@ -970,6 +970,19 @@ index 6ebdaa7..28a8694 100644
  void handle_key_blocking_activity();
  
  #endif // CATA_SRC_DO_TURN_H
+diff --git a/src/filesystem.cpp b/src/filesystem.cpp
+index 166a0d4..5c6e3de 100644
+--- a/src/filesystem.cpp
++++ b/src/filesystem.cpp
+@@ -595,7 +595,7 @@ bool is_lexically_valid( const fs::path &path )
+     fs::path rel = path.relative_path();
+     // "Do not end a file or directory name with a space or a period."
+     // https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file#naming-conventions
+-    for( auto &it : rel ) {
++    for( const auto &it : rel ) {
+         std::string item = it.generic_u8string();
+         if( item == "." || item == ".." ) {
+             continue;
 diff --git a/src/game.cpp b/src/game.cpp
 index 195bc1e..98967f0 100644
 --- a/src/game.cpp

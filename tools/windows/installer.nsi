@@ -10,6 +10,7 @@ Name "Minecataclysm"
 OutFile "${OUTPUT_EXE}"
 InstallDir "$LOCALAPPDATA\Programs\Minecataclysm"
 RequestExecutionLevel user
+AutoCloseWindow true
 SetCompressor /SOLID lzma
 ShowInstDetails nevershow
 ShowUninstDetails nevershow

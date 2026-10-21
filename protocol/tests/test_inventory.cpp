@@ -26,6 +26,18 @@ int main() {
     const auto english = english_wire.build_equipment_request(99,8,2,EquipmentAction::TAKEOFF);
     CHECK(::cwm::set_product_language("it"));
     CHECK(::cwm::wide("Quantity", "Quantità") == L"Quantità");
+    const auto supplementary = ::cwm::wide("🌍");
+    CHECK(supplementary.size() == (sizeof(wchar_t) == 2 ? 2 : 1));
+    if (sizeof(wchar_t) == 2) { CHECK(supplementary[0] == 0xd83c && supplementary[1] == 0xdf0d); }
+    else CHECK(supplementary[0] == 0x1f30d);
+    const auto bytes = [](std::initializer_list<unsigned> values) {
+        std::string out; for (const auto value : values) out += static_cast<char>(value); return out;
+    };
+    for (const auto &bad : {bytes({0xc0,0x80}), bytes({0xed,0xa0,0x80}), bytes({0xf4,0x90,0x80,0x80}), bytes({0xe2,0x82}), bytes({0x80})}) {
+        bool rejected = false;
+        try { ::cwm::wide(bad.c_str()); } catch (const std::range_error &) { rejected = true; }
+        CHECK(rejected);
+    }
     CHECK(::cwm::text("Fallback") == "Fallback");
     CHECK(::cwm::text("Fallback", "") == "Fallback");
     CHECK(!::cwm::set_product_language("fr"));
