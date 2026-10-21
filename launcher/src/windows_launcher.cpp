@@ -113,7 +113,7 @@ int WINAPI wWinMain(HINSTANCE instance,HINSTANCE,LPWSTR,int) {
         if(fs::exists(config)){std::ifstream old(config);settings<<old.rdbuf();}
         {std::ifstream defaults(runtime/L"defaults.conf");if(!defaults)throw std::runtime_error("The default game configuration is missing.");settings<<'\n'<<defaults.rdbuf();}
         const std::wstring endpoint=L"\\\\.\\pipe\\Minecataclysm-"+unique;
-        settings<<"\nbind_address = 127.0.0.1\nport = "<<local_port()<<"\ncwm_socket_path = "<<utf8(endpoint)
+        settings<<"\nkeymap_quicktune_next = KEY_F7\nkeymap_quicktune_prev = KEY_F8\nbind_address = 127.0.0.1\nport = "<<local_port()<<"\ncwm_socket_path = "<<utf8(endpoint)
                 <<"\ncwm_language = "<<initial<<"\nlanguage = "<<language->engine_locale<<"\n";
         {std::ofstream out(config);out<<settings.str();if(!out)throw std::runtime_error("Cannot write your game settings.");}
         SetEnvironmentVariableW(L"CDDA_LOCALE_DIR",(runtime/L"cdda/lang/mo").c_str());

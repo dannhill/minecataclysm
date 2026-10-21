@@ -40,7 +40,7 @@ def tree(source, target):
 
 def main():
     p=argparse.ArgumentParser(description=__doc__)
-    for name in ('workspace','dependencies','builds','output'):p.add_argument('--'+name,type=Path,required=True)
+    for name in ('workspace','dependencies','builds','output','source-receipt'):p.add_argument('--'+name,type=Path,required=True)
     a=p.parse_args();ws=a.workspace.resolve();deps=a.dependencies.resolve();builds=a.builds.resolve();out=a.output.resolve()
     if out.exists():raise RuntimeError('Use a new payload directory: '+str(out))
     out.mkdir(parents=True);runtime=out/'runtime';binary=runtime/'bin';binary.mkdir(parents=True)
@@ -87,7 +87,8 @@ def main():
     if not extra.is_dir():raise RuntimeError('Dependency notices have not been prepared')
     tree(extra,licenses/'dependencies')
     (out/'README.txt').write_text('''MINECATACLYSM - WINDOWS 11 x64 PROTOTYPE\n\nDouble-click Minecataclysm.exe to play. No development tools are needed.\nThe installer also creates a desktop shortcut. The first world takes longer\nto prepare; keep the launcher open while it works.\n\nCONTROLS\nWASD move, mouse look, left click attack, right click interact/hold aim.\nI inventory, H body/status, K crafting, X prone, Shift crouch, Ctrl run.\nEsc pauses and provides settings, immediate language choice and normal quit.\nEnglish is default; Italiano is incomplete (WIP).\n\nSAVES AND LOGS\nSaved automatically on normal exit. Wait for the saving window to close.\nYour saves/settings/logs are in %LOCALAPPDATA%\\Minecataclysm.\nUpdates and uninstall retain that folder. Program files contain no player world.\nDo not force-close the game while it is saving.\n\nVERIFICATION\nThis Windows build is cross-compiled and exercised under Wine on Linux.\nActual Windows 11 hardware/driver acceptance remains a separate manual check.\nThe installer is unsigned: Windows may show an unknown-publisher prompt.\nThe project is a playable prototype, not a finished release.\n\nHuman testing: every recorded manual PASS was reported by the sole human\ndeveloper, who also performs extensive general gameplay/UI playtests and is\nnot a UI/UX designer. Those historical checks do not imply a Windows playtest.\nThis notice was written by an LLM on that developer's explicit instructions.\nSee licenses/HUMAN_TESTING.md, BUILD-INFO.json and the repository test ledger.\n\nLICENSES AND SOURCE\nSee licenses/, in-game media-notices, and licenses/sources for application\nand LGPL dependency source. Source repository:\nhttps://github.com/dannhill/minecataclysm\n''',encoding='utf-8')
-    source_commit=json.loads((builds/'refresh-filesystem.json').read_text())['commit']
+    source_commit=json.loads(a.source_receipt.read_text())['commit']
+    shutil.copy2(a.source_receipt,licenses/'source-verification.json')
     info=dict(product='Minecataclysm',platform='Windows 11 x64',protocol='2.26',source_commit=source_commit,upstream=manifest['repositories'],dependencies=json.loads((builds/'dependencies-verified.json').read_text()),imports={**closure,**launcher_closure},files={})
     for file in sorted(out.rglob('*')):
         if file.is_file():info['files'][file.relative_to(out).as_posix()]=sha(file)

@@ -12,8 +12,9 @@ forks). The artifact directory below must be new and owned by this task:
 ```sh
 python3 tools/windows/fetch_deps.py --directory artifacts/windows11-build
 python3 tools/windows/fetch_licenses.py --directory artifacts/windows11-build
-# Reconstruct the committed baseline into artifacts/windows11-build/workspace
-# using tools/takeover_baseline.py reconstruct; see that command's --help.
+python3 tools/takeover_baseline.py reconstruct --destination artifacts/windows11-build/workspace
+python3 tools/refresh_verification_workspace.py --workspace artifacts/windows11-build/workspace \
+  --receipt artifacts/windows11-build/source.json
 # Supply a host msgfmt, e.g. /usr/bin/msgfmt.
 python3 tools/windows/build.py --workspace artifacts/windows11-build/workspace \
   --dependencies artifacts/windows11-build/deps --output artifacts/windows11-build \
@@ -26,7 +27,8 @@ python3 tools/windows/build.py --workspace artifacts/windows11-build/workspace \
   --msgfmt /usr/bin/msgfmt --component launcher --jobs 2
 python3 tools/windows/package.py --workspace artifacts/windows11-build/workspace \
   --dependencies artifacts/windows11-build/deps --builds artifacts/windows11-build \
-  --output artifacts/windows11-build/payload
+  --output artifacts/windows11-build/payload \
+  --source-receipt artifacts/windows11-build/source.json
 makensis -DPACKAGE_DIR="$PWD/artifacts/windows11-build/payload" \
   -DOUTPUT_EXE="$PWD/artifacts/windows11-build/Minecataclysm-Windows11-Setup.exe" \
   tools/windows/installer.nsi
