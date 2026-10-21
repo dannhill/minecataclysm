@@ -36417,7 +36417,7 @@
   {
     "path": "src/CMakeLists.txt",
     "mode": "100644",
-    "sha256": "02f48398c7553bd2d427f0e23ee453d240ace8e799302e4e78a3099183d35652"
+    "sha256": "0581a56228fe924431d9f408bda9aa84d375e9864d64cfe0818ce06a3e8a6ab7"
   },
   {
     "path": "src/achievement.cpp",
@@ -37337,7 +37337,7 @@
   {
     "path": "src/cwm/cwm_main.cpp",
     "mode": "100644",
-    "sha256": "60a4d2ba016f3c30af361554f5b2d14ad91fa9df32d588e07ce95dd768528c84"
+    "sha256": "cfabb493cccaf1bca7424d5956a6321e943bfb29ad4434d571277601243c913b"
   },
   {
     "path": "src/cwm/cwm_map_exporter.cpp",
@@ -37378,6 +37378,11 @@
     "path": "src/cwm/cwm_status_gauges.h",
     "mode": "100644",
     "sha256": "4f2ac91ecdaa1d70e1bea8b2b7e1a80904bf4317c1b4760e120e8e9dbb1d1d98"
+  },
+  {
+    "path": "src/cwm/cwm_windows.rc",
+    "mode": "100644",
+    "sha256": "8185f6e4492995ad937a9b17b41775ff0767f758191ce71ce24ce80ec49dbf37"
   },
   {
     "path": "src/cwm_motion.cpp",

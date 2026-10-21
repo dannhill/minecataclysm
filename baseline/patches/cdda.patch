@@ -12,7 +12,7 @@ index 9e05119..e7e7b82 100644
      message(STATUS "Searching for Curses library --")
      set(CURSES_NEED_NCURSES TRUE)
 diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
-index 6d5d148..8277e3b 100644
+index 6d5d148..435042d 100644
 --- a/src/CMakeLists.txt
 +++ b/src/CMakeLists.txt
 @@ -1,3 +1,4 @@
@@ -86,7 +86,7 @@ index 6d5d148..8277e3b 100644
          endif ()
      elseif (APPLE)
          target_link_libraries(cataclysm-common PUBLIC "-framework CoreFoundation")
-@@ -204,6 +205,29 @@ if (CURSES)
+@@ -204,6 +205,31 @@ if (CURSES)
      if (RELEASE)
          install(TARGETS cataclysm RUNTIME)
      endif ()
@@ -111,6 +111,8 @@ index 6d5d148..8277e3b 100644
 +    target_link_libraries(cdda-server PRIVATE cataclysm-common)
 +    add_dependencies(cdda-server get_version)
 +    if(WIN32)
++        enable_language(RC)
++        target_sources(cdda-server PRIVATE ${CMAKE_SOURCE_DIR}/src/cwm/cwm_windows.rc)
 +        target_link_libraries(cdda-server PRIVATE advapi32 shell32)
 +    endif()
  endif ()
@@ -2614,7 +2616,7 @@ index 0000000..d56deed
 +} // namespace cwm
 diff --git a/src/cwm/cwm_main.cpp b/src/cwm/cwm_main.cpp
 new file mode 100644
-index 0000000..12d6fbf
+index 0000000..af07174
 --- /dev/null
 +++ b/src/cwm/cwm_main.cpp
 @@ -0,0 +1,467 @@
@@ -2840,7 +2842,7 @@ index 0000000..12d6fbf
 +            terrain_demo = true;
 +        } else if (arg == "--help" || arg == "-h") {
 +            std::cout << "Usage: cdda-server [options]\n"
-+                      << "  --socket <path>       Private Unix domain socket path (required for IPC)\n"
++                      << "  --socket <path>       Private local IPC endpoint (required for IPC)\n"
 +                      << "  --world <name>        World name to load or create (default: cwm_world)\n"
 +                      << "  --userdir <path>      User directory for savegames and config (default: ./user)\n"
 +                      << "  --datadir <path>      Data directory (default: auto-detected)\n"
@@ -3021,7 +3023,7 @@ index 0000000..12d6fbf
 +    if (realtime) server.enable_realtime();
 +    if (continuous) server.enable_continuous();
 +    if (!server.start()) {
-+        std::cerr << "[CDDA-Server] ERROR: Failed to bind Unix socket at " << socket_path << "\n";
++        std::cerr << "[CDDA-Server] ERROR: Failed to bind local IPC endpoint at " << socket_path << "\n";
 +        return 1;
 +    }
 +    std::cout << "[CDDA-Server] CWM IPC server listening on: " << socket_path << "\n";
@@ -5404,6 +5406,14 @@ index 0000000..527a652
 +    return pain <= 0 ? 10 : pain > 70 ? 0 : 10 - (pain + 9) / 10;
 +}
 +} // namespace cwm
+diff --git a/src/cwm/cwm_windows.rc b/src/cwm/cwm_windows.rc
+new file mode 100644
+index 0000000..eb8c27f
+--- /dev/null
++++ b/src/cwm/cwm_windows.rc
+@@ -0,0 +1,2 @@
++#include <windows.h>
++1 RT_MANIFEST "cwm_windows.manifest"
 diff --git a/src/cwm_motion.cpp b/src/cwm_motion.cpp
 new file mode 100644
 index 0000000..a081e87
