@@ -6,6 +6,9 @@ from pathlib import Path
 def main():
  p=argparse.ArgumentParser(description=__doc__);p.add_argument('--prefix',type=Path,required=True);p.add_argument('--log',type=Path,required=True);p.add_argument('--timeout',type=int,default=180);p.add_argument('command',nargs=argparse.REMAINDER);a=p.parse_args()
  a.log.parent.mkdir(parents=True,exist_ok=True)
+ a.prefix.parent.mkdir(parents=True,exist_ok=True)
+ prefix_lock=a.prefix.with_suffix('.verification.lock').open('w')
+ fcntl.flock(prefix_lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
  r,w=os.pipe();high=fcntl.fcntl(w,fcntl.F_DUPFD,64);os.close(w);w=high
  with a.log.with_suffix('.xvfb.log').open('w') as xvlog:
   display=subprocess.Popen(['Xvfb','-displayfd',str(w),'-screen','0','1280x800x24','-nolisten','tcp','-noreset','-dpi','96'],pass_fds=(w,),stdout=xvlog,stderr=subprocess.STDOUT)
