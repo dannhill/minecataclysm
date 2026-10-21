@@ -1,5 +1,11 @@
 # Validazioni manuali del playable core
 
+Distribuzione Windows 11 (2026-10-21): **33 PENDING, nessun FAIL manuale
+aperto**. I precedenti 30 punti rimangono invariati; si aggiungono tre prove
+WIN-01 su un PC Windows reale. Cross-compilazione e prove Wine sono automatiche
+e non costituiscono un PASS personale Windows. Le prove sono rinviabili per
+lo sviluppo delle feature successive.
+
 Ultimo riscontro: **30 PENDING, nessun FAIL manuale aperto**. La conferma
 «ok funziona perfettamente» accetta l'avviso LANG-01 dopo `a0bbf43`: il suo
 ricontrollo non è più pendente. I precedenti 28 restano invariati; due nuove
@@ -994,3 +1000,23 @@ proprie prove LANG-02 e non eredita questo PASS.
    duplicazioni o riavvii. Esci normalmente e rilancia: la lingua scelta è
    conservata. Le domande native già aperte conservano il testo originale fino
    alla risposta; non devono ripresentarsi o applicare effetti due volte.
+
+
+## WIN-01 — Pacchetto Windows 11 x64 — PENDING (3), rinviabile
+
+1. **Installazione e primo avvio:** copia `Minecataclysm-Windows11-Setup.exe`
+   su un PC Windows 11 x64, preferibilmente senza strumenti di sviluppo. Doppio
+   clic: installazione per il tuo utente, icona sul desktop e avvio automatico
+   della partita 3D. Il primo mondo può richiedere qualche minuto. Nessun Bash,
+   Python o WSL richiesto. Prova anche un account/percorso con spazi e lettere
+   accentate. L'eseguibile non ha una firma del produttore.
+2. **Partita e riapertura:** movimento continuo 4x, mouse, I/H/K, pausa F7/Esc,
+   icone, grafica e suoni sul tuo hardware. Esc → Italiano/English cambia lingua
+   senza riavviare e resta in pausa. Muoviti, modifica una porta o finestra,
+   esci normalmente e aspetta la chiusura del salvataggio; doppio clic sull'icona
+   del desktop. Posizione, oggetti, stato del mondo e lingua restano coerenti.
+3. **Aggiornamento e disinstallazione:** chiudi il gioco, riesegui l'installer e
+   riapri dall'icona: il salvataggio precedente è ancora disponibile. Disinstalla
+   da Windows e verifica che `%LOCALAPPDATA%\Minecataclysm` conservi salvataggi
+   e log. Reinstalla e controlla che la stessa partita si carichi. Non cancellare
+   quella cartella per disinstallare il programma.

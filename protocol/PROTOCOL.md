@@ -338,10 +338,16 @@ consistent spawn/removal references. This is not complete semantic validation
 of every enum, coordinate transform, field or interaction; see FND-04.
 
 CWM contains no Luanti structures. `CwmTransport`/`CwmListener` are independent
-of OS and framing; endpoints use those interfaces, with POSIX instantiated
-only at the backend factory. Framing encodes big-endian bytes without POSIX
-headers. Unix sockets are the sole production backend. The in-memory test
-backend exercises the same client session controller without descriptors.
+of OS and framing; endpoints use those interfaces, with POSIX or Windows
+instantiated only at the backend boundary. Framing encodes big-endian bytes
+without POSIX headers. Windows adds a bounded overlapped local named-pipe
+backend, preserving the same CWM 2.26 frames, queue/work limits and session
+controller. It rejects remote clients, uses a random per-launch endpoint and
+restricts access to the account/SYSTEM. Its seven backend probes cover partial
+I/O, ordered final frames, EOF, reconnect, malformed/truncated input and queue
+overflow. The in-memory test backend exercises the same client session
+controller without descriptors. See the
+[distribution contract](../docs/design/windows11-distribution.md).
 
 ## Takeover-baseline message coverage (historical)
 
@@ -600,7 +606,9 @@ retry timer and is initialized once per Luanti Client. Disconnect disables
 command readiness and hides actors while retaining the static projection.
 Unix socket path lengths and fd flags are checked. Socket creation uses mode
 0600 and never unlinks another process’s bound path. All launch entry points
-exec the single start.sh supervisor; shared fallback socket paths are removed.
+on Linux exec the single start.sh supervisor; shared fallback socket paths are
+removed. Windows uses its native GUI supervisor, post-initialization ready event
+and graceful native-stop event; no Unix socket or Bash is required there.
 
 These are byte/frame/syscall budgets, not a general wall-clock bound on native
 snapshot generation or renderer ingestion of a legal 16-MiB frame. Benchmarks

@@ -21,8 +21,12 @@ Its internal CWM coordinator validates inputs and exports immutable snapshots
 and end-of-turn delta batches. CWM describes semantic state, independent of the
 transport and presentation engine. Luanti's native C++ bridge renders that
 projection, interpolates visual positions and captures commands. Mineclonia
-supplies selected textures/models/node definitions. The start.sh supervisor owns process and private-socket lifecycle; compiled
-launcher/coordinator aliases exec it without governing gameplay.
+supplies selected textures/models/node definitions. On Linux, start.sh owns process and private-socket lifecycle; compiled
+launcher/coordinator aliases exec it without governing gameplay. On Windows,
+the native Unicode GUI supervisor owns both bundled processes, a private local
+named pipe and explicit ready/stop events. Its shutdown requests the same native
+canonical save; it does not own gameplay or translate the save format. See the
+[Windows distribution contract](docs/design/windows11-distribution.md).
 
 The canonical save is CDDA's save. A Luanti world is a disposable presentation
 cache. On reconnect or a missing delta the client must obtain an authoritative

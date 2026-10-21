@@ -6,7 +6,7 @@ This package defines the standalone, binary IPC protocol between:
 
 ## Specifications
 - **Format**: FlatBuffers binary serialization (`cwm.fbs`)
-- **Transport**: Unix Domain Sockets (`AF_UNIX`) on POSIX; TCP fallback is planned
+- **Transport**: Unix domain sockets (`AF_UNIX`) on POSIX; bounded overlapped local named pipes on Windows
 - **Framing**: 4-byte big-endian length-prefixed stream framing
 - **License**: Apache-2.0
 
@@ -22,7 +22,7 @@ lists replace the tracked roster, including removal. Monster IDs are stable
 within a running coordinator through weak native ownership; persistence of
 protocol identities across server restarts remains future work.
 
-The current minor is 11 (see [the runtime contract](PROTOCOL.md)). Minor 3 appends semantic terrain categories for the
+The current minor is 26 (see [the runtime contract](PROTOCOL.md)). Minor 3 appends semantic terrain categories for the
 approved B materials/vegetation. Minor 4 appends `EntityState.state_flags` for
 native window passage, wading, swimming and underwater cues; presentation
 offsets do not alter native coordinates or time. Details and remaining gaps
