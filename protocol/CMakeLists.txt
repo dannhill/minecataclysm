@@ -33,6 +33,13 @@ target_include_directories(cwm_protocol INTERFACE
 )
 add_dependencies(cwm_protocol generate_cwm_headers)
 
+# These tests use assert for checks and setup; keep them effective in Release.
+if(MSVC)
+    add_compile_options(/UNDEBUG)
+else()
+    add_compile_options(-UNDEBUG)
+endif()
+
 # Tests
 enable_testing()
 

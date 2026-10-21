@@ -49,6 +49,12 @@ def main():
     try:
         first=launch();check('shipped_renderer_named_pipe_authoritative_world',first['ipc_connected']=='1' and first['continuous_motion']=='1' and first['time_scale']=='4')
         check('unicode_and_space_paths',bool(list((user/'cdda/save').glob('*/worldoptions.json'))))
+        wait(lambda r:r['pause_reasons']=='0');time.sleep(1)
+        before=position(latest())
+        for key in ('w','d'):
+            xdo('keydown',key);time.sleep(.25);xdo('keyup',key);time.sleep(.2)
+        wait(lambda r:r['intent_x']=='0' and r['intent_y']=='0')
+        check('windows_keys_produce_confirmed_continuous_motion',math.dist(position(latest()),before)>.015)
         shot('world')
         tap('i');wait(lambda r:r['equipment_form']=='1');time.sleep(.3);paused=latest();time.sleep(.6)
         check('inventory_freezes_native_time',latest()['simulation_time']==paused['simulation_time']);shot('inventory')

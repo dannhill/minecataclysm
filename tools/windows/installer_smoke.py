@@ -42,14 +42,14 @@ def main():
         current=max((user/'logs').glob('*/cdda.log'),key=lambda p:p.stat().st_mtime)
         wait(lambda:'Final save: SUCCESS' in current.read_text(errors='replace'),90)
         time.sleep(1)
-    def launch_installer():
+    def launch_installer(silent=True):
         trace.unlink(missing_ok=True)
-        result=wine(a.installer.resolve(),'/S',timeout=150)
+        result=wine(a.installer.resolve(),*(['/S'] if silent else []),timeout=150)
         (out/('installer-'+str(len(checks))+'.log')).write_text(result.stdout+result.stderr)
         check('installer_exit_'+str(len(checks)),result.returncode==0)
         wait(active)
     uninstall_key='HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Minecataclysm'
-    launch_installer();check('default_per_user_payload_and_desktop_shortcut',(install/'Minecataclysm.exe').is_file() and shortcut.is_file())
+    launch_installer(silent=False);check('default_per_user_payload_and_desktop_shortcut',(install/'Minecataclysm.exe').is_file() and shortcut.is_file())
     check('uninstall_entry',wine('reg','query',uninstall_key,'/v','DisplayName').returncode==0)
     close_game('installed-world')
     native_log=max((user/'logs').glob('*/cdda.log'),key=lambda p:p.stat().st_mtime)
