@@ -36417,7 +36417,7 @@
   {
     "path": "src/CMakeLists.txt",
     "mode": "100644",
-    "sha256": "c2f3f0a24d258e9e03a2435e3c110cc6971c65812d8bc6d9b0029b047029c966"
+    "sha256": "02f48398c7553bd2d427f0e23ee453d240ace8e799302e4e78a3099183d35652"
   },
   {
     "path": "src/achievement.cpp",
@@ -40642,7 +40642,7 @@
   {
     "path": "src/wincurse.cpp",
     "mode": "100644",
-    "sha256": "9e14ce07e7d5b7b88d6a29d0f054922fa58361267ce5cd72287d93b57b2802ba"
+    "sha256": "cc6ba5365eb1428c7d72d4ed2bfc03f38fb183344962e79e99c1d76ff15063d4"
   },
   {
     "path": "src/wish.cpp",
