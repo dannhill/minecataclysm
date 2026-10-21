@@ -1112,6 +1112,20 @@ index 7758c96..def39c0 100644
  	settings->setDefault("keymap_toggle_profiler", "KEY_F6");
  	settings->setDefault("keymap_camera_mode", "KEY_KEY_C");
  	settings->setDefault("keymap_screenshot", "KEY_F12");
+diff --git a/src/filesys.cpp b/src/filesys.cpp
+index 8881eb2..7a6e190 100644
+--- a/src/filesys.cpp
++++ b/src/filesys.cpp
+@@ -62,6 +62,9 @@ std::vector<DirListNode> GetDirListing(const std::string &pathstring)
+ {
+ 	std::vector<DirListNode> listing;
+ 
++	// An absent game/mod path is not the root of the current Windows drive.
++	if (pathstring.empty()) return listing;
++
+ 	WIN32_FIND_DATA FindFileData;
+ 	HANDLE hFind = INVALID_HANDLE_VALUE;
+ 	DWORD dwError;
 diff --git a/src/gettext.cpp b/src/gettext.cpp
 index 59ce240..fba1814 100644
 --- a/src/gettext.cpp
@@ -1900,6 +1914,46 @@ index 7f3f860..142a710 100644
  ////////////////////////////////////////////////////////////////////////////////
  
  void TestMapBlock::testSaveLoad(IGameDef *gamedef, const u8 version)
+diff --git a/src/util/string.cpp b/src/util/string.cpp
+index 43e9367..3c5ad81 100644
+--- a/src/util/string.cpp
++++ b/src/util/string.cpp
+@@ -153,25 +153,21 @@ void wide_add_codepoint(std::wstring &result, char32_t codepoint)
+ 
+ std::wstring utf8_to_wide(std::string_view input)
+ {
+-	size_t outbuf_size = input.size() + 1;
+-	wchar_t *outbuf = new wchar_t[outbuf_size];
+-	memset(outbuf, 0, outbuf_size * sizeof(wchar_t));
+-	MultiByteToWideChar(CP_UTF8, 0, input.data(), input.size(),
+-		outbuf, outbuf_size);
+-	std::wstring out(outbuf);
+-	delete[] outbuf;
++	if (input.empty()) return {};
++	std::wstring out(input.size(), L'\0');
++	const int written = MultiByteToWideChar(CP_UTF8, 0, input.data(),
++		static_cast<int>(input.size()), out.data(), static_cast<int>(out.size()));
++	out.resize(written);
+ 	return out;
+ }
+ 
+ std::string wide_to_utf8(std::wstring_view input)
+ {
+-	size_t outbuf_size = (input.size() + 1) * 6;
+-	char *outbuf = new char[outbuf_size];
+-	memset(outbuf, 0, outbuf_size);
+-	WideCharToMultiByte(CP_UTF8, 0, input.data(), input.size(),
+-		outbuf, outbuf_size, NULL, NULL);
+-	std::string out(outbuf);
+-	delete[] outbuf;
++	if (input.empty()) return {};
++	std::string out(input.size() * 4, '\0');
++	const int written = WideCharToMultiByte(CP_UTF8, 0, input.data(),
++		static_cast<int>(input.size()), out.data(), static_cast<int>(out.size()), nullptr, nullptr);
++	out.resize(written);
+ 	return out;
+ }
+ 
 diff --git a/builtin/mainmenu/settings/product_languages.lua b/builtin/mainmenu/settings/product_languages.lua
 new file mode 100644
 index 0000000..29ecbdd
