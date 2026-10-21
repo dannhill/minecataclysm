@@ -1,6 +1,16 @@
 # Implementation status
 
-Current scoped delivery: **live language selection and extensible catalogs**.
+Current requested delivery: **native Windows 11 x64 installer**, per-user and
+automatic launch, with separate canonical saves and bundled runtime/assets/DLLs.
+[Delivery, exact verification and limitations](docs/releases/windows11-2026-10-21.md).
+309 Windows client / 12 Windows protocol / 13 Linux protocol tests pass, plus
+12 actual-renderer and 19 installer lifecycle checks under Wine. Real Windows
+GPU/audio and Explorer acceptance remains in WIN-01; no human Windows PASS is
+inferred. **33 PENDING**, no open manual FAIL. M5.5 FAILED / SAVE-001 OPEN remain
+unchanged; this anticipates a packaging slice of M9 at the user's request.
+Native disassembly remains the next functional core slice.
+
+Previous scoped delivery: **live language selection and extensible catalogs**.
 Esc applies the acknowledged language in the running native/client pair,
 refreshing the whole menu and native labels without restarting the game.
 A shared registry owns codes, endonyms, native/engine locale mappings, catalogs

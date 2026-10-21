@@ -13,6 +13,12 @@ Automated verification and pending personal rechecks are recorded separately.
 [Full plan](IMPLEMENTATION_PLAN.md) ·
 [Manual PASS/FAIL and outstanding tests](docs/validation/pending-manual.md)
 
+Windows 11 x64: the local installer is generated as
+`dist/windows11/Minecataclysm-Windows11-Setup.exe` (not tracked in Git).
+[Delivery and verification](docs/releases/windows11-2026-10-21.md) ·
+[Windows build instructions](tools/windows/README.md). Real Windows hardware
+acceptance is recorded separately from automated Wine verification.
+
 This project aims to merge the 2D turn based videogame Cataclysm Dark Days Ahead(CDDA) with the 3D voxel real time game Mineclonia(as the name suggests, an open source minecraft clone) with the goal to provide CDDA with a 3D voxel engine.
 FAQ
 A: Why did you choose to make this?

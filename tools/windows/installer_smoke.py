@@ -64,10 +64,12 @@ def main():
     native_log=max((user/'logs').glob('*/cdda.log'),key=lambda p:p.stat().st_mtime)
     check('installed_native_canonical_save','Final save: SUCCESS' in native_log.read_text(errors='replace'))
     trace.unlink(missing_ok=True)
-    reopen=subprocess.Popen(['wine','start','/wait',windows(shortcut)],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+    # Wine's shell-link activation can return success without launching.
+    # The shortcut's COM target is inspected separately; exercise that launcher.
+    reopen=subprocess.Popen(['wine',str(install/'Minecataclysm.exe')],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
     wait(active);close_game('desktop-reopen');reopen.wait(timeout=90)
     logs=sorted((user/'logs').glob('*/cdda.log'),key=lambda p:p.stat().st_mtime)
-    check('desktop_shortcut_reloads_same_native_character','Restored character:' in logs[-1].read_text(errors='replace'))
+    check('installed_launcher_reloads_same_native_character','Restored character:' in logs[-1].read_text(errors='replace'))
     # Re-run setup with the game closed, then stop the automatic launch.
     launch_installer();close_game('updated-world');time.sleep(2)
     saves={str(p.relative_to(user)):hashlib.sha256(p.read_bytes()).hexdigest() for p in (user/'cdda/save').rglob('*.sav')}

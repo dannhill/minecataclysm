@@ -702,6 +702,12 @@ prima della prossima feature essenziale del playable core.
 
 ## Fase 5 — M8/M9 e contenuti successivi
 
+Anticipazione richiesta il 2026-10-21: installer nativo Windows 11 x64 con
+avvio automatico, librerie/risorse incluse e salvataggi separati.
+[Consegna e prove](docs/releases/windows11-2026-10-21.md): verifiche automatiche
+Wine; tre controlli WIN-01 su hardware reale restano nel backlog. Questa fetta
+non completa M9 né i gate generali di prestazioni, recovery e SAVE-001.
+
 Misurare sim, code/delta, meshing, entità visibili, input-to-visual e risorse
 nelle scene BM01–BM06. Ottimizzare colli misurati, verificare regressioni.
 Packaging Linux/Windows, licenze, avvio, aggiornamenti, save/crash recovery su
