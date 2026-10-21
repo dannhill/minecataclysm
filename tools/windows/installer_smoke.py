@@ -3,13 +3,13 @@
 
 Requires an isolated prefix with no existing Minecataclysm user/install data.
 """
-import argparse,csv,hashlib,json,os,subprocess,time
+import argparse,csv,hashlib,json,os,re,subprocess,time
 from pathlib import Path
 from gui_smoke import windows
 
 def main():
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--installer',type=Path,required=True);p.add_argument('--output',type=Path,required=True);a=p.parse_args();out=a.output.resolve();out.mkdir(parents=True,exist_ok=False)
-    checks={};trace=out/'camera.csv';window=None
+    checks={};trace=out/'camera.csv';window=None;installers=[]
     def check(name,ok):
         checks[name]=bool(ok);(out/'checks.json').write_text(json.dumps(checks,indent=2)+'\n');print(name,'PASS' if ok else 'FAIL',flush=True)
         if not ok:raise AssertionError(name)
@@ -42,15 +42,24 @@ def main():
         current=max((user/'logs').glob('*/cdda.log'),key=lambda p:p.stat().st_mtime)
         wait(lambda:'Final save: SUCCESS' in current.read_text(errors='replace'),90)
         time.sleep(1)
+        for process in installers:
+            process.wait(timeout=30)
+        check('installer_process_exit_'+label,all(p.returncode==0 for p in installers))
     def launch_installer(silent=True):
         trace.unlink(missing_ok=True)
-        result=wine(a.installer.resolve(),*(['/S'] if silent else []),timeout=150)
-        (out/('installer-'+str(len(checks))+'.log')).write_text(result.stdout+result.stderr)
-        check('installer_exit_'+str(len(checks)),result.returncode==0)
+        # A GUI child may inherit standard handles. A regular log file avoids
+        # waiting for pipe EOF until the game quits after setup has already exited.
+        with (out/('installer-'+str(len(checks))+'.log')).open('w') as log:
+            process=subprocess.Popen(['wine',str(a.installer.resolve()),*(['/S'] if silent else [])],stdout=log,stderr=subprocess.STDOUT)
+        installers.append(process)
         wait(active)
+        check('installer_auto_launch_'+str(len(checks)),True)
+
     uninstall_key='HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Minecataclysm'
     launch_installer(silent=False);check('default_per_user_payload_and_desktop_shortcut',(install/'Minecataclysm.exe').is_file() and shortcut.is_file())
     check('uninstall_entry',wine('reg','query',uninstall_key,'/v','DisplayName').returncode==0)
+    entry=wine('reg','query',uninstall_key,'/v','UninstallString')
+    check('quoted_uninstall_command',bool(re.search(r'REG_SZ\s+"[^"]+\\Uninstall\.exe"\s*$',entry.stdout,re.M)))
     close_game('installed-world')
     native_log=max((user/'logs').glob('*/cdda.log'),key=lambda p:p.stat().st_mtime)
     check('installed_native_canonical_save','Final save: SUCCESS' in native_log.read_text(errors='replace'))

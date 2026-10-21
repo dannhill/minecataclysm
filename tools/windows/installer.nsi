@@ -11,7 +11,11 @@ OutFile "${OUTPUT_EXE}"
 InstallDir "$LOCALAPPDATA\Programs\Minecataclysm"
 RequestExecutionLevel user
 AutoCloseWindow true
+!ifdef QUICK_BUILD
+SetCompress off
+!else
 SetCompressor /SOLID lzma
+!endif
 ShowInstDetails nevershow
 ShowUninstDetails nevershow
 !define MUI_ABORTWARNING
@@ -29,7 +33,7 @@ Section "Minecataclysm"
  WriteUninstaller "$INSTDIR\Uninstall.exe"
  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Minecataclysm" "DisplayName" "Minecataclysm"
  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Minecataclysm" "DisplayVersion" "0.1 prototype"
- WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Minecataclysm" "UninstallString" '$"$INSTDIR\Uninstall.exe$"'
+ WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Minecataclysm" "UninstallString" '"$INSTDIR\Uninstall.exe"'
  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Minecataclysm" "InstallLocation" "$INSTDIR"
  WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Minecataclysm" "NoModify" 1
  WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Minecataclysm" "NoRepair" 1
