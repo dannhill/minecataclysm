@@ -23,7 +23,7 @@ int main() {
     // Presentation language cannot alter semantic commands or wire identifiers.
     CHECK(::cwm::set_product_language("en"));
     MessageBuilder english_wire(10,7,{11,22,33});
-    const auto english = english_wire.build_equipment_request(99,8,2,EquipmentAction::TAKEOFF);
+    auto english = english_wire.build_equipment_request(99,8,2,EquipmentAction::TAKEOFF);
     CHECK(::cwm::set_product_language("it"));
     CHECK(::cwm::wide("Quantity", "Quantità") == L"Quantità");
     const auto supplementary = ::cwm::wide("🌍");
@@ -43,7 +43,14 @@ int main() {
     CHECK(!::cwm::set_product_language("fr"));
     CHECK(::cwm::text("Quantity", "Quantità") == "Quantità");
     MessageBuilder italian_wire(10,7,{11,22,33});
-    CHECK(italian_wire.build_equipment_request(99,8,2,EquipmentAction::TAKEOFF) == english);
+    auto italian = italian_wire.build_equipment_request(99,8,2,EquipmentAction::TAKEOFF);
+    // Time legitimately advances while Unicode validation runs. Compare the
+    // command bytes after normalizing only the envelope's monotonic timestamp.
+    CHECK(MessageVerifier::verify(english.data(), english.size()));
+    CHECK(MessageVerifier::verify(italian.data(), italian.size()));
+    CHECK(GetMutableCwmMessage(english.data())->mutate_timestamp_ms(1));
+    CHECK(GetMutableCwmMessage(italian.data())->mutate_timestamp_ms(1));
+    CHECK(italian == english);
     CHECK(::cwm::set_product_language("en"));
     for (int defect=0;defect<=8;++defect) {
         const auto bytes=inventory(defect);

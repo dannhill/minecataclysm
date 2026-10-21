@@ -57,7 +57,7 @@ def main():
     tree(ws/'game',runtime/'games/cdda_voxel')
     shutil.copy2(ws/'game/minetest.conf',runtime/'defaults.conf')
     tree(ws/'cdda/data',runtime/'cdda/data')
-    tree(builds/'build-native/lang/mo',runtime/'cdda/lang/mo')
+    tree(ws/'cdda/lang/mo',runtime/'cdda/lang/mo')
     licenses=out/'licenses';licenses.mkdir()
     for component,files in {'cdda':['LICENSE.txt','LICENSE-OFL-Terminus-Font.txt'],'luanti':['LICENSE.txt','COPYING.LESSER'],'mineclonia':['LICENSE.txt']}.items():
         folder=licenses/component;folder.mkdir()
