@@ -5324,7 +5324,7 @@ index 0000000..36adeef
 +}
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..6a2e404
+index 0000000..893440e
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
 @@ -0,0 +1,1323 @@
@@ -5603,7 +5603,7 @@ index 0000000..6a2e404
 +    const bool accepted=rest_.menu(u);
 +    if(realtime_ && moves>u.moves)clock_.charge_action(moves-u.moves,speed);
 +    rest_.refresh(u);++world_revision_;
-+    send_result({command.id,accepted,accepted?"":::cwm::text("Rest state changed. Open the rest menu again.")},u,m,g);
++    send_result({command.id,accepted,accepted ? "" : ::cwm::text("Rest state changed. Open the rest menu again.")},u,m,g);
 +}
 +
 +void CwmServer::service_clock(avatar& u, map& m, game& g) {
@@ -10483,7 +10483,7 @@ index 0000000..39d991c
 +}
 diff --git a/tests/cwm_runtime_test.cpp b/tests/cwm_runtime_test.cpp
 new file mode 100644
-index 0000000..6a669e4
+index 0000000..074267e
 --- /dev/null
 +++ b/tests/cwm_runtime_test.cpp
 @@ -0,0 +1,742 @@
@@ -11211,7 +11211,7 @@ index 0000000..6a669e4
 +TEST_CASE("cwm_native_rest_keeps_sleep_and_wait_distinct", "[cwm][rest]") {
 +    prepare_runtime();auto& u=get_avatar();
 +    cwm::RestTracker rest;rest.refresh(u);CHECK(rest.token==0);CHECK(cwm::RestTracker::phase(u)==-1);
-+    const auto pos=u.pos();const auto turn=calendar::turn;int prompts=0;
++    const auto pos=u.pos();int prompts=0;
 +    u.moves=1000;
 +    do_turn_with_action([&]{
 +        const auto time=calendar::turn;const auto moves=u.moves;const auto engine=rng_get_engine();

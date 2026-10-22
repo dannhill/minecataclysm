@@ -24,7 +24,7 @@ def main():
             raise RuntimeError('Invalid demo session; use --fresh')
     else:
         if not (fixture / 'user').is_dir() or not (fixture / 'before.json').is_file():
-            parser.error('Native reading fixture missing; see docs/design/native-rest.md')
+            parser.error('Native rest fixture missing; see docs/design/native-rest.md')
         session = Path(tempfile.mkdtemp(prefix='session-', dir=directory))
         shutil.copytree(fixture / 'user', session / 'user')
         (session / 'user/config/options.json').write_text(json.dumps([
