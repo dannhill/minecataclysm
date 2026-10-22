@@ -1,5 +1,9 @@
 # Validazioni manuali del playable core
 
+Compagni individuali (2026-10-22): **53 PENDING, nessun FAIL manuale aperto**.
+I precedenti 49 punti restano invariati; quattro nuove prove COMP-01 sono
+rinviabili. Nessun PASS personale viene dedotto dalle prove automatiche.
+
 Diario missioni note (2026-10-22): **49 PENDING, nessun FAIL manuale aperto**.
 I precedenti 45 punti restano invariati; quattro nuove prove JOURNAL-01 sono
 rinviabili. Le verifiche automatiche non costituiscono un PASS umano.
@@ -1175,3 +1179,35 @@ La lettura non valuta condizioni di completamento e non esegue gli script:
 non promette percentuali o ricompense simulate. Dettagli dinamici non sicuri
 mostrano un avviso esplicito. Indicazioni HUD/mappa 3D e compatibilità con ogni
 missione mod/EOC rimangono attività separate; nessun gate manuale richiesto ora.
+
+
+## COMP-01 — Ordini e regole individuali dei compagni — 4 PENDING
+
+`./companions-demo.sh --fresh` apre una sessione isolata con un alleato davanti.
+Nella partita normale usa un compagno effettivamente alleato, non uno sconosciuto.
+Il pannello è la prima voce **Companion orders and rules** nel dialogo amico.
+Non è un nuovo comando per reclutare né un controllo a distanza degli NPC.
+
+1. **PENDING — Accesso e consultazione.** Destro sull'alleato, apri il pannello,
+   visita Combat rules / Behavior rules, eventuali Next page / Previous page,
+   politiche di combattimento, mira e bionica. Sono visibili solo impostazioni
+   dell'alleato scelto. Il mondo resta fermo mentre leggi; Esc esce dal dialogo.
+   Su uno sconosciuto non deve comparire il pannello per comandarlo.
+2. **PENDING — Guardia e seguito.** Guard this position, esci e allontanati
+   qualche passo: il compagno mantiene il comportamento di guardia CDDA.
+   Parlaci di nuovo, Follow me, esci e cammina: l'AI nativa riprende a seguirti.
+   Back to conversation torna al dialogo amico/guardia appropriato. Non deve
+   reclutare NPC, teletrasportarli o cambiare assegnazioni di accampamenti.
+3. **PENDING — Regola e ordine temporaneo.** Nella demo Use firearms parte
+   con Base On ma Override Off. Modificare la base non cancella l'override:
+   Effective resta Off fino a Use base rule (remove override). Prova una regola
+   di comportamento e una politica di mira. Modifiche esplicite sul solo alleato;
+   consultare non deve concedere energia, abilità, cure o oggetti.
+4. **PENDING — Persistenza.** Modifica una regola e un override, esci e chiudi;
+   riapri `./companions-demo.sh` senza --fresh. Stesso alleato, ordini e regole
+   conservati. Il pannello non si riapre e la sua pausa non è salvata. Le azioni
+   già accettate rimangono native, non vengono ripetute alla riapertura.
+
+Addestramento, filtri testuali di raccolta, copia delle regole da altri NPC,
+radio/comandi di gruppo e servizi/accampamenti complessi restano fette separate.
+Non è richiesto nessun gate manuale adesso; i precedenti PASS restano storici.

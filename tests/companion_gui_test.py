@@ -238,7 +238,7 @@ def main():
 
             from CDDA.CWM.DecisionResponse import DecisionResponse
             from formspec_geometry import geometry
-            def select(text,part=False,mouse=False):
+            def pick(text,part=False,mouse=False):
                 for _ in range(10):
                     p=prompt();ls=labels(p)
                     found=[n for n,label in enumerate(ls) if (text in label if part else label==text)]
@@ -254,7 +254,7 @@ def main():
                     choose(ls.index('Next page'))
                 raise AssertionError('Pagination did not terminate')
             def control():
-                talk();p=select('Companion orders and rules')
+                talk();p=pick('Companion orders and rules')
                 check('native_panel_context_is_typed',bool(p.Conversation() and p.Conversation().CompanionControls()))
                 return p
             def body():return prompt().Text().decode()
@@ -268,32 +268,34 @@ def main():
             p=control();shot('companion-home.png');frozen=latest()['simulation_time'];start=(latest()['target_x'],latest()['target_z'])
             time.sleep(.5);tap('w')
             check('browsing_freezes_native_time_and_player',latest()['simulation_time']==frozen and (latest()['target_x'],latest()['target_z'])==start)
-            select('Combat rules',mouse=True);shot('companion-combat.png')
-            select('Use firearms:',part=True);shot('companion-override.png')
+            pick('Combat rules',mouse=True);shot('companion-combat.png')
+            pick('Use firearms:',part=True);shot('companion-override.png')
             check('base_and_effective_override_are_distinct','Base rule: On' in body() and 'Effective rule: Off' in body() and 'Temporary override: Off' in body())
-            select('Disable base rule');old_reply=messages(Payload.DecisionResponse,'client')[-1]
-            select('Enable base rule');current=latest()['pending_decision']
+            pick('Disable base rule');old_reply=messages(Payload.DecisionResponse,'client')[-1]
+            pick('Enable base rule');current=latest()['pending_decision']
             check('base_change_does_not_clear_temporary_order','Base rule: On' in body() and 'Effective rule: Off' in body())
             data=bytes(old_reply._tab.Bytes);injections.put(struct.pack('>I',len(data))+data);time.sleep(.6)
             check('stale_decision_does_not_repeat_old_rule_change',latest()['pending_decision']==current and 'Base rule: On' in body())
-            select('Use base rule (remove override)')
+            pick('Use base rule (remove override)')
             check('explicit_override_removal_restores_base','Effective rule: On' in body() and 'Temporary override: None' in body())
-            select('Disable base rule');select('Back');select('Back')
-            select('Behavior rules');select('Bash obstacles:',part=True);select('Enable base rule');select('Temporarily disable')
+            pick('Disable base rule');pick('Back');pick('Back')
+            pick('Behavior rules');pick('Bash obstacles:',part=True);pick('Enable base rule');pick('Temporarily disable')
             check('individual_behavior_override_is_explicit','Base rule: On' in body() and 'Effective rule: Off' in body())
-            shot('companion-behavior.png');select('Back');select('Back')
-            select('Engagement policy');select('All enemies');check('native_engagement_choice_marked','* All enemies' in labels(prompt()));select('Back')
-            select('Aiming policy');select('Shoot only when precisely aimed');check('native_aim_choice_marked','* Shoot only when precisely aimed' in labels(prompt()));select('Back')
-            select('Bionic power policy');select('Power reserved for defense');select('Reserve 25%');select('Back')
-            select('Recharge threshold');select('Recharge below 75%');select('Back');select('Back')
+            shot('companion-behavior.png');pick('Back');pick('Back')
+            pick('Engagement policy');pick('All enemies');check('native_engagement_choice_marked','* All enemies' in labels(prompt()));pick('Back')
+            pick('Aiming policy');pick('Shoot only when precisely aimed');check('native_aim_choice_marked','* Shoot only when precisely aimed' in labels(prompt()));pick('Back')
+            pick('Bionic power policy');pick('Power reserved for defense');pick('Reserve 25%');pick('Back')
+            pick('Recharge threshold');pick('Recharge below 75%');pick('Back');pick('Back')
             check('editing_decisions_keep_native_clock_frozen',latest()['simulation_time']==frozen)
-            select('Guard this position');check('native_guard_order_changes_current_status','Guarding position' in body())
-            shot('companion-guard.png');tap('Escape');wait(lambda r:int(r['pending_decision'])==0 and int(r['pending_move'])==0)
+            pick('Guard this position');check('native_guard_order_changes_current_status','Guarding position' in body())
+            shot('companion-guard.png');p=pick('Back to conversation')
+            check('explicit_back_returns_to_native_guard_topic',not p.Conversation().CompanionControls() and any('come with me' in label for label in labels(p)))
+            pick('Companion orders and rules');tap('Escape');wait(lambda r:int(r['pending_decision'])==0 and int(r['pending_move'])==0)
             check('safe_leave_returns_live_controls',int(latest()['pause_reasons'])==0)
             guard=npc_pos()
             xdo('keydown','--window',window,'s');time.sleep(.75);xdo('keyup','--window',window,'s');time.sleep(.6)
             check('guarded_companion_does_not_follow_player_step_for_step',npc_pos()==guard and (latest()['target_x'],latest()['target_z'])!=start)
-            p=control();select('Follow me');check('native_follow_order_changes_current_status','Following you' in body());tap('Escape')
+            p=control();pick('Follow me');check('native_follow_order_changes_current_status','Following you' in body());tap('Escape')
             wait(lambda r:int(r['pending_decision'])==0 and int(r['pending_move'])==0)
             time.sleep(2)
             check('companion_ai_moves_after_follow_resumes',npc_pos()!=guard)
@@ -304,7 +306,7 @@ def main():
             except AssertionError:stale=False
             check('reconnect_dismisses_old_companion_panel',not stale)
             check('reconnect_does_not_replay_talk_or_orders',len(messages(Payload.TalkRequest,'client'))==sent)
-            p=control();select('Behavior rules');select('Bash obstacles:',part=True)
+            p=control();pick('Behavior rules');pick('Bash obstacles:',part=True)
             check('fresh_connection_projects_current_canonical_rule','Base rule: On' in body() and 'Effective rule: Off' in body())
             tap('Escape');wait(lambda r:int(r['pending_decision'])==0 and int(r['pending_move'])==0)
             shot('companion-return-to-game.png');(out/'final-trace.json').write_text(json.dumps(latest(),indent=2)+'\n')
