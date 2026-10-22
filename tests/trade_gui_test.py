@@ -357,6 +357,7 @@ def main():
             connection=latest()['connection_id'];sent=len(messages(Payload.TradeCommitRequest,'client'));drop.set()
             wait(lambda r:r['connection_id']!=connection and int(r['input_ready'])==1 and int(r['pending_decision'])==0 and int(r['pending_move'])==0,timeout=25)
             check('reconnect_cancels_quote_without_replaying_commit',len(messages(Payload.TradeCommitRequest,'client'))==sent)
+            check('replacement_connection_never_inherits_old_quote',not any(m.ConnectionId()==int(latest()['connection_id']) for m in messages(Payload.TradeView)))
             tap('i');wait(lambda r:int(r['equipment_form'])==1)
             check('reconnect_closes_old_trade_and_allows_inventory',int(latest()['equipment_form'])==1)
             tap('Escape');wait(lambda r:int(r['equipment_form'])==0 and int(r['pause_reasons'])==0)
