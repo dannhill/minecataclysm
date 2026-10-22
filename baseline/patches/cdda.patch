@@ -2687,7 +2687,7 @@ index 09a7711..9b0c484 100644
          DebugLog( D_INFO, DC_ALL ) <<
 diff --git a/src/cwm/cwm_companions.h b/src/cwm/cwm_companions.h
 new file mode 100644
-index 0000000..d493edc
+index 0000000..1d8263d
 --- /dev/null
 +++ b/src/cwm/cwm_companions.h
 @@ -0,0 +1,138 @@
@@ -2724,7 +2724,7 @@ index 0000000..d493edc
 +        }};return values;
 +    }
 +    static bool available(const avatar &u,const npc &p) {
-+        return !u.is_dead() && !p.is_dead() && p.is_player_ally() && !p.is_enemy() &&
++        return !u.is_dead_state() && !p.is_dead() && p.is_player_ally() && !p.is_enemy() &&
 +            !u.is_deaf() && !u.is_mute() && !p.is_mute() &&
 +            !p.has_effect(efftype_id("sleep")) && !p.has_effect(efftype_id("lying_down")) &&
 +            !p.has_effect(efftype_id("narcosis")) && !p.has_effect(efftype_id("npc_suspend")) &&
