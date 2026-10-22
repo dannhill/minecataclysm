@@ -1183,7 +1183,7 @@ index ca47c12..eac711d 100644
  	int argc, char *argv[]);
  
 diff --git a/src/gui/guiFormSpecMenu.cpp b/src/gui/guiFormSpecMenu.cpp
-index ed1c300..c51099d 100644
+index ed1c300..9dd44bc 100644
 --- a/src/gui/guiFormSpecMenu.cpp
 +++ b/src/gui/guiFormSpecMenu.cpp
 @@ -1,3 +1,5 @@
@@ -1229,7 +1229,7 @@ index ed1c300..c51099d 100644
  			irr::SEvent evt;
  			evt.EventType            = EET_KEY_INPUT_EVENT;
  			evt.KeyInput.Key         = KEY_END;
-@@ -2922,6 +2936,31 @@ void GUIFormSpecMenu::parseElement(parserData* data, const std::string &element)
+@@ -2922,6 +2936,32 @@ void GUIFormSpecMenu::parseElement(parserData* data, const std::string &element)
  	// They remain here due to bool flags, for now
  	data->type = type;
  
@@ -1238,7 +1238,8 @@ index ed1c300..c51099d 100644
 +    }
 +    
 +
-+    if (m_text_dst && m_text_dst->m_formname == "CWM_EQUIPMENT") {
++    if (m_text_dst && (m_text_dst->m_formname == "CWM_EQUIPMENT" ||
++            m_text_dst->m_formname == "CWM_TRADE")) {
 +        if (type == "cwm_inventory") {
 +            const auto p = split(description, ';');
 +            if (p.size() == 2 || p.size() == 3) {
@@ -1261,7 +1262,7 @@ index ed1c300..c51099d 100644
  	auto it = element_parsers.find(type);
  	if (it != element_parsers.end()) {
  		it->second(this, data, description);
-@@ -2945,6 +2984,16 @@ void GUIFormSpecMenu::regenerateGui(v2u32 screensize)
+@@ -2945,6 +2985,16 @@ void GUIFormSpecMenu::regenerateGui(v2u32 screensize)
  
  	// Preserve stuff only on same form, not on a new form.
  	if (m_text_dst->m_formname == m_last_formname) {
@@ -1278,19 +1279,19 @@ index ed1c300..c51099d 100644
  		// Preserve tables/textlists
  		for (auto &m_table : m_tables) {
  			std::string tablename = m_table.first.fname;
-@@ -2989,6 +3038,11 @@ void GUIFormSpecMenu::regenerateGui(v2u32 screensize)
+@@ -2989,6 +3039,11 @@ void GUIFormSpecMenu::regenerateGui(v2u32 screensize)
  	m_tables.clear();
  	m_checkboxes.clear();
  	m_scrollbars.clear();
 +    m_cwm_drag_zones.clear(); m_cwm_drag_view = 0; m_cwm_drag_selected = 0; m_cwm_quick_transfer = false;
 +    m_cwm_decision=false; m_cwm_decision_waiting=false;
-+    if(!m_text_dst || m_text_dst->m_formname!="CWM_DECISION")m_allowclose=true;
++    if(!m_text_dst || (m_text_dst->m_formname!="CWM_DECISION" && m_text_dst->m_formname!="CWM_TRADE"))m_allowclose=true;
 +    if (m_cwm_drag_source) m_cwm_drag_cancelled = true;
 +    m_cwm_drag_source.reset(); m_cwm_drag_active = false;
  	m_fields.clear();
  	m_tooltips.clear();
  	m_tooltip_rects.clear();
-@@ -3269,6 +3323,10 @@ void GUIFormSpecMenu::regenerateGui(v2u32 screensize)
+@@ -3269,6 +3324,10 @@ void GUIFormSpecMenu::regenerateGui(v2u32 screensize)
  	}
  
  	// Set initial focus if parser didn't set it
@@ -1301,7 +1302,7 @@ index ed1c300..c51099d 100644
  	gui::IGUIElement *focused_element = Environment->getFocus();
  	if (!focused_element
  			|| !isMyChild(focused_element)
-@@ -3577,6 +3635,7 @@ void GUIFormSpecMenu::drawMenu()
+@@ -3577,6 +3636,7 @@ void GUIFormSpecMenu::drawMenu()
  		Draw dragged item stack
  	*/
  	drawSelectedItem();
@@ -1309,7 +1310,7 @@ index ed1c300..c51099d 100644
  
  	skin->setFont(old_font);
  }
-@@ -3900,13 +3959,137 @@ void GUIFormSpecMenu::acceptInput(FormspecQuitMode quitmode)
+@@ -3900,13 +3960,138 @@ void GUIFormSpecMenu::acceptInput(FormspecQuitMode quitmode)
  	}
  }
  
@@ -1325,7 +1326,8 @@ index ed1c300..c51099d 100644
 +
 +bool GUIFormSpecMenu::cwmDragEvent(const SEvent &event)
 +{
-+    if (!m_text_dst || m_text_dst->m_formname != "CWM_EQUIPMENT") return false;
++    if (!m_text_dst || (m_text_dst->m_formname != "CWM_EQUIPMENT" &&
++            m_text_dst->m_formname != "CWM_TRADE")) return false;
 +    if (event.EventType == EET_KEY_INPUT_EVENT && event.KeyInput.PressedDown &&
 +            (event.KeyInput.Key == KEY_ESCAPE ||
 +             (m_client && KeyPress(event.KeyInput) == getKeySetting("keymap_inventory"))) && m_cwm_drag_source) {
@@ -1447,7 +1449,7 @@ index ed1c300..c51099d 100644
  	// The IGUITabControl renders visually using the skin's selected
  	// font, which we override for the duration of form drawing,
  	// but computes tab hotspots based on how it would have rendered
-@@ -3990,6 +4173,15 @@ bool GUIFormSpecMenu::preprocessEvent(const SEvent& event)
+@@ -3990,6 +4175,15 @@ bool GUIFormSpecMenu::preprocessEvent(const SEvent& event)
  
  void GUIFormSpecMenu::tryClose()
  {
@@ -1463,7 +1465,7 @@ index ed1c300..c51099d 100644
  	if (m_allowclose) {
  		doPause = false;
  		acceptInput(quit_mode_cancel);
-@@ -4001,6 +4193,21 @@ void GUIFormSpecMenu::tryClose()
+@@ -4001,6 +4195,21 @@ void GUIFormSpecMenu::tryClose()
  
  bool GUIFormSpecMenu::OnEvent(const SEvent& event)
  {
@@ -1485,7 +1487,7 @@ index ed1c300..c51099d 100644
  	if (event.EventType==EET_KEY_INPUT_EVENT) {
  		KeyPress kp(event.KeyInput);
  		if (event.KeyInput.PressedDown && (
-@@ -4757,6 +4964,22 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
+@@ -4757,6 +4966,22 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
  	}
  
  	if (event.EventType == EET_GUI_EVENT) {

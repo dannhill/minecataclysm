@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Exercise native NPC conversations in the actual Luanti renderer.
+"""Exercise native NPC trading in the actual Luanti renderer.
 
-Requires an independently created --create-conversation fixture, X11, xdotool,
+Requires an independently created --create-trade fixture, X11, xdotool,
 ImageMagick and Pillow. Never opens an existing user world.
 """
 import argparse
@@ -20,6 +20,7 @@ import tempfile
 import threading
 import sys
 import queue
+import struct
 
 
 def main():
@@ -28,6 +29,8 @@ def main():
         parser.add_argument('--' + name, type=Path, required=True)
     args = parser.parse_args()
     ws, out = args.workspace.resolve(), args.artifacts.resolve()
+    sys.path.insert(0,str(ws/'protocol/python'))
+    from CDDA.CWM.CwmMessage import CwmMessage
     out.mkdir(parents=True, exist_ok=False)
     user = out / 'user'
     shutil.copytree(args.fixture.resolve(), user)
@@ -58,8 +61,9 @@ def main():
                LOG_DIR=str(out / 'logs'), CDDA_BIN=str(ws / 'cdda/build/src/cdda-server'),
                LUANTI_BIN=str(ws / 'luanti/bin/luanti'), CDDA_CONTINUOUS='1')
     env.pop('CDDA_TERRAIN_DEMO', None)
-    # A byte-transparent local relay lets the real client lose IPC while a
-    # selection is queued under manual pause. Gameplay still runs in CDDA.
+    # A local relay records real renderer traffic and injects explicit protocol
+    # probes. It renumbers client envelope sequences for the additional frames;
+    # command/quote identity and payload bytes remain unchanged.
     scratch = tempfile.TemporaryDirectory(prefix='cwm-conversation-gui-')
     relay_path = Path(scratch.name) / 'relay.sock'
     native_path = out / 'native-socket'
@@ -78,26 +82,37 @@ def main():
                     continue
                 with client_socket, socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as server_socket:
                     server_socket.connect(native_path.read_text().strip())
+                    native_sequence=0;client_buffer=bytearray()
+                    def forward_client(packet):
+                        nonlocal native_sequence
+                        body=bytearray(packet[4:]);message=CwmMessage.GetRootAs(body)
+                        native_sequence+=1
+                        offset=message._tab.Offset(4)
+                        if not offset:raise AssertionError('Client sequence must be explicit')
+                        struct.pack_into('<Q',body,message._tab.Pos+offset,native_sequence)
+                        frame=struct.pack('>I',len(body))+body
+                        with (out/'client-wire.bin').open('ab') as capture:capture.write(frame)
+                        server_socket.sendall(frame)
                     while not stop.is_set():
                         if drop.is_set():
                             drop.clear()
                             break
-                        while not injections.empty():
-                            packet=injections.get_nowait()
-                            with (out/'client-wire.bin').open('ab') as capture:capture.write(packet)
-                            server_socket.sendall(packet)
+                        while not injections.empty():forward_client(injections.get_nowait())
                         readable, _, _ = select.select([client_socket, server_socket], [], [], .03)
-                        closed = False
+                        closed=False
                         for source in readable:
-                            data = source.recv(1 << 20)
-                            if not data:
-                                closed = True
-                                break
-                            with (out / ('client-wire.bin' if source is client_socket else 'server-wire.bin')).open('ab') as capture:
-                                capture.write(data)
-                            (server_socket if source is client_socket else client_socket).sendall(data)
-                        if closed:
-                            break
+                            data=source.recv(1<<20)
+                            if not data:closed=True;break
+                            if source is client_socket:
+                                client_buffer.extend(data)
+                                while len(client_buffer)>=4:
+                                    size=struct.unpack('>I',client_buffer[:4])[0]
+                                    if len(client_buffer)<size+4:break
+                                    forward_client(bytes(client_buffer[:size+4]));del client_buffer[:size+4]
+                            else:
+                                with (out/'server-wire.bin').open('ab') as capture:capture.write(data)
+                                client_socket.sendall(data)
+                        if closed:break
         except (ConnectionResetError, BrokenPipeError) as error:
             if shutting_down.is_set(): expected_shutdown_errors.append(str(error))
             else: relay_errors.append(str(error))
@@ -325,7 +340,6 @@ def main():
                 return found
             check('commit_acknowledged_after_native_transfer',matching_acks() and matching_acks()[-1].Accepted())
             # Replay exactly the accepted command on the same connection.
-            import struct
             before=len(matching_acks());payload=bytes(commit._tab.Bytes);injections.put(struct.pack('>I',len(payload))+payload)
             deadline=time.monotonic()+8
             while len(matching_acks())<=before and time.monotonic()<deadline:time.sleep(.05)
