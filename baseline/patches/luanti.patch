@@ -88,7 +88,7 @@ index 57e5a13..0826756 100644
  	get_setting_info("touch_controls").option_labels = {
  		["auto"] = fgettext_ne("Auto"),
 diff --git a/builtin/settingtypes.txt b/builtin/settingtypes.txt
-index 728eaf4..e2368c4 100644
+index 728eaf4..7ac8f98 100644
 --- a/builtin/settingtypes.txt
 +++ b/builtin/settingtypes.txt
 @@ -666,9 +666,9 @@ mute_sound (Mute sound) bool false
@@ -104,7 +104,7 @@ index 728eaf4..e2368c4 100644
  
  [**GUI]
  
-@@ -2557,3 +2557,20 @@ keymap_increase_viewing_range_min (View range increase key) key +
+@@ -2557,3 +2557,21 @@ keymap_increase_viewing_range_min (View range increase key) key +
  
  #    Key for decreasing the viewing range.
  keymap_decrease_viewing_range_min (View range decrease key) key -
@@ -119,6 +119,7 @@ index 728eaf4..e2368c4 100644
 +keymap_cdda_crouch (CDDA: crouch key) string KEY_LSHIFT
 +keymap_cdda_prone (CDDA: prone key) string KEY_KEY_X
 +keymap_cdda_body (CDDA: body sheet key) string KEY_KEY_H
++keymap_cdda_journal (CDDA: mission journal key) key KEY_KEY_J
 +
 +# Right mouse is the default held aim input when no nearby context action wins.
 +keymap_cdda_aim (CDDA held aim keyboard fallback) key KEY_KEY_F
@@ -331,7 +332,7 @@ index 16ceda4..20bd596 100644
  			float old_anim_speed = player->last_animation_speed;
  			m_velocity = v3f(0,0,0);
 diff --git a/src/client/game.cpp b/src/client/game.cpp
-index 27b5833..af5d468 100644
+index 27b5833..c6ece29 100644
 --- a/src/client/game.cpp
 +++ b/src/client/game.cpp
 @@ -8,6 +8,10 @@
@@ -345,10 +346,15 @@ index 27b5833..af5d468 100644
  #include "client.h"
  #include "client/clientevent.h"
  #include "client/gameui.h"
-@@ -118,6 +122,75 @@ struct TextDestPlayerInventory : public TextDest
+@@ -118,6 +122,80 @@ struct TextDestPlayerInventory : public TextDest
  	Client *m_client;
  };
  
++struct CwmMissionFormHandler : public TextDest {
++    uint64_t view,connection;
++    CwmMissionFormHandler(uint64_t v,uint64_t c):view(v),connection(c){m_formname="CWM_MISSIONS";}
++    void gotText(const StringMap& fields) override {cdda_client::CddaBridge::getInstance().missionJournalFields(view,connection,fields);}
++};
 +struct CwmTradeFormHandler : public TextDest {
 +    uint64_t id,quote,connection;
 +    CwmTradeFormHandler(uint64_t a,uint64_t b,uint64_t c):id(a),quote(b),connection(c){m_formname="CWM_TRADE";}
@@ -421,7 +427,7 @@ index 27b5833..af5d468 100644
  struct LocalFormspecHandler : public TextDest
  {
  	LocalFormspecHandler(const std::string &formname)
-@@ -134,6 +207,10 @@ struct LocalFormspecHandler : public TextDest
+@@ -134,6 +212,10 @@ struct LocalFormspecHandler : public TextDest
  	void gotText(const StringMap &fields)
  	{
  		if (m_formname == "MT_PAUSE_MENU") {
@@ -432,7 +438,7 @@ index 27b5833..af5d468 100644
  			if (fields.find("btn_sound") != fields.end()) {
  				g_gamecallback->changeVolume();
  				return;
-@@ -443,12 +520,15 @@ class GameGlobalShaderConstantSetter : public IShaderConstantSetter
+@@ -443,12 +525,15 @@ class GameGlobalShaderConstantSetter : public IShaderConstantSetter
  		get_sunlight_color(&sunlight, daynight_ratio);
  		m_day_light.set(sunlight, services);
  
@@ -450,7 +456,7 @@ index 27b5833..af5d468 100644
  		m_animation_timer_delta_vertex.set(&animation_timer_delta_f, services);
  		m_animation_timer_delta_pixel.set(&animation_timer_delta_f, services);
  
-@@ -811,6 +891,7 @@ class Game {
+@@ -811,6 +896,7 @@ class Game {
  
  	void showDeathFormspecLegacy();
  	void showPauseMenu();
@@ -458,7 +464,7 @@ index 27b5833..af5d468 100644
  
  	void pauseAnimation();
  	void resumeAnimation();
-@@ -932,6 +1013,7 @@ class Game {
+@@ -932,6 +1018,7 @@ class Game {
  	bool m_first_loop_after_window_activation = false;
  	bool m_camera_offset_changed = false;
  	bool m_game_focused = false;
@@ -466,7 +472,7 @@ index 27b5833..af5d468 100644
  
  	bool m_does_lost_focus_pause_game = false;
  
-@@ -1009,6 +1091,8 @@ Game::Game() :
+@@ -1009,6 +1096,8 @@ Game::Game() :
  
  Game::~Game()
  {
@@ -475,7 +481,7 @@ index 27b5833..af5d468 100644
  	delete client;
  	delete soundmaker;
  	sound_manager.reset();
-@@ -1181,6 +1265,13 @@ void Game::run()
+@@ -1181,6 +1270,13 @@ void Game::run()
  		updateCamera(dtime);
  		updateSound(dtime);
  		processPlayerInteraction(dtime, m_game_ui->m_flags.show_hud);
@@ -489,7 +495,7 @@ index 27b5833..af5d468 100644
  		updateFrame(&graph, &stats, dtime, cam_view);
  		updateProfilerGraphs(&graph);
  
-@@ -1239,6 +1330,8 @@ void Game::shutdown()
+@@ -1239,6 +1335,8 @@ void Game::shutdown()
  		}
  	}
  
@@ -498,7 +504,7 @@ index 27b5833..af5d468 100644
  	delete client;
  	client = nullptr;
  	delete soundmaker;
-@@ -2046,14 +2139,38 @@ void Game::processUserInput(f32 dtime)
+@@ -2046,14 +2144,45 @@ void Game::processUserInput(f32 dtime)
  	if (m_cache_doubletap_jump && runData.jump_timer_down <= 0.4f)
  		runData.jump_timer_down += dtime;
  
@@ -518,7 +524,14 @@ index 27b5833..af5d468 100644
  void Game::processKeyInput()
  {
 -	if (wasKeyDown(KeyType::DROP)) {
-+    if (wasKeyDown(KeyType::CDDA_QUICK_USE) && cdda_client::CddaBridge::getInstance().ownsPlayer(client)) {
++    if(wasKeyDown(KeyType::CDDA_JOURNAL) && cdda_client::CddaBridge::getInstance().ownsPlayer(client)) {
++        auto& bridge=cdda_client::CddaBridge::getInstance();const auto form=bridge.openMissionJournal();
++        if(!form.empty()) {
++            auto *&menu=m_game_ui->updateFormspec("CWM_MISSIONS");
++            GUIFormSpecMenu::create(menu,client,m_rendering_engine->get_gui_env(),&input->joystick,
++                new FormspecFormSource(form),new CwmMissionFormHandler(bridge.missionJournalView(),bridge.missionJournalConnection()),"",sound_manager.get());
++        }
++    } else if (wasKeyDown(KeyType::CDDA_QUICK_USE) && cdda_client::CddaBridge::getInstance().ownsPlayer(client)) {
 +        cdda_client::CddaBridge::getInstance().useQuickSlot();
 +    } else if (wasKeyDown(KeyType::CDDA_CRAFTING) && cdda_client::CddaBridge::getInstance().ownsPlayer(client)) {
 +        const auto form = cdda_client::CddaBridge::getInstance().openCrafting();
@@ -540,7 +553,7 @@ index 27b5833..af5d468 100644
  		dropSelectedItem(isKeyDown(KeyType::SNEAK));
  	} else if (wasKeyDown(KeyType::AUTOFORWARD)) {
  		toggleAutoforward();
-@@ -2063,6 +2180,8 @@ void Game::processKeyInput()
+@@ -2063,6 +2192,8 @@ void Game::processKeyInput()
  	} else if (wasKeyDown(KeyType::INVENTORY)) {
  		openInventory();
  	} else if (input->cancelPressed()) {
@@ -549,7 +562,7 @@ index 27b5833..af5d468 100644
  #ifdef __ANDROID__
  		m_android_chat_open = false;
  #endif
-@@ -2083,7 +2202,8 @@ void Game::processKeyInput()
+@@ -2083,7 +2214,8 @@ void Game::processKeyInput()
  	} else if (wasKeyDown(KeyType::FREEMOVE)) {
  		toggleFreeMove();
  	} else if (wasKeyDown(KeyType::JUMP)) {
@@ -559,7 +572,7 @@ index 27b5833..af5d468 100644
  	} else if (wasKeyDown(KeyType::PITCHMOVE)) {
  		togglePitchMove();
  	} else if (wasKeyDown(KeyType::FASTMOVE)) {
-@@ -2137,12 +2257,13 @@ void Game::processKeyInput()
+@@ -2137,12 +2269,13 @@ void Game::processKeyInput()
  		toggleMinimap(isKeyDown(KeyType::SNEAK));
  	} else if (wasKeyPressed(KeyType::TOGGLE_CHAT)) {
  		m_game_ui->toggleChat(client);
@@ -575,7 +588,7 @@ index 27b5833..af5d468 100644
  	} else if (wasKeyPressed(KeyType::TOGGLE_PROFILER)) {
  		m_game_ui->toggleProfiler();
  	} else if (wasKeyDown(KeyType::INCREASE_VIEWING_RANGE)) {
-@@ -2154,9 +2275,17 @@ void Game::processKeyInput()
+@@ -2154,9 +2287,17 @@ void Game::processKeyInput()
  	} else if (wasKeyDown(KeyType::ZOOM)) {
  		checkZoomEnabled();
  	} else if (wasKeyDown(KeyType::QUICKTUNE_NEXT)) {
@@ -595,7 +608,7 @@ index 27b5833..af5d468 100644
  	} else if (wasKeyDown(KeyType::QUICKTUNE_INC)) {
  		quicktune->inc();
  	} else if (wasKeyDown(KeyType::QUICKTUNE_DEC)) {
-@@ -2178,6 +2307,22 @@ void Game::processItemSelection(u16 *new_playeritem)
+@@ -2178,6 +2319,22 @@ void Game::processItemSelection(u16 *new_playeritem)
  	LocalPlayer *player = client->getEnv().getLocalPlayer();
  
  	*new_playeritem = player->getWieldIndex();
@@ -618,7 +631,7 @@ index 27b5833..af5d468 100644
  	u16 max_item = player->getMaxHotbarItemcount();
  	if (max_item == 0)
  		return;
-@@ -2238,6 +2383,18 @@ void Game::dropSelectedItem(bool single_item)
+@@ -2238,6 +2395,18 @@ void Game::dropSelectedItem(bool single_item)
  
  void Game::openInventory()
  {
@@ -637,7 +650,7 @@ index 27b5833..af5d468 100644
  	/*
  	 * Don't permit to open inventory is CAO or player doesn't exists.
  	 * This prevent showing an empty inventory at player load
-@@ -2737,8 +2894,68 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
+@@ -2737,8 +2906,68 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
  		control.aux1 = control.aux1 ^ true;
  	}
  
@@ -706,7 +719,7 @@ index 27b5833..af5d468 100644
  	//tt.stop();
  }
  
-@@ -2784,6 +3001,84 @@ inline void Game::step(f32 dtime)
+@@ -2784,6 +3013,93 @@ inline void Game::step(f32 dtime)
  
  	if (!m_is_paused)
  		client->step(dtime);
@@ -765,6 +778,15 @@ index 27b5833..af5d468 100644
 +        }
 +        bridge.setMenuPause(g_menumgr.menuCount() > 0);
 +		bridge.update(dtime);
++        if(bridge.takeMissionJournalClose()) {
++            auto *form=m_game_ui->getFormspecGUI();if(form && m_game_ui->getFormspecName()=="CWM_MISSIONS")form->quitMenu();
++        }
++        const auto journal_update=bridge.takeMissionJournalUpdate();
++        if(!journal_update.empty()) {
++            auto *&form=m_game_ui->updateFormspec("CWM_MISSIONS");
++            GUIFormSpecMenu::create(form,client,m_rendering_engine->get_gui_env(),&input->joystick,
++                new FormspecFormSource(journal_update),new CwmMissionFormHandler(bridge.missionJournalView(),bridge.missionJournalConnection()),"",sound_manager.get());
++        }
 +        auto *decision_menu=m_game_ui->getFormspecGUI();
 +        if(decision_menu && m_game_ui->getFormspecName()=="CWM_DECISION" && !bridge.getMetrics().pending_decision)
 +            decision_menu->quitMenu();
@@ -791,7 +813,7 @@ index 27b5833..af5d468 100644
  }
  
  static void pauseNodeAnimation(PausedNodesList &paused, scene::ISceneNode *node) {
-@@ -3246,6 +3541,7 @@ void Game::updateCamera(f32 dtime)
+@@ -3246,6 +3562,7 @@ void Game::updateCamera(f32 dtime)
  	tool_reload_ratio = MYMIN(tool_reload_ratio, 1.0);
  	camera->update(player, dtime, tool_reload_ratio);
  	camera->step(dtime);
@@ -799,7 +821,7 @@ index 27b5833..af5d468 100644
  
  	f32 camera_fov = camera->getFovMax();
  	v3s16 camera_offset = camera->getOffset();
-@@ -3262,6 +3558,7 @@ void Game::updateCamera(f32 dtime)
+@@ -3262,6 +3579,7 @@ void Game::updateCamera(f32 dtime)
  		if (m_camera_offset_changed) {
  			client->updateCameraOffset(camera_offset);
  			client->getEnv().updateCameraOffset(camera_offset);
@@ -807,7 +829,7 @@ index 27b5833..af5d468 100644
  
  			if (clouds)
  				clouds->updateCameraOffset(camera_offset);
-@@ -3314,6 +3611,8 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
+@@ -3314,6 +3632,8 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
  
  	const ItemDefinition &selected_def = selected_item.getDefinition(itemdef_manager);
  	f32 d = getToolRange(selected_item, hand_item, itemdef_manager);
@@ -816,7 +838,7 @@ index 27b5833..af5d468 100644
  
  	core::line3d<f32> shootline;
  
-@@ -3365,6 +3664,54 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
+@@ -3365,6 +3685,54 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
  	// but the halo rendering code is already inefficient so there's no point in optimizing it here
  	hud->updateSelectionMesh(camera_offset);
  
@@ -871,7 +893,7 @@ index 27b5833..af5d468 100644
  	// Allow digging again if button is not pressed
  	if (runData.digging_blocked && !isKeyDown(KeyType::DIG))
  		runData.digging_blocked = false;
-@@ -4247,7 +4594,8 @@ void Game::updateClouds(float dtime)
+@@ -4247,7 +4615,8 @@ void Game::updateClouds(float dtime)
  {
  	if (this->sky->getCloudsVisible()) {
  		this->clouds->setVisible(true);
@@ -881,7 +903,7 @@ index 27b5833..af5d468 100644
  		// this->camera->getPosition is not enough for third-person camera.
  		v3f camera_node_position = this->camera->getCameraNode()->getPosition();
  		v3s16 camera_offset      = this->camera->getOffset();
-@@ -4319,7 +4667,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
+@@ -4319,7 +4688,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
  	/*
  		Fog
  	*/
@@ -895,7 +917,7 @@ index 27b5833..af5d468 100644
  		this->driver->setFog(
  				fog_color,
  				video::EFT_FOG_LINEAR,
-@@ -4470,7 +4823,7 @@ void Game::showDeathFormspecLegacy()
+@@ -4470,7 +4844,7 @@ void Game::showDeathFormspecLegacy()
  }
  
  #define GET_KEY_NAME(KEY) gettext(getKeySetting(#KEY).name())
@@ -904,7 +926,7 @@ index 27b5833..af5d468 100644
  {
  	std::string control_text;
  
-@@ -4518,6 +4871,22 @@ void Game::showPauseMenu()
+@@ -4518,6 +4892,22 @@ void Game::showPauseMenu()
  		<< strgettext("Exit to Menu") << "]";
  	os		<< "button_exit[4," << (ypos++) << ";3,0.5;btn_exit_os;"
  		<< strgettext("Exit to OS")   << "]";
@@ -927,7 +949,7 @@ index 27b5833..af5d468 100644
  	if (!control_text.empty()) {
  	os		<< "textarea[7.5,0.25;3.9,6.25;;" << control_text << ";]";
  	}
-@@ -4536,8 +4905,8 @@ void Game::showPauseMenu()
+@@ -4536,8 +4926,8 @@ void Game::showPauseMenu()
  	}
  	os << "\n";
  	if (simple_singleplayer_mode || address.empty()) {
@@ -938,7 +960,7 @@ index 27b5833..af5d468 100644
  		// Note: Status of enable_damage and creative_mode settings is intentionally
  		// NOT shown here because the game might roll its own damage system and/or do
  		// a per-player Creative Mode, in which case writing it here would mislead.
-@@ -4559,10 +4928,15 @@ void Game::showPauseMenu()
+@@ -4559,10 +4949,15 @@ void Game::showPauseMenu()
  	}
  	os << ";]";
  
@@ -980,7 +1002,7 @@ index 2da9efa..93b5bcd 100644
  		v2s32 pos(floor(e->pos.X * (float) m_screensize.X + 0.5),
  				floor(e->pos.Y * (float) m_screensize.Y + 0.5));
 diff --git a/src/client/inputhandler.cpp b/src/client/inputhandler.cpp
-index 88969f0..207a07f 100644
+index 88969f0..eb91b6f 100644
 --- a/src/client/inputhandler.cpp
 +++ b/src/client/inputhandler.cpp
 @@ -3,6 +3,7 @@
@@ -991,7 +1013,7 @@ index 88969f0..207a07f 100644
  #include "settings.h"
  #include "util/numeric.h"
  #include "inputhandler.h"
-@@ -63,6 +64,15 @@ void KeyCache::populate()
+@@ -63,6 +64,16 @@ void KeyCache::populate()
  			getKeySetting("keymap_decrease_viewing_range_min");
  	key[KeyType::RANGESELECT] = getKeySetting("keymap_rangeselect");
  	key[KeyType::ZOOM] = getKeySetting("keymap_zoom");
@@ -999,6 +1021,7 @@ index 88969f0..207a07f 100644
 +    key[KeyType::CDDA_AIM] = getKeySetting("keymap_cdda_aim");
 +    key[KeyType::CDDA_RELOAD] = getKeySetting("keymap_cdda_reload");
 +    key[KeyType::CDDA_QUICK_USE] = getKeySetting("keymap_cdda_quick_use");
++    key[KeyType::CDDA_JOURNAL] = getKeySetting("keymap_cdda_journal");
 +    key[KeyType::CDDA_CRAFTING] = getKeySetting("keymap_cdda_crafting");
 +    key[KeyType::CDDA_CLOSE] = getKeySetting("keymap_cdda_close");
 +	key[KeyType::CDDA_RUN] = getKeySetting("keymap_cdda_run");
@@ -1007,7 +1030,7 @@ index 88969f0..207a07f 100644
  
  	key[KeyType::QUICKTUNE_NEXT] = getKeySetting("keymap_quicktune_next");
  	key[KeyType::QUICKTUNE_PREV] = getKeySetting("keymap_quicktune_prev");
-@@ -109,7 +119,11 @@ bool MyEventReceiver::OnEvent(const SEvent &event)
+@@ -109,7 +120,11 @@ bool MyEventReceiver::OnEvent(const SEvent &event)
  		return true;
  	}
  
@@ -1021,15 +1044,16 @@ index 88969f0..207a07f 100644
  		const KeyPress keyCode(event.KeyInput);
  		if (keyCode == getKeySetting("keymap_fullscreen")) {
 diff --git a/src/client/keys.h b/src/client/keys.h
-index 4bce131..c780fe5 100644
+index 4bce131..a1a1542 100644
 --- a/src/client/keys.h
 +++ b/src/client/keys.h
-@@ -56,6 +56,15 @@ class KeyType
+@@ -56,6 +56,16 @@ class KeyType
  		DECREASE_VIEWING_RANGE,
  		RANGESELECT,
  		ZOOM,
 +		CDDA_BODY,
 +        CDDA_CRAFTING,
++        CDDA_JOURNAL,
 +        CDDA_CLOSE,
 +        CDDA_AIM,
 +        CDDA_RELOAD,
@@ -1100,10 +1124,10 @@ index d6e2863..239953a 100644
  	std::vector<std::unique_ptr<MeshUpdateWorkerThread>> m_workers;
  };
 diff --git a/src/defaultsettings.cpp b/src/defaultsettings.cpp
-index 7758c96..def39c0 100644
+index 7758c96..b94a9aa 100644
 --- a/src/defaultsettings.cpp
 +++ b/src/defaultsettings.cpp
-@@ -165,13 +165,27 @@ void set_default_settings()
+@@ -165,13 +165,28 @@ void set_default_settings()
  	settings->setDefault("keymap_toggle_block_bounds", "");
  	settings->setDefault("keymap_toggle_hud", "KEY_F1");
  	settings->setDefault("keymap_toggle_chat", "KEY_F2");
@@ -1113,6 +1137,7 @@ index 7758c96..def39c0 100644
 +    settings->setDefault("keymap_cdda_aim", "KEY_KEY_F");
 +    settings->setDefault("keymap_cdda_reload", "KEY_KEY_R");
 +    settings->setDefault("keymap_cdda_quick_use", "KEY_KEY_G");
++    settings->setDefault("keymap_cdda_journal", "KEY_KEY_J");
 +    settings->setDefault("keymap_cdda_crafting", "KEY_KEY_K");
 +    settings->setDefault("keymap_cdda_close", "KEY_KEY_O");
 +	settings->setDefault("keymap_cdda_run", "KEY_LCONTROL");
@@ -2172,10 +2197,10 @@ index 0000000..e1e7236
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..a6d2780
+index 0000000..b2c1cf7
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,3373 @@
+@@ -0,0 +1,3438 @@
 +#include "cwm/product_language.hpp"
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
@@ -2191,6 +2216,7 @@ index 0000000..a6d2780
 +#include "decision_text.h"
 +#include "decision_dialog.h"
 +#include "trade_dialog.h"
++#include "mission_journal.h"
 +#include "cwm/cwm_clock.hpp"
 +#include "avatar_status.h"
 +#include "posture_input.h"
@@ -2327,6 +2353,19 @@ index 0000000..a6d2780
 +    
 +    irr::gui::IGUIStaticText* posture_text_{nullptr};
 +    irr::gui::IGUIStaticText* vertical_text_{nullptr};
++    MissionJournal journal_;
++    bool journal_open_=false,journal_dirty_=false,journal_close_=false;
++    uint64_t journal_query_=0,journal_command_=0,journal_next_query_=0;
++    void cancel_journal() {
++        journal_close_=journal_open_;journal_open_=journal_dirty_=false;
++        journal_={};journal_query_=journal_command_=0;
++    }
++    bool query_journal() {
++        if(!session_.ready() || journal_query_)return false;
++        auto b=session_.builder();auto bytes=b.build_mission_query(++journal_next_query_);
++        if(!connection_->send_message(bytes.data(),bytes.size()))return false;
++        journal_query_=journal_next_query_;journal_.waiting=true;journal_dirty_=true;return true;
++    }
 +    TradeDialog trade_dialog_;
 +    bool trade_dirty_=false,trade_close_=false;
 +    void cancel_trade_presentation() {
@@ -3048,7 +3087,7 @@ index 0000000..a6d2780
 +        commit_projection(old_blocks);
 +        origin_valid_ = false;
 +        pending_move_ = 0; metrics_.pending_decision = 0;
-+        cancel_trade_presentation();
++        cancel_trade_presentation();cancel_journal();
 +        player_feet_offset_ = player_eye_offset_ = 0.f;
 +        caption_seconds_ = 0; low_light_ = false; low_light_blend_ = 0;
 +        posture_input_ = {}; aim_input_ = {}; deferred_ranged_.reset(); last_aim_command_ = 0; posture_command_ = 0; deferred_opening_.reset();
@@ -3127,7 +3166,7 @@ index 0000000..a6d2780
 +        language_request_ = language_connection_ = 0;
 +        session_.disconnected();
 +        body_close_requested_ = true;
-+        cancel_pickup_selection(); cancel_equipment(); cancel_trade_presentation();
++        cancel_pickup_selection(); cancel_equipment(); cancel_trade_presentation();cancel_journal();
 +        decision_dialog_={};decision_dirty_=false;
 +        metrics_.connected = false; player_ready_ = false; pending_move_ = 0;
 +        deferred_opening_.reset();
@@ -3320,7 +3359,7 @@ index 0000000..a6d2780
 +        if (session_.clear_world) { clear_world(); session_.clear_world = false; }
 +        if (msg->payload_type() == CDDA::CWM::Payload::WorldReset) {
 +            language_request_ = language_connection_ = 0;
-+            cancel_pickup_selection(); cancel_equipment(); cancel_trade_presentation();
++            cancel_pickup_selection(); cancel_equipment(); cancel_trade_presentation();cancel_journal();
 +            body_close_requested_ = true;
 +            player_ready_ = false;
 +            metrics_.pending_decision = 0;
@@ -3795,6 +3834,12 @@ index 0000000..a6d2780
 +            }
 +
 +            case CDDA::CWM::Payload::CommandAck: {
++                if(const auto* ack=msg->payload_as_CommandAck();journal_command_ && ack->command_id()==journal_command_) {
++                    journal_command_=0;journal_.waiting=false;
++                    journal_.notice=ack->accepted()?::cwm::text("Tracked mission updated."):ack->error_message()->str();
++                    if(journal_open_)query_journal();
++                }
++
 +                if(const auto* ack=msg->payload_as_CommandAck();trade_commit_ && ack->command_id()==trade_commit_) {
 +                    trade_commit_=0;trade_dialog_.waiting=false;trade_dirty_=true;
 +                    if(ack->error_message())trade_dialog_.notice=ack->error_message()->str();
@@ -3830,6 +3875,13 @@ index 0000000..a6d2780
 +                break;
 +            }
 +
++            case CDDA::CWM::Payload::MissionView: {
++                const auto* v=msg->payload_as_MissionView();
++                if(journal_open_ && journal_query_==v->query_id()) {
++                    journal_query_=0;journal_.read(*v,session_.identity.connection);journal_dirty_=true;
++                }
++                break;
++            }
 +            case CDDA::CWM::Payload::TradeView: {
 +                const auto* view=msg->payload_as_TradeView();
 +                // This native view is emitted only outside a pending decision.
@@ -4777,6 +4829,44 @@ index 0000000..a6d2780
 +    }
 +    for(unsigned n=0;n<dialog.choices.size();++n)if(fields.count("choice_"+std::to_string(n))) {pimpl_->answer_decision(n);return;}
 +}
++uint64_t CddaBridge::missionJournalView() const {return pimpl_?pimpl_->journal_.view:0;}
++uint64_t CddaBridge::missionJournalConnection() const {return pimpl_?pimpl_->session_.identity.connection:0;}
++std::string CddaBridge::openMissionJournal() {
++    if(!pimpl_ || !pimpl_->session_.ready() || !pimpl_->player_ready_ || pimpl_->pending_move_ ||
++       pimpl_->metrics_.pending_decision || pimpl_->trade_dialog_.id || pimpl_->equipment_open_ ||
++       pimpl_->crafting_open_ || pimpl_->body_form_open_ || pimpl_->ground_container_open_)return {};
++    auto& i=*pimpl_;i.journal_={};i.journal_open_=true;i.journal_close_=false;
++    setMenuPause(true);i.query_journal();i.journal_dirty_=false;return i.journal_.form();
++}
++std::string CddaBridge::takeMissionJournalUpdate() {
++    if(!pimpl_ || !pimpl_->journal_open_ || !pimpl_->journal_dirty_)return {};
++    pimpl_->journal_dirty_=false;return pimpl_->journal_.form();
++}
++bool CddaBridge::takeMissionJournalClose() {
++    if(!pimpl_ || !pimpl_->journal_close_)return false;
++    pimpl_->journal_close_=false;return true;
++}
++void CddaBridge::missionJournalFields(uint64_t view,uint64_t connection,const std::unordered_map<std::string,std::string>& fields) {
++    if(!pimpl_ || !pimpl_->journal_open_)return;
++    auto& i=*pimpl_;auto& j=i.journal_;
++    if(connection!=i.session_.identity.connection || view!=j.view)return;
++    if(fields.count("quit") || fields.count("close")){i.cancel_journal();return;}
++    if(j.waiting || i.journal_command_)return;
++    if(fields.count("refresh")){j.notice.clear();i.query_journal();return;}
++    for(int n=0;n<3;++n)if(fields.count("tab_"+std::to_string(n))) {
++        j.tab=n;j.page=0;j.selected=-1;for(const auto& e:j.entries)if(e.state==n){j.selected=e.id;break;}
++    }
++    for(const auto& e:j.entries)if(e.state==j.tab && fields.count("mission_"+std::to_string(e.id)))j.selected=e.id;
++    if(fields.count("previous") && j.page)--j.page;
++    if(fields.count("next"))++j.page;
++    if(fields.count("track"))if(const auto* e=j.entry(j.selected);e && !e->tracked && e->state==0 && j.view && i.session_.ready()) {
++        auto b=i.session_.builder();const auto id=i.session_.next_command++;
++        auto bytes=b.build_mission_track(id,j.view,e->id,j.tracked);
++        if(i.connection_->send_message(bytes.data(),bytes.size())){i.journal_command_=id;j.waiting=true;}
++    }
++    i.journal_dirty_=true;
++}
++
 +std::string CddaBridge::openCrafting() {
 +    if (!pimpl_ || !pimpl_->session_.ready() || !pimpl_->player_ready_ || pimpl_->pending_move_ ||
 +        pimpl_->body_form_open_ || pimpl_->ground_container_open_ || pimpl_->equipment_open_ || pimpl_->metrics_.pending_decision) return {};
@@ -5551,10 +5641,10 @@ index 0000000..a6d2780
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.h b/src/cdda/cdda_bridge.h
 new file mode 100644
-index 0000000..ea0f22c
+index 0000000..cfeb725
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.h
-@@ -0,0 +1,193 @@
+@@ -0,0 +1,199 @@
 +// Luanti C++ CWM Presentation Bridge
 +// Licensed under Apache-2.0
 +#pragma once
@@ -5695,6 +5785,12 @@ index 0000000..ea0f22c
 +    void setMenuPause(bool paused);
 +    void toggleSimulationPause();
 +    void cycleSimulationSpeed();
++    std::string openMissionJournal();
++    void missionJournalFields(uint64_t view,uint64_t connection,const std::unordered_map<std::string,std::string>& fields);
++    std::string takeMissionJournalUpdate();
++    bool takeMissionJournalClose();
++    uint64_t missionJournalView() const;
++    uint64_t missionJournalConnection() const;
 +    std::string openCrafting();
 +    void craftingFields(const std::unordered_map<std::string, std::string>& fields);
 +    bool takeCraftingClose();
@@ -6683,6 +6779,69 @@ index 0000000..7d869d1
 +    return cycle.first + std::fmod(seconds * cycle.fps, cycle.last - cycle.first + 1);
 +}
 +} // namespace cdda_client
+diff --git a/src/cdda/mission_journal.h b/src/cdda/mission_journal.h
+new file mode 100644
+index 0000000..083aeac
+--- /dev/null
++++ b/src/cdda/mission_journal.h
+@@ -0,0 +1,57 @@
++#pragma once
++#include "decision_text.h"
++#include "avatar_status.h"
++#include "cwm/cwm_generated.h"
++#include "cwm/product_language.hpp"
++#include <vector>
++
++namespace cdda_client {
++struct JournalEntry {
++    int id=-1,state=0;bool tracked=false,limited=false;
++    std::string title,description,objective,giver,deadline,remaining,target;
++};
++struct MissionJournal {
++    uint64_t query=0,view=0,connection=0;int tracked=-1,selected=-1,tab=0;unsigned page=0;
++    bool truncated=false,waiting=false;std::string error,notice;
++    std::vector<JournalEntry> entries;
++    void read(const CDDA::CWM::MissionView& v,uint64_t generation) {
++        query=v.query_id();view=v.view_id();connection=generation;tracked=v.tracked_id();truncated=v.truncated();error=v.error()->str();waiting=false;entries.clear();
++        for(const auto* e:*v.entries())entries.push_back({e->id(),int(e->state()),e->tracked(),e->limited(),e->title()->str(),e->description()->str(),e->objective()->str(),e->giver()->str(),e->deadline()->str(),e->remaining()->str(),e->target_text()->str()});
++        if(!entry(selected) || entry(selected)->state!=tab) {selected=-1;for(const auto& e:entries)if(e.state==tab){selected=e.id;break;}}
++    }
++    const JournalEntry* entry(int id) const {for(const auto& e:entries)if(e.id==id)return &e;return nullptr;}
++    std::string form() const {
++        const char* tabs[]={"Active","Completed","Failed"};
++        std::string f="formspec_version[4]size[16,12]no_prepend[]bgcolor[#00000000]background9[0,0;16,12;mcl_base_textures_background9.png;false;7]style_type[label;textcolor=#323232]style_type[button;border=false;bgimg=mcl_inventory_button9.png;bgimg_pressed=mcl_inventory_button9_pressed.png;bgimg_middle=2,2]";
++        f+="label[0.5,0.5;"+::cwm::text("Mission journal")+"]label[0.5,1;"+::cwm::text("Time is paused. Browsing does not complete or accept missions.")+"]";
++        for(int n=0;n<3;++n) {
++            unsigned count=0;for(const auto& e:entries)if(e.state==n)++count;
++            f+="button["+std::to_string(.5+n*3.4)+",1.45;3.2,0.65;tab_"+std::to_string(n)+";"+(tab==n?"[ ":"")+::cwm::text(tabs[n])+" ("+std::to_string(count)+")"+(tab==n?" ]":"")+"]";
++        }
++        std::vector<const JournalEntry*> rows;for(const auto& e:entries)if(e.state==tab)rows.push_back(&e);
++        const unsigned pages=std::max<size_t>(1,(rows.size()+7)/8),p=std::min(page,pages-1);
++        for(unsigned n=0;n<8 && p*8+n<rows.size();++n) {
++            const auto& e=*rows[p*8+n];const auto key="mission_"+std::to_string(e.id),y=std::to_string(2.4+n*.84);
++            if(e.id==selected)f+="box[0.5,"+y+";5.3,0.74;#E8CF5788]";
++            f+="button[0.5,"+y+";5.3,0.74;"+key+";"+statusEscape((e.tracked?"* ":"")+decisionPlainText(e.title))+"]tooltip["+key+";"+statusEscape(decisionPlainText(e.title))+"]";
++        }
++        f+="button[0.5,9.3;1,0.65;previous;<]label[1.8,9.65;"+std::to_string(p+1)+" / "+std::to_string(pages)+"]button[4.8,9.3;1,0.65;next;>]";
++        if(const auto* e=entry(selected);e && e->state==tab) {
++            std::string text="<global color=#323232 size=18><b>"+decisionRichText(e->title)+"</b>\n"+::cwm::text(tabs[tab])+ (e->tracked?" · "+::cwm::text("Tracked mission"):"")+"\n\n";
++            if(!e->giver.empty())text+="<b>"+::cwm::text("Quest giver")+":</b> "+decisionRichText(e->giver)+"\n\n";
++            text+="<b>"+::cwm::text("Objective")+":</b> "+decisionRichText(e->objective)+"\n\n";
++            text+=decisionRichText(e->description.empty()?::cwm::text("This native mission has no journal description. Ask the quest giver for details."):e->description)+"\n\n";
++            if(!e->deadline.empty())text+="<b>"+::cwm::text("Deadline")+":</b> "+decisionRichText(e->deadline)+"\n";
++            if(!e->remaining.empty())text+=::cwm::text("Time remaining")+": "+decisionRichText(e->remaining)+"\n";
++            if(!e->target.empty())text+="\n<b>"+::cwm::text("Known destination (overmap coordinates)")+":</b>\n"+decisionRichText(e->target);
++            else text+="\n"+::cwm::text("No destination is recorded in the native journal.");
++            if(e->limited)text+="\n\n"+::cwm::text("Some dynamic or very long details are unavailable in this read-only view.");
++            f+="hypertext[6.2,2.4;9.3,7.55;mission_details;"+statusEscape(text)+"]set_focus[mission_details;true]";
++            if(e->state==0 && !e->tracked && view && !waiting)f+="button[10.9,10.9;4.6,0.65;track;"+::cwm::text("Track this mission")+"]";
++        } else f+="hypertext[6.2,2.4;9.3,7.55;mission_details;"+statusEscape("<global color=#323232 size=18>"+::cwm::text(view?"No known missions in this category.":"Reading the native journal..."))+"]";
++        const auto message=waiting?::cwm::text("Waiting for the native journal..."):!notice.empty()?notice:!error.empty()?error:truncated?::cwm::text("Journal is too long: some entries are omitted."):"";
++        f+="hypertext[0.5,10.1;15,0.65;journal_notice;"+statusEscape("<global color=#963F25 size=16>"+decisionRichText(message))+"]button_exit[0.5,10.9;3.3,0.65;close;"+::cwm::text("Close")+"]button[4.1,10.9;3.3,0.65;refresh;"+::cwm::text("Refresh")+"]";
++        return f;
++    }
++};
++}
 diff --git a/src/cdda/posture_input.h b/src/cdda/posture_input.h
 new file mode 100644
 index 0000000..ca45474

@@ -548,6 +548,25 @@ table TradeCommitRequest { command_id: uint64; trade_id: uint64; quote_id: uint6
 table TradeCancelRequest { trade_id: uint64; }
 table TradeClosed { trade_id: uint64; accepted: bool; error: string; }
 
+enum MissionState : uint8 { ACTIVE, COMPLETED, FAILED }
+table MissionEntry {
+    id: int32;
+    state: MissionState;
+    tracked: bool;
+    title: string;
+    description: string;
+    objective: string;
+    giver: string;
+    deadline: string;
+    remaining: string;
+    target: Coord3i;
+    target_text: string;
+    limited: bool;
+}
+table MissionQueryRequest { query_id: uint64; }
+table MissionView { query_id: uint64; view_id: uint64; tracked_id: int32 = -1; entries: [MissionEntry]; truncated: bool; error: string; }
+table MissionTrackRequest { command_id: uint64; view_id: uint64; mission_id: int32 = -1; expected_tracked_id: int32 = -1; }
+
 table DecisionResponse {
     decision_id: uint64;
     choice: uint16;
@@ -617,6 +636,9 @@ union Payload {
     ,TradeCommitRequest
     ,TradeCancelRequest
     ,TradeClosed
+    ,MissionQueryRequest
+    ,MissionView
+    ,MissionTrackRequest
 }
 
 table CwmMessage {

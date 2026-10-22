@@ -59,3 +59,6 @@ class Payload(object):
     TradeCommitRequest = 53
     TradeCancelRequest = 54
     TradeClosed = 55
+    MissionQueryRequest = 56
+    MissionView = 57
+    MissionTrackRequest = 58

@@ -21,6 +21,22 @@ inline uint64_t fresh_identity() {
     const uint64_t value = (uint64_t(random()) << 32) ^ random();
     return value ? value : 1;
 }
+inline bool valid_missions(const CDDA::CWM::MissionView* v) {
+    const auto text=[](const auto* s,size_t bound){return s && s->size()<=bound && s->str().find('\0')==std::string::npos;};
+    if(!v || !v->query_id() || v->tracked_id() < -1 || !v->entries() || v->entries()->size()>2048 || !text(v->error(),4096))return false;
+    if(v->error()->size())return !v->view_id() && !v->entries()->size() && v->tracked_id()==-1 && !v->truncated();
+    if(!v->view_id())return false;
+    std::set<int> ids;unsigned tracked=0;
+    for(const auto* e:*v->entries()) {
+        if(!e || e->id()<0 || !ids.insert(e->id()).second || unsigned(e->state())>2 ||
+           !text(e->title(),4096) || !e->title()->size() || !text(e->description(),16384) || !text(e->objective(),4096) ||
+           !text(e->giver(),4096) || !text(e->deadline(),4096) || !text(e->remaining(),4096) || !text(e->target_text(),4096) ||
+           (!e->deadline()->size() && e->remaining()->size()) || (!e->target() && e->target_text()->size()) ||
+           (e->target() && !e->target_text()->size()))return false;
+        if(e->tracked() && (e->state()!=CDDA::CWM::MissionState::ACTIVE || e->id()!=v->tracked_id() || ++tracked>1))return false;
+    }
+    return v->tracked_id()==-1 ? !tracked : tracked==1 || v->truncated();
+}
 inline bool valid_trade(const CDDA::CWM::TradeView* v) {
     const auto text=[](const auto* s,size_t n){return s && s->size()<=n && s->str().find('\0')==std::string::npos;};
     if(!v || !v->trade_id() || !v->quote_id() || !(v->npc_id()>>63) ||
@@ -444,6 +460,10 @@ public:
             return true;
         }
         if (msg.payload_type() == Payload::HeartbeatAck) return true;
+        if (ready() && msg.payload_type() == Payload::MissionView) {
+            if(!valid_missions(msg.payload_as_MissionView())) {request_resync(channel);return false;}
+            return true;
+        }
         if (ready() && msg.payload_type() == Payload::TradeView) {
             if(!valid_trade(msg.payload_as_TradeView())) {request_resync(channel);return false;}
             return true;

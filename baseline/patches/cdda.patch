@@ -4738,6 +4738,119 @@ index 0000000..b8dd82d
 +};
 +
 +} // namespace cwm
+diff --git a/src/cwm/cwm_missions.h b/src/cwm/cwm_missions.h
+new file mode 100644
+index 0000000..e328e05
+--- /dev/null
++++ b/src/cwm/cwm_missions.h
+@@ -0,0 +1,107 @@
++#pragma once
++#include "avatar.h"
++#include "calendar.h"
++#include "game.h"
++#include "mission.h"
++#include "npc.h"
++#include "output.h"
++#include "cwm/cwm_protocol.hpp"
++#include "cwm/product_language.hpp"
++#include <set>
++
++namespace cwm {
++// A journal projects only the avatar's three native history lists. It never
++// calls process/is_complete/goal_condition or the general random tag parser.
++class MissionJournal {
++    uint64_t next_view_=1,view_=0;
++    int tracked_=-1;
++    std::set<int> active_;
++    static std::string bounded(std::string value,size_t bound,bool& limited) {
++        for(char& c:value)if(!c){c=' ';limited=true;}
++        if(value.size()>bound) {
++            size_t end=bound;
++            while(end && (static_cast<unsigned char>(value[end])&0xC0)==0x80)--end;
++            value.resize(end);limited=true;
++        }
++        return value;
++    }
++public:
++    static int tracked(const avatar& u) {return u.get_active_mission()?u.get_active_mission()->get_id():-1;}
++    void clear() {view_=0;active_.clear();tracked_=-1;}
++    uint64_t view() const {return view_;}
++    static std::string text(std::string source,const avatar& u,const std::string& giver,bool& limited,size_t bound=16384) {
++        source=remove_color_tags(source);
++        std::string result;
++        for(size_t at=0;at<source.size();) {
++            if(source[at]!='<') {result+=source[at++];continue;}
++            auto end=source.find('>',at);
++            if(end==std::string::npos) {result+=source.substr(at);break;}
++            const auto token=source.substr(at,end-at+1);
++            if(token=="<u_name>")result+=u.get_name();
++            else if(token=="<npc_name>")result+=giver.empty()?::cwm::tr("Quest giver"):giver;
++            else {result+=::cwm::tr("[dynamic detail: ask the quest giver]");limited=true;}
++            at=end+1;
++        }
++        return bounded(std::move(result),bound,limited);
++    }
++    static std::string objective(mission_goal goal) {
++        switch(goal) {
++            case MGOAL_GO_TO:case MGOAL_GO_TO_TYPE:return ::cwm::tr("Reach the mission destination.");
++            case MGOAL_FIND_ITEM:case MGOAL_FIND_ANY_ITEM:case MGOAL_FIND_ITEM_GROUP:return ::cwm::tr("Find the requested items.");
++            case MGOAL_FIND_MONSTER:return ::cwm::tr("Find and retrieve the mission creature.");
++            case MGOAL_FIND_NPC:return ::cwm::tr("Find the mission character.");
++            case MGOAL_TALK_TO_NPC:return ::cwm::tr("Speak with the mission character.");
++            case MGOAL_RECRUIT_NPC:case MGOAL_RECRUIT_NPC_CLASS:return ::cwm::tr("Recruit the requested companion.");
++            case MGOAL_ASSASSINATE:case MGOAL_KILL_MONSTER:case MGOAL_KILL_MONSTERS:case MGOAL_KILL_MONSTER_TYPE:case MGOAL_KILL_MONSTER_SPEC:case MGOAL_KILL_NEMESIS:return ::cwm::tr("Defeat the mission targets.");
++            case MGOAL_COMPUTER_TOGGLE:return ::cwm::tr("Activate the mission terminal.");
++            default:return ::cwm::tr("Follow the native mission instructions; discuss progress with the quest giver.");
++        }
++    }
++    std::vector<uint8_t> query(const avatar& u,game& g,uint64_t query,cdda::cwm::MessageBuilder& wire,const std::string& error={}) {
++        clear();auto& f=wire.builder();
++        std::vector<flatbuffers::Offset<CDDA::CWM::MissionEntry>> rows;
++        bool truncated=false;
++        if(error.empty()) {
++            view_=next_view_++;tracked_=tracked(u);std::set<int> ids;
++            const std::vector<std::vector<mission*>> lists{u.get_active_missions(),u.get_completed_missions(),u.get_failed_missions()};
++            for(unsigned state=0;state<lists.size();++state)for(const mission* m:lists[state]) {
++                if(!m || m->get_id()<0 || !ids.insert(m->get_id()).second)continue;
++                if(rows.size()==2048){truncated=true;continue;}
++                bool limited=false;
++                std::string giver;
++                if(m->get_npc_id().is_valid())if(const auto* person=g.find_npc(m->get_npc_id()))giver=person->disp_name();
++                giver=bounded(remove_color_tags(giver),4096,limited);
++                const auto title=text(m->name(),u,giver,limited,4096);
++                const auto description=text(m->get_description(),u,giver,limited);
++                std::string deadline,remaining,target_text;
++                if(m->has_deadline()) {
++                    deadline=to_string(m->get_deadline());
++                    if(state!=1) {
++                        const auto time=m->get_deadline()-calendar::turn;
++                        remaining=time<=0_turns ? ::cwm::tr("None!") : u.has_watch()?to_string(time):to_string_approx(time);
++                    }
++                }
++                std::optional<CDDA::CWM::Coord3i> target;
++                if(m->has_target()) {
++                    const auto p=m->get_target();target=CDDA::CWM::Coord3i(p.x(),p.y(),p.z());
++                    target_text=::cwm::tr("Target: ")+p.to_string()+"  "+::cwm::tr("You: ")+u.global_omt_location().to_string();
++                }
++                if(state==0)active_.insert(m->get_id());
++                rows.push_back(CDDA::CWM::CreateMissionEntry(f,m->get_id(),static_cast<CDDA::CWM::MissionState>(state),
++                    state==0 && m->get_id()==tracked_,f.CreateString(title.empty()?::cwm::tr("Unnamed mission"):title),
++                    f.CreateString(description),f.CreateString(objective(m->get_type().goal)),f.CreateString(giver),
++                    f.CreateString(deadline),f.CreateString(remaining),target?&*target:nullptr,f.CreateString(target_text),limited));
++            }
++        }
++        return wire.finish_message(CDDA::CWM::Payload::MissionView,CDDA::CWM::CreateMissionView(f,query,view_,tracked_,f.CreateVector(rows),truncated,f.CreateString(error)).Union());
++    }
++    std::string track(avatar& u,uint64_t view,int id,int expected) {
++        if(!view || view!=view_ || !active_.count(id))return ::cwm::tr("Journal expired: refresh the mission list.");
++        if(expected!=tracked_ || expected!=tracked(u))return ::cwm::tr("Tracked mission changed: refresh the journal.");
++        for(mission* m:u.get_active_missions())if(m && m->get_id()==id && m->in_progress() && m->get_assigned_player_id()==u.getID()) {
++            u.set_active_mission(*m);clear();return {};
++        }
++        return ::cwm::tr("Mission is no longer active or assigned to this character.");
++    }
++};
++}
 diff --git a/src/cwm/cwm_presentation.h b/src/cwm/cwm_presentation.h
 new file mode 100644
 index 0000000..ba86a11
@@ -4935,10 +5048,10 @@ index 0000000..d077b2c
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..701c460
+index 0000000..bfea9a5
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,1272 @@
+@@ -0,0 +1,1286 @@
 +#include "cwm/product_language.hpp"
 +#include "cwm_motion.h"
 +// CDDA CWM IPC Server Implementation
@@ -5040,7 +5153,7 @@ index 0000000..701c460
 +    if (pending_decision_ && decision_choices_ && !decision_answer_)
 +        decision_answer_ = static_cast<int>(decision_choices_) - 1;
 +    inventory_work_command_ = 0; inventory_work_settled_ = false;
-+    inventory_selection_.clear();
++    inventory_selection_.clear();mission_journal_.clear();
 +    held_direction_ = 0; intent_x_ = intent_y_ = 0; menu_pause_ = false;
 +    motion_sample_ = clock_.elapsed();
 +    for (const auto& command : commands_)
@@ -5760,6 +5873,13 @@ index 0000000..701c460
 +            decision_answer_ = response->choice();
 +        return;
 +    }
++    if(const auto* request=msg->payload_as_MissionQueryRequest()) {
++        if(!request->query_id()){server_->client()->close();return;}
++        cdda::cwm::MessageBuilder reply(sequence_counter_,world_revision_,identity_);
++        emit(mission_journal_.query(u,g,request->query_id(),reply,
++            pending_decision_ || trade_context_ ? ::cwm::tr("Finish the open decision before opening the journal.") : ""));
++        return;
++    }
 +    if (handle_trade_message(*msg,u,m,g)) return;
 +    if ((pending_decision_ || trade_context_) && msg->payload_type() != Payload::SimulationControlRequest &&
 +        msg->payload_type() != Payload::MovementIntentRequest &&
@@ -5792,7 +5912,9 @@ index 0000000..701c460
 +    }
 +    uint64_t id = 0;
 +    std::string signature;
-+    if (const auto* request = msg->payload_as_MoveRequest()) {
++    if(const auto* request=msg->payload_as_MissionTrackRequest()) {
++        id=request->command_id();signature="mission-track:"+std::to_string(request->view_id())+":"+std::to_string(request->mission_id())+":"+std::to_string(request->expected_tracked_id());
++    } else if (const auto* request = msg->payload_as_MoveRequest()) {
 +        id = request->command_id(); signature = "move:" + std::to_string(int(request->direction()));
 +    } else if (const auto* request = msg->payload_as_InteractRequest()) {
 +        id = request->command_id(); signature = "interact:" + std::to_string(int(request->action()));
@@ -5884,6 +6006,11 @@ index 0000000..701c460
 +    }
 +    if (status == Status::Expired) { send_result({id, false, "Command identity expired"}, u, m, g); return; }
 +    if (status != Status::Fresh) { server_->client()->close(); return; }
++    if(const auto* request=msg->payload_as_MissionTrackRequest()) {
++        const auto error=mission_journal_.track(u,request->view_id(),request->mission_id(),request->expected_tracked_id());
++        if(error.empty())++world_revision_;
++        send_result({id,error.empty(),error},u,m,g);return; // Native UI selection, no gameplay turn or move cost.
++    }
 +    if(const auto* request=msg->payload_as_CraftingFavoriteRequest()) {
 +        const auto error=crafting_selection_.set_favorite(u,request->view_id(),request->entry_id(),request->favorite(),request->expected_favorite());
 +        if(error.empty())++world_revision_;
@@ -6213,10 +6340,10 @@ index 0000000..701c460
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.h b/src/cwm/cwm_server.h
 new file mode 100644
-index 0000000..eaa6053
+index 0000000..462f36a
 --- /dev/null
 +++ b/src/cwm/cwm_server.h
-@@ -0,0 +1,164 @@
+@@ -0,0 +1,166 @@
 +// CDDA CWM IPC Server
 +// Licensed under Apache-2.0
 +#pragma once
@@ -6233,6 +6360,7 @@ index 0000000..eaa6053
 +#include "cwm_inventory.h"
 +#include "cwm_crafting.h"
 +#include "cwm_ranged.h"
++#include "cwm_missions.h"
 +#include "cwm/cwm_session.hpp"
 +#include "cwm/cwm_clock.hpp"
 +
@@ -6311,6 +6439,7 @@ index 0000000..eaa6053
 +
 +    RangedSelection ranged_selection_;
 +    CraftingSelection crafting_selection_;
++    MissionJournal mission_journal_;
 +    std::chrono::steady_clock::time_point next_crafting_query_{};
 +    std::chrono::steady_clock::time_point next_inventory_query_{};
 +    std::chrono::steady_clock::time_point handshake_deadline_;
@@ -9971,10 +10100,10 @@ index 0000000..39d991c
 +}
 diff --git a/tests/cwm_runtime_test.cpp b/tests/cwm_runtime_test.cpp
 new file mode 100644
-index 0000000..4370855
+index 0000000..46921e6
 --- /dev/null
 +++ b/tests/cwm_runtime_test.cpp
-@@ -0,0 +1,661 @@
+@@ -0,0 +1,714 @@
 +#include "cwm_motion.h"
 +#include "cata_catch.h"
 +#include "avatar.h"
@@ -10635,4 +10764,57 @@ index 0000000..4370855
 +    CHECK_FALSE(npc_trading::npc_can_fit_items(np,{{loc,200000}}));
 +    CHECK(npc_trading::npc_will_accept_trade(np,INT_MAX));
 +    CHECK_FALSE(npc_trading::npc_will_accept_trade(np,-INT_MAX));
++}
++
++
++#include "cwm/cwm_missions.h"
++#include "cwm/cwm_session.hpp"
++#include "json.h"
++#include <sstream>
++
++static std::string journal_canonical_state( const avatar &u ) {
++    std::ostringstream stream;JsonOut out(stream);out.start_object();out.member("avatar");u.serialize(out);
++    out.member("missions");mission::serialize_all(out);out.end_object();return stream.str();
++}
++TEST_CASE("cwm_journal_queries_only_known_native_histories_without_effects", "[cwm][journal]") {
++    prepare_runtime();auto& u=get_avatar();u.setID(character_id(101),false);u.reset_all_missions();mission::clear_all();
++    int evaluated=0;
++    mission_type kind=*mission_type::get(mission_type_id("MISSION_GET_FLAG"));
++    kind.start=[](mission*){};kind.end=[](mission*){};kind.fail=[](mission*){};
++    kind.goal=MGOAL_CONDITION;kind.goal_condition=[&](dialogue&){++evaluated;return true;};
++    auto make=[&](bool assigned) {
++        auto value=kind.create(character_id(999));mission::add_existing(value);auto* m=mission::find(value.get_id());
++        if(assigned) {m->assign(u);}
++        return m;
++    };
++    auto* first=make(true);auto* second=make(true);auto* success=make(true);success->wrap_up();
++    auto* failed=make(true);failed->fail();auto* hidden=make(false);
++    second->set_target(tripoint_abs_omt(123,456,-2));u.set_active_mission(*second);
++    const auto before=journal_canonical_state(u);const auto engine=rng_get_engine();const auto time=calendar::turn;const auto moves=u.moves;
++    cwm::MissionJournal journal;
++    for(unsigned n=1;n<4;++n) {
++        cdda::cwm::MessageBuilder wire(1,1);auto bytes=journal.query(u,*g,n,wire);
++        REQUIRE(cdda::cwm::MessageVerifier::verify(bytes.data(),bytes.size()));
++        auto* v=CDDA::CWM::GetCwmMessage(bytes.data())->payload_as_MissionView();REQUIRE(cdda::cwm::valid_missions(v));
++        REQUIRE(v->entries()->size()==4);CHECK(v->tracked_id()==second->get_id());
++        for(const auto* e:*v->entries())CHECK(e->id()!=hidden->get_id());
++        CHECK(v->entries()->Get(0)->id()==first->get_id());CHECK(v->entries()->Get(1)->target()->z()==-2);
++        CHECK(v->entries()->Get(2)->state()==CDDA::CWM::MissionState::COMPLETED);CHECK(v->entries()->Get(3)->state()==CDDA::CWM::MissionState::FAILED);
++        CHECK(journal_canonical_state(u)==before);CHECK(rng_get_engine()==engine);CHECK(calendar::turn==time);CHECK(u.moves==moves);CHECK(evaluated==0);
++    }
++    const auto view=journal.view();
++    CHECK_FALSE(journal.track(u,view,hidden->get_id(),second->get_id()).empty());
++    CHECK_FALSE(journal.track(u,view,success->get_id(),second->get_id()).empty());
++    CHECK_FALSE(journal.track(u,view,first->get_id(),-1).empty());
++    CHECK(journal.track(u,view,first->get_id(),second->get_id()).empty());CHECK(u.get_active_mission()==first);
++    CHECK_FALSE(journal.track(u,view,second->get_id(),first->get_id()).empty());
++    CHECK(calendar::turn==time);CHECK(u.moves==moves);CHECK(rng_get_engine()==engine);CHECK(evaluated==0);
++    u.reset_all_missions();mission::clear_all();
++}
++TEST_CASE("cwm_journal_dynamic_text_is_bounded_without_sampling", "[cwm][journal]") {
++    prepare_runtime();auto& u=get_avatar();u.name="Journal survivor";bool limited=false;auto engine=rng_get_engine();
++    CHECK(cwm::MissionJournal::text("<color_red>Hi <u_name></color> <reward_count:icon> <punc>",u,"Giver",limited)=="Hi Journal survivor [dynamic detail: ask the quest giver] [dynamic detail: ask the quest giver]");
++    CHECK(limited);CHECK(rng_get_engine()==engine);
++    limited=false;const auto clipped=cwm::MissionJournal::text(std::string(4095,'x')+"è",u,"",limited,4096);
++    CHECK(clipped.size()==4095);CHECK(limited);
 +}

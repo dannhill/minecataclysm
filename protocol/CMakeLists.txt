@@ -109,3 +109,7 @@ add_test(NAME test_disassembly COMMAND test_disassembly)
 add_executable(test_trade tests/test_trade.cpp)
 target_link_libraries(test_trade PRIVATE cwm_protocol)
 add_test(NAME test_trade COMMAND test_trade)
+
+add_executable(test_missions tests/test_missions.cpp)
+target_link_libraries(test_missions PRIVATE cwm_protocol)
+add_test(NAME test_missions COMMAND test_missions)

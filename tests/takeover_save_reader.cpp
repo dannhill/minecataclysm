@@ -18,6 +18,9 @@
 #include "map.h"
 #include "monster.h"
 #include "npc.h"
+#include "mission.h"
+#include <sstream>
+#include <climits>
 #include "dialogue_chatbin.h"
 #include "options.h"
 #include "overmap.h"
@@ -52,6 +55,7 @@ int main(int argc, const char *argv[]) {
     bool create_disassembly = false;
     bool create_conversation = false;
     bool create_trade = false;
+    bool create_journal = false;
     bool create_ranged = false;
     bool create_transfer = false;
     bool create_external = false;
@@ -69,6 +73,7 @@ int main(int argc, const char *argv[]) {
         else if (arg == "--create-transfer") { create = true; create_transfer = true; create_posture = true; }
         else if (arg == "--create-ranged") { create = true; create_ranged = true; create_posture = true; }
         else if (arg == "--create-crafting") { create = true; create_crafting = true; create_posture = true; }
+        else if (arg == "--create-journal") { create = true; create_journal = true; create_conversation = true; create_posture = true; }
         else if (arg == "--create-trade") { create = true; create_trade = true; create_conversation = true; create_posture = true; }
         else if (arg == "--create-conversation") { create = true; create_conversation = true; create_posture = true; }
         else if (arg == "--create-disassembly") { create = true; create_disassembly = true; create_posture = true; }
@@ -522,6 +527,25 @@ int main(int argc, const char *argv[]) {
                 guy->op_of_u.owed=100000;guy->op_of_u.trust=20;
             }
             overmap_buffer.insert_npc(guy); g->load_npcs();
+            if(create_journal) {
+                u.reset_all_missions();mission::clear_all();
+                auto make=[&](const std::string& type,const std::string& status,bool assigned,bool target,bool deadline) {
+                    const int uid=g->assign_mission_id();
+                    std::ostringstream s;JsonOut saved(s);saved.start_object();saved.member("type_id",type);saved.member("uid",uid);
+                    saved.member("status",status);saved.member("npc_id",guy->getID());saved.member("player_id",-1);
+                    const auto p=u.global_omt_location();saved.member("target",std::vector<int>{target?p.x()+4:INT_MIN,target?p.y()-3:INT_MIN,target?-1:INT_MIN});
+                    saved.member("deadline",deadline?calendar::turn+3_hours:calendar::turn_zero);saved.end_object();
+                    std::istringstream in(s.str());JsonIn json(in);auto jo=json.get_object();mission value;value.deserialize(jo);mission::add_existing(value);
+                    auto* m=mission::find(uid);if(assigned){m->assign(u);if(status!="in_progress")u.on_mission_finished(*m);}
+                    return m;
+                };
+                auto* first=make("MISSION_GET_FLAG","in_progress",true,true,false);
+                auto* timed=make("MISSION_GET_ANTIBIOTICS","in_progress",true,false,true);
+                make("MISSION_GET_FLAG","success",true,false,false);make("MISSION_GET_FLAG","failure",true,false,false);
+                auto* offered=make("MISSION_GET_INHALER","yet_to_start",false,false,false);
+                guy->chatbin.missions.clear();guy->chatbin.missions_assigned={first,timed};guy->chatbin.missions.push_back(offered);
+                u.set_active_mission(*timed);
+            }
         } else if (!create_vertical && !create_pickup && !create_body && !create_combat && !create_posture) {
         g->place_critter_at(mtype_id("mon_zombie"), tripoint(65,65,0));
         auto guy = make_shared_fast<npc>();
@@ -612,6 +636,7 @@ int main(int argc, const char *argv[]) {
     json.member("monsters"); json.start_array();
     for (monster &who : g->all_monsters()) who.serialize(json);
     json.end_array();
+    json.member("missions");mission::serialize_all(json);
     json.member("npcs"); json.start_array();
     for (npc &who : g->all_npcs()) who.serialize(json);
     json.end_array();

@@ -247,6 +247,18 @@ struct TradeCancelRequestBuilder;
 struct TradeClosed;
 struct TradeClosedBuilder;
 
+struct MissionEntry;
+struct MissionEntryBuilder;
+
+struct MissionQueryRequest;
+struct MissionQueryRequestBuilder;
+
+struct MissionView;
+struct MissionViewBuilder;
+
+struct MissionTrackRequest;
+struct MissionTrackRequestBuilder;
+
 struct DecisionResponse;
 struct DecisionResponseBuilder;
 
@@ -685,6 +697,39 @@ inline const char *EnumNameRangedAction(RangedAction e) {
   return EnumNamesRangedAction()[index];
 }
 
+enum class MissionState : uint8_t {
+  ACTIVE = 0,
+  COMPLETED = 1,
+  FAILED = 2,
+  MIN = ACTIVE,
+  MAX = FAILED
+};
+
+inline const MissionState (&EnumValuesMissionState())[3] {
+  static const MissionState values[] = {
+    MissionState::ACTIVE,
+    MissionState::COMPLETED,
+    MissionState::FAILED
+  };
+  return values;
+}
+
+inline const char * const *EnumNamesMissionState() {
+  static const char * const names[4] = {
+    "ACTIVE",
+    "COMPLETED",
+    "FAILED",
+    nullptr
+  };
+  return names;
+}
+
+inline const char *EnumNameMissionState(MissionState e) {
+  if (::flatbuffers::IsOutRange(e, MissionState::ACTIVE, MissionState::FAILED)) return "";
+  const size_t index = static_cast<size_t>(e);
+  return EnumNamesMissionState()[index];
+}
+
 enum class Payload : uint8_t {
   NONE = 0,
   HelloRequest = 1,
@@ -742,11 +787,14 @@ enum class Payload : uint8_t {
   TradeCommitRequest = 53,
   TradeCancelRequest = 54,
   TradeClosed = 55,
+  MissionQueryRequest = 56,
+  MissionView = 57,
+  MissionTrackRequest = 58,
   MIN = NONE,
-  MAX = TradeClosed
+  MAX = MissionTrackRequest
 };
 
-inline const Payload (&EnumValuesPayload())[56] {
+inline const Payload (&EnumValuesPayload())[59] {
   static const Payload values[] = {
     Payload::NONE,
     Payload::HelloRequest,
@@ -803,13 +851,16 @@ inline const Payload (&EnumValuesPayload())[56] {
     Payload::TradeOfferRequest,
     Payload::TradeCommitRequest,
     Payload::TradeCancelRequest,
-    Payload::TradeClosed
+    Payload::TradeClosed,
+    Payload::MissionQueryRequest,
+    Payload::MissionView,
+    Payload::MissionTrackRequest
   };
   return values;
 }
 
 inline const char * const *EnumNamesPayload() {
-  static const char * const names[57] = {
+  static const char * const names[60] = {
     "NONE",
     "HelloRequest",
     "HelloResponse",
@@ -866,13 +917,16 @@ inline const char * const *EnumNamesPayload() {
     "TradeCommitRequest",
     "TradeCancelRequest",
     "TradeClosed",
+    "MissionQueryRequest",
+    "MissionView",
+    "MissionTrackRequest",
     nullptr
   };
   return names;
 }
 
 inline const char *EnumNamePayload(Payload e) {
-  if (::flatbuffers::IsOutRange(e, Payload::NONE, Payload::TradeClosed)) return "";
+  if (::flatbuffers::IsOutRange(e, Payload::NONE, Payload::MissionTrackRequest)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesPayload()[index];
 }
@@ -1099,6 +1153,18 @@ template<> struct PayloadTraits<CDDA::CWM::TradeCancelRequest> {
 
 template<> struct PayloadTraits<CDDA::CWM::TradeClosed> {
   static const Payload enum_value = Payload::TradeClosed;
+};
+
+template<> struct PayloadTraits<CDDA::CWM::MissionQueryRequest> {
+  static const Payload enum_value = Payload::MissionQueryRequest;
+};
+
+template<> struct PayloadTraits<CDDA::CWM::MissionView> {
+  static const Payload enum_value = Payload::MissionView;
+};
+
+template<> struct PayloadTraits<CDDA::CWM::MissionTrackRequest> {
+  static const Payload enum_value = Payload::MissionTrackRequest;
 };
 
 bool VerifyPayload(::flatbuffers::Verifier &verifier, const void *obj, Payload type);
@@ -9679,6 +9745,496 @@ inline ::flatbuffers::Offset<TradeClosed> CreateTradeClosedDirect(
       error__);
 }
 
+struct MissionEntry FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef MissionEntryBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_ID = 4,
+    VT_STATE = 6,
+    VT_TRACKED = 8,
+    VT_TITLE = 10,
+    VT_DESCRIPTION = 12,
+    VT_OBJECTIVE = 14,
+    VT_GIVER = 16,
+    VT_DEADLINE = 18,
+    VT_REMAINING = 20,
+    VT_TARGET = 22,
+    VT_TARGET_TEXT = 24,
+    VT_LIMITED = 26
+  };
+  int32_t id() const {
+    return GetField<int32_t>(VT_ID, 0);
+  }
+  bool mutate_id(int32_t _id = 0) {
+    return SetField<int32_t>(VT_ID, _id, 0);
+  }
+  CDDA::CWM::MissionState state() const {
+    return static_cast<CDDA::CWM::MissionState>(GetField<uint8_t>(VT_STATE, 0));
+  }
+  bool mutate_state(CDDA::CWM::MissionState _state = static_cast<CDDA::CWM::MissionState>(0)) {
+    return SetField<uint8_t>(VT_STATE, static_cast<uint8_t>(_state), 0);
+  }
+  bool tracked() const {
+    return GetField<uint8_t>(VT_TRACKED, 0) != 0;
+  }
+  bool mutate_tracked(bool _tracked = 0) {
+    return SetField<uint8_t>(VT_TRACKED, static_cast<uint8_t>(_tracked), 0);
+  }
+  const ::flatbuffers::String *title() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_TITLE);
+  }
+  ::flatbuffers::String *mutable_title() {
+    return GetPointer<::flatbuffers::String *>(VT_TITLE);
+  }
+  const ::flatbuffers::String *description() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_DESCRIPTION);
+  }
+  ::flatbuffers::String *mutable_description() {
+    return GetPointer<::flatbuffers::String *>(VT_DESCRIPTION);
+  }
+  const ::flatbuffers::String *objective() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_OBJECTIVE);
+  }
+  ::flatbuffers::String *mutable_objective() {
+    return GetPointer<::flatbuffers::String *>(VT_OBJECTIVE);
+  }
+  const ::flatbuffers::String *giver() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_GIVER);
+  }
+  ::flatbuffers::String *mutable_giver() {
+    return GetPointer<::flatbuffers::String *>(VT_GIVER);
+  }
+  const ::flatbuffers::String *deadline() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_DEADLINE);
+  }
+  ::flatbuffers::String *mutable_deadline() {
+    return GetPointer<::flatbuffers::String *>(VT_DEADLINE);
+  }
+  const ::flatbuffers::String *remaining() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_REMAINING);
+  }
+  ::flatbuffers::String *mutable_remaining() {
+    return GetPointer<::flatbuffers::String *>(VT_REMAINING);
+  }
+  const CDDA::CWM::Coord3i *target() const {
+    return GetStruct<const CDDA::CWM::Coord3i *>(VT_TARGET);
+  }
+  CDDA::CWM::Coord3i *mutable_target() {
+    return GetStruct<CDDA::CWM::Coord3i *>(VT_TARGET);
+  }
+  const ::flatbuffers::String *target_text() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_TARGET_TEXT);
+  }
+  ::flatbuffers::String *mutable_target_text() {
+    return GetPointer<::flatbuffers::String *>(VT_TARGET_TEXT);
+  }
+  bool limited() const {
+    return GetField<uint8_t>(VT_LIMITED, 0) != 0;
+  }
+  bool mutate_limited(bool _limited = 0) {
+    return SetField<uint8_t>(VT_LIMITED, static_cast<uint8_t>(_limited), 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<int32_t>(verifier, VT_ID, 4) &&
+           VerifyField<uint8_t>(verifier, VT_STATE, 1) &&
+           VerifyField<uint8_t>(verifier, VT_TRACKED, 1) &&
+           VerifyOffset(verifier, VT_TITLE) &&
+           verifier.VerifyString(title()) &&
+           VerifyOffset(verifier, VT_DESCRIPTION) &&
+           verifier.VerifyString(description()) &&
+           VerifyOffset(verifier, VT_OBJECTIVE) &&
+           verifier.VerifyString(objective()) &&
+           VerifyOffset(verifier, VT_GIVER) &&
+           verifier.VerifyString(giver()) &&
+           VerifyOffset(verifier, VT_DEADLINE) &&
+           verifier.VerifyString(deadline()) &&
+           VerifyOffset(verifier, VT_REMAINING) &&
+           verifier.VerifyString(remaining()) &&
+           VerifyField<CDDA::CWM::Coord3i>(verifier, VT_TARGET, 4) &&
+           VerifyOffset(verifier, VT_TARGET_TEXT) &&
+           verifier.VerifyString(target_text()) &&
+           VerifyField<uint8_t>(verifier, VT_LIMITED, 1) &&
+           verifier.EndTable();
+  }
+};
+
+struct MissionEntryBuilder {
+  typedef MissionEntry Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_id(int32_t id) {
+    fbb_.AddElement<int32_t>(MissionEntry::VT_ID, id, 0);
+  }
+  void add_state(CDDA::CWM::MissionState state) {
+    fbb_.AddElement<uint8_t>(MissionEntry::VT_STATE, static_cast<uint8_t>(state), 0);
+  }
+  void add_tracked(bool tracked) {
+    fbb_.AddElement<uint8_t>(MissionEntry::VT_TRACKED, static_cast<uint8_t>(tracked), 0);
+  }
+  void add_title(::flatbuffers::Offset<::flatbuffers::String> title) {
+    fbb_.AddOffset(MissionEntry::VT_TITLE, title);
+  }
+  void add_description(::flatbuffers::Offset<::flatbuffers::String> description) {
+    fbb_.AddOffset(MissionEntry::VT_DESCRIPTION, description);
+  }
+  void add_objective(::flatbuffers::Offset<::flatbuffers::String> objective) {
+    fbb_.AddOffset(MissionEntry::VT_OBJECTIVE, objective);
+  }
+  void add_giver(::flatbuffers::Offset<::flatbuffers::String> giver) {
+    fbb_.AddOffset(MissionEntry::VT_GIVER, giver);
+  }
+  void add_deadline(::flatbuffers::Offset<::flatbuffers::String> deadline) {
+    fbb_.AddOffset(MissionEntry::VT_DEADLINE, deadline);
+  }
+  void add_remaining(::flatbuffers::Offset<::flatbuffers::String> remaining) {
+    fbb_.AddOffset(MissionEntry::VT_REMAINING, remaining);
+  }
+  void add_target(const CDDA::CWM::Coord3i *target) {
+    fbb_.AddStruct(MissionEntry::VT_TARGET, target);
+  }
+  void add_target_text(::flatbuffers::Offset<::flatbuffers::String> target_text) {
+    fbb_.AddOffset(MissionEntry::VT_TARGET_TEXT, target_text);
+  }
+  void add_limited(bool limited) {
+    fbb_.AddElement<uint8_t>(MissionEntry::VT_LIMITED, static_cast<uint8_t>(limited), 0);
+  }
+  explicit MissionEntryBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<MissionEntry> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<MissionEntry>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<MissionEntry> CreateMissionEntry(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    int32_t id = 0,
+    CDDA::CWM::MissionState state = CDDA::CWM::MissionState::ACTIVE,
+    bool tracked = false,
+    ::flatbuffers::Offset<::flatbuffers::String> title = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> description = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> objective = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> giver = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> deadline = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> remaining = 0,
+    const CDDA::CWM::Coord3i *target = nullptr,
+    ::flatbuffers::Offset<::flatbuffers::String> target_text = 0,
+    bool limited = false) {
+  MissionEntryBuilder builder_(_fbb);
+  builder_.add_target_text(target_text);
+  builder_.add_target(target);
+  builder_.add_remaining(remaining);
+  builder_.add_deadline(deadline);
+  builder_.add_giver(giver);
+  builder_.add_objective(objective);
+  builder_.add_description(description);
+  builder_.add_title(title);
+  builder_.add_id(id);
+  builder_.add_limited(limited);
+  builder_.add_tracked(tracked);
+  builder_.add_state(state);
+  return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<MissionEntry> CreateMissionEntryDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    int32_t id = 0,
+    CDDA::CWM::MissionState state = CDDA::CWM::MissionState::ACTIVE,
+    bool tracked = false,
+    const char *title = nullptr,
+    const char *description = nullptr,
+    const char *objective = nullptr,
+    const char *giver = nullptr,
+    const char *deadline = nullptr,
+    const char *remaining = nullptr,
+    const CDDA::CWM::Coord3i *target = nullptr,
+    const char *target_text = nullptr,
+    bool limited = false) {
+  auto title__ = title ? _fbb.CreateString(title) : 0;
+  auto description__ = description ? _fbb.CreateString(description) : 0;
+  auto objective__ = objective ? _fbb.CreateString(objective) : 0;
+  auto giver__ = giver ? _fbb.CreateString(giver) : 0;
+  auto deadline__ = deadline ? _fbb.CreateString(deadline) : 0;
+  auto remaining__ = remaining ? _fbb.CreateString(remaining) : 0;
+  auto target_text__ = target_text ? _fbb.CreateString(target_text) : 0;
+  return CDDA::CWM::CreateMissionEntry(
+      _fbb,
+      id,
+      state,
+      tracked,
+      title__,
+      description__,
+      objective__,
+      giver__,
+      deadline__,
+      remaining__,
+      target,
+      target_text__,
+      limited);
+}
+
+struct MissionQueryRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef MissionQueryRequestBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_QUERY_ID = 4
+  };
+  uint64_t query_id() const {
+    return GetField<uint64_t>(VT_QUERY_ID, 0);
+  }
+  bool mutate_query_id(uint64_t _query_id = 0) {
+    return SetField<uint64_t>(VT_QUERY_ID, _query_id, 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_QUERY_ID, 8) &&
+           verifier.EndTable();
+  }
+};
+
+struct MissionQueryRequestBuilder {
+  typedef MissionQueryRequest Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_query_id(uint64_t query_id) {
+    fbb_.AddElement<uint64_t>(MissionQueryRequest::VT_QUERY_ID, query_id, 0);
+  }
+  explicit MissionQueryRequestBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<MissionQueryRequest> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<MissionQueryRequest>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<MissionQueryRequest> CreateMissionQueryRequest(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t query_id = 0) {
+  MissionQueryRequestBuilder builder_(_fbb);
+  builder_.add_query_id(query_id);
+  return builder_.Finish();
+}
+
+struct MissionView FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef MissionViewBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_QUERY_ID = 4,
+    VT_VIEW_ID = 6,
+    VT_TRACKED_ID = 8,
+    VT_ENTRIES = 10,
+    VT_TRUNCATED = 12,
+    VT_ERROR = 14
+  };
+  uint64_t query_id() const {
+    return GetField<uint64_t>(VT_QUERY_ID, 0);
+  }
+  bool mutate_query_id(uint64_t _query_id = 0) {
+    return SetField<uint64_t>(VT_QUERY_ID, _query_id, 0);
+  }
+  uint64_t view_id() const {
+    return GetField<uint64_t>(VT_VIEW_ID, 0);
+  }
+  bool mutate_view_id(uint64_t _view_id = 0) {
+    return SetField<uint64_t>(VT_VIEW_ID, _view_id, 0);
+  }
+  int32_t tracked_id() const {
+    return GetField<int32_t>(VT_TRACKED_ID, -1);
+  }
+  bool mutate_tracked_id(int32_t _tracked_id = -1) {
+    return SetField<int32_t>(VT_TRACKED_ID, _tracked_id, -1);
+  }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::MissionEntry>> *entries() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::MissionEntry>> *>(VT_ENTRIES);
+  }
+  ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::MissionEntry>> *mutable_entries() {
+    return GetPointer<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::MissionEntry>> *>(VT_ENTRIES);
+  }
+  bool truncated() const {
+    return GetField<uint8_t>(VT_TRUNCATED, 0) != 0;
+  }
+  bool mutate_truncated(bool _truncated = 0) {
+    return SetField<uint8_t>(VT_TRUNCATED, static_cast<uint8_t>(_truncated), 0);
+  }
+  const ::flatbuffers::String *error() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_ERROR);
+  }
+  ::flatbuffers::String *mutable_error() {
+    return GetPointer<::flatbuffers::String *>(VT_ERROR);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_QUERY_ID, 8) &&
+           VerifyField<uint64_t>(verifier, VT_VIEW_ID, 8) &&
+           VerifyField<int32_t>(verifier, VT_TRACKED_ID, 4) &&
+           VerifyOffset(verifier, VT_ENTRIES) &&
+           verifier.VerifyVector(entries()) &&
+           verifier.VerifyVectorOfTables(entries()) &&
+           VerifyField<uint8_t>(verifier, VT_TRUNCATED, 1) &&
+           VerifyOffset(verifier, VT_ERROR) &&
+           verifier.VerifyString(error()) &&
+           verifier.EndTable();
+  }
+};
+
+struct MissionViewBuilder {
+  typedef MissionView Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_query_id(uint64_t query_id) {
+    fbb_.AddElement<uint64_t>(MissionView::VT_QUERY_ID, query_id, 0);
+  }
+  void add_view_id(uint64_t view_id) {
+    fbb_.AddElement<uint64_t>(MissionView::VT_VIEW_ID, view_id, 0);
+  }
+  void add_tracked_id(int32_t tracked_id) {
+    fbb_.AddElement<int32_t>(MissionView::VT_TRACKED_ID, tracked_id, -1);
+  }
+  void add_entries(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::MissionEntry>>> entries) {
+    fbb_.AddOffset(MissionView::VT_ENTRIES, entries);
+  }
+  void add_truncated(bool truncated) {
+    fbb_.AddElement<uint8_t>(MissionView::VT_TRUNCATED, static_cast<uint8_t>(truncated), 0);
+  }
+  void add_error(::flatbuffers::Offset<::flatbuffers::String> error) {
+    fbb_.AddOffset(MissionView::VT_ERROR, error);
+  }
+  explicit MissionViewBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<MissionView> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<MissionView>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<MissionView> CreateMissionView(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t query_id = 0,
+    uint64_t view_id = 0,
+    int32_t tracked_id = -1,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::MissionEntry>>> entries = 0,
+    bool truncated = false,
+    ::flatbuffers::Offset<::flatbuffers::String> error = 0) {
+  MissionViewBuilder builder_(_fbb);
+  builder_.add_view_id(view_id);
+  builder_.add_query_id(query_id);
+  builder_.add_error(error);
+  builder_.add_entries(entries);
+  builder_.add_tracked_id(tracked_id);
+  builder_.add_truncated(truncated);
+  return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<MissionView> CreateMissionViewDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t query_id = 0,
+    uint64_t view_id = 0,
+    int32_t tracked_id = -1,
+    const std::vector<::flatbuffers::Offset<CDDA::CWM::MissionEntry>> *entries = nullptr,
+    bool truncated = false,
+    const char *error = nullptr) {
+  auto entries__ = entries ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::MissionEntry>>(*entries) : 0;
+  auto error__ = error ? _fbb.CreateString(error) : 0;
+  return CDDA::CWM::CreateMissionView(
+      _fbb,
+      query_id,
+      view_id,
+      tracked_id,
+      entries__,
+      truncated,
+      error__);
+}
+
+struct MissionTrackRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef MissionTrackRequestBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_COMMAND_ID = 4,
+    VT_VIEW_ID = 6,
+    VT_MISSION_ID = 8,
+    VT_EXPECTED_TRACKED_ID = 10
+  };
+  uint64_t command_id() const {
+    return GetField<uint64_t>(VT_COMMAND_ID, 0);
+  }
+  bool mutate_command_id(uint64_t _command_id = 0) {
+    return SetField<uint64_t>(VT_COMMAND_ID, _command_id, 0);
+  }
+  uint64_t view_id() const {
+    return GetField<uint64_t>(VT_VIEW_ID, 0);
+  }
+  bool mutate_view_id(uint64_t _view_id = 0) {
+    return SetField<uint64_t>(VT_VIEW_ID, _view_id, 0);
+  }
+  int32_t mission_id() const {
+    return GetField<int32_t>(VT_MISSION_ID, -1);
+  }
+  bool mutate_mission_id(int32_t _mission_id = -1) {
+    return SetField<int32_t>(VT_MISSION_ID, _mission_id, -1);
+  }
+  int32_t expected_tracked_id() const {
+    return GetField<int32_t>(VT_EXPECTED_TRACKED_ID, -1);
+  }
+  bool mutate_expected_tracked_id(int32_t _expected_tracked_id = -1) {
+    return SetField<int32_t>(VT_EXPECTED_TRACKED_ID, _expected_tracked_id, -1);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_COMMAND_ID, 8) &&
+           VerifyField<uint64_t>(verifier, VT_VIEW_ID, 8) &&
+           VerifyField<int32_t>(verifier, VT_MISSION_ID, 4) &&
+           VerifyField<int32_t>(verifier, VT_EXPECTED_TRACKED_ID, 4) &&
+           verifier.EndTable();
+  }
+};
+
+struct MissionTrackRequestBuilder {
+  typedef MissionTrackRequest Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_command_id(uint64_t command_id) {
+    fbb_.AddElement<uint64_t>(MissionTrackRequest::VT_COMMAND_ID, command_id, 0);
+  }
+  void add_view_id(uint64_t view_id) {
+    fbb_.AddElement<uint64_t>(MissionTrackRequest::VT_VIEW_ID, view_id, 0);
+  }
+  void add_mission_id(int32_t mission_id) {
+    fbb_.AddElement<int32_t>(MissionTrackRequest::VT_MISSION_ID, mission_id, -1);
+  }
+  void add_expected_tracked_id(int32_t expected_tracked_id) {
+    fbb_.AddElement<int32_t>(MissionTrackRequest::VT_EXPECTED_TRACKED_ID, expected_tracked_id, -1);
+  }
+  explicit MissionTrackRequestBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<MissionTrackRequest> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<MissionTrackRequest>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<MissionTrackRequest> CreateMissionTrackRequest(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t command_id = 0,
+    uint64_t view_id = 0,
+    int32_t mission_id = -1,
+    int32_t expected_tracked_id = -1) {
+  MissionTrackRequestBuilder builder_(_fbb);
+  builder_.add_view_id(view_id);
+  builder_.add_command_id(command_id);
+  builder_.add_expected_tracked_id(expected_tracked_id);
+  builder_.add_mission_id(mission_id);
+  return builder_.Finish();
+}
+
 struct DecisionResponse FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef DecisionResponseBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
@@ -10240,6 +10796,15 @@ struct CwmMessage FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const CDDA::CWM::TradeClosed *payload_as_TradeClosed() const {
     return payload_type() == CDDA::CWM::Payload::TradeClosed ? static_cast<const CDDA::CWM::TradeClosed *>(payload()) : nullptr;
   }
+  const CDDA::CWM::MissionQueryRequest *payload_as_MissionQueryRequest() const {
+    return payload_type() == CDDA::CWM::Payload::MissionQueryRequest ? static_cast<const CDDA::CWM::MissionQueryRequest *>(payload()) : nullptr;
+  }
+  const CDDA::CWM::MissionView *payload_as_MissionView() const {
+    return payload_type() == CDDA::CWM::Payload::MissionView ? static_cast<const CDDA::CWM::MissionView *>(payload()) : nullptr;
+  }
+  const CDDA::CWM::MissionTrackRequest *payload_as_MissionTrackRequest() const {
+    return payload_type() == CDDA::CWM::Payload::MissionTrackRequest ? static_cast<const CDDA::CWM::MissionTrackRequest *>(payload()) : nullptr;
+  }
   void *mutable_payload() {
     return GetPointer<void *>(VT_PAYLOAD);
   }
@@ -10494,6 +11059,18 @@ template<> inline const CDDA::CWM::TradeCancelRequest *CwmMessage::payload_as<CD
 
 template<> inline const CDDA::CWM::TradeClosed *CwmMessage::payload_as<CDDA::CWM::TradeClosed>() const {
   return payload_as_TradeClosed();
+}
+
+template<> inline const CDDA::CWM::MissionQueryRequest *CwmMessage::payload_as<CDDA::CWM::MissionQueryRequest>() const {
+  return payload_as_MissionQueryRequest();
+}
+
+template<> inline const CDDA::CWM::MissionView *CwmMessage::payload_as<CDDA::CWM::MissionView>() const {
+  return payload_as_MissionView();
+}
+
+template<> inline const CDDA::CWM::MissionTrackRequest *CwmMessage::payload_as<CDDA::CWM::MissionTrackRequest>() const {
+  return payload_as_MissionTrackRequest();
 }
 
 struct CwmMessageBuilder {
@@ -10780,6 +11357,18 @@ inline bool VerifyPayload(::flatbuffers::Verifier &verifier, const void *obj, Pa
     }
     case Payload::TradeClosed: {
       auto ptr = reinterpret_cast<const CDDA::CWM::TradeClosed *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::MissionQueryRequest: {
+      auto ptr = reinterpret_cast<const CDDA::CWM::MissionQueryRequest *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::MissionView: {
+      auto ptr = reinterpret_cast<const CDDA::CWM::MissionView *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::MissionTrackRequest: {
+      auto ptr = reinterpret_cast<const CDDA::CWM::MissionTrackRequest *>(obj);
       return verifier.VerifyTable(ptr);
     }
     default: return true;

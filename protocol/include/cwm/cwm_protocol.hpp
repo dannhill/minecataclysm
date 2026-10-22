@@ -11,7 +11,7 @@
 namespace cdda::cwm {
 
 constexpr uint16_t PROTOCOL_VERSION_MAJOR = 2;
-constexpr uint16_t PROTOCOL_VERSION_MINOR = 29;
+constexpr uint16_t PROTOCOL_VERSION_MINOR = 30;
 
 struct Identity { uint64_t session{0}, player{0}, connection{0}; };
 
@@ -68,6 +68,12 @@ public:
         return result;
     }
 
+    std::vector<uint8_t> build_mission_query(uint64_t query) {
+        return finish_message(CDDA::CWM::Payload::MissionQueryRequest, CDDA::CWM::CreateMissionQueryRequest(fbb_,query).Union());
+    }
+    std::vector<uint8_t> build_mission_track(uint64_t command,uint64_t view,int mission,int expected) {
+        return finish_message(CDDA::CWM::Payload::MissionTrackRequest, CDDA::CWM::CreateMissionTrackRequest(fbb_,command,view,mission,expected).Union());
+    }
     std::vector<uint8_t> build_hello_request(const std::string& build_id, uint64_t client_id = 1) {
         auto b_id = fbb_.CreateString(build_id);
         auto hello = CDDA::CWM::CreateHelloRequest(fbb_, PROTOCOL_VERSION_MAJOR, PROTOCOL_VERSION_MINOR, b_id, client_id);
