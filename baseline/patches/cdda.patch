@@ -7070,10 +7070,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..4031706
+index 0000000..6170b36
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,2431 @@
+@@ -0,0 +1,2434 @@
 +#include "cata_catch.h"
 +#include "translations.h"
 +#include "options.h"
@@ -9470,10 +9470,13 @@ index 0000000..4031706
 +    REQUIRE(cwm::CompanionControls::rules().size()==ally_rule_strs.size());
 +    for(const auto& r:cwm::CompanionControls::rules())CHECK(ally_rule_strs.count(r.id)==1);
 +    auto saved=[&]{std::ostringstream s;JsonOut j(s);person->rules.serialize(j);return s.str();};
-+    const auto before=saved();const auto rng=rng_get_engine();const auto turn=calendar::turn;
-+    const auto position=person->pos();const auto moves=person->moves;const auto umoves=u.moves;
++    auto before=saved();auto rng=rng_get_engine();auto turn=calendar::turn;
++    auto position=person->pos();int moves=person->moves,umoves=u.moves;u.moves=1000;
 +    bool returned=false;int prompts=0;
 +    do_turn_with_action([&]{
++        // Isolate panel effects from the ordinary native turn prelude.
++        before=saved();rng=rng_get_engine();turn=calendar::turn;
++        position=person->pos();moves=person->moves;umoves=u.moves;
 +        external_conversation_info info;info.npc_id=(uint64_t(1)<<63)|uint64_t(person->getID().get_value());
 +        returned=cwm::CompanionControls::run(u,*person,info);
 +        finish_external_action_phase();return false;
