@@ -2687,7 +2687,7 @@ index 09a7711..9b0c484 100644
          DebugLog( D_INFO, DC_ALL ) <<
 diff --git a/src/cwm/cwm_companions.h b/src/cwm/cwm_companions.h
 new file mode 100644
-index 0000000..aab8e3d
+index 0000000..d493edc
 --- /dev/null
 +++ b/src/cwm/cwm_companions.h
 @@ -0,0 +1,138 @@
@@ -2700,7 +2700,7 @@ index 0000000..aab8e3d
 +#include "line.h"
 +#include "npctalk.h"
 +#include "talker.h"
-+#include "cwm/product_language.hpp"
++#include "../../../protocol/include/cwm/product_language.hpp"
 +#include <array>
 +#include <functional>
 +#include <string>
