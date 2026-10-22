@@ -1,5 +1,9 @@
 # Validazioni manuali del playable core
 
+Riposo, sonno e attesa (2026-10-23): **57 PENDING, nessun FAIL manuale aperto**.
+I precedenti 53 punti restano invariati; quattro nuove prove REST-01 sono
+rinviabili. Nessun PASS umano viene dedotto dalle verifiche automatiche.
+
 Compagni individuali (2026-10-22): **53 PENDING, nessun FAIL manuale aperto**.
 I precedenti 49 punti restano invariati; quattro nuove prove COMP-01 sono
 rinviabili. Nessun PASS personale viene dedotto dalle prove automatiche.
@@ -1211,3 +1215,35 @@ Non è un nuovo comando per reclutare né un controllo a distanza degli NPC.
 Addestramento, filtri testuali di raccolta, copia delle regole da altri NPC,
 radio/comandi di gruppo e servizi/accampamenti complessi restano fette separate.
 Non è richiesto nessun gate manuale adesso; i precedenti PASS restano storici.
+
+
+## REST-01 — Riposo, sonno e attesa nativi — 4 PENDING
+
+**B** nella partita normale apre il menu di riposo; il tasto è configurabile.
+`./rest-demo.sh --fresh` prepara una sessione isolata con personaggio stanco,
+letto, stamina bassa, senza orologio o ostili vicini. Non modifica i tuoi mondi.
+
+1. **PENDING — Attesa e pausa.** B → Wait or catch your breath; prova l'attesa
+   breve e quella per riprendere fiato. Il tempo scorre, I/Esc lo ferma mentre
+   leggi. B → Interrupt rest interrompe l'attesa. Annullare il primo menu non
+   deve avviare attività; tenere premuto movimento durante l'attesa non deve
+   accodare passi da eseguire dopo.
+2. **PENDING — Tentativo e sonno effettivo.** B → Try to sleep: No lascia svegli;
+   Yes usa il tentativo nativo. Puoi interrompere il tentativo, non forzare
+   gratuitamente il risveglio durante il sonno effettivo. Nella demo sul letto
+   il personaggio è abbastanza stanco da addormentarsi. Controlla il messaggio
+   Sleeping anche quando non vedi il mondo. Nessuna percentuale inventata
+   del sonno; se possiedi una sveglia, conserva le scelte di allarme native.
+3. **PENDING — Velocità e risveglio.** Le attese brevi restano a velocità normale.
+   Sonno/attese lunghe possono accelerare dopo qualche secondo simulato; B →
+   Continue at normal speed rallenta, Fast-forward long rest riaccelera.
+   I/Esc continua a fermare il mondo. Controlla che il ritorno al gioco dopo
+   un risveglio nativo non provochi una raffica di passi/tempo arretrato.
+   Rumori, danni e sveglie restano nativi; niente cure o stamina istantanee.
+4. **PENDING — Persistenza.** Esci durante sonno/attesa; riapri la stessa demo
+   senza --fresh. La vera attività o l'effetto sonno prosegue dal salvataggio,
+   senza un nuovo comando di avvio. Il menu e la sua pausa non vengono salvati;
+   consulta B/I anche dopo il caricamento. Posizione e bisogni restano nativi.
+
+Queste sono nuove prove personali rinviabili, non un gate richiesto adesso.
+Il riposo non completa i servizi avanzati NPC o l'accelerazione di ogni attività.
