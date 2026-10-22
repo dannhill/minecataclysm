@@ -273,10 +273,15 @@ def main():
                         a=CommandAck();a.Init(msg.Payload().Bytes,msg.Payload().Pos)
                         if a.CommandId()==request.CommandId():result.append(a)
                     return result
-                count=len(acks());data=bytes(command._tab.Bytes);injections.put(struct.pack('>I',len(data))+data)
+                snapshots=len(messages(Payload.SnapshotAck,'client'));count=len(acks());data=bytes(command._tab.Bytes);injections.put(struct.pack('>I',len(data))+data)
                 deadline=time.monotonic()+10
                 while len(acks())<=count and time.monotonic()<deadline:time.sleep(.05)
                 check('rest_replay_returns_cached_outcome_without_restart',len(acks())>count and acks()[-1].Accepted() and phase()==-1 and int(latest()['pending_decision'])==0)
+                deadline=time.monotonic()+10
+                while len(messages(Payload.SnapshotAck,'client'))<=snapshots and time.monotonic()<deadline:time.sleep(.05)
+                check('cached_full_state_installed_before_next_command',len(messages(Payload.SnapshotAck,'client'))>snapshots)
+                time.sleep(.3)
+                wait(lambda r:int(r['input_ready'])==1 and int(r['pause_reasons'])==0)
                 rest_menu();pick('Try to sleep');pick('No.');idle()
                 check('native_sleep_decline_stays_awake',phase()==-1)
                 rest_menu();pick('Try to sleep');pick('Yes.');idle()
@@ -290,6 +295,7 @@ def main():
             check('normal_speed_rest_can_be_selected',int(latest()['rest_accelerated'])==0)
             pos=position();xdo('keydown','--window',window,'w');time.sleep(.7);xdo('keyup','--window',window,'w');time.sleep(.3)
             check('sleep_blocks_held_movement',phase()==2 and position()==pos)
+            check('sleep_does_not_retry_native_prone_as_walking_input',len(messages(Payload.MovementModeRequest,'client'))<4)
             paused_reading();shot('sleeping.png')
             rest_menu();pick('Fast-forward long rest');idle()
             wait(lambda r:int(r['rest_accelerated'])==1,timeout=15)

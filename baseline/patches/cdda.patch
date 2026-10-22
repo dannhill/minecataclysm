@@ -5324,7 +5324,7 @@ index 0000000..36adeef
 +}
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..893440e
+index 0000000..4d9ad0b
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
 @@ -0,0 +1,1323 @@
@@ -6143,7 +6143,7 @@ index 0000000..893440e
 +        return;
 +    }
 +    if (!ready_ &&
-+        msg->payload_type() != Payload::ContinuousIntentRequest)
++        msg->payload_type() != Payload::ContinuousIntentRequest && msg->payload_type() != Payload::RestRequest)
 +        return; // Spatial authority waits for installed full state.
 +    if (const auto* request = msg->payload_as_LanguageRequest()) {
 +        const std::string code = request->code() ? request->code()->str() : "";
@@ -6186,7 +6186,7 @@ index 0000000..893440e
 +    if (handle_trade_message(*msg,u,m,g)) return;
 +    if ((pending_decision_ || trade_context_) && msg->payload_type() != Payload::SimulationControlRequest &&
 +        msg->payload_type() != Payload::MovementIntentRequest &&
-+        msg->payload_type() != Payload::ContinuousIntentRequest) return;
++        msg->payload_type() != Payload::ContinuousIntentRequest && msg->payload_type() != Payload::RestRequest) return;
 +    if (const auto* request = msg->payload_as_CraftingQueryRequest()) {
 +        if (!request->query_id() || !request->search() || request->search()->size() > 256 ||
 +            request->search()->str().find('\0') != std::string::npos || !request->batch() || request->batch() > 20 || int(request->filter()) > 4) {
@@ -6314,7 +6314,7 @@ index 0000000..893440e
 +    if(const auto* request=msg->payload_as_RestRequest()) {
 +        rest_.refresh(u);
 +        const auto error=RestTracker::error(u);
-+        if(pending_rest_ || request->expected_token()!=rest_.token || !error.empty() || (realtime_ && pause_reasons(g)))
++        if(!ready_ || pending_rest_ || request->expected_token()!=rest_.token || !error.empty() || (realtime_ && pause_reasons(g)))
 +            send_result({id,false,error.empty()?::cwm::text("Rest state changed or game paused. Open the rest menu again."):error},u,m,g);
 +        else pending_rest_=RestCommand{id,request->expected_token()};
 +        return; // Serviced inside the native external-choice scope, also while busy.

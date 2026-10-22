@@ -2223,10 +2223,10 @@ index 0000000..e1e7236
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..61ab1e3
+index 0000000..9c78cf5
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,3454 @@
+@@ -0,0 +1,3455 @@
 +#include "cwm/product_language.hpp"
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
@@ -4526,7 +4526,7 @@ index 0000000..61ab1e3
 +    const int confirmed = flags & cdda::cwm::PRONE ? 3 :
 +        flags & cdda::cwm::CROUCHING ? 2 : flags & cdda::cwm::RUNNING ? 1 : 0;
 +    const bool allowed = impl.connection_ && impl.connection_->is_valid() && impl.session_.ready() &&
-+        impl.player_ready_ && !impl.activity_token_ && !impl.metrics_.pending_decision && !impl.metrics_.pause_reasons &&
++        impl.player_ready_ && !impl.rest_token_ && !impl.activity_token_ && !impl.metrics_.pending_decision && !impl.metrics_.pause_reasons &&
 +        impl.sent_menu_pause_ != 1 && !impl.body_form_open_ && !impl.ground_container_open_ && !impl.equipment_open_;
 +    const int desired = impl.posture_input_.sample({run, crouch, prone},
 +        g_settings->getBool("cwm_run_toggle"), g_settings->getBool("cwm_crouch_toggle"), allowed, confirmed);
@@ -4862,7 +4862,8 @@ index 0000000..61ab1e3
 +uint64_t CddaBridge::missionJournalView() const {return pimpl_?pimpl_->journal_.view:0;}
 +uint64_t CddaBridge::missionJournalConnection() const {return pimpl_?pimpl_->session_.identity.connection:0;}
 +bool CddaBridge::openRestMenu() {
-+    if(!pimpl_)return false;auto& i=*pimpl_;
++    if (!pimpl_) return false;
++    auto& i = *pimpl_;
 +    if(!i.connection_ || !i.session_.ready() || !i.player_ready_ || i.pending_move_ || i.metrics_.pending_decision || i.metrics_.pause_reasons || i.equipment_open_ || i.crafting_open_ || i.body_form_open_ || i.journal_open_ || i.trade_dialog_.id || i.ground_container_open_)return false;
 +    i.dismiss_inventory_work();
 +    auto wire=i.session_.builder();const auto id=i.session_.next_command++;auto bytes=wire.build_rest_request(id,i.rest_token_);
