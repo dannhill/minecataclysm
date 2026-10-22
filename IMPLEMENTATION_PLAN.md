@@ -12,10 +12,13 @@ dagli obiettivi. La roadmap originale M0–M9 conserva i propri significati.
 
 ## Smontaggio nativo e chiarimento NPC — 2026-10-22
 
-Prossima fetta: smontaggio di singoli oggetti posseduti tramite la vera
+Fetta implementata: smontaggio di singoli oggetti posseduti tramite la vera
 ACT_DISASSEMBLE, progresso dell'incompleto, conferme, pausa, interruzione,
 ripresa e persistenza canonica. [Contratto](docs/design/native-disassembly.md).
-CWM2.27 richiede una coppia abbinata. Quattro prove DIS-01 rinviate nel
+[Consegna verificata](docs/fixes/native-disassembly.md): 120 casi nativi,
+309 client, 14 protocollo e 48 controlli grafici/canonici PASS. Coppia CWM2.27
+installata nel normale start.sh Linux; nessuna certificazione globale.
+Quattro prove DIS-01 rinviate nel
 backlog, precedenti 33 invariati; nessuna accettazione umana inferita.
 Pile, liquidi e operazioni ricorsive restano separati. Il pacchetto Windows
 consegnato il 21 ottobre rimane una fotografia CWM2.26 fino a un nuovo rebuild.

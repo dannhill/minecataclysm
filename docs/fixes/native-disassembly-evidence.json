@@ -1,0 +1,277 @@
+{
+  "scope": "Native single-item disassembly, canonical in-progress items and typed activity coordination",
+  "date": "2026-10-22",
+  "protocol": "CWM 2.27",
+  "source_commit": "26b78c8284cb3114b93ae719a7fcdf25c67da789",
+  "native_production_commit": "f783273a73edf03532a6f9484707b284e95a65dd",
+  "client_source_commit": "f90fbca2db07d0736593b937355c59f8a9302c3c",
+  "build_mode": "Incremental captured reconstructions with retained caches. Native public-header change rebuilt dependent core/test objects; not cold builds.",
+  "source_trees": {
+    "cdda": {
+      "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+      "patch_sha256": "c5ae7f5ca2cfabc2207b6bc554c99d33828df77d7e6c317b68cb7bac72e4fb65",
+      "tree_sha256": "e0b8946eff71b6c11b078cf15d512c936f33ae61ce4e06ea981b500360ad86d0"
+    },
+    "luanti": {
+      "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
+      "patch_sha256": "39aeb89f9d17e9fa1aee5554b4962ef4cfe07525abb1cd0fd4b0fb34dbcbe337",
+      "tree_sha256": "2aedaa43ee78b24cd389f4491d83365a5fcc73e1eee3c359b646fc4e28b9bc94"
+    },
+    "mineclonia": {
+      "commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36"
+    }
+  },
+  "native": {
+    "assertions": 72540,
+    "cases": 120,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-disassembly-20261022/native-regression.log",
+      "sha256": "3cbce9b2e43c2e83a3cd33d8c11b181e8f7c110af44ac49a8169e06a7ffcac00"
+    }
+  },
+  "native_disassembly": {
+    "assertions": 6800,
+    "cases": 5,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-disassembly-20261022/native-focused.log",
+      "sha256": "ba53d71f897243bf445180136ef717aedaed2bbe1752f5edd87e1b9d7ad55199"
+    }
+  },
+  "client": {
+    "cases": 309,
+    "modules": 47,
+    "catch_assertions": 648,
+    "catch_cases": 4,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-disassembly-20261022/client-unit-final.log",
+      "sha256": "3aaf5d1b880991a6d2da19cd9fd77c05802d876239873d03227f644105434378"
+    }
+  },
+  "protocol_tests": {
+    "tests": 14,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-disassembly-20261022/protocol-tests-final.log",
+      "sha256": "403f553669ddb9592fcede73addd7a6901576e85f74e09af8cb785f525de44c4"
+    }
+  },
+  "language_tests": {
+    "tests": 9,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-disassembly-20261022/language-tests-final.log",
+      "sha256": "a9102099ee6301c684fc626d1b65359b0fb5359157984b2319620bc80bdab310"
+    }
+  },
+  "registry_tests": {
+    "tests": 3,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-disassembly-20261022/registry-tests-final.log",
+      "sha256": "d858b8362d9e32b7d3be2b2fcf6b9e5b40ecbfca9965f268d5b2c78fcbaa6864"
+    }
+  },
+  "gui": {
+    "disassembly-save": {
+      "checks": 24,
+      "result": "PASS",
+      "checks_file": {
+        "path": "artifacts/native-disassembly-20261022/disassembly-save/checks.json",
+        "sha256": "e71ba56f77e70b331315579c83199ddf6a3770e713bc4b28179403186863ff3b"
+      },
+      "summary": {
+        "path": "artifacts/native-disassembly-20261022/disassembly-save/summary.json",
+        "sha256": "f1176fb4f84489fb1cbd169c03152110132a5e3ec7c9d3bd253e342f8391763f"
+      },
+      "native_readback": {
+        "path": "artifacts/native-disassembly-20261022/disassembly-save/native.json",
+        "sha256": "f20b961652ba822dc49f776ddbac2413c89560351e4f3e70a9c28113d54dd961"
+      }
+    },
+    "disassembly-resume": {
+      "checks": 12,
+      "result": "PASS",
+      "checks_file": {
+        "path": "artifacts/native-disassembly-20261022/disassembly-resume/checks.json",
+        "sha256": "88a4d858f8e662d94ab4e0f9b8a42a580bcc781c87745d2ee91c38f443998208"
+      },
+      "summary": {
+        "path": "artifacts/native-disassembly-20261022/disassembly-resume/summary.json",
+        "sha256": "bb6f2a204fba70c1a641989027b7d333699d131f2fc05654c0e1d030677e3773"
+      },
+      "native_readback": {
+        "path": "artifacts/native-disassembly-20261022/disassembly-resume/native.json",
+        "sha256": "d9828df505ac8d93c96c3d7146d2269e3726353573050a0a876443b41ffd3354"
+      }
+    },
+    "installed-resume": {
+      "checks": 12,
+      "result": "PASS",
+      "checks_file": {
+        "path": "artifacts/native-disassembly-20261022/installed-resume/checks.json",
+        "sha256": "88a4d858f8e662d94ab4e0f9b8a42a580bcc781c87745d2ee91c38f443998208"
+      },
+      "summary": {
+        "path": "artifacts/native-disassembly-20261022/installed-resume/summary.json",
+        "sha256": "a1f901301417d8021f0a8b455e39c2458efa5ca7fafc4855be17a62e572da8f1"
+      },
+      "native_readback": {
+        "path": "artifacts/native-disassembly-20261022/installed-resume/native.json",
+        "sha256": "02bb80e128941234eea495692b96e87b0a274873dcb1819431d0e41f1ff57925"
+      }
+    }
+  },
+  "gui_checks": 48,
+  "gui_environment": "Private Xvfb 1280x800 at 96 DPI, Mesa software and OpenAL null backend; isolated userdirs/configs, real Luanti C++ renderer and native coordinator.",
+  "independent_reader": {
+    "path": "artifacts/native-disassembly-20261022/native-save-reader",
+    "sha256": "4d9b3b10e202414c121a86028ce36f318b179c7bbc1311299a6582414fcf4b2b",
+    "build": {
+      "path": "artifacts/native-disassembly-20261022/native-save-reader.build.json",
+      "sha256": "dd4dbab349a9fc3d7205444c8c3e79c509096a45a9ad707b5aa27f963144dec9"
+    },
+    "pristine_pin": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+    "fixture": {
+      "path": "artifacts/native-disassembly-20261022/fixture/before.json",
+      "sha256": "9cb23fcc83113379ff3b67ed9f0df3c5a1314c6b7a51766ccd344ee90a74bde6"
+    },
+    "method": "Unmodified pinned native core with a test-only fixture/reader main; canonical game::load and native serialization, no CWM parser used for readback."
+  },
+  "installation": {
+    "protocol": "2.27",
+    "source_commit": "26b78c8284cb3114b93ae719a7fcdf25c67da789",
+    "runtimes": [
+      {
+        "name": "native",
+        "source": "artifacts/fnd03-session/workspace/cdda/build/src/cdda-server",
+        "target": "cdda/build/src/cdda-server",
+        "backup": "artifacts/native-disassembly-20261022/native-before-disassembly",
+        "before_sha256": "d8d17c0b111c7c4f8723b74c01914c3f1c43ff7d07a852c29f8f476d2f0a1571",
+        "after_sha256": "883ee273a2e9a1cdce80fcf4d015d69b437da091ff6b4d8d6f96079a5427ff3a"
+      },
+      {
+        "name": "client",
+        "source": "artifacts/language-20261011/workspace/luanti/bin/luanti",
+        "target": "luanti/bin/luanti",
+        "backup": "artifacts/native-disassembly-20261022/client-before-disassembly",
+        "before_sha256": "4f4c654f8896a0ff8678686323aab2f189e38239f14f9cfc65be5e91794dd841",
+        "after_sha256": "8bdf705d49237daa4fe5e71ac759e5bfae5e088abb5756f4fd618135acc823b4"
+      }
+    ]
+  },
+  "installation_log": {
+    "path": "artifacts/native-disassembly-20261022/install.log",
+    "sha256": "42cf18514978a20dfb1ff34cbe1a0c331655fc3a3473a7b33fcb002996e616a7"
+  },
+  "baseline": {
+    "path": "artifacts/native-disassembly-20261022/baseline-check-final.log",
+    "sha256": "6df957ecf8ca30b726e4bbccf9bdae9d1dee698e40ab6d2c02e633a9632834a9"
+  },
+  "native_refresh": {
+    "path": "artifacts/native-disassembly-20261022/refresh-native-filter-fixture.json",
+    "sha256": "79d33bf3035c0d3e2f42d046f3cc88e041f1657a265c7e1d9f3a565e6c605f9b"
+  },
+  "native_production_build": {
+    "path": "artifacts/native-disassembly-20261022/build-native-delivery.log",
+    "sha256": "f710e496cd581b08a1b0fe7ebd5a0fbe767364494d4c67e4938c742f3f28027d"
+  },
+  "native_test_build": {
+    "path": "artifacts/native-disassembly-20261022/build-native-filter-fixture.log",
+    "sha256": "c03d4a230ed063f986eabefa39ef91ba68da040ee102dbef30df8e2f6d37aeea"
+  },
+  "client_build": {
+    "path": "artifacts/native-disassembly-20261022/build-client-catalog.log",
+    "sha256": "08a96bcbf851077c2079bc700e35940926256569299037acfe9eb2aa911f51a8"
+  },
+  "client_refresh": {
+    "path": "artifacts/native-disassembly-20261022/refresh-client-filter-fixture.json",
+    "sha256": "79d33bf3035c0d3e2f42d046f3cc88e041f1657a265c7e1d9f3a565e6c605f9b"
+  },
+  "client_retained": {
+    "path": "artifacts/native-disassembly-20261022/client-retained.json",
+    "sha256": "67b98f07023ce81ab33993d9d01218ac82babcd367d6e8796b0d01e9e7a939fe"
+  },
+  "gui_harness": {
+    "path": "tests/disassembly_gui_test.py",
+    "sha256": "fac8897b665f1c9a4ee184b88005956ab18b9b6690e5b7add3e6269a33b44983"
+  },
+  "gui_wrapper": {
+    "path": "artifacts/native-disassembly-20261022/run-gui.py",
+    "sha256": "41ce23ed30252aed853a8b038d4b2326fad62d695165360f81b0b9971978a490"
+  },
+  "manual": {
+    "pending": 37,
+    "open_fail": 0,
+    "new_disassembly": 4,
+    "unchanged_previous": 33,
+    "note": "All personal DIS-01 acceptance remains PENDING; existing human PASS provenance unchanged."
+  },
+  "investigation": [
+    {
+      "log": {
+        "path": "artifacts/native-disassembly-20261022/build-native.log",
+        "sha256": "bfdfc90e5614c9d7ee781063ee3761e929b594a5fc656585b08622fa1bf07e93"
+      },
+      "outcome": "Initial private actor access failed compilation; replaced by a const native accessor before verification."
+    },
+    {
+      "log": {
+        "path": "artifacts/native-disassembly-20261022/gui-save-initial.log",
+        "sha256": "551ab4323a2aecc9e7538bdfdc3bb11f44993bfc047e86d79955ca46b9867004"
+      },
+      "outcome": "Overstrict harness expected the frozen counter exactly at cancel; the ordinary queued cancel can pay another native tick after closing I. Require preserved/increased progress, never a reset/refund."
+    },
+    {
+      "log": {
+        "path": "artifacts/native-disassembly-20261022/before-requirements-native-focused.log",
+        "sha256": "49e130d57a2db0fca0c2e13ce2828f936f89e18c98dda082be81d8f5ab76bcaf"
+      },
+      "outcome": "Read-only RNG probe exposed temporary item construction in native disassembly requirement filtering. Final type-flag lookup plus data-wide equivalence/purity test passes."
+    },
+    {
+      "log": {
+        "path": "artifacts/native-disassembly-20261022/build-native-requirements.log",
+        "sha256": "d3210115ff247bd3fbe444fcf5bb00fe131f748a28a40b97be38d0a20f0cff56"
+      },
+      "outcome": "Production server built; extra test initially referenced private recipe.reversible. Final fixture uses public is_reversible and rebuild/tests pass."
+    }
+  ],
+  "limits": [
+    "Single accessible owned non-charge-counted solid item or its single-item unfinished disassembly. Empty contents and solid recovered components only; charged/bulk/recursive operations and environmental-only pseudo-tools remain separate.",
+    "No new human visual acceptance inferred. Null audio backend does not certify audible/GPU hardware behavior.",
+    "NPC conversation, trade and mission UI are not implemented. Previous native-dialog PASS entries refer to activity confirmations/choices.",
+    "Windows installer remains the previously delivered CWM 2.26 snapshot; this scoped runtime installation is Linux/start.sh. Future package metadata derives protocol version from captured headers.",
+    "Historical M5.5 FAILED, full SAVE-001 OPEN and the five historical optional statistical melee failures remain unchanged; this is not global conformance certification."
+  ],
+  "commands": [
+    "python3 tools/takeover_baseline.py check",
+    "python3 tools/generate_product_languages.py --check",
+    "python3 tools/refresh_verification_workspace.py --workspace artifacts/fnd03-session/workspace --receipt artifacts/native-disassembly-20261022/refresh-native-filter-fixture.json",
+    "cmake --build artifacts/fnd03-session/workspace/cdda/build --target cdda-server cata_test -j4",
+    "CDDA_LOCALE_DIR=$PWD/lang/mo ./build/tests/cata_test '[cwm][disassembly]' --rng-seed 42 --user-dir=<isolated userdir> # cwd artifacts/fnd03-session/workspace/cdda",
+    "python3 tools/build_native_save_reader.py --pristine-cdda artifacts/m5.5/20261003-takeover/pristine-cdda --workspace artifacts/fnd03-session/workspace --output artifacts/native-disassembly-20261022/native-save-reader --strip-debug",
+    "artifacts/native-disassembly-20261022/native-save-reader --create-disassembly --userdir <new isolated fixture>/user --datadir cdda/data --output <new isolated fixture>/before.json",
+    "CDDA_LOCALE_DIR=$PWD/lang/mo ./build/tests/cata_test '[cwm],[reading]~[.],[melee]~[.],[ranged]~[.],[disassembly]~[.]' --rng-seed 42 --user-dir=<isolated userdir> # same cwd",
+    "cmake --build artifacts/language-20261011/workspace/luanti/build --target luanti -j3",
+    "artifacts/language-20261011/workspace/luanti/bin/luanti --run-unittests --logfile <isolated log>",
+    "ctest --test-dir artifacts/language-20261011/workspace/build/protocol --output-on-failure",
+    "python3 artifacts/language-20261011/workspace/tests/product_language_test.py",
+    "python3 artifacts/language-20261011/workspace/tests/product_language_registry_test.py",
+    "python3 artifacts/native-disassembly-20261022/run-gui.py disassembly_gui_test.py artifacts/native-disassembly-20261022/fixture/user disassembly-save --save-active",
+    "python3 artifacts/native-disassembly-20261022/run-gui.py disassembly_gui_test.py artifacts/native-disassembly-20261022/disassembly-save/user disassembly-resume --resume-only",
+    "python3 artifacts/native-disassembly-20261022/install.py",
+    "CWM_TEST_INSTALLED=1 python3 artifacts/native-disassembly-20261022/run-gui.py disassembly_gui_test.py artifacts/native-disassembly-20261022/disassembly-save/user installed-resume --resume-only"
+  ],
+  "environment": {
+    "os": "Linux pop-os 7.0.11-76070011-generic #202606011647~1780583630~22.04~70ad774 SMP PREEMPT_DYNAMIC Thu J x86_64 x86_64 x86_64 GNU/Linux",
+    "compiler": "c++ (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0",
+    "cmake": "cmake version 3.22.1",
+    "flatbuffers": "flatc version 24.3.25",
+    "architecture": "Linux x86_64"
+  }
+}

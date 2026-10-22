@@ -19,6 +19,12 @@ Windows 11 x64: the local installer is generated as
 [Windows build instructions](tools/windows/README.md). Real Windows hardware
 acceptance is recorded separately from automated Wine verification.
 
+Current Linux slice: [native item disassembly](docs/fixes/native-disassembly.md),
+including interruption, resume and canonical persistence, is available in
+`./start.sh`. NPC conversation/trade interfaces remain planned; visible NPCs
+do not yet have a working talk control. The Windows installer above remains
+its previously verified snapshot.
+
 This project aims to merge the 2D turn based videogame Cataclysm Dark Days Ahead(CDDA) with the 3D voxel real time game Mineclonia(as the name suggests, an open source minecraft clone) with the goal to provide CDDA with a 3D voxel engine.
 FAQ
 A: Why did you choose to make this?

@@ -1,6 +1,31 @@
 # Implementation status
 
-Current requested delivery: **native Windows 11 x64 installer**, per-user and
+Current scoped delivery: **native single-item disassembly**, CWM **2.27**,
+installed and checked in normal Linux `start.sh`. I → Disassemble / Resume;
+CDDA owns confirmations, requirements, actual work, interruption, recovery
+and canonical save/load. [Delivery](docs/fixes/native-disassembly.md),
+[contract](docs/design/native-disassembly.md),
+[exact evidence](docs/fixes/native-disassembly-evidence.json).
+
+**120 native cases / 72,540 assertions**, focused disassembly **5/6,800**;
+**309 client tests / 47 modules**, 648 Catch assertions / 4 cases;
+**14 protocol**, language **9**, registry **3**, and **48 actual renderer /
+canonical checks PASS**. Incremental captured builds, scoped evidence.
+Read-only queries preserve RNG; a data-wide native check verifies the default
+component-filter semantics. Rollback runtimes retained; mapping batch60 unchanged.
+
+**NPC conversations are not implemented:** friendly bump dialogue is explicitly
+blocked; there is no working talk control. Earlier native-dialog validations
+were activity confirmations/choices, not NPC conversation/trade/mission loops.
+That social slice remains open in Fase 4.6 and is the next core candidate.
+
+**37 PENDING**, no open manual FAIL: previous 33 unchanged plus four deferred
+DIS-01 checks. No human acceptance inferred from automation. Historical M5.5
+FAILED and full SAVE-001 OPEN remain unchanged. The Windows installer is still
+the previous verified CWM2.26 snapshot; no new Windows binary is claimed here.
+
+
+Previous requested delivery: **native Windows 11 x64 installer**, per-user and
 automatic launch, with separate canonical saves and bundled runtime/assets/DLLs.
 [Delivery, exact verification and limitations](docs/releases/windows11-2026-10-21.md).
 309 Windows client / 12 Windows protocol / 13 Linux protocol tests pass, plus
