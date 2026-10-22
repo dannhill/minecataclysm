@@ -265,12 +265,14 @@ def main():
             def entry(v,itype,trader,skip=0):
                 found=[v.Entries(n) for n in range(v.EntriesLength()) if v.Entries(n).TypeId()==itype.encode() and v.Entries(n).Trader()==trader]
                 return found[skip]
-            def select_item(v,e):
+            def select_item(v,e,shift=False):
                 entries=[v.Entries(n) for n in range(v.EntriesLength()) if v.Entries(n).Trader()==e.Trader()]
                 n=next(n for n,r in enumerate(entries) if r.Id()==e.Id())
                 if n>=27:raise AssertionError('Fixture entry outside first page')
                 x=.5 if e.Trader() else 11.5
+                if shift:xdo('keydown','Shift_L')
                 click(x+(n%9)*1.12+.5,2.2+(n//9)*1.15+.5)
+                if shift:xdo('keyup','Shift_L')
             def offer(v,e,quantity,drag=False):
                 select_item(v,e);click(12.2,8.65)
                 xdo('key','--clearmodifiers','ctrl+a');xdo('type','--clearmodifiers',str(quantity));time.sleep(.15)
@@ -292,7 +294,11 @@ def main():
             check('native_two_panel_quote',v.TradeId()>0 and v.QuoteId()>0 and npc>>63==1 and v.EntriesLength()>0)
             frozen=latest()['simulation_time'];time.sleep(.7)
             check('native_clock_paused_during_quote',latest()['simulation_time']==frozen and int(latest()['pause_reasons'])&16)
-            bandage=entry(v,'bandages',True);v=offer(v,bandage,1)
+            bandage=entry(v,'bandages',True)
+            for expected in (1,0):
+                count=len(messages(Payload.TradeView));select_item(v,bandage,shift=True);wait_wire(Payload.TradeView,count);v=trade_view()
+                check('shift_click_toggles_offer_'+str(expected),v.Entries(bandage.Id()-1).Selected()==expected and latest()['simulation_time']==frozen)
+            v=offer(v,bandage,1)
             check('proposal_updates_native_quote_without_running_clock',v.TheirValue()>0 and latest()['simulation_time']==frozen and v.Entries(bandage.Id()-1).Selected()==1)
             check('native_price_and_balance_exported',v.Balance()==100000-v.TheirValue() and v.RememberedBalance()==v.Balance() and v.CanConfirm())
             # Send invalid proposals through the same byte relay/session.
@@ -365,7 +371,7 @@ def main():
 
     check('byte_relay_completed_without_errors',not relay_errors)
     logs='\n'.join(p.read_text(errors='replace') for p in (out/'logs').rglob('*.log'))
-    check('native_trade_widgets_accepted_by_actual_parser','Invalid scrollbar element' not in logs and 'Invalid formspec' not in logs)
+    check('native_trade_widgets_accepted_by_actual_parser','Invalid scrollbar element' not in logs and 'Invalid formspec' not in logs and 'Unknown DrawSpec: type=cwm_' not in logs)
     output=out/'native.json'
     with (out/'native.log').open('w') as log:
         result=subprocess.run([str(args.native_reader.resolve()),'--userdir',str(user),'--datadir',str(ws/'cdda/data'),'--output',str(output)],stdout=log,stderr=subprocess.STDOUT,timeout=180)
