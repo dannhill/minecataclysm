@@ -10100,7 +10100,7 @@ index 0000000..39d991c
 +}
 diff --git a/tests/cwm_runtime_test.cpp b/tests/cwm_runtime_test.cpp
 new file mode 100644
-index 0000000..cb3ee64
+index 0000000..f6b99dd
 --- /dev/null
 +++ b/tests/cwm_runtime_test.cpp
 @@ -0,0 +1,719 @@
@@ -10777,9 +10777,9 @@ index 0000000..cb3ee64
 +    out.member("missions");mission::serialize_all(out);out.end_object();return stream.str();
 +}
 +TEST_CASE("cwm_journal_queries_only_known_native_histories_without_effects", "[cwm][journal]") {
-+    prepare_runtime();auto& u=get_avatar();u.setID(character_id(101),false);u.reset_all_missions();mission::clear_all();
++    prepare_runtime();auto& u=get_avatar();u.setID(character_id(101),true);u.reset_all_missions();mission::clear_all();
 +    const bool watch=GENERATE(false,true);
-+    if(watch)REQUIRE(u.wear_item(item(itype_id("watch")),false));
++    if(watch)REQUIRE(u.wear_item(item(itype_id("wristwatch")),false));
 +    REQUIRE(u.has_watch()==watch);
 +    int evaluated=0;
 +    mission_type kind=*mission_type::get(mission_type_id("MISSION_GET_FLAG"));

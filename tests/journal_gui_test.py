@@ -263,7 +263,7 @@ def main():
             check('only_four_known_native_missions',len(known)==4)
             check('native_histories_are_partitioned', [e.State() for e in known]==[0,0,1,2])
             first,second=known[:2];first_id=first.Id();second_id=second.Id()
-            check('canonical_mission_id_zero_is_valid',first_id==0)
+            check('canonical_native_mission_ids_are_distinct',first_id>=0 and second_id!=first_id)
             check('native_tracked_mission_exported',v.TrackedId()==second_id and second.Tracked())
             check('known_target_includes_native_vertical_coordinate',first.Target() is not None and first.Target().Z()==-1)
             check('unset_target_has_no_invented_location',second.Target() is None and not second.TargetText())

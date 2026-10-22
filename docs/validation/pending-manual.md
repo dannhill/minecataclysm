@@ -1,5 +1,9 @@
 # Validazioni manuali del playable core
 
+Diario missioni note (2026-10-22): **49 PENDING, nessun FAIL manuale aperto**.
+I precedenti 45 punti restano invariati; quattro nuove prove JOURNAL-01 sono
+rinviabili. Le verifiche automatiche non costituiscono un PASS umano.
+
 Commercio NPC (2026-10-22): **45 PENDING, nessun FAIL manuale aperto**.
 I precedenti 41 punti restano invariati; quattro nuove prove TRADE-01 sono
 rinviabili. Le verifiche automatiche e le immagini ispezionate dall'agente
@@ -1138,3 +1142,36 @@ L'apertura usa il restock/riordino nativo del venditore: annullare evita lo
 scambio, non annulla questi effetti nativi di apertura. La prima fetta non
 certifica tutti i mercanti/mod/EOC o servizi speciali. I PASS NPC precedenti
 restano distinti dalle nuove prove TRADE-01. Nessun gate manuale richiesto oggi.
+
+
+## JOURNAL-01 — Diario delle missioni note — 4 PENDING
+
+`./journal-demo.sh --fresh`: sessione isolata con due missioni attive, una
+completata, una fallita e una proposta NPC non ancora accettata. Il diario si
+apre con **J** anche nella normale partita di `./start.sh`. La demo ha un NPC
+davanti e nessun orologio: le scadenze attive hanno precisione approssimata.
+
+1. **PENDING** — Premi J. Leggi Attive/Completate/Fallite, descrizioni e
+   obiettivi; il tempo e il personaggio restano fermi. La missione proposta
+   dall'NPC e non accettata non deve comparire. In una partita senza missioni
+   note il diario deve mostrare uno stato vuoto comprensibile.
+2. **PENDING** — Nella scheda Active seleziona Find Flag e premi **Track this
+   mission**; poi prova l'altra missione attiva. Il contrassegno segue la
+   selezione esplicita. Consultare un'altra voce non deve cambiare la missione
+   seguita, assegnare premi o completarla. La destinazione di Find Flag mostra
+   coordinate native, incluso Z; la missione senza destinazione non ne inventa
+   una. Le coordinate sono celle della mappa globale CDDA, non blocchi Luanti.
+3. **PENDING** — Le schede Completed/Failed sono consultabili senza pulsanti
+   per completare, riattivare o seguire quelle missioni. Controlla la scadenza
+   approssimata in assenza di orologio. Esc chiude il diario; se prima avevi
+   attivato F7, dopo la chiusura il gioco deve rimanere in pausa fino a F7.
+4. **PENDING** — Segui Find Flag, chiudi e riavvia `./journal-demo.sh` senza
+   `--fresh`: missioni, stati e selezione persistono. Il diario non si riapre
+   automaticamente e la pausa del suo menu non è salvata. Facoltativamente
+   accetta una nuova missione parlando all'NPC e riapri J: deve comparire solo
+   dopo l'accettazione nativa.
+
+La lettura non valuta condizioni di completamento e non esegue gli script:
+non promette percentuali o ricompense simulate. Dettagli dinamici non sicuri
+mostrano un avviso esplicito. Indicazioni HUD/mappa 3D e compatibilità con ogni
+missione mod/EOC rimangono attività separate; nessun gate manuale richiesto ora.

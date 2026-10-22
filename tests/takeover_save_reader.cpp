@@ -20,6 +20,9 @@
 #include "monster.h"
 #include "npc.h"
 #include "mission.h"
+#include "event.h"
+#include "event_bus.h"
+#include "profession.h"
 #include <sstream>
 #include <climits>
 #include "dialogue_chatbin.h"
@@ -531,6 +534,10 @@ int main(int argc, const char *argv[]) {
             if(create_journal) {
                 u.remove_items_with([](const item&){return true;});u.remove_weapon();u.clear_worn();
                 u.wear_item(item(itype_id("backpack"),calendar::turn),false);
+                // Record the native avatar event before preparing histories.
+                // Otherwise native legacy-save migration legitimately creates
+                // a succession mission on first load of this synthetic save.
+                get_event_bus().send<event_type::game_avatar_new>(false,false,u.getID(),u.name,u.male,u.prof->ident(),u.custom_profession);
                 u.reset_all_missions();mission::clear_all();
                 auto make=[&](const std::string& type,const std::string& status,bool assigned,bool target,bool deadline) {
                     const int uid=g->assign_mission_id();
