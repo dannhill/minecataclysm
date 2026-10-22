@@ -1585,7 +1585,7 @@ index 7498f9e..37448f6 100644
      dead = true;
      set_killer( nkiller );
 diff --git a/src/npctalk.cpp b/src/npctalk.cpp
-index ea45f06..6f2d554 100644
+index ea45f06..554803d 100644
 --- a/src/npctalk.cpp
 +++ b/src/npctalk.cpp
 @@ -1,4 +1,7 @@
@@ -1635,7 +1635,7 @@ index ea45f06..6f2d554 100644
          challenge = string_format( _( "\"%s\"" ), challenge );
      }
  
-@@ -2534,13 +2536,65 @@ talk_topic dialogue::opt( dialogue_window &d_win, const talk_topic &topic )
+@@ -2534,13 +2536,66 @@ talk_topic dialogue::opt( dialogue_window &d_win, const talk_topic &topic )
          return talk_topic( "TALK_NONE" );
      }
  
@@ -1658,7 +1658,7 @@ index ea45f06..6f2d554 100644
 +        const bool companion_entry = companion && !by_radio &&
 +            ( topic.id == companion->chatbin.talk_friend || topic.id == companion->chatbin.talk_friend_guard ) &&
 +            cwm::CompanionControls::available( get_avatar(), *companion );
-+        if( companion_entry ) labels.push_back( ::cwm::tr( "Companion orders and rules" ) );
++        if( companion_entry ) labels.insert( labels.begin(), ::cwm::tr( "Companion orders and rules" ) );
 +        // Do not map disconnect/Esc to an arbitrary native reply: a single
 +        // native response can have irreversible effects. Leaving is effect-free.
 +        labels.push_back( _( "Leave conversation" ) );
@@ -1675,12 +1675,13 @@ index ea45f06..6f2d554 100644
 +                external_conversation_scope scope( info.npc_id ? &info : nullptr );
 +                selected = external_ui_choice( challenge, labels );
 +            }
-+            if( companion_entry && selected >= 0 && size_t( selected ) == responses.size() + inspect_actions.size() ) {
++            if( companion_entry && selected == 0 ) {
 +                if( !cwm::CompanionControls::run( get_avatar(), *companion, info ) ) return talk_topic( "TALK_DONE" );
 +                // An explicit return re-enters the current native friend root,
 +                // never the stale topic from before a guard/follow command.
 +                return talk_topic( companion->is_guarding() ? companion->chatbin.talk_friend_guard : companion->chatbin.talk_friend );
 +            }
++            if( companion_entry && selected > 0 ) --selected; // Native replies keep their original indices.
 +            if( selected < 0 || size_t( selected ) >= responses.size() + inspect_actions.size() ) return talk_topic( "TALK_DONE" );
 +            if( size_t( selected ) >= responses.size() ) return special_talk( inspect_actions[selected - responses.size()] );
 +            response_ind = selected;
@@ -1702,7 +1703,7 @@ index ea45f06..6f2d554 100644
      std::vector<input_event> response_hotkeys;
      const auto generate_response_lines = [&]() {
  #if defined(__ANDROID__)
-@@ -2567,7 +2621,7 @@ talk_topic dialogue::opt( dialogue_window &d_win, const talk_topic &topic )
+@@ -2567,7 +2622,7 @@ talk_topic dialogue::opt( dialogue_window &d_win, const talk_topic &topic )
          d_win.draw( d_win.is_not_conversation ? "" : actor( true )->disp_name() );
      } );
  
@@ -1711,7 +1712,7 @@ index ea45f06..6f2d554 100644
      bool okay;
      do {
          std::string action;
-@@ -2604,6 +2658,7 @@ talk_topic dialogue::opt( dialogue_window &d_win, const talk_topic &topic )
+@@ -2604,6 +2659,7 @@ talk_topic dialogue::opt( dialogue_window &d_win, const talk_topic &topic )
              okay = query_yn( _( "You'll be helpless!  Proceed?" ) );
          }
      } while( !okay );
@@ -7070,10 +7071,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..6170b36
+index 0000000..a8244f4
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,2434 @@
+@@ -0,0 +1,2442 @@
 +#include "cata_catch.h"
 +#include "translations.h"
 +#include "options.h"
@@ -9479,6 +9480,10 @@ index 0000000..6170b36
 +        position=person->pos();moves=person->moves;umoves=u.moves;
 +        external_conversation_info info;info.npc_id=(uint64_t(1)<<63)|uint64_t(person->getID().get_value());
 +        returned=cwm::CompanionControls::run(u,*person,info);
++        // The ordinary world phase after this callback may legitimately move
++        // NPCs, grant turn credit and sample AI RNG. Measure only the panel.
++        CHECK(saved()==before);CHECK(person->pos()==position);CHECK(person->moves==moves);
++        CHECK(u.moves==umoves);CHECK(rng_get_engine()==rng);CHECK(calendar::turn==turn);
 +        finish_external_action_phase();return false;
 +    },[&](const std::string&,const std::vector<std::string>& labels){
 +        REQUIRE(external_conversation);CHECK(external_conversation->companion_controls);
@@ -9486,8 +9491,8 @@ index 0000000..6170b36
 +        if(prompts==1){auto i=std::find(labels.begin(),labels.end(),"Combat rules");REQUIRE(i!=labels.end());return int(i-labels.begin());}
 +        return int(labels.size())-1; // Safe leave, not a native reply.
 +    });
-+    CHECK_FALSE(returned);CHECK(prompts==2);CHECK(saved()==before);CHECK(person->pos()==position);
-+    CHECK(person->moves==moves);CHECK(u.moves==umoves);CHECK(rng_get_engine()==rng);CHECK(calendar::turn==turn);
++    CHECK_FALSE(returned);CHECK(prompts==2);CHECK(saved()==before);
++    umoves=u.moves;turn=calendar::turn;
 +    const auto& rule=cwm::CompanionControls::rules().front();
 +    person->rules.set_flag(ally_rule::use_guns);person->rules.set_specific_override_state(ally_rule::use_guns,false);
 +    REQUIRE(cwm::CompanionControls::base(u,*person,rule,true));
@@ -9504,6 +9509,10 @@ index 0000000..6170b36
 +    person->set_fac(faction_id("no_faction"));CHECK_FALSE(cwm::CompanionControls::base(u,*person,rule,false));
 +    CHECK_FALSE(cwm::CompanionControls::order(u,*person,true));
 +    person->set_fac(faction_id("your_followers"));
++    person->add_effect(efftype_id("sleep"),10_minutes);CHECK_FALSE(cwm::CompanionControls::available(u,*person));
++    person->remove_effect(efftype_id("sleep"));
++    u.add_effect(efftype_id("deaf"),10_minutes);CHECK_FALSE(cwm::CompanionControls::available(u,*person));
++    u.remove_effect(efftype_id("deaf"));
 +    u.add_effect(efftype_id("blind"),10_minutes);u.recalc_sight_limits();
 +    CHECK_FALSE(cwm::CompanionControls::available(u,*person));CHECK_FALSE(cwm::CompanionControls::override_rule(u,*person,rule,0));
 +    clear_creatures();

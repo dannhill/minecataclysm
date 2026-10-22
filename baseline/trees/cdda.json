@@ -39112,7 +39112,7 @@
   {
     "path": "src/npctalk.cpp",
     "mode": "100644",
-    "sha256": "e6ba7695b41e2242592061bf1a46a4367ab51fdecf9a9f23de9f78676f959cf5"
+    "sha256": "5912c6b91f7e679d62f369f69388a1da3cc1dbbc85c609acd50b0204362612ae"
   },
   {
     "path": "src/npctalk.h",
@@ -40947,7 +40947,7 @@
   {
     "path": "tests/cwm_pickup_test.cpp",
     "mode": "100644",
-    "sha256": "375e4756576297df093bc553d21af5ccf86c7f20b79fde1aee04275b95938eea"
+    "sha256": "962ae95cd4ce73466083deecaa5981bd145bab1528bf65359aad9cd8447b5415"
   },
   {
     "path": "tests/cwm_projection_test.cpp",
