@@ -244,6 +244,7 @@ def main():
                 check('menu_has_'+part.replace(' ','_')+'_'+str(len(checks)),len(matches)==1)
                 choose(matches[0])
             def rest_menu():
+                wait(lambda r:int(r['input_ready'])==1 and int(r['pause_reasons'])==0 and int(r['pending_move'])==0 and int(r['pending_decision'])==0)
                 tap('b');wait(lambda r:int(r['pending_decision'])>0)
                 return labels(prompt())
             def idle():
