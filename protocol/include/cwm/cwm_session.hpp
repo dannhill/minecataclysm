@@ -61,16 +61,21 @@ inline bool valid_inventory(const CDDA::CWM::InventoryView* view) {
         if (!entry || entry->id() != ++id || entry->parent_id() >= id || entry->pocket_index() < -1 ||
             (!entry->parent_id() && entry->pocket_index() != -1) ||
             (entry->parent_id() && (entry->worn() || entry->wielded())) ||
-            (entry->worn() && entry->wielded()) || (entry->actions() & ~127) || entry->quick_slot() > 9 || entry->ui_order() > 2048 ||
+            (entry->worn() && entry->wielded()) || entry->quick_slot() > 9 || entry->ui_order() > 2048 ||
             entry->weight_grams() < 0 || entry->volume_ml() < 0 || entry->length_mm() < 0 || entry->access_moves() < 0 ||
             !text(entry->type_id(), 1024, false) || !text(entry->name(), 16384, false) || !text(entry->category(), 1024) ||
-            !entry->reasons() || entry->reasons()->size() != 7 || entry->consume_moves() < 0 ||
+            !entry->reasons() || entry->reasons()->size() != 8 || entry->consume_moves() < 0 ||
             !text(entry->consume_label(), 128) || !text(entry->consume_warning(), 2048) || !text(entry->transfer_reason(), 2048)) return false;
-        for (unsigned i = 0; i < 7; ++i)
+        for (unsigned i = 0; i < 8; ++i)
             if (!text(entry->reasons()->Get(i), 2048) ||
                 bool(entry->actions() & (1 << i)) == bool(entry->reasons()->Get(i)->size())) return false;
         if ((entry->actions() & 16) && (!entry->consume_moves() || !entry->consume_label()->size())) return false;
         if ((entry->actions() & 64) && (!entry->book() || !entry->book()->chapter_moves())) return false;
+        if ((entry->actions() & 128) && !entry->disassembly()) return false;
+        if (const auto* work=entry->disassembly())
+            if (work->estimated_moves()<0 || work->progress()<0 || work->progress()>10000000 ||
+                (!work->resume() && work->progress()) ||
+                ((entry->actions() & 128) && work->estimated_moves()>INT32_MAX)) return false;
         if (const auto* book=entry->book())
             if(book->chapter_moves()<0 || !text(book->summary(),2048,false))return false;
         if (entry->external() && (!view->external_coord() || entry->worn() || entry->wielded() || entry->actions() || entry->quick_slot() || entry->ui_order())) return false;
@@ -165,7 +170,12 @@ inline bool valid_world(const CDDA::CWM::WorldSnapshot* world) {
         if (!consumption->token() || consumption->total_moves() <= 0 ||
             consumption->remaining_moves() < 0 || consumption->remaining_moves() > consumption->total_moves()) return false;
     }
-    if (int(bool(world->consumption())) + int(bool(world->first_aid())) + int(bool(world->crafting())) + int(bool(world->reload())) + int(bool(world->item_transfer())) + int(bool(world->reading())) > 1) return false;
+    if (int(bool(world->consumption())) + int(bool(world->first_aid())) + int(bool(world->crafting())) + int(bool(world->reload())) + int(bool(world->item_transfer())) + int(bool(world->reading())) + int(bool(world->disassembly())) > 1) return false;
+    if (const auto* work=world->disassembly()) {
+        if (!work->token() || work->progress()<0 || work->progress()>10000000 ||
+            !work->name() || !work->name()->size() || work->name()->size()>16384 ||
+            work->name()->str().find('\0')!=std::string::npos) return false;
+    }
     if (const auto* reading=world->reading()) {
         const auto text=[](const auto* value,size_t max,bool empty=true) {
             return value && value->size()<=max && (empty || value->size()) && value->str().find('\0')==std::string::npos;

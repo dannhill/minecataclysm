@@ -101,3 +101,7 @@ add_test(NAME test_presentation COMMAND test_presentation)
 add_executable(test_reading tests/test_reading.cpp)
 target_link_libraries(test_reading PRIVATE cwm_protocol)
 add_test(NAME test_reading COMMAND test_reading)
+
+add_executable(test_disassembly tests/test_disassembly.cpp)
+target_link_libraries(test_disassembly PRIVATE cwm_protocol)
+add_test(NAME test_disassembly COMMAND test_disassembly)

@@ -243,6 +243,7 @@ table WorldSnapshot {
     // Native illumination at the player, not a client visibility rule.
     low_light: bool;
     reading: ReadingState;
+    disassembly: DisassemblyState;
 
 }
 
@@ -319,6 +320,10 @@ table ReadingState {
 }
 table CancelReadingRequest { command_id: uint64; activity_token: uint64; }
 table BookInfo { identified: bool; chapter_moves: int32; summary: string; }
+// ACT_DISASSEMBLE uses the canonical in-progress item's counter, not moves_left.
+table DisassemblyState { token: uint64; progress: int32; name: string; }
+table CancelDisassemblyRequest { command_id: uint64; activity_token: uint64; }
+table DisassemblyInfo { estimated_moves: int64; progress: int32; resume: bool; }
 enum CraftingFilter: uint8 { ALL = 0, FAVORITES = 1, RECENT = 2, UNFINISHED = 3, AUTO = 4 }
 table CraftingQueryRequest { query_id: uint64; search: string; batch: uint32 = 1; filter: CraftingFilter = ALL; }
 table CraftingEntry {
@@ -366,6 +371,7 @@ table InventoryEntry {
     ui_order: uint32;
     external: bool;
     book: BookInfo;
+    disassembly: DisassemblyInfo;
 }
 table InventoryPocket {
     owner_id: uint32;
@@ -397,7 +403,7 @@ table InventoryView {
     external_capacity_ml: int64;
     external_remaining_ml: int64;
 }
-enum EquipmentAction : byte { WIELD = 0, STOW = 1, WEAR = 2, TAKEOFF = 3, CONSUME = 4, TREAT = 5, READ = 6 }
+enum EquipmentAction : byte { WIELD = 0, STOW = 1, WEAR = 2, TAKEOFF = 3, CONSUME = 4, TREAT = 5, READ = 6, DISASSEMBLE = 7 }
 // Stable native-owned UI bookmarks. Selection never wields an item.
 table QuickSlot {
     slot: uint8;
@@ -551,6 +557,7 @@ union Payload {
     ,CancelReadingRequest
     ,LanguageRequest
     ,LanguageState
+    ,CancelDisassemblyRequest
 }
 
 table CwmMessage {

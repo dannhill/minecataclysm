@@ -1,1 +1,15 @@
-{}
+{
+  "Stack disassembly needs a quantity interface in a later update.": "Smontaggio pile: selezione quantita prevista in seguito.",
+  "Disassembly duration is outside this interface's supported range.": "Durata smontaggio fuori dall'intervallo supportato.",
+  "Liquid or gas recovery needs a dedicated interface in a later update.": "Recupero liquidi o gas: interfaccia dedicata prevista in seguito.",
+  "Empty the item before disassembling it here.": "Svuota l'oggetto prima di smontarlo qui.",
+  "Disassembly": "Smontaggio",
+  "Native estimate: ": "Stima nativa: ",
+  "Recovered components are placed nearby. Native tools and recovery rules apply.": "Componenti recuperati nelle vicinanze. Valgono utensili e regole di recupero nativi.",
+  "Resume disassembly": "Riprendi smontaggio",
+  "Disassemble...": "Smonta...",
+  "Interrupt disassembly": "Interrompi smontaggio",
+  "Disassemble": "Smonta",
+  "Disassembling: ": "Smontaggio: ",
+  "Disassembly in progress: ": "Smontaggio in corso: "
+}

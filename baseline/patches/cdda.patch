@@ -2162,6 +2162,61 @@ index 0000000..d94c308
 +    }
 +};
 +} // namespace cwm
+diff --git a/src/cwm/cwm_disassembly.h b/src/cwm/cwm_disassembly.h
+new file mode 100644
+index 0000000..ea1d3c4
+--- /dev/null
++++ b/src/cwm/cwm_disassembly.h
+@@ -0,0 +1,49 @@
++#pragma once
++#include "avatar.h"
++#include "activity_actor_definitions.h"
++#include "item.h"
++#include "itype.h"
++#include "recipe_dictionary.h"
++#include "output.h"
++#include "cwm/cwm_protocol.hpp"
++#include "cwm/product_language.hpp"
++#include <algorithm>
++#include <climits>
++
++namespace cwm {
++inline item_location active_disassembly(const avatar& u) {
++    if (u.activity.id() != activity_id("ACT_DISASSEMBLE")) return {};
++    const auto* actor = u.activity.actor ? dynamic_cast<const disassemble_activity_actor*>(u.activity.actor.get()) : nullptr;
++    return actor && actor->target ? actor->target : item_location{};
++}
++inline const recipe& disassembly_recipe(const item& it) {
++    return it.typeId() == itype_id("disassembly") ? it.get_making() : recipe_dictionary::get_uncraft(it.typeId());
++}
++inline std::string disassembly_error(avatar& u, const item& it) {
++    const auto allowed = u.can_disassemble(it, u.crafting_inventory());
++    if (!allowed.success()) return remove_color_tags(allowed.str());
++    const bool resume = it.typeId() == itype_id("disassembly");
++    if ((!resume && it.count_by_charges()) || (resume && it.get_making_batch_size() != 1))
++        return ::cwm::tr("Stack disassembly needs a quantity interface in a later update.", "Smontaggio pile: selezione quantita prevista in seguito.");
++    const auto& recipe = disassembly_recipe(it);
++    const auto moves = recipe.time_to_craft_moves(u, recipe_time_flag::ignore_proficiencies);
++    if (moves < 0 || moves > INT_MAX)
++        return ::cwm::tr("Disassembly duration is outside this interface's supported range.", "Durata smontaggio fuori dall'intervallo supportato.");
++    const item& original = resume ? it.components.only_item() : it;
++    // Never create sample items here: constructors and yields can consume RNG.
++    for (const auto& component : original.get_uncraft_components())
++        if (component.type->phase != phase_id::SOLID)
++            return ::cwm::tr("Liquid or gas recovery needs a dedicated interface in a later update.", "Recupero liquidi o gas: interfaccia dedicata prevista in seguito.");
++    if (!original.is_container_empty())
++        return ::cwm::tr("Empty the item before disassembling it here.", "Svuota l'oggetto prima di smontarlo qui.");
++    return {};
++}
++inline flatbuffers::Offset<CDDA::CWM::DisassemblyInfo> export_disassembly_info(
++        flatbuffers::FlatBufferBuilder& wire, avatar& u, const item& it) {
++    if (!it.is_disassemblable()) return {};
++    const bool resume = it.typeId() == itype_id("disassembly");
++    return CDDA::CWM::CreateDisassemblyInfo(wire,
++        std::max<int64_t>(0, disassembly_recipe(it).time_to_craft_moves(u, recipe_time_flag::ignore_proficiencies)),
++        resume ? std::clamp(it.item_counter, 0, 10000000) : 0, resume);
++}
++} // namespace cwm
 diff --git a/src/cwm/cwm_hotbar.h b/src/cwm/cwm_hotbar.h
 new file mode 100644
 index 0000000..0866007
@@ -2275,10 +2330,10 @@ index 0000000..0866007
 +} // namespace cwm
 diff --git a/src/cwm/cwm_inventory.h b/src/cwm/cwm_inventory.h
 new file mode 100644
-index 0000000..d56deed
+index 0000000..643413e
 --- /dev/null
 +++ b/src/cwm/cwm_inventory.h
-@@ -0,0 +1,335 @@
+@@ -0,0 +1,337 @@
 +#pragma once
 +#include "cwm/product_language.hpp"
 +#include <algorithm>
@@ -2302,6 +2357,7 @@ index 0000000..d56deed
 +#include "visitable.h"
 +#include "cwm/cwm_protocol.hpp"
 +#include "cwm_reading.h"
++#include "cwm_disassembly.h"
 +
 +namespace cwm {
 +// Bounded, ephemeral selection view. Native safe item_locations retain identity;
@@ -2368,11 +2424,12 @@ index 0000000..d56deed
 +    static std::string action_error(avatar& u, item_location location, int action) {
 +        if (!location || !location.held_by(u) || !u.has_item(*location))
 +            return ::cwm::tr("Item is no longer owned.", "Oggetto non piu posseduto.");
-+        if (action < 0 || action > 6) return ::cwm::tr("Equipment action is unsupported.", "Azione equipaggiamento non supportata.");
++        if (action < 0 || action > 7) return ::cwm::tr("Equipment action is unsupported.", "Azione equipaggiamento non supportata.");
 +        if (u.activity) return ::cwm::tr("Wait for the native activity to finish.", "Attendi la conclusione dell'attivita nativa.");
 +        const auto access = access_error(location);
 +        if (!access.empty()) return access;
 +        if (action == 6) return reading_error(u, *location);
++        if (action == 7) return disassembly_error(u, *location);
 +        const bool worn = u.is_worn(*location), wielded = u.is_wielding(*location);
 +        if (action == 0) {
 +            if (wielded) return ::cwm::tr("Item is already wielded.", "Oggetto gia impugnato.");
@@ -2557,7 +2614,7 @@ index 0000000..d56deed
 +                }
 +                uint8_t actions = 0;
 +                std::vector<flatbuffers::Offset<flatbuffers::String>> reasons;
-+                for (int action = 0; action < 7; ++action) {
++                for (int action = 0; action < 8; ++action) {
 +                    const auto reason = action_error(u, location, action);
 +                    if (reason.empty()) actions |= 1 << action;
 +                    reasons.push_back(fbb.CreateString(reason));
@@ -2580,7 +2637,7 @@ index 0000000..d56deed
 +                    units::to_gram<int64_t>(it->weight()), units::to_milliliter<int64_t>(it->volume()),
 +                    units::to_millimeter<int64_t>(it->length()), access, actions, &reasons, consume_moves, consume_label, remove_color_tags(warning).c_str(), (exporting_external ? external_source_error(u,location) : transfer_source_error(u, location)).c_str(),
 +                    std::any_of(container_pockets.begin(), container_pockets.end(),
-+                        [](const auto* p) { return p->is_type(pocket_type::CONTAINER); }), exporting_external ? 0 : quick_slot, it->rotten(), exporting_external ? 0 : ui_order(*it), exporting_external, book));
++                        [](const auto* p) { return p->is_type(pocket_type::CONTAINER); }), exporting_external ? 0 : quick_slot, it->rotten(), exporting_external ? 0 : ui_order(*it), exporting_external, book, export_disassembly_info(fbb,u,*it)));
 +                bindings_.push_back({location, exporting_external ? external_parents(location) : ancestors, it->typeId().str(), it->charges,
 +                                     it->count_by_charges(), worn, wielded, exporting_external});
 +                ids[it] = id;
@@ -3089,10 +3146,10 @@ index 0000000..af07174
 +
 diff --git a/src/cwm/cwm_map_exporter.cpp b/src/cwm/cwm_map_exporter.cpp
 new file mode 100644
-index 0000000..5bac00b
+index 0000000..deeeb96
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.cpp
-@@ -0,0 +1,724 @@
+@@ -0,0 +1,730 @@
 +#include "cwm/product_language.hpp"
 +#include "cwm_motion.h"
 +// CDDA CWM Map & Entity Exporter Implementation
@@ -3732,6 +3789,12 @@ index 0000000..5bac00b
 +                progress.substr(0,2048).c_str(),!u.has_identified(book->typeId()));
 +        }
 +    }
++    const auto disassembly_work = active_disassembly(u);
++    const auto disassembly = activity_token && disassembly_work ?
++        CDDA::CWM::CreateDisassemblyStateDirect(fbb, activity_token,
++            std::clamp(disassembly_work->item_counter, 0, 10000000),
++            remove_color_tags(disassembly_work->tname()).substr(0,16384).c_str()) :
++        flatbuffers::Offset<CDDA::CWM::DisassemblyState>{};
 +    const auto work = active_craft(u);
 +    const auto crafting = activity_token && work ?
 +        CDDA::CWM::CreateCraftingState(fbb, activity_token, std::clamp(work->item_counter, 0, 10000000)) :
@@ -3768,7 +3831,7 @@ index 0000000..5bac00b
 +        g.safe_mode == SAFE_MODE_STOP || u.has_effect(efftype_id("laserlocked")) ||
 +            (clock && (clock->pause_reasons & 4)),
 +        include_chunks, base_revision, state_id, resync_id, completed_command_id,
-+        spawned_vec, removed_vec, clock_state, ground_items_vec, owned_items_vec, avatar_status, consumption, first_aid, crafting, ranged, reload, transfer, inventory_work, quick_slots_vec, cue_vector, low_light, reading
++        spawned_vec, removed_vec, clock_state, ground_items_vec, owned_items_vec, avatar_status, consumption, first_aid, crafting, ranged, reload, transfer, inventory_work, quick_slots_vec, cue_vector, low_light, reading, disassembly
 +    );
 +
 +    return builder.finish_message(CDDA::CWM::Payload::WorldSnapshot, world_snap.Union());
@@ -4087,10 +4150,10 @@ index 0000000..d077b2c
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..fb12ddd
+index 0000000..808ef25
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,1107 @@
+@@ -0,0 +1,1118 @@
 +#include "cwm/product_language.hpp"
 +#include "cwm_motion.h"
 +// CDDA CWM IPC Server Implementation
@@ -4195,11 +4258,11 @@ index 0000000..fb12ddd
 +}
 +
 +void CwmServer::refresh_activity(const avatar& u) {
-+    if (auto work = active_craft(u)) {
++    if (auto work = u.activity.id() == activity_id("ACT_DISASSEMBLE") ? active_disassembly(u) : active_craft(u)) {
 +        const int remaining = 10000000 - std::clamp(work->item_counter, 0, 10000000);
-+        if (!activity_token_ || activity_kind_ != "ACT_CRAFT" || remaining > activity_remaining_)
++        if (!activity_token_ || activity_kind_ != u.activity.id().str() || remaining > activity_remaining_)
 +            activity_token_ = next_activity_token_++;
-+        activity_kind_ = "ACT_CRAFT"; activity_total_ = 10000000; activity_remaining_ = remaining;
++        activity_kind_ = u.activity.id().str(); activity_total_ = 10000000; activity_remaining_ = remaining;
 +        return;
 +    }
 +    if (u.activity.id() == activity_id("ACT_DROP") || u.activity.id() == activity_id("ACT_INSERT_ITEM") || u.activity.id() == activity_id("ACT_PICKUP")) {
@@ -4681,6 +4744,14 @@ index 0000000..fb12ddd
 +                }
 +                refresh_activity(u);
 +                break;
++            case 7:
++                activity_token_ = 0;
++                // Native selection passes its item_location directly; do not
++                // obtain, delete or synthesize components in this adapter.
++                accepted = u.disassemble(location, true);
++                accepted = accepted && u.activity.id() == activity_id("ACT_DISASSEMBLE");
++                refresh_activity(u);
++                break;
 +            case 6:
 +                activity_token_ = 0;
 +                // Native read key obtains the selected book from its pocket
@@ -4920,6 +4991,8 @@ index 0000000..fb12ddd
 +        id = request->command_id(); signature = "craft:" + std::to_string(request->view_id()) + ":" + std::to_string(request->entry_id());
 +    } else if (const auto* request = msg->payload_as_CancelCraftingRequest()) {
 +        id = request->command_id(); signature = "cancel-craft:" + std::to_string(request->activity_token());
++    } else if (const auto* request = msg->payload_as_CancelDisassemblyRequest()) {
++        id = request->command_id(); signature = "cancel-disassembly:" + std::to_string(request->activity_token());
 +    } else if (const auto* request = msg->payload_as_CancelReadingRequest()) {
 +        id = request->command_id(); signature = "cancel-reading:" + std::to_string(request->activity_token());
 +    } else if (const auto* request = msg->payload_as_CancelFirstAidRequest()) {
@@ -5013,18 +5086,19 @@ index 0000000..fb12ddd
 +        send_result({id, error.empty(), error}, u, m, g);
 +        return; // UI assignment has no action, move debit or calendar advancement.
 +    }
-+    if (msg->payload_as_CancelConsumptionRequest() || msg->payload_as_CancelFirstAidRequest() || msg->payload_as_CancelCraftingRequest() || msg->payload_as_CancelReloadRequest() || msg->payload_as_CancelItemTransferRequest() || msg->payload_as_CancelReadingRequest()) {
++    if (msg->payload_as_CancelConsumptionRequest() || msg->payload_as_CancelFirstAidRequest() || msg->payload_as_CancelCraftingRequest() || msg->payload_as_CancelReloadRequest() || msg->payload_as_CancelItemTransferRequest() || msg->payload_as_CancelReadingRequest() || msg->payload_as_CancelDisassemblyRequest()) {
 +        const auto* meal = msg->payload_as_CancelConsumptionRequest();
 +        const auto* aid = msg->payload_as_CancelFirstAidRequest();
 +        const auto* craft = msg->payload_as_CancelCraftingRequest();
 +        const auto* reload = msg->payload_as_CancelReloadRequest();
 +        const auto* transfer = msg->payload_as_CancelItemTransferRequest();
 +        const auto* reading = msg->payload_as_CancelReadingRequest();
-+        const auto token = reading ? reading->activity_token() : transfer ? transfer->activity_token() : meal ? meal->activity_token() : aid ? aid->activity_token() : craft ? craft->activity_token() : reload->activity_token();
++        const auto* disassembly = msg->payload_as_CancelDisassemblyRequest();
++        const auto token = disassembly ? disassembly->activity_token() : reading ? reading->activity_token() : transfer ? transfer->activity_token() : meal ? meal->activity_token() : aid ? aid->activity_token() : craft ? craft->activity_token() : reload->activity_token();
 +        refresh_activity(u);
 +        const bool valid = activity_token_ && token == activity_token_ &&
 +            (transfer ? (u.activity.id() == activity_id("ACT_DROP") || u.activity.id() == activity_id("ACT_INSERT_ITEM") || u.activity.id() == activity_id("ACT_PICKUP")) :
-+             u.activity.id() == activity_id(reading ? "ACT_READ" : meal ? "ACT_CONSUME" : aid ? "ACT_FIRSTAID" : craft ? "ACT_CRAFT" : "ACT_RELOAD")) &&
++             u.activity.id() == activity_id(disassembly ? "ACT_DISASSEMBLE" : reading ? "ACT_READ" : meal ? "ACT_CONSUME" : aid ? "ACT_FIRSTAID" : craft ? "ACT_CRAFT" : "ACT_RELOAD")) &&
 +            u.activity.is_interruptible() && (!realtime_ || !pause_reasons(g));
 +        if (valid) {
 +            u.cancel_activity(); // Native interruption/backlog rules, no refund.
@@ -5686,10 +5760,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..603e151
+index 0000000..3d888e5
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,2205 @@
+@@ -0,0 +1,2286 @@
 +#include "cata_catch.h"
 +#include "translations.h"
 +#include "options.h"
@@ -5871,6 +5945,11 @@ index 0000000..603e151
 +    static void interrupt_crafting( CwmServer &server, uint64_t token, uint64_t id ) {
 +        cdda::cwm::MessageBuilder wire(server.received_sequence_+1,1,server.identity_);
 +        const auto bytes=wire.build_cancel_crafting(id,token);
++        server.handle_client_message(bytes.data(),bytes.size(),get_avatar(),get_map(),*g);
++    }
++    static void interrupt_disassembly(CwmServer& server,uint64_t token,uint64_t id) {
++        cdda::cwm::MessageBuilder wire(server.received_sequence_+1,1,server.identity_);
++        const auto bytes=wire.build_cancel_disassembly(id,token);
 +        server.handle_client_message(bytes.data(),bytes.size(),get_avatar(),get_map(),*g);
 +    }
 +    static void interrupt_reading(CwmServer& server,uint64_t token,uint64_t id) {
@@ -6949,7 +7028,7 @@ index 0000000..603e151
 +    for(const auto* row:*view->entries())if(row->type_id()->str()=="mag_guns") {
 +        found=true;REQUIRE(row->book());CHECK_FALSE(row->book()->identified());
 +        CHECK(row->actions() & 64);CHECK(row->book()->chapter_moves()>0);
-+        CHECK(row->reasons()->size()==7);CHECK(row->reasons()->Get(6)->str().empty());
++        CHECK(row->reasons()->size()==8);CHECK(row->reasons()->Get(6)->str().empty());
 +        CHECK(row->book()->summary()->str().find("theory")==std::string::npos);
 +    }
 +    CHECK(found);CHECK_FALSE(u.has_identified(book->typeId()));CHECK_FALSE(u.activity);
@@ -7894,6 +7973,82 @@ index 0000000..603e151
 +    CHECK(u.activity.moves_left==1000);
 +    CHECK_FALSE(server.has_queued_action());
 +    CHECK(get_option<std::string>("USE_LANG")==option);
++}
++
++TEST_CASE("cwm_disassembly_inspection_is_readonly_and_preserves_rng", "[cwm][disassembly]") {
++    auto target=reading_fixture("footrags_faux_fur"); avatar& u=get_avatar();
++    const auto clock=calendar::turn; const auto rng=rng_get_engine();const int moves=u.moves;
++    cwm::InventorySelection selection;cdda::cwm::MessageBuilder wire(1,1,{101,102,103});
++    auto bytes=selection.query(u,1,wire);
++    const auto* view=CDDA::CWM::GetCwmMessage(bytes.data())->payload_as_InventoryView();
++    REQUIRE(cdda::cwm::valid_inventory(view));bool found=false;
++    for(const auto* row:*view->entries())if(row->type_id()->str()=="footrags_faux_fur") {
++        found=true;REQUIRE(row->disassembly());CHECK(row->actions() & 128);
++        CHECK_FALSE(row->disassembly()->resume());CHECK(row->disassembly()->estimated_moves()>0);
++    }
++    CHECK(found);CHECK(target);CHECK_FALSE(u.activity);CHECK(u.moves==moves);
++    CHECK(calendar::turn==clock);CHECK(rng_get_engine()==rng);
++    CHECK_FALSE(cwm::disassembly_error(u,item(itype_id("rock"))).empty());
++    CHECK_FALSE(cwm::disassembly_error(u,item(itype_id("9mm"))).empty());
++}
++
++TEST_CASE("cwm_disassembly_native_confirmation_can_decline_without_mutation", "[cwm][disassembly]") {
++    auto target=reading_fixture("footrags_faux_fur");avatar& u=get_avatar();
++    const override_option query("QUERY_DISASSEMBLE","true"),autosave("AUTOSAVE","false");
++    cwm::CwmServer server("/unused-disassembly");cwm::CwmServerTestAccess::ready(server);
++    const auto view=cwm::CwmServerTestAccess::inventory(server);
++    const auto selected=cwm::CwmServerTestAccess::item_id(server,*target);REQUIRE(selected);
++    cwm::CwmServerTestAccess::equipment(server,view,selected,7,1);REQUIRE(server.has_queued_action());
++    bool entered=false,prompted=false;
++    do_turn_with_action([&](){entered=true;u.moves=100;CHECK_FALSE(cwm::CwmServerTestAccess::execute(server));finish_external_action_phase();return false;},
++        [&](const auto&,const auto& choices){prompted=true;REQUIRE(choices.size()==2);return 1;});
++    CHECK(entered);CHECK(prompted);CHECK(target);CHECK_FALSE(u.activity);
++    CHECK_FALSE(cwm::CwmServerTestAccess::accepted(server));
++    cwm::CwmServerTestAccess::complete(server);
++    cwm::CwmServerTestAccess::equipment(server,view,selected,7,1);CHECK_FALSE(server.has_queued_action());
++}
++
++TEST_CASE("cwm_disassembly_cancel_and_resume_preserve_native_counter_and_yield", "[cwm][disassembly]") {
++    auto target=reading_fixture("footrags_faux_fur");avatar& u=get_avatar();
++    const override_option query("QUERY_DISASSEMBLE","false"),autosave("AUTOSAVE","false");
++    cwm::CwmServer server("/unused-disassembly-resume");cwm::CwmServerTestAccess::ready(server);
++    const auto view=cwm::CwmServerTestAccess::inventory(server);
++    const auto selected=cwm::CwmServerTestAccess::item_id(server,*target);
++    cwm::CwmServerTestAccess::equipment(server,view,selected,7,1);REQUIRE(server.has_queued_action());
++    bool entered=false;
++    do_turn_with_action([&](){entered=true;u.moves=100;CHECK(cwm::CwmServerTestAccess::execute(server));finish_external_action_phase();return false;},
++        [](const auto&,const auto&){return 0;});
++    REQUIRE(entered);REQUIRE(u.activity.id()==activity_id("ACT_DISASSEMBLE"));
++    cwm::CwmServerTestAccess::complete(server);
++    auto work=cwm::active_disassembly(u);REQUIRE(work);REQUIRE(work->typeId()==itype_id("disassembly"));
++    for(int n=0;n<5;++n){u.moves=100;u.activity.do_turn(u);}
++    const int progress=work->item_counter;REQUIRE(progress>0);REQUIRE(progress<10000000);
++    const auto token=cwm::CwmServerTestAccess::consumption(server);REQUIRE(token);
++    const auto bytes=cwm::CwmMapExporter::export_world_snapshot(1,1,u,get_map(),*g,true,nullptr,{},0,1,0,0,nullptr,token);
++    const auto* world=CDDA::CWM::GetCwmMessage(bytes.data())->payload_as_WorldSnapshot();
++    REQUIRE(cdda::cwm::valid_world(world));REQUIRE(world->disassembly());CHECK(world->disassembly()->progress()==progress);
++    cwm::CwmServerTestAccess::interrupt_reading(server,token,2);CHECK(u.activity);
++    cwm::CwmServerTestAccess::interrupt_disassembly(server,token+1,3);CHECK(u.activity);
++    cwm::CwmServerTestAccess::interrupt_disassembly(server,token,4);CHECK_FALSE(u.activity);
++    REQUIRE(work);CHECK(work->item_counter==progress);CHECK_FALSE(work->has_var("activity_var"));
++    cwm::CwmServerTestAccess::interrupt_disassembly(server,token,4);CHECK_FALSE(u.activity);
++    u.moves=100;REQUIRE(u.disassemble(work,false));REQUIRE(cwm::active_disassembly(u));
++    CHECK(cwm::active_disassembly(u)->item_counter>=progress);
++    CHECK(cwm::CwmServerTestAccess::consumption(server)!=token);
++    process_activity(u);CHECK_FALSE(u.activity);
++    bool recovered=false;for(const auto& it:get_map().i_at(u.pos()))if(it.typeId()==itype_id("sheet_faux_fur_patchwork"))recovered=true;
++    CHECK(recovered);
++}
++
++TEST_CASE("cwm_disassembly_revalidates_admission_and_native_requirements", "[cwm][disassembly]") {
++    auto target=reading_fixture("footrags_faux_fur");avatar& u=get_avatar();
++    cwm::CwmServer server("/unused-disassembly-stale");cwm::CwmServerTestAccess::ready(server);
++    const auto view=cwm::CwmServerTestAccess::inventory(server);
++    const auto selected=cwm::CwmServerTestAccess::item_id(server,*target);
++    cwm::CwmServerTestAccess::equipment(server,view,selected,7,1);REQUIRE(server.has_queued_action());
++    target.remove_item();CHECK_FALSE(cwm::CwmServerTestAccess::execute(server));CHECK_FALSE(u.activity);
++    cwm::CwmServerTestAccess::complete(server);
++    cwm::CwmServerTestAccess::equipment(server,view,selected,7,1);CHECK_FALSE(server.has_queued_action());
 +}
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644

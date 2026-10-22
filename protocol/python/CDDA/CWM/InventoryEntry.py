@@ -223,8 +223,19 @@ class InventoryEntry(object):
             return obj
         return None
 
+    # InventoryEntry
+    def Disassembly(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(56))
+        if o != 0:
+            x = self._tab.Indirect(o + self._tab.Pos)
+            from CDDA.CWM.DisassemblyInfo import DisassemblyInfo
+            obj = DisassemblyInfo()
+            obj.Init(self._tab.Bytes, x)
+            return obj
+        return None
+
 def InventoryEntryStart(builder):
-    builder.StartObject(26)
+    builder.StartObject(27)
 
 def Start(builder):
     InventoryEntryStart(builder)
@@ -390,6 +401,12 @@ def InventoryEntryAddBook(builder, book):
 
 def AddBook(builder, book):
     InventoryEntryAddBook(builder, book)
+
+def InventoryEntryAddDisassembly(builder, disassembly):
+    builder.PrependUOffsetTRelativeSlot(26, flatbuffers.number_types.UOffsetTFlags.py_type(disassembly), 0)
+
+def AddDisassembly(builder, disassembly):
+    InventoryEntryAddDisassembly(builder, disassembly)
 
 def InventoryEntryEnd(builder):
     return builder.EndObject()

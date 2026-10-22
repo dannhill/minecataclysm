@@ -10,3 +10,4 @@ class EquipmentAction(object):
     CONSUME = 4
     TREAT = 5
     READ = 6
+    DISASSEMBLE = 7

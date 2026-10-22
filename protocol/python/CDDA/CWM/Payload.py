@@ -50,3 +50,6 @@ class Payload(object):
     InventoryArrangeRequest = 44
     CraftingFavoriteRequest = 45
     CancelReadingRequest = 46
+    LanguageRequest = 47
+    LanguageState = 48
+    CancelDisassemblyRequest = 49

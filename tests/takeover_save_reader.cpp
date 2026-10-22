@@ -48,6 +48,7 @@ int main(int argc, const char *argv[]) {
     bool create_medicine = false;
     bool create_crafting = false;
     bool create_reading = false;
+    bool create_disassembly = false;
     bool create_ranged = false;
     bool create_transfer = false;
     bool create_external = false;
@@ -65,6 +66,7 @@ int main(int argc, const char *argv[]) {
         else if (arg == "--create-transfer") { create = true; create_transfer = true; create_posture = true; }
         else if (arg == "--create-ranged") { create = true; create_ranged = true; create_posture = true; }
         else if (arg == "--create-crafting") { create = true; create_crafting = true; create_posture = true; }
+        else if (arg == "--create-disassembly") { create = true; create_disassembly = true; create_posture = true; }
         else if (arg == "--create-reading") { create = true; create_reading = true; create_posture = true; }
         else if (arg == "--create-medicine") { create = true; create_medicine = true; create_posture = true; }
         else if (arg == "--create-consumption") { create = true; create_consumption = true; create_posture = true; }
@@ -334,6 +336,14 @@ int main(int argc, const char *argv[]) {
             if (!neutral) return 29;
             neutral->friendly=-1;neutral->unique_name="Amico (non bersaglio)";neutral->add_effect(efftype_id("tied"),10_days,true);
             u.moves=100;u.recoil=MAX_RECOIL;g->set_safe_mode(SAFE_MODE_OFF);
+        }
+        if (create_disassembly) {
+            u.remove_weapon();
+            if (!u.wear_item(item(itype_id("backpack_hiking"),calendar::turn))) return 31;
+            item target(itype_id("footrags_faux_fur"),calendar::turn);
+            target.set_var("uid","disassembly-original");u.i_add(target);
+            u.i_add(item(itype_id("atomic_lamp"),calendar::turn));
+            u.moves=100;g->set_safe_mode(SAFE_MODE_OFF);
         }
         if (create_reading) {
             u.remove_weapon();

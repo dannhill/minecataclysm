@@ -21,6 +21,19 @@ inline const char *catalog_translation(const std::string &code, const char *engl
         {"en", {
         }},
         {"it", {
+            {"Disassemble", "Smonta"},
+            {"Disassemble...", "Smonta..."},
+            {"Disassembling: ", "Smontaggio: "},
+            {"Disassembly", "Smontaggio"},
+            {"Disassembly duration is outside this interface's supported range.", "Durata smontaggio fuori dall'intervallo supportato."},
+            {"Disassembly in progress: ", "Smontaggio in corso: "},
+            {"Empty the item before disassembling it here.", "Svuota l'oggetto prima di smontarlo qui."},
+            {"Interrupt disassembly", "Interrompi smontaggio"},
+            {"Liquid or gas recovery needs a dedicated interface in a later update.", "Recupero liquidi o gas: interfaccia dedicata prevista in seguito."},
+            {"Native estimate: ", "Stima nativa: "},
+            {"Recovered components are placed nearby. Native tools and recovery rules apply.", "Componenti recuperati nelle vicinanze. Valgono utensili e regole di recupero nativi."},
+            {"Resume disassembly", "Riprendi smontaggio"},
+            {"Stack disassembly needs a quantity interface in a later update.", "Smontaggio pile: selezione quantita prevista in seguito."},
         }},
     };
     const auto catalog = catalogs.find(code);

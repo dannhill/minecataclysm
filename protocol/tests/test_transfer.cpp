@@ -19,7 +19,7 @@ std::vector<uint8_t> snapshot(int defect) {
 }
 std::vector<uint8_t> external_view(int defect) {
     MessageBuilder wire(1,7,{11,22,33});auto& f=wire.builder();
-    std::vector<flatbuffers::Offset<flatbuffers::String>> reasons(7,f.CreateString("not owned"));
+    std::vector<flatbuffers::Offset<flatbuffers::String>> reasons(8,f.CreateString("not owned"));
     std::vector<flatbuffers::Offset<InventoryEntry>> entries;
     entries.push_back(CreateInventoryEntryDirect(f,1,0,-1,"rock","rock","tools",0,false,
         defect==3,false,100,100,100,0,0,&reasons,0,"","","",false,defect==4?1:0,false,0,defect!=1));

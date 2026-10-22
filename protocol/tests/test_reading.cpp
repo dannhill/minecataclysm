@@ -24,7 +24,7 @@ std::vector<uint8_t> reading_world(int bad) {
 std::vector<uint8_t> book_inventory(int bad) {
     MessageBuilder wire(1,1,{11,22,33});auto& f=wire.builder();
     std::vector<flatbuffers::Offset<flatbuffers::String>> reasons;
-    for(int n=0;n<(bad==1?6:7);++n)reasons.push_back(f.CreateString(n==6?"":"unavailable"));
+    for(int n=0;n<(bad==1?7:8);++n)reasons.push_back(f.CreateString(n==6?"":"unavailable"));
     const auto book=bad==2 ? flatbuffers::Offset<BookInfo>{} :
         CreateBookInfoDirect(f,false,bad==3?-1:bad==4?0:100,bad==5?"":"Skim first");
     const auto entry=CreateInventoryEntryDirect(f,1,0,-1,"book","Book","books",0,false,false,false,1,1,1,0,64,&reasons,0,"","","",false,0,false,0,false,book);
