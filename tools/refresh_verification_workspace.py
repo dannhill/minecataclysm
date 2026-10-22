@@ -50,7 +50,13 @@ def main():
         subprocess.run(['git', '-C', str(root), 'archive', commit], stdout=stream, check=True)
         stream.seek(0)
         with tarfile.open(fileobj=stream) as archive:
-            archive.extractall(ws)
+            for member in archive:
+                target = ws / member.name
+                if (member.isfile() and target.is_file() and not target.is_symlink() and
+                        target.stat().st_mode & 0o777 == member.mode & 0o777 and
+                        target.read_bytes() == archive.extractfile(member).read()):
+                    continue  # Preserve timestamps/caches for byte-identical root files.
+                archive.extract(member, ws)
     for name, item in desired['repositories'].items():
         entries = json.loads((root / item['tree_inventory']).read_text())
         old_entries, _ = inventory(ws / name)

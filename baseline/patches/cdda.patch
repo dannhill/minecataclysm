@@ -5803,7 +5803,7 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..ab3e24a
+index 0000000..031d0df
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
 @@ -0,0 +1,2317 @@
@@ -8105,7 +8105,7 @@ index 0000000..ab3e24a
 +    std::set<itype_id> verified;
 +    for(const auto* type:item_controller->all()) {
 +        const auto& rec=recipe_dictionary::get_uncraft(type->get_id());
-+        if(!rec || !rec.reversible) continue;
++        if(!rec || !rec.is_reversible()) continue;
 +        auto expected=rec.simple_requirements().get_components();
 +        for(auto& alternatives:expected) {
 +            for(const auto& component:alternatives)if(verified.insert(component.type).second) {
