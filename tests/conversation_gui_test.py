@@ -223,6 +223,21 @@ def main():
             # Root dialogue has many native options. Presentation pagination
             # must keep the same topic/history without running native effects.
             seen=[];history=p.Conversation().History();page_count=0
+            if 'Next page' in labels(p):
+                from formspec_geometry import geometry
+                ox,oy,unit=geometry(out/'native-conversation.png',height=12)
+                old=latest()['pending_decision'];first=labels(p)
+                # Reach an offscreen response through the real scroll widget,
+                # then select its numbered button with the mouse.
+                xdo('mousemove','--window',window,str(round(ox+12*unit)),str(round(oy+6*unit)))
+                xdo('click','--repeat','24','--delay','40','5');time.sleep(.3)
+                shot('scrolled-native-replies.png')
+                n=first.index('Next page');maximum=max(1,len(first)*23-76)
+                y=2.3+n*2.3-maximum*.1+.35
+                xdo('mousemove','--window',window,str(round(ox+10.15*unit)),str(round(oy+y*unit)))
+                xdo('click','1');wait(lambda r:r['pending_decision']!=old)
+                p=prompt();seen+=first;page_count=1
+                check('offscreen_response_is_reachable_by_mouse_scroll',p.Conversation().History()==history)
             while True:
                 options=labels(p);seen+=options;page_count+=1
                 if 'Next page' not in options: break
@@ -272,6 +287,8 @@ def main():
             (out/'relay-errors.json').write_text(json.dumps(relay_errors))
             if old_window:subprocess.run(['xdotool','windowactivate',old_window],capture_output=True)
     check('byte_relay_completed_without_errors',not relay_errors)
+    logs='\n'.join(p.read_text(errors='replace') for p in (out/'logs').rglob('*.log'))
+    check('conversation_widgets_are_accepted_by_real_formspec_parser','Invalid scrollbar element' not in logs)
     output=out/'native.json'
     with (out/'native.log').open('w') as log:
         result=subprocess.run([str(args.native_reader.resolve()),'--userdir',str(user),'--datadir',str(ws/'cdda/data'),'--output',str(output)],stdout=log,stderr=subprocess.STDOUT,timeout=180)

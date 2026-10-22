@@ -6296,10 +6296,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..a52e8fc
+index 0000000..bf73f0d
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,2376 @@
+@@ -0,0 +1,2379 @@
 +#include "cata_catch.h"
 +#include "translations.h"
 +#include "options.h"
@@ -8640,6 +8640,7 @@ index 0000000..a52e8fc
 +    auto person=make_shared_fast<npc>();person->normalize();person->randomize();
 +    person->set_fac(faction_id("no_faction"));person->set_attitude(NPCATT_NULL);
 +    person->chatbin.first_topic="TALK_STRANGER_NEUTRAL";
++    person->set_speed_base(0);person->moves=0;
 +    person->spawn_at_precise(tripoint_abs_ms(get_map().getabs(u.pos()+tripoint_north)));
 +    overmap_buffer.insert_npc(person);g->load_npcs();REQUIRE(u.sees(*person));
 +    const auto target=(uint64_t(1)<<63)|uint64_t(person->getID().get_value());
@@ -8657,14 +8658,16 @@ index 0000000..a52e8fc
 +    SECTION("a duplicate cannot start a second native conversation or charge again") {
 +        cwm::CwmServerTestAccess::talk(server,target);REQUIRE(server.has_queued_action());
 +        cwm::CwmServerTestAccess::talk(server,target); // Pending replay, not another queue entry.
-+        int prompts=0;
++        int prompts=0;bool entered=false;
++        u.moves=1000;
 +        do_turn_with_action([&]() {
++            entered=true;
 +            u.moves=1000;CHECK(cwm::CwmServerTestAccess::execute(server));CHECK(u.moves==900);
 +            CHECK(person->get_known_to_u());finish_external_action_phase();return false;
 +        },[&](const std::string&,const std::vector<std::string>& labels) {
 +            ++prompts;return int(labels.size())-1;
 +        });
-+        CHECK(prompts==1);cwm::CwmServerTestAccess::complete(server);
++        REQUIRE(entered);CHECK(prompts==1);cwm::CwmServerTestAccess::complete(server);
 +        cwm::CwmServerTestAccess::talk(server,target);CHECK_FALSE(server.has_queued_action());CHECK(prompts==1);
 +    }
 +    clear_creatures();
@@ -9480,10 +9483,10 @@ index 0000000..39d991c
 +}
 diff --git a/tests/cwm_runtime_test.cpp b/tests/cwm_runtime_test.cpp
 new file mode 100644
-index 0000000..2b02e45
+index 0000000..3715a87
 --- /dev/null
 +++ b/tests/cwm_runtime_test.cpp
-@@ -0,0 +1,578 @@
+@@ -0,0 +1,579 @@
 +#include "cwm_motion.h"
 +#include "cata_catch.h"
 +#include "avatar.h"
@@ -10004,12 +10007,13 @@ index 0000000..2b02e45
 +    person.normalize(); person.setID( character_id( 993 ) ); person.name = "Conversation tester";
 +    dialogue d( get_talker_for( u ), get_talker_for( person ) );
 +    dialogue_window win;
-+    const auto time = calendar::turn;
++    auto time = calendar::turn;
 +    const int trust = person.op_of_u.trust;
 +    int prompts = 0;
 +    bool entered = false;
 +    do_turn_with_action( [&]() {
 +        entered = true;
++        time = calendar::turn; // The native turn begins before asking for input.
 +        CHECK( d.opt( win, talk_topic( "TALK_CWM_TEST_ENTRY" ) ).id == "TALK_CWM_TEST_EXIT" );
 +        CHECK( person.get_value( "npctalk_var_cwm_reply" ) == "yes" );
 +        CHECK( person.op_of_u.trust == trust + 1 );

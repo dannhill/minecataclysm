@@ -5747,7 +5747,7 @@ index 0000000..d02b91f
 +}
 diff --git a/src/cdda/decision_dialog.h b/src/cdda/decision_dialog.h
 new file mode 100644
-index 0000000..b11b1b5
+index 0000000..e98a984
 --- /dev/null
 +++ b/src/cdda/decision_dialog.h
 @@ -0,0 +1,101 @@
@@ -5816,7 +5816,7 @@ index 0000000..b11b1b5
 +        f += "label[0.55,4.85;"+::cwm::text("Conversation history")+"]";
 +        f += "hypertext[0.55,5.15;9.05,4.85;conversation_history;"+statusEscape("<global color=#323232 size=18>"+decisionRichText(transcript))+"]set_focus[conversation_history;true]";
 +        const int maximum=std::max(1,int(choices.size()*23)-76);
-+        f += "scrollbaroptions[min=0;max="+std::to_string(maximum)+";smallstep=8;largestep=35;thumbsize=76]scrollbar[15.05,2.3;0.4,7.7;reply_scroll;0]scroll_container[9.8,2.3;5.1,7.7;reply_scroll;vertical;0.1]";
++        f += "scrollbaroptions[min=0;max="+std::to_string(maximum)+";smallstep=8;largestep=35;thumbsize=76]scrollbar[15.05,2.3;0.4,7.7;vertical;reply_scroll;0]scroll_container[9.8,2.3;5.1,7.7;reply_scroll;vertical;0.1]";
 +        for(size_t n=0;n<choices.size();++n) {
 +            const auto y=std::to_string(n*2.3);
 +            f+="button[0,"+y+";0.7,0.7;choice_"+std::to_string(n)+";"+std::to_string(n+1)+"]";
