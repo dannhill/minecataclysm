@@ -246,8 +246,8 @@ def main():
             check('native_choices_are_not_lost_to_pagination',page_count>=2 and len(seen)>9)
             leave()
             check('leave_returns_to_live_game',proc.poll() is None and int(latest()['input_ready'])==1)
-            # Native trade is explicitly declined before a terminal UI or any
-            # transfer. The conversation can continue after that native cancel.
+            # The dedicated native trade view is cancellable from the actual
+            # renderer and never falls back to the terminal.
             p=talk()
             while True:
                 options=labels(p)
@@ -255,9 +255,11 @@ def main():
                 if selected is not None:break
                 if 'Next page' not in options:raise AssertionError('No native trade response')
                 choose(options.index('Next page'));p=prompt()
-            choose(selected);p=prompt()
-            check('unsupported_trade_is_explicit_and_nonblocking',p.Conversation() is None and b'No trade was made' in p.Text())
-            shot('trade-boundary.png');choose(p.CancelChoice())
+            old=len(messages(Payload.TradeView));tap(str(selected+1))
+            deadline=time.monotonic()+12
+            while len(messages(Payload.TradeView))<=old and time.monotonic()<deadline:time.sleep(.05)
+            check('dedicated_trade_is_nonblocking',len(messages(Payload.TradeView))>old)
+            shot('trade-boundary.png');tap('Escape')
             wait(lambda r:int(r['pending_decision'])==0 and int(r['pending_move'])==0)
             check('native_trade_branch_returns_safely',proc.poll() is None)
             # A dropped connection safely leaves; recovery never chooses a

@@ -357,7 +357,7 @@ def main():
     check('canonical_first_same_type_stack_untouched',len(first)==1 and first[0]['charges']==20)
     check('canonical_selected_stack_partial_sale',len(second)==1 and second[0]['charges']==25 and len(sold)==1 and sold[0]['charges']==5)
     check('canonical_bandage_moves_once',len(bought)==1 and not tagged(np,'trade-npc-bandage'))
-    check('canonical_owners_follow_exchange',bought[0]['owner']==player['faction']['id'] if False else bought[0].get('owner')==second[0].get('owner') and sold[0].get('owner')!=second[0].get('owner'))
+    check('canonical_owners_follow_exchange',bought[0].get('owner')==second[0].get('owner') and sold[0].get('owner')!=second[0].get('owner'))
     check('canonical_position_unchanged',native['player_abs']==[60,60,0])
     check('no_fake_activity_or_inventory',player['activity']['type']=='ACT_NULL' and not any('luanti' in k.lower() for k in player))
     (out/'summary.json').write_text(json.dumps({'checks':checks,'native_save':str(output),'expected_owed':expected_owed,'expected_sold':expected_sold},indent=2)+'\n')
