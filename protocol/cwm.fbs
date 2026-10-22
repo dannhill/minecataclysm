@@ -493,7 +493,19 @@ table DecisionPrompt {
     choices: [string];
     cancel_choice: int32 = -1; // Native safe fallback; -1 disables client cancellation.
     medical: [MedicalOption];
+    conversation: ConversationInfo;
 }
+
+// Already-generated native conversation. Refreshing it is presentation only.
+table ConversationInfo {
+    npc_id: uint64;
+    speaker: string;
+    topic: string;
+    history: string;
+    history_truncated: bool;
+}
+
+table TalkRequest { command_id: uint64; target_entity_id: uint64; }
 
 table DecisionResponse {
     decision_id: uint64;
@@ -558,6 +570,7 @@ union Payload {
     ,LanguageRequest
     ,LanguageState
     ,CancelDisassemblyRequest
+    ,TalkRequest
 }
 
 table CwmMessage {

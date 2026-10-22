@@ -27,6 +27,12 @@ inline bool valid_decision(const CDDA::CWM::DecisionPrompt* prompt) {
         !prompt->choices()->size() || prompt->choices()->size()>9 || prompt->cancel_choice() < -1 ||
         prompt->cancel_choice()>=int(prompt->choices()->size()))return false;
     for(const auto* label:*prompt->choices())if(!text(label,16384) || !label->size())return false;
+    if (const auto* c = prompt->conversation()) {
+        if (prompt->medical() || !(c->npc_id() & (uint64_t(1)<<63)) ||
+            !text(c->speaker(),4096) || !c->speaker()->size() ||
+            !text(c->topic(),1024) || !c->topic()->size() || !text(c->history(),262144) ||
+            prompt->cancel_choice()!=int(prompt->choices()->size())-1) return false;
+    }
     if (prompt->medical()) {
         if (prompt->medical()->size() > 128) return false;
         std::set<std::string> ids; std::set<int> choices;

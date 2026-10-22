@@ -11,7 +11,7 @@
 namespace cdda::cwm {
 
 constexpr uint16_t PROTOCOL_VERSION_MAJOR = 2;
-constexpr uint16_t PROTOCOL_VERSION_MINOR = 27;
+constexpr uint16_t PROTOCOL_VERSION_MINOR = 28;
 
 struct Identity { uint64_t session{0}, player{0}, connection{0}; };
 
@@ -118,6 +118,10 @@ public:
     std::vector<uint8_t> build_cancel_reading(uint64_t id, uint64_t token) {
         auto req = CDDA::CWM::CreateCancelReadingRequest(fbb_, id, token);
         return finish_message(CDDA::CWM::Payload::CancelReadingRequest, req.Union());
+    }
+    std::vector<uint8_t> build_talk_request(uint64_t id, uint64_t target) {
+        auto req = CDDA::CWM::CreateTalkRequest(fbb_, id, target);
+        return finish_message(CDDA::CWM::Payload::TalkRequest, req.Union());
     }
     std::vector<uint8_t> build_attack_request(uint64_t command_id, uint64_t target_entity_id) {
         const auto req = CDDA::CWM::CreateAttackRequest(fbb_, command_id, target_entity_id);

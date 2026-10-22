@@ -747,6 +747,54 @@ index 6b60d4c..65e919c 100644
  
      if( wp != nullptr ) {
          wp->apply_effects( *this, total_damage, attack_copy );
+diff --git a/src/dialogue_win.cpp b/src/dialogue_win.cpp
+index 89dd6e2..40c6378 100644
+--- a/src/dialogue_win.cpp
++++ b/src/dialogue_win.cpp
+@@ -152,6 +152,22 @@ void dialogue_window::clear_history_highlights()
+     num_lines_highlighted = 0;
+ }
+ 
++std::string dialogue_window::external_history( bool &truncated ) const
++{
++    // Explicit bounded wire projection; keep whole native UTF-8 messages.
++    size_t begin = history.size(), bytes = 0;
++    while( begin && bytes + history[begin - 1].text.size() + 1 <= 262144 ) {
++        --begin;
++        bytes += history[begin].text.size() + 1;
++    }
++    truncated = begin != 0;
++    std::string result;
++    for( size_t i = begin; i < history.size(); ++i ) {
++        result += history[i].text + "\n";
++    }
++    return result;
++}
++
+ nc_color dialogue_window::default_color() const
+ {
+     return is_computer ? c_green : c_white;
+diff --git a/src/dialogue_win.h b/src/dialogue_win.h
+index 42ca157..e899c0f 100644
+--- a/src/dialogue_win.h
++++ b/src/dialogue_win.h
+@@ -51,6 +51,7 @@ class dialogue_window
+ 
+         /** Unhighlights all messages. */
+         void clear_history_highlights();
++        std::string external_history( bool &truncated ) const;
+         bool is_computer = false;
+         bool is_not_conversation = false;
+         int sel_response = 0;
+@@ -79,7 +80,7 @@ class dialogue_window
+         std::unique_ptr<scrolling_text_view> history_view;
+         bool update_history_view = true;
+         /** Number of history messages to highlight. */
+-        int num_lines_highlighted;
++        int num_lines_highlighted = 0;
+         /** Stored responses (hotkey, lines) */
+         std::vector<std::tuple<std::string, std::vector<std::string>>> folded_txt;
+         std::vector<int> folded_heights;
 diff --git a/src/do_turn.cpp b/src/do_turn.cpp
 index 2455a6f..32c0e4a 100644
 --- a/src/do_turn.cpp
@@ -1300,6 +1348,104 @@ index 5dd44b0..7ca192e 100644
          /**
           * Remove a specific item from the inventory. The item is compared
           * by pointer. Contents of the item are removed as well.
+diff --git a/src/inventory_ui.cpp b/src/inventory_ui.cpp
+index deac48c..8012aae 100644
+--- a/src/inventory_ui.cpp
++++ b/src/inventory_ui.cpp
+@@ -1,4 +1,5 @@
+ #include "inventory_ui.h"
++#include "do_turn.h"
+ 
+ #include <cstdint>
+ #include <optional>
+@@ -3254,6 +3255,10 @@ std::string inventory_selector::action_bound_to_key( char key ) const
+ 
+ item_location inventory_pick_selector::execute()
+ {
++    if( external_ui_active() ) {
++        external_ui_choice( _( "This item selection needs a dedicated interface.  Nothing was selected." ), { _( "Cancel" ) } );
++        return item_location::nowhere;
++    }
+     shared_ptr_fast<ui_adaptor> ui = create_or_get_ui_adaptor();
+     debug_print_timer( tp_start );
+     item_location startDragItem;
+@@ -3394,6 +3399,10 @@ void ammo_inventory_selector::mod_chosen_count( inventory_entry &entry, int valu
+ 
+ drop_location ammo_inventory_selector::execute()
+ {
++    if( external_ui_active() ) {
++        external_ui_choice( _( "This item selection needs a dedicated interface.  Nothing was selected." ), { _( "Cancel" ) } );
++        return {};
++    }
+     shared_ptr_fast<ui_adaptor> ui = create_or_get_ui_adaptor();
+     debug_print_timer( tp_start );
+     while( true ) {
+@@ -3662,6 +3671,10 @@ void inventory_multiselector::toggle_entries( int &count, const toggle_mode mode
+ 
+ drop_locations inventory_multiselector::execute( bool allow_empty )
+ {
++    if( external_ui_active() ) {
++        external_ui_choice( _( "This item selection needs a dedicated interface.  Nothing was selected." ), { _( "Cancel" ) } );
++        return {};
++    }
+     shared_ptr_fast<ui_adaptor> ui = create_or_get_ui_adaptor();
+     debug_print_timer( tp_start );
+     while( true ) {
+@@ -3697,6 +3710,10 @@ inventory_compare_selector::inventory_compare_selector( Character &p ) :
+ 
+ std::pair<const item *, const item *> inventory_compare_selector::execute()
+ {
++    if( external_ui_active() ) {
++        external_ui_choice( _( "This item selection needs a dedicated interface.  Nothing was selected." ), { _( "Cancel" ) } );
++        return {};
++    }
+     shared_ptr_fast<ui_adaptor> ui = create_or_get_ui_adaptor();
+     debug_print_timer( tp_start );
+     while( true ) {
+@@ -3949,6 +3966,10 @@ std::string haul_selector_preset::get_denial( const item_location &item ) const
+ 
+ drop_locations inventory_drop_selector::execute()
+ {
++    if( external_ui_active() ) {
++        external_ui_choice( _( "This item selection needs a dedicated interface.  Nothing was selected." ), { _( "Cancel" ) } );
++        return {};
++    }
+     shared_ptr_fast<ui_adaptor> ui = create_or_get_ui_adaptor();
+     debug_print_timer( tp_start );
+     while( true ) {
+@@ -4137,6 +4158,10 @@ void pickup_selector::apply_selection( std::vector<drop_location> selection )
+ 
+ drop_locations pickup_selector::execute()
+ {
++    if( external_ui_active() ) {
++        external_ui_choice( _( "This item selection needs a dedicated interface.  Nothing was selected." ), { _( "Cancel" ) } );
++        return {};
++    }
+     shared_ptr_fast<ui_adaptor> ui = create_or_get_ui_adaptor();
+     debug_print_timer( tp_start );
+ 
+@@ -4312,6 +4337,10 @@ void inventory_examiner::force_max_window_size()
+ 
+ int inventory_examiner::execute()
+ {
++    if( external_ui_active() ) {
++        external_ui_choice( _( "This item selection needs a dedicated interface.  Nothing was selected." ), { _( "Cancel" ) } );
++        return -1;
++    }
+     if( !check_parent_item() ) {
+         return NO_CONTENTS_TO_EXAMINE;
+     }
+@@ -4405,6 +4434,10 @@ std::string unload_selector::hint_string()
+ 
+ std::pair<item_location, bool> unload_selector::execute()
+ {
++    if( external_ui_active() ) {
++        external_ui_choice( _( "This item selection needs a dedicated interface.  Nothing was selected." ), { _( "Cancel" ) } );
++        return { item_location::nowhere, false };
++    }
+     shared_ptr_fast<ui_adaptor> ui = create_or_get_ui_adaptor();
+     item_location startDragItem;
+     bool dragActive = false;
 diff --git a/src/item.cpp b/src/item.cpp
 index 9c51213..472bb0a 100644
 --- a/src/item.cpp
@@ -1425,6 +1571,144 @@ index 7498f9e..37448f6 100644
      g->set_critter_died();
      dead = true;
      set_killer( nkiller );
+diff --git a/src/npctalk.cpp b/src/npctalk.cpp
+index ea45f06..261e3aa 100644
+--- a/src/npctalk.cpp
++++ b/src/npctalk.cpp
+@@ -1,4 +1,6 @@
+ #include "dialogue.h" // IWYU pragma: associated
++#include "do_turn.h"
++#include "external_conversation.h"
+ 
+ #include <algorithm>
+ #include <array>
+@@ -1350,9 +1352,6 @@ void avatar::talk_to( std::unique_ptr<talker> talk_with, bool radio_contact,
+     for( const std::string &topic_id : d.actor( true )->get_topics( radio_contact ) ) {
+         d.add_topic( topic_id );
+     }
+-    for( const std::string &topic_id : d.actor( true )->get_topics( radio_contact ) ) {
+-        d.add_topic( topic_id );
+-    }
+     dialogue_window d_win;
+     d_win.is_computer = is_computer;
+     d_win.is_not_conversation = is_not_conversation;
+@@ -1364,7 +1363,7 @@ void avatar::talk_to( std::unique_ptr<talker> talk_with, bool radio_contact,
+             int cat = topic_category( d.topic_stack.back() );
+             do {
+                 d.topic_stack.pop_back();
+-            } while( cat != -1 && topic_category( d.topic_stack.back() ) == cat );
++            } while( !d.topic_stack.empty() && cat != -1 && topic_category( d.topic_stack.back() ) == cat );
+         }
+         if( next.id == "TALK_DONE" || d.topic_stack.empty() ) {
+             npc *npc_actor = d.actor( true )->get_npc();
+@@ -2490,14 +2489,16 @@ talk_topic dialogue::opt( dialogue_window &d_win, const talk_topic &topic )
+     const auto resize_cb = [&]( ui_adaptor & ui ) {
+         d_win.resize( ui );
+     };
+-    ui.on_screen_resize( resize_cb );
+-    resize_cb( ui );
++    if( !external_ui_active() ) {
++        ui.on_screen_resize( resize_cb );
++        resize_cb( ui );
++    }
+ 
+     // Construct full line
+     std::string challenge = dynamic_line( topic );
+     gen_responses( topic );
+     // Put quotes around challenge (unless it's an action)
+-    if( challenge[0] != '*' && challenge[0] != '&' ) {
++    if( challenge.empty() || ( challenge[0] != '*' && challenge[0] != '&' ) ) {
+         challenge = string_format( _( "\"%s\"" ), challenge );
+     }
+ 
+@@ -2534,13 +2535,46 @@ talk_topic dialogue::opt( dialogue_window &d_win, const talk_topic &topic )
+         return talk_topic( "TALK_NONE" );
+     }
+ 
++    std::vector<talk_data> response_lines;
++    size_t response_ind = responses.size();
++    if( external_ui_active() ) {
++        std::vector<std::string> labels;
++        for( talk_response &response : responses ) {
++            response_lines.push_back( response.create_option_line( *this, input_event(), d_win.is_computer ) );
++            labels.push_back( response_lines.back().text );
++        }
++        // Do not map disconnect/Esc to an arbitrary native reply: a single
++        // native response can have irreversible effects. Leaving is effect-free.
++        labels.push_back( _( "Leave conversation" ) );
++        external_conversation_info info;
++        if( const npc *person = actor( true )->get_npc() ) {
++            info.npc_id = ( uint64_t( 1 ) << 63 ) | uint64_t( person->getID().get_value() );
++        }
++        info.speaker = actor( true )->disp_name();
++        info.topic = topic.id;
++        info.history = d_win.external_history( info.history_truncated );
++        while( true ) {
++            int selected;
++            {
++                external_conversation_scope scope( &info );
++                selected = external_ui_choice( challenge, labels );
++            }
++            if( selected < 0 || size_t( selected ) >= responses.size() ) return talk_topic( "TALK_DONE" );
++            response_ind = selected;
++            const auto consequences = responses[response_ind].get_consequences( *this );
++            if( consequences.count( dialogue_consequence::hostile ) &&
++                !query_yn( _( "You may be attacked!  Proceed?" ) ) ) continue;
++            if( consequences.count( dialogue_consequence::helpless ) &&
++                !query_yn( _( "You'll be helpless!  Proceed?" ) ) ) continue;
++            break;
++        }
++    } else {
+     input_context ctxt( "DIALOGUE_CHOOSE_RESPONSE" );
+     d_win.set_up_scrolling( ctxt );
+     ctxt.register_action( "HELP_KEYBINDINGS" );
+     ctxt.register_action( "CONFIRM" );
+     ctxt.register_action( "ANY_INPUT" );
+     ctxt.register_action( "QUIT" );
+-    std::vector<talk_data> response_lines;
+     std::vector<input_event> response_hotkeys;
+     const auto generate_response_lines = [&]() {
+ #if defined(__ANDROID__)
+@@ -2567,7 +2601,7 @@ talk_topic dialogue::opt( dialogue_window &d_win, const talk_topic &topic )
+         d_win.draw( d_win.is_not_conversation ? "" : actor( true )->disp_name() );
+     } );
+ 
+-    size_t response_ind = response_hotkeys.size();
++    response_ind = response_hotkeys.size();
+     bool okay;
+     do {
+         std::string action;
+@@ -2604,6 +2638,7 @@ talk_topic dialogue::opt( dialogue_window &d_win, const talk_topic &topic )
+             okay = query_yn( _( "You'll be helpless!  Proceed?" ) );
+         }
+     } while( !okay );
++    }
+ 
+     d_win.add_history_separator();
+     d_win.add_to_history( response_lines[response_ind].text, _( "You" ), c_light_blue );
+diff --git a/src/npctrade.cpp b/src/npctrade.cpp
+index cca50d9..f17b5a9 100644
+--- a/src/npctrade.cpp
++++ b/src/npctrade.cpp
+@@ -1,4 +1,5 @@
+ #include "npctrade.h"
++#include "do_turn.h"
+ 
+ #include <algorithm>
+ #include <iosfwd>
+@@ -277,6 +278,12 @@ void npc_trading::update_npc_owed( npc &np, int your_balance, int your_sale_valu
+ // cost is positive when the player owes the NPC money for a service to be performed
+ bool npc_trading::trade( npc &np, int cost, const std::string &deal )
+ {
++    if( external_ui_active() ) {
++        // No restocking, item migration, price/debt mutation or terminal UI.
++        // The dedicated native trade projection is a separate implementation.
++        external_ui_choice( _( "Trading needs a dedicated interface and is not available yet.  No trade was made." ), { _( "Cancel" ) } );
++        return false;
++    }
+     np.shop_restock();
+     //np.drop_items( np.weight_carried() - np.weight_capacity(),
+     //               np.volume_carried() - np.volume_capacity() );
 diff --git a/src/output.cpp b/src/output.cpp
 index 38b1d71..e5b7a12 100644
 --- a/src/output.cpp
@@ -1541,6 +1825,48 @@ index 6da4259..2b286b1 100644
          bool rooted() const;
  
          // Question to ask when the activity is to be stopped,
+diff --git a/src/popup.cpp b/src/popup.cpp
+index 70614b4..d16782a 100644
+--- a/src/popup.cpp
++++ b/src/popup.cpp
+@@ -1,4 +1,5 @@
+ #include "popup.h"
++#include "do_turn.h"
+ 
+ #include <algorithm>
+ #include <array>
+@@ -268,6 +269,23 @@ std::shared_ptr<ui_adaptor> query_popup::create_or_get_adaptor()
+ 
+ query_popup::result query_popup::query_once()
+ {
++    if( external_ui_active() ) {
++        input_context ctxt( category, pref_kbd_mode );
++        std::vector<std::string> labels;
++        for( const auto &opt : options ) {
++            ctxt.register_action( opt.action );
++            labels.push_back( ctxt.get_action_name( opt.action ) );
++        }
++        if( options.empty() && anykey ) {
++            external_ui_choice( text, { _( "Continue" ) } );
++            return { false, "ANY_INPUT", input_event( '\n', input_event_t::keyboard_char ) };
++        }
++        labels.push_back( _( "Cancel" ) );
++        const int answer = external_ui_choice( text, labels );
++        if( answer < 0 || size_t( answer ) >= options.size() ) return { false, "QUIT", {} };
++        // Native mouse/CONFIRM activation bypasses the raw-key filter too.
++        return { false, options[answer].action, input_event( '\n', input_event_t::keyboard_char ) };
++    }
+     if( !anykey && !cancel && options.empty() ) {
+         return { false, "ERROR", {} };
+     }
+@@ -364,6 +382,7 @@ query_popup::result query_popup::query_once()
+ 
+ query_popup::result query_popup::query()
+ {
++    if( external_ui_active() ) return query_once();
+     std::shared_ptr<ui_adaptor> ui = create_or_get_adaptor();
+ 
+     result res;
 diff --git a/src/ranged.cpp b/src/ranged.cpp
 index 6973ff1..352b6b2 100644
 --- a/src/ranged.cpp
@@ -1754,6 +2080,30 @@ index 48f747f..d49deea 100644
          if( sound.category == sound_t::music ) {
              music::activate_music_id( music::music_id::sound );
          }
+diff --git a/src/string_input_popup.cpp b/src/string_input_popup.cpp
+index c4c28c2..ebd39b2 100644
+--- a/src/string_input_popup.cpp
++++ b/src/string_input_popup.cpp
+@@ -1,4 +1,5 @@
+ #include "string_input_popup.h"
++#include "do_turn.h"
+ 
+ #include <cctype>
+ 
+@@ -370,6 +371,13 @@ int64_t string_input_popup::query_int64_t( const bool loop, const bool draw_only
+ 
+ const std::string &string_input_popup::query_string( const bool loop, const bool draw_only )
+ {
++    if( external_ui_active() ) {
++        external_ui_choice( _( "Text entry is not available in this interface yet.  The request was cancelled." ), { _( "Cancel" ) } );
++        _canceled = true;
++        _text_changed = false;
++        _text.clear();
++        return _text;
++    }
+     if( !custom_window && !w_full ) {
+         create_window();
+         _position = -1;
 diff --git a/src/translations.cpp b/src/translations.cpp
 index e0f257a..82690b4 100644
 --- a/src/translations.cpp
@@ -1777,15 +2127,17 @@ index e0f257a..82690b4 100644
  #if defined(LOCALIZE)
  
 diff --git a/src/ui.cpp b/src/ui.cpp
-index b901cde..58b5398 100644
+index b901cde..c173cde 100644
 --- a/src/ui.cpp
 +++ b/src/ui.cpp
-@@ -1,3 +1,4 @@
+@@ -1,4 +1,6 @@
 +#include "do_turn.h"
  #include "ui.h"
++#include "do_turn.h"
  
  #include <cctype>
-@@ -244,7 +245,7 @@ uilist::operator int() const
+ #include <algorithm>
+@@ -244,7 +246,7 @@ uilist::operator int() const
   */
  void uilist::init()
  {
@@ -1794,6 +2146,35 @@ index b901cde..58b5398 100644
      w_x_setup = pos_scalar::auto_assign {};
      w_y_setup = pos_scalar::auto_assign {};
      w_width_setup = size_scalar::auto_assign {};
+@@ -1031,6 +1033,28 @@ uilist::handle_mouse_result_t uilist::handle_mouse( const input_context &ctxt,
+  */
+ void uilist::query( bool loop, int timeout )
+ {
++    if( external_ui_active() ) {
++        // Static native service menus preserve enabled entries and retval.
++        // Callback-driven map previews need their own presentation adapter.
++        if( callback ) {
++            external_ui_choice( _( "This service needs an interface that is not available yet.  Nothing was selected." ), { _( "Cancel" ) } );
++            ret = UILIST_CANCEL;
++            return;
++        }
++        std::vector<std::string> labels;
++        std::vector<int> indices;
++        for( size_t i = 0; i < entries.size(); ++i ) {
++            if( !entries[i].enabled ) continue;
++            labels.push_back( remove_color_tags( entries[i].txt + "\n" + entries[i].desc ) );
++            indices.push_back( i );
++        }
++        labels.push_back( _( "Cancel" ) );
++        const int answer = external_ui_choice( remove_color_tags( title + "\n" + text ), labels );
++        if( answer < 0 || size_t( answer ) >= indices.size() ) { ret = UILIST_CANCEL; return; }
++        selected = indices[answer];
++        ret = entries[selected].retval == -1 ? selected : entries[selected].retval;
++        return;
++    }
+ #if defined(__ANDROID__)
+     bool auto_pos = w_x_setup.fun == nullptr && w_y_setup.fun == nullptr &&
+                     w_width_setup.fun == nullptr && w_height_setup.fun == nullptr;
 diff --git a/src/vehicle_use.cpp b/src/vehicle_use.cpp
 index 567f951..7b75d93 100644
 --- a/src/vehicle_use.cpp
@@ -1966,6 +2347,41 @@ index 09a7711..9b0c484 100644
      } catch( const std::exception &err ) {
          DebugLog( D_ERROR, DC_ALL ) << "Terminated:\n" << err.what();
          DebugLog( D_INFO, DC_ALL ) <<
+diff --git a/src/cwm/cwm_conversation.h b/src/cwm/cwm_conversation.h
+new file mode 100644
+index 0000000..0e40433
+--- /dev/null
++++ b/src/cwm/cwm_conversation.h
+@@ -0,0 +1,29 @@
++#pragma once
++
++#include "avatar.h"
++#include "game.h"
++#include "npc.h"
++#include "talker.h"
++#include "cwm/product_language.hpp"
++
++namespace cwm {
++inline npc *conversation_target( uint64_t id, const avatar &u, game &game ) {
++    if( !( id & ( uint64_t( 1 ) << 63 ) ) ) return nullptr;
++    for( npc &person : game.all_npcs() ) {
++        if( ( ( uint64_t( 1 ) << 63 ) | uint64_t( person.getID().get_value() ) ) != id ) continue;
++        // Same eligibility as game::chat's local NPC selection, using native
++        // sensory visibility and distance, never the presentation camera.
++        return !person.is_dead() && person.posz() == u.posz() &&
++               rl_dist( u.pos(), person.pos() ) <= SEEX * 2 && u.sees( person.pos() ) ? &person : nullptr;
++    }
++    return nullptr;
++}
++inline std::string conversation_error( uint64_t id, const avatar &u, game &game ) {
++    if( !conversation_target( id, u, game ) )
++        return ::cwm::tr( "NPC unavailable, unseen or too far away." );
++    if( u.has_trait( trait_id( "PROF_FOODP" ) ) &&
++        !( u.is_wearing( itype_id( "foodperson_mask" ) ) || u.is_wearing( itype_id( "foodperson_mask_on" ) ) ) )
++        return ::cwm::tr( "You can't speak without your face!" );
++    return {};
++}
++} // namespace cwm
 diff --git a/src/cwm/cwm_crafting.h b/src/cwm/cwm_crafting.h
 new file mode 100644
 index 0000000..d94c308
@@ -4193,16 +4609,17 @@ index 0000000..d077b2c
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..808ef25
+index 0000000..ddc73d0
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,1118 @@
+@@ -0,0 +1,1145 @@
 +#include "cwm/product_language.hpp"
 +#include "cwm_motion.h"
 +// CDDA CWM IPC Server Implementation
 +// Licensed under Apache-2.0
 +
 +#include "cwm_server.h"
++#include "cwm_conversation.h"
 +#include "cwm_hotbar.h"
 +#include "cwm_map_exporter.h"
 +#include "cwm/ipc_transport.hpp"
@@ -4381,8 +4798,14 @@ index 0000000..808ef25
 +        fbb, p.choice, fbb.CreateString(p.body_id), fbb.CreateString(p.name), fbb.CreateString(p.description),
 +        p.health_quarters, fbb.CreateString(p.health_text), p.hp_current, p.hp_max));
 +    const auto medical = parts.empty() ? flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<CDDA::CWM::MedicalOption>>>{} : fbb.CreateVector(parts);
++    flatbuffers::Offset<CDDA::CWM::ConversationInfo> conversation;
++    if (decision_conversation_) {
++        const auto& c = *decision_conversation_;
++        conversation = CDDA::CWM::CreateConversationInfo(fbb,c.npc_id,fbb.CreateString(c.speaker),
++            fbb.CreateString(c.topic),fbb.CreateString(c.history),c.history_truncated);
++    }
 +    emit(builder.finish_message(CDDA::CWM::Payload::DecisionPrompt,
-+        CDDA::CWM::CreateDecisionPrompt(fbb, pending_decision_, text, labels, static_cast<int>(decision_labels_.size()) - 1, medical).Union()));
++        CDDA::CWM::CreateDecisionPrompt(fbb, pending_decision_, text, labels, static_cast<int>(decision_labels_.size()) - 1, medical, conversation).Union()));
 +}
 +
 +void CwmServer::send_result(const Result& result, avatar& u, map& m, game& g) {
@@ -4672,6 +5095,7 @@ index 0000000..808ef25
 +    decision_text_ = text;
 +    decision_labels_ = choices;
 +    decision_medical_ = medical;
++    decision_conversation_ = external_conversation ? std::optional<external_conversation_info>(*external_conversation) : std::nullopt;
 +    send_state(u, m, g, !snapshot_sent_);
 +    send_decision();
 +    while (keep_running() && has_active_client() && !decision_answer_) {
@@ -4682,6 +5106,7 @@ index 0000000..808ef25
 +    const int selected = decision_answer_.value_or(static_cast<int>(choices.size()) - 1);
 +    pending_decision_ = 0;
 +    decision_medical_.clear();
++    decision_conversation_.reset();
 +    decision_answer_.reset();
 +    if (realtime_) { clock_.sample(cdda::cwm::SimulationClock::Wall::now(), false); ++world_revision_; send_state(u, m, g); }
 +    return selected;
@@ -4707,7 +5132,19 @@ index 0000000..808ef25
 +        result_ = Result{command.id, false, ::cwm::tr("Interrupt or finish the activity before acting.", "Interrompi o concludi l'attivita prima di agire.")};
 +        return false;
 +    }
-+    if (command.ranged_action >= 0) {
++    if (command.talk_target) {
++        auto error = conversation_error(command.talk_target,u,g);
++        if (realtime_ && pause_reasons(g)) error = "Simulation is paused";
++        if (!error.empty()) { result_ = Result{command.id,false,error}; return false; }
++        npc* person = conversation_target(command.talk_target,u,g);
++        inventory_selection_.clear(); crafting_selection_.clear(); ranged_selection_.clear();
++        u.talk_to(get_talker_for(*person));
++        // game::chat debits exactly one native action after the conversation.
++        u.mod_moves(-100);
++        refresh_activity(u); ++world_revision_;
++        result_ = Result{command.id,true,""};
++        return true;
++    } else if (command.ranged_action >= 0) {
 +        auto error = ranged_selection_.validate(u,g,command.ranged_weapon,command.ranged_target,command.ranged_action);
 +        if (realtime_ && pause_reasons(g)) error="Simulation is paused";
 +        if (!error.empty()) { result_=Result{command.id,false,error};return false; }
@@ -5074,6 +5511,8 @@ index 0000000..808ef25
 +            ":" + std::to_string(request->item_id()) + ":" + std::to_string(int(request->action()));
 +    } else if (const auto* request = msg->payload_as_MovementModeRequest()) {
 +        id = request->command_id(); signature = "mode:" + std::to_string(int(request->mode()));
++    } else if (const auto* request = msg->payload_as_TalkRequest()) {
++        id = request->command_id(); signature = "talk:" + std::to_string(request->target_entity_id());
 +    } else if (const auto* request = msg->payload_as_AttackRequest()) {
 +        id = request->command_id(); signature = "attack:" + std::to_string(request->target_entity_id());
 +    } else if (const auto* request = msg->payload_as_AcknowledgeThreatRequest()) {
@@ -5266,6 +5705,10 @@ index 0000000..808ef25
 +        command.movement_mode = int(request->mode());
 +        if (!valid_mode(command.movement_mode)) error = "Unsupported movement mode";
 +        else if (!u.can_switch_to(mode_ids[command.movement_mode])) error = "Native movement mode unavailable";
++    } else if (const auto* request = msg->payload_as_TalkRequest()) {
++        command.id = request->command_id(); command.talk_target = request->target_entity_id();
++        error = conversation_error(command.talk_target,u,g);
++        if (error.empty() && !g.check_safe_mode_allowed(false)) error = "Safe mode: threat requires acknowledgement";
 +    } else if (msg->payload_type() == CDDA::CWM::Payload::AttackRequest) {
 +        const auto* request = msg->payload_as_AttackRequest();
 +        command.id = request->command_id();
@@ -5317,10 +5760,10 @@ index 0000000..808ef25
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.h b/src/cwm/cwm_server.h
 new file mode 100644
-index 0000000..9df180d
+index 0000000..2e284bc
 --- /dev/null
 +++ b/src/cwm/cwm_server.h
-@@ -0,0 +1,153 @@
+@@ -0,0 +1,156 @@
 +// CDDA CWM IPC Server
 +// Licensed under Apache-2.0
 +#pragma once
@@ -5332,6 +5775,7 @@ index 0000000..9df180d
 +#include <functional>
 +#include <optional>
 +#include "do_turn.h"
++#include "external_conversation.h"
 +#include "cwm_map_exporter.h"
 +#include "cwm_inventory.h"
 +#include "cwm_crafting.h"
@@ -5419,6 +5863,7 @@ index 0000000..9df180d
 +        uint64_t id{0};
 +        bool move{false};
 +        uint64_t attack_target{0};
++        uint64_t talk_target{0};
 +        int ranged_action{-1};
 +        uint64_t ranged_weapon{0}, ranged_target{0};
 +        int movement_mode{-1};
@@ -5457,6 +5902,7 @@ index 0000000..9df180d
 +    std::string decision_text_;
 +    std::vector<std::string> decision_labels_;
 +    std::vector<external_medical_option> decision_medical_;
++    std::optional<external_conversation_info> decision_conversation_;
 +    CwmMapExporter::ProjectionCache projection_cache_;
 +
 +    void send_state(avatar& u, map& m, game& g, bool full = false, uint64_t completed = 0);
@@ -5785,6 +6231,39 @@ index 0000000..1672957
 +};
 +Step advance( avatar &u, map &m, double x, double y, double seconds );
 +}
+diff --git a/src/external_conversation.h b/src/external_conversation.h
+new file mode 100644
+index 0000000..48a1fc0
+--- /dev/null
++++ b/src/external_conversation.h
+@@ -0,0 +1,27 @@
++#pragma once
++
++#include <cstdint>
++#include <string>
++
++// Native semantic presentation context, scoped to one already-generated choice.
++// Neither pagination nor a reconnect may re-run a topic's speaker effects.
++struct external_conversation_info {
++    uint64_t npc_id = 0;
++    std::string speaker;
++    std::string topic;
++    std::string history;
++    bool history_truncated = false;
++};
++
++inline thread_local const external_conversation_info *external_conversation = nullptr;
++
++class external_conversation_scope
++{
++    const external_conversation_info *previous;
++    public:
++        explicit external_conversation_scope( const external_conversation_info *info ) :
++            previous( external_conversation ) { external_conversation = info; }
++        ~external_conversation_scope() { external_conversation = previous; }
++        external_conversation_scope( const external_conversation_scope & ) = delete;
++        external_conversation_scope &operator=( const external_conversation_scope & ) = delete;
++};
 diff --git a/src/safe_mode_actions.h b/src/safe_mode_actions.h
 new file mode 100644
 index 0000000..f5a7c0a
@@ -8928,10 +9407,10 @@ index 0000000..39d991c
 +}
 diff --git a/tests/cwm_runtime_test.cpp b/tests/cwm_runtime_test.cpp
 new file mode 100644
-index 0000000..f9f7b99
+index 0000000..c019803
 --- /dev/null
 +++ b/tests/cwm_runtime_test.cpp
-@@ -0,0 +1,490 @@
+@@ -0,0 +1,576 @@
 +#include "cwm_motion.h"
 +#include "cata_catch.h"
 +#include "avatar.h"
@@ -9421,4 +9900,90 @@ index 0000000..f9f7b99
 +    const int previous=observed;
 +    REQUIRE_FALSE(do_turn_with_action([&]() {finish_external_action_phase();return false;}));
 +    CHECK(observed==previous); // Provider cannot escape its scoped canonical turn.
++}
++
++#include "dialogue.h"
++#include "dialogue_win.h"
++#include "external_conversation.h"
++#include "json_loader.h"
++#include "npc.h"
++#include "npctrade.h"
++#include "ui.h"
++
++TEST_CASE( "cwm_native_conversation_preserves_history_effects_and_safe_exit", "[cwm][conversation]" )
++{
++    prepare_runtime();
++    const override_option no_autosave( "AUTOSAVE", "false" );
++    load_talk_topic( json_loader::from_string( R"({
++      "id":"TALK_CWM_TEST_ENTRY","dynamic_line":"A native greeting.",
++      "speaker_effect":{"effect":{"npc_adjust_var":"cwm_visits","adjustment":1}},
++      "responses":[{"text":"Remember this reply.","topic":"TALK_CWM_TEST_EXIT",
++        "effect":{"npc_add_var":"cwm_reply","value":"yes"},"opinion":{"trust":1}}]
++    })" ).get_object() );
++    load_talk_topic( json_loader::from_string( R"({
++      "id":"TALK_CWM_TEST_EXIT","dynamic_line":"I remember what you said.",
++      "responses":[{"text":"An irreversible reply.","topic":"TALK_DONE",
++        "effect":{"npc_add_var":"cwm_unsafe","value":"yes"}}]
++    })" ).get_object() );
++    avatar &u = get_avatar();
++    npc person;
++    person.normalize(); person.setID( character_id( 993 ) ); person.name = "Conversation tester";
++    dialogue d( get_talker_for( u ), get_talker_for( person ) );
++    dialogue_window win;
++    const auto time = calendar::turn;
++    const int trust = person.op_of_u.trust;
++    int prompts = 0;
++    bool entered = false;
++    do_turn_with_action( [&]() {
++        entered = true;
++        CHECK( d.opt( win, talk_topic( "TALK_CWM_TEST_ENTRY" ) ).id == "TALK_CWM_TEST_EXIT" );
++        CHECK( person.get_value( "npctalk_var_cwm_reply" ) == "yes" );
++        CHECK( person.op_of_u.trust == trust + 1 );
++        CHECK( d.opt( win, talk_topic( "TALK_CWM_TEST_EXIT" ) ).id == "TALK_DONE" );
++        CHECK( person.get_value( "npctalk_var_cwm_unsafe" ).empty() );
++        finish_external_action_phase(); return false;
++    }, [&]( const std::string &, const std::vector<std::string> &labels ) {
++        REQUIRE( external_conversation != nullptr );
++        CHECK( external_conversation->speaker == person.name );
++        CHECK( external_conversation->npc_id == ( ( uint64_t( 1 ) << 63 ) | 993 ) );
++        CHECK( person.get_value( "npctalk_var_cwm_visits" ) == "1" );
++        CHECK( calendar::turn == time );
++        CHECK( labels.size() == 2 );
++        CHECK( labels.back() == "Leave conversation" );
++        ++prompts;
++        if( prompts == 1 ) {
++            CHECK( external_conversation->history.find( "A native greeting." ) != std::string::npos );
++            return 0;
++        }
++        CHECK( external_conversation->history.find( "Remember this reply." ) != std::string::npos );
++        CHECK( external_conversation->history.find( "I remember what you said." ) != std::string::npos );
++        return 1;
++    } );
++    CHECK( entered ); CHECK( prompts == 2 ); CHECK_FALSE( external_conversation );
++}
++
++TEST_CASE( "cwm_native_conversation_service_menus_and_trade_cancel_without_transfer", "[cwm][conversation]" )
++{
++    prepare_runtime();
++    const override_option no_autosave( "AUTOSAVE", "false" );
++    npc person; person.normalize(); person.name = "Service tester";
++    person.op_of_u.owed = 321;
++    int prompts = 0;
++    do_turn_with_action( [&]() {
++        uilist menu;
++        menu.title = "Native service menu";
++        menu.addentry( 8, false, 0, "Unavailable" );
++        menu.addentry( 42, true, 0, "Available" );
++        menu.query(); CHECK( menu.ret == 42 );
++        CHECK_FALSE( npc_trading::trade( person, 100, "Test trade" ) );
++        CHECK( person.op_of_u.owed == 321 );
++        finish_external_action_phase(); return false;
++    }, [&]( const std::string &text, const std::vector<std::string> &labels ) {
++        CHECK_FALSE( external_conversation );
++        ++prompts;
++        if( prompts == 1 ) { CHECK( labels.size() == 2 ); CHECK( labels.front().find( "Available" ) == 0 ); }
++        else CHECK( text.find( "No trade was made" ) != std::string::npos );
++        return 0;
++    } );
++    CHECK( prompts == 2 );
 +}

@@ -53,3 +53,4 @@ class Payload(object):
     LanguageRequest = 47
     LanguageState = 48
     CancelDisassemblyRequest = 49
+    TalkRequest = 50

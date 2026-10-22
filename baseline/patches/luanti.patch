@@ -331,7 +331,7 @@ index 16ceda4..20bd596 100644
  			float old_anim_speed = player->last_animation_speed;
  			m_velocity = v3f(0,0,0);
 diff --git a/src/client/game.cpp b/src/client/game.cpp
-index 27b5833..0b44f07 100644
+index 27b5833..a2c1eba 100644
 --- a/src/client/game.cpp
 +++ b/src/client/game.cpp
 @@ -8,6 +8,10 @@
@@ -797,7 +797,7 @@ index 27b5833..0b44f07 100644
  
  	core::line3d<f32> shootline;
  
-@@ -3365,6 +3645,52 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
+@@ -3365,6 +3645,54 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
  	// but the halo rendering code is already inefficient so there's no point in optimizing it here
  	hud->updateSelectionMesh(camera_offset);
  
@@ -821,14 +821,16 @@ index 27b5833..0b44f07 100644
 +		if (!bridge.getMetrics().pending_decision && fire_pressed &&
 +				bridge.attackPointedTarget()) camera->setDigging(0);
 +        const bool right_pressed = wasKeyPressed(KeyType::PLACE);
-+        const bool context = !bridge.hasPointedRangedTarget() && (items_pointed ||
++        const bool npc_pointed = bridge.hasPointedNpc();
++        const bool context = !bridge.hasPointedRangedTarget() && (npc_pointed || items_pointed ||
 +            opening.has_value());
 +        const bool context_pressed = bridge.handleAimInput(isKeyDown(KeyType::PLACE), right_pressed,
 +            isKeyDown(KeyType::CDDA_AIM), context,
 +            device->isWindowActive() && device->isWindowFocused() && !isMenuActive() &&
 +                !guienv->hasFocus(gui_chat_console.get()), fire_pressed, reload_pressed);
 +		if (!bridge.getMetrics().pending_decision && context_pressed && !close_pressed) {
-+			if (items_pointed) {
++            if (npc_pointed) bridge.talkPointedNpc();
++            else if (items_pointed) {
 +				const auto form = bridge.activateGroundItems();
 +				if (!form.empty()) {
 +					auto *&formspec = m_game_ui->updateFormspec("CWM_GROUND");
@@ -850,7 +852,7 @@ index 27b5833..0b44f07 100644
  	// Allow digging again if button is not pressed
  	if (runData.digging_blocked && !isKeyDown(KeyType::DIG))
  		runData.digging_blocked = false;
-@@ -4247,7 +4573,8 @@ void Game::updateClouds(float dtime)
+@@ -4247,7 +4575,8 @@ void Game::updateClouds(float dtime)
  {
  	if (this->sky->getCloudsVisible()) {
  		this->clouds->setVisible(true);
@@ -860,7 +862,7 @@ index 27b5833..0b44f07 100644
  		// this->camera->getPosition is not enough for third-person camera.
  		v3f camera_node_position = this->camera->getCameraNode()->getPosition();
  		v3s16 camera_offset      = this->camera->getOffset();
-@@ -4319,7 +4646,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
+@@ -4319,7 +4648,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
  	/*
  		Fog
  	*/
@@ -874,7 +876,7 @@ index 27b5833..0b44f07 100644
  		this->driver->setFog(
  				fog_color,
  				video::EFT_FOG_LINEAR,
-@@ -4470,7 +4802,7 @@ void Game::showDeathFormspecLegacy()
+@@ -4470,7 +4804,7 @@ void Game::showDeathFormspecLegacy()
  }
  
  #define GET_KEY_NAME(KEY) gettext(getKeySetting(#KEY).name())
@@ -883,7 +885,7 @@ index 27b5833..0b44f07 100644
  {
  	std::string control_text;
  
-@@ -4518,6 +4850,22 @@ void Game::showPauseMenu()
+@@ -4518,6 +4852,22 @@ void Game::showPauseMenu()
  		<< strgettext("Exit to Menu") << "]";
  	os		<< "button_exit[4," << (ypos++) << ";3,0.5;btn_exit_os;"
  		<< strgettext("Exit to OS")   << "]";
@@ -906,7 +908,7 @@ index 27b5833..0b44f07 100644
  	if (!control_text.empty()) {
  	os		<< "textarea[7.5,0.25;3.9,6.25;;" << control_text << ";]";
  	}
-@@ -4536,8 +4884,8 @@ void Game::showPauseMenu()
+@@ -4536,8 +4886,8 @@ void Game::showPauseMenu()
  	}
  	os << "\n";
  	if (simple_singleplayer_mode || address.empty()) {
@@ -917,7 +919,7 @@ index 27b5833..0b44f07 100644
  		// Note: Status of enable_damage and creative_mode settings is intentionally
  		// NOT shown here because the game might roll its own damage system and/or do
  		// a per-player Creative Mode, in which case writing it here would mislead.
-@@ -4559,10 +4907,15 @@ void Game::showPauseMenu()
+@@ -4559,10 +4909,15 @@ void Game::showPauseMenu()
  	}
  	os << ";]";
  
@@ -2149,10 +2151,10 @@ index 0000000..e1e7236
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..74104c0
+index 0000000..9c9c097
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,3258 @@
+@@ -0,0 +1,3279 @@
 +#include "cwm/product_language.hpp"
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
@@ -3897,6 +3899,19 @@ index 0000000..74104c0
 +        if (deferred_ranged_) return false;
 +        return send_ranged_request(action);
 +    }
++    bool send_talk_request() {
++        const auto it = entities_.find(pointed_actor_);
++        if (!connection_ || !connection_->is_valid() || !session_.ready() || !player_ready_ ||
++            pending_move_ || metrics_.pending_decision || metrics_.pause_reasons || activity_token_ ||
++            equipment_open_ || ground_container_open_ || body_form_open_ || it == entities_.end() ||
++            !it->second.humanoid || !it->second.perceived) return false;
++        const uint64_t command = session_.next_command++;
++        auto builder = session_.builder();
++        const auto bytes = builder.build_talk_request(command,pointed_actor_);
++        if (!connection_->send_message(bytes.data(),bytes.size())) return false;
++        pending_move_ = command; move_acked_ = false; sent_move_ = std::chrono::steady_clock::now();
++        return true;
++    }
 +    bool send_attack_request() {
 +        if (weapon_token_) return request_ranged_action(1);
 +        const auto now = std::chrono::steady_clock::now();
@@ -4357,7 +4372,7 @@ index 0000000..74104c0
 +        impl.hover_hint_ = (impl.weapon_token_ ? utf8_to_wide(impl.weapon_name_) + L" [" + std::to_wstring(impl.weapon_ammo_) + L"] — " : L"") + utf8_to_wide(ent.name) +
 +            ((ent.state_flags & cdda::cwm::HOSTILE_TO_PLAYER) ?
 +             (impl.metrics_.pause_reasons ? (::cwm::wide(" — resume to attack", " — riprendi per attaccare")) : impl.weapon_token_ ? (::cwm::wide(" — hold right mouse/F: aim; left click: fire; R: reload", " — destro/F mantenuto: mira; clic sinistro: spara; R: ricarica")) : (::cwm::wide(" — left click: melee attack", " — clic sinistro: attacco ravvicinato"))) :
-+             (::cwm::wide(" — non-hostile creature", " — creatura non ostile")));
++             (ent.humanoid ? ::cwm::wide(" — right click: talk") : ::cwm::wide(" — non-hostile creature", " — creatura non ostile")));
 +        if (impl.weapon_token_ && (ent.state_flags & cdda::cwm::HOSTILE_TO_PLAYER)) {
 +            if (impl.aim_input_.aiming()) impl.hover_hint_ += ::cwm::wide(" — Aiming", " — In mira");
 +            // Actual native recoil, not a locally predicted hit probability.
@@ -4398,6 +4413,14 @@ index 0000000..74104c0
 +float CddaBridge::visualAnimationDelta() const {
 +    return pimpl_ ? pimpl_->visual_animation_delta_ : 0.f;
 +}
++
++bool CddaBridge::hasPointedNpc() const {
++    if (!pimpl_) return false;
++    const auto it = pimpl_->entities_.find(pimpl_->pointed_actor_);
++    return it != pimpl_->entities_.end() && it->second.perceived && it->second.humanoid &&
++        !(it->second.state_flags & cdda::cwm::HOSTILE_TO_PLAYER);
++}
++bool CddaBridge::talkPointedNpc() { return pimpl_ && pimpl_->send_talk_request(); }
 +
 +bool CddaBridge::hasPointedRangedTarget() const {
 +    if (!pimpl_ || !pimpl_->weapon_token_) return false;
@@ -5413,10 +5436,10 @@ index 0000000..74104c0
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.h b/src/cdda/cdda_bridge.h
 new file mode 100644
-index 0000000..fb7e976
+index 0000000..7d2a255
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.h
-@@ -0,0 +1,185 @@
+@@ -0,0 +1,187 @@
 +// Luanti C++ CWM Presentation Bridge
 +// Licensed under Apache-2.0
 +#pragma once
@@ -5525,6 +5548,8 @@ index 0000000..fb7e976
 +    bool pointCombatTarget(const irr::core::line3d<float>& ray);
 +    float pointingRange() const;
 +    bool attackPointedTarget();
++    bool hasPointedNpc() const;
++    bool talkPointedNpc();
 +    bool hasPointedRangedTarget() const;
 +    bool isPointedOpening(const v3s16& node) const;
 +    std::optional<v3s16> pointOpening(const irr::core::line3d<float>& ray);
@@ -5722,10 +5747,10 @@ index 0000000..d02b91f
 +}
 diff --git a/src/cdda/decision_dialog.h b/src/cdda/decision_dialog.h
 new file mode 100644
-index 0000000..74ce5f0
+index 0000000..7c4b7ab
 --- /dev/null
 +++ b/src/cdda/decision_dialog.h
-@@ -0,0 +1,76 @@
+@@ -0,0 +1,99 @@
 +#pragma once
 +#include "avatar_status.h"
 +#include "decision_text.h"
@@ -5741,9 +5766,16 @@ index 0000000..74ce5f0
 +    uint64_t id{},connection{};int cancel{-1};bool submitted{};
 +    std::string body;std::vector<std::string> choices;
 +    std::vector<MedicalOptionView> medical;
++    uint64_t npc{};
++    std::string speaker, history;
++    bool history_truncated{};
 +    void read(const CDDA::CWM::DecisionPrompt& prompt,uint64_t generation) {
 +        id=prompt.decision_id();connection=generation;cancel=prompt.cancel_choice();submitted=false;
 +        body=prompt.text()->str();choices.clear();for(const auto* label:*prompt.choices())choices.push_back(label->str());
++        npc=0; speaker.clear(); history.clear(); history_truncated=false;
++        if(const auto* c=prompt.conversation()) {
++            npc=c->npc_id(); speaker=c->speaker()->str(); history=c->history()->str(); history_truncated=c->history_truncated();
++        }
 +        medical.clear(); if(prompt.medical())for(const auto* p:*prompt.medical())medical.push_back({
 +            p->choice(),p->health_quarters(),p->hp_current(),p->hp_max(),p->body_id()->str(),p->name()->str(),p->description()->str(),p->health_text()->str()});
 +    }
@@ -5777,6 +5809,21 @@ index 0000000..74ce5f0
 +        if(cancel>=0 && size_t(cancel)<choices.size())f+="button[0.55,10.65;14.9,0.75;cancel;Esc: "+statusEscape(decisionPlainText(choices[cancel]))+"]";
 +        return f;
 +    }
++    std::string conversationForm(std::string f) const {
++        f += "label[0.55,1.95;"+statusEscape(speaker)+"]";
++        const auto transcript=(history_truncated ? ::cwm::text("Earlier conversation text omitted from this view.")+"\n" : "")+history;
++        f += "hypertext[0.55,2.3;9.05,7.7;conversation_history;"+statusEscape("<global color=#323232 size=18>"+decisionRichText(transcript))+"]set_focus[conversation_history;true]";
++        const int maximum=std::max(1,int(choices.size()*23)-76);
++        f += "scrollbaroptions[min=0;max="+std::to_string(maximum)+";smallstep=8;largestep=35;thumbsize=76]scrollbar[15.05,2.3;0.4,7.7;reply_scroll;0]scroll_container[9.8,2.3;5.1,7.7;reply_scroll;vertical;0.1]";
++        for(size_t n=0;n<choices.size();++n) {
++            const auto y=std::to_string(n*2.3);
++            f+="button[0,"+y+";0.7,0.7;choice_"+std::to_string(n)+";"+std::to_string(n+1)+"]";
++            f+="hypertext[0.85,"+y+";4.2,2.1;reply_"+std::to_string(n)+";"+statusEscape("<global color=#323232 size=16>"+decisionRichText(choices[n]))+"]";
++        }
++        f+="scroll_container_end[]label[0.55,10.2;"+::cwm::text("Choose a numbered response. Trials and consequences follow CDDA rules.")+"]";
++        if(cancel>=0 && size_t(cancel)<choices.size())f+="button[0.55,10.65;14.9,0.75;cancel;Esc: "+statusEscape(decisionPlainText(choices[cancel]))+"]";
++        return f;
++    }
 +    std::string form() const {
 +        std::string f="formspec_version[4]size[16,12]no_prepend[]bgcolor[#00000000]"
 +            "background9[0,0;16,12;mcl_base_textures_background9.png;false;7]"
@@ -5784,6 +5831,7 @@ index 0000000..74ce5f0
 +        f+="cwm_decision["+std::string(submitted?"1":"0")+"]image[0.55,0.4;0.65,0.65;cdda_status_unknown.png]";
 +        f+="label[1.45,0.75;"+::cwm::text("Choose an action","Scegli un'azione")+"]";
 +        f+="label[0.55,1.35;"+std::string(submitted?::cwm::text("Response sent · waiting for the game","Risposta inviata · in attesa del gioco"): ::cwm::text("Time is paused while you choose","Il tempo e fermo mentre scegli"))+"]";
++        if(npc && !submitted)return conversationForm(f);
 +        if(!medical.empty() && !submitted)return medicalForm(f);
 +        f+="hypertext[0.55,1.85;14.9,3.9;prompt;"+statusEscape("<global color=#323232 size=18>"+decisionRichText(body))+"]set_focus[prompt;true]";
 +        if(submitted)return f+"label[0.55,6.3;"+::cwm::text("Waiting for the game...","In attesa del gioco...")+"]";

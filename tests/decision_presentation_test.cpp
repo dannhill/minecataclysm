@@ -19,6 +19,11 @@ int main(){
     CHECK(view.form().find("choice_-1")==std::string::npos);
     CHECK(view.form().find("Broken")!=std::string::npos);
     CHECK(view.form().find("choice_0;1. Left arm")!=std::string::npos);
+    view.medical.clear();view.npc=(uint64_t(1)<<63)|12;view.speaker="NPC <unsafe>";
+    view.history="The full native conversation history.";view.choices={std::string(300,'x'),"Leave conversation"};
+    CHECK(view.form().find("conversation_history")!=std::string::npos);
+    CHECK(view.form().find(std::string(300,'x'))!=std::string::npos);
+    CHECK(view.form().find("reply_scroll")!=std::string::npos);
     view.submitted=true;CHECK(!view.permits(18,77,0));CHECK(view.form().find("Waiting for the game...")!=std::string::npos);
     std::cout<<"Held-key release, stale prompt/generation, markup safety, explicit cancellation and waiting PASS\n";
 }

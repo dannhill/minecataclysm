@@ -223,6 +223,12 @@ struct MedicalOptionBuilder;
 struct DecisionPrompt;
 struct DecisionPromptBuilder;
 
+struct ConversationInfo;
+struct ConversationInfoBuilder;
+
+struct TalkRequest;
+struct TalkRequestBuilder;
+
 struct DecisionResponse;
 struct DecisionResponseBuilder;
 
@@ -712,11 +718,12 @@ enum class Payload : uint8_t {
   LanguageRequest = 47,
   LanguageState = 48,
   CancelDisassemblyRequest = 49,
+  TalkRequest = 50,
   MIN = NONE,
-  MAX = CancelDisassemblyRequest
+  MAX = TalkRequest
 };
 
-inline const Payload (&EnumValuesPayload())[50] {
+inline const Payload (&EnumValuesPayload())[51] {
   static const Payload values[] = {
     Payload::NONE,
     Payload::HelloRequest,
@@ -767,13 +774,14 @@ inline const Payload (&EnumValuesPayload())[50] {
     Payload::CancelReadingRequest,
     Payload::LanguageRequest,
     Payload::LanguageState,
-    Payload::CancelDisassemblyRequest
+    Payload::CancelDisassemblyRequest,
+    Payload::TalkRequest
   };
   return values;
 }
 
 inline const char * const *EnumNamesPayload() {
-  static const char * const names[51] = {
+  static const char * const names[52] = {
     "NONE",
     "HelloRequest",
     "HelloResponse",
@@ -824,13 +832,14 @@ inline const char * const *EnumNamesPayload() {
     "LanguageRequest",
     "LanguageState",
     "CancelDisassemblyRequest",
+    "TalkRequest",
     nullptr
   };
   return names;
 }
 
 inline const char *EnumNamePayload(Payload e) {
-  if (::flatbuffers::IsOutRange(e, Payload::NONE, Payload::CancelDisassemblyRequest)) return "";
+  if (::flatbuffers::IsOutRange(e, Payload::NONE, Payload::TalkRequest)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesPayload()[index];
 }
@@ -1033,6 +1042,10 @@ template<> struct PayloadTraits<CDDA::CWM::LanguageState> {
 
 template<> struct PayloadTraits<CDDA::CWM::CancelDisassemblyRequest> {
   static const Payload enum_value = Payload::CancelDisassemblyRequest;
+};
+
+template<> struct PayloadTraits<CDDA::CWM::TalkRequest> {
+  static const Payload enum_value = Payload::TalkRequest;
 };
 
 bool VerifyPayload(::flatbuffers::Verifier &verifier, const void *obj, Payload type);
@@ -8457,7 +8470,8 @@ struct DecisionPrompt FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_TEXT = 6,
     VT_CHOICES = 8,
     VT_CANCEL_CHOICE = 10,
-    VT_MEDICAL = 12
+    VT_MEDICAL = 12,
+    VT_CONVERSATION = 14
   };
   uint64_t decision_id() const {
     return GetField<uint64_t>(VT_DECISION_ID, 0);
@@ -8489,6 +8503,12 @@ struct DecisionPrompt FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::MedicalOption>> *mutable_medical() {
     return GetPointer<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::MedicalOption>> *>(VT_MEDICAL);
   }
+  const CDDA::CWM::ConversationInfo *conversation() const {
+    return GetPointer<const CDDA::CWM::ConversationInfo *>(VT_CONVERSATION);
+  }
+  CDDA::CWM::ConversationInfo *mutable_conversation() {
+    return GetPointer<CDDA::CWM::ConversationInfo *>(VT_CONVERSATION);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint64_t>(verifier, VT_DECISION_ID, 8) &&
@@ -8501,6 +8521,8 @@ struct DecisionPrompt FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_MEDICAL) &&
            verifier.VerifyVector(medical()) &&
            verifier.VerifyVectorOfTables(medical()) &&
+           VerifyOffset(verifier, VT_CONVERSATION) &&
+           verifier.VerifyTable(conversation()) &&
            verifier.EndTable();
   }
 };
@@ -8524,6 +8546,9 @@ struct DecisionPromptBuilder {
   void add_medical(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::MedicalOption>>> medical) {
     fbb_.AddOffset(DecisionPrompt::VT_MEDICAL, medical);
   }
+  void add_conversation(::flatbuffers::Offset<CDDA::CWM::ConversationInfo> conversation) {
+    fbb_.AddOffset(DecisionPrompt::VT_CONVERSATION, conversation);
+  }
   explicit DecisionPromptBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -8541,9 +8566,11 @@ inline ::flatbuffers::Offset<DecisionPrompt> CreateDecisionPrompt(
     ::flatbuffers::Offset<::flatbuffers::String> text = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>>> choices = 0,
     int32_t cancel_choice = -1,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::MedicalOption>>> medical = 0) {
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::MedicalOption>>> medical = 0,
+    ::flatbuffers::Offset<CDDA::CWM::ConversationInfo> conversation = 0) {
   DecisionPromptBuilder builder_(_fbb);
   builder_.add_decision_id(decision_id);
+  builder_.add_conversation(conversation);
   builder_.add_medical(medical);
   builder_.add_cancel_choice(cancel_choice);
   builder_.add_choices(choices);
@@ -8557,7 +8584,8 @@ inline ::flatbuffers::Offset<DecisionPrompt> CreateDecisionPromptDirect(
     const char *text = nullptr,
     const std::vector<::flatbuffers::Offset<::flatbuffers::String>> *choices = nullptr,
     int32_t cancel_choice = -1,
-    const std::vector<::flatbuffers::Offset<CDDA::CWM::MedicalOption>> *medical = nullptr) {
+    const std::vector<::flatbuffers::Offset<CDDA::CWM::MedicalOption>> *medical = nullptr,
+    ::flatbuffers::Offset<CDDA::CWM::ConversationInfo> conversation = 0) {
   auto text__ = text ? _fbb.CreateString(text) : 0;
   auto choices__ = choices ? _fbb.CreateVector<::flatbuffers::Offset<::flatbuffers::String>>(*choices) : 0;
   auto medical__ = medical ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::MedicalOption>>(*medical) : 0;
@@ -8567,7 +8595,183 @@ inline ::flatbuffers::Offset<DecisionPrompt> CreateDecisionPromptDirect(
       text__,
       choices__,
       cancel_choice,
-      medical__);
+      medical__,
+      conversation);
+}
+
+struct ConversationInfo FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef ConversationInfoBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_NPC_ID = 4,
+    VT_SPEAKER = 6,
+    VT_TOPIC = 8,
+    VT_HISTORY = 10,
+    VT_HISTORY_TRUNCATED = 12
+  };
+  uint64_t npc_id() const {
+    return GetField<uint64_t>(VT_NPC_ID, 0);
+  }
+  bool mutate_npc_id(uint64_t _npc_id = 0) {
+    return SetField<uint64_t>(VT_NPC_ID, _npc_id, 0);
+  }
+  const ::flatbuffers::String *speaker() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_SPEAKER);
+  }
+  ::flatbuffers::String *mutable_speaker() {
+    return GetPointer<::flatbuffers::String *>(VT_SPEAKER);
+  }
+  const ::flatbuffers::String *topic() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_TOPIC);
+  }
+  ::flatbuffers::String *mutable_topic() {
+    return GetPointer<::flatbuffers::String *>(VT_TOPIC);
+  }
+  const ::flatbuffers::String *history() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_HISTORY);
+  }
+  ::flatbuffers::String *mutable_history() {
+    return GetPointer<::flatbuffers::String *>(VT_HISTORY);
+  }
+  bool history_truncated() const {
+    return GetField<uint8_t>(VT_HISTORY_TRUNCATED, 0) != 0;
+  }
+  bool mutate_history_truncated(bool _history_truncated = 0) {
+    return SetField<uint8_t>(VT_HISTORY_TRUNCATED, static_cast<uint8_t>(_history_truncated), 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_NPC_ID, 8) &&
+           VerifyOffset(verifier, VT_SPEAKER) &&
+           verifier.VerifyString(speaker()) &&
+           VerifyOffset(verifier, VT_TOPIC) &&
+           verifier.VerifyString(topic()) &&
+           VerifyOffset(verifier, VT_HISTORY) &&
+           verifier.VerifyString(history()) &&
+           VerifyField<uint8_t>(verifier, VT_HISTORY_TRUNCATED, 1) &&
+           verifier.EndTable();
+  }
+};
+
+struct ConversationInfoBuilder {
+  typedef ConversationInfo Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_npc_id(uint64_t npc_id) {
+    fbb_.AddElement<uint64_t>(ConversationInfo::VT_NPC_ID, npc_id, 0);
+  }
+  void add_speaker(::flatbuffers::Offset<::flatbuffers::String> speaker) {
+    fbb_.AddOffset(ConversationInfo::VT_SPEAKER, speaker);
+  }
+  void add_topic(::flatbuffers::Offset<::flatbuffers::String> topic) {
+    fbb_.AddOffset(ConversationInfo::VT_TOPIC, topic);
+  }
+  void add_history(::flatbuffers::Offset<::flatbuffers::String> history) {
+    fbb_.AddOffset(ConversationInfo::VT_HISTORY, history);
+  }
+  void add_history_truncated(bool history_truncated) {
+    fbb_.AddElement<uint8_t>(ConversationInfo::VT_HISTORY_TRUNCATED, static_cast<uint8_t>(history_truncated), 0);
+  }
+  explicit ConversationInfoBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<ConversationInfo> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<ConversationInfo>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<ConversationInfo> CreateConversationInfo(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t npc_id = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> speaker = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> topic = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> history = 0,
+    bool history_truncated = false) {
+  ConversationInfoBuilder builder_(_fbb);
+  builder_.add_npc_id(npc_id);
+  builder_.add_history(history);
+  builder_.add_topic(topic);
+  builder_.add_speaker(speaker);
+  builder_.add_history_truncated(history_truncated);
+  return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<ConversationInfo> CreateConversationInfoDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t npc_id = 0,
+    const char *speaker = nullptr,
+    const char *topic = nullptr,
+    const char *history = nullptr,
+    bool history_truncated = false) {
+  auto speaker__ = speaker ? _fbb.CreateString(speaker) : 0;
+  auto topic__ = topic ? _fbb.CreateString(topic) : 0;
+  auto history__ = history ? _fbb.CreateString(history) : 0;
+  return CDDA::CWM::CreateConversationInfo(
+      _fbb,
+      npc_id,
+      speaker__,
+      topic__,
+      history__,
+      history_truncated);
+}
+
+struct TalkRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef TalkRequestBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_COMMAND_ID = 4,
+    VT_TARGET_ENTITY_ID = 6
+  };
+  uint64_t command_id() const {
+    return GetField<uint64_t>(VT_COMMAND_ID, 0);
+  }
+  bool mutate_command_id(uint64_t _command_id = 0) {
+    return SetField<uint64_t>(VT_COMMAND_ID, _command_id, 0);
+  }
+  uint64_t target_entity_id() const {
+    return GetField<uint64_t>(VT_TARGET_ENTITY_ID, 0);
+  }
+  bool mutate_target_entity_id(uint64_t _target_entity_id = 0) {
+    return SetField<uint64_t>(VT_TARGET_ENTITY_ID, _target_entity_id, 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_COMMAND_ID, 8) &&
+           VerifyField<uint64_t>(verifier, VT_TARGET_ENTITY_ID, 8) &&
+           verifier.EndTable();
+  }
+};
+
+struct TalkRequestBuilder {
+  typedef TalkRequest Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_command_id(uint64_t command_id) {
+    fbb_.AddElement<uint64_t>(TalkRequest::VT_COMMAND_ID, command_id, 0);
+  }
+  void add_target_entity_id(uint64_t target_entity_id) {
+    fbb_.AddElement<uint64_t>(TalkRequest::VT_TARGET_ENTITY_ID, target_entity_id, 0);
+  }
+  explicit TalkRequestBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<TalkRequest> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<TalkRequest>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<TalkRequest> CreateTalkRequest(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t command_id = 0,
+    uint64_t target_entity_id = 0) {
+  TalkRequestBuilder builder_(_fbb);
+  builder_.add_target_entity_id(target_entity_id);
+  builder_.add_command_id(command_id);
+  return builder_.Finish();
 }
 
 struct DecisionResponse FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -9113,6 +9317,9 @@ struct CwmMessage FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const CDDA::CWM::CancelDisassemblyRequest *payload_as_CancelDisassemblyRequest() const {
     return payload_type() == CDDA::CWM::Payload::CancelDisassemblyRequest ? static_cast<const CDDA::CWM::CancelDisassemblyRequest *>(payload()) : nullptr;
   }
+  const CDDA::CWM::TalkRequest *payload_as_TalkRequest() const {
+    return payload_type() == CDDA::CWM::Payload::TalkRequest ? static_cast<const CDDA::CWM::TalkRequest *>(payload()) : nullptr;
+  }
   void *mutable_payload() {
     return GetPointer<void *>(VT_PAYLOAD);
   }
@@ -9343,6 +9550,10 @@ template<> inline const CDDA::CWM::LanguageState *CwmMessage::payload_as<CDDA::C
 
 template<> inline const CDDA::CWM::CancelDisassemblyRequest *CwmMessage::payload_as<CDDA::CWM::CancelDisassemblyRequest>() const {
   return payload_as_CancelDisassemblyRequest();
+}
+
+template<> inline const CDDA::CWM::TalkRequest *CwmMessage::payload_as<CDDA::CWM::TalkRequest>() const {
+  return payload_as_TalkRequest();
 }
 
 struct CwmMessageBuilder {
@@ -9605,6 +9816,10 @@ inline bool VerifyPayload(::flatbuffers::Verifier &verifier, const void *obj, Pa
     }
     case Payload::CancelDisassemblyRequest: {
       auto ptr = reinterpret_cast<const CDDA::CWM::CancelDisassemblyRequest *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::TalkRequest: {
+      auto ptr = reinterpret_cast<const CDDA::CWM::TalkRequest *>(obj);
       return verifier.VerifyTable(ptr);
     }
     default: return true;

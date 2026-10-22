@@ -27,5 +27,16 @@ int main(){
         auto data=typed.finish_message(Payload::DecisionPrompt,v.Union());
         CHECK(valid_decision(GetCwmMessage(data.data())->payload_as_DecisionPrompt())==(bad==0 || bad==9));
     }
+    for(int bad=0;bad<6;++bad) {
+        MessageBuilder typed(1,1);auto& f=typed.builder();
+        auto conversation=CreateConversationInfo(f,bad==1?1:((uint64_t(1)<<63)|12),
+            f.CreateString(bad==2?"":"Native speaker"),f.CreateString(bad==3?"":"TALK_NATIVE"),
+            f.CreateString(std::string(bad==4?262145:100,'h')),false);
+        auto prompt=CreateDecisionPrompt(f,5,f.CreateString("Native text"),f.CreateVectorOfStrings(labels),bad==5?-1:1,{},conversation);
+        auto data=typed.finish_message(Payload::DecisionPrompt,prompt.Union());
+        CHECK(valid_decision(GetCwmMessage(data.data())->payload_as_DecisionPrompt())==(bad==0));
+    }
+    MessageBuilder talk(1,1);auto request=talk.build_talk_request(8,(uint64_t(1)<<63)|12);
+    CHECK(GetCwmMessage(request.data())->payload_as_TalkRequest()->target_entity_id()==((uint64_t(1)<<63)|12));
     std::cout<<"Decision identity, label bounds, cancellation metadata and no inferred cancellation PASS\n";
 }

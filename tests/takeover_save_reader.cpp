@@ -18,6 +18,7 @@
 #include "map.h"
 #include "monster.h"
 #include "npc.h"
+#include "dialogue_chatbin.h"
 #include "options.h"
 #include "overmap.h"
 #include "overmapbuffer.h"
@@ -49,6 +50,7 @@ int main(int argc, const char *argv[]) {
     bool create_crafting = false;
     bool create_reading = false;
     bool create_disassembly = false;
+    bool create_conversation = false;
     bool create_ranged = false;
     bool create_transfer = false;
     bool create_external = false;
@@ -66,6 +68,7 @@ int main(int argc, const char *argv[]) {
         else if (arg == "--create-transfer") { create = true; create_transfer = true; create_posture = true; }
         else if (arg == "--create-ranged") { create = true; create_ranged = true; create_posture = true; }
         else if (arg == "--create-crafting") { create = true; create_crafting = true; create_posture = true; }
+        else if (arg == "--create-conversation") { create = true; create_conversation = true; create_posture = true; }
         else if (arg == "--create-disassembly") { create = true; create_disassembly = true; create_posture = true; }
         else if (arg == "--create-reading") { create = true; create_reading = true; create_posture = true; }
         else if (arg == "--create-medicine") { create = true; create_medicine = true; create_posture = true; }
@@ -492,6 +495,20 @@ int main(int argc, const char *argv[]) {
             u.set_skill_level(skill_id("swimming"),10);
             get_weather().update_weather();
             if (!g->save()) return 5;
+        }
+        if (create_conversation) {
+            auto guy = make_shared_fast<npc>();
+            guy->normalize(); guy->randomize();
+            guy->name = "Conversation NPC";
+            guy->set_fac(faction_id("no_faction"));
+            guy->set_attitude(NPCATT_TALK);
+            guy->chatbin.first_topic = "TALK_STRANGER_NEUTRAL";
+            guy->known_to_u = false;
+            guy->op_of_u.trust = 0; guy->op_of_u.fear = 0; guy->op_of_u.value = 0; guy->op_of_u.anger = 0;
+            guy->spawn_at_precise(tripoint_abs_ms(m.getabs(tripoint(60,57,0))));
+            guy->set_guard_pos(guy->get_location());
+            guy->set_speed_base(0); guy->moves = 0;
+            overmap_buffer.insert_npc(guy); g->load_npcs();
         } else if (!create_vertical && !create_pickup && !create_body && !create_combat && !create_posture) {
         g->place_critter_at(mtype_id("mon_zombie"), tripoint(65,65,0));
         auto guy = make_shared_fast<npc>();

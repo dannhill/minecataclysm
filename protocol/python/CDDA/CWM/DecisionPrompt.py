@@ -90,8 +90,19 @@ class DecisionPrompt(object):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(12))
         return o == 0
 
+    # DecisionPrompt
+    def Conversation(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(14))
+        if o != 0:
+            x = self._tab.Indirect(o + self._tab.Pos)
+            from CDDA.CWM.ConversationInfo import ConversationInfo
+            obj = ConversationInfo()
+            obj.Init(self._tab.Bytes, x)
+            return obj
+        return None
+
 def DecisionPromptStart(builder):
-    builder.StartObject(5)
+    builder.StartObject(6)
 
 def Start(builder):
     DecisionPromptStart(builder)
@@ -137,6 +148,12 @@ def DecisionPromptStartMedicalVector(builder, numElems):
 
 def StartMedicalVector(builder, numElems):
     return DecisionPromptStartMedicalVector(builder, numElems)
+
+def DecisionPromptAddConversation(builder, conversation):
+    builder.PrependUOffsetTRelativeSlot(5, flatbuffers.number_types.UOffsetTFlags.py_type(conversation), 0)
+
+def AddConversation(builder, conversation):
+    DecisionPromptAddConversation(builder, conversation)
 
 def DecisionPromptEnd(builder):
     return builder.EndObject()
