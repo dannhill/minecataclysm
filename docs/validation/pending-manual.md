@@ -1,5 +1,10 @@
 # Validazioni manuali del playable core
 
+Conversazioni NPC (2026-10-22): **41 PENDING, nessun FAIL manuale aperto**.
+I precedenti 37 punti rimangono invariati; quattro nuove prove NPC-01 sono
+rinviabili. Le prove automatiche non sono un'accettazione umana. Il chiarimento
+NPC precedente in fondo al file descrive la versione prima di questa consegna.
+
 Smontaggio nativo (2026-10-22): **37 PENDING, nessun FAIL manuale aperto**.
 I precedenti 33 punti sono invariati; si aggiungono quattro prove DIS-01
 rinviabili. Nessun PASS umano viene dedotto dalle verifiche automatiche.
@@ -1062,3 +1067,35 @@ restituisce esplicitamente “NPC interaction UI is not implemented yet”.
 Le precedenti prove PASS dei “dialoghi nativi” riguardano conferme e scelte di
 oggetti/attività, non conversazioni, missioni o commercio. Questi ultimi
 restano nella Fase 4.6 della roadmap e richiederanno una consegna distinta.
+
+
+## NPC-01 — Conversazioni native con gli NPC — 4 PENDING
+
+`./conversation-demo.sh --fresh`: un NPC si trova direttamente davanti al
+personaggio, a pochi passi. La stessa interazione vale nel normale `./start.sh`.
+Questi controlli si possono fare insieme al resto del backlog, senza urgenza.
+
+1. **PENDING — Puntamento e ingresso.** Punta al corpo dell'NPC: compare l'hint
+   per parlare. Premi il tasto destro: si apre la conversazione con il suo nome
+   e le risposte native. Non devi urtarlo né camminargli addosso. Con un'arma
+   in mano il destro sull'NPC non ostile continua a servire per parlargli.
+2. **PENDING — Lettura e tempo fermo.** Lascia aperta la conversazione: il
+   mondo rimane fermo. Leggi il testo corrente e lo storico; scorri le risposte
+   e, quando presente, usa Next page / Previous page. Le opzioni non devono
+   sparire e sfogliare non deve cambiare la battuta corrente o far passare tempo.
+3. **PENDING — Risposta, dettagli e uscita.** Scegli una domanda innocua
+   (per esempio “What are you doing?” nella demo), leggi la risposta e torna
+   indietro. Prova una voce di osservazione/opinione e poi Esc / Leave
+   conversation. Il gioco riprende senza scegliere una risposta nativa al tuo
+   posto. Se provi il commercio, per ora deve apparire l'avviso di funzione
+   rinviata: nessuno scambio, nessun blocco su terminale. Non è un trade completo.
+4. **PENDING — Salvataggio e rientro.** Parla, esci, chiudi il gioco e riapri
+   senza `--fresh`: stesso personaggio, NPC e mondo. Le conseguenze native
+   effettivamente ottenute restano salvate. La finestra della conversazione non
+   viene salvata come pausa; una nuova conversazione richiede un nuovo destro.
+   Una semplice ispezione non deve regalare oggetti né completare missioni.
+
+Le risposte con prove sociali e avvisi di ostilità sono native: possono fallire
+per statistiche e condizioni del personaggio. Non occorre riuscire in una prova
+per validare l'interfaccia. Scambi, diario missioni e servizi NPC complessi
+restano fette successive; non si deduce che siano implementati da questi PASS.

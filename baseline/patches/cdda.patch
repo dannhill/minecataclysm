@@ -1572,7 +1572,7 @@ index 7498f9e..37448f6 100644
      dead = true;
      set_killer( nkiller );
 diff --git a/src/npctalk.cpp b/src/npctalk.cpp
-index ea45f06..a3ecf3a 100644
+index ea45f06..1e8c58e 100644
 --- a/src/npctalk.cpp
 +++ b/src/npctalk.cpp
 @@ -1,4 +1,6 @@
@@ -1636,7 +1636,7 @@ index ea45f06..a3ecf3a 100644
 +        std::vector<std::string> inspect_actions;
 +        if( !d_win.is_computer && !d_win.is_not_conversation ) {
 +            inspect_actions = { "LOOK_AT", "SIZE_UP_STATS", "ASSESS_PERSONALITY", "CHECK_OPINION", "YELL" };
-+            for( const std::string &label : { _( "Look at" ), _( "Size up stats" ), _( "Assess personality" ), _( "Check opinion" ), _( "Yell" ) } ) {
++            for( const auto &label : { _( "Look at" ), _( "Size up stats" ), _( "Assess personality" ), _( "Check opinion" ), _( "Yell" ) } ) {
 +                labels.push_back( label );
 +            }
 +        }
