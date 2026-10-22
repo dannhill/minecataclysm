@@ -1117,11 +1117,11 @@ non ostili percepiti. Non usare i tuoi save ordinari per le prove distruttive.
 
 1. **PENDING** — Destro sull'NPC, scegli la risposta per commerciare. Due
    pannelli con icone, nomi/tooltip, quantità e saldo; tempo fermo. Seleziona
-   qualcosa, poi **Annulla** o **Esc**: nessun trasferimento o debito variato.
+   qualcosa, poi **Cancel trade** o **Esc**: nessun trasferimento o debito variato.
    Riapri e verifica che l'offerta non sia già selezionata.
 2. **PENDING** — Richiedi la benda e offri 5 munizioni dalla pila da 30,
-   trascinandola nell'altro pannello o usando quantità/**Aggiorna offerta**.
-   **Rivedi e conferma**: prima rispondi **No**, l'offerta rimane modificabile;
+   trascinandola nell'altro pannello o usando quantità/**Update offer**.
+   **Review and confirm**: prima rispondi **No**, l'offerta rimane modificabile;
    poi **Sì**. Benda ricevuta una volta, pila da 20 intatta, pila da 30 ridotta
    a 25 e saldo aggiornato. Shift-clic propone/rimuove l'intera pila; la
    selezione da sola non trasferisce nulla.

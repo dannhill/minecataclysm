@@ -10,6 +10,29 @@ un panorama più ampio; nebbia, memoria distante e rilievo restano da scegliere.
 Lo [stato implementato](IMPLEMENTATION_STATUS.md) e le evidenze restano separati
 dagli obiettivi. La roadmap originale M0–M9 conserva i propri significati.
 
+## Commercio NPC nativo — 2026-10-22
+
+Fetta core: risposta nativa per commerciare dal dialogo, inventari a due
+pannelli, quantità, drag e Shift-clic come proposta; conferma nativa separata
+prima dello scambio intero. CDDA mantiene prezzi, credito/debiti, proprietà,
+contenitori/capacità e trasferimenti. Offerte scadute o sorgenti mutate non
+possono essere applicate; un retry della conferma non ripete lo scambio.
+Il tempo resta fermo nella proposta. Annulla/Esc e No non trasferiscono oggetti;
+il restock/riordino nativo di apertura resta comportamento CDDA.
+[Contratto](docs/design/native-trade.md),
+[consegna ed evidenze](docs/fixes/native-trade.md).
+
+Quattro prove TRADE-01 rinviate: **45 PENDING**, nessun FAIL manuale aperto;
+i precedenti 41 punti restano invariati. Nessun PASS umano dedotto dalle prove
+automatiche. Coppia CWM2.29 per Linux; installer Windows ancora CWM2.26.
+M5.5 FAILED e SAVE-001 OPEN non cambiano.
+
+**Prossimo passo core: diario delle missioni note**, con stato e dettagli
+nativi, obiettivi e progressi comprensibili e senza nuove informazioni da una
+mappa onnisciente. L'accettazione e gli effetti dei dialoghi restano nativi.
+In seguito comandi individuali/servizi dei compagni e copertura dei flussi
+missione completi. Il commercio non completa tutti i servizi EOC o la Fase4.6.
+
 ## Conversazioni NPC — 2026-10-22
 
 Fetta implementata e verificata: **destro su NPC non ostile percepito** per
@@ -26,12 +49,12 @@ e 44 controlli del renderer/salvataggio PASS. Quattro prove NPC-01 rinviate,
 **41 PENDING** totali; nessuna accettazione umana dedotta. Windows rimane alla
 fotografia CWM2.26 precedente. Questo non completa l'intera Fase4.6 o M5.5.
 
-**Prossimo passo core: commercio NPC nativo.** Query di inventari/offerta,
+**Passo allora successivo, ora consegnato sopra: commercio NPC nativo.** Query di inventari/offerta,
 quantità e due pannelli riusando le interazioni già disponibili. Prezzi,
 credito/debiti, proprietà, contenitori/capacità e conferma devono restare nativi;
 una proposta scaduta o un target cambiato va rivalidato, un retry non duplica
-lo scambio. Per ora la scelta di trade mostra un avviso e annulla prima di
-restock o trasferimenti. Successivamente diario/missioni note, comandi
+lo scambio. Nella sola versione CWM2.28 la scelta di trade annullava prima di
+restock o trasferimenti; CWM2.29 supera questo limite. Successivamente diario/missioni note, comandi
 individuali e servizi dei compagni. Le schermate native speciali non adattate
 non vanno conteggiate come funzionalità complete per la sola apertura del dialogo.
 

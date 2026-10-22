@@ -1,0 +1,234 @@
+{
+  "scope": "Native NPC bilateral trade, native prices/credit/ownership/capacity, confirmed single execution, renderer and canonical persistence",
+  "date": "2026-10-22",
+  "protocol": {
+    "cases": 15,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-trade-20261022/test-protocol.log",
+      "sha256": "90db4df74911c54d5603d2ca0cc9eb98213001ea3d67ec4da56d94c906a657f7"
+    }
+  },
+  "source_commit": "46ae405bc713f49fb2b34306c08a6703cf6eac84",
+  "production_capture_commit": "2bf0ca502932dc367ae9d74f1eb8bf0b1f13b390",
+  "build_mode": "Incremental captured reconstructions retaining build caches; SDK dependencies rebuilt, then affected native/client/test units rebuilt. Not a cold-build conformance audit. Final test-only native edits do not change native production objects.",
+  "source_trees": {
+    "cdda": {
+      "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+      "patch_sha256": "c86dddf0cc8ff9ec7b238068203b937bd07eb570d05d35ffc3d05694eb683c53",
+      "tree_sha256": "67d80c7c9261e6dc0bd966b50805875669ad54645daa588dfd309b2e377588cf"
+    },
+    "luanti": {
+      "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
+      "patch_sha256": "5976852d8e5f18b14b2fdf4e610952097c3684babfd182bac1e569dd39da4716",
+      "tree_sha256": "ef3504412df343ebb84ba3d8a35183a62c8b1524b3aae52317a04cb03a078351"
+    },
+    "mineclonia": {
+      "commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36"
+    }
+  },
+  "environment": {
+    "kernel": "Linux 7.0.11-76070011-generic x86_64 GNU/Linux",
+    "compiler": "g++ 11.4.0",
+    "cmake": "3.22.1",
+    "python": "3.10.12",
+    "renderer": "Private Xvfb 1280x800x24, Mesa software OpenGL, OpenAL null, xdotool actual mouse and keyboard"
+  },
+  "native": {
+    "cases": 167,
+    "assertions": 73272,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-trade-20261022/test-native-final.log",
+      "sha256": "2ee64282246555f2548c65e241db02d0b1d250c7b6e729f7934dcbe096f6ea9a"
+    }
+  },
+  "native_trade": {
+    "cases": 9,
+    "assertions": 163,
+    "result": "PASS",
+    "note": "Includes four new CWM trade cases and existing native trade cases",
+    "log": {
+      "path": "artifacts/native-trade-20261022/test-native-trade-final.log",
+      "sha256": "b7a4c952d7901778ee753386e0833e4e06b442229ad65939e636645b0fccdeb0"
+    }
+  },
+  "client": {
+    "cases": 309,
+    "modules": 47,
+    "catch_cases": 4,
+    "catch_assertions": 648,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-trade-20261022/test-client-tested.log",
+      "sha256": "6698242557d6792a2bacaa68c35c3c735d68f94ba1e96114b51c979f8e5a4192"
+    }
+  },
+  "trade_presentation": {
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-trade-20261022/test-presentation.log",
+      "sha256": "472dd4c01dd36a6c1ed474de8a86ab9aed053314e03666421663a6414f990634"
+    }
+  },
+  "launcher_language": {
+    "cases": 9,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-trade-20261022/test-language.log",
+      "sha256": "7a607588a81395bbef73a5f8f336c4abafe4170f5eb0ace6b3fc24b77d9e49bf"
+    }
+  },
+  "language_registry": {
+    "cases": 3,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-trade-20261022/test-registry.log",
+      "sha256": "659a5b75bc6b0099bf58a5c4c1cfae7a9bf58e3543299d5b26bb0cedfa541516"
+    }
+  },
+  "renderer": {
+    "reconstructed_trade": {
+      "checks": 33,
+      "result": "PASS",
+      "checks_file": {
+        "path": "artifacts/native-trade-20261022/trade-gui-final/checks.json",
+        "sha256": "5ea68d02520f5e9709cc93692d0a7eb19bbeb9beda882b820309269ab05a166d"
+      },
+      "summary": {
+        "path": "artifacts/native-trade-20261022/trade-gui-final/summary.json",
+        "sha256": "53df738b51dd82b9add71d59518bc150390b6c499ffdd0321060fc42be623191"
+      },
+      "canonical_readback": {
+        "path": "artifacts/native-trade-20261022/trade-gui-final/native.json",
+        "sha256": "27f398850ef0831c8aca6364088641e1b056bdc45785c14eb6100797a731dc5f"
+      }
+    },
+    "installed_trade": {
+      "checks": 33,
+      "result": "PASS",
+      "checks_file": {
+        "path": "artifacts/native-trade-20261022/installed-trade/checks.json",
+        "sha256": "5ea68d02520f5e9709cc93692d0a7eb19bbeb9beda882b820309269ab05a166d"
+      },
+      "summary": {
+        "path": "artifacts/native-trade-20261022/installed-trade/summary.json",
+        "sha256": "686e4e866275bb8d6c07419b47bff3b219becd6cbb82573c78020da94f9f68cf"
+      },
+      "canonical_readback": {
+        "path": "artifacts/native-trade-20261022/installed-trade/native.json",
+        "sha256": "95a697804313c23f8f652beb13bbde5f9a10b762c2c9ea76f91809c21952ccae"
+      }
+    },
+    "conversation_regression": {
+      "checks": 22,
+      "result": "PASS",
+      "checks_file": {
+        "path": "artifacts/native-trade-20261022/conversation-regression/checks.json",
+        "sha256": "ff4488f1e52fa2685b3b366933e09294c507be1fdf789eea6ff4614f2a3e68a0"
+      },
+      "summary": {
+        "path": "artifacts/native-trade-20261022/conversation-regression/summary.json",
+        "sha256": "fc6ef1df4f910e096a84424e3f0f99ad9c308a2e5734faaac99b3b64bf86d212"
+      },
+      "canonical_readback": {
+        "path": "artifacts/native-trade-20261022/conversation-regression/native.json",
+        "sha256": "47f80ee9985221666d44262896e8bc613ff5e99d2a895327c475eb197d3b05dc"
+      }
+    },
+    "total_checks": 88,
+    "relay": "Trade harness injects excess-quantity/stale-quote and duplicate-commit protocol probes on the real renderer connection. It renumbers client envelope sequences for added frames; native command/quote identities and gameplay payloads are preserved. Conversation relay is byte-transparent.",
+    "screenshots_inspected_by": "LLM agent; not human validation"
+  },
+  "native_oracle": {
+    "upstream_pin": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+    "binary": {
+      "path": "artifacts/native-trade-20261022/native-save-reader",
+      "sha256": "8cf4a9eaa0a6192b8625645cb2a475924704a42df978ff90278c1d1c62e63bd6"
+    },
+    "fixture": {
+      "path": "artifacts/native-trade-20261022/fixture/before.json",
+      "sha256": "ea8df16d64ebba2c6e27ddf55248706f7b1202a938347802ae9a00e768ac1c18"
+    },
+    "note": "Fixture and readback linked to unmodified pinned native core, never the production fork objects. Test-only main adds --create-trade."
+  },
+  "installation": {
+    "native": {
+      "source": "artifacts/fnd03-session/workspace/cdda/build/src/cdda-server",
+      "installed": "cdda/build/src/cdda-server",
+      "sha256": "4ae4e217b63013284176d32fd8191632e40edd84e1c36141106df31454a0dd47",
+      "previous": "artifacts/native-trade-20261022/native-before-trade",
+      "previous_sha256": "c2e738d8e49c9cff33156d2b755cde4980098f60795ea38ed9d1138929710fb8"
+    },
+    "client": {
+      "source": "artifacts/language-20261011/workspace/luanti/bin/luanti",
+      "installed": "luanti/bin/luanti",
+      "sha256": "994e4733b65b695d284db57d0e547f9b803c09f37c67e8500e1080360cc47f9a",
+      "previous": "artifacts/native-trade-20261022/client-before-trade",
+      "previous_sha256": "1b0cd6317cf3371a545597d1cffeb8834115a26c3e75c3e4c611479a0ad48544"
+    }
+  },
+  "source_check": {
+    "path": "artifacts/native-trade-20261022/baseline-check.log",
+    "sha256": "325b48fc1c5a719da10805ab3a7dbe23b8e82cf4356f6b1a381dcaa22d96f76e"
+  },
+  "build_logs": [
+    {
+      "path": "artifacts/native-trade-20261022/build-native-retry.log",
+      "sha256": "274c6422acf4b9bf25d42d2bdf035e11ad6f7f7fa6fb9adbee008db866ee57a8"
+    },
+    {
+      "path": "artifacts/native-trade-20261022/build-native-credit.log",
+      "sha256": "fb7d32773e451d403c8aed22c7152ba7ba5ecad38294245f3f974b43518edbfa"
+    },
+    {
+      "path": "artifacts/native-trade-20261022/build-client-confirmation.log",
+      "sha256": "c1481994d9265404b8e2c9c0b98914ebace67e8e5e514a2ae89891d6af6d9757"
+    },
+    {
+      "path": "artifacts/native-trade-20261022/build-client-drag.log",
+      "sha256": "ba84290a903fb01acdc1d4662c46373245de540b4e3978cc74925b3484c6c36e"
+    },
+    {
+      "path": "artifacts/native-trade-20261022/build-protocol.log",
+      "sha256": "9683a27b42cb14a353a33c765cc41d2c0d6b550bec0ed902fae392c2bbd8e1ce"
+    },
+    {
+      "path": "artifacts/native-trade-20261022/build-reader.log",
+      "sha256": "73847975c3c7263992ee172dd3142f93a1882681cbb6df98a01bda3e1f7ec9c6"
+    }
+  ],
+  "manual": {
+    "pending": 45,
+    "open_fail": 0,
+    "added": "TRADE-01: 4 PENDING, previous 41 unchanged",
+    "human_acceptance": "None inferred from automation"
+  },
+  "limits": [
+    "Historical M5.5 FAILED unchanged; full SAVE-001 OPEN. These are scoped fixtures, not broad certification.",
+    "Native restock/drop-invalid-inventory occurs once on opening; cancel does not undo native opening effects.",
+    "No acceptance of every mod/EOC/shop-zone/service configuration. Mission journal and specialised companion/service interfaces remain future work.",
+    "Linux pair updated; Windows installer remains CWM2.26 snapshot. Mapping batch60 unchanged.",
+    "Investigation failures retained: native test API/const setup, confirmation pause settlement and missing trade parser/drag routing; probe harness sequence/closure errors repaired before final PASS."
+  ],
+  "commands": [
+    "python3 tools/takeover_baseline.py capture",
+    "python3 tools/refresh_verification_workspace.py --workspace artifacts/fnd03-session/workspace --receipt artifacts/native-trade-20261022/refresh-credit-tests.json",
+    "python3 tools/refresh_verification_workspace.py --workspace artifacts/language-20261011/workspace --receipt artifacts/native-trade-20261022/refresh-trade-drag.json",
+    "cmake --build artifacts/fnd03-session/workspace/cdda/build --target cdda-server cata_test -j4",
+    "cmake --build artifacts/language-20261011/workspace/luanti/build --target luanti -j3",
+    "cmake --build artifacts/language-20261011/workspace/build/protocol -j3",
+    "ctest --test-dir artifacts/language-20261011/workspace/build/protocol --output-on-failure",
+    "cd artifacts/fnd03-session/workspace/cdda && CDDA_LOCALE_DIR=$PWD/lang/mo ./build/tests/cata_test '[cwm],[reading]~[.],[melee]~[.],[ranged]~[.],[disassembly]~[.],[npc_talk]~[.]' --rng-seed 42 --user-dir=<new-isolated-absolute-directory>",
+    "cd artifacts/fnd03-session/workspace/cdda && CDDA_LOCALE_DIR=$PWD/lang/mo ./build/tests/cata_test '[trade]' --rng-seed 42 --user-dir=<new-isolated-absolute-directory>",
+    "artifacts/language-20261011/workspace/luanti/bin/luanti --run-unittests --logfile <isolated-log>",
+    "python3 tools/build_native_save_reader.py --pristine-cdda artifacts/m5.5/20261003-takeover/pristine-cdda --workspace artifacts/language-20261011/workspace --output artifacts/native-trade-20261022/native-save-reader --strip-debug",
+    "artifacts/native-trade-20261022/native-save-reader --create-trade --userdir <new-fixture-userdir> --datadir cdda/data --output <fixture-before.json>",
+    "python3 artifacts/native-trade-20261022/run-gui.py trade_gui_test.py artifacts/native-trade-20261022/fixture/user <new-artifact-name>",
+    "CWM_TEST_INSTALLED=1 python3 artifacts/native-trade-20261022/run-gui.py trade_gui_test.py artifacts/native-trade-20261022/fixture/user <new-installed-artifact-name>",
+    "python3 tools/takeover_baseline.py check",
+    "xvfb-run -a -s '-screen 0 1280x800x24 -dpi 96' env CWM_GUI_NO_WM=1 LIBGL_ALWAYS_SOFTWARE=1 ALSOFT_DRIVERS=null CDDA_LANGUAGE=en python3 tests/trade_gui_test.py --workspace artifacts/language-20261011/workspace --fixture artifacts/native-trade-20261022/fixture/user --native-reader artifacts/native-trade-20261022/native-save-reader --artifacts <new-artifact-directory>"
+  ]
+}

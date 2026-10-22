@@ -1,5 +1,9 @@
 # Native NPC conversations — 2026-10-22
 
+The later [CWM2.29 native trading delivery](native-trade.md) supersedes this
+report's trade boundary and installed runtime. The checks below describe the
+conversation delivery's exact historical source.
+
 Normal Linux **`./start.sh` now supports talking to NPCs**: point at a
 perceived, non-hostile character and **right-click**. The same control works
 with a weapon held. Walking into a friendly NPC does not start a conversation.

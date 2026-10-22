@@ -898,10 +898,9 @@ prompt or automatically restart conversation. Native encounter/entry effects
 already applied are canonical, not reverted by closing the view.
 
 No conversation UI state or new dialogue save format is introduced. Native
-NPC/trial/mission state persists through the existing CDDA save. Dedicated
-trade and complex service interfaces remain separate: current native trade
-cancels before restock/transfer, and service menus/selectors without a suitable
-presentation explicitly cancel rather than pretending an exchange succeeded.
+NPC/trial/mission state persists through the existing CDDA save. CWM2.29
+adds the dedicated native trade interface below. Complex service menus/selectors
+without a suitable presentation still cancel explicitly.
 
 ## Native trade — CWM 2.29
 
@@ -916,7 +915,10 @@ trigger full resynchronization, never local inference.
 TradeOfferRequest carries a presentation request ID, trade ID, expected quote,
 row and quantity. Success returns a fresh quote; rejection preserves the
 selection with an explicit reason. No item transfer, RNG sampling or time cost
-is attached to proposals. TradeCommitRequest carries a gameplay command ID
+is attached to proposals. TradeView is emitted only outside a pending native
+decision and settles a previously submitted confirmation; TradeClosed likewise
+settles the trade confirmation. The trade modal itself retains Decision pause,
+so that bit alone cannot identify a pending numbered prompt. TradeCommitRequest carries a gameplay command ID
 and the exact current trade/quote IDs. The native owner thread validates the
 sources and invokes the normal confirmation and transfer path. Completion
 ACK follows all native effects; TradeClosed and authoritative state settle

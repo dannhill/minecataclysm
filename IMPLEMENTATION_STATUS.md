@@ -1,33 +1,36 @@
 # Implementation status
 
-Current scoped delivery: **native NPC conversations**, CWM **2.28**, installed
-and verified in normal Linux `start.sh`. Point at a perceived, non-hostile NPC
-and **right-click**. CDDA owns native text, response conditions/trials, topic
-entry effects, mission/training selections, opinion changes and the normal
-chat action cost. Choices pause simulation; the UI presents the current line,
-scrollable history and complete native responses. Esc/connection replacement
-safely leave an unanswered conversation; an already accepted response remains
-single execution. [Delivery](docs/fixes/native-conversation.md),
-[bounded contract](docs/design/native-conversation.md),
-[exact evidence](docs/fixes/native-conversation-evidence.json).
+Current scoped delivery: **native NPC trading**, CWM **2.29**, installed and
+verified in normal Linux `start.sh`. Right-click a perceived non-hostile NPC,
+choose its native trade reply, propose quantities in two panels and confirm
+the whole offer through CDDA. Drag/Shift-click edit proposals; native prices,
+credit, ownership, containers/capacity and final transfers remain authoritative.
+No cancels confirmation while retaining the offer; Cancel/Esc exits the trade.
+Native opening restock/drop-invalid behavior is preserved once, not on queries.
+[Delivery](docs/fixes/native-trade.md), [contract](docs/design/native-trade.md),
+[exact evidence](docs/fixes/native-trade-evidence.json).
 
-**163 native cases / 73,220 assertions PASS**, including upstream NPC talk
-coverage; focused conversation **4 cases / 56 assertions PASS**. Client
-**309 tests / 47 modules**, 648 Catch assertions / 4 cases; protocol **14**,
-language **9**, registry **3**; **44 actual renderer/canonical checks PASS**,
-including repetition against the installed runtime pair. Native and graphical
-fixtures are isolated; the pinned, unmodified native core independently reads
-the resulting saves and confirms the same NPC identity and encounter state.
-These are incremental captured builds, not a new cold-build audit.
+**167 native cases / 73,272 assertions PASS**; focused trade **9/163**.
+Client **309 tests / 47 modules**, 648 Catch assertions / 4 cases; protocol
+**15**, language **9**, registry **3**, standalone trade view PASS.
+**88 renderer/canonical checks PASS**: reconstructed trade 33, installed trade
+33 and conversation regression 22. The independent pinned native reader
+confirms exact selected-stack quantity, unchanged other stack, one purchase,
+ownership and debt/sold accounting after replay/reconnect. Incremental captured
+reconstructions, not a cold-build audit.
 
-**41 PENDING**, no open manual FAIL: previous 37 unchanged plus four NPC-01
-checks in the shared ledger. No human acceptance inferred. Dedicated NPC trade
-is the next core slice: current trade choices explicitly cancel before any
-restocking or exchange. Mission journal, complete companion/service interfaces
-and broad NPC/EOC acceptance remain open in Fase4.6. Historical M5.5 FAILED and
-full SAVE-001 OPEN remain unchanged. Mapping batch60 is unchanged. The Windows
-installer remains the previously verified **CWM2.26 snapshot**; only Linux
-runtimes were updated in this delivery.
+**45 PENDING**, no open manual FAIL: prior 41 unchanged plus four TRADE-01
+checks. No human acceptance inferred. Mission journal/known objectives is the
+next core slice; specialised companion/service interfaces and broad NPC/EOC
+coverage remain open. Historical M5.5 FAILED and full SAVE-001 OPEN remain
+unchanged. Mapping batch60 unchanged. Windows installer remains the previously
+verified **CWM2.26 snapshot**; only Linux runtimes updated here.
+
+Previous scoped delivery: [native NPC conversations](docs/fixes/native-conversation.md).
+Pointed right-click, native response conditions/trials and effects, history,
+safe leave, paused choices and native encounter persistence remain available.
+Its four human NPC-01 checks remain pending; the original cancelled trade
+boundary is superseded by this dedicated trade delivery.
 
 Previous scoped delivery: [native single-item disassembly](docs/fixes/native-disassembly.md),
 including actual work, interruption, resume and canonical unfinished-item
