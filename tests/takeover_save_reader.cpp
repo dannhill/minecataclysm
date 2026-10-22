@@ -503,7 +503,6 @@ int main(int argc, const char *argv[]) {
             guy->set_fac(faction_id("no_faction"));
             guy->set_attitude(NPCATT_TALK);
             guy->chatbin.first_topic = "TALK_STRANGER_NEUTRAL";
-            guy->known_to_u = false;
             guy->op_of_u.trust = 0; guy->op_of_u.fear = 0; guy->op_of_u.value = 0; guy->op_of_u.anger = 0;
             guy->spawn_at_precise(tripoint_abs_ms(m.getabs(tripoint(60,57,0))));
             guy->set_guard_pos(guy->get_location());

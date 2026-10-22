@@ -1572,7 +1572,7 @@ index 7498f9e..37448f6 100644
      dead = true;
      set_killer( nkiller );
 diff --git a/src/npctalk.cpp b/src/npctalk.cpp
-index ea45f06..261e3aa 100644
+index ea45f06..a3ecf3a 100644
 --- a/src/npctalk.cpp
 +++ b/src/npctalk.cpp
 @@ -1,4 +1,6 @@
@@ -1621,7 +1621,7 @@ index ea45f06..261e3aa 100644
          challenge = string_format( _( "\"%s\"" ), challenge );
      }
  
-@@ -2534,13 +2535,46 @@ talk_topic dialogue::opt( dialogue_window &d_win, const talk_topic &topic )
+@@ -2534,13 +2535,54 @@ talk_topic dialogue::opt( dialogue_window &d_win, const talk_topic &topic )
          return talk_topic( "TALK_NONE" );
      }
  
@@ -1631,7 +1631,14 @@ index ea45f06..261e3aa 100644
 +        std::vector<std::string> labels;
 +        for( talk_response &response : responses ) {
 +            response_lines.push_back( response.create_option_line( *this, input_event(), d_win.is_computer ) );
-+            labels.push_back( response_lines.back().text );
++            labels.push_back( colorize( response_lines.back().text, response_lines.back().color ) );
++        }
++        std::vector<std::string> inspect_actions;
++        if( !d_win.is_computer && !d_win.is_not_conversation ) {
++            inspect_actions = { "LOOK_AT", "SIZE_UP_STATS", "ASSESS_PERSONALITY", "CHECK_OPINION", "YELL" };
++            for( const std::string &label : { _( "Look at" ), _( "Size up stats" ), _( "Assess personality" ), _( "Check opinion" ), _( "Yell" ) } ) {
++                labels.push_back( label );
++            }
 +        }
 +        // Do not map disconnect/Esc to an arbitrary native reply: a single
 +        // native response can have irreversible effects. Leaving is effect-free.
@@ -1646,10 +1653,11 @@ index ea45f06..261e3aa 100644
 +        while( true ) {
 +            int selected;
 +            {
-+                external_conversation_scope scope( &info );
++                external_conversation_scope scope( info.npc_id ? &info : nullptr );
 +                selected = external_ui_choice( challenge, labels );
 +            }
-+            if( selected < 0 || size_t( selected ) >= responses.size() ) return talk_topic( "TALK_DONE" );
++            if( selected < 0 || size_t( selected ) >= responses.size() + inspect_actions.size() ) return talk_topic( "TALK_DONE" );
++            if( size_t( selected ) >= responses.size() ) return special_talk( inspect_actions[selected - responses.size()] );
 +            response_ind = selected;
 +            const auto consequences = responses[response_ind].get_consequences( *this );
 +            if( consequences.count( dialogue_consequence::hostile ) &&
@@ -1669,7 +1677,7 @@ index ea45f06..261e3aa 100644
      std::vector<input_event> response_hotkeys;
      const auto generate_response_lines = [&]() {
  #if defined(__ANDROID__)
-@@ -2567,7 +2601,7 @@ talk_topic dialogue::opt( dialogue_window &d_win, const talk_topic &topic )
+@@ -2567,7 +2609,7 @@ talk_topic dialogue::opt( dialogue_window &d_win, const talk_topic &topic )
          d_win.draw( d_win.is_not_conversation ? "" : actor( true )->disp_name() );
      } );
  
@@ -1678,7 +1686,7 @@ index ea45f06..261e3aa 100644
      bool okay;
      do {
          std::string action;
-@@ -2604,6 +2638,7 @@ talk_topic dialogue::opt( dialogue_window &d_win, const talk_topic &topic )
+@@ -2604,6 +2646,7 @@ talk_topic dialogue::opt( dialogue_window &d_win, const talk_topic &topic )
              okay = query_yn( _( "You'll be helpless!  Proceed?" ) );
          }
      } while( !okay );
@@ -2349,7 +2357,7 @@ index 09a7711..9b0c484 100644
          DebugLog( D_INFO, DC_ALL ) <<
 diff --git a/src/cwm/cwm_conversation.h b/src/cwm/cwm_conversation.h
 new file mode 100644
-index 0000000..0e40433
+index 0000000..1296d17
 --- /dev/null
 +++ b/src/cwm/cwm_conversation.h
 @@ -0,0 +1,29 @@
@@ -2369,7 +2377,7 @@ index 0000000..0e40433
 +        // Same eligibility as game::chat's local NPC selection, using native
 +        // sensory visibility and distance, never the presentation camera.
 +        return !person.is_dead() && person.posz() == u.posz() &&
-+               rl_dist( u.pos(), person.pos() ) <= SEEX * 2 && u.sees( person.pos() ) ? &person : nullptr;
++               rl_dist( u.pos(), person.pos() ) <= SEEX * 2 && u.sees( person.pos() ) && u.sees( person ) ? &person : nullptr;
 +    }
 +    return nullptr;
 +}
@@ -4609,7 +4617,7 @@ index 0000000..d077b2c
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..ddc73d0
+index 0000000..6999d8e
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
 @@ -0,0 +1,1145 @@
@@ -5289,7 +5297,7 @@ index 0000000..ddc73d0
 +            const tripoint target = u.pos() + tripoint(directions[command.action], 0);
 +            const npc* person = get_creature_tracker().creature_at<npc>(target);
 +            if (person && !person->is_enemy()) {
-+                result_ = Result{command.id, false, "NPC interaction UI is not implemented yet"};
++                result_ = Result{command.id, false, ::cwm::tr("Right-click the NPC to talk.")};
 +                return false;
 +            }
 +            accepted = avatar_action::move(u, m, directions[command.action]);
@@ -5979,7 +5987,7 @@ index 0000000..eb8c27f
 +1 RT_MANIFEST "cwm_windows.manifest"
 diff --git a/src/cwm_motion.cpp b/src/cwm_motion.cpp
 new file mode 100644
-index 0000000..a081e87
+index 0000000..0106a99
 --- /dev/null
 +++ b/src/cwm_motion.cpp
 @@ -0,0 +1,214 @@
@@ -6145,7 +6153,7 @@ index 0000000..a081e87
 +        const tripoint attempt = delta != tripoint_zero ? delta : contacted;
 +        const tripoint target = u.pos() + attempt;
 +        const npc *person = get_creature_tracker().creature_at<npc>( target );
-+        // Friendly bump dialogue is not yet a nonblocking CWM action.
++        // Friendly bump does not start a conversation: explicit right-click owns it.
 +        if( !person || person->is_enemy() ) {
 +            // Do not invoke native movement toward an ordinary wall at 25Hz.
 +            // Closed doors/windows and creatures retain their native action.
@@ -6282,10 +6290,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..031d0df
+index 0000000..09ee7ff
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,2317 @@
+@@ -0,0 +1,2362 @@
 +#include "cata_catch.h"
 +#include "translations.h"
 +#include "options.h"
@@ -6352,6 +6360,11 @@ index 0000000..031d0df
 +        cdda::cwm::MessageBuilder wire(server.received_sequence_+1,1,server.identity_);
 +        auto bytes=wire.build_interact_request(id,target.x,target.y,target.z,
 +            close?CDDA::CWM::InteractAction::CLOSE:CDDA::CWM::InteractAction::OPEN);
++        server.handle_client_message(bytes.data(),bytes.size(),get_avatar(),get_map(),*g);
++    }
++    static void talk(CwmServer& server,uint64_t target,uint64_t id=1) {
++        cdda::cwm::MessageBuilder wire(server.received_sequence_+1,1,server.identity_);
++        const auto bytes=wire.build_talk_request(id,target);
 +        server.handle_client_message(bytes.data(),bytes.size(),get_avatar(),get_map(),*g);
 +    }
 +    static void attack( CwmServer &server, uint64_t target, uint64_t id = 1 ) {
@@ -8603,6 +8616,46 @@ index 0000000..031d0df
 +    }
 +    CHECK(verified.size()>100);
 +}
++
++TEST_CASE("cwm_talk_revalidates_native_target_and_deduplicates_commands", "[cwm][conversation]") {
++    clear_avatar(); clear_map(); clear_creatures();
++    const override_option no_autosave("AUTOSAVE","false");
++    avatar& u=get_avatar();u.setpos(tripoint(60,60,0));
++    calendar::turn=calendar::turn_zero+36_hours;
++    g->new_game=false;g->uquit=QUIT_NO;g->set_safe_mode(SAFE_MODE_OFF);
++    u.recalc_sight_limits();g->reset_light_level();get_map().build_map_cache(0);
++    get_map().invalidate_visibility_cache();get_map().update_visibility_cache(0);
++    auto person=make_shared_fast<npc>();person->normalize();person->randomize();
++    person->set_fac(faction_id("no_faction"));person->set_attitude(NPCATT_NULL);
++    person->spawn_at_precise(tripoint_abs_ms(get_map().getabs(u.pos()+tripoint_north)));
++    overmap_buffer.insert_npc(person);g->load_npcs();REQUIRE(u.sees(*person));
++    const auto target=(uint64_t(1)<<63)|uint64_t(person->getID().get_value());
++    cwm::CwmServer server("/unused-cwm-conversation");cwm::CwmServerTestAccess::ready(server);
++    SECTION("invalid namespace is rejected without an action") {
++        cwm::CwmServerTestAccess::talk(server,person->getID().get_value());
++        CHECK_FALSE(server.has_queued_action());CHECK_FALSE(person->get_known_to_u());
++    }
++    SECTION("lost sensory access invalidates an admitted request") {
++        cwm::CwmServerTestAccess::talk(server,target);REQUIRE(server.has_queued_action());
++        person->setpos(u.pos()+tripoint(5,0,0));
++        u.add_effect(efftype_id("blind"),10_seconds);u.recalc_sight_limits();
++        CHECK_FALSE(cwm::CwmServerTestAccess::execute(server));CHECK_FALSE(person->get_known_to_u());
++    }
++    SECTION("a duplicate cannot start a second native conversation or charge again") {
++        cwm::CwmServerTestAccess::talk(server,target);REQUIRE(server.has_queued_action());
++        cwm::CwmServerTestAccess::talk(server,target); // Pending replay, not another queue entry.
++        int prompts=0;
++        do_turn_with_action([&]() {
++            u.moves=1000;CHECK(cwm::CwmServerTestAccess::execute(server));CHECK(u.moves==900);
++            CHECK(person->get_known_to_u());finish_external_action_phase();return false;
++        },[&](const std::string&,const std::vector<std::string>& labels) {
++            ++prompts;return int(labels.size())-1;
++        });
++        CHECK(prompts==1);cwm::CwmServerTestAccess::complete(server);
++        cwm::CwmServerTestAccess::talk(server,target);CHECK_FALSE(server.has_queued_action());CHECK(prompts==1);
++    }
++    clear_creatures();
++}
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644
 index 0000000..39d991c
@@ -9407,10 +9460,10 @@ index 0000000..39d991c
 +}
 diff --git a/tests/cwm_runtime_test.cpp b/tests/cwm_runtime_test.cpp
 new file mode 100644
-index 0000000..c019803
+index 0000000..2b02e45
 --- /dev/null
 +++ b/tests/cwm_runtime_test.cpp
-@@ -0,0 +1,576 @@
+@@ -0,0 +1,578 @@
 +#include "cwm_motion.h"
 +#include "cata_catch.h"
 +#include "avatar.h"
@@ -9917,8 +9970,9 @@ index 0000000..c019803
 +    load_talk_topic( json_loader::from_string( R"({
 +      "id":"TALK_CWM_TEST_ENTRY","dynamic_line":"A native greeting.",
 +      "speaker_effect":{"effect":{"npc_adjust_var":"cwm_visits","adjustment":1}},
-+      "responses":[{"text":"Remember this reply.","topic":"TALK_CWM_TEST_EXIT",
-+        "effect":{"npc_add_var":"cwm_reply","value":"yes"},"opinion":{"trust":1}}]
++      "responses":[{"text":"Remember this reply.","trial":{"type":"PERSUADE","difficulty":10000},
++        "success":{"topic":"TALK_CWM_TEST_EXIT","effect":{"npc_add_var":"cwm_reply","value":"yes"},"opinion":{"trust":1}},
++        "failure":{"topic":"TALK_DONE","effect":{"npc_add_var":"cwm_failure","value":"yes"}}}]
 +    })" ).get_object() );
 +    load_talk_topic( json_loader::from_string( R"({
 +      "id":"TALK_CWM_TEST_EXIT","dynamic_line":"I remember what you said.",
@@ -9948,16 +10002,17 @@ index 0000000..c019803
 +        CHECK( external_conversation->npc_id == ( ( uint64_t( 1 ) << 63 ) | 993 ) );
 +        CHECK( person.get_value( "npctalk_var_cwm_visits" ) == "1" );
 +        CHECK( calendar::turn == time );
-+        CHECK( labels.size() == 2 );
++        CHECK( labels.size() == 7 );
 +        CHECK( labels.back() == "Leave conversation" );
 +        ++prompts;
 +        if( prompts == 1 ) {
 +            CHECK( external_conversation->history.find( "A native greeting." ) != std::string::npos );
++            CHECK( labels.front().find( "100%" ) != std::string::npos );
 +            return 0;
 +        }
 +        CHECK( external_conversation->history.find( "Remember this reply." ) != std::string::npos );
 +        CHECK( external_conversation->history.find( "I remember what you said." ) != std::string::npos );
-+        return 1;
++        return int( labels.size() ) - 1;
 +    } );
 +    CHECK( entered ); CHECK( prompts == 2 ); CHECK_FALSE( external_conversation );
 +}

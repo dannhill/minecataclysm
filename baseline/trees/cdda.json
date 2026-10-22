@@ -37322,7 +37322,7 @@
   {
     "path": "src/cwm/cwm_conversation.h",
     "mode": "100644",
-    "sha256": "22ee22222625acf72ccb2531d080af45ad254ac607b2fab2905de1ae524bff27"
+    "sha256": "e4eae08d4baffa02743fdc252ca58cde937eb9d80c235144ed6d83478a220cfd"
   },
   {
     "path": "src/cwm/cwm_crafting.h",
@@ -37377,7 +37377,7 @@
   {
     "path": "src/cwm/cwm_server.cpp",
     "mode": "100644",
-    "sha256": "11429961bdc683fb105348d3e6a267eccf1c3bd5c7961d6b1c73c43d5d72ffec"
+    "sha256": "898de00835d0eb2f76d6150f760f0668d5d80c9b842a404ad464a7cd6adaf1c0"
   },
   {
     "path": "src/cwm/cwm_server.h",
@@ -37397,7 +37397,7 @@
   {
     "path": "src/cwm_motion.cpp",
     "mode": "100644",
-    "sha256": "32e701e3317dbf6280382b6ef2072f3567564e3016e70d1a0932fff7ab7cbf5e"
+    "sha256": "174c114a9f46176354689c0f53dfb7e5ee050a81c95d3d1376d666302bedabca"
   },
   {
     "path": "src/cwm_motion.h",
@@ -39092,7 +39092,7 @@
   {
     "path": "src/npctalk.cpp",
     "mode": "100644",
-    "sha256": "b98b452a4cac2d7add42ebf0dac5cc9bc77074fbcef00f223f22a0407902bf5a"
+    "sha256": "23b1312e21f66c40ead8c4de25cc833e2537ac7f038060683d14711e7e5ef9f6"
   },
   {
     "path": "src/npctalk.h",
@@ -40927,7 +40927,7 @@
   {
     "path": "tests/cwm_pickup_test.cpp",
     "mode": "100644",
-    "sha256": "83f06219af0bcc17c04974d15b46f4af21e7b7a3b0abd613c5315817ebe42975"
+    "sha256": "c61d899c3f817905dc065f4ea55fc1e885cfd60fa744dd006b3b392211c997cd"
   },
   {
     "path": "tests/cwm_projection_test.cpp",
@@ -40937,7 +40937,7 @@
   {
     "path": "tests/cwm_runtime_test.cpp",
     "mode": "100644",
-    "sha256": "1f5434b4aefb6477d9a068864cd2ecdc9ec7ca5d7df666097faa2a4718aa3b48"
+    "sha256": "8878b87731de17c450f3adf0120a41b455552a468dd64ef94a3be7e6b2bba936"
   },
   {
     "path": "tests/data/name.json",
