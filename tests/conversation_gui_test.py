@@ -187,9 +187,9 @@ def main():
             from CDDA.CWM.InventoryView import InventoryView
             from CDDA.CWM.DecisionPrompt import DecisionPrompt
             from CDDA.CWM.WorldSnapshot import WorldSnapshot
-            def messages(kind):
+            def messages(kind,direction="server"):
                 import struct
-                buf=(out/'server-wire.bin').read_bytes();offset=0;found=[]
+                buf=(out/(direction+'-wire.bin')).read_bytes();offset=0;found=[]
                 while offset+4<=len(buf):
                     n=struct.unpack('>I',buf[offset:offset+4])[0];offset+=4
                     if offset+n>len(buf):break
@@ -247,9 +247,9 @@ def main():
             check('native_trade_branch_returns_safely',proc.poll() is None)
             # A dropped connection safely leaves; recovery never chooses a
             # native reply or automatically starts the conversation again.
-            p=talk();connection=latest()['connection_id'];drop.set()
+            p=talk();connection=latest()['connection_id'];sent=len(messages(Payload.TalkRequest,'client'));drop.set()
             wait(lambda r:r['connection_id']!=connection and int(r['input_ready'])==1 and int(r['pending_decision'])==0 and int(r['pending_move'])==0,timeout=25)
-            check('disconnect_safely_leaves_without_replaying_talk',proc.poll() is None)
+            check('disconnect_safely_leaves_without_replaying_talk',proc.poll() is None and len(messages(Payload.TalkRequest,'client'))==sent)
             shot('reconnected.png')
             tap('F7');wait(lambda r:int(r['pause_reasons'])==1)
             turn(0,-9);wait(lambda r:int(r['combat_hover'])==npc)

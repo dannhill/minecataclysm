@@ -6296,10 +6296,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..1dced19
+index 0000000..a52e8fc
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,2375 @@
+@@ -0,0 +1,2376 @@
 +#include "cata_catch.h"
 +#include "translations.h"
 +#include "options.h"
@@ -8639,6 +8639,7 @@ index 0000000..1dced19
 +    get_map().invalidate_visibility_cache();get_map().update_visibility_cache(0);
 +    auto person=make_shared_fast<npc>();person->normalize();person->randomize();
 +    person->set_fac(faction_id("no_faction"));person->set_attitude(NPCATT_NULL);
++    person->chatbin.first_topic="TALK_STRANGER_NEUTRAL";
 +    person->spawn_at_precise(tripoint_abs_ms(get_map().getabs(u.pos()+tripoint_north)));
 +    overmap_buffer.insert_npc(person);g->load_npcs();REQUIRE(u.sees(*person));
 +    const auto target=(uint64_t(1)<<63)|uint64_t(person->getID().get_value());
