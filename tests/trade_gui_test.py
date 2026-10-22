@@ -357,6 +357,10 @@ def main():
             connection=latest()['connection_id'];sent=len(messages(Payload.TradeCommitRequest,'client'));drop.set()
             wait(lambda r:r['connection_id']!=connection and int(r['input_ready'])==1 and int(r['pending_decision'])==0 and int(r['pending_move'])==0,timeout=25)
             check('reconnect_cancels_quote_without_replaying_commit',len(messages(Payload.TradeCommitRequest,'client'))==sent)
+            tap('i');wait(lambda r:int(r['equipment_form'])==1)
+            check('reconnect_closes_old_trade_and_allows_inventory',int(latest()['equipment_form'])==1)
+            tap('Escape');wait(lambda r:int(r['equipment_form'])==0 and int(r['pause_reasons'])==0)
+            check('recovered_inventory_returns_to_live_controls',int(latest()['input_ready'])==1)
             shot('trade-reconnected.png')
             final=latest();(out/'final-trace.json').write_text(json.dumps(final,indent=2)+'\n')
         finally:

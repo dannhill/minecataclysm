@@ -4935,10 +4935,10 @@ index 0000000..d077b2c
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..b92c76c
+index 0000000..701c460
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,1270 @@
+@@ -0,0 +1,1272 @@
 +#include "cwm/product_language.hpp"
 +#include "cwm_motion.h"
 +// CDDA CWM IPC Server Implementation
@@ -6104,7 +6104,9 @@ index 0000000..b92c76c
 +
 +void CwmServer::send_trade() {
 +    if (!trade_context_ || !trade_context_->model || !ready_ || !has_active_client() || pending_decision_) return;
-+    auto& t=*trade_context_;auto& model=*t.model;auto& np=model.external_npc();
++    auto& t=*trade_context_;
++    if(t.cancel || t.connection!=identity_.connection)return;
++    auto& model=*t.model;auto& np=model.external_npc();
 +    const auto validation=model.external_valid();
 +    if(!validation.empty()) {t.cancel=true;t.error=validation;return;}
 +    const auto& rows=model.external_entries();

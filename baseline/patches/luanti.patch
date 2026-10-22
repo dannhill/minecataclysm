@@ -2172,10 +2172,10 @@ index 0000000..e1e7236
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..b18e084
+index 0000000..a6d2780
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,3369 @@
+@@ -0,0 +1,3373 @@
 +#include "cwm/product_language.hpp"
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
@@ -2329,6 +2329,9 @@ index 0000000..b18e084
 +    irr::gui::IGUIStaticText* vertical_text_{nullptr};
 +    TradeDialog trade_dialog_;
 +    bool trade_dirty_=false,trade_close_=false;
++    void cancel_trade_presentation() {
++        trade_dialog_={};trade_dirty_=false;trade_close_=true;trade_commit_=trade_request_=0;
++    }
 +    uint64_t trade_request_=0,trade_commit_=0;
 +    DecisionDialog decision_dialog_; bool decision_dirty_{false};
 +    irr::scene::ISceneManager* smgr_{nullptr};
@@ -3045,7 +3048,7 @@ index 0000000..b18e084
 +        commit_projection(old_blocks);
 +        origin_valid_ = false;
 +        pending_move_ = 0; metrics_.pending_decision = 0;
-+        trade_dialog_={};trade_dirty_=false;trade_close_=true;trade_commit_=trade_request_=0;
++        cancel_trade_presentation();
 +        player_feet_offset_ = player_eye_offset_ = 0.f;
 +        caption_seconds_ = 0; low_light_ = false; low_light_blend_ = 0;
 +        posture_input_ = {}; aim_input_ = {}; deferred_ranged_.reset(); last_aim_command_ = 0; posture_command_ = 0; deferred_opening_.reset();
@@ -3124,7 +3127,8 @@ index 0000000..b18e084
 +        language_request_ = language_connection_ = 0;
 +        session_.disconnected();
 +        body_close_requested_ = true;
-+        cancel_pickup_selection(); cancel_equipment();
++        cancel_pickup_selection(); cancel_equipment(); cancel_trade_presentation();
++        decision_dialog_={};decision_dirty_=false;
 +        metrics_.connected = false; player_ready_ = false; pending_move_ = 0;
 +        deferred_opening_.reset();
 +        connection_.reset(); metrics_.pending_decision = 0;
@@ -3316,7 +3320,7 @@ index 0000000..b18e084
 +        if (session_.clear_world) { clear_world(); session_.clear_world = false; }
 +        if (msg->payload_type() == CDDA::CWM::Payload::WorldReset) {
 +            language_request_ = language_connection_ = 0;
-+            cancel_pickup_selection(); cancel_equipment();
++            cancel_pickup_selection(); cancel_equipment(); cancel_trade_presentation();
 +            body_close_requested_ = true;
 +            player_ready_ = false;
 +            metrics_.pending_decision = 0;
