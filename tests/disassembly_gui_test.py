@@ -269,7 +269,9 @@ def main():
                 shot('disassembly-paused.png');click(13.4,10.35)
                 wait(lambda r:int(r['disassembly_token'])==0 and int(r['equipment_form'])==1 and int(r['inventory_view'])>0)
                 work=select_item('disassembly')
-                check('interrupt_keeps_native_unfinished_item',work.Disassembly().Resume() and work.Disassembly().Progress()==progress)
+                check('interrupt_keeps_native_unfinished_item',work.Disassembly().Resume() and progress<=work.Disassembly().Progress()<10000000)
+                # Closing the inspection to submit cancel can pay another native tick; no refund/reset.
+                progress=work.Disassembly().Progress()
                 check('unfinished_item_can_resume',bool(work.Actions()&128))
                 shot('unfinished-disassembly.png');start()
                 wait(lambda r:int(r['disassembly_token'])>0 and int(r['pending_move'])==0)
