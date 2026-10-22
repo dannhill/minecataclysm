@@ -6,10 +6,15 @@ captured implementation; it does not approve its gaps. The executable schema
 is [cwm.fbs](cwm.fbs). Audit findings and evidence are in
 [M5.5](../docs/audits/M5.5.md).
 
-The current runtime requires **CWM 2.27**. This breaks the old negotiation
+The current runtime requires **CWM 2.28**. This breaks the old negotiation
 contract; schema fields and union members are appended without changing the
 existing FlatBuffers offsets. Both executables must be rebuilt together.
 The historical coverage table below is retained as audit evidence.
+
+CWM 2.28 appends `TalkRequest` (50) and optional
+`DecisionPrompt.conversation:ConversationInfo`. It projects an already-generated
+native NPC conversation; it does not duplicate dialogue logic or save state.
+[Scoped contract and service boundaries](../docs/design/native-conversation.md).
 
 CWM 2.27 appends `CancelDisassemblyRequest` (49),
 `EquipmentAction.DISASSEMBLE` (7), an eighth inventory action/reason,
@@ -850,3 +855,44 @@ Exact paired version 2.25 is required. Canonical ACT_READ serialization, book
 identification, chapter effects and theoretical experience remain native. I/menu
 pause is transient and not written into the character save. No Luanti-specific
 data, new save fields or client-owned learning state are introduced.
+
+## Native NPC conversation — CWM 2.28
+
+TalkRequest appends union member 50 with `command_id:uint64` and
+`target_entity_id:uint64`. It uses the normal session, sequence and bounded
+command ledger. The target must resolve to the exported canonical NPC namespace
+(high bit set, remaining bits the native character ID), be alive, perceived,
+on the same Z and within native local chat range (2*SEEX). Admission is pure;
+execution revalidates the target and speech restrictions before calling
+`avatar::talk_to`. Busy, paused, stale and invalid requests do not queue a later
+automatic conversation. The normal native chat action costs 100 moves at exit.
+
+DecisionPrompt optionally appends `conversation:ConversationInfo` with NPC ID,
+speaker, native topic ID, native transcript and `history_truncated`. Speaker,
+topic and history must be present, NUL-free and bounded to 4096, 1024 and 262144
+bytes respectively; speaker/topic are nonempty. Medical metadata is mutually
+exclusive with conversation metadata. History retains complete native messages,
+and the UI explicitly signals omission when the bound is reached.
+
+Existing bounds remain: 1..9 page choices with nonempty labels of at most 16384
+bytes, text at most 16384 bytes, nonzero decision ID and a valid cancel index.
+A conversation's final choice must be its explicit safe Leave action. Native
+answers and observation topic actions keep their exact indices through paging.
+Page changes resend already-generated text/history, without reapplying topic
+entry effects, re-evaluating responses or rolling a social trial. A submitted
+choice is valid only for the current decision and connection and can be
+accepted once. Native conditions, rolls, effects and mission selections stay
+in CDDA; the client does not infer behavior from translated labels.
+
+The native clock pauses while awaiting choices. Esc, lost peer or replacement
+peer settles an unanswered choice through the explicit safe final option. A
+valid answer already received from the original peer remains accepted; it is
+not executed again. Replacement connections do not inherit an unanswered
+prompt or automatically restart conversation. Native encounter/entry effects
+already applied are canonical, not reverted by closing the view.
+
+No conversation UI state or new dialogue save format is introduced. Native
+NPC/trial/mission state persists through the existing CDDA save. Dedicated
+trade and complex service interfaces remain separate: current native trade
+cancels before restock/transfer, and service menus/selectors without a suitable
+presentation explicitly cancel rather than pretending an exchange succeeded.

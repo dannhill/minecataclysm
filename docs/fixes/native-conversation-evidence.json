@@ -1,0 +1,262 @@
+{
+  "scope": "Native NPC conversation, typed targeting, paused choices/history/trials and canonical NPC encounter persistence",
+  "date": "2026-10-22",
+  "protocol": "CWM 2.28",
+  "source_commit": "c5ff859f4fc7b6f5745bfb6ff6d0d6cca4a91906",
+  "native_production_commit": "42eba27d36bdef5cd26a654bd50967a416db2f5a",
+  "gui_harness_commit": "822ff67943ef9c9da67df001fd3e514e95f32cec",
+  "build_mode": "Incremental captured reconstructions with retained caches, not cold builds. SDK dependency rebuild followed by narrow production and test repairs; unchanged native production objects retained after final test-only edits.",
+  "source_trees": {
+    "cdda": {
+      "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+      "patch_sha256": "f550dac8170debab1390e9480e74e0352191b5cfdb7c9d7d081bfd3667b1e9a3",
+      "tree_sha256": "6c2dfe06bdd2af7e28b4c71952a0b55a7396999e52e08889909a70602c60fa65"
+    },
+    "luanti": {
+      "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
+      "patch_sha256": "bb2e6db8981b41c3969bc99663dd96c7c1526c9db012f2b036720169504da998",
+      "tree_sha256": "713434880b5fe0de14ea1ae5260442874b06ce5d5284166b8947fe22abde65b3"
+    },
+    "mineclonia": {
+      "commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36"
+    }
+  },
+  "native": {
+    "cases": 163,
+    "assertions": 73220,
+    "result": "PASS",
+    "filter": "[cwm],[reading]~[.],[melee]~[.],[ranged]~[.],[disassembly]~[.],[npc_talk]~[.]",
+    "log": {
+      "path": "artifacts/native-conversation-20261022/native-regression.log",
+      "sha256": "276ce2dfa8e83ec9a7c0b3a1406061cf3adc7c9f199eb886bbf1708d7cd942c3"
+    }
+  },
+  "native_conversation": {
+    "cases": 4,
+    "assertions": 56,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-conversation-20261022/native-focused-final.log",
+      "sha256": "adefb46c348fbf8a5dbe9f19a14a5a5b8aa8fd0a1acefe9a0e7267a1c80a9c4a"
+    }
+  },
+  "client": {
+    "cases": 309,
+    "modules": 47,
+    "catch_cases": 4,
+    "catch_assertions": 648,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-conversation-20261022/client-unit-tested.stdout",
+      "sha256": "367a01252f4909a592b312ff53c43e96542db454bea020adfcb7f77cfd1f357f"
+    }
+  },
+  "decision_view": {
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-conversation-20261022/decision-presentation-tested.log",
+      "sha256": "b719909233730e623a6a5924351ad548c3194f1dc67ccf4df87fac4f4b2651ff"
+    }
+  },
+  "protocol_tests": {
+    "tests": 14,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-conversation-20261022/protocol-tests.log",
+      "sha256": "5218c9c387e31832976fc33d3668acd034e1152ba543c36c3c1caff4f8b3f856"
+    },
+    "note": "SDK/schema bytes unchanged after this run."
+  },
+  "language_tests": {
+    "tests": 9,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-conversation-20261022/language-tests.log",
+      "sha256": "1e344dfd403ec6bbc509444c39924db4eab05e1c5b54b07abb3a7a7a8c37949e"
+    }
+  },
+  "registry_tests": {
+    "tests": 3,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-conversation-20261022/registry-tests.log",
+      "sha256": "0422cad04f59c2f846b7c9cb15aa8541e544d08bdc651c882aa96a104f704c9d"
+    }
+  },
+  "gui": {
+    "conversation-gui-final": {
+      "checks": 22,
+      "result": "PASS",
+      "checks_file": {
+        "path": "artifacts/native-conversation-20261022/conversation-gui-final/checks.json",
+        "sha256": "479430ca74c1d574e789efb4a8d821eb6f187a3c1f54e57793023919a80aa1cb"
+      },
+      "summary": {
+        "path": "artifacts/native-conversation-20261022/conversation-gui-final/summary.json",
+        "sha256": "96a967e1bcdf2578475781293efe606ca6a9ac96a24b7133455aa187701cc9d3"
+      },
+      "native_readback": {
+        "path": "artifacts/native-conversation-20261022/conversation-gui-final/native.json",
+        "sha256": "6e76ba5a3a338e7b2ad03c370b65e1085c17c05876cf758015aba62154819e1c"
+      }
+    },
+    "installed-conversation": {
+      "checks": 22,
+      "result": "PASS",
+      "checks_file": {
+        "path": "artifacts/native-conversation-20261022/installed-conversation/checks.json",
+        "sha256": "479430ca74c1d574e789efb4a8d821eb6f187a3c1f54e57793023919a80aa1cb"
+      },
+      "summary": {
+        "path": "artifacts/native-conversation-20261022/installed-conversation/summary.json",
+        "sha256": "68ad00919286ca15468fff7cfbcc5b8735c715e8ea21bebc32ff4f5b4cb7283c"
+      },
+      "native_readback": {
+        "path": "artifacts/native-conversation-20261022/installed-conversation/native.json",
+        "sha256": "25b87f63095d5d2cab9447966766daad3e65f3554357b1435c0e1dc7e151b51c"
+      }
+    }
+  },
+  "gui_environment": "Private Xvfb 1280x800/96 DPI, Mesa software, OpenAL null; actual Luanti renderer and native coordinator, independent userdirs/configurations. Agent screenshot inspection is not human acceptance.",
+  "independent_reader": {
+    "binary": {
+      "path": "artifacts/native-conversation-20261022/native-save-reader",
+      "sha256": "44312f6d64bc554451ea310bca685a782fa530e4a8505594e1d283f039a1d016"
+    },
+    "build": {
+      "path": "artifacts/native-conversation-20261022/native-save-reader.build.json",
+      "sha256": "edb39b93c6be0de56112b1cee80ae687d3b96880f0e776c337d16cb27455e928"
+    },
+    "source": {
+      "path": "tests/takeover_save_reader.cpp",
+      "sha256": "0834aefdeac4f874876146db04296b1c7189da0023c6358c010508a0d2934612"
+    },
+    "pristine_pin": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+    "fixture": {
+      "path": "artifacts/native-conversation-20261022/fixture/before.json",
+      "sha256": "ba71a42bdfc392b9a7db08911d0d0149b6e0b056b5142e9a403e6ce0d0da2a99"
+    },
+    "method": "Test-only fixture/reader main linked to the unmodified pinned core; canonical game::load/native serialization, no CWM save interpretation."
+  },
+  "installation": {
+    "protocol": "2.28",
+    "source_commit": "822ff67943ef9c9da67df001fd3e514e95f32cec",
+    "production_build_commit": "c5ff859f4fc7b6f5745bfb6ff6d0d6cca4a91906",
+    "runtimes": [
+      {
+        "name": "native",
+        "source": "artifacts/fnd03-session/workspace/cdda/build/src/cdda-server",
+        "target": "cdda/build/src/cdda-server",
+        "backup": "artifacts/native-conversation-20261022/native-before-conversation",
+        "before_sha256": "883ee273a2e9a1cdce80fcf4d015d69b437da091ff6b4d8d6f96079a5427ff3a",
+        "after_sha256": "c2e738d8e49c9cff33156d2b755cde4980098f60795ea38ed9d1138929710fb8"
+      },
+      {
+        "name": "client",
+        "source": "artifacts/language-20261011/workspace/luanti/bin/luanti",
+        "target": "luanti/bin/luanti",
+        "backup": "artifacts/native-conversation-20261022/client-before-conversation",
+        "before_sha256": "8bdf705d49237daa4fe5e71ac759e5bfae5e088abb5756f4fd618135acc823b4",
+        "after_sha256": "1b0cd6317cf3371a545597d1cffeb8834115a26c3e75c3e4c611479a0ad48544"
+      }
+    ]
+  },
+  "baseline": {
+    "path": "artifacts/native-conversation-20261022/baseline-check-final.log",
+    "sha256": "49d0591b6745b7ee8acaa0e0e9572352615fa5b1bdab69cc85317ab2999bdc68"
+  },
+  "native_refresh": {
+    "path": "artifacts/native-conversation-20261022/refresh-native-scroll.json",
+    "sha256": "f2bf21bdd2096969b875a06e7cc344d29890a46ff6d8f3b967fbc382eb275341"
+  },
+  "client_refresh": {
+    "path": "artifacts/native-conversation-20261022/refresh-client-scroll.json",
+    "sha256": "1012bb1c93707283155d07970f39b26c57349c7f258412d893f6c1d670e8f81b"
+  },
+  "native_build": {
+    "path": "artifacts/native-conversation-20261022/build-native-tested.log",
+    "sha256": "5ec8177c2dd8d7ad56aa88c5be08d48394c30c346b0ebd91cf92c27783ab1b1f"
+  },
+  "client_build": {
+    "path": "artifacts/native-conversation-20261022/build-client-tested.log",
+    "sha256": "37d5f043a0d3af63026e84a3aa16b6b5e48d9d009cb031b93d0f0967f3a1f8e7"
+  },
+  "gui_harness": {
+    "path": "tests/conversation_gui_test.py",
+    "sha256": "58d31d7ca911b80411a43fbb13c1c9763404682b1cb372fe6e014296fad45a1a"
+  },
+  "gui_wrapper": {
+    "path": "artifacts/native-conversation-20261022/run-gui.py",
+    "sha256": "9d0fd85107add5b4a872cd444c2108fba944503dd5af7946195daf0457ccfb2c"
+  },
+  "manual": {
+    "pending": 41,
+    "open_fail": 0,
+    "new_npc": 4,
+    "unchanged_previous": 37,
+    "note": "No human acceptance inferred. Existing personal PASS provenance is unchanged."
+  },
+  "investigation": [
+    {
+      "log": {
+        "path": "artifacts/native-conversation-20261022/build-reader.log",
+        "sha256": "f098bbd868b85467f6f6398a28c1d13fc837c23f91fffc2e22e3dd1e73ee49e8"
+      },
+      "outcome": "Initial test fixture tried private known_to_u; removed the assignment and used its native default and canonical serialized field."
+    },
+    {
+      "log": {
+        "path": "artifacts/native-conversation-20261022/build-native-final.log",
+        "sha256": "d65c6897753a7668f9ce9e50973e2cf5a7a7cde07d3157334ee9aac3edc5d3f2"
+      },
+      "outcome": "Strict build rejected a temporary string reference in the inspection-label loop; corrected before final verification."
+    },
+    {
+      "log": {
+        "path": "artifacts/native-conversation-20261022/native-focused.log",
+        "sha256": "3a3506abe44412abab5c47f48c5bfe86a813c2308f7adc629193b97c5ace0bdc"
+      },
+      "outcome": "Two test setup errors: native time advances before input; command probe had no preexisting move credit. Fixed fixtures to test paused choice time and ensure executor entry."
+    },
+    {
+      "log": {
+        "path": "artifacts/native-conversation-20261022/gui.log",
+        "sha256": "108f71724d7ed920bdf66f849c3ed9e60f14b24b0b21d2df7c02e933849add7c"
+      },
+      "outcome": "Initial GUI script passed but screenshot showed an invalid scrollbar. Corrected the formspec; final run also uses real mouse scrolling/button selection and rejects parser errors."
+    }
+  ],
+  "limitations": [
+    "Dedicated native NPC trade remains planned; current trade requests explicitly cancel before restocking or transfer.",
+    "No certification of every NPC mission/EOC, camp, surgery, map selector or training interface.",
+    "History projection retains newest whole messages within 256 KiB with an explicit omission notice.",
+    "Historical M5.5 FAILED, full SAVE-001 OPEN and hidden statistical probes remain outside this scoped acceptance.",
+    "Existing Windows installer remains the previous CWM2.26 snapshot; only Linux runtimes updated.",
+    "Item mapping batch60 unchanged."
+  ],
+  "commands": [
+    "python3 tools/takeover_baseline.py capture",
+    "python3 tools/refresh_verification_workspace.py --workspace artifacts/fnd03-session/workspace --receipt <receipt>",
+    "python3 tools/refresh_verification_workspace.py --workspace artifacts/language-20261011/workspace --receipt <receipt>",
+    "cmake --build artifacts/fnd03-session/workspace/cdda/build --target cdda-server cata_test -j4",
+    "cmake --build artifacts/language-20261011/workspace/luanti/build --target luanti -j3",
+    "cmake --build artifacts/language-20261011/workspace/build/protocol -j3",
+    "ctest --test-dir artifacts/language-20261011/workspace/build/protocol --output-on-failure",
+    "cd artifacts/fnd03-session/workspace/cdda && CDDA_LOCALE_DIR=\"$PWD/lang/mo\" ./build/tests/cata_test <recorded filter> --rng-seed 42 --user-dir=<isolated absolute path>",
+    "artifacts/language-20261011/workspace/luanti/bin/luanti --run-unittests --logfile <isolated log>",
+    "python3 tests/product_language_test.py; python3 tests/product_language_registry_test.py",
+    "python3 tools/build_native_save_reader.py --pristine-cdda artifacts/m5.5/20261003-takeover/pristine-cdda --workspace . --output artifacts/native-conversation-20261022/native-save-reader --strip-debug",
+    "artifacts/native-conversation-20261022/native-save-reader --create-conversation --userdir <isolated userdir> --datadir cdda/data/ --output <before.json>",
+    "python3 artifacts/native-conversation-20261022/run-gui.py conversation_gui_test.py artifacts/native-conversation-20261022/fixture/user conversation-gui-final",
+    "CWM_TEST_INSTALLED=1 python3 artifacts/native-conversation-20261022/run-gui.py conversation_gui_test.py artifacts/native-conversation-20261022/fixture/user installed-conversation",
+    "python3 tools/takeover_baseline.py check"
+  ],
+  "environment": {
+    "kernel": "Linux 7.0.11-76070011-generic",
+    "compiler": "c++ (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0",
+    "cmake": "cmake version 3.22.1",
+    "flatc": "flatc version 24.3.25"
+  }
+}

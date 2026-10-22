@@ -19,11 +19,15 @@ Windows 11 x64: the local installer is generated as
 [Windows build instructions](tools/windows/README.md). Real Windows hardware
 acceptance is recorded separately from automated Wine verification.
 
-Current Linux slice: [native item disassembly](docs/fixes/native-disassembly.md),
-including interruption, resume and canonical persistence, is available in
-`./start.sh`. NPC conversation/trade interfaces remain planned; visible NPCs
-do not yet have a working talk control. The Windows installer above remains
-its previously verified snapshot.
+Current Linux slice: [native NPC conversations](docs/fixes/native-conversation.md)
+are available in `./start.sh`: point at a perceived, non-hostile NPC and
+**right-click**. Native choices pause time, with current text, transcript and
+social trials. `./conversation-demo.sh --fresh` opens an isolated NPC scene.
+Dedicated NPC trading remains planned; its current option explicitly cancels.
+[Native item disassembly](docs/fixes/native-disassembly.md), including resume
+and canonical persistence, remains available. Human rechecks are separately
+pending in the ledger. The Windows installer above remains its previous
+CWM2.26 snapshot; this delivery updates Linux to CWM2.28.
 
 This project aims to merge the 2D turn based videogame Cataclysm Dark Days Ahead(CDDA) with the 3D voxel real time game Mineclonia(as the name suggests, an open source minecraft clone) with the goal to provide CDDA with a 3D voxel engine.
 FAQ

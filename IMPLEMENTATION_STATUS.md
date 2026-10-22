@@ -1,28 +1,38 @@
 # Implementation status
 
-Current scoped delivery: **native single-item disassembly**, CWM **2.27**,
-installed and checked in normal Linux `start.sh`. I → Disassemble / Resume;
-CDDA owns confirmations, requirements, actual work, interruption, recovery
-and canonical save/load. [Delivery](docs/fixes/native-disassembly.md),
-[contract](docs/design/native-disassembly.md),
-[exact evidence](docs/fixes/native-disassembly-evidence.json).
+Current scoped delivery: **native NPC conversations**, CWM **2.28**, installed
+and verified in normal Linux `start.sh`. Point at a perceived, non-hostile NPC
+and **right-click**. CDDA owns native text, response conditions/trials, topic
+entry effects, mission/training selections, opinion changes and the normal
+chat action cost. Choices pause simulation; the UI presents the current line,
+scrollable history and complete native responses. Esc/connection replacement
+safely leave an unanswered conversation; an already accepted response remains
+single execution. [Delivery](docs/fixes/native-conversation.md),
+[bounded contract](docs/design/native-conversation.md),
+[exact evidence](docs/fixes/native-conversation-evidence.json).
 
-**120 native cases / 72,540 assertions**, focused disassembly **5/6,800**;
-**309 client tests / 47 modules**, 648 Catch assertions / 4 cases;
-**14 protocol**, language **9**, registry **3**, and **48 actual renderer /
-canonical checks PASS**. Incremental captured builds, scoped evidence.
-Read-only queries preserve RNG; a data-wide native check verifies the default
-component-filter semantics. Rollback runtimes retained; mapping batch60 unchanged.
+**163 native cases / 73,220 assertions PASS**, including upstream NPC talk
+coverage; focused conversation **4 cases / 56 assertions PASS**. Client
+**309 tests / 47 modules**, 648 Catch assertions / 4 cases; protocol **14**,
+language **9**, registry **3**; **44 actual renderer/canonical checks PASS**,
+including repetition against the installed runtime pair. Native and graphical
+fixtures are isolated; the pinned, unmodified native core independently reads
+the resulting saves and confirms the same NPC identity and encounter state.
+These are incremental captured builds, not a new cold-build audit.
 
-**NPC conversations are not implemented:** friendly bump dialogue is explicitly
-blocked; there is no working talk control. Earlier native-dialog validations
-were activity confirmations/choices, not NPC conversation/trade/mission loops.
-That social slice remains open in Fase 4.6 and is the next core candidate.
+**41 PENDING**, no open manual FAIL: previous 37 unchanged plus four NPC-01
+checks in the shared ledger. No human acceptance inferred. Dedicated NPC trade
+is the next core slice: current trade choices explicitly cancel before any
+restocking or exchange. Mission journal, complete companion/service interfaces
+and broad NPC/EOC acceptance remain open in Fase4.6. Historical M5.5 FAILED and
+full SAVE-001 OPEN remain unchanged. Mapping batch60 is unchanged. The Windows
+installer remains the previously verified **CWM2.26 snapshot**; only Linux
+runtimes were updated in this delivery.
 
-**37 PENDING**, no open manual FAIL: previous 33 unchanged plus four deferred
-DIS-01 checks. No human acceptance inferred from automation. Historical M5.5
-FAILED and full SAVE-001 OPEN remain unchanged. The Windows installer is still
-the previous verified CWM2.26 snapshot; no new Windows binary is claimed here.
+Previous scoped delivery: [native single-item disassembly](docs/fixes/native-disassembly.md),
+including actual work, interruption, resume and canonical unfinished-item
+persistence. Its four human DIS-01 checks remain pending. The earlier statement
+that NPCs had no talk control described `bab8fe2` and is superseded by this slice.
 
 
 Previous requested delivery: **native Windows 11 x64 installer**, per-user and

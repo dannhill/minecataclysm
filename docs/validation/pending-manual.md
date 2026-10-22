@@ -1058,9 +1058,10 @@ Se CDDA posa l'incompleto su un banco o a terra, raccoglilo prima di riprenderlo
 con I. Durata e recupero dipendono dalle condizioni native; la demo usa una
 ricetta senza utensili aggiuntivi e senza rischio di recupero da difficoltà.
 
-## Chiarimento NPC — 2026-10-22
+## Chiarimento NPC precedente — snapshot bab8fe2, prima di NPC-01
 
-Nessun nuovo test personale oggi: **le conversazioni con gli NPC non sono
+Questa nota descriveva la build precedente ed è superata dalla consegna NPC-01
+qui sotto. In quel momento non c’era un nuovo test personale: **le conversazioni con gli NPC non sono
 ancora collegate alla GUI**. Non esiste un tasto funzionante per iniziarle.
 Il controllo nel runtime (`cwm_server.cpp`, movimento verso un NPC amichevole)
 restituisce esplicitamente “NPC interaction UI is not implemented yet”.

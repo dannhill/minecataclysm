@@ -10,6 +10,31 @@ un panorama più ampio; nebbia, memoria distante e rilievo restano da scegliere.
 Lo [stato implementato](IMPLEMENTATION_STATUS.md) e le evidenze restano separati
 dagli obiettivi. La roadmap originale M0–M9 conserva i propri significati.
 
+## Conversazioni NPC — 2026-10-22
+
+Fetta implementata e verificata: **destro su NPC non ostile percepito** per
+aprire la conversazione CDDA; testo corrente, storico, risposte native complete,
+prove sociali/conseguenze, voci native di osservazione e opinione. Il tempo si
+ferma durante le scelte. Esc o perdita/sostituzione della connessione escono
+senza scegliere una risposta nativa arbitraria; risposte già accettate si
+eseguono una sola volta. Effetti e salvataggi rimangono in CDDA.
+[Contratto e confini](docs/design/native-conversation.md),
+[consegna ed evidenze](docs/fixes/native-conversation.md).
+
+CWM2.28 installato in start.sh Linux: 163 casi nativi, 309 client, 14 protocollo
+e 44 controlli del renderer/salvataggio PASS. Quattro prove NPC-01 rinviate,
+**41 PENDING** totali; nessuna accettazione umana dedotta. Windows rimane alla
+fotografia CWM2.26 precedente. Questo non completa l'intera Fase4.6 o M5.5.
+
+**Prossimo passo core: commercio NPC nativo.** Query di inventari/offerta,
+quantità e due pannelli riusando le interazioni già disponibili. Prezzi,
+credito/debiti, proprietà, contenitori/capacità e conferma devono restare nativi;
+una proposta scaduta o un target cambiato va rivalidato, un retry non duplica
+lo scambio. Per ora la scelta di trade mostra un avviso e annulla prima di
+restock o trasferimenti. Successivamente diario/missioni note, comandi
+individuali e servizi dei compagni. Le schermate native speciali non adattate
+non vanno conteggiate come funzionalità complete per la sola apertura del dialogo.
+
 ## Smontaggio nativo e chiarimento NPC — 2026-10-22
 
 Fetta implementata: smontaggio di singoli oggetti posseduti tramite la vera
@@ -23,8 +48,8 @@ backlog, precedenti 33 invariati; nessuna accettazione umana inferita.
 Pile, liquidi e operazioni ricorsive restano separati. Il pacchetto Windows
 consegnato il 21 ottobre rimane una fotografia CWM2.26 fino a un nuovo rebuild.
 
-Chiarimento richiesto dall'utente: gli NPC sono visualizzati, ma i dialoghi
-NPC non sono implementati; il runtime rifiuta esplicitamente l'interazione.
+Chiarimento precedente, relativo a `bab8fe2` e superato dalla consegna NPC
+qui sopra: gli NPC erano visualizzati ma non avevano una conversazione collegata.
 I PASS dei “dialoghi nativi” precedenti sono conferme di attività, non
 conversazioni. Dialoghi, missioni e commercio restano Fase4.6: questa lacuna
 non va conteggiata come core già giocabile. Dopo lo smontaggio, valutare una
