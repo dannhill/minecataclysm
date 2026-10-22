@@ -1526,6 +1526,21 @@ index 183628b..a767b51 100644
      } else {
          option = STASH;
      }
+diff --git a/src/player_activity.h b/src/player_activity.h
+index 6da4259..2b286b1 100644
+--- a/src/player_activity.h
++++ b/src/player_activity.h
+@@ -114,6 +114,10 @@ class player_activity
+         const activity_id &id() const {
+             return type;
+         }
++        // Read-only access for semantic activity projections; ownership stays here.
++        const activity_actor *get_actor() const {
++            return actor.get();
++        }
+         bool rooted() const;
+ 
+         // Question to ask when the activity is to be stopped,
 diff --git a/src/ranged.cpp b/src/ranged.cpp
 index 6973ff1..352b6b2 100644
 --- a/src/ranged.cpp
@@ -2164,7 +2179,7 @@ index 0000000..d94c308
 +} // namespace cwm
 diff --git a/src/cwm/cwm_disassembly.h b/src/cwm/cwm_disassembly.h
 new file mode 100644
-index 0000000..ba970a3
+index 0000000..b8ea173
 --- /dev/null
 +++ b/src/cwm/cwm_disassembly.h
 @@ -0,0 +1,50 @@
@@ -2184,7 +2199,7 @@ index 0000000..ba970a3
 +namespace cwm {
 +inline item_location active_disassembly(const avatar& u) {
 +    if (u.activity.id() != activity_id("ACT_DISASSEMBLE")) return {};
-+    const auto* actor = u.activity.actor ? dynamic_cast<const disassemble_activity_actor*>(u.activity.actor.get()) : nullptr;
++    const auto* actor = dynamic_cast<const disassemble_activity_actor*>(u.activity.get_actor());
 +    return actor && actor->target ? actor->target : item_location{};
 +}
 +inline const recipe& disassembly_recipe(const item& it) {

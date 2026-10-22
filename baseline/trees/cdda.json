@@ -37327,7 +37327,7 @@
   {
     "path": "src/cwm/cwm_disassembly.h",
     "mode": "100644",
-    "sha256": "d18e5b886f15fb9b6f8d23d393c28a72bd9ef23d1fca1ff92cba54255114f552"
+    "sha256": "b3f1483761a16e65d2f9522d921a5c9efc3de97fc7a107de2f23ba869b9d53c1"
   },
   {
     "path": "src/cwm/cwm_hotbar.h",
@@ -39327,7 +39327,7 @@
   {
     "path": "src/player_activity.h",
     "mode": "100644",
-    "sha256": "0788c4f7222761248032de3c0c152a41d792c600ea967190931c5694e1c8dbba"
+    "sha256": "502fe0cea4dfebc7c367cff7351070f2b0ad6fe85854c682d9d20847fe7cc876"
   },
   {
     "path": "src/player_difficulty.cpp",
