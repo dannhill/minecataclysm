@@ -9969,10 +9969,10 @@ index 0000000..39d991c
 +}
 diff --git a/tests/cwm_runtime_test.cpp b/tests/cwm_runtime_test.cpp
 new file mode 100644
-index 0000000..3fefa10
+index 0000000..4370855
 --- /dev/null
 +++ b/tests/cwm_runtime_test.cpp
-@@ -0,0 +1,660 @@
+@@ -0,0 +1,661 @@
 +#include "cwm_motion.h"
 +#include "cata_catch.h"
 +#include "avatar.h"
@@ -10632,4 +10632,5 @@ index 0000000..3fefa10
 +    CHECK(npc_trading::npc_can_fit_items(np,{{loc,1}}));
 +    CHECK_FALSE(npc_trading::npc_can_fit_items(np,{{loc,200000}}));
 +    CHECK(npc_trading::npc_will_accept_trade(np,INT_MAX));
++    CHECK_FALSE(npc_trading::npc_will_accept_trade(np,-INT_MAX));
 +}

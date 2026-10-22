@@ -1,5 +1,11 @@
 # Validazioni manuali del playable core
 
+Commercio NPC (2026-10-22): **45 PENDING, nessun FAIL manuale aperto**.
+I precedenti 41 punti restano invariati; quattro nuove prove TRADE-01 sono
+rinviabili. Le verifiche automatiche e le immagini ispezionate dall'agente
+non costituiscono un PASS umano. La vecchia limitazione trade di NPC-01 è
+superata da questa consegna, senza accettare automaticamente i suoi test.
+
 Conversazioni NPC (2026-10-22): **41 PENDING, nessun FAIL manuale aperto**.
 I precedenti 37 punti rimangono invariati; quattro nuove prove NPC-01 sono
 rinviabili. Le prove automatiche non sono un'accettazione umana. Il chiarimento
@@ -1100,3 +1106,35 @@ Le risposte con prove sociali e avvisi di ostilità sono native: possono fallire
 per statistiche e condizioni del personaggio. Non occorre riuscire in una prova
 per validare l'interfaccia. Scambi, diario missioni e servizi NPC complessi
 restano fette successive; non si deduce che siano implementati da questi PASS.
+
+
+## TRADE-01 — Scambio NPC nativo — 4 PENDING
+
+`./trade-demo.sh --fresh` crea una sessione isolata: NPC direttamente davanti,
+benda e lampada in vendita, due pile di munizioni da 20 e 30 e credito nativo
+iniziale. Funziona anche nella partita normale da `./start.sh`, con NPC nativi
+non ostili percepiti. Non usare i tuoi save ordinari per le prove distruttive.
+
+1. **PENDING** — Destro sull'NPC, scegli la risposta per commerciare. Due
+   pannelli con icone, nomi/tooltip, quantità e saldo; tempo fermo. Seleziona
+   qualcosa, poi **Annulla** o **Esc**: nessun trasferimento o debito variato.
+   Riapri e verifica che l'offerta non sia già selezionata.
+2. **PENDING** — Richiedi la benda e offri 5 munizioni dalla pila da 30,
+   trascinandola nell'altro pannello o usando quantità/**Aggiorna offerta**.
+   **Rivedi e conferma**: prima rispondi **No**, l'offerta rimane modificabile;
+   poi **Sì**. Benda ricevuta una volta, pila da 20 intatta, pila da 30 ridotta
+   a 25 e saldo aggiornato. Shift-clic propone/rimuove l'intera pila; la
+   selezione da sola non trasferisce nulla.
+3. **PENDING** — Prova quantità oltre il disponibile e, quando il credito non
+   basta, una richiesta troppo costosa: motivo visibile, nessuno scambio. Selezionare
+   contenitore e suo contenuto insieme deve essere rifiutato. Esc da un'offerta
+   e No dalla conferma non devono bloccare il gioco. F7 già attivo non deve
+   accodare una conversazione/scambio da eseguire appena riprende il tempo.
+4. **PENDING** — Dopo uno scambio esci e riapri `./trade-demo.sh` senza
+   `--fresh`: oggetti, quantità e debito persistono, nessuna copia aggiuntiva.
+   Riaprire e annullare altre offerte non ripete lo scambio precedente.
+
+L'apertura usa il restock/riordino nativo del venditore: annullare evita lo
+scambio, non annulla questi effetti nativi di apertura. La prima fetta non
+certifica tutti i mercanti/mod/EOC o servizi speciali. I PASS NPC precedenti
+restano distinti dalle nuove prove TRADE-01. Nessun gate manuale richiesto oggi.

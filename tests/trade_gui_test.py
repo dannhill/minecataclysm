@@ -280,6 +280,19 @@ def main():
             bandage=entry(v,'bandages',True);v=offer(v,bandage,1)
             check('proposal_updates_native_quote_without_running_clock',v.TheirValue()>0 and latest()['simulation_time']==frozen and v.Entries(bandage.Id()-1).Selected()==1)
             check('native_price_and_balance_exported',v.Balance()==100000-v.TheirValue() and v.RememberedBalance()==v.Balance() and v.CanConfirm())
+            # Send invalid proposals through the same byte relay/session.
+            # They are protocol probes, not alternate gameplay simulation.
+            def invalid_offer(quantity,quote):
+                import flatbuffers,struct
+                from CDDA.CWM import TradeOfferRequest as O,CwmMessage as E
+                b=flatbuffers.Builder(256);O.Start(b);O.AddRequestId(b,900000);O.AddTradeId(b,v.TradeId());O.AddQuoteId(b,quote);O.AddEntryId(b,bandage.Id());O.AddQuantity(b,quantity);payload=O.End(b)
+                E.Start(b);E.AddSequenceNumber(b,1);E.AddWorldRevision(b,int(latest()['revision']));E.AddPayloadType(b,Payload.TradeOfferRequest);E.AddPayload(b,payload);E.AddSessionId(b,int(latest()['session_id']));E.AddPlayerId(b,int(latest()['player_id']));E.AddConnectionId(b,int(latest()['connection_id']));b.Finish(E.End(b))
+                count=len(messages(Payload.TradeView));data=bytes(b.Output());injections.put(struct.pack('>I',len(data))+data);wait_wire(Payload.TradeView,count)
+                return trade_view()
+            rejected=invalid_offer(bandage.Available()+1,v.QuoteId())
+            check('excess_quantity_rejects_without_editing_offer',rejected.QuoteId()==v.QuoteId() and rejected.Entries(bandage.Id()-1).Selected()==1 and bool(rejected.Error()))
+            rejected=invalid_offer(0,v.QuoteId()-1)
+            check('stale_quote_rejects_without_editing_offer',rejected.QuoteId()==v.QuoteId() and rejected.Entries(bandage.Id()-1).Selected()==1 and bool(rejected.Error()))
             count=len(messages(Payload.TradeClosed));click(2.5,11.4);wait_wire(Payload.TradeClosed,count);settle()
             check('cancel_offer_returns_to_game_without_confirmation',proc.poll() is None)
             v=open_trade();bandage=entry(v,'bandages',True)
