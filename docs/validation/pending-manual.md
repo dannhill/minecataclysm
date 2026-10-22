@@ -1,5 +1,9 @@
 # Validazioni manuali del playable core
 
+Smontaggio nativo (2026-10-22): **37 PENDING, nessun FAIL manuale aperto**.
+I precedenti 33 punti sono invariati; si aggiungono quattro prove DIS-01
+rinviabili. Nessun PASS umano viene dedotto dalle verifiche automatiche.
+
 Distribuzione Windows 11 (2026-10-21): **33 PENDING, nessun FAIL manuale
 aperto**. I precedenti 30 punti rimangono invariati; si aggiungono tre prove
 WIN-01 su un PC Windows reale. Cross-compilazione e prove Wine sono automatiche
@@ -1020,3 +1024,41 @@ proprie prove LANG-02 e non eredita questo PASS.
    da Windows e verifica che `%LOCALAPPDATA%\Minecataclysm` conservi salvataggi
    e log. Reinstalla e controlla che la stessa partita si carichi. Non cancellare
    quella cartella per disinstallare il programma.
+
+
+## DIS-01 — Smontaggio nativo — 4 PENDING
+
+`./disassembly-demo.sh --fresh` crea una copia isolata: fasce per piedi in
+pelliccia sintetica, lampada e zaino. Stesse azioni nel normale `./start.sh`
+con oggetti smontabili realmente posseduti. Non occorre fare queste prove ora.
+
+1. **PENDING — Consulta e annulla.** I → seleziona le fasce → Smonta / Disassemble.
+   Durante la consultazione il tempo resta fermo. Rifiuta la conferma nativa:
+   oggetto ancora presente, nessun componente prodotto. F7 deve impedire
+   l'avvio, senza eseguirlo dopo la ripresa.
+2. **PENDING — Lavoro e pausa.** Conferma lo smontaggio: compare il progresso.
+   Apri I durante il lavoro: progresso e mondo fermi. Chiudi I: riprende.
+   Non è un'azione istantanea: il tempo e i requisiti sono quelli di CDDA.
+3. **PENDING — Interrompi e riprendi.** I → Interrompi smontaggio. Rimane un
+   oggetto di smontaggio incompleto. Selezionalo → Riprendi smontaggio:
+   conserva il progresso già fatto. A fine lavoro appaiono nelle vicinanze
+   due pezze di pelliccia sintetica; il vecchio oggetto non deve duplicarsi.
+4. **PENDING — Salva e ricarica.** In una nuova demo avvia lo smontaggio e
+   chiudi il gioco durante il lavoro. Rilancia senza `--fresh`: riprende il
+   lavoro nativo, con progresso conservato e un solo risultato. Il menu I
+   non viene salvato come pausa, coerentemente con lettura e crafting.
+
+Questa fetta non include pile di munizioni, liquidi o smontaggio ricorsivo.
+Se CDDA posa l'incompleto su un banco o a terra, raccoglilo prima di riprenderlo
+con I. Durata e recupero dipendono dalle condizioni native; la demo usa una
+ricetta senza utensili aggiuntivi e senza rischio di recupero da difficoltà.
+
+## Chiarimento NPC — 2026-10-22
+
+Nessun nuovo test personale oggi: **le conversazioni con gli NPC non sono
+ancora collegate alla GUI**. Non esiste un tasto funzionante per iniziarle.
+Il controllo nel runtime (`cwm_server.cpp`, movimento verso un NPC amichevole)
+restituisce esplicitamente “NPC interaction UI is not implemented yet”.
+Le precedenti prove PASS dei “dialoghi nativi” riguardano conferme e scelte di
+oggetti/attività, non conversazioni, missioni o commercio. Questi ultimi
+restano nella Fase 4.6 della roadmap e richiederanno una consegna distinta.

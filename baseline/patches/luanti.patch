@@ -1625,7 +1625,7 @@ index 5d6b891..d50c79f 100644
  		g_settings->getFlagStr("anticheat_flags", flagdesc_anticheat, nullptr);
  
 diff --git a/src/unittest/test_mapblock.cpp b/src/unittest/test_mapblock.cpp
-index 7f3f860..142a710 100644
+index 7f3f860..1592f02 100644
 --- a/src/unittest/test_mapblock.cpp
 +++ b/src/unittest/test_mapblock.cpp
 @@ -10,6 +10,17 @@
@@ -1664,7 +1664,7 @@ index 7f3f860..142a710 100644
  };
  
  static TestMapBlock g_test_instance;
-@@ -44,9 +64,248 @@ void TestMapBlock::runTests(IGameDef *gamedef)
+@@ -44,9 +64,258 @@ void TestMapBlock::runTests(IGameDef *gamedef)
  	TEST(testSave29, gamedef);
  	TEST(testLoad29, gamedef);
  	TEST(testLoad20, gamedef);
@@ -1779,6 +1779,16 @@ index 7f3f860..142a710 100644
 +    reading=equipmentForm(view,0,2,"",0,"",[](const auto&) { return "known:book"; },42);
 +    UASSERT(reading.find(";action_6;")==std::string::npos); // No overlap with Interrupt.
 +    UASSERT(reading.find(";cancel_consume;")!=std::string::npos);
++    book.disassembly=true;book.actions|=128;book.disassembly_moves=9000;
++    auto disassembly=equipmentForm(view,0,2,"",0,"",[](const auto&) { return "known:book"; });
++    UASSERT(disassembly.find(";action_7;Disassemble...]")!=std::string::npos);
++    UASSERT(disassembly.find(";action_6;Read...]")!=std::string::npos);
++    book.disassembly_resume=true;book.disassembly_progress=1234567;
++    disassembly=equipmentForm(view,0,2,"",0,"",[](const auto&) { return "known:book"; });
++    UASSERT(disassembly.find(";action_7;Resume disassembly]")!=std::string::npos);
++    disassembly=equipmentForm(view,0,2,"",0,"",[](const auto&) { return "known:book"; },42,false,false,false,false,false,false,0,false,1,false,false,true);
++    UASSERT(disassembly.find(";action_7;")==std::string::npos);
++    UASSERT(disassembly.find(";cancel_consume;Interrupt disassembly]")!=std::string::npos);
 +}
 +
 +void TestMapBlock::testCddaBodyStatusEscaping()

@@ -2179,16 +2179,17 @@ index 0000000..d94c308
 +} // namespace cwm
 diff --git a/src/cwm/cwm_disassembly.h b/src/cwm/cwm_disassembly.h
 new file mode 100644
-index 0000000..b8ea173
+index 0000000..618210b
 --- /dev/null
 +++ b/src/cwm/cwm_disassembly.h
-@@ -0,0 +1,50 @@
+@@ -0,0 +1,61 @@
 +#pragma once
 +#include "avatar.h"
 +#include "activity_actor_definitions.h"
 +#include "item.h"
 +#include "itype.h"
 +#include "inventory.h"
++#include "crafting.h"
 +#include "recipe_dictionary.h"
 +#include "output.h"
 +#include "cwm/cwm_protocol.hpp"
@@ -2205,8 +2206,18 @@ index 0000000..b8ea173
 +inline const recipe& disassembly_recipe(const item& it) {
 +    return it.typeId() == itype_id("disassembly") ? it.get_making() : recipe_dictionary::get_uncraft(it.typeId());
 +}
-+inline std::string disassembly_error(avatar& u, const item& it) {
-+    const auto allowed = u.can_disassemble(it, u.crafting_inventory());
++inline inventory disassembly_sources(avatar& u) {
++    // Read-only concrete sources: native crafting_inventory() can generate
++    // randomized water/pseudo items and cache them during inspection.
++    inventory sources; sources.form_from_map(u.pos(), PICKUP_RANGE, &u, false, true, false);
++    for (const auto& loc : u.all_items_loc()) sources.add_item(*loc, false, false);
++    for (const auto* pseudo : u.get_pseudo_items()) sources.add_item(*pseudo, false, false);
++    return sources;
++}
++inline std::string disassembly_error(avatar& u, const item& it, const inventory* supplied = nullptr) {
++    if (!it.is_disassemblable()) return ::cwm::tr("You cannot disassemble this.", "Non puoi smontare questo oggetto.");
++    const auto sources = supplied ? inventory{} : disassembly_sources(u);
++    const auto allowed = u.can_disassemble(it, supplied ? *supplied : sources);
 +    if (!allowed.success()) return remove_color_tags(allowed.str());
 +    const bool resume = it.typeId() == itype_id("disassembly");
 +    if ((!resume && it.count_by_charges()) || (resume && it.get_making_batch_size() != 1))
@@ -2346,10 +2357,10 @@ index 0000000..0866007
 +} // namespace cwm
 diff --git a/src/cwm/cwm_inventory.h b/src/cwm/cwm_inventory.h
 new file mode 100644
-index 0000000..643413e
+index 0000000..078e363
 --- /dev/null
 +++ b/src/cwm/cwm_inventory.h
-@@ -0,0 +1,337 @@
+@@ -0,0 +1,338 @@
 +#pragma once
 +#include "cwm/product_language.hpp"
 +#include <algorithm>
@@ -2437,7 +2448,7 @@ index 0000000..643413e
 +        }
 +        return {};
 +    }
-+    static std::string action_error(avatar& u, item_location location, int action) {
++    static std::string action_error(avatar& u, item_location location, int action, const inventory* tools = nullptr) {
 +        if (!location || !location.held_by(u) || !u.has_item(*location))
 +            return ::cwm::tr("Item is no longer owned.", "Oggetto non piu posseduto.");
 +        if (action < 0 || action > 7) return ::cwm::tr("Equipment action is unsupported.", "Azione equipaggiamento non supportata.");
@@ -2445,7 +2456,7 @@ index 0000000..643413e
 +        const auto access = access_error(location);
 +        if (!access.empty()) return access;
 +        if (action == 6) return reading_error(u, *location);
-+        if (action == 7) return disassembly_error(u, *location);
++        if (action == 7) return disassembly_error(u, *location, tools);
 +        const bool worn = u.is_worn(*location), wielded = u.is_wielding(*location);
 +        if (action == 0) {
 +            if (wielded) return ::cwm::tr("Item is already wielded.", "Oggetto gia impugnato.");
@@ -2610,6 +2621,7 @@ index 0000000..643413e
 +                external_=external; const auto pos=external_position(); auto& m=get_map();
 +                external_terrain_=m.ter(pos).id().str();external_furniture_=m.furn(pos).id().str();
 +            }
++            const auto disassembly_tools = disassembly_sources(u);
 +            std::map<item*, uint32_t> ids;
 +            bool exporting_external=false;
 +            const auto append = [&](item* it, item* parent) {
@@ -2631,7 +2643,7 @@ index 0000000..643413e
 +                uint8_t actions = 0;
 +                std::vector<flatbuffers::Offset<flatbuffers::String>> reasons;
 +                for (int action = 0; action < 8; ++action) {
-+                    const auto reason = action_error(u, location, action);
++                    const auto reason = action_error(u, location, action, &disassembly_tools);
 +                    if (reason.empty()) actions |= 1 << action;
 +                    reasons.push_back(fbb.CreateString(reason));
 +                }
@@ -5776,10 +5788,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..3d888e5
+index 0000000..a5a0eda
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,2286 @@
+@@ -0,0 +1,2290 @@
 +#include "cata_catch.h"
 +#include "translations.h"
 +#include "options.h"
@@ -7993,6 +8005,10 @@ index 0000000..3d888e5
 +
 +TEST_CASE("cwm_disassembly_inspection_is_readonly_and_preserves_rng", "[cwm][disassembly]") {
 +    auto target=reading_fixture("footrags_faux_fur"); avatar& u=get_avatar();
++    SECTION("ordinary dry inventory") {}
++    SECTION("near randomized environmental water") {
++        get_map().ter_set(u.pos()+tripoint_east,ter_str_id("t_water_sh"));
++    }
 +    const auto clock=calendar::turn; const auto rng=rng_get_engine();const int moves=u.moves;
 +    cwm::InventorySelection selection;cdda::cwm::MessageBuilder wire(1,1,{101,102,103});
 +    auto bytes=selection.query(u,1,wire);

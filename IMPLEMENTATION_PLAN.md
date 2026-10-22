@@ -10,6 +10,24 @@ un panorama più ampio; nebbia, memoria distante e rilievo restano da scegliere.
 Lo [stato implementato](IMPLEMENTATION_STATUS.md) e le evidenze restano separati
 dagli obiettivi. La roadmap originale M0–M9 conserva i propri significati.
 
+## Smontaggio nativo e chiarimento NPC — 2026-10-22
+
+Prossima fetta: smontaggio di singoli oggetti posseduti tramite la vera
+ACT_DISASSEMBLE, progresso dell'incompleto, conferme, pausa, interruzione,
+ripresa e persistenza canonica. [Contratto](docs/design/native-disassembly.md).
+CWM2.27 richiede una coppia abbinata. Quattro prove DIS-01 rinviate nel
+backlog, precedenti 33 invariati; nessuna accettazione umana inferita.
+Pile, liquidi e operazioni ricorsive restano separati. Il pacchetto Windows
+consegnato il 21 ottobre rimane una fotografia CWM2.26 fino a un nuovo rebuild.
+
+Chiarimento richiesto dall'utente: gli NPC sono visualizzati, ma i dialoghi
+NPC non sono implementati; il runtime rifiuta esplicitamente l'interazione.
+I PASS dei “dialoghi nativi” precedenti sono conferme di attività, non
+conversazioni. Dialoghi, missioni e commercio restano Fase4.6: questa lacuna
+non va conteggiata come core già giocabile. Dopo lo smontaggio, valutare una
+fetta dedicata di conversazione NPC prima di dichiarare completo il ciclo
+sociale; non dedurre il completamento dalla sola presenza del modello NPC.
+
 ## Cambio lingua a caldo — 2026-10-18
 
 L'utente accetta l'avviso precedente e chiede di eliminare il riavvio.

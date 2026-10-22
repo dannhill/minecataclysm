@@ -6,10 +6,21 @@ captured implementation; it does not approve its gaps. The executable schema
 is [cwm.fbs](cwm.fbs). Audit findings and evidence are in
 [M5.5](../docs/audits/M5.5.md).
 
-The current runtime requires **CWM 2.26**. This breaks the old negotiation
+The current runtime requires **CWM 2.27**. This breaks the old negotiation
 contract; schema fields and union members are appended without changing the
 existing FlatBuffers offsets. Both executables must be rebuilt together.
 The historical coverage table below is retained as audit evidence.
+
+CWM 2.27 appends `CancelDisassemblyRequest` (49),
+`EquipmentAction.DISASSEMBLE` (7), an eighth inventory action/reason,
+`InventoryEntry.disassembly` and `WorldSnapshot.disassembly`. The state
+projects the native ACT_DISASSEMBLE actor's exact work-item counter, bounded
+0–10,000,000, with a session activity token and display name. It is exclusive
+with the other activity states; typed cancellation checks kind/generation.
+Queries export native estimated work, resume status and paid progress without
+creating items or sampling yields. Item handles, validation, ledger and
+recovery remain shared. Canonical item/actor persistence is unchanged.
+See [the bounded first slice](../docs/design/native-disassembly.md).
 
 CWM 2.26 appends `LanguageRequest` (47) and `LanguageState` (48).
 Request IDs are presentation correlations, separate from gameplay command IDs.
