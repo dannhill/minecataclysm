@@ -2223,10 +2223,10 @@ index 0000000..e1e7236
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..d43a662
+index 0000000..f6413ce
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,3455 @@
+@@ -0,0 +1,3458 @@
 +#include "cwm/product_language.hpp"
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
@@ -5418,9 +5418,12 @@ index 0000000..d43a662
 +    } else if (pimpl_->activity_token_ && pimpl_->activity_total_ > 0) work_text += L"  " + std::to_wstring(
 +        std::clamp(100 - int(100.0 * pimpl_->activity_remaining_ / pimpl_->activity_total_), 0, 100)) + L"%";
 +    else work_text += pimpl_->inventory_work_settled_ ? (::cwm::wide(" — finished", " — conclusa")) : (::cwm::wide(" — waiting for CDDA", " — attesa di CDDA"));
-+    if(pimpl_->rest_token_)work_text+=L"\n"+::cwm::wide(pimpl_->rest_accelerated_?"Fast-forward · B: rest menu":"B: rest menu");
++    if(pimpl_->rest_token_)work_text+=L"\n"+std::wstring(pimpl_->rest_accelerated_ ? ::cwm::wide("Fast-forward · ") : L"")+
++        utf8_to_wide(getKeySetting("keymap_cdda_rest").name())+::cwm::wide(": rest menu");
 +    if(pimpl_->reading_ && !pimpl_->reading_progress_.empty())work_text+=L"\n"+utf8_to_wide(pimpl_->reading_progress_);
-+    work_text += (L"\n" + ::cwm::wide("I: inspect (pauses) · Esc: hide this panel", "I: consulta (pausa) · Esc: nascondi questo pannello"));
++    work_text += L"\n" + (pimpl_->rest_token_ ?
++        ::cwm::wide("I: inspect (pauses) · Esc: pause menu", "I: consulta (pausa) · Esc: menu di pausa") :
++        ::cwm::wide("I: inspect (pauses) · Esc: hide this panel", "I: consulta (pausa) · Esc: nascondi questo pannello"));
 +    pimpl_->inventory_work_text_->setText(work_text.c_str());
 +    pimpl_->inventory_work_text_->setVisible((pimpl_->rest_token_ || pimpl_->inventory_work_command_ ||
 +        ((pimpl_->reading_ || pimpl_->disassembling_) && !pimpl_->reading_panel_hidden_)) && pimpl_->session_.ready() &&
