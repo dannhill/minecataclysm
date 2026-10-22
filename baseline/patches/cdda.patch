@@ -10100,10 +10100,10 @@ index 0000000..39d991c
 +}
 diff --git a/tests/cwm_runtime_test.cpp b/tests/cwm_runtime_test.cpp
 new file mode 100644
-index 0000000..46921e6
+index 0000000..cb3ee64
 --- /dev/null
 +++ b/tests/cwm_runtime_test.cpp
-@@ -0,0 +1,714 @@
+@@ -0,0 +1,719 @@
 +#include "cwm_motion.h"
 +#include "cata_catch.h"
 +#include "avatar.h"
@@ -10778,9 +10778,13 @@ index 0000000..46921e6
 +}
 +TEST_CASE("cwm_journal_queries_only_known_native_histories_without_effects", "[cwm][journal]") {
 +    prepare_runtime();auto& u=get_avatar();u.setID(character_id(101),false);u.reset_all_missions();mission::clear_all();
++    const bool watch=GENERATE(false,true);
++    if(watch)REQUIRE(u.wear_item(item(itype_id("watch")),false));
++    REQUIRE(u.has_watch()==watch);
 +    int evaluated=0;
 +    mission_type kind=*mission_type::get(mission_type_id("MISSION_GET_FLAG"));
 +    kind.start=[](mission*){};kind.end=[](mission*){};kind.fail=[](mission*){};
++    kind.deadline_low=3_hours;kind.deadline_high=3_hours;
 +    kind.goal=MGOAL_CONDITION;kind.goal_condition=[&](dialogue&){++evaluated;return true;};
 +    auto make=[&](bool assigned) {
 +        auto value=kind.create(character_id(999));mission::add_existing(value);auto* m=mission::find(value.get_id());
@@ -10797,6 +10801,7 @@ index 0000000..46921e6
 +        REQUIRE(cdda::cwm::MessageVerifier::verify(bytes.data(),bytes.size()));
 +        auto* v=CDDA::CWM::GetCwmMessage(bytes.data())->payload_as_MissionView();REQUIRE(cdda::cwm::valid_missions(v));
 +        REQUIRE(v->entries()->size()==4);CHECK(v->tracked_id()==second->get_id());
++        CHECK(v->entries()->Get(0)->remaining()->str()==(watch?to_string(first->get_deadline()-calendar::turn):to_string_approx(first->get_deadline()-calendar::turn)));
 +        for(const auto* e:*v->entries())CHECK(e->id()!=hidden->get_id());
 +        CHECK(v->entries()->Get(0)->id()==first->get_id());CHECK(v->entries()->Get(1)->target()->z()==-2);
 +        CHECK(v->entries()->Get(2)->state()==CDDA::CWM::MissionState::COMPLETED);CHECK(v->entries()->Get(3)->state()==CDDA::CWM::MissionState::FAILED);
