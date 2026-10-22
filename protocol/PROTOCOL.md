@@ -6,10 +6,17 @@ captured implementation; it does not approve its gaps. The executable schema
 is [cwm.fbs](cwm.fbs). Audit findings and evidence are in
 [M5.5](../docs/audits/M5.5.md).
 
-The current runtime requires **CWM 2.30**. This breaks the old negotiation
+The current runtime requires **CWM 2.31**. This breaks the old negotiation
 contract; schema fields and union members are appended without changing the
 existing FlatBuffers offsets. Both executables must be rebuilt together.
 The historical coverage table below is retained as audit evidence.
+
+CWM 2.31 appends `ConversationInfo.companion_controls`. It identifies a native
+individual order/rule subflow carried by existing bounded decision prompts.
+Choices remain native decision indices with the same connection/decision
+fencing and safe final exit. No new rule command, AI model, widget ID or save
+format is introduced. The flag selects a compact control layout; pagination
+does not regenerate native topic effects. [Companion contract](../docs/design/native-companions.md).
 
 CWM 2.30 appends `MissionQueryRequest` (56), `MissionView` (57) and
 `MissionTrackRequest` (58). Queries export only the avatar's known native

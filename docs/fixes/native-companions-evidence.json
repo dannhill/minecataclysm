@@ -1,0 +1,375 @@
+{
+  "scope": "Individual local-ally native companion orders/rules, explicit base/effective/temporary settings, actual AI follow/guard and canonical persistence",
+  "date": "2026-10-22",
+  "source_commit": "9adf6faa3cd1cf55eb54bb73e95b32c4c6bca0eb",
+  "production_capture_commit": "9adf6faa3cd1cf55eb54bb73e95b32c4c6bca0eb",
+  "client_build_capture_commit": "f193aa6622d95c8b77303f9e7fc0b93e575cbce8",
+  "build_mode": "Incremental captured reconstructions retaining caches; affected native server/test units rebuilt at final capture. Client production tree and SDK unchanged after initial captured build. Reader links unmodified pinned native core. Not a cold-build conformance audit.",
+  "source_trees": {
+    "cdda": {
+      "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+      "patch_sha256": "c33470e369ef91ed01e8290aaea45685148af7d61e75785886a0d090b98ddd17",
+      "tree_sha256": "d678a06e8f35a77782e5f589f8dee9bdd499768ccd7a7ea18cbe578815af7252"
+    },
+    "luanti": {
+      "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
+      "patch_sha256": "1d4348dc9518448b9b1df22a03413011a8980bd920f8413eadc442880018349f",
+      "tree_sha256": "c722dc4b405ae285dd5607020472a68cf5e8485b08d075a573f94f265e561ca6"
+    },
+    "mineclonia": {
+      "commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36"
+    }
+  },
+  "environment": {
+    "kernel": "Linux 7.0.11-76070011-generic x86_64 GNU/Linux",
+    "compiler": "g++ 11.4.0",
+    "cmake": "3.22.1",
+    "python": "3.10.12",
+    "renderer": "Private Xvfb 1280x800x24, Mesa software OpenGL, OpenAL null, actual xdotool keyboard and mouse"
+  },
+  "native": {
+    "cases": 171,
+    "assertions": 73526,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-companions-20261022/test-native-release.log",
+      "sha256": "53498cdaec4067edbc92b12e76626f41bb475c737753f09f6e72c6290da16f24"
+    }
+  },
+  "client": {
+    "cases": 309,
+    "modules": 47,
+    "catch_cases": 4,
+    "catch_assertions": 648,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-companions-20261022/test-client.log",
+      "sha256": "ed3b6e9679d38b022213cbb3e318e728e8b3d15f8caa6a9adb10d9d23a0d2a1c"
+    }
+  },
+  "protocol": {
+    "cases": 16,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-companions-20261022/test-protocol.log",
+      "sha256": "1161dbe28d0ab22eeb346db23d4b611f2bcbf57be1e0910674057d9f24e8182d"
+    }
+  },
+  "launcher_language": {
+    "cases": 9,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-companions-20261022/test-language.log",
+      "sha256": "8601ad2a004f3fc3f9858ef171cb5353c423bd3828fad96e704007059c2d2ba0"
+    }
+  },
+  "language_registry": {
+    "cases": 3,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-companions-20261022/test-registry.log",
+      "sha256": "f153ce426e4beb64e31cb7832c9a1d857145f31e0b283d5065078aa7a0f1ea08"
+    }
+  },
+  "companion_presentation": {
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-companions-20261022/test-presentation.log",
+      "sha256": "34473866740f7869900a039129e9b9814339900b7fce426ad3da7c4796675b6a"
+    }
+  },
+  "renderer": {
+    "reconstructed_companion": {
+      "checks": 29,
+      "result": "PASS",
+      "checks_file": {
+        "path": "artifacts/native-companions-20261022/companion-release/checks.json",
+        "sha256": "4d2955a262b63b11725f5d738c2cc8d92eab54ade8eb05672d5f696d5ee0c6a8"
+      },
+      "summary": {
+        "path": "artifacts/native-companions-20261022/companion-release/summary.json",
+        "sha256": "7645bea0cf1f4607d7928b2b39c2d4662473a3c20b5597b3106912a41f6b416d"
+      },
+      "canonical_readback": {
+        "path": "artifacts/native-companions-20261022/companion-release/native.json",
+        "sha256": "945ee48e9c6220cbc310a195125e3f952d0b06f05f0dcc00bd2814cfdcdda651"
+      },
+      "screenshots": [
+        {
+          "path": "artifacts/native-companions-20261022/companion-release/companion-behavior.png",
+          "sha256": "17961bf12e41ea96ebc1f304994c9956acabe15999dafee9bb2d0cb5d5e443fd"
+        },
+        {
+          "path": "artifacts/native-companions-20261022/companion-release/companion-click-layout.png",
+          "sha256": "17d73b416a1cfa2418c6d0155723bc96b9f58bd7cbd74e6eb52574fce5013c7d"
+        },
+        {
+          "path": "artifacts/native-companions-20261022/companion-release/companion-combat.png",
+          "sha256": "44ad7fc66667ddc715d0dd8229a5f87c501d6e5851f5ea30cf179b2b5fb311a8"
+        },
+        {
+          "path": "artifacts/native-companions-20261022/companion-release/companion-following.png",
+          "sha256": "8ef60a022969479cbd02d53cce3f1d49d045d8cd9d7edfe7da29264e7eb40ce7"
+        },
+        {
+          "path": "artifacts/native-companions-20261022/companion-release/companion-guard.png",
+          "sha256": "db06a8d9cc1444e8fc59f82cf0792f5d84d4e7212e4f444a591583707aeacc60"
+        },
+        {
+          "path": "artifacts/native-companions-20261022/companion-release/companion-home.png",
+          "sha256": "0a97f30132d5bec6f8c0138ed6c11ef9fd00e2add1762b42d75d9882aab7eb21"
+        },
+        {
+          "path": "artifacts/native-companions-20261022/companion-release/companion-override.png",
+          "sha256": "7c4b93f3821cd208ea0199ca8679395c4d02527f7903d4ce1fe8417396838d17"
+        },
+        {
+          "path": "artifacts/native-companions-20261022/companion-release/companion-reconnected.png",
+          "sha256": "674b0c7178e3f2b5e9687a6346f6a07492e7469a586278b440627d5fb63cf29e"
+        },
+        {
+          "path": "artifacts/native-companions-20261022/companion-release/companion-return-to-game.png",
+          "sha256": "4715243bafedf13d2f377556bbc591059e2b57f79d57748fabd3a80d12f6db33"
+        }
+      ]
+    },
+    "installed_companion": {
+      "checks": 29,
+      "result": "PASS",
+      "checks_file": {
+        "path": "artifacts/native-companions-20261022/installed-companion/checks.json",
+        "sha256": "4d2955a262b63b11725f5d738c2cc8d92eab54ade8eb05672d5f696d5ee0c6a8"
+      },
+      "summary": {
+        "path": "artifacts/native-companions-20261022/installed-companion/summary.json",
+        "sha256": "fde2b6f4d34e249ad39229536694940c7df1b901b640ef98700716a31d62dd86"
+      },
+      "canonical_readback": {
+        "path": "artifacts/native-companions-20261022/installed-companion/native.json",
+        "sha256": "6863ae3efcaac1636d93c2f229e702c71b081b614d85582d686597e2b99ffb6c"
+      },
+      "screenshots": [
+        {
+          "path": "artifacts/native-companions-20261022/installed-companion/companion-behavior.png",
+          "sha256": "467150f8ad4f885c970189bce98ac71030be87add2c6369d4eb3872295d85cea"
+        },
+        {
+          "path": "artifacts/native-companions-20261022/installed-companion/companion-click-layout.png",
+          "sha256": "bd569913771e4e7b1fe4ba17c18006c7733cfce3bae24c40bbaee03482d758c4"
+        },
+        {
+          "path": "artifacts/native-companions-20261022/installed-companion/companion-combat.png",
+          "sha256": "52577f7b19f46590426e38ff8fab059359ba21f6c364e053714a68c7f16eaa2c"
+        },
+        {
+          "path": "artifacts/native-companions-20261022/installed-companion/companion-following.png",
+          "sha256": "01f4efeeb7dd38f385e6661b283ff3c9431436bea796f5ff0d21e8b1e0d8d858"
+        },
+        {
+          "path": "artifacts/native-companions-20261022/installed-companion/companion-guard.png",
+          "sha256": "7ab7ad241f0344637a2232d6c381cee9fb208d459336b99bcb0b759fe8ac0449"
+        },
+        {
+          "path": "artifacts/native-companions-20261022/installed-companion/companion-home.png",
+          "sha256": "c9cf1f97737b8b8d7dbebea1f30fcff7aab69fb59ce2993ef70e0f571dc1b94f"
+        },
+        {
+          "path": "artifacts/native-companions-20261022/installed-companion/companion-override.png",
+          "sha256": "082100b6d5677432feb459d0e3a02cb9e6ed26aa55dbd743f3b0a340810dedc0"
+        },
+        {
+          "path": "artifacts/native-companions-20261022/installed-companion/companion-reconnected.png",
+          "sha256": "f6306d9b6d037c9c66b1543546623fb8d9474b863eab48b4b5be178602c5aa8f"
+        },
+        {
+          "path": "artifacts/native-companions-20261022/installed-companion/companion-return-to-game.png",
+          "sha256": "1f604f3192fab7acc1da96c7bd672e0a465eb6d277dd3abc1e1381e45f969902"
+        }
+      ]
+    },
+    "journal_regression": {
+      "checks": 31,
+      "result": "PASS",
+      "checks_file": {
+        "path": "artifacts/native-companions-20261022/journal-regression/checks.json",
+        "sha256": "ee543f57e3d1576956bba98ba4da0b1ff1c255d718570af88c620aae3e3245d7"
+      },
+      "summary": {
+        "path": "artifacts/native-companions-20261022/journal-regression/summary.json",
+        "sha256": "d888522fdf52631ddda0d8ce09d0eaef13d14d7c0ac3dffd53a56bb601bcc35f"
+      },
+      "canonical_readback": {
+        "path": "artifacts/native-companions-20261022/journal-regression/native.json",
+        "sha256": "abc5a38778a6618a2777be12a44ec23494dc803d45a85de9a5602a715232d13f"
+      },
+      "screenshots": [
+        {
+          "path": "artifacts/native-companions-20261022/journal-regression/journal-active.png",
+          "sha256": "c6fdd04a201629d224a5ff5c5a2f9b10cb95975542ba3815b07f7206a3cef648"
+        },
+        {
+          "path": "artifacts/native-companions-20261022/journal-regression/journal-reconnected.png",
+          "sha256": "bde6969a7bf83b0589f07d5a1913741f06bfdf3fb7d1d485cf94dc27df7ea2d8"
+        },
+        {
+          "path": "artifacts/native-companions-20261022/journal-regression/journal-return-to-game.png",
+          "sha256": "297bde43fae15888e4a86bb67021c5c9a9752842cdca28a90bc16b17ef7395bb"
+        },
+        {
+          "path": "artifacts/native-companions-20261022/journal-regression/journal-tab-0.png",
+          "sha256": "4e04a346e2ceb627ac2f4fab0acc96ecb635fa79c3cf9c5f44431d9b4b1063f7"
+        },
+        {
+          "path": "artifacts/native-companions-20261022/journal-regression/journal-tab-1.png",
+          "sha256": "ef209373e205ddd39a607132565d757374006ba71698f6cdcf626eb2b3afd355"
+        },
+        {
+          "path": "artifacts/native-companions-20261022/journal-regression/journal-tab-2.png",
+          "sha256": "a0fe5be8d04e23e7cfb75e3e41fb0598dd8d30293fe65cdd0ecddce18c4a29b6"
+        },
+        {
+          "path": "artifacts/native-companions-20261022/journal-regression/journal-tracked.png",
+          "sha256": "c8bca47cd6bd044bbb9b57aebdf88481dde0eca810a82163c756b7df5b562673"
+        }
+      ]
+    },
+    "total_checks": 89,
+    "screenshots_inspected_by": "LLM agent; not human acceptance",
+    "relay": "Companion harness reinjects an earlier DecisionResponse after a later rule change. It renumbers envelope sequences for the added frame; decision/connection identity and choice are unchanged. The stale response cannot change the current rule. Existing journal harness likewise probes old tracking-command replay."
+  },
+  "native_oracle": {
+    "upstream_pin": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+    "binary": {
+      "path": "artifacts/native-companions-20261022/native-save-reader",
+      "sha256": "e30c8cdcd992e7f1409780902bc6a5d0c9912493f2eae084b3a3b43b4e658ba9"
+    },
+    "build_receipt": {
+      "path": "artifacts/native-companions-20261022/native-save-reader.build.json",
+      "sha256": "aa76c7b9177ff83e1544c3e9f392bd8f29ffc9af1a2367116599af7c174f2390"
+    },
+    "fixture": {
+      "path": "artifacts/native-companions-20261022/fixture/before.json",
+      "sha256": "61fd3f3c8635dd1fd6ac3b71ccb838c3d7d3bb1afe7c9ea673c83265d449dd0a"
+    },
+    "note": "Native follow/assignment APIs prepare an ally. Fixture and readback link unmodified pinned core objects, never production fork objects."
+  },
+  "installation": {
+    "native": {
+      "source": "artifacts/fnd03-session/workspace/cdda/build/src/cdda-server",
+      "installed": "cdda/build/src/cdda-server",
+      "sha256": "d2288bf481526e04b589266a6d4507fa8fd1c0650b1bd70ec79d0b1b2784f09a",
+      "previous": "artifacts/native-companions-20261022/native-before-companions",
+      "previous_sha256": "60880749f406403462de9f59f6b8992d915f4664e817452d56d91e23bb85ddc0"
+    },
+    "client": {
+      "source": "artifacts/language-20261011/workspace/luanti/bin/luanti",
+      "installed": "luanti/bin/luanti",
+      "sha256": "6eb9dbf75e5ce2562d85d1f87f1b10e700d34c570baefcce45d00620652cdfd5",
+      "previous": "artifacts/native-companions-20261022/client-before-companions",
+      "previous_sha256": "df6ff64ae480d37841378aea1d346e4a6293ddc38f4faa7c22d6455c33465952"
+    }
+  },
+  "source_check": {
+    "path": "artifacts/native-companions-20261022/baseline-check.log",
+    "sha256": "d233dc766a8f80356340588fc366784522a3c663d8506827c256d80f44c3492f"
+  },
+  "build_logs": [
+    {
+      "path": "artifacts/native-companions-20261022/build-native-final.log",
+      "sha256": "b0ff7ff235831434f83554ff8253b6fc0ad4d9537967c772e234725f83c51f4d"
+    },
+    {
+      "path": "artifacts/native-companions-20261022/build-entry-first.log",
+      "sha256": "4e472ed58994cca0472fefef7f1b952f125442d0121c829ca872d72b45102f30"
+    },
+    {
+      "path": "artifacts/native-companions-20261022/build-product-wording.log",
+      "sha256": "7a4e860b45d7ce497a1767b942e4e32831e027db5020698bfe207c50fe0d3d5f"
+    },
+    {
+      "path": "artifacts/native-companions-20261022/build-client.log",
+      "sha256": "095114a629ca4c4029e60af6fbeb625eeab2a14bb94ebc59408e72cfd6ff95a0"
+    },
+    {
+      "path": "artifacts/native-companions-20261022/build-protocol.log",
+      "sha256": "f29983056b3a0e0d5f1b68e1d45266d0c9fbe366310e4cbfe1810ec7731bc281"
+    },
+    {
+      "path": "artifacts/native-companions-20261022/build-reader.log",
+      "sha256": "888f990e5d7de1e46c228fdf9441f0a00e2d67a0712ddc9386c3fd827727abc2"
+    }
+  ],
+  "reconstruction_receipts": [
+    {
+      "path": "artifacts/native-companions-20261022/refresh-native.json",
+      "sha256": "25e9f87b2afd015702a896ba03fa1ceb7d59b59536dc006e2da092bc7d034faf"
+    },
+    {
+      "path": "artifacts/native-companions-20261022/refresh-client.json",
+      "sha256": "25e9f87b2afd015702a896ba03fa1ceb7d59b59536dc006e2da092bc7d034faf"
+    },
+    {
+      "path": "artifacts/native-companions-20261022/refresh-product-wording.json",
+      "sha256": "276f71a27dd8d92793c36f42808ced4e921bfbcc0751c3a93c2e38e922841496"
+    },
+    {
+      "path": "artifacts/native-companions-20261022/refresh-gui-final.json",
+      "sha256": "75a98d6469749ef75eb551ec750f8c36351769381d7b34f1d5ea9b36689c7452"
+    }
+  ],
+  "gui_wrapper": {
+    "path": "artifacts/native-companions-20261022/run-gui.py",
+    "sha256": "9b153b3237a2af64e76d019181946e8bb62b6e89b541fb10445496664ecb50dc"
+  },
+  "manual": {
+    "pending": 53,
+    "open_fail": 0,
+    "added": "COMP-01: four PENDING; prior 49 unchanged",
+    "human_acceptance": "No new human PASS inferred from automation"
+  },
+  "core_estimate": {
+    "reference_percent": 92,
+    "range_percent": [
+      90,
+      95
+    ],
+    "remaining_substantial_slices": [
+      3,
+      6
+    ],
+    "excludes": "Pending human tests and full approved game feature scope",
+    "next": "Native sleep/rest and waiting, then essential liquid/item uses and non-demo consolidation",
+    "note": "Engineering estimate, not a measured code/feature count"
+  },
+  "limits": [
+    "Historical M5.5 FAILED and full SAVE-001 OPEN unchanged. Scoped verification, not complete certification.",
+    "Local allies through eligible native friend/guard roots only; no recruitment bypass, remote radio or mass shout orders.",
+    "Camp/expedition assignments protected. Training, text pickup filters/copy rules, camps and other specialised services remain open.",
+    "Native conversation exit and NPC weapon-reselection costs retained. Native AI decisions/path failures remain possible; no teleport or client authority.",
+    "Linux pair updated. Windows installer remains CWM2.26 snapshot. Item mapping batch60 unchanged.",
+    "Investigation errors retained: native core shared include path/avatar predicate; test purity assertions originally crossed the normal AI phase; Python select-module shadow and unarmed pointing reach in GUI driver. Final driver approaches by actual native movement and uses pinned FOLLOW=3."
+  ],
+  "commands": [
+    "python3 tools/takeover_baseline.py capture",
+    "python3 tools/refresh_verification_workspace.py --workspace artifacts/fnd03-session/workspace --receipt artifacts/native-companions-20261022/refresh-product-wording.json",
+    "python3 tools/refresh_verification_workspace.py --workspace artifacts/language-20261011/workspace --receipt artifacts/native-companions-20261022/refresh-gui-final.json",
+    "cmake --build artifacts/fnd03-session/workspace/cdda/build --target cdda-server cata_test -j4",
+    "cmake --build artifacts/language-20261011/workspace/luanti/build --target luanti -j3",
+    "cmake --build artifacts/language-20261011/workspace/build/protocol -j3",
+    "ctest --test-dir artifacts/language-20261011/workspace/build/protocol --output-on-failure",
+    "cd artifacts/fnd03-session/workspace/cdda && CDDA_LOCALE_DIR=$PWD/lang/mo ./build/tests/cata_test '[cwm],[reading]~[.],[melee]~[.],[ranged]~[.],[disassembly]~[.],[npc_talk]~[.],[mission]' --rng-seed 42 --user-dir=<new-isolated-absolute-directory>",
+    "artifacts/language-20261011/workspace/luanti/bin/luanti --run-unittests --logfile <isolated-log>",
+    "g++ -std=c++20 -I artifacts/language-20261011/workspace/luanti/src -I artifacts/language-20261011/workspace/protocol/include -I /home/dannhill/.local/include artifacts/language-20261011/workspace/tests/companion_presentation_test.cpp -o <new-test-output> && <new-test-output>",
+    "python3 artifacts/language-20261011/workspace/tests/product_language_test.py",
+    "python3 artifacts/language-20261011/workspace/tests/product_language_registry_test.py",
+    "python3 tools/build_native_save_reader.py --pristine-cdda artifacts/m5.5/20261003-takeover/pristine-cdda --workspace artifacts/language-20261011/workspace --output artifacts/native-companions-20261022/native-save-reader --strip-debug",
+    "artifacts/native-companions-20261022/native-save-reader --create-companions --userdir <new-fixture-userdir> --datadir cdda/data --output <fixture-before.json>",
+    "cp artifacts/fnd03-session/workspace/cdda/build/src/cdda-server artifacts/language-20261011/workspace/cdda/build/src/cdda-server",
+    "python3 artifacts/native-companions-20261022/run-gui.py companion_gui_test.py artifacts/native-companions-20261022/fixture/user <new-artifact-name>",
+    "CWM_TEST_INSTALLED=1 python3 artifacts/native-companions-20261022/run-gui.py companion_gui_test.py artifacts/native-companions-20261022/fixture/user <new-installed-artifact-name>",
+    "CWM_TEST_INSTALLED=1 python3 artifacts/native-companions-20261022/run-gui.py journal_gui_test.py artifacts/native-journal-20261022/fixture-canonical/user <new-journal-regression-artifact-name>",
+    "python3 tools/takeover_baseline.py check"
+  ]
+}

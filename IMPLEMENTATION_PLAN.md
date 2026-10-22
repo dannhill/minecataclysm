@@ -10,6 +10,32 @@ un panorama più ampio; nebbia, memoria distante e rilievo restano da scegliere.
 Lo [stato implementato](IMPLEMENTATION_STATUS.md) e le evidenze restano separati
 dagli obiettivi. La roadmap originale M0–M9 conserva i propri significati.
 
+## Compagni individuali e chiusura del core — 2026-10-22
+
+Fetta implementata: prima voce **Companion orders and rules** nel dialogo
+nativo amico/guardia di un alleato locale. Guardia/seguito, tutte le 18 regole
+individuali, politiche di combattimento/mira e riserva/ricarica bionica passano
+dai setter e dalle funzioni CDDA. Base, valore effettivo e override temporaneo
+sono distinti; la consultazione non rivaluta effetti del dialogo né cambia
+regole. Esc/perdita di connessione escono senza ripetere ordini. Nessuna nuova
+autorità AI o persistenza Luanti. [Contratto](docs/design/native-companions.md),
+[consegna ed evidenze](docs/fixes/native-companions.md).
+
+Quattro prove COMP-01 rinviate: **53 PENDING**, nessun FAIL manuale aperto;
+i precedenti 49 punti restano invariati. Nessun PASS umano dedotto. CWM2.31
+Linux; installer Windows ancora CWM2.26. M5.5 FAILED e SAVE-001 OPEN invariati.
+
+[Stima aggiornata del core](docs/progress/core-outlook-2026-10-22.md):
+**90–95%, riferimento 92%, escludendo i test manuali**, circa 3–6 interventi
+sostanziali con incertezza. Non è una percentuale del gioco completo.
+**Prossimo passo essenziale: riposo/sonno e attesa nativi**, mantenendo tentativo,
+risveglio, interruzioni e tempo effettivo CDDA. L'indicatore della stanchezza
+non equivale a un comando per dormire. Seguono fonti/travasi di liquidi e usi
+essenziali ancora mancanti, poi consolidamento su mondo non-demo e prestazioni
+con popolazioni reali. Addestramento/filtri testuali/copia regole, radio, servizi
+avanzati e accampamenti restano ambito successivo; non allargare indefinitamente
+il minimo core per includerli tutti.
+
 ## Diario delle missioni note — 2026-10-22
 
 Fetta core implementata: **J**, schede Active/Completed/Failed, obiettivi e
@@ -26,11 +52,12 @@ i precedenti 45 punti restano invariati. Nessun PASS umano dedotto dalle prove
 automatiche. Coppia CWM2.30 per Linux; installer Windows ancora CWM2.26.
 M5.5 FAILED e SAVE-001 OPEN non cambiano.
 
-**Prossimo passo core: comandi individuali e servizi dei compagni**, partendo
+**Passo allora successivo: comandi individuali e servizi dei compagni**, partendo
 dai flussi effettivi del dialogo CDDA e mantenendo autorità, costi, condizioni
 e persistenza nativi. Copertura di ogni ciclo missione/mod/EOC, dettagli
 dinamici sicuri e indicatori opzionali HUD/mappa restano separati. Il diario
-non completa l'intera Fase4.6.
+non completa l'intera Fase4.6. La prima fetta degli ordini/regole individuali è
+ora consegnata sopra; non certifica tutti i servizi.
 
 ## Commercio NPC nativo — 2026-10-22
 

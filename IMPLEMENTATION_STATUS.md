@@ -1,6 +1,34 @@
 # Implementation status
 
-Current scoped delivery: **known native mission journal**, CWM **2.30**, in
+Current scoped delivery: **individual native companion orders and rules**,
+CWM **2.31**, in normal Linux `start.sh`. Right-click a local ally and choose
+the first **Companion orders and rules** response. Native Guard/Follow,
+18 individual rules, engagement/aiming and CBM reserve/recharge preferences;
+base/effective/temporary overrides remain distinct. Local communication and
+alliance are revalidated; camp/expedition assignments cannot be changed here.
+NPC AI, setters/costs and persistence remain native. Safe leave/reconnect
+never replays accepted orders. [Contract](docs/design/native-companions.md),
+[delivery](docs/fixes/native-companions.md),
+[exact evidence](docs/fixes/native-companions-evidence.json).
+
+Native **171 cases / 73,526 assertions PASS**; client **309 tests / 47 modules**
+and 648 Catch assertions / 4 cases; protocol **16**, language **9**, registry
+**3**, standalone companion view PASS. **89 renderer/canonical checks PASS**:
+reconstructed companion 29, installed companion 29, journal regression 31.
+Coverage exercises base vs override, old-decision replay rejection, guard/follow AI, native return topic,
+connection replacement and independent pinned-core persistence. Exact final
+run counts and binary identities are in the evidence. Incremental captured
+reconstructions, not a cold-build audit.
+
+**53 PENDING**, no open manual FAIL: prior 49 unchanged plus four COMP-01
+checks. No human acceptance inferred. [Minimum core estimate](docs/progress/core-outlook-2026-10-22.md):
+**90–95%, reference 92%, excluding manual tests**. Next essential slice:
+native rest/sleep and waiting, then essential liquid/item uses and non-demo
+consolidation. Training, copied/pickup filters, radio/group commands and complex
+services/camps remain separate. M5.5 FAILED / full SAVE-001 OPEN unchanged.
+Mapping batch60 unchanged; Windows installer remains the **CWM2.26 snapshot**.
+
+Previous scoped delivery: **known native mission journal**, CWM **2.30**, in
 normal Linux `start.sh`. **J** opens Active / Completed / Failed histories,
 native objectives, known giver, deadlines and explicit native overmap XYZ
 destinations. **Track this mission** uses the native setter as a separate

@@ -19,7 +19,16 @@ Windows 11 x64: the local installer is generated as
 [Windows build instructions](tools/windows/README.md). Real Windows hardware
 acceptance is recorded separately from automated Wine verification.
 
-Current Linux slice: [known mission journal](docs/fixes/native-journal.md) in
+Current Linux slice: [individual companion orders/rules](docs/fixes/native-companions.md)
+in `./start.sh`. Right-click a local ally and choose the first response,
+**Companion orders and rules**: guard/follow, individual behavior/combat rules,
+aiming and bionic power preferences, with base/temporary overrides shown separately.
+`./companions-demo.sh --fresh` opens an isolated ally scene.
+[Minimum-core outlook](docs/progress/core-outlook-2026-10-22.md): approximately
+90–95% (reference 92%), excluding pending personal tests; this is an engineering
+estimate, not completion of the full approved game.
+
+[Known mission journal](docs/fixes/native-journal.md) remains available in
 `./start.sh`. **Press J** for native Active / Completed / Failed histories,
 known objectives, destinations and deadlines. **Track this mission** changes
 the native tracked mission explicitly; browsing never accepts or completes one.
@@ -29,7 +38,7 @@ a perceived non-hostile NPC and choose its native trade reply.
 [Native conversations](docs/fixes/native-conversation.md) and
 [item disassembly](docs/fixes/native-disassembly.md) remain available.
 Human rechecks are recorded separately in the ledger. Linux uses paired
-CWM2.30 runtimes; the Windows installer remains its earlier CWM2.26 snapshot.
+CWM2.31 runtimes; the Windows installer remains its earlier CWM2.26 snapshot.
 
 This project aims to merge the 2D turn based videogame Cataclysm Dark Days Ahead(CDDA) with the 3D voxel real time game Mineclonia(as the name suggests, an open source minecraft clone) with the goal to provide CDDA with a 3D voxel engine.
 FAQ

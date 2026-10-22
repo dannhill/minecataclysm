@@ -58,8 +58,9 @@ using native quotes, prices, ownership, credit, capacity and confirmation.
 
 Mission dialogue effects continue in CDDA, but this delivery does not certify
 all mission scripts, map selectors, surgery, camp management or training
-activities. Those complex service interfaces and individual companion orders
-remain separate roadmap work. Opening a conversation is not evidence that an
+activities. [Individual companion orders/rules](native-companions.md) now add a
+dedicated local-ally panel; complex service interfaces remain separate roadmap
+work. Opening a conversation is not evidence that an
 arbitrary EOC-driven NPC service is fully usable in 3D.
 
 `./conversation-demo.sh --fresh` uses an isolated pristine-core fixture with
