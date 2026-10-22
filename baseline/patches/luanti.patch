@@ -2197,10 +2197,10 @@ index 0000000..e1e7236
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..b2c1cf7
+index 0000000..ff0598a
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,3438 @@
+@@ -0,0 +1,3439 @@
 +#include "cwm/product_language.hpp"
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
@@ -4858,7 +4858,8 @@ index 0000000..b2c1cf7
 +    }
 +    for(const auto& e:j.entries)if(e.state==j.tab && fields.count("mission_"+std::to_string(e.id)))j.selected=e.id;
 +    if(fields.count("previous") && j.page)--j.page;
-+    if(fields.count("next"))++j.page;
++    if(fields.count("next")) {unsigned count=0;for(const auto& e:j.entries)if(e.state==j.tab)++count;
++        if((j.page+1)*8<count)++j.page;}
 +    if(fields.count("track"))if(const auto* e=j.entry(j.selected);e && !e->tracked && e->state==0 && j.view && i.session_.ready()) {
 +        auto b=i.session_.builder();const auto id=i.session_.next_command++;
 +        auto bytes=b.build_mission_track(id,j.view,e->id,j.tracked);
@@ -6781,10 +6782,10 @@ index 0000000..7d869d1
 +} // namespace cdda_client
 diff --git a/src/cdda/mission_journal.h b/src/cdda/mission_journal.h
 new file mode 100644
-index 0000000..083aeac
+index 0000000..886ceac
 --- /dev/null
 +++ b/src/cdda/mission_journal.h
-@@ -0,0 +1,57 @@
+@@ -0,0 +1,59 @@
 +#pragma once
 +#include "decision_text.h"
 +#include "avatar_status.h"
@@ -6804,6 +6805,8 @@ index 0000000..083aeac
 +    void read(const CDDA::CWM::MissionView& v,uint64_t generation) {
 +        query=v.query_id();view=v.view_id();connection=generation;tracked=v.tracked_id();truncated=v.truncated();error=v.error()->str();waiting=false;entries.clear();
 +        for(const auto* e:*v.entries())entries.push_back({e->id(),int(e->state()),e->tracked(),e->limited(),e->title()->str(),e->description()->str(),e->objective()->str(),e->giver()->str(),e->deadline()->str(),e->remaining()->str(),e->target_text()->str()});
++        unsigned count=0;for(const auto& e:entries)if(e.state==tab)++count;
++        page=std::min(page,std::max(1u,(count+7)/8)-1);
 +        if(!entry(selected) || entry(selected)->state!=tab) {selected=-1;for(const auto& e:entries)if(e.state==tab){selected=e.id;break;}}
 +    }
 +    const JournalEntry* entry(int id) const {for(const auto& e:entries)if(e.id==id)return &e;return nullptr;}

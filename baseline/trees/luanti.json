@@ -7247,7 +7247,7 @@
   {
     "path": "src/cdda/cdda_bridge.cpp",
     "mode": "100644",
-    "sha256": "d8ad93eff965b02eb230fbdc6d17091090196d8a8ace07a507a10da270578aa4"
+    "sha256": "11218b3d2bc010ed6d4a67bce3cbdf5c29902f53134fae6ce5d9d795cc2f248e"
   },
   {
     "path": "src/cdda/cdda_bridge.h",
@@ -7307,7 +7307,7 @@
   {
     "path": "src/cdda/mission_journal.h",
     "mode": "100644",
-    "sha256": "4a127b189b767a79933f687788101c520a3eeb22bd96e47b81b1f1033ef59548"
+    "sha256": "da5c2659e1fc641eda0227cd9903062c33520ca7351d3fa5245963decade778d"
   },
   {
     "path": "src/cdda/posture_input.h",

@@ -528,6 +528,8 @@ int main(int argc, const char *argv[]) {
             }
             overmap_buffer.insert_npc(guy); g->load_npcs();
             if(create_journal) {
+                u.remove_items_with([](const item&){return true;});u.remove_weapon();u.clear_worn();
+                u.wear_item(item(itype_id("backpack"),calendar::turn),false);
                 u.reset_all_missions();mission::clear_all();
                 auto make=[&](const std::string& type,const std::string& status,bool assigned,bool target,bool deadline) {
                     const int uid=g->assign_mission_id();
