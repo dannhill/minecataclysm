@@ -6,9 +6,9 @@
       "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
       "shallow": true,
       "patch": "baseline/patches/cdda.patch",
-      "patch_sha256": "406b5f762a10238ca12b8a53a8549c3f9128a12d2db0ba3e0057fa4ffc0224b6",
+      "patch_sha256": "6254bc236baba8e81378adb47fb9f149fd06c57ecfc9fb9bb9c99df6fe1e8059",
       "tree_inventory": "baseline/trees/cdda.json",
-      "tree_sha256": "0c377d1a37ea4e1f7449f6cd1993be551311d05edf9920f503dd6672a5c09100",
+      "tree_sha256": "d33eaba3904ae20351f716954e3c341460d5e0d01c6b636999d263d8d4502f9d",
       "file_count": 8591,
       "original_status": " M CMakeLists.txt\n M src/CMakeLists.txt\n M src/activity_actor.cpp\n M src/avatar.cpp\n M src/avatar_action.cpp\n M src/avatar_action.h\n M src/character.cpp\n M src/character_body.cpp\n M src/character_inventory.cpp\n M src/craft_command.cpp\n M src/craft_command.h\n M src/crafting.cpp\n M src/crafting.h\n M src/creature.cpp\n M src/do_turn.cpp\n M src/do_turn.h\n M src/filesystem.cpp\n M src/game.cpp\n M src/game.h\n M src/handle_action.cpp\n M src/iexamine.cpp\n M src/inventory.cpp\n M src/inventory.h\n M src/item.cpp\n M src/iuse_actor.cpp\n M src/melee.cpp\n M src/monster.cpp\n M src/output.cpp\n M src/pickup.cpp\n M src/ranged.cpp\n M src/ranged.h\n M src/recipe.cpp\n M src/recipe.h\n M src/sounds.cpp\n M src/translations.cpp\n M src/ui.cpp\n M src/vehicle_use.cpp\n M src/vpart_position.h\n M src/wincurse.cpp\n M tests/CMakeLists.txt\n M tests/melee_test.cpp\n M tests/test_main.cpp\n?? src/cwm/cwm_crafting.h\n?? src/cwm/cwm_disassembly.h\n?? src/cwm/cwm_hotbar.h\n?? src/cwm/cwm_inventory.h\n?? src/cwm/cwm_main.cpp\n?? src/cwm/cwm_map_exporter.cpp\n?? src/cwm/cwm_map_exporter.h\n?? src/cwm/cwm_presentation.h\n?? src/cwm/cwm_ranged.h\n?? src/cwm/cwm_reading.h\n?? src/cwm/cwm_server.cpp\n?? src/cwm/cwm_server.h\n?? src/cwm/cwm_status_gauges.h\n?? src/cwm/cwm_windows.rc\n?? src/cwm_motion.cpp\n?? src/cwm_motion.h\n?? src/safe_mode_actions.h\n?? tests/cwm_pickup_test.cpp\n?? tests/cwm_projection_test.cpp\n?? tests/cwm_runtime_test.cpp\n"
     },

@@ -2164,15 +2164,16 @@ index 0000000..d94c308
 +} // namespace cwm
 diff --git a/src/cwm/cwm_disassembly.h b/src/cwm/cwm_disassembly.h
 new file mode 100644
-index 0000000..ea1d3c4
+index 0000000..ba970a3
 --- /dev/null
 +++ b/src/cwm/cwm_disassembly.h
-@@ -0,0 +1,49 @@
+@@ -0,0 +1,50 @@
 +#pragma once
 +#include "avatar.h"
 +#include "activity_actor_definitions.h"
 +#include "item.h"
 +#include "itype.h"
++#include "inventory.h"
 +#include "recipe_dictionary.h"
 +#include "output.h"
 +#include "cwm/cwm_protocol.hpp"
