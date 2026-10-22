@@ -1349,7 +1349,7 @@ index 5dd44b0..7ca192e 100644
           * Remove a specific item from the inventory. The item is compared
           * by pointer. Contents of the item are removed as well.
 diff --git a/src/inventory_ui.cpp b/src/inventory_ui.cpp
-index deac48c..8012aae 100644
+index deac48c..8ab60a5 100644
 --- a/src/inventory_ui.cpp
 +++ b/src/inventory_ui.cpp
 @@ -1,4 +1,5 @@
@@ -1446,6 +1446,19 @@ index deac48c..8012aae 100644
      shared_ptr_fast<ui_adaptor> ui = create_or_get_ui_adaptor();
      item_location startDragItem;
      bool dragActive = false;
+@@ -4477,8 +4510,10 @@ trade_selector::trade_selector( trade_ui *parent, Character &u,
+     // CANCEL and OK are already set in inventory_selector
+     ctxt.register_action( ACTION_SWITCH_PANES );
+     ctxt.register_action( ACTION_AUTOBALANCE );
+-    resize( size, origin );
+-    _ui = create_or_get_ui_adaptor();
++    if( !external_ui_active() ) {
++        resize( size, origin );
++        _ui = create_or_get_ui_adaptor();
++    }
+     set_invlet_type( inventory_selector::SELECTOR_INVLET_ALPHA );
+ }
+ 
 diff --git a/src/item.cpp b/src/item.cpp
 index 9c51213..472bb0a 100644
 --- a/src/item.cpp
@@ -1695,20 +1708,34 @@ index ea45f06..1e8c58e 100644
      d_win.add_history_separator();
      d_win.add_to_history( response_lines[response_ind].text, _( "You" ), c_light_blue );
 diff --git a/src/npctrade.cpp b/src/npctrade.cpp
-index cca50d9..f17b5a9 100644
+index cca50d9..5d38df3 100644
 --- a/src/npctrade.cpp
 +++ b/src/npctrade.cpp
-@@ -1,4 +1,5 @@
+@@ -1,4 +1,6 @@
  #include "npctrade.h"
 +#include "do_turn.h"
++#include "external_trade.h"
  
  #include <algorithm>
  #include <iosfwd>
-@@ -277,6 +278,12 @@ void npc_trading::update_npc_owed( npc &np, int your_balance, int your_sale_valu
+@@ -87,7 +89,11 @@ std::list<item> npc_trading::transfer_items( trade_selector::select_t &stuff, Ch
+ 
+         if( ip.first.held_by( giver ) ) {
+             if( ip.first->count_by_charges() ) {
+-                giver.use_charges( gift.typeId(), ip.second );
++                // Consume this concrete selection, not the first same-type
++                // stack elsewhere in the character's pockets.
++                ip.first->charges -= ip.second;
++                if( ip.first->charges <= 0 ) ip.first.remove_item();
++                else ip.first.on_contents_changed();
+             } else if( ip.second > 0 ) {
+                 giver.remove_items_with( [&ip]( const item & i ) {
+                     return &i == ip.first.get_item();
+@@ -277,6 +283,12 @@ void npc_trading::update_npc_owed( npc &np, int your_balance, int your_sale_valu
  // cost is positive when the player owes the NPC money for a service to be performed
  bool npc_trading::trade( npc &np, int cost, const std::string &deal )
  {
-+    if( external_ui_active() ) {
++    if( external_ui_active() && !external_trade ) {
 +        // No restocking, item migration, price/debt mutation or terminal UI.
 +        // The dedicated native trade projection is a separate implementation.
 +        external_ui_choice( _( "Trading needs a dedicated interface and is not available yet.  No trade was made." ), { _( "Cancel" ) } );
@@ -1717,6 +1744,50 @@ index cca50d9..f17b5a9 100644
      np.shop_restock();
      //np.drop_items( np.weight_carried() - np.weight_capacity(),
      //               np.volume_carried() - np.volume_capacity() );
+@@ -331,13 +343,15 @@ bool npc_trading::trade( npc &np, int cost, const std::string &deal )
+             player_character.practice( skill_speech, trade_result.value_you / 10000 );
+         }
+     }
++    if( external_ui_active() && external_trade && external_trade->finished )
++        external_trade->finished( trade_result.traded );
+     return trade_result.traded ;
+ }
+ 
+ // Will the NPC accept the trade that's currently on offer?
+ bool npc_trading::npc_will_accept_trade( npc const &np, int your_balance )
+ {
+-    return np.will_exchange_items_freely() || your_balance + np.max_credit_extended() >= 0;
++    return np.will_exchange_items_freely() || int64_t( your_balance ) + np.max_credit_extended() >= 0;
+ }
+ bool npc_trading::npc_can_fit_items( npc const &np, trade_selector::select_t const &to_trade )
+ {
+@@ -347,19 +361,24 @@ bool npc_trading::npc_can_fit_items( npc const &np, trade_selector::select_t con
+         return false;
+     }
+     for( trade_selector::entry_t const &it : to_trade ) {
++        const int copies = it.first->count_by_charges() ? 1 : it.second;
++        for( int n = 0; n < copies; ++n ) {
+         bool item_stored = false;
++        item offered = *it.first;
++        if( offered.count_by_charges() ) offered.charges = it.second;
+         for( item &pkt : avail_pockets ) {
+             const units::volume pvol = pkt.max_containable_volume();
+-            const item &i = *it.first;
++            const item &i = offered;
+             if( pkt.can_holster( i ) || ( pkt.can_contain( i ).success() && pvol > i.volume() ) ) {
+                 pkt.put_in( i, pocket_type::CONTAINER );
+                 item_stored = true;
+                 break;
+             }
+         }
+-        if( !item_stored && !np.can_wear( *it.first, false ).success() ) {
++        if( !item_stored && !np.can_wear( offered, false ).success() ) {
+             return false;
+         }
++        }
+     }
+     return true;
+ }
 diff --git a/src/output.cpp b/src/output.cpp
 index 38b1d71..e5b7a12 100644
 --- a/src/output.cpp
@@ -2112,6 +2183,252 @@ index c4c28c2..ebd39b2 100644
      if( !custom_window && !w_full ) {
          create_window();
          _position = -1;
+diff --git a/src/trade_ui.cpp b/src/trade_ui.cpp
+index b1bf5f8..39b7935 100644
+--- a/src/trade_ui.cpp
++++ b/src/trade_ui.cpp
+@@ -1,5 +1,11 @@
+ 
+ #include "trade_ui.h"
++#include "do_turn.h"
++#include "external_trade.h"
++#include "json.h"
++#include <sstream>
++#include <set>
++#include <limits>
+ 
+ #include <cmath>
+ #include <cstdlib>
+@@ -140,12 +146,12 @@ trade_ui::trade_ui( party_t &you, npc &trader, currency_t cost, std::string titl
+         _panes[_trader]->add_nearby_items( 1 );
+     }
+ 
+-    if( trader.will_exchange_items_freely() ) {
+-        _cost = 0;
+-    } else {
+-        _cost = trader.op_of_u.owed - cost;
+-    }
++    _service_cost = cost;
++    const int64_t initial = trader.will_exchange_items_freely() ? 0 : int64_t( trader.op_of_u.owed ) - cost;
++    _valid_cost = initial >= INT_MIN && initial <= INT_MAX;
++    _cost = _valid_cost ? int( initial ) : 0;
+     _balance = _cost;
++    if( external_ui_active() ) return;
+ 
+     _panes[_you]->get_active_column().on_deactivate();
+ 
+@@ -173,6 +179,10 @@ trade_ui::trade_result_t trade_ui::perform_trade()
+     _exit = false;
+     _traded = false;
+ 
++    if( external_ui_active() ) {
++        _traded = external_trade && external_trade->choose && external_trade->choose( *this );
++        _exit = true;
++    }
+     while( !_exit ) {
+         _panes[_cpane]->execute();
+ 
+@@ -197,17 +207,22 @@ trade_ui::trade_result_t trade_ui::perform_trade()
+ 
+ void trade_ui::recalc_values_cpane()
+ {
+-    _trade_values[_cpane] = 0;
+-
+-    for( entry_t const &it : _panes[_cpane]->to_trade() ) {
+-        // FIXME: cache trading_price
+-        _trade_values[_cpane] +=
+-            npc_trading::trading_price( *_parties[-_cpane + 1], *_parties[_cpane], it );
+-    }
+-    if( !_parties[_trader]->as_npc()->will_exchange_items_freely() ) {
+-        _balance = _cost + _trade_values[_you] - _trade_values[_trader];
++    _valid_values = _valid_cost;
++    for( size_t side = 0; side < npanes; ++side ) {
++        int64_t total = 0;
++        for( entry_t const &it : _panes[side]->to_trade() ) {
++            const int price = npc_trading::trading_price( *_parties[1 - side], *_parties[side], it );
++            if( price < 0 ) _valid_values = false;
++            total += price;
++        }
++        if( total < 0 || total > INT_MAX ) _valid_values = false;
++        _trade_values[side] = total >= 0 && total <= INT_MAX ? int( total ) : 0;
+     }
+-    _header_ui.invalidate_ui();
++    const int64_t balance = _parties[_trader]->as_npc()->will_exchange_items_freely() ? 0 :
++                            int64_t( _cost ) + _trade_values[_you] - _trade_values[_trader];
++    if( balance < INT_MIN || balance > INT_MAX ) _valid_values = false;
++    _balance = balance >= INT_MIN && balance <= INT_MAX ? int( balance ) : 0;
++    if( !external_ui_active() ) _header_ui.invalidate_ui();
+ }
+ 
+ void trade_ui::autobalance()
+@@ -259,7 +274,10 @@ bool trade_ui::_confirm_trade() const
+ {
+     npc const &np = *_parties[_trader]->as_npc();
+ 
+-    if( !npc_trading::npc_will_accept_trade( np, _balance ) ) {
++    if( !_valid_values || !_valid_cost ||
++        ( !np.will_exchange_items_freely() && int64_t( np.op_of_u.sold ) + _trade_values[_you] > INT_MAX ) ) {
++        popup( _( "This offer's value is outside the supported range." ) );
++    } else if( !npc_trading::npc_will_accept_trade( np, _balance ) ) {
+         if( np.max_credit_extended() == 0 ) {
+             popup( _( "You'll need to offer me more than that." ) );
+         } else {
+@@ -309,3 +327,101 @@ void trade_ui::_draw_header()
+                                          trade_selector::ACTION_AUTOBALANCE ),
+                                            c_yellow ) ) );
+ }
++
++namespace {
++std::string trade_signature( const item_location &loc ) {
++    if( !loc ) return {};
++    std::ostringstream stream;
++    JsonOut json( stream );
++    loc->serialize( json );
++    return stream.str();
++}
++}
++
++npc &trade_ui::external_npc() const { return *_parties[_trader]->as_npc(); }
++const std::vector<trade_ui::external_entry> &trade_ui::external_entries() {
++    if( _external_catalog ) return _external_entries;
++    _external_catalog = true;
++    _external_owed = external_npc().op_of_u.owed;
++    _external_credit = external_npc().max_credit_extended();
++    _external_free = external_npc().will_exchange_items_freely();
++    std::set<const item *> seen;
++    for( size_t side = 0; side < npanes; ++side ) {
++        for( const auto *column : _panes[side]->get_all_columns() ) {
++            for( inventory_entry *entry : column->get_entries( []( const inventory_entry &e ) { return e.is_item(); }, true ) ) {
++                if( !entry->get_available_count() || !seen.insert( entry->any_item().get_item() ).second ) continue;
++                external_entry record{ entry, side == _trader, {}, 0, {} };
++                for( const auto &loc : entry->locations ) record.signatures.push_back( trade_signature( loc ) );
++                record.unit_price = external_price( record, 1 );
++                record.denial = external_reason( record );
++                _external_entries.push_back( std::move( record ) );
++            }
++        }
++    }
++    return _external_entries;
++}
++int trade_ui::external_price( const external_entry &entry, int quantity ) const {
++    const size_t side = entry.trader ? _trader : _you;
++    return npc_trading::trading_price( *_parties[1-side], *_parties[side], { entry.entry->any_item(), quantity } );
++}
++std::string trade_ui::external_reason( const external_entry &entry ) const {
++    return ( entry.trader ? _tpreset : _upreset ).get_denial( entry.entry->any_item() );
++}
++std::string trade_ui::external_valid() {
++    const auto &rows = external_entries();
++    if( rows.size() > 2048 ) return _( "Too many trade entries for this interface.  No exchange was made." );
++    if( external_npc().op_of_u.owed != _external_owed || external_npc().max_credit_extended() != _external_credit ||
++        external_npc().will_exchange_items_freely() != _external_free )
++        return _( "The trade terms changed.  Close and reopen trading." );
++    for( const auto &row : rows ) {
++        for( size_t i = 0; i < row.entry->locations.size(); ++i ) {
++            const auto &loc = row.entry->locations[i];
++            if( !loc || trade_signature( loc ) != row.signatures[i] ||
++                !( row.trader ? _tpreset : _upreset ).is_shown( loc ) )
++                return _( "The trade inventory changed.  Close and reopen trading." );
++        }
++        if( external_price( row, 1 ) != row.unit_price || external_reason( row ) != row.denial )
++            return _( "The trade terms changed.  Close and reopen trading." );
++    }
++    for( size_t side = 0; side < npanes; ++side ) {
++        int64_t total = 0;
++        for( const auto &it : _panes[side]->to_trade() )
++            total += npc_trading::trading_price( *_parties[1-side], *_parties[side], it );
++        if( _valid_values && total != _trade_values[side] )
++            return _( "The trade price changed.  Close and reopen trading." );
++    }
++    return {};
++}
++std::string trade_ui::external_set( unsigned id, int quantity ) {
++    if( auto error = external_valid(); !error.empty() ) return error;
++    if( !id || id > _external_entries.size() || quantity < 0 ) return _( "Invalid trade selection." );
++    auto &row = _external_entries[id-1];
++    if( size_t( quantity ) > row.entry->get_available_count() ) return _( "That quantity is not available." );
++    if( quantity && !row.denial.empty() ) return row.denial;
++    if( quantity ) {
++        for( const auto &other : _external_entries ) {
++            if( &other == &row || !other.entry->chosen_count ) continue;
++            for( const auto &a : row.entry->locations ) for( const auto &b : other.entry->locations ) {
++                if( a == b || a.eventually_contains( b ) || b.eventually_contains( a ) )
++                    return _( "Select either a container or its contents, not both." );
++            }
++        }
++    }
++    _cpane = row.trader ? _trader : _you;
++    _panes[_cpane]->external_choose( *row.entry, quantity );
++    return {};
++}
++std::string trade_ui::external_denial() {
++    if( auto error = external_valid(); !error.empty() ) return error;
++    if( !_valid_values || !_valid_cost ) return _( "This offer's value is outside the supported range." );
++    const npc &np = external_npc();
++    if( !np.will_exchange_items_freely() && int64_t( np.op_of_u.sold ) + _trade_values[_you] > INT_MAX )
++        return _( "This offer's value is outside the supported range." );
++    if( !npc_trading::npc_will_accept_trade( np, _balance ) ) return _( "You need to offer more, within the trader's credit limit." );
++    if( !np.is_shopkeeper() && !npc_trading::npc_can_fit_items( np, _panes[_you]->to_trade() ) )
++        return _( "The trader does not have appropriate pockets for this offer." );
++    return {};
++}
++bool trade_ui::external_confirm() {
++    return external_denial().empty() && _confirm_trade();
++}
+diff --git a/src/trade_ui.h b/src/trade_ui.h
+index 91d1627..cec904b 100644
+--- a/src/trade_ui.h
++++ b/src/trade_ui.h
+@@ -38,6 +38,10 @@ class trade_selector : public inventory_drop_selector
+         void resize( point const &size, point const &origin );
+         shared_ptr_fast<ui_adaptor> get_ui() const;
+         input_context const *get_ctxt() const;
++        void external_choose( inventory_entry &entry, size_t count ) {
++            set_chosen_count( entry, count );
++            on_toggle();
++        }
+ 
+         static constexpr char const *ACTION_AUTOBALANCE = "AUTO_BALANCE";
+         static constexpr char const *ACTION_SWITCH_PANES = "SWITCH_LISTS";
+@@ -90,6 +94,25 @@ class trade_ui
+         void recalc_values_cpane();
+         void autobalance();
+         void resize();
++        struct external_entry {
++            inventory_entry *entry;
++            bool trader;
++            std::vector<std::string> signatures;
++            int unit_price;
++            std::string denial;
++        };
++        const std::vector<external_entry> &external_entries();
++        std::string external_valid();
++        std::string external_set( unsigned id, int quantity );
++        std::string external_denial();
++        bool external_confirm();
++        npc &external_npc() const;
++        const std::string &external_title() const { return _title; }
++        int external_service_cost() const { return _service_cost; }
++        int external_balance() const { return _balance; }
++        int external_value( bool trader ) const { return _trade_values[trader ? _trader : _you]; }
++        int external_price( const external_entry &entry, int quantity ) const;
++        std::string external_reason( const external_entry &entry ) const;
+ 
+         constexpr static int header_size = 5;
+ 
+@@ -112,6 +135,12 @@ class trade_ui
+         bool _traded = false;
+         currency_t _cost = 0;
+         currency_t _balance = 0;
++        currency_t _service_cost = 0;
++        bool _valid_values = true, _valid_cost = true;
++        std::vector<external_entry> _external_entries;
++        bool _external_catalog = false;
++        int _external_owed = 0, _external_credit = 0;
++        bool _external_free = false;
+         std::string const _title;
+         catacurses::window _header_w;
+         ui_adaptor _header_ui;
 diff --git a/src/translations.cpp b/src/translations.cpp
 index e0f257a..82690b4 100644
 --- a/src/translations.cpp
@@ -4617,10 +4934,10 @@ index 0000000..d077b2c
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..3662abb
+index 0000000..b92c76c
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,1151 @@
+@@ -0,0 +1,1270 @@
 +#include "cwm/product_language.hpp"
 +#include "cwm_motion.h"
 +// CDDA CWM IPC Server Implementation
@@ -4628,6 +4945,10 @@ index 0000000..3662abb
 +
 +#include "cwm_server.h"
 +#include "cwm_conversation.h"
++#include "cwm_trade.h"
++#include "external_trade.h"
++#include "npctrade.h"
++#include "output.h"
 +#include "cwm_hotbar.h"
 +#include "cwm_map_exporter.h"
 +#include "cwm/ipc_transport.hpp"
@@ -4711,6 +5032,7 @@ index 0000000..3662abb
 +}
 +
 +void CwmServer::cancel_connection() {
++    if (trade_context_) trade_context_->cancel=true;
 +    // A replacement peer must not inherit an unanswered native choice. Keep
 +    // a response already accepted from its valid connection, otherwise leave
 +    // through the explicit safe final option before accepting more input.
@@ -4870,7 +5192,7 @@ index 0000000..3662abb
 +    using namespace cdda::cwm;
 +    return (manual_pause_ ? uint32_t(Manual) : 0u) | (menu_pause_ ? uint32_t(Menu) : 0u) |
 +        ((g.uquit != QUIT_WATCH && (threat_pause_ || g.safe_mode == SAFE_MODE_STOP || get_avatar().has_effect(efftype_id("laserlocked")))) ? uint32_t(Threat) : 0u) |
-+        ((!ready_ || !has_active_client()) ? uint32_t(Recovery) : 0u) | (pending_decision_ ? uint32_t(Decision) : 0u);
++        ((!ready_ || !has_active_client()) ? uint32_t(Recovery) : 0u) | ((pending_decision_ || trade_context_) ? uint32_t(Decision) : 0u);
 +}
 +
 +void CwmServer::service_clock(avatar& u, map& m, game& g) {
@@ -5014,6 +5336,12 @@ index 0000000..3662abb
 +
 +bool CwmServer::advance_turn(avatar& u, map& m, game& g,
 +                           const std::function<bool()>& keep_running) {
++    const external_trade_provider trade_provider{
++        [&](trade_ui& model){return ask_trade(model,u,m,g,keep_running);},
++        [&](bool accepted){finish_trade(accepted,u,m,g);}
++    };
++    const external_trade_scope trade_scope(trade_provider);
++
 +    if (realtime_) {
 +        while (keep_running() && pause_reasons(g)) {
 +            service_clock(u, m, g);
@@ -5385,7 +5713,7 @@ index 0000000..3662abb
 +    if (msg->payload_type() == Payload::SnapshotAck) {
 +        const auto* ack = msg->payload_as_SnapshotAck();
 +        if (ack && awaiting_state_ && ack->state_id() == awaiting_state_) {
-+            awaiting_state_ = 0; ready_ = true; send_decision();
++            awaiting_state_ = 0; ready_ = true; send_decision(); send_trade();
 +            if (realtime_) { ++world_revision_; send_state(u, m, g); detect_threats(u, m, g); }
 +        }
 +        return;
@@ -5404,7 +5732,7 @@ index 0000000..3662abb
 +        const std::string code = request->code() ? request->code()->str() : "";
 +        const auto *language = ::cwm::product_language(code);
 +        const bool valid = request->request_id() && language;
-+        const bool accepted = valid && !pending_decision_;
++        const bool accepted = valid && !pending_decision_ && !trade_context_;
 +        // Never replay an open native question to obtain translated text:
 +        // entry effects and choices must execute exactly once.
 +        if (accepted && code != ::cwm::product_language_storage()) {
@@ -5431,7 +5759,8 @@ index 0000000..3662abb
 +            decision_answer_ = response->choice();
 +        return;
 +    }
-+    if (pending_decision_ && msg->payload_type() != Payload::SimulationControlRequest &&
++    if (handle_trade_message(*msg,u,m,g)) return;
++    if ((pending_decision_ || trade_context_) && msg->payload_type() != Payload::SimulationControlRequest &&
 +        msg->payload_type() != Payload::MovementIntentRequest &&
 +        msg->payload_type() != Payload::ContinuousIntentRequest) return;
 +    if (const auto* request = msg->payload_as_CraftingQueryRequest()) {
@@ -5771,13 +6100,120 @@ index 0000000..3662abb
 +    else commands_.push_back(command);
 +}
 +
++
++void CwmServer::send_trade() {
++    if (!trade_context_ || !trade_context_->model || !ready_ || !has_active_client() || pending_decision_) return;
++    auto& t=*trade_context_;auto& model=*t.model;auto& np=model.external_npc();
++    const auto validation=model.external_valid();
++    if(!validation.empty()) {t.cancel=true;t.error=validation;return;}
++    const auto& rows=model.external_entries();
++    if(rows.size()>2048) {t.cancel=true;t.error="Too many trade entries for this interface.";return;}
++    cdda::cwm::MessageBuilder wire(sequence_counter_,world_revision_,identity_);auto& f=wire.builder();
++    std::vector<flatbuffers::Offset<CDDA::CWM::TradeEntry>> entries;
++    std::unordered_map<const item*,uint32_t> ids;
++    for(size_t n=0;n<rows.size();++n)for(const auto& loc:rows[n].entry->locations)if(loc)ids[loc.get_item()]=n+1;
++    for(size_t n=0;n<rows.size();++n) {
++        const auto& row=rows[n];auto loc=row.entry->any_item();if(!loc) {t.cancel=true;t.error="Trade inventory changed.";return;}
++        uint32_t parent=0;if(loc.has_parent()) {auto p=loc.parent_item();if(p && ids.count(p.get_item()))parent=ids.at(p.get_item());}
++        auto reason=model.external_reason(row);
++        if(row.unit_price<0)reason="Unsupported native item value.";
++        entries.push_back(CDDA::CWM::CreateTradeEntry(f,n+1,row.trader,parent,
++            f.CreateString(loc->typeId().str()),f.CreateString(loc->tname().substr(0,16384)),
++            f.CreateString(loc->get_category_of_contents().get_id().str()),f.CreateString(loc.describe(&get_avatar()).substr(0,4096)),
++            int(std::min<size_t>(INT_MAX,row.entry->get_available_count())),int(row.entry->chosen_count),std::max(0,row.unit_price),
++            f.CreateString(reason.substr(0,4096)),row.trader ? np.is_worn(*loc) : get_avatar().is_worn(*loc),
++            row.trader ? np.is_wielding(*loc) : get_avatar().is_wielding(*loc),loc->rotten(),loc->is_container()));
++    }
++    const auto denial=model.external_denial();
++    emit(wire.finish_message(CDDA::CWM::Payload::TradeView,CDDA::CWM::CreateTradeView(f,t.id,t.quote,t.query,t.npc,
++        f.CreateString(np.get_name().substr(0,4096)),f.CreateString(model.external_title().substr(0,4096)),f.CreateVector(entries),
++        model.external_value(false),model.external_value(true),model.external_balance(),
++        npc_trading::calc_npc_owes_you(np,model.external_balance()),np.max_credit_extended(),model.external_service_cost(),
++        np.will_exchange_items_freely(),denial.empty(),f.CreateString((t.error.empty()?denial:t.error).substr(0,4096))).Union()));
++}
++
++bool CwmServer::ask_trade(trade_ui& model,avatar& u,map& m,game& g,const std::function<bool()>& keep_running) {
++    trade_context_=std::make_unique<TradeContext>();auto& t=*trade_context_;
++    t.model=&model;t.id=next_trade_++;t.quote=next_quote_++;t.connection=identity_.connection;
++    t.npc=(uint64_t(1)<<63)|uint64_t(model.external_npc().getID().get_value());
++    model.external_entries();
++    if(realtime_) {clock_.sample(cdda::cwm::SimulationClock::Wall::now(),false);drop_realtime_input(u,m,g);}
++    ++world_revision_;send_state(u,m,g);send_trade();
++    while(keep_running() && has_active_client() && identity_.connection==t.connection && !t.cancel) {
++        update(u,m,g);
++        if(!conversation_target(t.npc,u,g) || model.external_npc().is_enemy()) {t.error="The trader is no longer available.";break;}
++        if(t.commit_requested) {
++            t.commit_requested=false;
++            auto error=model.external_denial();
++            if(manual_pause_ || threat_pause_)error="Simulation is paused";
++            const bool accepted=error.empty() && model.external_confirm();
++            if(accepted) {t.model=nullptr;return true;}
++            if(error.empty())error="Trade not confirmed.";
++            send_result({t.commit,false,error},u,m,g);t.commit=0;t.error=error;
++            send_trade();
++        }
++        std::this_thread::sleep_for(std::chrono::milliseconds(1));
++    }
++    t.model=nullptr;
++    if(t.error.empty())t.error="Trade cancelled.";
++    return false;
++}
++
++void CwmServer::finish_trade(bool accepted,avatar& u,map& m,game& g) {
++    if(!trade_context_)return;
++    const auto id=trade_context_->id,command=trade_context_->commit;
++    const std::string error=accepted?"":trade_context_->error;
++    trade_context_.reset();++world_revision_;
++    if(command)send_result({command,accepted,error},u,m,g);
++    if(ready_ && has_active_client()) {
++        cdda::cwm::MessageBuilder wire(sequence_counter_,world_revision_,identity_);
++        emit(wire.finish_message(CDDA::CWM::Payload::TradeClosed,CDDA::CWM::CreateTradeClosed(wire.builder(),id,accepted,wire.builder().CreateString(error)).Union()));
++        send_state(u,m,g);
++    }
++}
++
++bool CwmServer::handle_trade_message(const CDDA::CWM::CwmMessage& msg,avatar& u,map& m,game& g) {
++    if(const auto* r=msg.payload_as_TradeCancelRequest()) {
++        if(trade_context_ && r->trade_id()==trade_context_->id && !pending_decision_)trade_context_->cancel=true;
++        return true;
++    }
++    if(const auto* r=msg.payload_as_TradeOfferRequest()) {
++        if(!trade_context_ || !trade_context_->model || pending_decision_ || trade_context_->commit_requested)return true;
++        auto& t=*trade_context_;t.query=r->request_id();
++        if(!r->request_id() || r->trade_id()!=t.id || r->quote_id()!=t.quote)t.error="Offer expired; use the current quote.";
++        else {
++            t.error=t.model->external_set(r->entry_id(),r->quantity());
++            if(t.error.empty())t.quote=next_quote_++;
++        }
++        send_trade();return true;
++    }
++    const auto* r=msg.payload_as_TradeCommitRequest();if(!r)return false;
++    const auto status=ledger_.begin(client_id_,r->command_id(),"trade:"+std::to_string(r->trade_id())+":"+std::to_string(r->quote_id()));
++    using S=cdda::cwm::CommandLedger::Status;
++    if(status==S::Pending)return true;
++    if(status==S::Complete) {const auto result=ledger_.find(r->command_id())->outcome;send_result({result.id,result.accepted,result.error},u,m,g);return true;}
++    if(status!=S::Fresh) {server_->client()->close();return true;}
++    std::string error;
++    if(!trade_context_ || !trade_context_->model || pending_decision_)error="No available trade quote.";
++    else if(trade_context_->commit || trade_context_->commit_requested)error="A trade confirmation is already pending.";
++    else if(r->trade_id()!=trade_context_->id || r->quote_id()!=trade_context_->quote)error="Offer expired; use the current quote.";
++    else if(manual_pause_ || threat_pause_)error="Simulation is paused";
++    else if(!conversation_target(trade_context_->npc,u,g) || trade_context_->model->external_npc().is_enemy())error="The trader is no longer available.";
++    else error=trade_context_->model->external_denial();
++    if(!error.empty()) {
++        send_result({r->command_id(),false,error},u,m,g);
++        if(trade_context_) {trade_context_->error=error;send_trade();}
++    } else {trade_context_->commit=r->command_id();trade_context_->commit_requested=true;}
++    return true;
++}
++
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.h b/src/cwm/cwm_server.h
 new file mode 100644
-index 0000000..2e284bc
+index 0000000..eaa6053
 --- /dev/null
 +++ b/src/cwm/cwm_server.h
-@@ -0,0 +1,156 @@
+@@ -0,0 +1,164 @@
 +// CDDA CWM IPC Server
 +// Licensed under Apache-2.0
 +#pragma once
@@ -5797,6 +6233,7 @@ index 0000000..2e284bc
 +#include "cwm/cwm_session.hpp"
 +#include "cwm/cwm_clock.hpp"
 +
++class trade_ui;
 +class avatar;
 +class map;
 +class game;
@@ -5806,6 +6243,7 @@ index 0000000..2e284bc
 +}
 +
 +namespace cwm {
++struct TradeContext;
 +
 +class CwmServer {
 +public:
@@ -5917,6 +6355,12 @@ index 0000000..2e284bc
 +    std::vector<std::string> decision_labels_;
 +    std::vector<external_medical_option> decision_medical_;
 +    std::optional<external_conversation_info> decision_conversation_;
++    std::unique_ptr<TradeContext> trade_context_;
++    uint64_t next_trade_=1,next_quote_=1;
++    bool ask_trade(trade_ui& model,avatar& u,map& m,game& g,const std::function<bool()>& keep_running);
++    void finish_trade(bool accepted,avatar& u,map& m,game& g);
++    void send_trade();
++    bool handle_trade_message(const CDDA::CWM::CwmMessage& msg,avatar& u,map& m,game& g);
 +    CwmMapExporter::ProjectionCache projection_cache_;
 +
 +    void send_state(avatar& u, map& m, game& g, bool full = false, uint64_t completed = 0);
@@ -5983,6 +6427,22 @@ index 0000000..527a652
 +    return pain <= 0 ? 10 : pain > 70 ? 0 : 10 - (pain + 9) / 10;
 +}
 +} // namespace cwm
+diff --git a/src/cwm/cwm_trade.h b/src/cwm/cwm_trade.h
+new file mode 100644
+index 0000000..a5c21f3
+--- /dev/null
++++ b/src/cwm/cwm_trade.h
+@@ -0,0 +1,10 @@
++#pragma once
++#include "trade_ui.h"
++namespace cwm {
++struct TradeContext {
++    trade_ui *model = nullptr;
++    uint64_t id=0,quote=0,query=0,npc=0,connection=0,commit=0;
++    bool cancel=false,commit_requested=false;
++    std::string error;
++};
++}
 diff --git a/src/cwm/cwm_windows.rc b/src/cwm/cwm_windows.rc
 new file mode 100644
 index 0000000..eb8c27f
@@ -6277,6 +6737,31 @@ index 0000000..48a1fc0
 +        ~external_conversation_scope() { external_conversation = previous; }
 +        external_conversation_scope( const external_conversation_scope & ) = delete;
 +        external_conversation_scope &operator=( const external_conversation_scope & ) = delete;
++};
+diff --git a/src/external_trade.h b/src/external_trade.h
+new file mode 100644
+index 0000000..41692c0
+--- /dev/null
++++ b/src/external_trade.h
+@@ -0,0 +1,19 @@
++#pragma once
++#include <functional>
++
++class trade_ui;
++struct external_trade_provider {
++    std::function<bool( trade_ui & )> choose;
++    std::function<void( bool )> finished;
++};
++inline thread_local const external_trade_provider *external_trade = nullptr;
++class external_trade_scope {
++    const external_trade_provider *previous;
++    public:
++        explicit external_trade_scope( const external_trade_provider &provider ) : previous( external_trade ) {
++            external_trade = &provider;
++        }
++        ~external_trade_scope() { external_trade = previous; }
++        external_trade_scope( const external_trade_scope & ) = delete;
++        external_trade_scope &operator=( const external_trade_scope & ) = delete;
 +};
 diff --git a/src/safe_mode_actions.h b/src/safe_mode_actions.h
 new file mode 100644
@@ -9483,10 +9968,10 @@ index 0000000..39d991c
 +}
 diff --git a/tests/cwm_runtime_test.cpp b/tests/cwm_runtime_test.cpp
 new file mode 100644
-index 0000000..3715a87
+index 0000000..b49d3b4
 --- /dev/null
 +++ b/tests/cwm_runtime_test.cpp
-@@ -0,0 +1,579 @@
+@@ -0,0 +1,661 @@
 +#include "cwm_motion.h"
 +#include "cata_catch.h"
 +#include "avatar.h"
@@ -10065,4 +10550,86 @@ index 0000000..3715a87
 +        return 0;
 +    } );
 +    CHECK( prompts == 2 );
++}
++
++#include "external_trade.h"
++#include "trade_ui.h"
++#include "rng.h"
++#include "npctrade.h"
++
++static void prepare_trade_npc( npc &np ) {
++    np.normalize();np.randomize(npc_class_id("NC_NONE"));np.set_fac(faction_id("no_faction"));
++    np.remove_items_with([](const item&){return true;});np.remove_weapon();np.clear_worn();
++    np.setpos(get_avatar().pos()+tripoint_north);
++    np.wear_item(item(itype_id("backpack"),calendar::turn),false);
++    np.op_of_u.owed=100000;np.op_of_u.trust=20;
++}
++
++TEST_CASE("cwm_trade_consumes_the_selected_charge_stack_only", "[cwm][trade]") {
++    prepare_runtime();auto& u=get_avatar();u.wear_item(item(itype_id("backpack"),calendar::turn),false);
++    item a(itype_id("9mm"),calendar::turn,5);a.set_var("uid","trade-a");
++    item b(itype_id("9mm"),calendar::turn,7);b.set_var("uid","trade-b");
++    item_location first(u,&u.i_add(a)),second(u,&u.i_add(b));REQUIRE(first);REQUIRE(second);
++    npc np;prepare_trade_npc(np);
++    trade_selector::select_t offer{{second,3}};std::list<item_location*> map;
++    auto escrow=npc_trading::transfer_items(offer,u,np,map,true);
++    CHECK(first->charges==5);CHECK(second->charges==4);REQUIRE(escrow.size()==1);
++    CHECK(escrow.front().charges==3);CHECK(escrow.front().get_var("uid")=="trade-b");CHECK(escrow.front().is_owned_by(np));
++}
++
++TEST_CASE("cwm_native_trade_quote_confirmation_and_read_only_browsing", "[cwm][trade]") {
++    prepare_runtime();const override_option autosave("AUTOSAVE","false");auto& u=get_avatar();
++    u.wear_item(item(itype_id("backpack"),calendar::turn),false);
++    npc np;prepare_trade_npc(np);
++    item bandage(itype_id("bandages"),calendar::turn);bandage.set_var("uid","native-trade-bandage");bandage.set_owner(np);np.i_add(bandage);
++    const bool accept=GENERATE(false,true);bool finished=false;int finishes=0;int expected=0;
++    const int owed=np.op_of_u.owed;
++    const external_trade_provider provider{
++        [&](trade_ui& model) {
++            const auto before=calendar::turn;const auto engine=rng_get_engine();
++            const auto& rows=model.external_entries();unsigned id=0;
++            for(unsigned n=0;n<rows.size();++n)if(rows[n].trader && rows[n].entry->any_item()->get_var("uid")=="native-trade-bandage")id=n+1;
++            REQUIRE(id);CHECK(model.external_valid().empty());CHECK(model.external_valid().empty());
++            CHECK(rng_get_engine()==engine);CHECK(calendar::turn==before);
++            REQUIRE(model.external_set(id,1).empty());CHECK(model.external_denial().empty());
++            CHECK(model.external_value(true)==npc_trading::trading_price(u,np,{rows[id-1].entry->any_item(),1}));
++            expected=npc_trading::calc_npc_owes_you(np,model.external_balance());
++            return model.external_confirm();
++        },[&](bool value){finished=value;++finishes;}
++    };
++    u.moves=1000;
++    do_turn_with_action([&](){const external_trade_scope scope(provider);CHECK(npc_trading::trade(np,0,"Native fixture")==accept);finish_external_action_phase();return false;},
++        [&](const std::string&,const std::vector<std::string>& labels){REQUIRE(labels.size()==2);return accept?0:1;});
++    CHECK(finishes==1);CHECK(finished==accept);CHECK(np.op_of_u.owed==(accept?expected:owed));
++    const auto carried=u.items_with([](const item& it){return it.get_var("uid")=="native-trade-bandage";});
++    const auto remaining=np.items_with([](const item& it){return it.get_var("uid")=="native-trade-bandage";});
++    CHECK(carried.size()==(accept?1:0));CHECK(remaining.size()==(accept?0:1));
++    if(accept)CHECK(carried.front()->is_owned_by(u));
++}
++
++TEST_CASE("cwm_native_trade_stale_context_and_container_overlap_are_rejected", "[cwm][trade]") {
++    prepare_runtime();const override_option autosave("AUTOSAVE","false");auto& u=get_avatar();
++    u.wear_item(item(itype_id("backpack"),calendar::turn),false);
++    item ammo(itype_id("9mm"),calendar::turn,8);ammo.set_var("uid","trade-stale");u.i_add(ammo);
++    npc np;prepare_trade_npc(np);u.moves=1000;
++    do_turn_with_action([&](){
++        trade_ui model(u,np,0,"Validation");const auto& rows=model.external_entries();unsigned child=0,parent=0;
++        for(unsigned n=0;n<rows.size();++n)if(!rows[n].trader && rows[n].entry->any_item()->get_var("uid")=="trade-stale")child=n+1;
++        REQUIRE(child);const auto loc=rows[child-1].entry->any_item();REQUIRE(loc.has_parent());const auto p=loc.parent_item();
++        for(unsigned n=0;n<rows.size();++n)if(rows[n].entry->any_item()==p)parent=n+1;
++        REQUIRE(parent);CHECK(model.external_set(parent,1).empty());CHECK_FALSE(model.external_set(child,1).empty());
++        CHECK(model.external_set(parent,0).empty());CHECK(model.external_set(child,3).empty());
++        loc->charges--;CHECK_FALSE(model.external_valid().empty());CHECK_FALSE(model.external_denial().empty());
++        finish_external_action_phase();return false;
++    },[](const std::string&,const std::vector<std::string>& labels){return int(labels.size())-1;});
++}
++
++TEST_CASE("cwm_native_trade_checks_offered_charge_capacity_and_wide_credit_math", "[cwm][trade]") {
++    prepare_runtime();npc np;prepare_trade_npc(np);auto& u=get_avatar();
++    u.wear_item(item(itype_id("backpack"),calendar::turn),false);
++    item ammo(itype_id("9mm"),calendar::turn,200000);auto& source=u.i_add(ammo);
++    item_location loc(u,&source);
++    CHECK(npc_trading::npc_can_fit_items(np,{{loc,1}}));
++    CHECK_FALSE(npc_trading::npc_can_fit_items(np,{{loc,200000}}));
++    CHECK(npc_trading::npc_will_accept_trade(np,INT_MAX));
 +}

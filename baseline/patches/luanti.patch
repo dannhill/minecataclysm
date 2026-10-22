@@ -331,7 +331,7 @@ index 16ceda4..20bd596 100644
  			float old_anim_speed = player->last_animation_speed;
  			m_velocity = v3f(0,0,0);
 diff --git a/src/client/game.cpp b/src/client/game.cpp
-index 27b5833..a2c1eba 100644
+index 27b5833..cd0864e 100644
 --- a/src/client/game.cpp
 +++ b/src/client/game.cpp
 @@ -8,6 +8,10 @@
@@ -345,10 +345,15 @@ index 27b5833..a2c1eba 100644
  #include "client.h"
  #include "client/clientevent.h"
  #include "client/gameui.h"
-@@ -118,6 +122,67 @@ struct TextDestPlayerInventory : public TextDest
+@@ -118,6 +122,72 @@ struct TextDestPlayerInventory : public TextDest
  	Client *m_client;
  };
  
++struct CwmTradeFormHandler : public TextDest {
++    uint64_t id,quote,connection;
++    CwmTradeFormHandler(uint64_t a,uint64_t b,uint64_t c):id(a),quote(b),connection(c){m_formname="CWM_TRADE";}
++    void gotText(const StringMap& fields) override {cdda_client::CddaBridge::getInstance().tradeFields(id,quote,connection,fields);}
++};
 +struct CwmDecisionFormHandler : public TextDest {
 +    uint64_t id,connection;
 +    CwmDecisionFormHandler(uint64_t selected,uint64_t generation):id(selected),connection(generation){m_formname="CWM_DECISION";}
@@ -413,7 +418,7 @@ index 27b5833..a2c1eba 100644
  struct LocalFormspecHandler : public TextDest
  {
  	LocalFormspecHandler(const std::string &formname)
-@@ -134,6 +199,10 @@ struct LocalFormspecHandler : public TextDest
+@@ -134,6 +204,10 @@ struct LocalFormspecHandler : public TextDest
  	void gotText(const StringMap &fields)
  	{
  		if (m_formname == "MT_PAUSE_MENU") {
@@ -424,7 +429,7 @@ index 27b5833..a2c1eba 100644
  			if (fields.find("btn_sound") != fields.end()) {
  				g_gamecallback->changeVolume();
  				return;
-@@ -443,12 +512,15 @@ class GameGlobalShaderConstantSetter : public IShaderConstantSetter
+@@ -443,12 +517,15 @@ class GameGlobalShaderConstantSetter : public IShaderConstantSetter
  		get_sunlight_color(&sunlight, daynight_ratio);
  		m_day_light.set(sunlight, services);
  
@@ -442,7 +447,7 @@ index 27b5833..a2c1eba 100644
  		m_animation_timer_delta_vertex.set(&animation_timer_delta_f, services);
  		m_animation_timer_delta_pixel.set(&animation_timer_delta_f, services);
  
-@@ -811,6 +883,7 @@ class Game {
+@@ -811,6 +888,7 @@ class Game {
  
  	void showDeathFormspecLegacy();
  	void showPauseMenu();
@@ -450,7 +455,7 @@ index 27b5833..a2c1eba 100644
  
  	void pauseAnimation();
  	void resumeAnimation();
-@@ -932,6 +1005,7 @@ class Game {
+@@ -932,6 +1010,7 @@ class Game {
  	bool m_first_loop_after_window_activation = false;
  	bool m_camera_offset_changed = false;
  	bool m_game_focused = false;
@@ -458,7 +463,7 @@ index 27b5833..a2c1eba 100644
  
  	bool m_does_lost_focus_pause_game = false;
  
-@@ -1009,6 +1083,8 @@ Game::Game() :
+@@ -1009,6 +1088,8 @@ Game::Game() :
  
  Game::~Game()
  {
@@ -467,7 +472,7 @@ index 27b5833..a2c1eba 100644
  	delete client;
  	delete soundmaker;
  	sound_manager.reset();
-@@ -1181,6 +1257,13 @@ void Game::run()
+@@ -1181,6 +1262,13 @@ void Game::run()
  		updateCamera(dtime);
  		updateSound(dtime);
  		processPlayerInteraction(dtime, m_game_ui->m_flags.show_hud);
@@ -481,7 +486,7 @@ index 27b5833..a2c1eba 100644
  		updateFrame(&graph, &stats, dtime, cam_view);
  		updateProfilerGraphs(&graph);
  
-@@ -1239,6 +1322,8 @@ void Game::shutdown()
+@@ -1239,6 +1327,8 @@ void Game::shutdown()
  		}
  	}
  
@@ -490,7 +495,7 @@ index 27b5833..a2c1eba 100644
  	delete client;
  	client = nullptr;
  	delete soundmaker;
-@@ -2046,14 +2131,38 @@ void Game::processUserInput(f32 dtime)
+@@ -2046,14 +2136,38 @@ void Game::processUserInput(f32 dtime)
  	if (m_cache_doubletap_jump && runData.jump_timer_down <= 0.4f)
  		runData.jump_timer_down += dtime;
  
@@ -532,7 +537,7 @@ index 27b5833..a2c1eba 100644
  		dropSelectedItem(isKeyDown(KeyType::SNEAK));
  	} else if (wasKeyDown(KeyType::AUTOFORWARD)) {
  		toggleAutoforward();
-@@ -2063,6 +2172,8 @@ void Game::processKeyInput()
+@@ -2063,6 +2177,8 @@ void Game::processKeyInput()
  	} else if (wasKeyDown(KeyType::INVENTORY)) {
  		openInventory();
  	} else if (input->cancelPressed()) {
@@ -541,7 +546,7 @@ index 27b5833..a2c1eba 100644
  #ifdef __ANDROID__
  		m_android_chat_open = false;
  #endif
-@@ -2083,7 +2194,8 @@ void Game::processKeyInput()
+@@ -2083,7 +2199,8 @@ void Game::processKeyInput()
  	} else if (wasKeyDown(KeyType::FREEMOVE)) {
  		toggleFreeMove();
  	} else if (wasKeyDown(KeyType::JUMP)) {
@@ -551,7 +556,7 @@ index 27b5833..a2c1eba 100644
  	} else if (wasKeyDown(KeyType::PITCHMOVE)) {
  		togglePitchMove();
  	} else if (wasKeyDown(KeyType::FASTMOVE)) {
-@@ -2137,12 +2249,13 @@ void Game::processKeyInput()
+@@ -2137,12 +2254,13 @@ void Game::processKeyInput()
  		toggleMinimap(isKeyDown(KeyType::SNEAK));
  	} else if (wasKeyPressed(KeyType::TOGGLE_CHAT)) {
  		m_game_ui->toggleChat(client);
@@ -567,7 +572,7 @@ index 27b5833..a2c1eba 100644
  	} else if (wasKeyPressed(KeyType::TOGGLE_PROFILER)) {
  		m_game_ui->toggleProfiler();
  	} else if (wasKeyDown(KeyType::INCREASE_VIEWING_RANGE)) {
-@@ -2154,9 +2267,17 @@ void Game::processKeyInput()
+@@ -2154,9 +2272,17 @@ void Game::processKeyInput()
  	} else if (wasKeyDown(KeyType::ZOOM)) {
  		checkZoomEnabled();
  	} else if (wasKeyDown(KeyType::QUICKTUNE_NEXT)) {
@@ -587,7 +592,7 @@ index 27b5833..a2c1eba 100644
  	} else if (wasKeyDown(KeyType::QUICKTUNE_INC)) {
  		quicktune->inc();
  	} else if (wasKeyDown(KeyType::QUICKTUNE_DEC)) {
-@@ -2178,6 +2299,22 @@ void Game::processItemSelection(u16 *new_playeritem)
+@@ -2178,6 +2304,22 @@ void Game::processItemSelection(u16 *new_playeritem)
  	LocalPlayer *player = client->getEnv().getLocalPlayer();
  
  	*new_playeritem = player->getWieldIndex();
@@ -610,7 +615,7 @@ index 27b5833..a2c1eba 100644
  	u16 max_item = player->getMaxHotbarItemcount();
  	if (max_item == 0)
  		return;
-@@ -2238,6 +2375,18 @@ void Game::dropSelectedItem(bool single_item)
+@@ -2238,6 +2380,18 @@ void Game::dropSelectedItem(bool single_item)
  
  void Game::openInventory()
  {
@@ -629,7 +634,7 @@ index 27b5833..a2c1eba 100644
  	/*
  	 * Don't permit to open inventory is CAO or player doesn't exists.
  	 * This prevent showing an empty inventory at player load
-@@ -2737,8 +2886,68 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
+@@ -2737,8 +2891,68 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
  		control.aux1 = control.aux1 ^ true;
  	}
  
@@ -698,7 +703,7 @@ index 27b5833..a2c1eba 100644
  	//tt.stop();
  }
  
-@@ -2784,6 +2993,73 @@ inline void Game::step(f32 dtime)
+@@ -2784,6 +2998,84 @@ inline void Game::step(f32 dtime)
  
  	if (!m_is_paused)
  		client->step(dtime);
@@ -760,6 +765,17 @@ index 27b5833..a2c1eba 100644
 +        auto *decision_menu=m_game_ui->getFormspecGUI();
 +        if(decision_menu && m_game_ui->getFormspecName()=="CWM_DECISION" && !bridge.getMetrics().pending_decision)
 +            decision_menu->quitMenu();
++        if(bridge.takeTradeClose()) {
++            auto *form=m_game_ui->getFormspecGUI();
++            if(form && m_game_ui->getFormspecName()=="CWM_TRADE")form->quitMenu();
++        }
++        const auto trade_update=bridge.takeTradeUpdate();
++        if(!trade_update.empty()) {
++            auto *&form=m_game_ui->updateFormspec("CWM_TRADE");
++            GUIFormSpecMenu::create(form,client,m_rendering_engine->get_gui_env(),&input->joystick,
++                new FormspecFormSource(trade_update),new CwmTradeFormHandler(bridge.tradeId(),bridge.tradeQuote(),bridge.tradeConnection()),"",sound_manager.get());
++            form->allowClose(false);
++        }
 +        const auto decision_update=bridge.takeDecisionDialogUpdate();
 +        if(!decision_update.empty()) {
 +            auto *&form=m_game_ui->updateFormspec("CWM_DECISION");
@@ -772,7 +788,7 @@ index 27b5833..a2c1eba 100644
  }
  
  static void pauseNodeAnimation(PausedNodesList &paused, scene::ISceneNode *node) {
-@@ -3246,6 +3522,7 @@ void Game::updateCamera(f32 dtime)
+@@ -3246,6 +3538,7 @@ void Game::updateCamera(f32 dtime)
  	tool_reload_ratio = MYMIN(tool_reload_ratio, 1.0);
  	camera->update(player, dtime, tool_reload_ratio);
  	camera->step(dtime);
@@ -780,7 +796,7 @@ index 27b5833..a2c1eba 100644
  
  	f32 camera_fov = camera->getFovMax();
  	v3s16 camera_offset = camera->getOffset();
-@@ -3262,6 +3539,7 @@ void Game::updateCamera(f32 dtime)
+@@ -3262,6 +3555,7 @@ void Game::updateCamera(f32 dtime)
  		if (m_camera_offset_changed) {
  			client->updateCameraOffset(camera_offset);
  			client->getEnv().updateCameraOffset(camera_offset);
@@ -788,7 +804,7 @@ index 27b5833..a2c1eba 100644
  
  			if (clouds)
  				clouds->updateCameraOffset(camera_offset);
-@@ -3314,6 +3592,8 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
+@@ -3314,6 +3608,8 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
  
  	const ItemDefinition &selected_def = selected_item.getDefinition(itemdef_manager);
  	f32 d = getToolRange(selected_item, hand_item, itemdef_manager);
@@ -797,7 +813,7 @@ index 27b5833..a2c1eba 100644
  
  	core::line3d<f32> shootline;
  
-@@ -3365,6 +3645,54 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
+@@ -3365,6 +3661,54 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
  	// but the halo rendering code is already inefficient so there's no point in optimizing it here
  	hud->updateSelectionMesh(camera_offset);
  
@@ -852,7 +868,7 @@ index 27b5833..a2c1eba 100644
  	// Allow digging again if button is not pressed
  	if (runData.digging_blocked && !isKeyDown(KeyType::DIG))
  		runData.digging_blocked = false;
-@@ -4247,7 +4575,8 @@ void Game::updateClouds(float dtime)
+@@ -4247,7 +4591,8 @@ void Game::updateClouds(float dtime)
  {
  	if (this->sky->getCloudsVisible()) {
  		this->clouds->setVisible(true);
@@ -862,7 +878,7 @@ index 27b5833..a2c1eba 100644
  		// this->camera->getPosition is not enough for third-person camera.
  		v3f camera_node_position = this->camera->getCameraNode()->getPosition();
  		v3s16 camera_offset      = this->camera->getOffset();
-@@ -4319,7 +4648,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
+@@ -4319,7 +4664,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
  	/*
  		Fog
  	*/
@@ -876,7 +892,7 @@ index 27b5833..a2c1eba 100644
  		this->driver->setFog(
  				fog_color,
  				video::EFT_FOG_LINEAR,
-@@ -4470,7 +4804,7 @@ void Game::showDeathFormspecLegacy()
+@@ -4470,7 +4820,7 @@ void Game::showDeathFormspecLegacy()
  }
  
  #define GET_KEY_NAME(KEY) gettext(getKeySetting(#KEY).name())
@@ -885,7 +901,7 @@ index 27b5833..a2c1eba 100644
  {
  	std::string control_text;
  
-@@ -4518,6 +4852,22 @@ void Game::showPauseMenu()
+@@ -4518,6 +4868,22 @@ void Game::showPauseMenu()
  		<< strgettext("Exit to Menu") << "]";
  	os		<< "button_exit[4," << (ypos++) << ";3,0.5;btn_exit_os;"
  		<< strgettext("Exit to OS")   << "]";
@@ -908,7 +924,7 @@ index 27b5833..a2c1eba 100644
  	if (!control_text.empty()) {
  	os		<< "textarea[7.5,0.25;3.9,6.25;;" << control_text << ";]";
  	}
-@@ -4536,8 +4886,8 @@ void Game::showPauseMenu()
+@@ -4536,8 +4902,8 @@ void Game::showPauseMenu()
  	}
  	os << "\n";
  	if (simple_singleplayer_mode || address.empty()) {
@@ -919,7 +935,7 @@ index 27b5833..a2c1eba 100644
  		// Note: Status of enable_damage and creative_mode settings is intentionally
  		// NOT shown here because the game might roll its own damage system and/or do
  		// a per-player Creative Mode, in which case writing it here would mislead.
-@@ -4559,10 +4909,15 @@ void Game::showPauseMenu()
+@@ -4559,10 +4925,15 @@ void Game::showPauseMenu()
  	}
  	os << ";]";
  
@@ -2151,10 +2167,10 @@ index 0000000..e1e7236
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..9c9c097
+index 0000000..7fd8db6
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,3279 @@
+@@ -0,0 +1,3358 @@
 +#include "cwm/product_language.hpp"
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
@@ -2169,6 +2185,7 @@ index 0000000..9c9c097
 +#include "crafting_inventory.h"
 +#include "decision_text.h"
 +#include "decision_dialog.h"
++#include "trade_dialog.h"
 +#include "cwm/cwm_clock.hpp"
 +#include "avatar_status.h"
 +#include "posture_input.h"
@@ -2305,6 +2322,9 @@ index 0000000..9c9c097
 +    
 +    irr::gui::IGUIStaticText* posture_text_{nullptr};
 +    irr::gui::IGUIStaticText* vertical_text_{nullptr};
++    TradeDialog trade_dialog_;
++    bool trade_dirty_=false,trade_close_=false;
++    uint64_t trade_request_=0,trade_commit_=0;
 +    DecisionDialog decision_dialog_; bool decision_dirty_{false};
 +    irr::scene::ISceneManager* smgr_{nullptr};
 +    std::unordered_map<uint16_t, content_t> material_map_;
@@ -3608,7 +3628,8 @@ index 0000000..9c9c097
 +                metrics_.continuous_motion = snap->clock() && snap->clock()->continuous_motion();
 +                metrics_.pause_reasons = snap->clock() ? snap->clock()->pause_reasons() : 0;
 +                if(decision_dialog_.submitted && !(metrics_.pause_reasons & cdda::cwm::Decision)) {
-+                    metrics_.pending_decision=0;decision_dialog_={};decision_dirty_=false;
++                    trade_dialog_={};trade_dirty_=false;trade_close_=true;trade_commit_=trade_request_=0;
++        metrics_.pending_decision=0;decision_dialog_={};decision_dirty_=false;
 +                }
 +                metrics_.time_scale = snap->clock() ? snap->clock()->time_scale() : 1.f;
 +                if (metrics_.safety_stop || (metrics_.pause_reasons & uint32_t(1 | 4 | 8)))
@@ -3765,6 +3786,11 @@ index 0000000..9c9c097
 +            }
 +
 +            case CDDA::CWM::Payload::CommandAck: {
++                if(const auto* ack=msg->payload_as_CommandAck();trade_commit_ && ack->command_id()==trade_commit_) {
++                    trade_commit_=0;trade_dialog_.waiting=false;trade_dirty_=true;
++                    if(ack->error_message())trade_dialog_.notice=ack->error_message()->str();
++                }
++
 +                const auto* ack = msg->payload_as_CommandAck();
 +                if(ack && ack->command_id()==crafting_favorite_command_) {
 +                    crafting_favorite_refresh_=true;
@@ -3795,6 +3821,19 @@ index 0000000..9c9c097
 +                break;
 +            }
 +
++            case CDDA::CWM::Payload::TradeView: {
++                const auto* view=msg->payload_as_TradeView();
++                trade_dialog_.read(*view,session_.identity.connection);trade_dirty_=true;trade_close_=false;
++                break;
++            }
++            case CDDA::CWM::Payload::TradeClosed: {
++                const auto* closed=msg->payload_as_TradeClosed();
++                if(closed->trade_id()==trade_dialog_.id) {
++                    if(closed->error()->size()) {cue_caption_=utf8_to_wide(closed->error()->str());caption_seconds_=3.f;}
++                    trade_dialog_={};trade_dirty_=false;trade_close_=true;trade_commit_=0;
++                }
++                break;
++            }
 +            case CDDA::CWM::Payload::DecisionPrompt: {
 +                const auto* prompt = msg->payload_as_DecisionPrompt();
 +                if (!prompt || !prompt->text() || !prompt->choices() || prompt->choices()->size() == 0 ||
@@ -4647,6 +4686,62 @@ index 0000000..9c9c097
 +    return pimpl_ && pimpl_->answer_decision(choice);
 +}
 +
++uint64_t CddaBridge::tradeId() const {return pimpl_?pimpl_->trade_dialog_.id:0;}
++uint64_t CddaBridge::tradeQuote() const {return pimpl_?pimpl_->trade_dialog_.quote:0;}
++uint64_t CddaBridge::tradeConnection() const {return pimpl_?pimpl_->trade_dialog_.connection:0;}
++bool CddaBridge::takeTradeClose() {if(!pimpl_ || !pimpl_->trade_close_)return false;pimpl_->trade_close_=false;return true;}
++std::string CddaBridge::takeTradeUpdate() {
++    if(!pimpl_ || !pimpl_->trade_dialog_.id || !pimpl_->trade_dirty_ || pimpl_->metrics_.pending_decision)return {};
++    pimpl_->trade_dirty_=false;
++    return pimpl_->trade_dialog_.form([&](const auto& type){return pimpl_->ground_item_visual_name(type);});
++}
++void CddaBridge::tradeFields(uint64_t id,uint64_t quote,uint64_t connection,const std::unordered_map<std::string,std::string>& fields) {
++    if(!pimpl_ || !pimpl_->session_.ready())return;
++    auto& i=*pimpl_;auto& d=i.trade_dialog_;
++    if(!id || id!=d.id || quote!=d.quote || connection!=d.connection || connection!=i.session_.identity.connection || i.metrics_.pending_decision)return;
++    if(fields.count("cancel") || fields.count("quit")) {
++        if(!d.waiting) {auto b=i.session_.builder();auto bytes=b.build_trade_cancel(id);i.connection_->send_message(bytes.data(),bytes.size());d.waiting=true;i.trade_dirty_=true;}return;
++    }
++    if(d.waiting)return;
++    const auto number=[](const std::string& s)->uint64_t {try {size_t n=0;auto v=std::stoull(s,&n);return n==s.size()?v:0;}catch(...){return 0;}};
++    const auto keyid=[&](const std::string& s)->unsigned {return s.rfind("item_",0)==0?unsigned(number(s.substr(5))):0;};
++    if(fields.count("quantity"))d.quantity=int(std::min<uint64_t>(INT32_MAX,number(fields.at("quantity"))));
++    unsigned changed=0;int quantity=0;
++    for(const auto& r:d.rows)if(fields.count("item_"+std::to_string(r.item.id))) {
++        d.selected=r.item.id;d.quantity=std::max(1,r.selected);
++        if(fields.count("shift") && fields.at("shift")=="true") {changed=r.item.id;quantity=r.selected?0:r.available;}
++        break;
++    }
++    const auto* selected=d.row(d.selected);
++    if(selected && fields.count("all"))d.quantity=selected->available;
++    if(selected && fields.count("offer")) {changed=d.selected;quantity=d.quantity;}
++    if(selected && fields.count("remove")) {changed=d.selected;quantity=0;}
++    if(fields.count("drag_from") && fields.count("drag_to")) {
++        if(!fields.count("drag_view") || number(fields.at("drag_view"))!=d.quote)return;
++        auto source=d.row(keyid(fields.at("drag_from")));auto destination=d.row(keyid(fields.at("drag_to")));
++        if(source) {
++            const auto to=fields.at("drag_to");
++            const bool opposite=destination?destination->trader!=source->trader:
++                source->trader?to.rfind("trade_own",0)==0:to.rfind("trade_npc",0)==0;
++            if(opposite) {d.selected=changed=source->item.id;quantity=std::min(std::max(1,d.quantity),source->available);}
++        }
++    }
++    for(unsigned side=0;side<2;++side) {
++        auto prefix=side?"own":"npc";
++        if(fields.count(std::string(prefix)+"_prev") && d.page[side])--d.page[side];
++        if(fields.count(std::string(prefix)+"_next"))++d.page[side];
++    }
++    if(changed) {
++        auto b=i.session_.builder();auto bytes=b.build_trade_offer(++i.trade_request_,d.id,d.quote,changed,quantity);
++        if(i.connection_->send_message(bytes.data(),bytes.size()))d.waiting=true;
++    } else if(fields.count("accept") && d.can_confirm && !(i.metrics_.pause_reasons & (1|4|8))) {
++        auto b=i.session_.builder();const auto command=i.session_.next_command++;
++        auto bytes=b.build_trade_commit(command,d.id,d.quote);
++        if(i.connection_->send_message(bytes.data(),bytes.size())) {i.trade_commit_=command;d.waiting=true;}
++    }
++    i.trade_dirty_=true;
++}
++
 +uint64_t CddaBridge::decisionDialogConnection() const {return pimpl_?pimpl_->decision_dialog_.connection:0;}
 +std::string CddaBridge::takeDecisionDialogUpdate() {
 +    if(!pimpl_ || !pimpl_->metrics_.pending_decision || !pimpl_->decision_dirty_)return {};
@@ -5436,10 +5531,10 @@ index 0000000..9c9c097
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.h b/src/cdda/cdda_bridge.h
 new file mode 100644
-index 0000000..7d2a255
+index 0000000..ea0f22c
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.h
-@@ -0,0 +1,187 @@
+@@ -0,0 +1,193 @@
 +// Luanti C++ CWM Presentation Bridge
 +// Licensed under Apache-2.0
 +#pragma once
@@ -5550,6 +5645,12 @@ index 0000000..7d2a255
 +    bool attackPointedTarget();
 +    bool hasPointedNpc() const;
 +    bool talkPointedNpc();
++    std::string takeTradeUpdate();
++    bool takeTradeClose();
++    uint64_t tradeId() const;
++    uint64_t tradeQuote() const;
++    uint64_t tradeConnection() const;
++    void tradeFields(uint64_t id,uint64_t quote,uint64_t connection,const std::unordered_map<std::string,std::string>& fields);
 +    bool hasPointedRangedTarget() const;
 +    bool isPointedOpening(const v3s16& node) const;
 +    std::optional<v3s16> pointOpening(const irr::core::line3d<float>& ray);
@@ -6639,3 +6740,92 @@ index 0000000..2338ed6
 +    return -1;
 +}
 +} // namespace cdda_client
+diff --git a/src/cdda/trade_dialog.h b/src/cdda/trade_dialog.h
+new file mode 100644
+index 0000000..b743423
+--- /dev/null
++++ b/src/cdda/trade_dialog.h
+@@ -0,0 +1,83 @@
++#pragma once
++#include "equipment_inventory.h"
++#include "decision_text.h"
++#include <cstdint>
++namespace cdda_client {
++struct TradeRow {
++    EquipmentEntry item;
++    bool trader{};
++    int available{}, selected{};
++    int64_t price{};
++    std::string source,reason;
++};
++struct TradeDialog {
++    uint64_t id{},quote{},query{},connection{},npc{};
++    std::string name,title,error,notice,search;
++    int64_t yours{},theirs{},balance{},remembered{},credit{},cost{};
++    bool free{},can_confirm{},waiting{};
++    unsigned selected{},page[2]{0,0};int quantity{1};
++    std::vector<TradeRow> rows;
++    void read(const CDDA::CWM::TradeView& v,uint64_t generation) {
++        if(id!=v.trade_id() || connection!=generation) *this={};
++        id=v.trade_id();quote=v.quote_id();query=v.request_id();connection=generation;npc=v.npc_id();
++        name=v.name()->str();title=v.title()->str();error=v.error()->str();notice.clear();
++        yours=v.your_value();theirs=v.their_value();balance=v.balance();remembered=v.remembered_balance();credit=v.credit_limit();cost=v.service_cost();
++        free=v.free_exchange();can_confirm=v.can_confirm();waiting=false;rows.clear();
++        for(const auto* e:*v.entries()) {
++            TradeRow r;r.item.id=e->id();r.item.parent=e->parent_id();r.item.type=e->type_id()->str();
++            r.item.name=e->name()->str();r.item.category=e->category()->str();r.item.worn=e->worn();r.item.wielded=e->wielded();
++            r.item.rotten=e->rotten();r.item.container=e->container();r.item.counted=e->available()>1;r.item.charges=e->available();
++            r.trader=e->trader();r.available=e->available();r.selected=e->selected();r.price=e->unit_price();r.source=e->source()->str();r.reason=e->reason()->str();
++            rows.push_back(std::move(r));
++        }
++        if(selected>rows.size())selected=0;
++    }
++    const TradeRow* row(unsigned n) const {return n && n<=rows.size()?&rows[n-1]:nullptr;}
++    static std::string money(int64_t cents) {std::ostringstream s;s<<std::fixed<<std::setprecision(2)<<cents/100.;return "$"+s.str();}
++    std::string form(const std::function<std::string(const std::string&)>& icon) const {
++        std::string f="formspec_version[4]size[22,12]no_prepend[]bgcolor[#00000000]background9[0,0;22,12;mcl_base_textures_background9.png;false;7]"
++            "style_type[label;textcolor=#323232]style_type[button;border=false;bgimg=mcl_inventory_button9.png;bgimg_pressed=mcl_inventory_button9_pressed.png;bgimg_middle=2,2]style_type[image_button;border=false;bgimg=;bgimg_pressed=]";
++        f+="cwm_inventory["+std::to_string(quote)+";"+std::to_string(selected)+";1]";
++        f+="label[0.5,0.45;"+statusEscape(name)+"]label[11.5,0.45;"+::cwm::text("Your inventory")+"]";
++        f+="label[0.5,0.95;"+::cwm::text("Time is paused. Items move only after the native confirmation.")+"]";
++        for(unsigned side=0;side<2;++side) {
++            const double x=side?11.5:.5;
++            std::vector<const TradeRow*> found;
++            for(const auto& r:rows)if(r.trader==(side==0) && (search.empty() || equipmentLower(r.item.name+" "+r.source).find(equipmentLower(search))!=std::string::npos))found.push_back(&r);
++            const unsigned pages=std::max<size_t>(1,(found.size()+26)/27),p=std::min(page[side],pages-1);
++            const std::string prefix=side?"own":"npc";
++            f+="button["+std::to_string(x)+",1.35;0.7,0.6;"+prefix+"_prev;<]label["+std::to_string(x+1)+",1.65;"+std::to_string(p+1)+" / "+std::to_string(pages)+"]button["+std::to_string(x+9.25)+",1.35;0.7,0.6;"+prefix+"_next;>]";
++            for(unsigned n=0;n<27;++n) {
++                const auto index=p*27+n;
++                const auto pos=std::to_string(x+(n%9)*1.12)+","+std::to_string(2.2+(n/9)*1.15);
++                const std::string target=side?"trade_own":"trade_npc";
++                f+="image["+pos+";1.05,1.05;mcl_formspec_itemslot.png]";
++                if(index>=found.size()) {const auto key=target+"_empty_"+std::to_string(n);f+="button["+pos+";1.05,1.05;"+key+";]cwm_drag["+key+";0;;1]";continue;}
++                const auto& r=*found[index];const auto& e=r.item;const auto key="item_"+std::to_string(e.id);
++                if(r.selected)f+="box["+pos+";1.05,1.05;#69A55788]";
++                if(selected==e.id)f+="box["+pos+";1.05,1.05;#E8CF5790]";
++                f+=equipmentDrag(key,&e,icon);
++                const auto visual=icon(e.type);const bool generic=visual.empty()||visual=="cdda_items:fallback_generic";
++                f+=std::string(generic?"image_button[":"item_image_button[")+pos+";1.05,1.05;"+statusEscape(generic?equipmentCategoryIcon(e):visual)+";"+key+";]";
++                f+="tooltip["+key+";"+statusEscape(decisionPlainText(e.name)+"\n"+decisionPlainText(r.source)+"\n"+money(r.price)+" / "+::cwm::text("unit")+(r.reason.empty()?"":"\n"+decisionPlainText(r.reason)))+"]";
++                f+="label["+std::to_string(x+(n%9)*1.12+.03)+","+std::to_string(2.2+(n/9)*1.15+.88)+";"+std::to_string(r.selected)+"/"+std::to_string(r.available)+"]";
++            }
++            f+="button["+std::to_string(x)+",5.75;10,0.65;"+(side?"trade_own":"trade_npc")+";"+(side?::cwm::text("Drag here to request from the trader"): ::cwm::text("Drag here to offer to the trader"))+"]cwm_drag["+(side?"trade_own":"trade_npc")+";0;;1]";
++        }
++        f+="label[0.5,6.85;"+::cwm::text("You request: ")+money(theirs)+"]label[11.5,6.85;"+::cwm::text("You offer: ")+money(yours)+"]";
++        f+="label[0.5,7.4;"+statusEscape(free?::cwm::text("Companion exchange · no debt"): ::cwm::text("Balance: ")+money(balance)+" · "+::cwm::text("Remembered: ")+money(remembered))+"]";
++        f+="label[11.5,7.4;"+::cwm::text("Credit limit: ")+money(credit)+" · "+::cwm::text("Service: ")+money(cost)+"]";
++        if(const auto* r=row(selected)) {
++            f+="hypertext[0.5,7.9;10,1.45;trade_info;"+statusEscape("<global color=#323232 size=17>"+decisionRichText(r->item.name+"\n"+r->source+"\n"+r->reason))+"]";
++            f+="label[11.5,8.05;"+::cwm::text("Quantity to offer")+"]field[11.5,8.35;2,0.65;quantity;;"+std::to_string(quantity)+"]field_close_on_enter[quantity;false]";
++            f+="button[13.7,8.35;1.8,0.65;all;"+::cwm::text("All")+"]button[15.7,8.35;2.8,0.65;offer;"+::cwm::text("Update offer")+"]button[18.7,8.35;2.8,0.65;remove;"+::cwm::text("Remove offer")+"]";
++        }
++        const auto message=waiting?::cwm::text("Waiting for the native trade result..."): !notice.empty()?notice:error;
++        f+="hypertext[0.5,9.4;21,1;trade_notice;"+statusEscape("<global color=#963F25 size=18><b>"+decisionRichText(message)+"</b>")+"]";
++        f+="label[0.5,10.65;"+::cwm::text("Select an item · Shift-click: offer all · drag across panels: update the offer")+"]";
++        f+="button[0.5,11.1;4,0.65;cancel;"+::cwm::text("Cancel trade")+"]";
++        if(!waiting && can_confirm)f+="button[17.5,11.1;4,0.65;accept;"+::cwm::text("Review and confirm")+"]";
++        return f;
++    }
++};
++}

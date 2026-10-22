@@ -54,3 +54,8 @@ class Payload(object):
     LanguageState = 48
     CancelDisassemblyRequest = 49
     TalkRequest = 50
+    TradeView = 51
+    TradeOfferRequest = 52
+    TradeCommitRequest = 53
+    TradeCancelRequest = 54
+    TradeClosed = 55

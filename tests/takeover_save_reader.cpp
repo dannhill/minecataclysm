@@ -51,6 +51,7 @@ int main(int argc, const char *argv[]) {
     bool create_reading = false;
     bool create_disassembly = false;
     bool create_conversation = false;
+    bool create_trade = false;
     bool create_ranged = false;
     bool create_transfer = false;
     bool create_external = false;
@@ -68,6 +69,7 @@ int main(int argc, const char *argv[]) {
         else if (arg == "--create-transfer") { create = true; create_transfer = true; create_posture = true; }
         else if (arg == "--create-ranged") { create = true; create_ranged = true; create_posture = true; }
         else if (arg == "--create-crafting") { create = true; create_crafting = true; create_posture = true; }
+        else if (arg == "--create-trade") { create = true; create_trade = true; create_conversation = true; create_posture = true; }
         else if (arg == "--create-conversation") { create = true; create_conversation = true; create_posture = true; }
         else if (arg == "--create-disassembly") { create = true; create_disassembly = true; create_posture = true; }
         else if (arg == "--create-reading") { create = true; create_reading = true; create_posture = true; }
@@ -507,6 +509,18 @@ int main(int argc, const char *argv[]) {
             guy->spawn_at_precise(tripoint_abs_ms(m.getabs(tripoint(60,57,0))));
             guy->set_guard_pos(guy->get_location());
             guy->set_speed_base(0); guy->moves = 0;
+            if(create_trade) {
+                u.remove_items_with([](const item&){return true;});u.remove_weapon();u.clear_worn();m.i_clear(u.pos());
+                u.wear_item(item(itype_id("backpack"),calendar::turn),false);
+                item a(itype_id("9mm"),calendar::turn,20);a.set_var("uid","trade-player-ammo-a");a.set_owner(u);u.i_add(a);
+                item b(itype_id("9mm"),calendar::turn,30);b.set_var("uid","trade-player-ammo-b");b.set_owner(u);u.i_add(b);
+                item bottle(itype_id("bottle_plastic"),calendar::turn);bottle.set_var("uid","trade-player-bottle");bottle.set_owner(u);u.i_add(bottle);
+                guy->remove_items_with([](const item&){return true;});guy->remove_weapon();guy->clear_worn();
+                guy->wear_item(item(itype_id("backpack"),calendar::turn),false);
+                item bandage(itype_id("bandages"),calendar::turn);bandage.set_var("uid","trade-npc-bandage");bandage.set_owner(*guy);guy->i_add(bandage);
+                item lamp(itype_id("atomic_lamp"),calendar::turn);lamp.set_var("uid","trade-npc-lamp");lamp.set_owner(*guy);guy->i_add(lamp);
+                guy->op_of_u.owed=100000;guy->op_of_u.trust=20;
+            }
             overmap_buffer.insert_npc(guy); g->load_npcs();
         } else if (!create_vertical && !create_pickup && !create_body && !create_combat && !create_posture) {
         g->place_critter_at(mtype_id("mon_zombie"), tripoint(65,65,0));

@@ -21,6 +21,32 @@ inline uint64_t fresh_identity() {
     const uint64_t value = (uint64_t(random()) << 32) ^ random();
     return value ? value : 1;
 }
+inline bool valid_trade(const CDDA::CWM::TradeView* v) {
+    const auto text=[](const auto* s,size_t n){return s && s->size()<=n && s->str().find('\0')==std::string::npos;};
+    if(!v || !v->trade_id() || !v->quote_id() || !(v->npc_id()>>63) ||
+       !text(v->name(),4096) || !v->name()->size() || !text(v->title(),4096) || !text(v->error(),4096) ||
+       !v->entries() || v->entries()->size()>2048 || v->your_value()<0 || v->your_value()>INT32_MAX ||
+       v->their_value()<0 || v->their_value()>INT32_MAX || v->balance()<INT32_MIN || v->balance()>INT32_MAX ||
+       v->remembered_balance()<INT32_MIN || v->remembered_balance()>INT32_MAX || v->credit_limit()<0 ||
+       v->credit_limit()>INT32_MAX || v->service_cost()<INT32_MIN || v->service_cost()>INT32_MAX)return false;
+    uint32_t id=0;
+    for(const auto* e:*v->entries()) {
+        if(!e || e->id()!=++id || e->parent_id()>v->entries()->size() || e->parent_id()==id ||
+           !text(e->type_id(),1024) || !e->type_id()->size() || !text(e->name(),16384) || !e->name()->size() ||
+           !text(e->category(),1024) || !text(e->source(),4096) || !text(e->reason(),4096) ||
+           e->available()<=0 || e->selected()<0 || e->selected()>e->available() || e->unit_price()<0 || e->unit_price()>INT32_MAX)return false;
+    }
+    // Parent links must stay in one party and cannot form cycles.
+    for(const auto* e:*v->entries()) {
+        auto p=e->parent_id();unsigned depth=0;
+        while(p) {
+            const auto* parent=v->entries()->Get(p-1);
+            if(++depth>64 || parent->trader()!=e->trader())return false;
+            p=parent->parent_id();
+        }
+    }
+    return true;
+}
 inline bool valid_decision(const CDDA::CWM::DecisionPrompt* prompt) {
     const auto text=[](const auto* s,size_t bound){return s && s->size()<=bound && s->str().find('\0')==std::string::npos;};
     if(!prompt || !prompt->decision_id() || !text(prompt->text(),16384) || !prompt->choices() ||
@@ -418,6 +444,17 @@ public:
             return true;
         }
         if (msg.payload_type() == Payload::HeartbeatAck) return true;
+        if (ready() && msg.payload_type() == Payload::TradeView) {
+            if(!valid_trade(msg.payload_as_TradeView())) {request_resync(channel);return false;}
+            return true;
+        }
+        if (ready() && msg.payload_type() == Payload::TradeClosed) {
+            const auto* v=msg.payload_as_TradeClosed();
+            if(!v || !v->trade_id() || !v->error() || v->error()->size()>4096 || v->error()->str().find('\0')!=std::string::npos) {
+                request_resync(channel);return false;
+            }
+            return true;
+        }
         if (ready() && msg.payload_type() == Payload::DecisionPrompt) {
             if(!valid_decision(msg.payload_as_DecisionPrompt())) {request_resync(channel);return false;}
             return true;

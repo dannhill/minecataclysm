@@ -37377,17 +37377,22 @@
   {
     "path": "src/cwm/cwm_server.cpp",
     "mode": "100644",
-    "sha256": "690f7c6237a41d417adb509db9eafe29ffab7bc658933a1e895bbce110a060f3"
+    "sha256": "b6f9745f2a0e08a68329ce5b64cdd18461f30f4d84c10d5ef8f367fe85d116eb"
   },
   {
     "path": "src/cwm/cwm_server.h",
     "mode": "100644",
-    "sha256": "147eb31258b1920dfa7e1a03f5867013d68a2f636be62d08b74152b31567bf14"
+    "sha256": "3e727a41fcd65cfe69b0e552938bd3455054acadf7c9064b49688c343026c2bc"
   },
   {
     "path": "src/cwm/cwm_status_gauges.h",
     "mode": "100644",
     "sha256": "4f2ac91ecdaa1d70e1bea8b2b7e1a80904bf4317c1b4760e120e8e9dbb1d1d98"
+  },
+  {
+    "path": "src/cwm/cwm_trade.h",
+    "mode": "100644",
+    "sha256": "826f721fa724f8c8b9171ff2a129c7b90ca399af1afd0e13b8139af2cbf614a6"
   },
   {
     "path": "src/cwm/cwm_windows.rc",
@@ -37713,6 +37718,11 @@
     "path": "src/external_conversation.h",
     "mode": "100644",
     "sha256": "57ddd638f241e567992eeb219ac375a78bd1c73edc231f471f63ffdf6cf34645"
+  },
+  {
+    "path": "src/external_trade.h",
+    "mode": "100644",
+    "sha256": "e3f27f3b52f91f8f863cef2b943b85e7f1baabaee447aac96962558daba0f3a9"
   },
   {
     "path": "src/faction.cpp",
@@ -38047,7 +38057,7 @@
   {
     "path": "src/inventory_ui.cpp",
     "mode": "100644",
-    "sha256": "82914d6bf251269622f1d1c832c71e923144a23d64866d0f948fee8edcbbe032"
+    "sha256": "146377d318d40a552149eb70440b8f7c2cb8e95956f495b01c9ea045b39dc8cb"
   },
   {
     "path": "src/inventory_ui.h",
@@ -39107,7 +39117,7 @@
   {
     "path": "src/npctrade.cpp",
     "mode": "100644",
-    "sha256": "04725581f21350fcba08b02cc440cf5e2fc2e2bdff0b22909629f8f66bc33021"
+    "sha256": "0456d5dee85dad8c1595454ac1be493578144e89a2b9c893095942b8b286c212"
   },
   {
     "path": "src/npctrade.h",
@@ -40257,12 +40267,12 @@
   {
     "path": "src/trade_ui.cpp",
     "mode": "100644",
-    "sha256": "91c707682a104a39fad88bcd7df02b26b9a0c4c26ba80d39be4c90882996787e"
+    "sha256": "b93929063ea43c92006f84d1428827fd7dea36cfe40fd6436a4b72eb09a3b7ff"
   },
   {
     "path": "src/trade_ui.h",
     "mode": "100644",
-    "sha256": "474d7b6d636dac8abdb90cd96dde4dc690a33476a80531cbb5c5b53d9a723d9d"
+    "sha256": "59e5a3d49a61f5e7b6d3959a48da7d0a7beed451a32f4a76c5c039c2887a2d1c"
   },
   {
     "path": "src/trait_group.cpp",
@@ -40937,7 +40947,7 @@
   {
     "path": "tests/cwm_runtime_test.cpp",
     "mode": "100644",
-    "sha256": "44a89a655e4c6c9a3426dc1429503f640245779288b0e2113ee70578d04fe962"
+    "sha256": "29037d25124643c048bbf863a9d657d2c1b7412ab26414eff4e3c675c91f77e8"
   },
   {
     "path": "tests/data/name.json",

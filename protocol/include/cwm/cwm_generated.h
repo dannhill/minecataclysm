@@ -229,6 +229,24 @@ struct ConversationInfoBuilder;
 struct TalkRequest;
 struct TalkRequestBuilder;
 
+struct TradeEntry;
+struct TradeEntryBuilder;
+
+struct TradeView;
+struct TradeViewBuilder;
+
+struct TradeOfferRequest;
+struct TradeOfferRequestBuilder;
+
+struct TradeCommitRequest;
+struct TradeCommitRequestBuilder;
+
+struct TradeCancelRequest;
+struct TradeCancelRequestBuilder;
+
+struct TradeClosed;
+struct TradeClosedBuilder;
+
 struct DecisionResponse;
 struct DecisionResponseBuilder;
 
@@ -719,11 +737,16 @@ enum class Payload : uint8_t {
   LanguageState = 48,
   CancelDisassemblyRequest = 49,
   TalkRequest = 50,
+  TradeView = 51,
+  TradeOfferRequest = 52,
+  TradeCommitRequest = 53,
+  TradeCancelRequest = 54,
+  TradeClosed = 55,
   MIN = NONE,
-  MAX = TalkRequest
+  MAX = TradeClosed
 };
 
-inline const Payload (&EnumValuesPayload())[51] {
+inline const Payload (&EnumValuesPayload())[56] {
   static const Payload values[] = {
     Payload::NONE,
     Payload::HelloRequest,
@@ -775,13 +798,18 @@ inline const Payload (&EnumValuesPayload())[51] {
     Payload::LanguageRequest,
     Payload::LanguageState,
     Payload::CancelDisassemblyRequest,
-    Payload::TalkRequest
+    Payload::TalkRequest,
+    Payload::TradeView,
+    Payload::TradeOfferRequest,
+    Payload::TradeCommitRequest,
+    Payload::TradeCancelRequest,
+    Payload::TradeClosed
   };
   return values;
 }
 
 inline const char * const *EnumNamesPayload() {
-  static const char * const names[52] = {
+  static const char * const names[57] = {
     "NONE",
     "HelloRequest",
     "HelloResponse",
@@ -833,13 +861,18 @@ inline const char * const *EnumNamesPayload() {
     "LanguageState",
     "CancelDisassemblyRequest",
     "TalkRequest",
+    "TradeView",
+    "TradeOfferRequest",
+    "TradeCommitRequest",
+    "TradeCancelRequest",
+    "TradeClosed",
     nullptr
   };
   return names;
 }
 
 inline const char *EnumNamePayload(Payload e) {
-  if (::flatbuffers::IsOutRange(e, Payload::NONE, Payload::TalkRequest)) return "";
+  if (::flatbuffers::IsOutRange(e, Payload::NONE, Payload::TradeClosed)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesPayload()[index];
 }
@@ -1046,6 +1079,26 @@ template<> struct PayloadTraits<CDDA::CWM::CancelDisassemblyRequest> {
 
 template<> struct PayloadTraits<CDDA::CWM::TalkRequest> {
   static const Payload enum_value = Payload::TalkRequest;
+};
+
+template<> struct PayloadTraits<CDDA::CWM::TradeView> {
+  static const Payload enum_value = Payload::TradeView;
+};
+
+template<> struct PayloadTraits<CDDA::CWM::TradeOfferRequest> {
+  static const Payload enum_value = Payload::TradeOfferRequest;
+};
+
+template<> struct PayloadTraits<CDDA::CWM::TradeCommitRequest> {
+  static const Payload enum_value = Payload::TradeCommitRequest;
+};
+
+template<> struct PayloadTraits<CDDA::CWM::TradeCancelRequest> {
+  static const Payload enum_value = Payload::TradeCancelRequest;
+};
+
+template<> struct PayloadTraits<CDDA::CWM::TradeClosed> {
+  static const Payload enum_value = Payload::TradeClosed;
 };
 
 bool VerifyPayload(::flatbuffers::Verifier &verifier, const void *obj, Payload type);
@@ -8774,6 +8827,858 @@ inline ::flatbuffers::Offset<TalkRequest> CreateTalkRequest(
   return builder_.Finish();
 }
 
+struct TradeEntry FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef TradeEntryBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_ID = 4,
+    VT_TRADER = 6,
+    VT_PARENT_ID = 8,
+    VT_TYPE_ID = 10,
+    VT_NAME = 12,
+    VT_CATEGORY = 14,
+    VT_SOURCE = 16,
+    VT_AVAILABLE = 18,
+    VT_SELECTED = 20,
+    VT_UNIT_PRICE = 22,
+    VT_REASON = 24,
+    VT_WORN = 26,
+    VT_WIELDED = 28,
+    VT_ROTTEN = 30,
+    VT_CONTAINER = 32
+  };
+  uint32_t id() const {
+    return GetField<uint32_t>(VT_ID, 0);
+  }
+  bool mutate_id(uint32_t _id = 0) {
+    return SetField<uint32_t>(VT_ID, _id, 0);
+  }
+  bool trader() const {
+    return GetField<uint8_t>(VT_TRADER, 0) != 0;
+  }
+  bool mutate_trader(bool _trader = 0) {
+    return SetField<uint8_t>(VT_TRADER, static_cast<uint8_t>(_trader), 0);
+  }
+  uint32_t parent_id() const {
+    return GetField<uint32_t>(VT_PARENT_ID, 0);
+  }
+  bool mutate_parent_id(uint32_t _parent_id = 0) {
+    return SetField<uint32_t>(VT_PARENT_ID, _parent_id, 0);
+  }
+  const ::flatbuffers::String *type_id() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_TYPE_ID);
+  }
+  ::flatbuffers::String *mutable_type_id() {
+    return GetPointer<::flatbuffers::String *>(VT_TYPE_ID);
+  }
+  const ::flatbuffers::String *name() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_NAME);
+  }
+  ::flatbuffers::String *mutable_name() {
+    return GetPointer<::flatbuffers::String *>(VT_NAME);
+  }
+  const ::flatbuffers::String *category() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_CATEGORY);
+  }
+  ::flatbuffers::String *mutable_category() {
+    return GetPointer<::flatbuffers::String *>(VT_CATEGORY);
+  }
+  const ::flatbuffers::String *source() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_SOURCE);
+  }
+  ::flatbuffers::String *mutable_source() {
+    return GetPointer<::flatbuffers::String *>(VT_SOURCE);
+  }
+  int32_t available() const {
+    return GetField<int32_t>(VT_AVAILABLE, 0);
+  }
+  bool mutate_available(int32_t _available = 0) {
+    return SetField<int32_t>(VT_AVAILABLE, _available, 0);
+  }
+  int32_t selected() const {
+    return GetField<int32_t>(VT_SELECTED, 0);
+  }
+  bool mutate_selected(int32_t _selected = 0) {
+    return SetField<int32_t>(VT_SELECTED, _selected, 0);
+  }
+  int64_t unit_price() const {
+    return GetField<int64_t>(VT_UNIT_PRICE, 0);
+  }
+  bool mutate_unit_price(int64_t _unit_price = 0) {
+    return SetField<int64_t>(VT_UNIT_PRICE, _unit_price, 0);
+  }
+  const ::flatbuffers::String *reason() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_REASON);
+  }
+  ::flatbuffers::String *mutable_reason() {
+    return GetPointer<::flatbuffers::String *>(VT_REASON);
+  }
+  bool worn() const {
+    return GetField<uint8_t>(VT_WORN, 0) != 0;
+  }
+  bool mutate_worn(bool _worn = 0) {
+    return SetField<uint8_t>(VT_WORN, static_cast<uint8_t>(_worn), 0);
+  }
+  bool wielded() const {
+    return GetField<uint8_t>(VT_WIELDED, 0) != 0;
+  }
+  bool mutate_wielded(bool _wielded = 0) {
+    return SetField<uint8_t>(VT_WIELDED, static_cast<uint8_t>(_wielded), 0);
+  }
+  bool rotten() const {
+    return GetField<uint8_t>(VT_ROTTEN, 0) != 0;
+  }
+  bool mutate_rotten(bool _rotten = 0) {
+    return SetField<uint8_t>(VT_ROTTEN, static_cast<uint8_t>(_rotten), 0);
+  }
+  bool container() const {
+    return GetField<uint8_t>(VT_CONTAINER, 0) != 0;
+  }
+  bool mutate_container(bool _container = 0) {
+    return SetField<uint8_t>(VT_CONTAINER, static_cast<uint8_t>(_container), 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_ID, 4) &&
+           VerifyField<uint8_t>(verifier, VT_TRADER, 1) &&
+           VerifyField<uint32_t>(verifier, VT_PARENT_ID, 4) &&
+           VerifyOffset(verifier, VT_TYPE_ID) &&
+           verifier.VerifyString(type_id()) &&
+           VerifyOffset(verifier, VT_NAME) &&
+           verifier.VerifyString(name()) &&
+           VerifyOffset(verifier, VT_CATEGORY) &&
+           verifier.VerifyString(category()) &&
+           VerifyOffset(verifier, VT_SOURCE) &&
+           verifier.VerifyString(source()) &&
+           VerifyField<int32_t>(verifier, VT_AVAILABLE, 4) &&
+           VerifyField<int32_t>(verifier, VT_SELECTED, 4) &&
+           VerifyField<int64_t>(verifier, VT_UNIT_PRICE, 8) &&
+           VerifyOffset(verifier, VT_REASON) &&
+           verifier.VerifyString(reason()) &&
+           VerifyField<uint8_t>(verifier, VT_WORN, 1) &&
+           VerifyField<uint8_t>(verifier, VT_WIELDED, 1) &&
+           VerifyField<uint8_t>(verifier, VT_ROTTEN, 1) &&
+           VerifyField<uint8_t>(verifier, VT_CONTAINER, 1) &&
+           verifier.EndTable();
+  }
+};
+
+struct TradeEntryBuilder {
+  typedef TradeEntry Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_id(uint32_t id) {
+    fbb_.AddElement<uint32_t>(TradeEntry::VT_ID, id, 0);
+  }
+  void add_trader(bool trader) {
+    fbb_.AddElement<uint8_t>(TradeEntry::VT_TRADER, static_cast<uint8_t>(trader), 0);
+  }
+  void add_parent_id(uint32_t parent_id) {
+    fbb_.AddElement<uint32_t>(TradeEntry::VT_PARENT_ID, parent_id, 0);
+  }
+  void add_type_id(::flatbuffers::Offset<::flatbuffers::String> type_id) {
+    fbb_.AddOffset(TradeEntry::VT_TYPE_ID, type_id);
+  }
+  void add_name(::flatbuffers::Offset<::flatbuffers::String> name) {
+    fbb_.AddOffset(TradeEntry::VT_NAME, name);
+  }
+  void add_category(::flatbuffers::Offset<::flatbuffers::String> category) {
+    fbb_.AddOffset(TradeEntry::VT_CATEGORY, category);
+  }
+  void add_source(::flatbuffers::Offset<::flatbuffers::String> source) {
+    fbb_.AddOffset(TradeEntry::VT_SOURCE, source);
+  }
+  void add_available(int32_t available) {
+    fbb_.AddElement<int32_t>(TradeEntry::VT_AVAILABLE, available, 0);
+  }
+  void add_selected(int32_t selected) {
+    fbb_.AddElement<int32_t>(TradeEntry::VT_SELECTED, selected, 0);
+  }
+  void add_unit_price(int64_t unit_price) {
+    fbb_.AddElement<int64_t>(TradeEntry::VT_UNIT_PRICE, unit_price, 0);
+  }
+  void add_reason(::flatbuffers::Offset<::flatbuffers::String> reason) {
+    fbb_.AddOffset(TradeEntry::VT_REASON, reason);
+  }
+  void add_worn(bool worn) {
+    fbb_.AddElement<uint8_t>(TradeEntry::VT_WORN, static_cast<uint8_t>(worn), 0);
+  }
+  void add_wielded(bool wielded) {
+    fbb_.AddElement<uint8_t>(TradeEntry::VT_WIELDED, static_cast<uint8_t>(wielded), 0);
+  }
+  void add_rotten(bool rotten) {
+    fbb_.AddElement<uint8_t>(TradeEntry::VT_ROTTEN, static_cast<uint8_t>(rotten), 0);
+  }
+  void add_container(bool container) {
+    fbb_.AddElement<uint8_t>(TradeEntry::VT_CONTAINER, static_cast<uint8_t>(container), 0);
+  }
+  explicit TradeEntryBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<TradeEntry> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<TradeEntry>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<TradeEntry> CreateTradeEntry(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t id = 0,
+    bool trader = false,
+    uint32_t parent_id = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> type_id = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> name = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> category = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> source = 0,
+    int32_t available = 0,
+    int32_t selected = 0,
+    int64_t unit_price = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> reason = 0,
+    bool worn = false,
+    bool wielded = false,
+    bool rotten = false,
+    bool container = false) {
+  TradeEntryBuilder builder_(_fbb);
+  builder_.add_unit_price(unit_price);
+  builder_.add_reason(reason);
+  builder_.add_selected(selected);
+  builder_.add_available(available);
+  builder_.add_source(source);
+  builder_.add_category(category);
+  builder_.add_name(name);
+  builder_.add_type_id(type_id);
+  builder_.add_parent_id(parent_id);
+  builder_.add_id(id);
+  builder_.add_container(container);
+  builder_.add_rotten(rotten);
+  builder_.add_wielded(wielded);
+  builder_.add_worn(worn);
+  builder_.add_trader(trader);
+  return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<TradeEntry> CreateTradeEntryDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t id = 0,
+    bool trader = false,
+    uint32_t parent_id = 0,
+    const char *type_id = nullptr,
+    const char *name = nullptr,
+    const char *category = nullptr,
+    const char *source = nullptr,
+    int32_t available = 0,
+    int32_t selected = 0,
+    int64_t unit_price = 0,
+    const char *reason = nullptr,
+    bool worn = false,
+    bool wielded = false,
+    bool rotten = false,
+    bool container = false) {
+  auto type_id__ = type_id ? _fbb.CreateString(type_id) : 0;
+  auto name__ = name ? _fbb.CreateString(name) : 0;
+  auto category__ = category ? _fbb.CreateString(category) : 0;
+  auto source__ = source ? _fbb.CreateString(source) : 0;
+  auto reason__ = reason ? _fbb.CreateString(reason) : 0;
+  return CDDA::CWM::CreateTradeEntry(
+      _fbb,
+      id,
+      trader,
+      parent_id,
+      type_id__,
+      name__,
+      category__,
+      source__,
+      available,
+      selected,
+      unit_price,
+      reason__,
+      worn,
+      wielded,
+      rotten,
+      container);
+}
+
+struct TradeView FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef TradeViewBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_TRADE_ID = 4,
+    VT_QUOTE_ID = 6,
+    VT_REQUEST_ID = 8,
+    VT_NPC_ID = 10,
+    VT_NAME = 12,
+    VT_TITLE = 14,
+    VT_ENTRIES = 16,
+    VT_YOUR_VALUE = 18,
+    VT_THEIR_VALUE = 20,
+    VT_BALANCE = 22,
+    VT_REMEMBERED_BALANCE = 24,
+    VT_CREDIT_LIMIT = 26,
+    VT_SERVICE_COST = 28,
+    VT_FREE_EXCHANGE = 30,
+    VT_CAN_CONFIRM = 32,
+    VT_ERROR = 34
+  };
+  uint64_t trade_id() const {
+    return GetField<uint64_t>(VT_TRADE_ID, 0);
+  }
+  bool mutate_trade_id(uint64_t _trade_id = 0) {
+    return SetField<uint64_t>(VT_TRADE_ID, _trade_id, 0);
+  }
+  uint64_t quote_id() const {
+    return GetField<uint64_t>(VT_QUOTE_ID, 0);
+  }
+  bool mutate_quote_id(uint64_t _quote_id = 0) {
+    return SetField<uint64_t>(VT_QUOTE_ID, _quote_id, 0);
+  }
+  uint64_t request_id() const {
+    return GetField<uint64_t>(VT_REQUEST_ID, 0);
+  }
+  bool mutate_request_id(uint64_t _request_id = 0) {
+    return SetField<uint64_t>(VT_REQUEST_ID, _request_id, 0);
+  }
+  uint64_t npc_id() const {
+    return GetField<uint64_t>(VT_NPC_ID, 0);
+  }
+  bool mutate_npc_id(uint64_t _npc_id = 0) {
+    return SetField<uint64_t>(VT_NPC_ID, _npc_id, 0);
+  }
+  const ::flatbuffers::String *name() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_NAME);
+  }
+  ::flatbuffers::String *mutable_name() {
+    return GetPointer<::flatbuffers::String *>(VT_NAME);
+  }
+  const ::flatbuffers::String *title() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_TITLE);
+  }
+  ::flatbuffers::String *mutable_title() {
+    return GetPointer<::flatbuffers::String *>(VT_TITLE);
+  }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::TradeEntry>> *entries() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::TradeEntry>> *>(VT_ENTRIES);
+  }
+  ::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::TradeEntry>> *mutable_entries() {
+    return GetPointer<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::TradeEntry>> *>(VT_ENTRIES);
+  }
+  int64_t your_value() const {
+    return GetField<int64_t>(VT_YOUR_VALUE, 0);
+  }
+  bool mutate_your_value(int64_t _your_value = 0) {
+    return SetField<int64_t>(VT_YOUR_VALUE, _your_value, 0);
+  }
+  int64_t their_value() const {
+    return GetField<int64_t>(VT_THEIR_VALUE, 0);
+  }
+  bool mutate_their_value(int64_t _their_value = 0) {
+    return SetField<int64_t>(VT_THEIR_VALUE, _their_value, 0);
+  }
+  int64_t balance() const {
+    return GetField<int64_t>(VT_BALANCE, 0);
+  }
+  bool mutate_balance(int64_t _balance = 0) {
+    return SetField<int64_t>(VT_BALANCE, _balance, 0);
+  }
+  int64_t remembered_balance() const {
+    return GetField<int64_t>(VT_REMEMBERED_BALANCE, 0);
+  }
+  bool mutate_remembered_balance(int64_t _remembered_balance = 0) {
+    return SetField<int64_t>(VT_REMEMBERED_BALANCE, _remembered_balance, 0);
+  }
+  int64_t credit_limit() const {
+    return GetField<int64_t>(VT_CREDIT_LIMIT, 0);
+  }
+  bool mutate_credit_limit(int64_t _credit_limit = 0) {
+    return SetField<int64_t>(VT_CREDIT_LIMIT, _credit_limit, 0);
+  }
+  int64_t service_cost() const {
+    return GetField<int64_t>(VT_SERVICE_COST, 0);
+  }
+  bool mutate_service_cost(int64_t _service_cost = 0) {
+    return SetField<int64_t>(VT_SERVICE_COST, _service_cost, 0);
+  }
+  bool free_exchange() const {
+    return GetField<uint8_t>(VT_FREE_EXCHANGE, 0) != 0;
+  }
+  bool mutate_free_exchange(bool _free_exchange = 0) {
+    return SetField<uint8_t>(VT_FREE_EXCHANGE, static_cast<uint8_t>(_free_exchange), 0);
+  }
+  bool can_confirm() const {
+    return GetField<uint8_t>(VT_CAN_CONFIRM, 0) != 0;
+  }
+  bool mutate_can_confirm(bool _can_confirm = 0) {
+    return SetField<uint8_t>(VT_CAN_CONFIRM, static_cast<uint8_t>(_can_confirm), 0);
+  }
+  const ::flatbuffers::String *error() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_ERROR);
+  }
+  ::flatbuffers::String *mutable_error() {
+    return GetPointer<::flatbuffers::String *>(VT_ERROR);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_TRADE_ID, 8) &&
+           VerifyField<uint64_t>(verifier, VT_QUOTE_ID, 8) &&
+           VerifyField<uint64_t>(verifier, VT_REQUEST_ID, 8) &&
+           VerifyField<uint64_t>(verifier, VT_NPC_ID, 8) &&
+           VerifyOffset(verifier, VT_NAME) &&
+           verifier.VerifyString(name()) &&
+           VerifyOffset(verifier, VT_TITLE) &&
+           verifier.VerifyString(title()) &&
+           VerifyOffset(verifier, VT_ENTRIES) &&
+           verifier.VerifyVector(entries()) &&
+           verifier.VerifyVectorOfTables(entries()) &&
+           VerifyField<int64_t>(verifier, VT_YOUR_VALUE, 8) &&
+           VerifyField<int64_t>(verifier, VT_THEIR_VALUE, 8) &&
+           VerifyField<int64_t>(verifier, VT_BALANCE, 8) &&
+           VerifyField<int64_t>(verifier, VT_REMEMBERED_BALANCE, 8) &&
+           VerifyField<int64_t>(verifier, VT_CREDIT_LIMIT, 8) &&
+           VerifyField<int64_t>(verifier, VT_SERVICE_COST, 8) &&
+           VerifyField<uint8_t>(verifier, VT_FREE_EXCHANGE, 1) &&
+           VerifyField<uint8_t>(verifier, VT_CAN_CONFIRM, 1) &&
+           VerifyOffset(verifier, VT_ERROR) &&
+           verifier.VerifyString(error()) &&
+           verifier.EndTable();
+  }
+};
+
+struct TradeViewBuilder {
+  typedef TradeView Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_trade_id(uint64_t trade_id) {
+    fbb_.AddElement<uint64_t>(TradeView::VT_TRADE_ID, trade_id, 0);
+  }
+  void add_quote_id(uint64_t quote_id) {
+    fbb_.AddElement<uint64_t>(TradeView::VT_QUOTE_ID, quote_id, 0);
+  }
+  void add_request_id(uint64_t request_id) {
+    fbb_.AddElement<uint64_t>(TradeView::VT_REQUEST_ID, request_id, 0);
+  }
+  void add_npc_id(uint64_t npc_id) {
+    fbb_.AddElement<uint64_t>(TradeView::VT_NPC_ID, npc_id, 0);
+  }
+  void add_name(::flatbuffers::Offset<::flatbuffers::String> name) {
+    fbb_.AddOffset(TradeView::VT_NAME, name);
+  }
+  void add_title(::flatbuffers::Offset<::flatbuffers::String> title) {
+    fbb_.AddOffset(TradeView::VT_TITLE, title);
+  }
+  void add_entries(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::TradeEntry>>> entries) {
+    fbb_.AddOffset(TradeView::VT_ENTRIES, entries);
+  }
+  void add_your_value(int64_t your_value) {
+    fbb_.AddElement<int64_t>(TradeView::VT_YOUR_VALUE, your_value, 0);
+  }
+  void add_their_value(int64_t their_value) {
+    fbb_.AddElement<int64_t>(TradeView::VT_THEIR_VALUE, their_value, 0);
+  }
+  void add_balance(int64_t balance) {
+    fbb_.AddElement<int64_t>(TradeView::VT_BALANCE, balance, 0);
+  }
+  void add_remembered_balance(int64_t remembered_balance) {
+    fbb_.AddElement<int64_t>(TradeView::VT_REMEMBERED_BALANCE, remembered_balance, 0);
+  }
+  void add_credit_limit(int64_t credit_limit) {
+    fbb_.AddElement<int64_t>(TradeView::VT_CREDIT_LIMIT, credit_limit, 0);
+  }
+  void add_service_cost(int64_t service_cost) {
+    fbb_.AddElement<int64_t>(TradeView::VT_SERVICE_COST, service_cost, 0);
+  }
+  void add_free_exchange(bool free_exchange) {
+    fbb_.AddElement<uint8_t>(TradeView::VT_FREE_EXCHANGE, static_cast<uint8_t>(free_exchange), 0);
+  }
+  void add_can_confirm(bool can_confirm) {
+    fbb_.AddElement<uint8_t>(TradeView::VT_CAN_CONFIRM, static_cast<uint8_t>(can_confirm), 0);
+  }
+  void add_error(::flatbuffers::Offset<::flatbuffers::String> error) {
+    fbb_.AddOffset(TradeView::VT_ERROR, error);
+  }
+  explicit TradeViewBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<TradeView> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<TradeView>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<TradeView> CreateTradeView(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t trade_id = 0,
+    uint64_t quote_id = 0,
+    uint64_t request_id = 0,
+    uint64_t npc_id = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> name = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> title = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::TradeEntry>>> entries = 0,
+    int64_t your_value = 0,
+    int64_t their_value = 0,
+    int64_t balance = 0,
+    int64_t remembered_balance = 0,
+    int64_t credit_limit = 0,
+    int64_t service_cost = 0,
+    bool free_exchange = false,
+    bool can_confirm = false,
+    ::flatbuffers::Offset<::flatbuffers::String> error = 0) {
+  TradeViewBuilder builder_(_fbb);
+  builder_.add_service_cost(service_cost);
+  builder_.add_credit_limit(credit_limit);
+  builder_.add_remembered_balance(remembered_balance);
+  builder_.add_balance(balance);
+  builder_.add_their_value(their_value);
+  builder_.add_your_value(your_value);
+  builder_.add_npc_id(npc_id);
+  builder_.add_request_id(request_id);
+  builder_.add_quote_id(quote_id);
+  builder_.add_trade_id(trade_id);
+  builder_.add_error(error);
+  builder_.add_entries(entries);
+  builder_.add_title(title);
+  builder_.add_name(name);
+  builder_.add_can_confirm(can_confirm);
+  builder_.add_free_exchange(free_exchange);
+  return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<TradeView> CreateTradeViewDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t trade_id = 0,
+    uint64_t quote_id = 0,
+    uint64_t request_id = 0,
+    uint64_t npc_id = 0,
+    const char *name = nullptr,
+    const char *title = nullptr,
+    const std::vector<::flatbuffers::Offset<CDDA::CWM::TradeEntry>> *entries = nullptr,
+    int64_t your_value = 0,
+    int64_t their_value = 0,
+    int64_t balance = 0,
+    int64_t remembered_balance = 0,
+    int64_t credit_limit = 0,
+    int64_t service_cost = 0,
+    bool free_exchange = false,
+    bool can_confirm = false,
+    const char *error = nullptr) {
+  auto name__ = name ? _fbb.CreateString(name) : 0;
+  auto title__ = title ? _fbb.CreateString(title) : 0;
+  auto entries__ = entries ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::TradeEntry>>(*entries) : 0;
+  auto error__ = error ? _fbb.CreateString(error) : 0;
+  return CDDA::CWM::CreateTradeView(
+      _fbb,
+      trade_id,
+      quote_id,
+      request_id,
+      npc_id,
+      name__,
+      title__,
+      entries__,
+      your_value,
+      their_value,
+      balance,
+      remembered_balance,
+      credit_limit,
+      service_cost,
+      free_exchange,
+      can_confirm,
+      error__);
+}
+
+struct TradeOfferRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef TradeOfferRequestBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_REQUEST_ID = 4,
+    VT_TRADE_ID = 6,
+    VT_QUOTE_ID = 8,
+    VT_ENTRY_ID = 10,
+    VT_QUANTITY = 12
+  };
+  uint64_t request_id() const {
+    return GetField<uint64_t>(VT_REQUEST_ID, 0);
+  }
+  bool mutate_request_id(uint64_t _request_id = 0) {
+    return SetField<uint64_t>(VT_REQUEST_ID, _request_id, 0);
+  }
+  uint64_t trade_id() const {
+    return GetField<uint64_t>(VT_TRADE_ID, 0);
+  }
+  bool mutate_trade_id(uint64_t _trade_id = 0) {
+    return SetField<uint64_t>(VT_TRADE_ID, _trade_id, 0);
+  }
+  uint64_t quote_id() const {
+    return GetField<uint64_t>(VT_QUOTE_ID, 0);
+  }
+  bool mutate_quote_id(uint64_t _quote_id = 0) {
+    return SetField<uint64_t>(VT_QUOTE_ID, _quote_id, 0);
+  }
+  uint32_t entry_id() const {
+    return GetField<uint32_t>(VT_ENTRY_ID, 0);
+  }
+  bool mutate_entry_id(uint32_t _entry_id = 0) {
+    return SetField<uint32_t>(VT_ENTRY_ID, _entry_id, 0);
+  }
+  int32_t quantity() const {
+    return GetField<int32_t>(VT_QUANTITY, 0);
+  }
+  bool mutate_quantity(int32_t _quantity = 0) {
+    return SetField<int32_t>(VT_QUANTITY, _quantity, 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_REQUEST_ID, 8) &&
+           VerifyField<uint64_t>(verifier, VT_TRADE_ID, 8) &&
+           VerifyField<uint64_t>(verifier, VT_QUOTE_ID, 8) &&
+           VerifyField<uint32_t>(verifier, VT_ENTRY_ID, 4) &&
+           VerifyField<int32_t>(verifier, VT_QUANTITY, 4) &&
+           verifier.EndTable();
+  }
+};
+
+struct TradeOfferRequestBuilder {
+  typedef TradeOfferRequest Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_request_id(uint64_t request_id) {
+    fbb_.AddElement<uint64_t>(TradeOfferRequest::VT_REQUEST_ID, request_id, 0);
+  }
+  void add_trade_id(uint64_t trade_id) {
+    fbb_.AddElement<uint64_t>(TradeOfferRequest::VT_TRADE_ID, trade_id, 0);
+  }
+  void add_quote_id(uint64_t quote_id) {
+    fbb_.AddElement<uint64_t>(TradeOfferRequest::VT_QUOTE_ID, quote_id, 0);
+  }
+  void add_entry_id(uint32_t entry_id) {
+    fbb_.AddElement<uint32_t>(TradeOfferRequest::VT_ENTRY_ID, entry_id, 0);
+  }
+  void add_quantity(int32_t quantity) {
+    fbb_.AddElement<int32_t>(TradeOfferRequest::VT_QUANTITY, quantity, 0);
+  }
+  explicit TradeOfferRequestBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<TradeOfferRequest> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<TradeOfferRequest>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<TradeOfferRequest> CreateTradeOfferRequest(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t request_id = 0,
+    uint64_t trade_id = 0,
+    uint64_t quote_id = 0,
+    uint32_t entry_id = 0,
+    int32_t quantity = 0) {
+  TradeOfferRequestBuilder builder_(_fbb);
+  builder_.add_quote_id(quote_id);
+  builder_.add_trade_id(trade_id);
+  builder_.add_request_id(request_id);
+  builder_.add_quantity(quantity);
+  builder_.add_entry_id(entry_id);
+  return builder_.Finish();
+}
+
+struct TradeCommitRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef TradeCommitRequestBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_COMMAND_ID = 4,
+    VT_TRADE_ID = 6,
+    VT_QUOTE_ID = 8
+  };
+  uint64_t command_id() const {
+    return GetField<uint64_t>(VT_COMMAND_ID, 0);
+  }
+  bool mutate_command_id(uint64_t _command_id = 0) {
+    return SetField<uint64_t>(VT_COMMAND_ID, _command_id, 0);
+  }
+  uint64_t trade_id() const {
+    return GetField<uint64_t>(VT_TRADE_ID, 0);
+  }
+  bool mutate_trade_id(uint64_t _trade_id = 0) {
+    return SetField<uint64_t>(VT_TRADE_ID, _trade_id, 0);
+  }
+  uint64_t quote_id() const {
+    return GetField<uint64_t>(VT_QUOTE_ID, 0);
+  }
+  bool mutate_quote_id(uint64_t _quote_id = 0) {
+    return SetField<uint64_t>(VT_QUOTE_ID, _quote_id, 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_COMMAND_ID, 8) &&
+           VerifyField<uint64_t>(verifier, VT_TRADE_ID, 8) &&
+           VerifyField<uint64_t>(verifier, VT_QUOTE_ID, 8) &&
+           verifier.EndTable();
+  }
+};
+
+struct TradeCommitRequestBuilder {
+  typedef TradeCommitRequest Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_command_id(uint64_t command_id) {
+    fbb_.AddElement<uint64_t>(TradeCommitRequest::VT_COMMAND_ID, command_id, 0);
+  }
+  void add_trade_id(uint64_t trade_id) {
+    fbb_.AddElement<uint64_t>(TradeCommitRequest::VT_TRADE_ID, trade_id, 0);
+  }
+  void add_quote_id(uint64_t quote_id) {
+    fbb_.AddElement<uint64_t>(TradeCommitRequest::VT_QUOTE_ID, quote_id, 0);
+  }
+  explicit TradeCommitRequestBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<TradeCommitRequest> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<TradeCommitRequest>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<TradeCommitRequest> CreateTradeCommitRequest(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t command_id = 0,
+    uint64_t trade_id = 0,
+    uint64_t quote_id = 0) {
+  TradeCommitRequestBuilder builder_(_fbb);
+  builder_.add_quote_id(quote_id);
+  builder_.add_trade_id(trade_id);
+  builder_.add_command_id(command_id);
+  return builder_.Finish();
+}
+
+struct TradeCancelRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef TradeCancelRequestBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_TRADE_ID = 4
+  };
+  uint64_t trade_id() const {
+    return GetField<uint64_t>(VT_TRADE_ID, 0);
+  }
+  bool mutate_trade_id(uint64_t _trade_id = 0) {
+    return SetField<uint64_t>(VT_TRADE_ID, _trade_id, 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_TRADE_ID, 8) &&
+           verifier.EndTable();
+  }
+};
+
+struct TradeCancelRequestBuilder {
+  typedef TradeCancelRequest Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_trade_id(uint64_t trade_id) {
+    fbb_.AddElement<uint64_t>(TradeCancelRequest::VT_TRADE_ID, trade_id, 0);
+  }
+  explicit TradeCancelRequestBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<TradeCancelRequest> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<TradeCancelRequest>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<TradeCancelRequest> CreateTradeCancelRequest(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t trade_id = 0) {
+  TradeCancelRequestBuilder builder_(_fbb);
+  builder_.add_trade_id(trade_id);
+  return builder_.Finish();
+}
+
+struct TradeClosed FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef TradeClosedBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_TRADE_ID = 4,
+    VT_ACCEPTED = 6,
+    VT_ERROR = 8
+  };
+  uint64_t trade_id() const {
+    return GetField<uint64_t>(VT_TRADE_ID, 0);
+  }
+  bool mutate_trade_id(uint64_t _trade_id = 0) {
+    return SetField<uint64_t>(VT_TRADE_ID, _trade_id, 0);
+  }
+  bool accepted() const {
+    return GetField<uint8_t>(VT_ACCEPTED, 0) != 0;
+  }
+  bool mutate_accepted(bool _accepted = 0) {
+    return SetField<uint8_t>(VT_ACCEPTED, static_cast<uint8_t>(_accepted), 0);
+  }
+  const ::flatbuffers::String *error() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_ERROR);
+  }
+  ::flatbuffers::String *mutable_error() {
+    return GetPointer<::flatbuffers::String *>(VT_ERROR);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_TRADE_ID, 8) &&
+           VerifyField<uint8_t>(verifier, VT_ACCEPTED, 1) &&
+           VerifyOffset(verifier, VT_ERROR) &&
+           verifier.VerifyString(error()) &&
+           verifier.EndTable();
+  }
+};
+
+struct TradeClosedBuilder {
+  typedef TradeClosed Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_trade_id(uint64_t trade_id) {
+    fbb_.AddElement<uint64_t>(TradeClosed::VT_TRADE_ID, trade_id, 0);
+  }
+  void add_accepted(bool accepted) {
+    fbb_.AddElement<uint8_t>(TradeClosed::VT_ACCEPTED, static_cast<uint8_t>(accepted), 0);
+  }
+  void add_error(::flatbuffers::Offset<::flatbuffers::String> error) {
+    fbb_.AddOffset(TradeClosed::VT_ERROR, error);
+  }
+  explicit TradeClosedBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<TradeClosed> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<TradeClosed>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<TradeClosed> CreateTradeClosed(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t trade_id = 0,
+    bool accepted = false,
+    ::flatbuffers::Offset<::flatbuffers::String> error = 0) {
+  TradeClosedBuilder builder_(_fbb);
+  builder_.add_trade_id(trade_id);
+  builder_.add_error(error);
+  builder_.add_accepted(accepted);
+  return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<TradeClosed> CreateTradeClosedDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t trade_id = 0,
+    bool accepted = false,
+    const char *error = nullptr) {
+  auto error__ = error ? _fbb.CreateString(error) : 0;
+  return CDDA::CWM::CreateTradeClosed(
+      _fbb,
+      trade_id,
+      accepted,
+      error__);
+}
+
 struct DecisionResponse FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef DecisionResponseBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
@@ -9320,6 +10225,21 @@ struct CwmMessage FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const CDDA::CWM::TalkRequest *payload_as_TalkRequest() const {
     return payload_type() == CDDA::CWM::Payload::TalkRequest ? static_cast<const CDDA::CWM::TalkRequest *>(payload()) : nullptr;
   }
+  const CDDA::CWM::TradeView *payload_as_TradeView() const {
+    return payload_type() == CDDA::CWM::Payload::TradeView ? static_cast<const CDDA::CWM::TradeView *>(payload()) : nullptr;
+  }
+  const CDDA::CWM::TradeOfferRequest *payload_as_TradeOfferRequest() const {
+    return payload_type() == CDDA::CWM::Payload::TradeOfferRequest ? static_cast<const CDDA::CWM::TradeOfferRequest *>(payload()) : nullptr;
+  }
+  const CDDA::CWM::TradeCommitRequest *payload_as_TradeCommitRequest() const {
+    return payload_type() == CDDA::CWM::Payload::TradeCommitRequest ? static_cast<const CDDA::CWM::TradeCommitRequest *>(payload()) : nullptr;
+  }
+  const CDDA::CWM::TradeCancelRequest *payload_as_TradeCancelRequest() const {
+    return payload_type() == CDDA::CWM::Payload::TradeCancelRequest ? static_cast<const CDDA::CWM::TradeCancelRequest *>(payload()) : nullptr;
+  }
+  const CDDA::CWM::TradeClosed *payload_as_TradeClosed() const {
+    return payload_type() == CDDA::CWM::Payload::TradeClosed ? static_cast<const CDDA::CWM::TradeClosed *>(payload()) : nullptr;
+  }
   void *mutable_payload() {
     return GetPointer<void *>(VT_PAYLOAD);
   }
@@ -9554,6 +10474,26 @@ template<> inline const CDDA::CWM::CancelDisassemblyRequest *CwmMessage::payload
 
 template<> inline const CDDA::CWM::TalkRequest *CwmMessage::payload_as<CDDA::CWM::TalkRequest>() const {
   return payload_as_TalkRequest();
+}
+
+template<> inline const CDDA::CWM::TradeView *CwmMessage::payload_as<CDDA::CWM::TradeView>() const {
+  return payload_as_TradeView();
+}
+
+template<> inline const CDDA::CWM::TradeOfferRequest *CwmMessage::payload_as<CDDA::CWM::TradeOfferRequest>() const {
+  return payload_as_TradeOfferRequest();
+}
+
+template<> inline const CDDA::CWM::TradeCommitRequest *CwmMessage::payload_as<CDDA::CWM::TradeCommitRequest>() const {
+  return payload_as_TradeCommitRequest();
+}
+
+template<> inline const CDDA::CWM::TradeCancelRequest *CwmMessage::payload_as<CDDA::CWM::TradeCancelRequest>() const {
+  return payload_as_TradeCancelRequest();
+}
+
+template<> inline const CDDA::CWM::TradeClosed *CwmMessage::payload_as<CDDA::CWM::TradeClosed>() const {
+  return payload_as_TradeClosed();
 }
 
 struct CwmMessageBuilder {
@@ -9820,6 +10760,26 @@ inline bool VerifyPayload(::flatbuffers::Verifier &verifier, const void *obj, Pa
     }
     case Payload::TalkRequest: {
       auto ptr = reinterpret_cast<const CDDA::CWM::TalkRequest *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::TradeView: {
+      auto ptr = reinterpret_cast<const CDDA::CWM::TradeView *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::TradeOfferRequest: {
+      auto ptr = reinterpret_cast<const CDDA::CWM::TradeOfferRequest *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::TradeCommitRequest: {
+      auto ptr = reinterpret_cast<const CDDA::CWM::TradeCommitRequest *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::TradeCancelRequest: {
+      auto ptr = reinterpret_cast<const CDDA::CWM::TradeCancelRequest *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::TradeClosed: {
+      auto ptr = reinterpret_cast<const CDDA::CWM::TradeClosed *>(obj);
       return verifier.VerifyTable(ptr);
     }
     default: return true;

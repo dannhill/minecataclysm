@@ -11,7 +11,7 @@
 namespace cdda::cwm {
 
 constexpr uint16_t PROTOCOL_VERSION_MAJOR = 2;
-constexpr uint16_t PROTOCOL_VERSION_MINOR = 28;
+constexpr uint16_t PROTOCOL_VERSION_MINOR = 29;
 
 struct Identity { uint64_t session{0}, player{0}, connection{0}; };
 
@@ -118,6 +118,15 @@ public:
     std::vector<uint8_t> build_cancel_reading(uint64_t id, uint64_t token) {
         auto req = CDDA::CWM::CreateCancelReadingRequest(fbb_, id, token);
         return finish_message(CDDA::CWM::Payload::CancelReadingRequest, req.Union());
+    }
+    std::vector<uint8_t> build_trade_offer(uint64_t request, uint64_t trade, uint64_t quote, uint32_t item, int quantity) {
+        return finish_message(CDDA::CWM::Payload::TradeOfferRequest,CDDA::CWM::CreateTradeOfferRequest(fbb_,request,trade,quote,item,quantity).Union());
+    }
+    std::vector<uint8_t> build_trade_commit(uint64_t command, uint64_t trade, uint64_t quote) {
+        return finish_message(CDDA::CWM::Payload::TradeCommitRequest,CDDA::CWM::CreateTradeCommitRequest(fbb_,command,trade,quote).Union());
+    }
+    std::vector<uint8_t> build_trade_cancel(uint64_t trade) {
+        return finish_message(CDDA::CWM::Payload::TradeCancelRequest,CDDA::CWM::CreateTradeCancelRequest(fbb_,trade).Union());
     }
     std::vector<uint8_t> build_talk_request(uint64_t id, uint64_t target) {
         auto req = CDDA::CWM::CreateTalkRequest(fbb_, id, target);

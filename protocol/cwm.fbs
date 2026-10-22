@@ -507,6 +507,47 @@ table ConversationInfo {
 
 table TalkRequest { command_id: uint64; target_entity_id: uint64; }
 
+table TradeEntry {
+    id: uint32;
+    trader: bool;
+    parent_id: uint32;
+    type_id: string;
+    name: string;
+    category: string;
+    source: string;
+    available: int32;
+    selected: int32;
+    unit_price: int64;
+    reason: string;
+    worn: bool;
+    wielded: bool;
+    rotten: bool;
+    container: bool;
+}
+table TradeView {
+    trade_id: uint64;
+    quote_id: uint64;
+    request_id: uint64;
+    npc_id: uint64;
+    name: string;
+    title: string;
+    entries: [TradeEntry];
+    your_value: int64;
+    their_value: int64;
+    balance: int64;
+    remembered_balance: int64;
+    credit_limit: int64;
+    service_cost: int64;
+    free_exchange: bool;
+    can_confirm: bool;
+    error: string;
+}
+// Proposals are presentation state. Only Commit is a gameplay command.
+table TradeOfferRequest { request_id: uint64; trade_id: uint64; quote_id: uint64; entry_id: uint32; quantity: int32; }
+table TradeCommitRequest { command_id: uint64; trade_id: uint64; quote_id: uint64; }
+table TradeCancelRequest { trade_id: uint64; }
+table TradeClosed { trade_id: uint64; accepted: bool; error: string; }
+
 table DecisionResponse {
     decision_id: uint64;
     choice: uint16;
@@ -571,6 +612,11 @@ union Payload {
     ,LanguageState
     ,CancelDisassemblyRequest
     ,TalkRequest
+    ,TradeView
+    ,TradeOfferRequest
+    ,TradeCommitRequest
+    ,TradeCancelRequest
+    ,TradeClosed
 }
 
 table CwmMessage {
