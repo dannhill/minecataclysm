@@ -1237,7 +1237,7 @@
   {
     "path": "builtin/settingtypes.txt",
     "mode": "100644",
-    "sha256": "bf69953b31b078effbb64accd660bf92aa9a0f1aba7aac13cb44e03de872c251"
+    "sha256": "b345f30025572585f966595dda1b2659fe7dddc373e6b05efb6fe145ffd5be0a"
   },
   {
     "path": "client/serverlist/.gitignore",
@@ -8202,7 +8202,7 @@
   {
     "path": "src/defaultsettings.cpp",
     "mode": "100644",
-    "sha256": "413436d9e0be74dfbd34f66de347d730c1241add82d298ad90fe1f7b4ba200e8"
+    "sha256": "d18a72853a1689e8d40c6c9f740439bd7e0a548c7a6098b347eece1afcad323d"
   },
   {
     "path": "src/defaultsettings.h",

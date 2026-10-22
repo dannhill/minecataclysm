@@ -88,7 +88,7 @@ index 57e5a13..0826756 100644
  	get_setting_info("touch_controls").option_labels = {
  		["auto"] = fgettext_ne("Auto"),
 diff --git a/builtin/settingtypes.txt b/builtin/settingtypes.txt
-index 728eaf4..682ecf0 100644
+index 728eaf4..50a844e 100644
 --- a/builtin/settingtypes.txt
 +++ b/builtin/settingtypes.txt
 @@ -666,9 +666,9 @@ mute_sound (Mute sound) bool false
@@ -104,6 +104,15 @@ index 728eaf4..682ecf0 100644
  
  [**GUI]
  
+@@ -2397,7 +2397,7 @@ keymap_noclip (Noclip key) key KEY_KEY_H
+ keymap_hotbar_next (Hotbar next key) key KEY_KEY_N
+ 
+ #    Key for selecting the previous item in the hotbar.
+-keymap_hotbar_previous (Hotbar previous key) key KEY_KEY_B
++keymap_hotbar_previous (Hotbar previous key) key
+ 
+ #    Key for muting the game.
+ keymap_mute (Mute key) key KEY_KEY_M
 @@ -2557,3 +2557,24 @@ keymap_increase_viewing_range_min (View range increase key) key +
  
  #    Key for decreasing the viewing range.
@@ -1131,9 +1140,18 @@ index d6e2863..239953a 100644
  	std::vector<std::unique_ptr<MeshUpdateWorkerThread>> m_workers;
  };
 diff --git a/src/defaultsettings.cpp b/src/defaultsettings.cpp
-index 7758c96..fc0a5b4 100644
+index 7758c96..6c734bc 100644
 --- a/src/defaultsettings.cpp
 +++ b/src/defaultsettings.cpp
+@@ -157,7 +157,7 @@ void set_default_settings()
+ 	settings->setDefault("keymap_fastmove", "KEY_KEY_J");
+ 	settings->setDefault("keymap_noclip", "KEY_KEY_H");
+ 	settings->setDefault("keymap_hotbar_next", "KEY_KEY_N");
+-	settings->setDefault("keymap_hotbar_previous", "KEY_KEY_B");
++	settings->setDefault("keymap_hotbar_previous", "");
+ 	settings->setDefault("keymap_mute", "KEY_KEY_M");
+ 	settings->setDefault("keymap_increase_volume", "");
+ 	settings->setDefault("keymap_decrease_volume", "");
 @@ -165,13 +165,29 @@ void set_default_settings()
  	settings->setDefault("keymap_toggle_block_bounds", "");
  	settings->setDefault("keymap_toggle_hud", "KEY_F1");
