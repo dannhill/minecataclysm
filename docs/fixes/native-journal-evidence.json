@@ -1,0 +1,346 @@
+{
+  "scope": "Known native mission journal: read-only native histories/objectives, separate no-cost native tracking, actual renderer and canonical persistence",
+  "date": "2026-10-22",
+  "source_commit": "582c157706c84097466bb71ada745fad2bbe0020",
+  "production_capture_commit": "5d02a679750f3729e30803de2bdfef01eadde635",
+  "build_mode": "Incremental captured reconstructions retaining caches; server, client and affected tests rebuilt. Subsequent captured changes are tests and fixture setup only. Not a cold-build conformance audit.",
+  "source_trees": {
+    "cdda": {
+      "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+      "patch_sha256": "e12b68a9d14cd2cb8d0e25888c2ccc36e325190915cb71359422bae9e8f079fc",
+      "tree_sha256": "62542ac243c813edba747b31f427a9207fdc9f503f1a46d4f321bc880fddc1e6"
+    },
+    "luanti": {
+      "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
+      "patch_sha256": "75c460acbd04a6cbe9dd28545b24dafffc667041210def7650d0b5af0334b495",
+      "tree_sha256": "50d5f04f568ec984d0e583dcc829f35edacccd63a7214f691cad3f226fc65a84"
+    },
+    "mineclonia": {
+      "commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36"
+    }
+  },
+  "environment": {
+    "kernel": "Linux 7.0.11-76070011-generic x86_64 GNU/Linux",
+    "compiler": "g++ 11.4.0",
+    "cmake": "3.22.1",
+    "python": "3.10.12",
+    "renderer": "Private Xvfb 1280x800x24, Mesa software OpenGL, OpenAL null, actual xdotool mouse and keyboard"
+  },
+  "native": {
+    "cases": 170,
+    "assertions": 73461,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-journal-20261022/test-native-regression.log",
+      "sha256": "7ccf82a23e57356ac49e78a44f782d66f290f91e77749f509fe520c4b6e2ac83"
+    }
+  },
+  "native_journal_and_mission": {
+    "cases": 3,
+    "assertions": 189,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-journal-20261022/test-native-focused-final.log",
+      "sha256": "2a91bc06e498964a76f55250385eb55b54c03c4be1320f59201c9780d1b6a94f"
+    }
+  },
+  "client": {
+    "cases": 309,
+    "modules": 47,
+    "catch_cases": 4,
+    "catch_assertions": 648,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-journal-20261022/test-client.log",
+      "sha256": "b5ac9fa308ce926b84dae9a8aa5f89f2277e40f0e62e706e5befe9c70de25f97"
+    }
+  },
+  "protocol": {
+    "cases": 16,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-journal-20261022/test-protocol.log",
+      "sha256": "bacc0a02ef4497d4c8b7823ccab406cc98a7aa9d029cb5a0f5b7d1c1d910de60"
+    }
+  },
+  "launcher_language": {
+    "cases": 9,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-journal-20261022/test-language.log",
+      "sha256": "dafeb7495bf0e0ffb5ac33046d544456d27f0b9f5ce5bfb037fcce331a103886"
+    }
+  },
+  "language_registry": {
+    "cases": 3,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-journal-20261022/test-registry.log",
+      "sha256": "f534406116194119df952577c4bd0a80a356f23971d41a58820b089d359985b8"
+    }
+  },
+  "journal_presentation": {
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-journal-20261022/test-presentation.log",
+      "sha256": "a7dc78718b0496d2aec641e16bd23c88e83fa4089889c4517065c9c4e23d369f"
+    }
+  },
+  "renderer": {
+    "reconstructed_journal": {
+      "checks": 31,
+      "result": "PASS",
+      "checks_file": {
+        "path": "artifacts/native-journal-20261022/journal-gui-final/checks.json",
+        "sha256": "ee543f57e3d1576956bba98ba4da0b1ff1c255d718570af88c620aae3e3245d7"
+      },
+      "summary": {
+        "path": "artifacts/native-journal-20261022/journal-gui-final/summary.json",
+        "sha256": "34979d2848d2c5f7844a35545c306c6cd18ddd8406c9eb16246b5e41baa351d6"
+      },
+      "canonical_readback": {
+        "path": "artifacts/native-journal-20261022/journal-gui-final/native.json",
+        "sha256": "bba0396ceaa743bfcadfdab877d7db31e690657a0d574ac22cb728912b4413f9"
+      },
+      "screenshots": [
+        {
+          "path": "artifacts/native-journal-20261022/journal-gui-final/journal-active.png",
+          "sha256": "54af7fdd75b115c04e3ef94d9468d3ef9f314914a3143e2436303b8204f74a0e"
+        },
+        {
+          "path": "artifacts/native-journal-20261022/journal-gui-final/journal-reconnected.png",
+          "sha256": "f0aed79cae6b3e579b651d1b6fab25e6df32c758b9e7c7b4cbc07643ce3a428b"
+        },
+        {
+          "path": "artifacts/native-journal-20261022/journal-gui-final/journal-return-to-game.png",
+          "sha256": "cba3aacb4d4de77417b43953d950970957a273c94f5763aa729e7e7617c60fcb"
+        },
+        {
+          "path": "artifacts/native-journal-20261022/journal-gui-final/journal-tab-0.png",
+          "sha256": "d4c1d16fb7c0470c131a548be5f50acefec3d31a985afe7e81721b9b62092846"
+        },
+        {
+          "path": "artifacts/native-journal-20261022/journal-gui-final/journal-tab-1.png",
+          "sha256": "57cffd36ca74e7e0a9f5e35d022a81a2c1ef4394eb23b1588ac04795ee0ca5cd"
+        },
+        {
+          "path": "artifacts/native-journal-20261022/journal-gui-final/journal-tab-2.png",
+          "sha256": "fbf66a54745239805b1abea703e3d76788e07b8094dc39812c7cceb4bfd2e1e6"
+        },
+        {
+          "path": "artifacts/native-journal-20261022/journal-gui-final/journal-tracked.png",
+          "sha256": "d46768057c4337e8a795b1462d1f8c46f20428b91b5bc959833cdeb33a1931db"
+        }
+      ]
+    },
+    "installed_journal": {
+      "checks": 31,
+      "result": "PASS",
+      "checks_file": {
+        "path": "artifacts/native-journal-20261022/installed-journal/checks.json",
+        "sha256": "ee543f57e3d1576956bba98ba4da0b1ff1c255d718570af88c620aae3e3245d7"
+      },
+      "summary": {
+        "path": "artifacts/native-journal-20261022/installed-journal/summary.json",
+        "sha256": "a9af92a2789291c3181f8082a35fc6a8e194b7017af4a89c19d0da4a071960ff"
+      },
+      "canonical_readback": {
+        "path": "artifacts/native-journal-20261022/installed-journal/native.json",
+        "sha256": "01db71f3abc4cc965bd4b5f6b3f150eba50509521c77a3cf276aee0909d925e9"
+      },
+      "screenshots": [
+        {
+          "path": "artifacts/native-journal-20261022/installed-journal/journal-active.png",
+          "sha256": "a6f0f82196d4a663f22b1e023979c0372b9cfd769ca37b68795ce4458e62bd13"
+        },
+        {
+          "path": "artifacts/native-journal-20261022/installed-journal/journal-reconnected.png",
+          "sha256": "0cf7963bf7640459f2afdc47badc059babbc32678e9aa4baf9114f8199fc5c18"
+        },
+        {
+          "path": "artifacts/native-journal-20261022/installed-journal/journal-return-to-game.png",
+          "sha256": "c6331731f2c4e063e221b0e7a9dd70ef50cb41206c718a56776b0dc608beeeb5"
+        },
+        {
+          "path": "artifacts/native-journal-20261022/installed-journal/journal-tab-0.png",
+          "sha256": "a01f6c07bc2fb5212070875197b4e4f543772ed5d9795baf21277d12ad7612d3"
+        },
+        {
+          "path": "artifacts/native-journal-20261022/installed-journal/journal-tab-1.png",
+          "sha256": "c1e72557012782f66e3c9a4b8cec787246f5af536cdc65e632654b10b900eb64"
+        },
+        {
+          "path": "artifacts/native-journal-20261022/installed-journal/journal-tab-2.png",
+          "sha256": "4a9223f5b85a52b69dd125d536387529183444d6b934d3cf22d5af7d48348f88"
+        },
+        {
+          "path": "artifacts/native-journal-20261022/installed-journal/journal-tracked.png",
+          "sha256": "69ec7bdfec2fb7aaf021fe33a11baa82d098ae785ca1e8107181f8169c8d8f4f"
+        }
+      ]
+    },
+    "trade_regression": {
+      "checks": 37,
+      "result": "PASS",
+      "checks_file": {
+        "path": "artifacts/native-journal-20261022/trade-regression/checks.json",
+        "sha256": "8aec8c24c1eeadb8661226c3b99a3ffa76c6ce1d58c90fb3c75cc73c0701c813"
+      },
+      "summary": {
+        "path": "artifacts/native-journal-20261022/trade-regression/summary.json",
+        "sha256": "a488427966f0a14a9eea9543ef72db0c66dcf4297f5f4c3d7319af29adcff302"
+      },
+      "canonical_readback": {
+        "path": "artifacts/native-journal-20261022/trade-regression/native.json",
+        "sha256": "6010ff73d18c788ef52fad53e236643118608c0e35b7cd91f51cfadb56fe2509"
+      },
+      "screenshots": [
+        {
+          "path": "artifacts/native-journal-20261022/trade-regression/bilateral-offer.png",
+          "sha256": "6a2f271eb4dac4cdb0e0d7e79ea992bda9335d3bb7ef9c268cd2c9e403cb1d47"
+        },
+        {
+          "path": "artifacts/native-journal-20261022/trade-regression/native-trade-confirm.png",
+          "sha256": "b15ff9a0963266de7aa0a064edbb3974b21f7a19b18459b948a6d27cf3bd06a5"
+        },
+        {
+          "path": "artifacts/native-journal-20261022/trade-regression/trade-declined.png",
+          "sha256": "0e4b72bee0baa37426842aab15c0c705c21c23eb4b32492efd9af0265afedfd4"
+        },
+        {
+          "path": "artifacts/native-journal-20261022/trade-regression/trade-open.png",
+          "sha256": "8df06b03ec27920619afe6ff49be5af1c924902cc3c656064d3c92aae5de44d0"
+        },
+        {
+          "path": "artifacts/native-journal-20261022/trade-regression/trade-reconnected.png",
+          "sha256": "e6c598b8d3aa7f17856f8efd6fde7e6bec9c3135a76567f174cf0235c15743b8"
+        },
+        {
+          "path": "artifacts/native-journal-20261022/trade-regression/trade-recovery-before-input.png",
+          "sha256": "914e2edac8230c60df5375511e6c23b5e2f90565c115538657ca870014596d85"
+        }
+      ]
+    },
+    "total_checks": 99,
+    "relay": "Journal harness injects a previously accepted track command after a later selection; client envelope sequences are adjusted for the additional frame. Native command identity, view and expected selection remain unchanged. Existing trade harness probes stale/excess offers and repeated commit.",
+    "screenshots_inspected_by": "LLM agent; not human validation"
+  },
+  "native_oracle": {
+    "upstream_pin": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+    "binary": {
+      "path": "artifacts/native-journal-20261022/native-save-reader",
+      "sha256": "88498c0b37604da723a0f7af6e11715935d6021bbe150ef6473c75dca34702b3"
+    },
+    "build_receipt": {
+      "path": "artifacts/native-journal-20261022/native-save-reader.build.json",
+      "sha256": "f359a770fdc49f2c1b4d6d85463f635e996135ee90797f940257500f65fb0933"
+    },
+    "fixture": {
+      "path": "artifacts/native-journal-20261022/fixture-canonical/before.json",
+      "sha256": "6bb1e835b77ac5724ff04dbd5d8b2872251b26d0471dd52c44240c73c3b8e8e6"
+    },
+    "note": "Test-only main linked to unmodified pinned native core objects. Prepared native mission histories, not a claim of playthrough completion. Native avatar-history event prevents unintended legacy-save fixture migration."
+  },
+  "installation": {
+    "native": {
+      "source": "artifacts/fnd03-session/workspace/cdda/build/src/cdda-server",
+      "installed": "cdda/build/src/cdda-server",
+      "sha256": "60880749f406403462de9f59f6b8992d915f4664e817452d56d91e23bb85ddc0",
+      "previous": "artifacts/native-journal-20261022/native-before-journal",
+      "previous_sha256": "7c3d90dcc283c1e0d75862ca7861ed404be0a2e86430f4e32fb5bdc49cae84b8"
+    },
+    "client": {
+      "source": "artifacts/language-20261011/workspace/luanti/bin/luanti",
+      "installed": "luanti/bin/luanti",
+      "sha256": "df6ff64ae480d37841378aea1d346e4a6293ddc38f4faa7c22d6455c33465952",
+      "previous": "artifacts/native-journal-20261022/client-before-journal",
+      "previous_sha256": "35cfd735a3c477ed9d8d6f31f19f364bdcb3d0ed6b59f7d594982fff8e75013d"
+    }
+  },
+  "source_check": {
+    "path": "artifacts/native-journal-20261022/baseline-check.log",
+    "sha256": "89d7a217eda1789562d2dd01adc8fb971568e3c9dca3a00ec92721ca3122a00c"
+  },
+  "build_logs": [
+    {
+      "path": "artifacts/native-journal-20261022/build-native.log",
+      "sha256": "cf23821ed91242eaaa5c0fd2403b7684f0e4934ed28b143a02b29a404e3d4efd"
+    },
+    {
+      "path": "artifacts/native-journal-20261022/build-native-tests.log",
+      "sha256": "fd3b788d89cd67b2880ef9dc280b5c300e4b04230013f9e23f440e6a588fea35"
+    },
+    {
+      "path": "artifacts/native-journal-20261022/build-native-final-tests.log",
+      "sha256": "fd3b788d89cd67b2880ef9dc280b5c300e4b04230013f9e23f440e6a588fea35"
+    },
+    {
+      "path": "artifacts/native-journal-20261022/build-client.log",
+      "sha256": "2bdc409ad069714ad0fd9912cde1de0cb9f28dd740c32c9d2ae7357306a252ab"
+    },
+    {
+      "path": "artifacts/native-journal-20261022/build-reader-canonical.log",
+      "sha256": "b5adb2a2fb54459b25e4e87153a04df27e98ab77d9f0cdff4b0b7abd7d251fb8"
+    }
+  ],
+  "reconstruction_receipts": [
+    {
+      "path": "artifacts/native-journal-20261022/refresh-native.json",
+      "sha256": "5fb6bbbd5075dae141166331cf91162066de677dc3689d42ddaa497a46bf475c"
+    },
+    {
+      "path": "artifacts/native-journal-20261022/refresh-client-build.json",
+      "sha256": "bbe65ee389fb2daf590a17d2444c6897362598dcec6e120c6c208fc5e256ad2a"
+    },
+    {
+      "path": "artifacts/native-journal-20261022/refresh-final-tests.json",
+      "sha256": "9aa5334d7ac7b4755c2343154fb137fea2c5f3d289e97f85598b7c981d328b7f"
+    },
+    {
+      "path": "artifacts/native-journal-20261022/refresh-canonical-fixture.json",
+      "sha256": "9aa5334d7ac7b4755c2343154fb137fea2c5f3d289e97f85598b7c981d328b7f"
+    }
+  ],
+  "gui_wrapper": {
+    "path": "artifacts/native-journal-20261022/run-gui.py",
+    "sha256": "ce5764f01a60bb2391c4d2f8c69c37143dab91bb9206095fac4550b405263994"
+  },
+  "manual": {
+    "pending": 49,
+    "open_fail": 0,
+    "added": "JOURNAL-01: 4 PENDING; prior 45 unchanged",
+    "human_acceptance": "None inferred from automation"
+  },
+  "limits": [
+    "Historical M5.5 FAILED and full SAVE-001 OPEN unchanged; scoped verification, not complete certification.",
+    "Known native target is shown as in CDDA journal, even in unexplored terrain; no terrain/map generation, fog reveal or creature telemetry.",
+    "No completion-condition evaluation, arbitrary dynamic description parsing or simulated progress percentage. Unknown dynamic tokens are explicitly marked limited.",
+    "Full mission/mod/EOC lifecycles, safe recorded dynamic reward text, optional waypoint HUD and companion/service UIs remain open.",
+    "Linux pair updated. Windows installer remains CWM2.26 snapshot. Mapping batch60 unchanged.",
+    "Investigation fixture/API errors retained. Missing native avatar event triggered legitimate faction-succession migration; fixture history repaired, production loader unchanged.",
+    "A redundant secondary protocol build was stopped; its build-protocol.log is not a clean successful build receipt. Final protocol result comes from the reconstructed native workspace SDK, 16/16 PASS."
+  ],
+  "commands": [
+    "python3 tools/takeover_baseline.py capture",
+    "python3 tools/refresh_verification_workspace.py --workspace artifacts/fnd03-session/workspace --receipt artifacts/native-journal-20261022/refresh-final-tests.json",
+    "python3 tools/refresh_verification_workspace.py --workspace artifacts/language-20261011/workspace --receipt artifacts/native-journal-20261022/refresh-canonical-fixture.json",
+    "cmake --build artifacts/fnd03-session/workspace/build/protocol -j3",
+    "ctest --test-dir artifacts/fnd03-session/workspace/build/protocol --output-on-failure",
+    "cmake --build artifacts/fnd03-session/workspace/cdda/build --target cdda-server cata_test -j4",
+    "cmake --build artifacts/language-20261011/workspace/luanti/build --target luanti -j3",
+    "cd artifacts/fnd03-session/workspace/cdda && CDDA_LOCALE_DIR=$PWD/lang/mo ./build/tests/cata_test '[cwm],[reading]~[.],[melee]~[.],[ranged]~[.],[disassembly]~[.],[npc_talk]~[.],[mission]' --rng-seed 42 --user-dir=<new-isolated-absolute-directory>",
+    "cd artifacts/fnd03-session/workspace/cdda && CDDA_LOCALE_DIR=$PWD/lang/mo ./build/tests/cata_test '[journal],[mission]' --rng-seed 42 --user-dir=<new-isolated-absolute-directory>",
+    "artifacts/language-20261011/workspace/luanti/bin/luanti --run-unittests --logfile <isolated-log>",
+    "python3 artifacts/language-20261011/workspace/tests/product_language_test.py",
+    "python3 artifacts/language-20261011/workspace/tests/product_language_registry_test.py",
+    "g++ -std=c++20 -I artifacts/language-20261011/workspace/luanti/src -I artifacts/language-20261011/workspace/protocol/include -I /home/dannhill/.local/include artifacts/language-20261011/workspace/tests/journal_presentation_test.cpp -o <new-test-output> && <new-test-output>",
+    "python3 tools/build_native_save_reader.py --pristine-cdda artifacts/m5.5/20261003-takeover/pristine-cdda --workspace artifacts/language-20261011/workspace --output artifacts/native-journal-20261022/native-save-reader --strip-debug",
+    "artifacts/native-journal-20261022/native-save-reader --create-journal --userdir <new-fixture-userdir> --datadir cdda/data --output <fixture-before.json>",
+    "python3 artifacts/native-journal-20261022/run-gui.py journal_gui_test.py artifacts/native-journal-20261022/fixture-canonical/user <new-artifact-name>",
+    "CWM_TEST_INSTALLED=1 python3 artifacts/native-journal-20261022/run-gui.py journal_gui_test.py artifacts/native-journal-20261022/fixture-canonical/user <new-installed-artifact-name>",
+    "CWM_TEST_INSTALLED=1 python3 artifacts/native-journal-20261022/run-gui.py trade_gui_test.py artifacts/native-trade-20261022/fixture/user <new-trade-regression-artifact-name>",
+    "python3 tools/takeover_baseline.py check"
+  ]
+}

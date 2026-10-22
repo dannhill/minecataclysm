@@ -10,6 +10,28 @@ un panorama più ampio; nebbia, memoria distante e rilievo restano da scegliere.
 Lo [stato implementato](IMPLEMENTATION_STATUS.md) e le evidenze restano separati
 dagli obiettivi. La roadmap originale M0–M9 conserva i propri significati.
 
+## Diario delle missioni note — 2026-10-22
+
+Fetta core implementata: **J**, schede Active/Completed/Failed, obiettivi e
+dettagli nativi, scadenze con precisione nativa in base all'orologio e
+destinazioni note in coordinate overmap XYZ. Nessun accesso onnisciente alle
+missioni del mondo o rivelazione della mappa. La consultazione non valuta
+condizioni, effetti o premi; **Track this mission** cambia esplicitamente la
+selezione nativa senza tempo/costi e senza ripeterla dopo una riconnessione.
+[Contratto](docs/design/native-journal.md),
+[consegna e verifiche](docs/fixes/native-journal.md).
+
+Quattro prove JOURNAL-01 rinviate: **49 PENDING**, nessun FAIL manuale aperto;
+i precedenti 45 punti restano invariati. Nessun PASS umano dedotto dalle prove
+automatiche. Coppia CWM2.30 per Linux; installer Windows ancora CWM2.26.
+M5.5 FAILED e SAVE-001 OPEN non cambiano.
+
+**Prossimo passo core: comandi individuali e servizi dei compagni**, partendo
+dai flussi effettivi del dialogo CDDA e mantenendo autorità, costi, condizioni
+e persistenza nativi. Copertura di ogni ciclo missione/mod/EOC, dettagli
+dinamici sicuri e indicatori opzionali HUD/mappa restano separati. Il diario
+non completa l'intera Fase4.6.
+
 ## Commercio NPC nativo — 2026-10-22
 
 Fetta core: risposta nativa per commerciare dal dialogo, inventari a due
@@ -27,7 +49,7 @@ i precedenti 41 punti restano invariati. Nessun PASS umano dedotto dalle prove
 automatiche. Coppia CWM2.29 per Linux; installer Windows ancora CWM2.26.
 M5.5 FAILED e SAVE-001 OPEN non cambiano.
 
-**Prossimo passo core: diario delle missioni note**, con stato e dettagli
+**Passo allora successivo, ora consegnato sopra: diario delle missioni note**, con stato e dettagli
 nativi, obiettivi e progressi comprensibili e senza nuove informazioni da una
 mappa onnisciente. L'accettazione e gli effetti dei dialoghi restano nativi.
 In seguito comandi individuali/servizi dei compagni e copertura dei flussi

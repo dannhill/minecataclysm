@@ -1,6 +1,33 @@
 # Implementation status
 
-Current scoped delivery: **native NPC trading**, CWM **2.29**, installed and
+Current scoped delivery: **known native mission journal**, CWM **2.30**, in
+normal Linux `start.sh`. **J** opens Active / Completed / Failed histories,
+native objectives, known giver, deadlines and explicit native overmap XYZ
+destinations. **Track this mission** uses the native setter as a separate
+no-cost action; reading neither evaluates completion conditions nor runs
+effects/reward scripts. No global mission registry or extra map knowledge is
+exported. Native watch/no-watch precision is preserved.
+[Delivery](docs/fixes/native-journal.md), [contract](docs/design/native-journal.md),
+[exact evidence](docs/fixes/native-journal-evidence.json).
+
+**170 native cases / 73,461 assertions PASS**; focused journal/native mission
+coverage **3/189**. Client **309 tests / 47 modules**, 648 Catch assertions /
+4 cases; protocol **16**, language **9**, registry **3**, standalone journal
+view PASS. **99 renderer/canonical checks PASS**: reconstructed journal 31,
+installed journal 31 and trade regression 37. Independent pinned-core readback
+verifies selection, histories and assignment; the real renderer exercises
+pause, explicit tracking, replay and reconnect. Exact binary identities are
+in the delivery evidence.
+Incremental captured reconstructions, not a cold-build audit.
+
+**49 PENDING**, no open manual FAIL: prior 45 unchanged plus four JOURNAL-01
+checks. No human acceptance inferred. Next core slice: individual companion
+commands/services; broad mission/mod/EOC lifecycle coverage, optional waypoint
+HUD and safe dynamic journal details remain open. Historical M5.5 FAILED and
+full SAVE-001 OPEN remain unchanged. Mapping batch60 unchanged. Windows
+installer remains its earlier **CWM2.26 snapshot**; this delivery updates Linux.
+
+Previous scoped delivery: **native NPC trading**, CWM **2.29**, installed and
 verified in normal Linux `start.sh`. Right-click a perceived non-hostile NPC,
 choose its native trade reply, propose quantities in two panels and confirm
 the whole offer through CDDA. Drag/Shift-click edit proposals; native prices,
@@ -20,8 +47,8 @@ ownership and debt/sold accounting after replay/reconnect. Incremental captured
 reconstructions, not a cold-build audit.
 
 **45 PENDING**, no open manual FAIL: prior 41 unchanged plus four TRADE-01
-checks. No human acceptance inferred. Mission journal/known objectives is the
-next core slice; specialised companion/service interfaces and broad NPC/EOC
+checks. No human acceptance inferred. Mission journal/known objectives was the
+next core slice, now delivered above; specialised companion/service interfaces and broad NPC/EOC
 coverage remain open. Historical M5.5 FAILED and full SAVE-001 OPEN remain
 unchanged. Mapping batch60 unchanged. Windows installer remains the previously
 verified **CWM2.26 snapshot**; only Linux runtimes updated here.

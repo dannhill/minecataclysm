@@ -19,15 +19,17 @@ Windows 11 x64: the local installer is generated as
 [Windows build instructions](tools/windows/README.md). Real Windows hardware
 acceptance is recorded separately from automated Wine verification.
 
-Current Linux slice: [native NPC trading](docs/fixes/native-trade.md) in
-`./start.sh`. **Right-click a perceived non-hostile NPC**, choose its native
-trade reply, build an offer in the two panels and confirm the whole exchange.
-Prices, credit, ownership and transferred quantities remain native CDDA state.
-`./trade-demo.sh --fresh` opens an isolated trading scene.
+Current Linux slice: [known mission journal](docs/fixes/native-journal.md) in
+`./start.sh`. **Press J** for native Active / Completed / Failed histories,
+known objectives, destinations and deadlines. **Track this mission** changes
+the native tracked mission explicitly; browsing never accepts or completes one.
+`./journal-demo.sh --fresh` opens an isolated scene with prepared mission histories.
+[Native NPC trading](docs/fixes/native-trade.md) remains available: right-click
+a perceived non-hostile NPC and choose its native trade reply.
 [Native conversations](docs/fixes/native-conversation.md) and
 [item disassembly](docs/fixes/native-disassembly.md) remain available.
 Human rechecks are recorded separately in the ledger. Linux uses paired
-CWM2.29 runtimes; the Windows installer remains its earlier CWM2.26 snapshot.
+CWM2.30 runtimes; the Windows installer remains its earlier CWM2.26 snapshot.
 
 This project aims to merge the 2D turn based videogame Cataclysm Dark Days Ahead(CDDA) with the 3D voxel real time game Mineclonia(as the name suggests, an open source minecraft clone) with the goal to provide CDDA with a 3D voxel engine.
 FAQ

@@ -6,10 +6,20 @@ captured implementation; it does not approve its gaps. The executable schema
 is [cwm.fbs](cwm.fbs). Audit findings and evidence are in
 [M5.5](../docs/audits/M5.5.md).
 
-The current runtime requires **CWM 2.29**. This breaks the old negotiation
+The current runtime requires **CWM 2.30**. This breaks the old negotiation
 contract; schema fields and union members are appended without changing the
 existing FlatBuffers offsets. Both executables must be rebuilt together.
 The historical coverage table below is retained as audit evidence.
+
+CWM 2.30 appends `MissionQueryRequest` (56), `MissionView` (57) and
+`MissionTrackRequest` (58). Queries export only the avatar's known native
+histories, bounded to 2048 entries with explicit truncation. Native IDs include
+valid zero; -1 means no tracked mission. Tracking validates the current view,
+connection, active assignment and expected tracked ID, then uses the shared
+command ledger and native setter without advancing time. Reading does not
+evaluate completion conditions or scripts. Targets use native global overmap
+coordinates, including Z; no Luanti type or extra terrain knowledge is exported.
+[Journal contract](../docs/design/native-journal.md).
 
 CWM 2.29 appends `TradeView` (51), `TradeOfferRequest` (52),
 `TradeCommitRequest` (53), `TradeCancelRequest` (54), `TradeClosed` (55).
