@@ -9969,10 +9969,10 @@ index 0000000..39d991c
 +}
 diff --git a/tests/cwm_runtime_test.cpp b/tests/cwm_runtime_test.cpp
 new file mode 100644
-index 0000000..3af84fd
+index 0000000..3fefa10
 --- /dev/null
 +++ b/tests/cwm_runtime_test.cpp
-@@ -0,0 +1,661 @@
+@@ -0,0 +1,660 @@
 +#include "cwm_motion.h"
 +#include "cata_catch.h"
 +#include "avatar.h"
@@ -10570,7 +10570,7 @@ index 0000000..3af84fd
 +    prepare_runtime();auto& u=get_avatar();u.wear_item(item(itype_id("backpack"),calendar::turn),false);
 +    item a(itype_id("9mm"),calendar::turn,5);a.set_var("uid","trade-a");
 +    item b(itype_id("9mm"),calendar::turn,7);b.set_var("uid","trade-b");
-+    item_location first(u,&u.i_add(a)),second(u,&u.i_add(b));REQUIRE(first);REQUIRE(second);
++    item_location first=u.i_add(a),second=u.i_add(b);REQUIRE(first);REQUIRE(second);
 +    npc np;prepare_trade_npc(np);
 +    trade_selector::select_t offer{{second,3}};std::list<item_location*> map;
 +    auto escrow=npc_trading::transfer_items(offer,u,np,map,true);
@@ -10628,8 +10628,7 @@ index 0000000..3af84fd
 +TEST_CASE("cwm_native_trade_checks_offered_charge_capacity_and_wide_credit_math", "[cwm][trade]") {
 +    prepare_runtime();npc np;prepare_trade_npc(np);auto& u=get_avatar();
 +    u.wear_item(item(itype_id("backpack"),calendar::turn),false);
-+    item ammo(itype_id("9mm"),calendar::turn,200000);auto& source=u.i_add(ammo);
-+    item_location loc(u,&source);
++    item ammo(itype_id("9mm"),calendar::turn,200000);auto loc=u.i_add(ammo);
 +    CHECK(npc_trading::npc_can_fit_items(np,{{loc,1}}));
 +    CHECK_FALSE(npc_trading::npc_can_fit_items(np,{{loc,200000}}));
 +    CHECK(npc_trading::npc_will_accept_trade(np,INT_MAX));

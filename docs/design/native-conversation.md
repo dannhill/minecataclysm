@@ -52,10 +52,9 @@ Static native service menus use the existing external-choice provider with
 enabled entries and exact native return values. Informational popups use
 external choices. Callback-dependent menus, text entry and native inventory
 selectors explicitly cancel where their dedicated presentation is missing.
-NPC trading cancels **before** restocking, item migration or trade UI setup;
-no exchange is performed. The next core slice needs a proper native trade
-query/offer/confirmation interface, preserving prices, ownership, credit,
-capacity and native item locations. No fake successful trade is reported.
+The original CWM2.28 delivery cancelled trading before restocking or transfer.
+CWM2.29 supersedes that boundary with the dedicated [native trade interface](native-trade.md),
+using native quotes, prices, ownership, credit, capacity and confirmation.
 
 Mission dialogue effects continue in CDDA, but this delivery does not certify
 all mission scripts, map selectors, surgery, camp management or training

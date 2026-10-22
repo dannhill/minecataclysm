@@ -6,10 +6,16 @@ captured implementation; it does not approve its gaps. The executable schema
 is [cwm.fbs](cwm.fbs). Audit findings and evidence are in
 [M5.5](../docs/audits/M5.5.md).
 
-The current runtime requires **CWM 2.28**. This breaks the old negotiation
+The current runtime requires **CWM 2.29**. This breaks the old negotiation
 contract; schema fields and union members are appended without changing the
 existing FlatBuffers offsets. Both executables must be rebuilt together.
 The historical coverage table below is retained as audit evidence.
+
+CWM 2.29 appends `TradeView` (51), `TradeOfferRequest` (52),
+`TradeCommitRequest` (53), `TradeCancelRequest` (54), `TradeClosed` (55).
+Offers are native modal selection state; only explicit commits use gameplay
+command IDs and the shared at-most-once ledger. Quote/connection identities
+bind responses to one native trade model. [Trade contract](../docs/design/native-trade.md).
 
 CWM 2.28 appends `TalkRequest` (50) and optional
 `DecisionPrompt.conversation:ConversationInfo`. It projects an already-generated
@@ -896,3 +902,30 @@ NPC/trial/mission state persists through the existing CDDA save. Dedicated
 trade and complex service interfaces remain separate: current native trade
 cancels before restock/transfer, and service menus/selectors without a suitable
 presentation explicitly cancel rather than pretending an exchange succeeded.
+
+## Native trade — CWM 2.29
+
+TradeView exports native row IDs, source/parent identities within the quote,
+party, available/selected quantity, price, denial, source labels and item flags.
+It also exports whole-offer totals, balance, capped remembered debt, credit,
+service cost, free-exchange flag and native can-confirm outcome. There are at
+most 2048 contiguous rows; parent links are bounded, acyclic and party-local.
+Quantities and native integer money totals are bounded. Malformed views
+trigger full resynchronization, never local inference.
+
+TradeOfferRequest carries a presentation request ID, trade ID, expected quote,
+row and quantity. Success returns a fresh quote; rejection preserves the
+selection with an explicit reason. No item transfer, RNG sampling or time cost
+is attached to proposals. TradeCommitRequest carries a gameplay command ID
+and the exact current trade/quote IDs. The native owner thread validates the
+sources and invokes the normal confirmation and transfer path. Completion
+ACK follows all native effects; TradeClosed and authoritative state settle
+the UI. Duplicate commits receive cached outcomes, not repeated transfers.
+
+TradeCancelRequest names the active trade; it cannot approve or alter a pending
+native decision. Native confirmation uses the existing DecisionPrompt path,
+including safe unanswered cancellation. The client cannot modify the offer
+while waiting. Resync retains one native model; reconnect cancels it without
+automatic replay. Native trade state is transient, canonical items/debt are
+persisted by CDDA alone. Menu pause is ignored only for the trade's own explicit
+commit; manual, threat and recovery pauses still reject it.

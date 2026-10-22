@@ -12,10 +12,11 @@ import tempfile
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--fresh', action='store_true')
+    parser.add_argument('--trade', action='store_true')
     args, client_args = parser.parse_known_args()
     root = Path(__file__).resolve().parents[1]
-    fixture = root / 'artifacts/native-conversation-20261022/fixture'
-    directory = root / 'artifacts/conversation-demo'
+    fixture = root / ('artifacts/native-trade-20261022/fixture' if args.trade else 'artifacts/native-conversation-20261022/fixture')
+    directory = root / ('artifacts/trade-demo' if args.trade else 'artifacts/conversation-demo')
     directory.mkdir(parents=True, exist_ok=True)
     pointer = directory / 'last-session'
     if pointer.exists() and not args.fresh:
@@ -24,7 +25,7 @@ def main():
             raise RuntimeError('Invalid demo session; use --fresh')
     else:
         if not (fixture / 'user').is_dir() or not (fixture / 'before.json').is_file():
-            parser.error('Native disassembly fixture missing; see docs/design/native-conversation.md')
+            parser.error('Native NPC fixture missing; see docs/design/native-trade.md')
         session = Path(tempfile.mkdtemp(prefix='session-', dir=directory))
         shutil.copytree(fixture / 'user', session / 'user')
         (session / 'user/config/options.json').write_text(json.dumps([
@@ -43,7 +44,8 @@ def main():
     print('Isolated conversation scene:', session, flush=True)
     print('An NPC is directly ahead. Point at the character and right-click to talk.', flush=True)
     print('Numbered responses and Esc: leave. Time pauses during the conversation.', flush=True)
-    print('Native text, trials and effects come from CDDA. Trading is a separate pending interface.', flush=True)
+    print('Native text, trials and effects come from CDDA. Choose the native trade reply to exchange items.', flush=True)
+    if args.trade: print('Trade fixture: two separate ammo stacks (20 and 30), trader bandage and lamp, native starting credit.', flush=True)
     print('F7: manual pause. Relaunch without --fresh to keep this demo save.', flush=True)
     os.execve(root / 'start.sh', [str(root / 'start.sh'), '--go', '--name', 'conversation_demo', *client_args], env)
 
