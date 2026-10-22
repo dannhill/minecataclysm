@@ -21,6 +21,11 @@ inline uint64_t fresh_identity() {
     const uint64_t value = (uint64_t(random()) << 32) ^ random();
     return value ? value : 1;
 }
+inline bool valid_rest(const CDDA::CWM::RestState* rest) {
+    return rest && rest->token() && int(rest->phase())>=0 && int(rest->phase())<=2 && rest->progress()>=-1 && rest->progress()<=100 &&
+        (rest->phase()==CDDA::CWM::RestPhase::WAITING || rest->progress()==-1) &&
+        (rest->phase()!=CDDA::CWM::RestPhase::SLEEPING || !rest->interruptible());
+}
 inline bool valid_missions(const CDDA::CWM::MissionView* v) {
     const auto text=[](const auto* s,size_t bound){return s && s->size()<=bound && s->str().find('\0')==std::string::npos;};
     if(!v || !v->query_id() || v->tracked_id() < -1 || !v->entries() || v->entries()->size()>2048 || !text(v->error(),4096))return false;
@@ -214,9 +219,7 @@ inline bool valid_world(const CDDA::CWM::WorldSnapshot* world) {
         }
         return true;
     };
-    if(const auto* rest=world->rest()) {
-        if(!rest->token() || int(rest->phase())<0 || int(rest->phase())>2 || rest->progress() < -1 || rest->progress()>100 || (rest->phase()!=CDDA::CWM::RestPhase::WAITING && rest->progress()!=-1) || (rest->phase()==CDDA::CWM::RestPhase::SLEEPING && rest->interruptible()))return false;
-    }
+    if(world->rest() && !valid_rest(world->rest()))return false;
     if (const auto* consumption = world->consumption()) {
         if (!consumption->token() || consumption->total_moves() <= 0 ||
             consumption->remaining_moves() < 0 || consumption->remaining_moves() > consumption->total_moves()) return false;

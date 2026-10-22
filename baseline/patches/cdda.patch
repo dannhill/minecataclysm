@@ -5257,7 +5257,7 @@ index 0000000..d077b2c
 +} // namespace cwm
 diff --git a/src/cwm/cwm_rest.h b/src/cwm/cwm_rest.h
 new file mode 100644
-index 0000000..f2a32e8
+index 0000000..2cb8c1e
 --- /dev/null
 +++ b/src/cwm/cwm_rest.h
 @@ -0,0 +1,61 @@
@@ -5274,7 +5274,7 @@ index 0000000..f2a32e8
 +namespace cwm {
 +struct RestTracker {
 +    uint64_t token=0,next=1;int last=-1;
-+    bool fast=true;std::chrono::steady_clock::time_point started{};
++    bool fast=true;time_point started=calendar::turn;
 +    static int phase(const avatar& u) {
 +        if(u.has_effect(efftype_id("sleep")))return 2;
 +        const auto a=u.activity.id();
@@ -5284,7 +5284,7 @@ index 0000000..f2a32e8
 +    }
 +    void refresh(const avatar& u) {
 +        const int p=phase(u);
-+        if(p!=last){last=p;token=p<0?0:next++;started=std::chrono::steady_clock::now();}
++        if(p!=last){last=p;token=p<0?0:next++;started=calendar::turn;}
 +    }
 +    static bool interruptible(const avatar& u) {const int p=phase(u);return p>=0 && p<2 && u.activity.is_interruptible();}
 +    static int progress(const avatar& u) {
@@ -5294,7 +5294,7 @@ index 0000000..f2a32e8
 +    bool accelerated(const avatar& u) const {
 +        const int p=phase(u);
 +        return fast && p>=0 && (p==2 || p==1 || u.activity.moves_total>=30000) &&
-+            std::chrono::steady_clock::now()-started>=std::chrono::seconds(2);
++            calendar::turn-started>=8_seconds;
 +    }
 +    static std::string error(const avatar& u) {
 +        if(u.is_dead_state())return ::cwm::text("Rest unavailable after death.");
