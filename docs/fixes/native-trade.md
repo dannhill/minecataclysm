@@ -34,8 +34,8 @@ is introduced. The normal native chat action remains in effect at exit.
 - **309 client tests / 47 modules PASS**, plus 648 Catch assertions / 4 cases.
   Protocol **15/15**, launcher language **9/9**, language registry **3/3** and
   the standalone trade view check PASS.
-- **88 actual renderer/canonical checks PASS**: 33 trade checks against the
-  reconstructed pair, 33 against the installed pair used by start.sh, and
+- **96 actual renderer/canonical checks PASS**: 37 trade checks against the
+  reconstructed pair, 37 against the installed pair used by start.sh, and
   22 conversation regression checks. Actual mouse input exercises dragging,
   Shift-click, partial quantities, native No/Yes, cancellation and reconnect.
   Protocol probes on that connection exercise excess quantity, stale quote
@@ -52,9 +52,11 @@ LLM agent, not counted as personal human acceptance.
 [Exact source identities, hashes, commands and logs](native-trade-evidence.json).
 Builds are incremental reconstructions with caches retained, not cold builds.
 Investigation logs preserve the native test API setup errors, the confirmation
-pause settlement repair, and the missing trade parser/drag routing caught by
-the real renderer. Relay probe sequence/closure errors were in the harness;
-final PASS follows their repair. No failed attempt is counted as a final PASS.
+pause settlement repair, the missing trade parser/drag routing, and the stale
+trade modal found on reconnect by screenshot inspection. Final renderer coverage explicitly opens
+and closes the ordinary inventory after recovery and rejects any old quote
+on the replacement connection. Relay probe sequence/closure errors were in the
+harness; final PASS follows their repair. No failed attempt is counted as a final PASS.
 
 ## Installed runtime and follow-up
 

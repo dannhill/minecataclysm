@@ -13,8 +13,8 @@ Native opening restock/drop-invalid behavior is preserved once, not on queries.
 **167 native cases / 73,272 assertions PASS**; focused trade **9/163**.
 Client **309 tests / 47 modules**, 648 Catch assertions / 4 cases; protocol
 **15**, language **9**, registry **3**, standalone trade view PASS.
-**88 renderer/canonical checks PASS**: reconstructed trade 33, installed trade
-33 and conversation regression 22. The independent pinned native reader
+**96 renderer/canonical checks PASS**: reconstructed trade 37, installed trade
+37 and conversation regression 22. The independent pinned native reader
 confirms exact selected-stack quantity, unchanged other stack, one purchase,
 ownership and debt/sold accounting after replay/reconnect. Incremental captured
 reconstructions, not a cold-build audit.
