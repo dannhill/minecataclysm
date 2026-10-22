@@ -2167,10 +2167,10 @@ index 0000000..e1e7236
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..e8934a0
+index 0000000..b18e084
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,3364 @@
+@@ -0,0 +1,3369 @@
 +#include "cwm/product_language.hpp"
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
@@ -3040,6 +3040,7 @@ index 0000000..e8934a0
 +        commit_projection(old_blocks);
 +        origin_valid_ = false;
 +        pending_move_ = 0; metrics_.pending_decision = 0;
++        trade_dialog_={};trade_dirty_=false;trade_close_=true;trade_commit_=trade_request_=0;
 +        player_feet_offset_ = player_eye_offset_ = 0.f;
 +        caption_seconds_ = 0; low_light_ = false; low_light_blend_ = 0;
 +        posture_input_ = {}; aim_input_ = {}; deferred_ranged_.reset(); last_aim_command_ = 0; posture_command_ = 0; deferred_opening_.reset();
@@ -3628,8 +3629,7 @@ index 0000000..e8934a0
 +                metrics_.continuous_motion = snap->clock() && snap->clock()->continuous_motion();
 +                metrics_.pause_reasons = snap->clock() ? snap->clock()->pause_reasons() : 0;
 +                if(decision_dialog_.submitted && !(metrics_.pause_reasons & cdda::cwm::Decision)) {
-+                    trade_dialog_={};trade_dirty_=false;trade_close_=true;trade_commit_=trade_request_=0;
-+        metrics_.pending_decision=0;decision_dialog_={};decision_dirty_=false;
++                    metrics_.pending_decision=0;decision_dialog_={};decision_dirty_=false;
 +                }
 +                metrics_.time_scale = snap->clock() ? snap->clock()->time_scale() : 1.f;
 +                if (metrics_.safety_stop || (metrics_.pause_reasons & uint32_t(1 | 4 | 8)))
@@ -3823,12 +3823,17 @@ index 0000000..e8934a0
 +
 +            case CDDA::CWM::Payload::TradeView: {
 +                const auto* view=msg->payload_as_TradeView();
++                // This native view is emitted only outside a pending decision.
++                // The modal trade keeps Decision pause set after a declined
++                // confirmation, so that bit cannot settle the numbered form.
++                metrics_.pending_decision=0;decision_dialog_={};decision_dirty_=false;
 +                trade_dialog_.read(*view,session_.identity.connection);trade_dirty_=true;trade_close_=false;
 +                break;
 +            }
 +            case CDDA::CWM::Payload::TradeClosed: {
 +                const auto* closed=msg->payload_as_TradeClosed();
 +                if(closed->trade_id()==trade_dialog_.id) {
++                    metrics_.pending_decision=0;decision_dialog_={};decision_dirty_=false;
 +                    if(closed->error()->size()) {cue_caption_=utf8_to_wide(closed->error()->str());caption_seconds_=3.f;}
 +                    trade_dialog_={};trade_dirty_=false;trade_close_=true;trade_commit_=0;
 +                }
