@@ -295,7 +295,7 @@ def main():
     check('conversation_save_readable_by_independent_pinned_core',result.returncode==0)
     native=json.loads(output.read_text());player=native['player']
     npcs=[n for n in native['npcs'] if n.get('name')=='Conversation NPC']
-    check('same_canonical_npc_survives_save',len(npcs)==1)
+    check('same_canonical_npc_survives_save',len(npcs)==1 and npcs[0]['id']==(npc & ((1<<63)-1)))
     check('native_conversation_marks_npc_known',npcs[0]['known_to_u'])
     check('native_talk_attitude_is_settled',npcs[0]['attitude']==0)
     check('canonical_position_unchanged',native['player_abs']==[60,60,0])
