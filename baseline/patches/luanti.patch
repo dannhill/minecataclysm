@@ -5965,10 +5965,10 @@ index 0000000..d02b91f
 +}
 diff --git a/src/cdda/decision_dialog.h b/src/cdda/decision_dialog.h
 new file mode 100644
-index 0000000..e98a984
+index 0000000..44f960b
 --- /dev/null
 +++ b/src/cdda/decision_dialog.h
-@@ -0,0 +1,101 @@
+@@ -0,0 +1,114 @@
 +#pragma once
 +#include "avatar_status.h"
 +#include "decision_text.h"
@@ -5986,13 +5986,13 @@ index 0000000..e98a984
 +    std::vector<MedicalOptionView> medical;
 +    uint64_t npc{};
 +    std::string speaker, history;
-+    bool history_truncated{};
++    bool history_truncated{}, companion_controls{};
 +    void read(const CDDA::CWM::DecisionPrompt& prompt,uint64_t generation) {
 +        id=prompt.decision_id();connection=generation;cancel=prompt.cancel_choice();submitted=false;
 +        body=prompt.text()->str();choices.clear();for(const auto* label:*prompt.choices())choices.push_back(label->str());
-+        npc=0; speaker.clear(); history.clear(); history_truncated=false;
++        npc=0; speaker.clear(); history.clear(); history_truncated=false; companion_controls=false;
 +        if(const auto* c=prompt.conversation()) {
-+            npc=c->npc_id(); speaker=c->speaker()->str(); history=c->history()->str(); history_truncated=c->history_truncated();
++            npc=c->npc_id(); speaker=c->speaker()->str(); history=c->history()->str(); history_truncated=c->history_truncated(); companion_controls=c->companion_controls();
 +        }
 +        medical.clear(); if(prompt.medical())for(const auto* p:*prompt.medical())medical.push_back({
 +            p->choice(),p->health_quarters(),p->hp_current(),p->hp_max(),p->body_id()->str(),p->name()->str(),p->description()->str(),p->health_text()->str()});
@@ -6027,6 +6027,18 @@ index 0000000..e98a984
 +        if(cancel>=0 && size_t(cancel)<choices.size())f+="button[0.55,10.65;14.9,0.75;cancel;Esc: "+statusEscape(decisionPlainText(choices[cancel]))+"]";
 +        return f;
 +    }
++    std::string companionForm(std::string f) const {
++        f += "label[0.55,1.95;"+statusEscape(speaker)+"]";
++        f += "hypertext[0.55,2.3;6.0,7.7;companion_profile;"+statusEscape("<global color=#323232 size=18>"+decisionRichText(body))+"]";
++        for(size_t n=0;n<choices.size();++n) {
++            if(int(n)==cancel)continue;
++            const auto name="choice_"+std::to_string(n);
++            f+="button[7,"+std::to_string(2.3+n*.91)+";7.9,0.78;"+name+";"+std::to_string(n+1)+". "+statusEscape(decisionPlainText(choices[n]))+"]tooltip["+name+";"+statusEscape(decisionPlainText(choices[n]))+"]";
++        }
++        f+="label[0.55,10.2;"+::cwm::text("Orders apply to this companion only. Temporary overrides take priority.")+"]";
++        if(cancel>=0 && size_t(cancel)<choices.size())f+="button[0.55,10.65;14.9,0.75;cancel;Esc: "+statusEscape(decisionPlainText(choices[cancel]))+"]";
++        return f;
++    }
 +    std::string conversationForm(std::string f) const {
 +        f += "label[0.55,1.95;"+statusEscape(speaker)+"]";
 +        const auto transcript=(history_truncated ? ::cwm::text("Earlier conversation text omitted from this view.")+"\n" : "")+history;
@@ -6051,6 +6063,7 @@ index 0000000..e98a984
 +        f+="cwm_decision["+std::string(submitted?"1":"0")+"]image[0.55,0.4;0.65,0.65;cdda_status_unknown.png]";
 +        f+="label[1.45,0.75;"+::cwm::text("Choose an action","Scegli un'azione")+"]";
 +        f+="label[0.55,1.35;"+std::string(submitted?::cwm::text("Response sent · waiting for the game","Risposta inviata · in attesa del gioco"): ::cwm::text("Time is paused while you choose","Il tempo e fermo mentre scegli"))+"]";
++        if(npc && companion_controls && !submitted)return companionForm(f);
 +        if(npc && !submitted)return conversationForm(f);
 +        if(!medical.empty() && !submitted)return medicalForm(f);
 +        f+="hypertext[0.55,1.85;14.9,3.9;prompt;"+statusEscape("<global color=#323232 size=18>"+decisionRichText(body))+"]set_focus[prompt;true]";

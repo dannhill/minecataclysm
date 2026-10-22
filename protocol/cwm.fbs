@@ -503,6 +503,7 @@ table ConversationInfo {
     topic: string;
     history: string;
     history_truncated: bool;
+    companion_controls: bool; // Native individual order/rule panel, still explicit decisions.
 }
 
 table TalkRequest { command_id: uint64; target_entity_id: uint64; }

@@ -19,6 +19,7 @@
 #include "map.h"
 #include "monster.h"
 #include "npc.h"
+#include "npctalk.h"
 #include "mission.h"
 #include "event.h"
 #include "event_bus.h"
@@ -60,6 +61,7 @@ int main(int argc, const char *argv[]) {
     bool create_conversation = false;
     bool create_trade = false;
     bool create_journal = false;
+    bool create_companions = false;
     bool create_ranged = false;
     bool create_transfer = false;
     bool create_external = false;
@@ -77,6 +79,7 @@ int main(int argc, const char *argv[]) {
         else if (arg == "--create-transfer") { create = true; create_transfer = true; create_posture = true; }
         else if (arg == "--create-ranged") { create = true; create_ranged = true; create_posture = true; }
         else if (arg == "--create-crafting") { create = true; create_crafting = true; create_posture = true; }
+        else if (arg == "--create-companions") { create = true; create_companions = true; create_conversation = true; create_posture = true; }
         else if (arg == "--create-journal") { create = true; create_journal = true; create_conversation = true; create_posture = true; }
         else if (arg == "--create-trade") { create = true; create_trade = true; create_conversation = true; create_posture = true; }
         else if (arg == "--create-conversation") { create = true; create_conversation = true; create_posture = true; }
@@ -531,6 +534,17 @@ int main(int argc, const char *argv[]) {
                 guy->op_of_u.owed=100000;guy->op_of_u.trust=20;
             }
             overmap_buffer.insert_npc(guy); g->load_npcs();
+            if(create_companions) {
+                guy->name="Companion NPC";guy->set_speed_base(100);guy->moves=0;
+                guy->guard_pos=std::nullopt;guy->assigned_camp=std::nullopt;
+                guy->chatbin.first_topic=guy->chatbin.talk_friend;
+                talk_function::follow(*guy);
+                guy->rules.set_flag(ally_rule::use_guns);
+                guy->rules.set_specific_override_state(ally_rule::use_guns,false);
+                guy->rules.clear_flag(ally_rule::allow_bash);
+                guy->rules.engagement=combat_engagement::NONE;
+                guy->rules.aim=aim_rule::WHEN_CONVENIENT;
+            }
             if(create_journal) {
                 u.remove_items_with([](const item&){return true;});u.remove_weapon();u.clear_worn();
                 u.wear_item(item(itype_id("backpack"),calendar::turn),false);

@@ -59,8 +59,15 @@ class ConversationInfo(object):
             return bool(self._tab.Get(flatbuffers.number_types.BoolFlags, o + self._tab.Pos))
         return False
 
+    # ConversationInfo
+    def CompanionControls(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(14))
+        if o != 0:
+            return bool(self._tab.Get(flatbuffers.number_types.BoolFlags, o + self._tab.Pos))
+        return False
+
 def ConversationInfoStart(builder):
-    builder.StartObject(5)
+    builder.StartObject(6)
 
 def Start(builder):
     ConversationInfoStart(builder)
@@ -94,6 +101,12 @@ def ConversationInfoAddHistoryTruncated(builder, historyTruncated):
 
 def AddHistoryTruncated(builder, historyTruncated):
     ConversationInfoAddHistoryTruncated(builder, historyTruncated)
+
+def ConversationInfoAddCompanionControls(builder, companionControls):
+    builder.PrependBoolSlot(5, companionControls, 0)
+
+def AddCompanionControls(builder, companionControls):
+    ConversationInfoAddCompanionControls(builder, companionControls)
 
 def ConversationInfoEnd(builder):
     return builder.EndObject()

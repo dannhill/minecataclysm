@@ -14,10 +14,11 @@ def main():
     parser.add_argument('--fresh', action='store_true')
     parser.add_argument('--trade', action='store_true')
     parser.add_argument('--journal', action='store_true')
+    parser.add_argument('--companions', action='store_true')
     args, client_args = parser.parse_known_args()
     root = Path(__file__).resolve().parents[1]
-    fixture = root / ('artifacts/native-journal-20261022/fixture-canonical' if args.journal else 'artifacts/native-trade-20261022/fixture' if args.trade else 'artifacts/native-conversation-20261022/fixture')
-    directory = root / ('artifacts/journal-demo' if args.journal else 'artifacts/trade-demo' if args.trade else 'artifacts/conversation-demo')
+    fixture = root / ('artifacts/native-companions-20261022/fixture' if args.companions else 'artifacts/native-journal-20261022/fixture-canonical' if args.journal else 'artifacts/native-trade-20261022/fixture' if args.trade else 'artifacts/native-conversation-20261022/fixture')
+    directory = root / ('artifacts/companions-demo' if args.companions else 'artifacts/journal-demo' if args.journal else 'artifacts/trade-demo' if args.trade else 'artifacts/conversation-demo')
     directory.mkdir(parents=True, exist_ok=True)
     pointer = directory / 'last-session'
     if pointer.exists() and not args.fresh:
@@ -46,6 +47,7 @@ def main():
     print('An NPC is directly ahead. Point at the character and right-click to talk.', flush=True)
     print('Numbered responses and Esc: leave. Time pauses during the conversation.', flush=True)
     print('Native text, trials and effects come from CDDA. Choose the native trade reply to exchange items.', flush=True)
+    if args.companions: print('Ally directly ahead: right-click, Companion orders and rules. Native following, guard and individual settings.', flush=True)
     if args.journal: print('J: mission journal; active/completed/failed, native tracking and approximate deadlines without a watch.', flush=True)
     if args.trade: print('Trade fixture: two separate ammo stacks (20 and 30), trader bandage and lamp, native starting credit.', flush=True)
     print('F7: manual pause. Relaunch without --fresh to keep this demo save.', flush=True)

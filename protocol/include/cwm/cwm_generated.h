@@ -8725,7 +8725,8 @@ struct ConversationInfo FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_SPEAKER = 6,
     VT_TOPIC = 8,
     VT_HISTORY = 10,
-    VT_HISTORY_TRUNCATED = 12
+    VT_HISTORY_TRUNCATED = 12,
+    VT_COMPANION_CONTROLS = 14
   };
   uint64_t npc_id() const {
     return GetField<uint64_t>(VT_NPC_ID, 0);
@@ -8757,6 +8758,12 @@ struct ConversationInfo FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   bool mutate_history_truncated(bool _history_truncated = 0) {
     return SetField<uint8_t>(VT_HISTORY_TRUNCATED, static_cast<uint8_t>(_history_truncated), 0);
   }
+  bool companion_controls() const {
+    return GetField<uint8_t>(VT_COMPANION_CONTROLS, 0) != 0;
+  }
+  bool mutate_companion_controls(bool _companion_controls = 0) {
+    return SetField<uint8_t>(VT_COMPANION_CONTROLS, static_cast<uint8_t>(_companion_controls), 0);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint64_t>(verifier, VT_NPC_ID, 8) &&
@@ -8767,6 +8774,7 @@ struct ConversationInfo FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_HISTORY) &&
            verifier.VerifyString(history()) &&
            VerifyField<uint8_t>(verifier, VT_HISTORY_TRUNCATED, 1) &&
+           VerifyField<uint8_t>(verifier, VT_COMPANION_CONTROLS, 1) &&
            verifier.EndTable();
   }
 };
@@ -8790,6 +8798,9 @@ struct ConversationInfoBuilder {
   void add_history_truncated(bool history_truncated) {
     fbb_.AddElement<uint8_t>(ConversationInfo::VT_HISTORY_TRUNCATED, static_cast<uint8_t>(history_truncated), 0);
   }
+  void add_companion_controls(bool companion_controls) {
+    fbb_.AddElement<uint8_t>(ConversationInfo::VT_COMPANION_CONTROLS, static_cast<uint8_t>(companion_controls), 0);
+  }
   explicit ConversationInfoBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -8807,12 +8818,14 @@ inline ::flatbuffers::Offset<ConversationInfo> CreateConversationInfo(
     ::flatbuffers::Offset<::flatbuffers::String> speaker = 0,
     ::flatbuffers::Offset<::flatbuffers::String> topic = 0,
     ::flatbuffers::Offset<::flatbuffers::String> history = 0,
-    bool history_truncated = false) {
+    bool history_truncated = false,
+    bool companion_controls = false) {
   ConversationInfoBuilder builder_(_fbb);
   builder_.add_npc_id(npc_id);
   builder_.add_history(history);
   builder_.add_topic(topic);
   builder_.add_speaker(speaker);
+  builder_.add_companion_controls(companion_controls);
   builder_.add_history_truncated(history_truncated);
   return builder_.Finish();
 }
@@ -8823,7 +8836,8 @@ inline ::flatbuffers::Offset<ConversationInfo> CreateConversationInfoDirect(
     const char *speaker = nullptr,
     const char *topic = nullptr,
     const char *history = nullptr,
-    bool history_truncated = false) {
+    bool history_truncated = false,
+    bool companion_controls = false) {
   auto speaker__ = speaker ? _fbb.CreateString(speaker) : 0;
   auto topic__ = topic ? _fbb.CreateString(topic) : 0;
   auto history__ = history ? _fbb.CreateString(history) : 0;
@@ -8833,7 +8847,8 @@ inline ::flatbuffers::Offset<ConversationInfo> CreateConversationInfoDirect(
       speaker__,
       topic__,
       history__,
-      history_truncated);
+      history_truncated,
+      companion_controls);
 }
 
 struct TalkRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {

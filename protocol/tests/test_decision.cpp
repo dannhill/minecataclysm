@@ -36,6 +36,13 @@ int main(){
         auto data=typed.finish_message(Payload::DecisionPrompt,prompt.Union());
         CHECK(valid_decision(GetCwmMessage(data.data())->payload_as_DecisionPrompt())==(bad==0));
     }
+    MessageBuilder companion(1,1);auto& cf=companion.builder();
+    auto context=CreateConversationInfo(cf,(uint64_t(1)<<63)|12,cf.CreateString("Ally"),cf.CreateString("CWM_COMPANION_CONTROLS"),cf.CreateString(""),false,true);
+    auto control=CreateDecisionPrompt(cf,6,cf.CreateString("Base: On / Override: Off"),cf.CreateVectorOfStrings(labels),1,{},context);
+    auto cb=companion.finish_message(Payload::DecisionPrompt,control.Union());
+    CHECK(MessageVerifier::verify(cb.data(),cb.size()));
+    auto cp=GetCwmMessage(cb.data())->payload_as_DecisionPrompt();
+    CHECK(valid_decision(cp) && cp->conversation()->companion_controls());
     MessageBuilder talk(1,1);auto request=talk.build_talk_request(8,(uint64_t(1)<<63)|12);
     CHECK(GetCwmMessage(request.data())->payload_as_TalkRequest()->target_entity_id()==((uint64_t(1)<<63)|12));
     std::cout<<"Decision identity, label bounds, cancellation metadata and no inferred cancellation PASS\n";
