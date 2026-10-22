@@ -2223,7 +2223,7 @@ index 0000000..e1e7236
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..9c78cf5
+index 0000000..d43a662
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
 @@ -0,0 +1,3455 @@
@@ -4018,7 +4018,7 @@ index 0000000..9c78cf5
 +    bool request_ranged_action(int action) {
 +        if (pending_move_ && pending_move_ == last_aim_command_ && !deferred_ranged_ &&
 +            weapon_token_ && connection_ && connection_->is_valid() && session_.ready() && player_ready_ &&
-+            !activity_token_ && !metrics_.pending_decision && !metrics_.pause_reasons && sent_menu_pause_ != 1 &&
++            !rest_token_ && !activity_token_ && !metrics_.pending_decision && !metrics_.pause_reasons && sent_menu_pause_ != 1 &&
 +            !equipment_open_ && !crafting_open_ && !ground_container_open_ && !body_form_open_) {
 +            if (action == 1) {
 +                const auto it = entities_.find(pointed_actor_);
@@ -4411,7 +4411,7 @@ index 0000000..9c78cf5
 +        }
 +        if (i.inventory_work_command_ && i.inventory_work_settled_ && !i.pending_move_ &&
 +            i.session_.ready() && i.player_ready_ && !i.metrics_.pending_decision && !i.metrics_.pause_reasons &&
-+            !i.activity_token_ && i.sent_menu_pause_ != 1 && !i.equipment_open_ && !i.crafting_open_ &&
++            !i.rest_token_ && !i.activity_token_ && i.sent_menu_pause_ != 1 && !i.equipment_open_ && !i.crafting_open_ &&
 +            !i.body_form_open_ && !i.ground_container_open_) {
 +            const bool returning = i.inventory_return_requested_;
 +            const auto error = i.inventory_work_error_;
@@ -4611,7 +4611,7 @@ index 0000000..9c78cf5
 +    if (!pimpl_) return false;
 +    auto& i = *pimpl_;
 +    const bool allowed = focused && i.connection_ && i.connection_->is_valid() &&
-+        i.session_.ready() && i.player_ready_ && !i.activity_token_ && !i.metrics_.pending_decision &&
++        i.session_.ready() && i.player_ready_ && !i.rest_token_ && !i.activity_token_ && !i.metrics_.pending_decision &&
 +        !i.metrics_.pause_reasons && i.sent_menu_pause_ != 1 && !i.equipment_open_ &&
 +        !i.crafting_open_ && !i.ground_container_open_ && !i.body_form_open_;
 +    const auto intent = i.aim_input_.sample(right, pressed, fallback, context, allowed, fire, reload);
@@ -5011,7 +5011,7 @@ index 0000000..9c78cf5
 +    auto& i = *pimpl_;
 +    const auto& slot = i.quick_slots_[i.quick_slot_ - 1];
 +    const auto action = quickDefaultAction(slot.item);
-+    if (!slot || action < 0 || i.pending_move_ || i.activity_token_ || (i.inventory_work_command_ && !i.inventory_work_settled_) || i.metrics_.pause_reasons ||
++    if (!slot || action < 0 || i.pending_move_ || i.rest_token_ || i.activity_token_ || (i.inventory_work_command_ && !i.inventory_work_settled_) || i.metrics_.pause_reasons ||
 +        i.metrics_.pending_decision || i.equipment_open_ || i.body_form_open_ || i.crafting_open_ || i.ground_container_open_) {
 +        i.item_hint_ = !slot ? (::cwm::wide("Empty quick slot. Drag an item into it in I.", "Slot rapido vuoto. Assegna un oggetto con I.")) : (::cwm::wide("Action unavailable: resume or finish the current work.", "Azione non disponibile: riprendi o concludi il lavoro in corso."));
 +        i.item_hint_until_ = std::chrono::steady_clock::now() + std::chrono::seconds(4);
