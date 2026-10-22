@@ -37322,7 +37322,7 @@
   {
     "path": "src/cwm/cwm_companions.h",
     "mode": "100644",
-    "sha256": "5d1113cfa2d527d02f9fee023fd40d506010433985bc3847727d3eaff546c513"
+    "sha256": "34174a04aac26dda02c030bbe59bc33c4fa302caa692005c7445028019958ac9"
   },
   {
     "path": "src/cwm/cwm_conversation.h",

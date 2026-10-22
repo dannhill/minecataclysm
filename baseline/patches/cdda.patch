@@ -2688,7 +2688,7 @@ index 09a7711..9b0c484 100644
          DebugLog( D_INFO, DC_ALL ) <<
 diff --git a/src/cwm/cwm_companions.h b/src/cwm/cwm_companions.h
 new file mode 100644
-index 0000000..1d8263d
+index 0000000..279265f
 --- /dev/null
 +++ b/src/cwm/cwm_companions.h
 @@ -0,0 +1,138 @@
@@ -2773,9 +2773,9 @@ index 0000000..1d8263d
 +            auto add=[&](std::string label,std::function<void()> action){entries.emplace_back(std::move(label),std::move(action));};
 +            auto category=[&](const char *label,int next){add(::cwm::text(label),[&,next]{pane=next;});};
 +            std::string body=::cwm::text("Companion orders and rules")+"\n"+p.disp_name()+"\n"+
-+                ::cwm::tr(p.is_following()?"Following you":p.is_guarding()?"Guarding position":"Other native activity")+"\n\n";
++                ::cwm::tr(p.is_following()?"Following you":p.is_guarding()?"Guarding position":"Other activity")+"\n\n";
 +            if(pane==HOME) {
-+                body+=::cwm::text("Rules and orders apply only to this ally. The native conversation pays its normal action cost when you leave.");
++                body+=::cwm::text("Rules and orders apply only to this ally. Talking takes time when you leave the conversation.");
 +                if(!p.assigned_camp && !p.has_companion_mission()) {
 +                    if(p.is_following())add(::cwm::text("Guard this position"),[&]{order(u,p,true);});
 +                    else if(local_guard(p))add(::cwm::text("Follow me"),[&]{order(u,p,false);});
@@ -2798,7 +2798,7 @@ index 0000000..1d8263d
 +                add(::cwm::text("Temporarily enable"),[&]{override_rule(u,p,r,1);});
 +                add(::cwm::text("Temporarily disable"),[&]{override_rule(u,p,r,0);});
 +            } else if(pane==POWER) {
-+                body+=::cwm::text("Native bionic power preferences. These do not install, activate or recharge a bionic for free.");
++                body+=::cwm::text("Manage bionic power preferences. These settings do not supply or recharge power.");
 +                category("Power reserved for defense",RESERVE);category("Recharge threshold",RECHARGE);
 +            } else {
 +                const char *type=pane==ENGAGEMENT?"engagement_rule":pane==AIM?"aim_rule":pane==RESERVE?"cbm_reserve_rule":"cbm_recharge_rule";
@@ -2807,7 +2807,7 @@ index 0000000..1d8263d
 +                else if(pane==AIM)options={{"AIM_WHEN_CONVENIENT","Aim when convenient"},{"AIM_SPRAY","Shoot without aiming"},{"AIM_PRECISE","Aim when possible"},{"AIM_STRICTLY_PRECISE","Shoot only when precisely aimed"}};
 +                else if(pane==RESERVE)options={{"CBM_RESERVE_ALL","Reserve 100%"},{"CBM_RESERVE_MOST","Reserve 75%"},{"CBM_RESERVE_SOME","Reserve 50%"},{"CBM_RESERVE_LITTLE","Reserve 25%"},{"CBM_RESERVE_NONE","Reserve 0%"}};
 +                else options={{"CBM_RECHARGE_ALL","Recharge below 90%"},{"CBM_RECHARGE_MOST","Recharge below 75%"},{"CBM_RECHARGE_SOME","Recharge below 50%"},{"CBM_RECHARGE_LITTLE","Recharge below 25%"},{"CBM_RECHARGE_NONE","Recharge below 10%"}};
-+                body+=::cwm::text("The marked option is the current native policy. Selecting another uses the same setter as CDDA dialogue.");
++                body+=::cwm::text("The marked option is the current policy. Select an option to change it.");
 +                for(const auto &o:options) {
 +                    auto actor=get_talker_for(p);const bool current=actor->has_ai_rule(type,o.first);
 +                    add(std::string(current?"* ":"")+::cwm::text(o.second),[&,type,id=o.first]{get_talker_for(p)->set_ai_rule(type,id);});

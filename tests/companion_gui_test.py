@@ -223,7 +223,12 @@ def main():
                 return p
             def labels(p): return [p.Choices(n).decode() for n in range(p.ChoicesLength())]
             def talk():
-                turn(0,-9)
+                # An unarmed pointing ray has the product's normal four-tile
+                # reach. Approach a guard through real native movement first.
+                for _ in range(14):
+                    turn(0,-9)
+                    if int(latest()['combat_hover'])>>63==1:break
+                    xdo('keydown','--window',window,'w');time.sleep(.12);xdo('keyup','--window',window,'w');time.sleep(.2)
                 wait(lambda r: int(r['combat_hover'])>>63==1)
                 xdo('click','3')
                 wait(lambda r:int(r['pending_decision'])>0)
@@ -297,7 +302,7 @@ def main():
             check('guarded_companion_does_not_follow_player_step_for_step',npc_pos()==guard and (latest()['target_x'],latest()['target_z'])!=start)
             p=control();pick('Follow me');check('native_follow_order_changes_current_status','Following you' in body());tap('Escape')
             wait(lambda r:int(r['pending_decision'])==0 and int(r['pending_move'])==0)
-            time.sleep(2)
+            xdo('keydown','--window',window,'s');time.sleep(.9);xdo('keyup','--window',window,'s');time.sleep(2)
             check('companion_ai_moves_after_follow_resumes',npc_pos()!=guard)
             p=control();shot('companion-following.png');sent=len(messages(Payload.TalkRequest,'client'));connection=latest()['connection_id'];drop.set()
             wait(lambda r:r['connection_id']!=connection and int(r['input_ready'])==1 and int(r['pending_move'])==0,timeout=25)
@@ -334,7 +339,7 @@ def main():
     check('canonical_individual_base_rules_persist',not rules['rule_use_guns'] and rules['rule_allow_bash'])
     check('canonical_temporary_override_persists',rules['override_enable_allow_bash'] and not rules['override_allow_bash'] and not rules['override_enable_use_guns'])
     check('canonical_native_policies_persist',rules['engagement']==4 and rules['aim']==3 and rules['cbm_reserve']==25 and rules['cbm_recharge']==75)
-    check('native_follow_assignment_persists',n['attitude']==2 and n['mission']==0 and n['assigned_camp'] is None)
+    check('native_follow_assignment_persists',n['attitude']==3 and n['mission']==0 and n['assigned_camp'] is None)
     check('companion_panel_does_not_create_player_activity',native['player']['activity']['type']=='ACT_NULL')
     (out/'summary.json').write_text(json.dumps({'checks':checks,'native_save':str(output),'companion':'Companion NPC'},indent=2)+'\n')
 

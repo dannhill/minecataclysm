@@ -15,8 +15,9 @@ melee/ranged, reading/disassembly, basic feedback and live language now have
 scoped deliveries. NPC conversations, trading and known mission history add a
 first social loop, although trade/camps were not originally minimum-core gates.
 
-Remaining technical emphasis: essential sources/transfers of liquids and item
-uses still missing from the 3D interface; close actual survival-loop omissions
+Remaining technical emphasis: native sleep/rest and waiting controls (the
+fatigue HUD alone is not a sleep command); essential sources/transfers of
+liquids and item uses still missing from the 3D interface; close actual survival-loop omissions
 rather than adding every possible CDDA subsystem; then consolidated non-demo
 playthrough, busy/recovery/save regression and populated performance checks.
 The planned individual companion panel is the immediate next bounded slice,
