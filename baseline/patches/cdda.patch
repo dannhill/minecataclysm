@@ -2184,7 +2184,7 @@ index c4c28c2..ebd39b2 100644
          create_window();
          _position = -1;
 diff --git a/src/trade_ui.cpp b/src/trade_ui.cpp
-index b1bf5f8..39b7935 100644
+index b1bf5f8..e64aa33 100644
 --- a/src/trade_ui.cpp
 +++ b/src/trade_ui.cpp
 @@ -1,5 +1,11 @@
@@ -2297,7 +2297,7 @@ index b1bf5f8..39b7935 100644
 +    _external_free = external_npc().will_exchange_items_freely();
 +    std::set<const item *> seen;
 +    for( size_t side = 0; side < npanes; ++side ) {
-+        for( const auto *column : _panes[side]->get_all_columns() ) {
++        for( const auto *column : _panes[side]->external_columns() ) {
 +            for( inventory_entry *entry : column->get_entries( []( const inventory_entry &e ) { return e.is_item(); }, true ) ) {
 +                if( !entry->get_available_count() || !seen.insert( entry->any_item().get_item() ).second ) continue;
 +                external_entry record{ entry, side == _trader, {}, 0, {} };
@@ -2376,13 +2376,14 @@ index b1bf5f8..39b7935 100644
 +    return external_denial().empty() && _confirm_trade();
 +}
 diff --git a/src/trade_ui.h b/src/trade_ui.h
-index 91d1627..cec904b 100644
+index 91d1627..74f52d5 100644
 --- a/src/trade_ui.h
 +++ b/src/trade_ui.h
-@@ -38,6 +38,10 @@ class trade_selector : public inventory_drop_selector
+@@ -38,6 +38,11 @@ class trade_selector : public inventory_drop_selector
          void resize( point const &size, point const &origin );
          shared_ptr_fast<ui_adaptor> get_ui() const;
          input_context const *get_ctxt() const;
++        auto external_columns() const { return get_all_columns(); }
 +        void external_choose( inventory_entry &entry, size_t count ) {
 +            set_chosen_count( entry, count );
 +            on_toggle();
@@ -2390,7 +2391,7 @@ index 91d1627..cec904b 100644
  
          static constexpr char const *ACTION_AUTOBALANCE = "AUTO_BALANCE";
          static constexpr char const *ACTION_SWITCH_PANES = "SWITCH_LISTS";
-@@ -90,6 +94,25 @@ class trade_ui
+@@ -90,6 +95,25 @@ class trade_ui
          void recalc_values_cpane();
          void autobalance();
          void resize();
@@ -2416,7 +2417,7 @@ index 91d1627..cec904b 100644
  
          constexpr static int header_size = 5;
  
-@@ -112,6 +135,12 @@ class trade_ui
+@@ -112,6 +136,12 @@ class trade_ui
          bool _traded = false;
          currency_t _cost = 0;
          currency_t _balance = 0;
@@ -9968,7 +9969,7 @@ index 0000000..39d991c
 +}
 diff --git a/tests/cwm_runtime_test.cpp b/tests/cwm_runtime_test.cpp
 new file mode 100644
-index 0000000..b49d3b4
+index 0000000..3af84fd
 --- /dev/null
 +++ b/tests/cwm_runtime_test.cpp
 @@ -0,0 +1,661 @@
@@ -10615,7 +10616,7 @@ index 0000000..b49d3b4
 +    do_turn_with_action([&](){
 +        trade_ui model(u,np,0,"Validation");const auto& rows=model.external_entries();unsigned child=0,parent=0;
 +        for(unsigned n=0;n<rows.size();++n)if(!rows[n].trader && rows[n].entry->any_item()->get_var("uid")=="trade-stale")child=n+1;
-+        REQUIRE(child);const auto loc=rows[child-1].entry->any_item();REQUIRE(loc.has_parent());const auto p=loc.parent_item();
++        REQUIRE(child);auto loc=rows[child-1].entry->any_item();REQUIRE(loc.has_parent());const auto p=loc.parent_item();
 +        for(unsigned n=0;n<rows.size();++n)if(rows[n].entry->any_item()==p)parent=n+1;
 +        REQUIRE(parent);CHECK(model.external_set(parent,1).empty());CHECK_FALSE(model.external_set(child,1).empty());
 +        CHECK(model.external_set(parent,0).empty());CHECK(model.external_set(child,3).empty());

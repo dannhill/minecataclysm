@@ -40267,12 +40267,12 @@
   {
     "path": "src/trade_ui.cpp",
     "mode": "100644",
-    "sha256": "b93929063ea43c92006f84d1428827fd7dea36cfe40fd6436a4b72eb09a3b7ff"
+    "sha256": "71949816da42fa9acc866c12804eb51eb6dfdc63090b0b10d0e15046c61cd129"
   },
   {
     "path": "src/trade_ui.h",
     "mode": "100644",
-    "sha256": "59e5a3d49a61f5e7b6d3959a48da7d0a7beed451a32f4a76c5c039c2887a2d1c"
+    "sha256": "be2700283bc195858b26c6bed827ce88da342b288d36eb5daaaad9b291d190e9"
   },
   {
     "path": "src/trait_group.cpp",
@@ -40947,7 +40947,7 @@
   {
     "path": "tests/cwm_runtime_test.cpp",
     "mode": "100644",
-    "sha256": "29037d25124643c048bbf863a9d657d2c1b7412ab26414eff4e3c675c91f77e8"
+    "sha256": "345c6940bbb56eac3d9d21a85fc4b62c62bb03786c011a90baacb6dfaa63a619"
   },
   {
     "path": "tests/data/name.json",

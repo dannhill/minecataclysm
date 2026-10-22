@@ -2167,10 +2167,10 @@ index 0000000..e1e7236
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..7fd8db6
+index 0000000..e8934a0
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,3358 @@
+@@ -0,0 +1,3364 @@
 +#include "cwm/product_language.hpp"
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
@@ -4703,18 +4703,24 @@ index 0000000..7fd8db6
 +        if(!d.waiting) {auto b=i.session_.builder();auto bytes=b.build_trade_cancel(id);i.connection_->send_message(bytes.data(),bytes.size());d.waiting=true;i.trade_dirty_=true;}return;
 +    }
 +    if(d.waiting)return;
-+    const auto number=[](const std::string& s)->uint64_t {try {size_t n=0;auto v=std::stoull(s,&n);return n==s.size()?v:0;}catch(...){return 0;}};
++    const auto number=[](const std::string& s)->uint64_t {if(s.empty() || s.find_first_not_of("0123456789")!=std::string::npos)return 0;try {size_t n=0;auto v=std::stoull(s,&n);return n==s.size()?v:0;}catch(...){return 0;}};
 +    const auto keyid=[&](const std::string& s)->unsigned {return s.rfind("item_",0)==0?unsigned(number(s.substr(5))):0;};
 +    if(fields.count("quantity"))d.quantity=int(std::min<uint64_t>(INT32_MAX,number(fields.at("quantity"))));
 +    unsigned changed=0;int quantity=0;
 +    for(const auto& r:d.rows)if(fields.count("item_"+std::to_string(r.item.id))) {
 +        d.selected=r.item.id;d.quantity=std::max(1,r.selected);
-+        if(fields.count("shift") && fields.at("shift")=="true") {changed=r.item.id;quantity=r.selected?0:r.available;}
++        
 +        break;
++    }
++    if(fields.count("quick_transfer") && fields.count("drag_view") && number(fields.at("drag_view"))==d.quote) {
++        if(auto* r=d.row(keyid(fields.at("quick_transfer")))) {d.selected=changed=r->item.id;quantity=r->selected?0:r->available;}
 +    }
 +    const auto* selected=d.row(d.selected);
 +    if(selected && fields.count("all"))d.quantity=selected->available;
-+    if(selected && fields.count("offer")) {changed=d.selected;quantity=d.quantity;}
++    if(selected && fields.count("offer")) {
++        if(d.quantity<1) {d.notice=::cwm::text("Enter a positive quantity.");i.trade_dirty_=true;return;}
++        changed=d.selected;quantity=d.quantity;
++    }
 +    if(selected && fields.count("remove")) {changed=d.selected;quantity=0;}
 +    if(fields.count("drag_from") && fields.count("drag_to")) {
 +        if(!fields.count("drag_view") || number(fields.at("drag_view"))!=d.quote)return;
