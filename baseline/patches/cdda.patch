@@ -4617,10 +4617,10 @@ index 0000000..d077b2c
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..6999d8e
+index 0000000..3662abb
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,1145 @@
+@@ -0,0 +1,1151 @@
 +#include "cwm/product_language.hpp"
 +#include "cwm_motion.h"
 +// CDDA CWM IPC Server Implementation
@@ -4711,6 +4711,11 @@ index 0000000..6999d8e
 +}
 +
 +void CwmServer::cancel_connection() {
++    // A replacement peer must not inherit an unanswered native choice. Keep
++    // a response already accepted from its valid connection, otherwise leave
++    // through the explicit safe final option before accepting more input.
++    if (pending_decision_ && decision_choices_ && !decision_answer_)
++        decision_answer_ = static_cast<int>(decision_choices_) - 1;
 +    inventory_work_command_ = 0; inventory_work_settled_ = false;
 +    inventory_selection_.clear();
 +    held_direction_ = 0; intent_x_ = intent_y_ = 0; menu_pause_ = false;
@@ -4796,7 +4801,7 @@ index 0000000..6999d8e
 +}
 +
 +void CwmServer::send_decision() {
-+    if (!pending_decision_ || !ready_ || !has_active_client()) return;
++    if (!pending_decision_ || decision_answer_ || !ready_ || !has_active_client()) return;
 +    cdda::cwm::MessageBuilder builder(sequence_counter_, world_revision_, identity_);
 +    auto& fbb = builder.builder();
 +    const auto text = fbb.CreateString(decision_text_);
@@ -5106,7 +5111,8 @@ index 0000000..6999d8e
 +    decision_conversation_ = external_conversation ? std::optional<external_conversation_info>(*external_conversation) : std::nullopt;
 +    send_state(u, m, g, !snapshot_sent_);
 +    send_decision();
-+    while (keep_running() && has_active_client() && !decision_answer_) {
++    const auto decision_connection = identity_.connection;
++    while (keep_running() && has_active_client() && identity_.connection == decision_connection && !decision_answer_) {
 +        update(u, m, g);
 +        std::this_thread::sleep_for(std::chrono::milliseconds(1));
 +    }
@@ -6290,10 +6296,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..09ee7ff
+index 0000000..1dced19
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,2362 @@
+@@ -0,0 +1,2375 @@
 +#include "cata_catch.h"
 +#include "translations.h"
 +#include "options.h"
@@ -6493,6 +6499,12 @@ index 0000000..09ee7ff
 +        cdda::cwm::MessageBuilder wire(server.received_sequence_+1,1,server.identity_);
 +        const auto bytes=wire.build_cancel_reading(id,token);
 +        server.handle_client_message(bytes.data(),bytes.size(),get_avatar(),get_map(),*g);
++    }
++    static bool decision_disconnect(CwmServer& server,bool answered) {
++        server.pending_decision_=7;server.decision_choices_=3;
++        server.decision_answer_=answered ? std::optional<int>(0) : std::nullopt;
++        server.cancel_connection();
++        return server.decision_answer_ == (answered ? 0 : 2);
 +    }
 +    static void cancel( CwmServer &server ) { server.cancel_connection(); }
 +    static void complete( CwmServer &server ) {
@@ -8655,6 +8667,13 @@ index 0000000..09ee7ff
 +        cwm::CwmServerTestAccess::talk(server,target);CHECK_FALSE(server.has_queued_action());CHECK(prompts==1);
 +    }
 +    clear_creatures();
++}
++
++TEST_CASE("cwm_connection_replacement_settles_only_unanswered_choices_to_safe_exit", "[cwm][conversation]") {
++    cwm::CwmServer waiting("/unused-waiting-dialogue");
++    CHECK(cwm::CwmServerTestAccess::decision_disconnect(waiting,false));
++    cwm::CwmServer answered("/unused-answered-dialogue");
++    CHECK(cwm::CwmServerTestAccess::decision_disconnect(answered,true));
 +}
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644

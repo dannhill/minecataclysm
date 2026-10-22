@@ -6,9 +6,9 @@
       "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
       "shallow": true,
       "patch": "baseline/patches/cdda.patch",
-      "patch_sha256": "59ee7ef983ba7cb3180c67017c6ac032da281548fcf797f0253f02092540aab4",
+      "patch_sha256": "c8605a773f58b7fbda93134bafb379f86fa1058fd3799dcafb34f12f1af0e6dc",
       "tree_inventory": "baseline/trees/cdda.json",
-      "tree_sha256": "81f59a3fbeb6fbd1ac92844217fe4dc44f5f22e1b5f2c23eba522c412db15502",
+      "tree_sha256": "9b529813740e5dbba0d28bb5448fa82885061093b2aeff38d02fded87d578bc6",
       "file_count": 8593,
       "original_status": " M CMakeLists.txt\n M src/CMakeLists.txt\n M src/activity_actor.cpp\n M src/avatar.cpp\n M src/avatar_action.cpp\n M src/avatar_action.h\n M src/character.cpp\n M src/character_body.cpp\n M src/character_inventory.cpp\n M src/craft_command.cpp\n M src/craft_command.h\n M src/crafting.cpp\n M src/crafting.h\n M src/creature.cpp\n M src/dialogue_win.cpp\n M src/dialogue_win.h\n M src/do_turn.cpp\n M src/do_turn.h\n M src/filesystem.cpp\n M src/game.cpp\n M src/game.h\n M src/handle_action.cpp\n M src/iexamine.cpp\n M src/inventory.cpp\n M src/inventory.h\n M src/inventory_ui.cpp\n M src/item.cpp\n M src/iuse_actor.cpp\n M src/melee.cpp\n M src/monster.cpp\n M src/npctalk.cpp\n M src/npctrade.cpp\n M src/output.cpp\n M src/pickup.cpp\n M src/player_activity.h\n M src/popup.cpp\n M src/ranged.cpp\n M src/ranged.h\n M src/recipe.cpp\n M src/recipe.h\n M src/requirements.cpp\n M src/sounds.cpp\n M src/string_input_popup.cpp\n M src/translations.cpp\n M src/ui.cpp\n M src/vehicle_use.cpp\n M src/vpart_position.h\n M src/wincurse.cpp\n M tests/CMakeLists.txt\n M tests/melee_test.cpp\n M tests/test_main.cpp\n?? src/cwm/cwm_conversation.h\n?? src/cwm/cwm_crafting.h\n?? src/cwm/cwm_disassembly.h\n?? src/cwm/cwm_hotbar.h\n?? src/cwm/cwm_inventory.h\n?? src/cwm/cwm_main.cpp\n?? src/cwm/cwm_map_exporter.cpp\n?? src/cwm/cwm_map_exporter.h\n?? src/cwm/cwm_presentation.h\n?? src/cwm/cwm_ranged.h\n?? src/cwm/cwm_reading.h\n?? src/cwm/cwm_server.cpp\n?? src/cwm/cwm_server.h\n?? src/cwm/cwm_status_gauges.h\n?? src/cwm/cwm_windows.rc\n?? src/cwm_motion.cpp\n?? src/cwm_motion.h\n?? src/external_conversation.h\n?? src/safe_mode_actions.h\n?? tests/cwm_pickup_test.cpp\n?? tests/cwm_projection_test.cpp\n?? tests/cwm_runtime_test.cpp\n"
     },
