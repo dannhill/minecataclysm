@@ -14,6 +14,7 @@
 #include "item.h"
 #include "flag.h"
 #include "json.h"
+#include "json_loader.h"
 #include "loading_ui.h"
 #include "map.h"
 #include "monster.h"
@@ -537,7 +538,7 @@ int main(int argc, const char *argv[]) {
                     saved.member("status",status);saved.member("npc_id",guy->getID());saved.member("player_id",-1);
                     const auto p=u.global_omt_location();saved.member("target",std::vector<int>{target?p.x()+4:INT_MIN,target?p.y()-3:INT_MIN,target?-1:INT_MIN});
                     saved.member("deadline",deadline?calendar::turn+3_hours:calendar::turn_zero);saved.end_object();
-                    std::istringstream in(s.str());JsonIn json(in);auto jo=json.get_object();mission value;value.deserialize(jo);mission::add_existing(value);
+                    auto jo=json_loader::from_string(s.str()).get_object();mission value;value.deserialize(jo);mission::add_existing(value);
                     auto* m=mission::find(uid);if(assigned){m->assign(u);if(status!="in_progress")u.on_mission_finished(*m);}
                     return m;
                 };
