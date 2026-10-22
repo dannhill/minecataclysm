@@ -214,11 +214,14 @@ inline bool valid_world(const CDDA::CWM::WorldSnapshot* world) {
         }
         return true;
     };
+    if(const auto* rest=world->rest()) {
+        if(!rest->token() || int(rest->phase())<0 || int(rest->phase())>2 || rest->progress() < -1 || rest->progress()>100 || (rest->phase()!=CDDA::CWM::RestPhase::WAITING && rest->progress()!=-1) || (rest->phase()==CDDA::CWM::RestPhase::SLEEPING && rest->interruptible()))return false;
+    }
     if (const auto* consumption = world->consumption()) {
         if (!consumption->token() || consumption->total_moves() <= 0 ||
             consumption->remaining_moves() < 0 || consumption->remaining_moves() > consumption->total_moves()) return false;
     }
-    if (int(bool(world->consumption())) + int(bool(world->first_aid())) + int(bool(world->crafting())) + int(bool(world->reload())) + int(bool(world->item_transfer())) + int(bool(world->reading())) + int(bool(world->disassembly())) > 1) return false;
+    if (int(bool(world->consumption())) + int(bool(world->first_aid())) + int(bool(world->crafting())) + int(bool(world->reload())) + int(bool(world->item_transfer())) + int(bool(world->reading())) + int(bool(world->disassembly())) + int(bool(world->rest())) > 1) return false;
     if (const auto* work=world->disassembly()) {
         if (!work->token() || work->progress()<0 || work->progress()>10000000 ||
             !work->name() || !work->name()->size() || work->name()->size()>16384 ||

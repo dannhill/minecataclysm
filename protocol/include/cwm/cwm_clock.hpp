@@ -9,11 +9,13 @@ enum PauseReason : unsigned { Manual = 1, Menu = 2, Threat = 4, Recovery = 8, De
 class SimulationClock {
 public:
     using Wall = std::chrono::steady_clock;
-    void sample(Wall::time_point now, bool running) {
+    void sample(Wall::time_point now, bool running, bool accelerated = false) {
+        if(accelerated_ && (!running || !accelerated))tick_end_=std::max(tick_end_,elapsed_);
+        accelerated_=running && accelerated;
         if (started_ && running_ && running) {
             // Suspend/stalls lose wall time rather than creating catch-up turns.
             const double dt = std::chrono::duration<double>(now - last_).count();
-            elapsed_ += std::clamp(dt, 0.0, 0.25) * scale_;
+            elapsed_ += std::clamp(dt, 0.0, 0.25) * scale_ * (accelerated_ ? 64.0 : 1.0);
         }
         last_ = now; started_ = true; running_ = running;
     }
@@ -43,7 +45,7 @@ public:
     }
 private:
     Wall::time_point last_{};
-    bool started_{false}, running_{false};
+    bool started_{false}, running_{false}, accelerated_{false};
     double elapsed_{0.0}, scale_{1.0}, tick_end_{1.0}, action_due_{0.0};
 };
 }

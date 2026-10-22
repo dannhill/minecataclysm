@@ -11,7 +11,7 @@
 namespace cdda::cwm {
 
 constexpr uint16_t PROTOCOL_VERSION_MAJOR = 2;
-constexpr uint16_t PROTOCOL_VERSION_MINOR = 31;
+constexpr uint16_t PROTOCOL_VERSION_MINOR = 32;
 
 struct Identity { uint64_t session{0}, player{0}, connection{0}; };
 
@@ -68,6 +68,9 @@ public:
         return result;
     }
 
+    std::vector<uint8_t> build_rest_request(uint64_t command,uint64_t expected) {
+        return finish_message(CDDA::CWM::Payload::RestRequest,CDDA::CWM::CreateRestRequest(fbb_,command,expected).Union());
+    }
     std::vector<uint8_t> build_mission_query(uint64_t query) {
         return finish_message(CDDA::CWM::Payload::MissionQueryRequest, CDDA::CWM::CreateMissionQueryRequest(fbb_,query).Union());
     }

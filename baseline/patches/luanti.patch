@@ -88,7 +88,7 @@ index 57e5a13..0826756 100644
  	get_setting_info("touch_controls").option_labels = {
  		["auto"] = fgettext_ne("Auto"),
 diff --git a/builtin/settingtypes.txt b/builtin/settingtypes.txt
-index 728eaf4..7ac8f98 100644
+index 728eaf4..682ecf0 100644
 --- a/builtin/settingtypes.txt
 +++ b/builtin/settingtypes.txt
 @@ -666,9 +666,9 @@ mute_sound (Mute sound) bool false
@@ -104,7 +104,7 @@ index 728eaf4..7ac8f98 100644
  
  [**GUI]
  
-@@ -2557,3 +2557,21 @@ keymap_increase_viewing_range_min (View range increase key) key +
+@@ -2557,3 +2557,24 @@ keymap_increase_viewing_range_min (View range increase key) key +
  
  #    Key for decreasing the viewing range.
  keymap_decrease_viewing_range_min (View range decrease key) key -
@@ -126,6 +126,9 @@ index 728eaf4..7ac8f98 100644
 +keymap_cdda_reload (CDDA native reload) key KEY_KEY_R
 +keymap_cdda_quick_use (CDDA selected quick slot: use or equip) key KEY_KEY_G
 +keymap_cdda_close (CDDA close the pointed opening or curtains) key KEY_KEY_O
++
++# Native sleep, waiting and rest interruption.
++keymap_cdda_rest (CDDA: rest and sleep menu key) key KEY_KEY_B
 diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
 index 65e5ab6..351c98a 100644
 --- a/src/CMakeLists.txt
@@ -332,7 +335,7 @@ index 16ceda4..20bd596 100644
  			float old_anim_speed = player->last_animation_speed;
  			m_velocity = v3f(0,0,0);
 diff --git a/src/client/game.cpp b/src/client/game.cpp
-index 27b5833..c6ece29 100644
+index 27b5833..50fdc83 100644
 --- a/src/client/game.cpp
 +++ b/src/client/game.cpp
 @@ -8,6 +8,10 @@
@@ -504,7 +507,7 @@ index 27b5833..c6ece29 100644
  	delete client;
  	client = nullptr;
  	delete soundmaker;
-@@ -2046,14 +2144,45 @@ void Game::processUserInput(f32 dtime)
+@@ -2046,14 +2144,47 @@ void Game::processUserInput(f32 dtime)
  	if (m_cache_doubletap_jump && runData.jump_timer_down <= 0.4f)
  		runData.jump_timer_down += dtime;
  
@@ -524,7 +527,9 @@ index 27b5833..c6ece29 100644
  void Game::processKeyInput()
  {
 -	if (wasKeyDown(KeyType::DROP)) {
-+    if(wasKeyDown(KeyType::CDDA_JOURNAL) && cdda_client::CddaBridge::getInstance().ownsPlayer(client)) {
++    if(wasKeyDown(KeyType::CDDA_REST) && cdda_client::CddaBridge::getInstance().ownsPlayer(client)) {
++        cdda_client::CddaBridge::getInstance().openRestMenu();
++    } else if(wasKeyDown(KeyType::CDDA_JOURNAL) && cdda_client::CddaBridge::getInstance().ownsPlayer(client)) {
 +        auto& bridge=cdda_client::CddaBridge::getInstance();const auto form=bridge.openMissionJournal();
 +        if(!form.empty()) {
 +            auto *&menu=m_game_ui->updateFormspec("CWM_MISSIONS");
@@ -553,7 +558,7 @@ index 27b5833..c6ece29 100644
  		dropSelectedItem(isKeyDown(KeyType::SNEAK));
  	} else if (wasKeyDown(KeyType::AUTOFORWARD)) {
  		toggleAutoforward();
-@@ -2063,6 +2192,8 @@ void Game::processKeyInput()
+@@ -2063,6 +2194,8 @@ void Game::processKeyInput()
  	} else if (wasKeyDown(KeyType::INVENTORY)) {
  		openInventory();
  	} else if (input->cancelPressed()) {
@@ -562,7 +567,7 @@ index 27b5833..c6ece29 100644
  #ifdef __ANDROID__
  		m_android_chat_open = false;
  #endif
-@@ -2083,7 +2214,8 @@ void Game::processKeyInput()
+@@ -2083,7 +2216,8 @@ void Game::processKeyInput()
  	} else if (wasKeyDown(KeyType::FREEMOVE)) {
  		toggleFreeMove();
  	} else if (wasKeyDown(KeyType::JUMP)) {
@@ -572,7 +577,7 @@ index 27b5833..c6ece29 100644
  	} else if (wasKeyDown(KeyType::PITCHMOVE)) {
  		togglePitchMove();
  	} else if (wasKeyDown(KeyType::FASTMOVE)) {
-@@ -2137,12 +2269,13 @@ void Game::processKeyInput()
+@@ -2137,12 +2271,13 @@ void Game::processKeyInput()
  		toggleMinimap(isKeyDown(KeyType::SNEAK));
  	} else if (wasKeyPressed(KeyType::TOGGLE_CHAT)) {
  		m_game_ui->toggleChat(client);
@@ -588,7 +593,7 @@ index 27b5833..c6ece29 100644
  	} else if (wasKeyPressed(KeyType::TOGGLE_PROFILER)) {
  		m_game_ui->toggleProfiler();
  	} else if (wasKeyDown(KeyType::INCREASE_VIEWING_RANGE)) {
-@@ -2154,9 +2287,17 @@ void Game::processKeyInput()
+@@ -2154,9 +2289,17 @@ void Game::processKeyInput()
  	} else if (wasKeyDown(KeyType::ZOOM)) {
  		checkZoomEnabled();
  	} else if (wasKeyDown(KeyType::QUICKTUNE_NEXT)) {
@@ -608,7 +613,7 @@ index 27b5833..c6ece29 100644
  	} else if (wasKeyDown(KeyType::QUICKTUNE_INC)) {
  		quicktune->inc();
  	} else if (wasKeyDown(KeyType::QUICKTUNE_DEC)) {
-@@ -2178,6 +2319,22 @@ void Game::processItemSelection(u16 *new_playeritem)
+@@ -2178,6 +2321,22 @@ void Game::processItemSelection(u16 *new_playeritem)
  	LocalPlayer *player = client->getEnv().getLocalPlayer();
  
  	*new_playeritem = player->getWieldIndex();
@@ -631,7 +636,7 @@ index 27b5833..c6ece29 100644
  	u16 max_item = player->getMaxHotbarItemcount();
  	if (max_item == 0)
  		return;
-@@ -2238,6 +2395,18 @@ void Game::dropSelectedItem(bool single_item)
+@@ -2238,6 +2397,18 @@ void Game::dropSelectedItem(bool single_item)
  
  void Game::openInventory()
  {
@@ -650,7 +655,7 @@ index 27b5833..c6ece29 100644
  	/*
  	 * Don't permit to open inventory is CAO or player doesn't exists.
  	 * This prevent showing an empty inventory at player load
-@@ -2737,8 +2906,68 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
+@@ -2737,8 +2908,68 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
  		control.aux1 = control.aux1 ^ true;
  	}
  
@@ -719,7 +724,7 @@ index 27b5833..c6ece29 100644
  	//tt.stop();
  }
  
-@@ -2784,6 +3013,93 @@ inline void Game::step(f32 dtime)
+@@ -2784,6 +3015,93 @@ inline void Game::step(f32 dtime)
  
  	if (!m_is_paused)
  		client->step(dtime);
@@ -813,7 +818,7 @@ index 27b5833..c6ece29 100644
  }
  
  static void pauseNodeAnimation(PausedNodesList &paused, scene::ISceneNode *node) {
-@@ -3246,6 +3562,7 @@ void Game::updateCamera(f32 dtime)
+@@ -3246,6 +3564,7 @@ void Game::updateCamera(f32 dtime)
  	tool_reload_ratio = MYMIN(tool_reload_ratio, 1.0);
  	camera->update(player, dtime, tool_reload_ratio);
  	camera->step(dtime);
@@ -821,7 +826,7 @@ index 27b5833..c6ece29 100644
  
  	f32 camera_fov = camera->getFovMax();
  	v3s16 camera_offset = camera->getOffset();
-@@ -3262,6 +3579,7 @@ void Game::updateCamera(f32 dtime)
+@@ -3262,6 +3581,7 @@ void Game::updateCamera(f32 dtime)
  		if (m_camera_offset_changed) {
  			client->updateCameraOffset(camera_offset);
  			client->getEnv().updateCameraOffset(camera_offset);
@@ -829,7 +834,7 @@ index 27b5833..c6ece29 100644
  
  			if (clouds)
  				clouds->updateCameraOffset(camera_offset);
-@@ -3314,6 +3632,8 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
+@@ -3314,6 +3634,8 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
  
  	const ItemDefinition &selected_def = selected_item.getDefinition(itemdef_manager);
  	f32 d = getToolRange(selected_item, hand_item, itemdef_manager);
@@ -838,7 +843,7 @@ index 27b5833..c6ece29 100644
  
  	core::line3d<f32> shootline;
  
-@@ -3365,6 +3685,54 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
+@@ -3365,6 +3687,54 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
  	// but the halo rendering code is already inefficient so there's no point in optimizing it here
  	hud->updateSelectionMesh(camera_offset);
  
@@ -893,7 +898,7 @@ index 27b5833..c6ece29 100644
  	// Allow digging again if button is not pressed
  	if (runData.digging_blocked && !isKeyDown(KeyType::DIG))
  		runData.digging_blocked = false;
-@@ -4247,7 +4615,8 @@ void Game::updateClouds(float dtime)
+@@ -4247,7 +4617,8 @@ void Game::updateClouds(float dtime)
  {
  	if (this->sky->getCloudsVisible()) {
  		this->clouds->setVisible(true);
@@ -903,7 +908,7 @@ index 27b5833..c6ece29 100644
  		// this->camera->getPosition is not enough for third-person camera.
  		v3f camera_node_position = this->camera->getCameraNode()->getPosition();
  		v3s16 camera_offset      = this->camera->getOffset();
-@@ -4319,7 +4688,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
+@@ -4319,7 +4690,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
  	/*
  		Fog
  	*/
@@ -917,7 +922,7 @@ index 27b5833..c6ece29 100644
  		this->driver->setFog(
  				fog_color,
  				video::EFT_FOG_LINEAR,
-@@ -4470,7 +4844,7 @@ void Game::showDeathFormspecLegacy()
+@@ -4470,7 +4846,7 @@ void Game::showDeathFormspecLegacy()
  }
  
  #define GET_KEY_NAME(KEY) gettext(getKeySetting(#KEY).name())
@@ -926,7 +931,7 @@ index 27b5833..c6ece29 100644
  {
  	std::string control_text;
  
-@@ -4518,6 +4892,22 @@ void Game::showPauseMenu()
+@@ -4518,6 +4894,22 @@ void Game::showPauseMenu()
  		<< strgettext("Exit to Menu") << "]";
  	os		<< "button_exit[4," << (ypos++) << ";3,0.5;btn_exit_os;"
  		<< strgettext("Exit to OS")   << "]";
@@ -949,7 +954,7 @@ index 27b5833..c6ece29 100644
  	if (!control_text.empty()) {
  	os		<< "textarea[7.5,0.25;3.9,6.25;;" << control_text << ";]";
  	}
-@@ -4536,8 +4926,8 @@ void Game::showPauseMenu()
+@@ -4536,8 +4928,8 @@ void Game::showPauseMenu()
  	}
  	os << "\n";
  	if (simple_singleplayer_mode || address.empty()) {
@@ -960,7 +965,7 @@ index 27b5833..c6ece29 100644
  		// Note: Status of enable_damage and creative_mode settings is intentionally
  		// NOT shown here because the game might roll its own damage system and/or do
  		// a per-player Creative Mode, in which case writing it here would mislead.
-@@ -4559,10 +4949,15 @@ void Game::showPauseMenu()
+@@ -4559,10 +4951,15 @@ void Game::showPauseMenu()
  	}
  	os << ";]";
  
@@ -1002,7 +1007,7 @@ index 2da9efa..93b5bcd 100644
  		v2s32 pos(floor(e->pos.X * (float) m_screensize.X + 0.5),
  				floor(e->pos.Y * (float) m_screensize.Y + 0.5));
 diff --git a/src/client/inputhandler.cpp b/src/client/inputhandler.cpp
-index 88969f0..eb91b6f 100644
+index 88969f0..c6f3291 100644
 --- a/src/client/inputhandler.cpp
 +++ b/src/client/inputhandler.cpp
 @@ -3,6 +3,7 @@
@@ -1013,7 +1018,7 @@ index 88969f0..eb91b6f 100644
  #include "settings.h"
  #include "util/numeric.h"
  #include "inputhandler.h"
-@@ -63,6 +64,16 @@ void KeyCache::populate()
+@@ -63,6 +64,17 @@ void KeyCache::populate()
  			getKeySetting("keymap_decrease_viewing_range_min");
  	key[KeyType::RANGESELECT] = getKeySetting("keymap_rangeselect");
  	key[KeyType::ZOOM] = getKeySetting("keymap_zoom");
@@ -1021,6 +1026,7 @@ index 88969f0..eb91b6f 100644
 +    key[KeyType::CDDA_AIM] = getKeySetting("keymap_cdda_aim");
 +    key[KeyType::CDDA_RELOAD] = getKeySetting("keymap_cdda_reload");
 +    key[KeyType::CDDA_QUICK_USE] = getKeySetting("keymap_cdda_quick_use");
++    key[KeyType::CDDA_REST] = getKeySetting("keymap_cdda_rest");
 +    key[KeyType::CDDA_JOURNAL] = getKeySetting("keymap_cdda_journal");
 +    key[KeyType::CDDA_CRAFTING] = getKeySetting("keymap_cdda_crafting");
 +    key[KeyType::CDDA_CLOSE] = getKeySetting("keymap_cdda_close");
@@ -1030,7 +1036,7 @@ index 88969f0..eb91b6f 100644
  
  	key[KeyType::QUICKTUNE_NEXT] = getKeySetting("keymap_quicktune_next");
  	key[KeyType::QUICKTUNE_PREV] = getKeySetting("keymap_quicktune_prev");
-@@ -109,7 +120,11 @@ bool MyEventReceiver::OnEvent(const SEvent &event)
+@@ -109,7 +121,11 @@ bool MyEventReceiver::OnEvent(const SEvent &event)
  		return true;
  	}
  
@@ -1044,16 +1050,17 @@ index 88969f0..eb91b6f 100644
  		const KeyPress keyCode(event.KeyInput);
  		if (keyCode == getKeySetting("keymap_fullscreen")) {
 diff --git a/src/client/keys.h b/src/client/keys.h
-index 4bce131..a1a1542 100644
+index 4bce131..bcf43fd 100644
 --- a/src/client/keys.h
 +++ b/src/client/keys.h
-@@ -56,6 +56,16 @@ class KeyType
+@@ -56,6 +56,17 @@ class KeyType
  		DECREASE_VIEWING_RANGE,
  		RANGESELECT,
  		ZOOM,
 +		CDDA_BODY,
 +        CDDA_CRAFTING,
 +        CDDA_JOURNAL,
++        CDDA_REST,
 +        CDDA_CLOSE,
 +        CDDA_AIM,
 +        CDDA_RELOAD,
@@ -1124,10 +1131,10 @@ index d6e2863..239953a 100644
  	std::vector<std::unique_ptr<MeshUpdateWorkerThread>> m_workers;
  };
 diff --git a/src/defaultsettings.cpp b/src/defaultsettings.cpp
-index 7758c96..b94a9aa 100644
+index 7758c96..fc0a5b4 100644
 --- a/src/defaultsettings.cpp
 +++ b/src/defaultsettings.cpp
-@@ -165,13 +165,28 @@ void set_default_settings()
+@@ -165,13 +165,29 @@ void set_default_settings()
  	settings->setDefault("keymap_toggle_block_bounds", "");
  	settings->setDefault("keymap_toggle_hud", "KEY_F1");
  	settings->setDefault("keymap_toggle_chat", "KEY_F2");
@@ -1137,6 +1144,7 @@ index 7758c96..b94a9aa 100644
 +    settings->setDefault("keymap_cdda_aim", "KEY_KEY_F");
 +    settings->setDefault("keymap_cdda_reload", "KEY_KEY_R");
 +    settings->setDefault("keymap_cdda_quick_use", "KEY_KEY_G");
++    settings->setDefault("keymap_cdda_rest", "KEY_KEY_B");
 +    settings->setDefault("keymap_cdda_journal", "KEY_KEY_J");
 +    settings->setDefault("keymap_cdda_crafting", "KEY_KEY_K");
 +    settings->setDefault("keymap_cdda_close", "KEY_KEY_O");
@@ -2197,10 +2205,10 @@ index 0000000..e1e7236
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..ff0598a
+index 0000000..ff324d3
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,3439 @@
+@@ -0,0 +1,3454 @@
 +#include "cwm/product_language.hpp"
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
@@ -2412,6 +2420,7 @@ index 0000000..ff0598a
 +    uint64_t activity_token_{0}, cancel_activity_sent_{0};
 +    int activity_total_{0}, activity_remaining_{0};
 +    bool first_aid_{false}, crafting_{false};
++    uint64_t rest_token_=0;int rest_phase_=-1,rest_progress_=-1;bool rest_accelerated_=false;
 +    bool disassembling_{false}; std::string disassembly_name_;
 +    bool reloading_{false}, reading_{false}, reading_skimming_{false}, reading_panel_hidden_{false};
 +    std::string reading_book_, reading_progress_;
@@ -2501,6 +2510,7 @@ index 0000000..ff0598a
 +        crafting_search_due_.reset();
 +        crafting_query_pending_=crafting_favorite_refresh_=false;crafting_favorite_command_=0;
 +        crafting_close_ = crafting_open_;
++        rest_token_=0;rest_phase_=-1;rest_progress_=-1;rest_accelerated_=false;
 +        queued_cancel_activity_.reset(); activity_token_ = 0; weapon_token_ = 0; disassembling_ = reloading_ = reading_ = reading_panel_hidden_ = false; disassembly_name_.clear(); reading_book_.clear(); reading_progress_.clear();
 +        activity_total_ = activity_remaining_ = 0;
 +        queued_equipment_.reset(); queued_transfer_.reset(); external_anchor_.reset(); transferring_ = false; inventory_query_ = 0; equipment_view_ = {};
@@ -3104,7 +3114,7 @@ index 0000000..ff0598a
 +    void movement_intent(int direction) {
 +        if (metrics_.continuous_motion) { continuous_intent(0, 0); return; }
 +        if (!metrics_.realtime) return;
-+        if (!player_ready_ || !session_.ready() || activity_token_ || metrics_.pause_reasons || metrics_.pending_decision) {
++        if (!player_ready_ || !session_.ready() || rest_token_ || activity_token_ || metrics_.pause_reasons || metrics_.pending_decision) {
 +            sent_intent_ = 0; intent_needs_release_ = direction != 0; return;
 +        }
 +        if (!direction) intent_needs_release_ = false;
@@ -3127,7 +3137,7 @@ index 0000000..ff0598a
 +        constexpr uint32_t recovery_pause = 1u << 3;
 +        const bool recovery_only = metrics_.pause_reasons == recovery_pause;
 +        if (!player_ready_ || !session_.ready() ||
-+                (metrics_.pause_reasons && !recovery_only) || activity_token_ || metrics_.pending_decision) {
++                (metrics_.pause_reasons && !recovery_only) || rest_token_ || activity_token_ || metrics_.pending_decision) {
 +            sent_intent_x_ = sent_intent_y_ = 0; intent_needs_release_ = pressed; return;
 +        }
 +        if (!pressed) intent_needs_release_ = false;
@@ -3456,6 +3466,8 @@ index 0000000..ff0598a
 +                    inventory_work_settled_ = native_work_settled_;
 +                else if (inventory_work_rejected_ && snap->completed_command_id() == inventory_work_command_)
 +                    inventory_work_settled_ = true; // Admission rejection has no native debit.
++                const auto* rest=snap->rest();rest_token_=rest?rest->token():0;rest_phase_=rest?int(rest->phase()):-1;
++                rest_progress_=rest?rest->progress():-1;rest_accelerated_=rest && rest->accelerated();
 +                const auto* consumption = snap->consumption();
 +                const uint64_t previous_consumption = activity_token_;
 +                const auto* transfer = snap->item_transfer(); transferring_ = transfer != nullptr;
@@ -3968,7 +3980,7 @@ index 0000000..ff0598a
 +    bool send_ranged_request(int action) {
 +        const auto now = std::chrono::steady_clock::now();
 +        if (!weapon_token_ || !connection_ || !connection_->is_valid() || !session_.ready() || !player_ready_ ||
-+            pending_move_ || activity_token_ || metrics_.pending_decision || metrics_.pause_reasons || sent_menu_pause_ == 1 ||
++            pending_move_ || rest_token_ || activity_token_ || metrics_.pending_decision || metrics_.pause_reasons || sent_menu_pause_ == 1 ||
 +            equipment_open_ || crafting_open_ || ground_container_open_ || body_form_open_ || now < next_move_) return false;
 +        if (action != 2) {
 +            const auto it = entities_.find(pointed_actor_);
@@ -4007,7 +4019,7 @@ index 0000000..ff0598a
 +    bool send_talk_request() {
 +        const auto it = entities_.find(pointed_actor_);
 +        if (!connection_ || !connection_->is_valid() || !session_.ready() || !player_ready_ ||
-+            pending_move_ || metrics_.pending_decision || metrics_.pause_reasons || activity_token_ ||
++            pending_move_ || metrics_.pending_decision || metrics_.pause_reasons || rest_token_ || rest_token_ || activity_token_ ||
 +            equipment_open_ || ground_container_open_ || body_form_open_ || it == entities_.end() ||
 +            !it->second.humanoid || !it->second.perceived) return false;
 +        const uint64_t command = session_.next_command++;
@@ -4091,7 +4103,7 @@ index 0000000..ff0598a
 +    std::string trace_path;
 +    if (g_settings->getNoEx("cwm_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->trace_.open(trace_path);
-+        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog,ipc_connected,ipc_input,ipc_output,ipc_read_bytes,ipc_write_bytes,ipc_frames,ipc_dispatch_bytes,ipc_read_calls,ipc_write_calls,session_state,input_ready,session_id,player_id,connection_id,sequence,resync_count,entity_cache,vehicle_cache,scene_origin_x,scene_origin_y,simulation_time,realtime,pause_reasons,time_scale,sent_intent,continuous_motion,intent_x,intent_y,ipc_latency_ms,projection_ms,ground_tiles,owned_items,ground_container,ground_hover,queued_pickup,ground_visual_nodes,ground_hover_items,ground_target_items,ground_target_visual_nodes,ground_target_first_type,status_available,body_form,survival_visible,status_stamina,status_head,status_arm_l,combat_hover,attacks_sent,attack_target,attack_target_hp,attack_result,player_state_flags,player_eye_offset,visual_animation_time,visual_animation_delta,ground_item_rotation,status_hunger_level,status_thirst_level,status_fatigue_level,status_pain_level,hud_images_active,equipment_form,inventory_view,inventory_entries,equipment_selected,equipment_sent,pending_decision,consumption_token,consumption_total,consumption_remaining,cancel_consumption_sent,first_aid_token,first_aid_total,first_aid_remaining,crafting_form,crafting_view,crafting_selected,crafting_sent,crafting_token,crafting_progress,weapon_token,weapon_ammo,weapon_recoil,aim_sent,fire_sent,reload_sent,reload_token,reload_total,reload_remaining,transfer_form,transfers_sent,transfer_token,transfer_total,transfer_remaining,inventory_work_command,native_work_command,native_work_settled,inventory_return,inventory_work_visible,equipment_page,equipment_filter,equipment_search_open,quick_slot,quick_count,quick_wielded,quick_use_sent,quick_bind_command,aim_held,ranged_deferred,external_form,external_entries,decision_waiting,native_work_total_ms,native_work_remaining_ms,work_progress_visible,presentation_cues,sounds_dispatched,low_light,underwater,diagnostics,wield_texture,shot_kick,low_light_blend,reading_token,reading_total,reading_remaining,reading_skimming,disassembly_token,disassembly_progress\n";
++        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog,ipc_connected,ipc_input,ipc_output,ipc_read_bytes,ipc_write_bytes,ipc_frames,ipc_dispatch_bytes,ipc_read_calls,ipc_write_calls,session_state,input_ready,session_id,player_id,connection_id,sequence,resync_count,entity_cache,vehicle_cache,scene_origin_x,scene_origin_y,simulation_time,realtime,pause_reasons,time_scale,sent_intent,continuous_motion,intent_x,intent_y,ipc_latency_ms,projection_ms,ground_tiles,owned_items,ground_container,ground_hover,queued_pickup,ground_visual_nodes,ground_hover_items,ground_target_items,ground_target_visual_nodes,ground_target_first_type,status_available,body_form,survival_visible,status_stamina,status_head,status_arm_l,combat_hover,attacks_sent,attack_target,attack_target_hp,attack_result,player_state_flags,player_eye_offset,visual_animation_time,visual_animation_delta,ground_item_rotation,status_hunger_level,status_thirst_level,status_fatigue_level,status_pain_level,hud_images_active,equipment_form,inventory_view,inventory_entries,equipment_selected,equipment_sent,pending_decision,consumption_token,consumption_total,consumption_remaining,cancel_consumption_sent,first_aid_token,first_aid_total,first_aid_remaining,crafting_form,crafting_view,crafting_selected,crafting_sent,crafting_token,crafting_progress,weapon_token,weapon_ammo,weapon_recoil,aim_sent,fire_sent,reload_sent,reload_token,reload_total,reload_remaining,transfer_form,transfers_sent,transfer_token,transfer_total,transfer_remaining,inventory_work_command,native_work_command,native_work_settled,inventory_return,inventory_work_visible,equipment_page,equipment_filter,equipment_search_open,quick_slot,quick_count,quick_wielded,quick_use_sent,quick_bind_command,aim_held,ranged_deferred,external_form,external_entries,decision_waiting,native_work_total_ms,native_work_remaining_ms,work_progress_visible,presentation_cues,sounds_dispatched,low_light,underwater,diagnostics,wield_texture,shot_kick,low_light_blend,reading_token,reading_total,reading_remaining,reading_skimming,disassembly_token,disassembly_progress,rest_token,rest_phase,rest_accelerated\n";
 +    }
 +    if (g_settings->getNoEx("cwm_entity_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->entity_trace_.open(trace_path);
@@ -4343,7 +4355,7 @@ index 0000000..ff0598a
 +        << ',' << wieldedTexture() << ',' << shotKick() << ',' << pimpl_->low_light_blend_ << ',' << (pimpl_->reading_ ? pimpl_->activity_token_ : 0)
 +        << ',' << (pimpl_->reading_ ? pimpl_->activity_total_ : 0) << ',' << (pimpl_->reading_ ? pimpl_->activity_remaining_ : 0)
 +        << ',' << pimpl_->reading_skimming_ << ',' << (pimpl_->disassembling_ ? pimpl_->activity_token_ : 0)
-+        << ',' << (pimpl_->disassembling_ ? 10000000-pimpl_->activity_remaining_ : 0) << '\n';
++        << ',' << (pimpl_->disassembling_ ? 10000000-pimpl_->activity_remaining_ : 0) << ',' << pimpl_->rest_token_ << ',' << pimpl_->rest_phase_ << ',' << pimpl_->rest_accelerated_ << '\n';
 +    pimpl_->trace_.flush();
 +}
 +
@@ -4831,6 +4843,14 @@ index 0000000..ff0598a
 +}
 +uint64_t CddaBridge::missionJournalView() const {return pimpl_?pimpl_->journal_.view:0;}
 +uint64_t CddaBridge::missionJournalConnection() const {return pimpl_?pimpl_->session_.identity.connection:0;}
++bool CddaBridge::openRestMenu() {
++    if(!pimpl_)return false;auto& i=*pimpl_;
++    if(!i.connection_ || !i.session_.ready() || !i.player_ready_ || i.pending_move_ || i.metrics_.pending_decision || i.metrics_.pause_reasons || i.equipment_open_ || i.crafting_open_ || i.body_form_open_ || i.journal_open_ || i.trade_dialog_.id || i.ground_container_open_)return false;
++    i.dismiss_inventory_work();
++    auto wire=i.session_.builder();const auto id=i.session_.next_command++;auto bytes=wire.build_rest_request(id,i.rest_token_);
++    if(!i.connection_->send_message(bytes.data(),bytes.size()))return false;
++    i.pending_move_=id;i.move_acked_=false;i.sent_move_=std::chrono::steady_clock::now();return true;
++}
 +std::string CddaBridge::openMissionJournal() {
 +    if(!pimpl_ || !pimpl_->session_.ready() || !pimpl_->player_ready_ || pimpl_->pending_move_ ||
 +       pimpl_->metrics_.pending_decision || pimpl_->trade_dialog_.id || pimpl_->equipment_open_ ||
@@ -4934,7 +4954,7 @@ index 0000000..ff0598a
 +    if (fields.count("start")) if (const auto* e = i.crafting_view_.entry(i.crafting_selected_)) {
 +        if (!e->reason.empty()) i.crafting_notice_ = e->reason;
 +        else if (i.crafting_search_due_) return;
-+        else if (i.activity_token_) i.crafting_notice_ = (::cwm::text("Interrupt the activity before acting.", "Interrompi l'attivita prima di agire."));
++        else if (i.rest_token_ || i.activity_token_) i.crafting_notice_ = (::cwm::text("Interrupt the activity before acting.", "Interrompi l'attivita prima di agire."));
 +        else if (i.metrics_.pause_reasons & ~uint32_t(2)) i.crafting_notice_ = (::cwm::text("Resume the game before crafting.", "Riprendi il gioco prima di creare."));
 +        else if (!i.session_.ready() || i.pending_move_) i.crafting_notice_ = (::cwm::text("Wait for the updated state.", "Attendi lo stato aggiornato."));
 +        else {
@@ -5173,7 +5193,7 @@ index 0000000..ff0598a
 +            else if (!selected->transfer_reason.empty()) i.equipment_notice_ = selected->transfer_reason;
 +            else if (i.transfer_quantity_ <= 0 || i.transfer_quantity_ > available) i.equipment_notice_ = (::cwm::text("Invalid quantity.", "Quantita non valida."));
 +            else if (insert && !i.transfer_destination_) i.equipment_notice_ = (::cwm::text("Select a container.", "Seleziona un contenitore."));
-+            else if (i.activity_token_) i.equipment_notice_ = (::cwm::text("Interrupt the activity first.", "Interrompi prima l'attivita."));
++            else if (i.rest_token_ || i.activity_token_) i.equipment_notice_ = (::cwm::text("Interrupt the activity first.", "Interrompi prima l'attivita."));
 +            else if (i.metrics_.pause_reasons & ~uint32_t(2)) i.equipment_notice_ = (::cwm::text("Resume the game before transferring.", "Riprendi il gioco prima di trasferire."));
 +            else if (!i.session_.ready() || i.pending_move_) i.equipment_notice_ = (::cwm::text("Wait for the updated state.", "Attendi lo stato aggiornato."));
 +            else {
@@ -5361,10 +5381,12 @@ index 0000000..ff0598a
 +    const int work_left = std::max(10, (int(screen.Width) - work_width) / 2);
 +    const int work_top = std::max(165, int(screen.Height) - 270);
 +    pimpl_->inventory_work_text_->setRelativePosition(irr::core::rect<irr::s32>(work_left, work_top, work_left + work_width, work_top + 78));
-+    std::wstring work_text = pimpl_->disassembling_ ? ::cwm::wide("Disassembling: ")+utf8_to_wide(pimpl_->disassembly_name_) : pimpl_->reading_ ?
++    std::wstring work_text = pimpl_->rest_token_ ? ::cwm::wide(pimpl_->rest_phase_==2?"Sleeping":pimpl_->rest_phase_==1?"Trying to fall asleep":"Waiting") : pimpl_->disassembling_ ? ::cwm::wide("Disassembling: ")+utf8_to_wide(pimpl_->disassembly_name_) : pimpl_->reading_ ?
 +        (pimpl_->reading_skimming_ ? ::cwm::wide("Skimming: ","Sfoglio: ") : ::cwm::wide("Reading: ","Lettura: "))+
 +        utf8_to_wide(pimpl_->reading_book_) : pimpl_->inventory_work_label_;
-+    if (pimpl_->inventory_time_pending()) {
++    if(pimpl_->rest_token_) {
++        if(pimpl_->rest_progress_>=0)work_text+=L" "+std::to_wstring(pimpl_->rest_progress_)+L"%";
++    } else if (pimpl_->inventory_time_pending()) {
 +        // Upstream wear/takeoff (and wield/stow) mutate atomically and debit
 +        // moves. This is remaining native time, not cancellable actor progress.
 +        const auto tenths = (uint64_t(pimpl_->native_work_remaining_ms_) + 99) / 100;
@@ -5377,10 +5399,11 @@ index 0000000..ff0598a
 +    } else if (pimpl_->activity_token_ && pimpl_->activity_total_ > 0) work_text += L"  " + std::to_wstring(
 +        std::clamp(100 - int(100.0 * pimpl_->activity_remaining_ / pimpl_->activity_total_), 0, 100)) + L"%";
 +    else work_text += pimpl_->inventory_work_settled_ ? (::cwm::wide(" — finished", " — conclusa")) : (::cwm::wide(" — waiting for CDDA", " — attesa di CDDA"));
++    if(pimpl_->rest_token_)work_text+=L"\n"+::cwm::wide(pimpl_->rest_accelerated_?"Fast-forward · B: rest menu":"B: rest menu");
 +    if(pimpl_->reading_ && !pimpl_->reading_progress_.empty())work_text+=L"\n"+utf8_to_wide(pimpl_->reading_progress_);
 +    work_text += (L"\n" + ::cwm::wide("I: inspect (pauses) · Esc: hide this panel", "I: consulta (pausa) · Esc: nascondi questo pannello"));
 +    pimpl_->inventory_work_text_->setText(work_text.c_str());
-+    pimpl_->inventory_work_text_->setVisible((pimpl_->inventory_work_command_ ||
++    pimpl_->inventory_work_text_->setVisible((pimpl_->rest_token_ || pimpl_->inventory_work_command_ ||
 +        ((pimpl_->reading_ || pimpl_->disassembling_) && !pimpl_->reading_panel_hidden_)) && pimpl_->session_.ready() &&
 +        !pimpl_->equipment_open_ && !pimpl_->crafting_open_ && !pimpl_->body_form_open_ &&
 +        !pimpl_->ground_container_open_ && !pimpl_->metrics_.pending_decision);
@@ -5642,10 +5665,10 @@ index 0000000..ff0598a
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.h b/src/cdda/cdda_bridge.h
 new file mode 100644
-index 0000000..cfeb725
+index 0000000..a4c7432
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.h
-@@ -0,0 +1,199 @@
+@@ -0,0 +1,200 @@
 +// Luanti C++ CWM Presentation Bridge
 +// Licensed under Apache-2.0
 +#pragma once
@@ -5786,6 +5809,7 @@ index 0000000..cfeb725
 +    void setMenuPause(bool paused);
 +    void toggleSimulationPause();
 +    void cycleSimulationSpeed();
++    bool openRestMenu();
 +    std::string openMissionJournal();
 +    void missionJournalFields(uint64_t view,uint64_t connection,const std::unordered_map<std::string,std::string>& fields);
 +    std::string takeMissionJournalUpdate();

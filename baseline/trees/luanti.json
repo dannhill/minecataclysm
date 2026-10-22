@@ -1237,7 +1237,7 @@
   {
     "path": "builtin/settingtypes.txt",
     "mode": "100644",
-    "sha256": "488ec261c9825d45dea82c8919c8f3c8ea0285ae8446d5c8f74a884a3d573c4c"
+    "sha256": "bf69953b31b078effbb64accd660bf92aa9a0f1aba7aac13cb44e03de872c251"
   },
   {
     "path": "client/serverlist/.gitignore",
@@ -7247,12 +7247,12 @@
   {
     "path": "src/cdda/cdda_bridge.cpp",
     "mode": "100644",
-    "sha256": "11218b3d2bc010ed6d4a67bce3cbdf5c29902f53134fae6ce5d9d795cc2f248e"
+    "sha256": "082e65ed606732b59d9073f50241ee7c5657ff1c962574f619ba17a87c30d13c"
   },
   {
     "path": "src/cdda/cdda_bridge.h",
     "mode": "100644",
-    "sha256": "ce34748aef19ba06a0c9539e663d495c1e9ad016399ba680f4ff3b25f466424f"
+    "sha256": "c673c82f253dc375607a5159ff3101958a28a7eb50a5eeb33ba2b013771e0298"
   },
   {
     "path": "src/cdda/crafting_inventory.h",
@@ -7507,7 +7507,7 @@
   {
     "path": "src/client/game.cpp",
     "mode": "100644",
-    "sha256": "5bc9b31f3525e8964c3cf7a642c76097b008e6657dab8aee094a20f1b516b2cb"
+    "sha256": "08690ba49da77115dec11d8c06f85caf0958c881ea0ecfa3e5e62aae84180921"
   },
   {
     "path": "src/client/game.h",
@@ -7567,7 +7567,7 @@
   {
     "path": "src/client/inputhandler.cpp",
     "mode": "100644",
-    "sha256": "1679cb4d0179538882bbf5e60641b415867d1a71c3d113722773374b6c0ea4e2"
+    "sha256": "cfa916636dd6fce377f0ddfce2de33bf03a6584796e2fe82c52ed6ff1de5525f"
   },
   {
     "path": "src/client/inputhandler.h",
@@ -7597,7 +7597,7 @@
   {
     "path": "src/client/keys.h",
     "mode": "100644",
-    "sha256": "5fde542a7be1a103f89649acab576df062561031482a5261356a7b35aa5aa5c9"
+    "sha256": "d08962131b27fc3044dc34731ea6fc75c363c0ba5f07076f937433b59071fd2b"
   },
   {
     "path": "src/client/localplayer.cpp",
@@ -8202,7 +8202,7 @@
   {
     "path": "src/defaultsettings.cpp",
     "mode": "100644",
-    "sha256": "a34e1bf4b19b2557c260291625cc0ce327252d5ce5296c2d8682f280496f130b"
+    "sha256": "413436d9e0be74dfbd34f66de347d730c1241add82d298ad90fe1f7b4ba200e8"
   },
   {
     "path": "src/defaultsettings.h",

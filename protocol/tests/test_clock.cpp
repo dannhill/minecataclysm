@@ -44,5 +44,10 @@ int main() {
     for(int i=1;i<=9;++i) work.sample(t(90.1+i*.25),true);
     CHECK(!work.action_due()); work.sample(t(92.6),true); CHECK(work.action_due());
     CHECK(work.charge_work(-100,100)==0); CHECK(work.action_due());
+    SimulationClock rest;rest.sample(t(0),true,true);rest.sample(t(.25),true,true);
+    CHECK(std::abs(rest.elapsed()-16)<1e-8);CHECK(rest.tick_due());rest.complete_tick();
+    rest.sample(t(.25),false);const auto frozen=rest.elapsed();rest.sample(t(900),false);
+    CHECK(rest.elapsed()==frozen);rest.sample(t(901),true,false);CHECK(rest.elapsed()==frozen);
+    rest.sample(t(901.25),true,false);CHECK(std::abs(rest.elapsed()-frozen-.25)<1e-8);
     std::cout<<"Clock invariants PASS ("<<checks<<" checks)\n";
 }

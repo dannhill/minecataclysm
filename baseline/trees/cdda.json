@@ -36667,7 +36667,7 @@
   {
     "path": "src/avatar_action.h",
     "mode": "100644",
-    "sha256": "41e955175a36a765e90023fd663e36f7798c264a1dc69d11ac7cdeea770d71f2"
+    "sha256": "ab24f37b5c6412391db7a4d74af17ed63e615eabe5adf230e26e8aef92904434"
   },
   {
     "path": "src/ballistics.cpp",
@@ -37357,12 +37357,12 @@
   {
     "path": "src/cwm/cwm_map_exporter.cpp",
     "mode": "100644",
-    "sha256": "7ed3a9dff8aa0b55be59e6a2430cdcf105dfbd4aa2787056156e18f8935034c2"
+    "sha256": "b024e65e886504a1320b39023105b2b0735b9af8ec3c7612c8df78b596c0238c"
   },
   {
     "path": "src/cwm/cwm_map_exporter.h",
     "mode": "100644",
-    "sha256": "bb801dba65a7cb0dbaa223e940ceb695684733f5ed5ac98a7f456f30a27de3b0"
+    "sha256": "c4e3fb9f31da539a875c871433934ff43abe145f8e91572e42bd223ed5470158"
   },
   {
     "path": "src/cwm/cwm_missions.h",
@@ -37385,14 +37385,19 @@
     "sha256": "7db620f17a9ffa3ae5d1c26b402cb142720eff333a0b61415764a0e3a4fcae18"
   },
   {
+    "path": "src/cwm/cwm_rest.h",
+    "mode": "100644",
+    "sha256": "e53ba972d0113c533042d10595132bee0c9d20868ccd97701890189f885f2574"
+  },
+  {
     "path": "src/cwm/cwm_server.cpp",
     "mode": "100644",
-    "sha256": "c0105363f242574831c6b59a6a3d54661899ce37665090248db9cc19c7299c2d"
+    "sha256": "6a309325d640b4e0a6ac6961cdf6052228dd66fbacc1d6df8e84390543b75421"
   },
   {
     "path": "src/cwm/cwm_server.h",
     "mode": "100644",
-    "sha256": "0c734331e81e9ff168dfb2c75ce078541c597f43fec266c609d5ac92518a33b1"
+    "sha256": "0767ad6e394c49c3b99685eeee94715c7c21f0ab13ca72a69af4ed2626449232"
   },
   {
     "path": "src/cwm/cwm_status_gauges.h",
@@ -37972,7 +37977,7 @@
   {
     "path": "src/handle_action.cpp",
     "mode": "100644",
-    "sha256": "4c81d252dcebe7dd91ade35dbd3ec0a0eb462104df77149a84553b6a50354e93"
+    "sha256": "7ab7240bc92895d571ea6bc21bce7ad3e87acca0b0b0050745290d0615312fec"
   },
   {
     "path": "src/handle_liquid.cpp",
@@ -40957,7 +40962,7 @@
   {
     "path": "tests/cwm_runtime_test.cpp",
     "mode": "100644",
-    "sha256": "db267ed94ac5b861ad1296a89349e5481efac834e7e69efd9ee1369b2e1589de"
+    "sha256": "ef5aba494969c9f9170c232ba5445125363f376f43a7bd8eb44845c37e892143"
   },
   {
     "path": "tests/data/name.json",

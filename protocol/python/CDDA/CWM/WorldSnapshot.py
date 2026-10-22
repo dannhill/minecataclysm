@@ -494,8 +494,19 @@ class WorldSnapshot(object):
             return obj
         return None
 
+    # WorldSnapshot
+    def Rest(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(68))
+        if o != 0:
+            x = self._tab.Indirect(o + self._tab.Pos)
+            from CDDA.CWM.RestState import RestState
+            obj = RestState()
+            obj.Init(self._tab.Bytes, x)
+            return obj
+        return None
+
 def WorldSnapshotStart(builder):
-    builder.StartObject(32)
+    builder.StartObject(33)
 
 def Start(builder):
     WorldSnapshotStart(builder)
@@ -757,6 +768,12 @@ def WorldSnapshotAddDisassembly(builder, disassembly):
 
 def AddDisassembly(builder, disassembly):
     WorldSnapshotAddDisassembly(builder, disassembly)
+
+def WorldSnapshotAddRest(builder, rest):
+    builder.PrependUOffsetTRelativeSlot(32, flatbuffers.number_types.UOffsetTFlags.py_type(rest), 0)
+
+def AddRest(builder, rest):
+    WorldSnapshotAddRest(builder, rest)
 
 def WorldSnapshotEnd(builder):
     return builder.EndObject()

@@ -226,6 +226,12 @@ struct DecisionPromptBuilder;
 struct ConversationInfo;
 struct ConversationInfoBuilder;
 
+struct RestState;
+struct RestStateBuilder;
+
+struct RestRequest;
+struct RestRequestBuilder;
+
 struct TalkRequest;
 struct TalkRequestBuilder;
 
@@ -697,6 +703,39 @@ inline const char *EnumNameRangedAction(RangedAction e) {
   return EnumNamesRangedAction()[index];
 }
 
+enum class RestPhase : int8_t {
+  WAITING = 0,
+  TRYING_SLEEP = 1,
+  SLEEPING = 2,
+  MIN = WAITING,
+  MAX = SLEEPING
+};
+
+inline const RestPhase (&EnumValuesRestPhase())[3] {
+  static const RestPhase values[] = {
+    RestPhase::WAITING,
+    RestPhase::TRYING_SLEEP,
+    RestPhase::SLEEPING
+  };
+  return values;
+}
+
+inline const char * const *EnumNamesRestPhase() {
+  static const char * const names[4] = {
+    "WAITING",
+    "TRYING_SLEEP",
+    "SLEEPING",
+    nullptr
+  };
+  return names;
+}
+
+inline const char *EnumNameRestPhase(RestPhase e) {
+  if (::flatbuffers::IsOutRange(e, RestPhase::WAITING, RestPhase::SLEEPING)) return "";
+  const size_t index = static_cast<size_t>(e);
+  return EnumNamesRestPhase()[index];
+}
+
 enum class MissionState : uint8_t {
   ACTIVE = 0,
   COMPLETED = 1,
@@ -790,11 +829,12 @@ enum class Payload : uint8_t {
   MissionQueryRequest = 56,
   MissionView = 57,
   MissionTrackRequest = 58,
+  RestRequest = 59,
   MIN = NONE,
-  MAX = MissionTrackRequest
+  MAX = RestRequest
 };
 
-inline const Payload (&EnumValuesPayload())[59] {
+inline const Payload (&EnumValuesPayload())[60] {
   static const Payload values[] = {
     Payload::NONE,
     Payload::HelloRequest,
@@ -854,13 +894,14 @@ inline const Payload (&EnumValuesPayload())[59] {
     Payload::TradeClosed,
     Payload::MissionQueryRequest,
     Payload::MissionView,
-    Payload::MissionTrackRequest
+    Payload::MissionTrackRequest,
+    Payload::RestRequest
   };
   return values;
 }
 
 inline const char * const *EnumNamesPayload() {
-  static const char * const names[60] = {
+  static const char * const names[61] = {
     "NONE",
     "HelloRequest",
     "HelloResponse",
@@ -920,13 +961,14 @@ inline const char * const *EnumNamesPayload() {
     "MissionQueryRequest",
     "MissionView",
     "MissionTrackRequest",
+    "RestRequest",
     nullptr
   };
   return names;
 }
 
 inline const char *EnumNamePayload(Payload e) {
-  if (::flatbuffers::IsOutRange(e, Payload::NONE, Payload::MissionTrackRequest)) return "";
+  if (::flatbuffers::IsOutRange(e, Payload::NONE, Payload::RestRequest)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesPayload()[index];
 }
@@ -1165,6 +1207,10 @@ template<> struct PayloadTraits<CDDA::CWM::MissionView> {
 
 template<> struct PayloadTraits<CDDA::CWM::MissionTrackRequest> {
   static const Payload enum_value = Payload::MissionTrackRequest;
+};
+
+template<> struct PayloadTraits<CDDA::CWM::RestRequest> {
+  static const Payload enum_value = Payload::RestRequest;
 };
 
 bool VerifyPayload(::flatbuffers::Verifier &verifier, const void *obj, Payload type);
@@ -3209,7 +3255,8 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_PRESENTATION_EVENTS = 60,
     VT_LOW_LIGHT = 62,
     VT_READING = 64,
-    VT_DISASSEMBLY = 66
+    VT_DISASSEMBLY = 66,
+    VT_REST = 68
   };
   uint64_t world_revision() const {
     return GetField<uint64_t>(VT_WORLD_REVISION, 0);
@@ -3403,6 +3450,12 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   CDDA::CWM::DisassemblyState *mutable_disassembly() {
     return GetPointer<CDDA::CWM::DisassemblyState *>(VT_DISASSEMBLY);
   }
+  const CDDA::CWM::RestState *rest() const {
+    return GetPointer<const CDDA::CWM::RestState *>(VT_REST);
+  }
+  CDDA::CWM::RestState *mutable_rest() {
+    return GetPointer<CDDA::CWM::RestState *>(VT_REST);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint64_t>(verifier, VT_WORLD_REVISION, 8) &&
@@ -3470,6 +3523,8 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyTable(reading()) &&
            VerifyOffset(verifier, VT_DISASSEMBLY) &&
            verifier.VerifyTable(disassembly()) &&
+           VerifyOffset(verifier, VT_REST) &&
+           verifier.VerifyTable(rest()) &&
            verifier.EndTable();
   }
 };
@@ -3574,6 +3629,9 @@ struct WorldSnapshotBuilder {
   void add_disassembly(::flatbuffers::Offset<CDDA::CWM::DisassemblyState> disassembly) {
     fbb_.AddOffset(WorldSnapshot::VT_DISASSEMBLY, disassembly);
   }
+  void add_rest(::flatbuffers::Offset<CDDA::CWM::RestState> rest) {
+    fbb_.AddOffset(WorldSnapshot::VT_REST, rest);
+  }
   explicit WorldSnapshotBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -3618,7 +3676,8 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshot(
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<CDDA::CWM::PresentationEvent>>> presentation_events = 0,
     bool low_light = false,
     ::flatbuffers::Offset<CDDA::CWM::ReadingState> reading = 0,
-    ::flatbuffers::Offset<CDDA::CWM::DisassemblyState> disassembly = 0) {
+    ::flatbuffers::Offset<CDDA::CWM::DisassemblyState> disassembly = 0,
+    ::flatbuffers::Offset<CDDA::CWM::RestState> rest = 0) {
   WorldSnapshotBuilder builder_(_fbb);
   builder_.add_completed_command_id(completed_command_id);
   builder_.add_resync_id(resync_id);
@@ -3626,6 +3685,7 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshot(
   builder_.add_base_revision(base_revision);
   builder_.add_simulation_time_seconds(simulation_time_seconds);
   builder_.add_world_revision(world_revision);
+  builder_.add_rest(rest);
   builder_.add_disassembly(disassembly);
   builder_.add_reading(reading);
   builder_.add_presentation_events(presentation_events);
@@ -3688,7 +3748,8 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshotDirect(
     const std::vector<::flatbuffers::Offset<CDDA::CWM::PresentationEvent>> *presentation_events = nullptr,
     bool low_light = false,
     ::flatbuffers::Offset<CDDA::CWM::ReadingState> reading = 0,
-    ::flatbuffers::Offset<CDDA::CWM::DisassemblyState> disassembly = 0) {
+    ::flatbuffers::Offset<CDDA::CWM::DisassemblyState> disassembly = 0,
+    ::flatbuffers::Offset<CDDA::CWM::RestState> rest = 0) {
   auto chunks__ = chunks ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::ChunkSnapshot>>(*chunks) : 0;
   auto entities__ = entities ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::EntityState>>(*entities) : 0;
   auto vehicles__ = vehicles ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::VehicleState>>(*vehicles) : 0;
@@ -3733,7 +3794,8 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshotDirect(
       presentation_events__,
       low_light,
       reading,
-      disassembly);
+      disassembly,
+      rest);
 }
 
 struct InventoryWorkState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -8851,6 +8913,159 @@ inline ::flatbuffers::Offset<ConversationInfo> CreateConversationInfoDirect(
       companion_controls);
 }
 
+struct RestState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef RestStateBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_TOKEN = 4,
+    VT_PHASE = 6,
+    VT_INTERRUPTIBLE = 8,
+    VT_ACCELERATED = 10,
+    VT_PROGRESS = 12
+  };
+  uint64_t token() const {
+    return GetField<uint64_t>(VT_TOKEN, 0);
+  }
+  bool mutate_token(uint64_t _token = 0) {
+    return SetField<uint64_t>(VT_TOKEN, _token, 0);
+  }
+  CDDA::CWM::RestPhase phase() const {
+    return static_cast<CDDA::CWM::RestPhase>(GetField<int8_t>(VT_PHASE, 0));
+  }
+  bool mutate_phase(CDDA::CWM::RestPhase _phase = static_cast<CDDA::CWM::RestPhase>(0)) {
+    return SetField<int8_t>(VT_PHASE, static_cast<int8_t>(_phase), 0);
+  }
+  bool interruptible() const {
+    return GetField<uint8_t>(VT_INTERRUPTIBLE, 0) != 0;
+  }
+  bool mutate_interruptible(bool _interruptible = 0) {
+    return SetField<uint8_t>(VT_INTERRUPTIBLE, static_cast<uint8_t>(_interruptible), 0);
+  }
+  bool accelerated() const {
+    return GetField<uint8_t>(VT_ACCELERATED, 0) != 0;
+  }
+  bool mutate_accelerated(bool _accelerated = 0) {
+    return SetField<uint8_t>(VT_ACCELERATED, static_cast<uint8_t>(_accelerated), 0);
+  }
+  int32_t progress() const {
+    return GetField<int32_t>(VT_PROGRESS, -1);
+  }
+  bool mutate_progress(int32_t _progress = -1) {
+    return SetField<int32_t>(VT_PROGRESS, _progress, -1);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_TOKEN, 8) &&
+           VerifyField<int8_t>(verifier, VT_PHASE, 1) &&
+           VerifyField<uint8_t>(verifier, VT_INTERRUPTIBLE, 1) &&
+           VerifyField<uint8_t>(verifier, VT_ACCELERATED, 1) &&
+           VerifyField<int32_t>(verifier, VT_PROGRESS, 4) &&
+           verifier.EndTable();
+  }
+};
+
+struct RestStateBuilder {
+  typedef RestState Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_token(uint64_t token) {
+    fbb_.AddElement<uint64_t>(RestState::VT_TOKEN, token, 0);
+  }
+  void add_phase(CDDA::CWM::RestPhase phase) {
+    fbb_.AddElement<int8_t>(RestState::VT_PHASE, static_cast<int8_t>(phase), 0);
+  }
+  void add_interruptible(bool interruptible) {
+    fbb_.AddElement<uint8_t>(RestState::VT_INTERRUPTIBLE, static_cast<uint8_t>(interruptible), 0);
+  }
+  void add_accelerated(bool accelerated) {
+    fbb_.AddElement<uint8_t>(RestState::VT_ACCELERATED, static_cast<uint8_t>(accelerated), 0);
+  }
+  void add_progress(int32_t progress) {
+    fbb_.AddElement<int32_t>(RestState::VT_PROGRESS, progress, -1);
+  }
+  explicit RestStateBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<RestState> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<RestState>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<RestState> CreateRestState(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t token = 0,
+    CDDA::CWM::RestPhase phase = CDDA::CWM::RestPhase::WAITING,
+    bool interruptible = false,
+    bool accelerated = false,
+    int32_t progress = -1) {
+  RestStateBuilder builder_(_fbb);
+  builder_.add_token(token);
+  builder_.add_progress(progress);
+  builder_.add_accelerated(accelerated);
+  builder_.add_interruptible(interruptible);
+  builder_.add_phase(phase);
+  return builder_.Finish();
+}
+
+struct RestRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef RestRequestBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_COMMAND_ID = 4,
+    VT_EXPECTED_TOKEN = 6
+  };
+  uint64_t command_id() const {
+    return GetField<uint64_t>(VT_COMMAND_ID, 0);
+  }
+  bool mutate_command_id(uint64_t _command_id = 0) {
+    return SetField<uint64_t>(VT_COMMAND_ID, _command_id, 0);
+  }
+  uint64_t expected_token() const {
+    return GetField<uint64_t>(VT_EXPECTED_TOKEN, 0);
+  }
+  bool mutate_expected_token(uint64_t _expected_token = 0) {
+    return SetField<uint64_t>(VT_EXPECTED_TOKEN, _expected_token, 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_COMMAND_ID, 8) &&
+           VerifyField<uint64_t>(verifier, VT_EXPECTED_TOKEN, 8) &&
+           verifier.EndTable();
+  }
+};
+
+struct RestRequestBuilder {
+  typedef RestRequest Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_command_id(uint64_t command_id) {
+    fbb_.AddElement<uint64_t>(RestRequest::VT_COMMAND_ID, command_id, 0);
+  }
+  void add_expected_token(uint64_t expected_token) {
+    fbb_.AddElement<uint64_t>(RestRequest::VT_EXPECTED_TOKEN, expected_token, 0);
+  }
+  explicit RestRequestBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<RestRequest> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<RestRequest>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<RestRequest> CreateRestRequest(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t command_id = 0,
+    uint64_t expected_token = 0) {
+  RestRequestBuilder builder_(_fbb);
+  builder_.add_expected_token(expected_token);
+  builder_.add_command_id(command_id);
+  return builder_.Finish();
+}
+
 struct TalkRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef TalkRequestBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
@@ -10820,6 +11035,9 @@ struct CwmMessage FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const CDDA::CWM::MissionTrackRequest *payload_as_MissionTrackRequest() const {
     return payload_type() == CDDA::CWM::Payload::MissionTrackRequest ? static_cast<const CDDA::CWM::MissionTrackRequest *>(payload()) : nullptr;
   }
+  const CDDA::CWM::RestRequest *payload_as_RestRequest() const {
+    return payload_type() == CDDA::CWM::Payload::RestRequest ? static_cast<const CDDA::CWM::RestRequest *>(payload()) : nullptr;
+  }
   void *mutable_payload() {
     return GetPointer<void *>(VT_PAYLOAD);
   }
@@ -11086,6 +11304,10 @@ template<> inline const CDDA::CWM::MissionView *CwmMessage::payload_as<CDDA::CWM
 
 template<> inline const CDDA::CWM::MissionTrackRequest *CwmMessage::payload_as<CDDA::CWM::MissionTrackRequest>() const {
   return payload_as_MissionTrackRequest();
+}
+
+template<> inline const CDDA::CWM::RestRequest *CwmMessage::payload_as<CDDA::CWM::RestRequest>() const {
+  return payload_as_RestRequest();
 }
 
 struct CwmMessageBuilder {
@@ -11384,6 +11606,10 @@ inline bool VerifyPayload(::flatbuffers::Verifier &verifier, const void *obj, Pa
     }
     case Payload::MissionTrackRequest: {
       auto ptr = reinterpret_cast<const CDDA::CWM::MissionTrackRequest *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::RestRequest: {
+      auto ptr = reinterpret_cast<const CDDA::CWM::RestRequest *>(obj);
       return verifier.VerifyTable(ptr);
     }
     default: return true;

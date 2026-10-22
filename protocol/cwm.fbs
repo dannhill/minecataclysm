@@ -244,6 +244,7 @@ table WorldSnapshot {
     low_light: bool;
     reading: ReadingState;
     disassembly: DisassemblyState;
+    rest: RestState;
 
 }
 
@@ -506,6 +507,11 @@ table ConversationInfo {
     companion_controls: bool; // Native individual order/rule panel, still explicit decisions.
 }
 
+enum RestPhase : byte { WAITING = 0, TRYING_SLEEP = 1, SLEEPING = 2 }
+table RestState { token: uint64; phase: RestPhase; interruptible: bool; accelerated: bool; progress: int32 = -1; }
+// Open the native rest menu, bound to the last projected rest generation (0 idle).
+table RestRequest { command_id: uint64; expected_token: uint64; }
+
 table TalkRequest { command_id: uint64; target_entity_id: uint64; }
 
 table TradeEntry {
@@ -640,6 +646,7 @@ union Payload {
     ,MissionQueryRequest
     ,MissionView
     ,MissionTrackRequest
+    ,RestRequest
 }
 
 table CwmMessage {

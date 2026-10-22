@@ -62,6 +62,7 @@ int main(int argc, const char *argv[]) {
     bool create_trade = false;
     bool create_journal = false;
     bool create_companions = false;
+    bool create_rest = false;
     bool create_ranged = false;
     bool create_transfer = false;
     bool create_external = false;
@@ -79,6 +80,7 @@ int main(int argc, const char *argv[]) {
         else if (arg == "--create-transfer") { create = true; create_transfer = true; create_posture = true; }
         else if (arg == "--create-ranged") { create = true; create_ranged = true; create_posture = true; }
         else if (arg == "--create-crafting") { create = true; create_crafting = true; create_posture = true; }
+        else if (arg == "--create-rest") { create = true; create_rest = true; create_posture = true; }
         else if (arg == "--create-companions") { create = true; create_companions = true; create_conversation = true; create_posture = true; }
         else if (arg == "--create-journal") { create = true; create_journal = true; create_conversation = true; create_posture = true; }
         else if (arg == "--create-trade") { create = true; create_trade = true; create_conversation = true; create_posture = true; }
@@ -509,6 +511,14 @@ int main(int argc, const char *argv[]) {
             u.set_skill_level(skill_id("swimming"),10);
             get_weather().update_weather();
             if (!g->save()) return 5;
+        }
+        if(create_rest) {
+            u.remove_items_with([](const item&){return true;});u.remove_weapon();u.clear_worn();
+            u.wear_item(item(itype_id("backpack"),calendar::turn),false);
+            u.set_fatigue(500);u.set_stamina(u.get_stamina_max()/3);
+            m.ter_set(u.pos(),ter_str_id("t_floor"));m.furn_set(u.pos(),furn_str_id("f_bed"));
+            u.add_effect(efftype_id("sleep"),2_minutes);u.set_movement_mode(move_mode_id("prone"));
+            g->set_safe_mode(SAFE_MODE_OFF);
         }
         if (create_conversation) {
             auto guy = make_shared_fast<npc>();

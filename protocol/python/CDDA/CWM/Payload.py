@@ -62,3 +62,4 @@ class Payload(object):
     MissionQueryRequest = 56
     MissionView = 57
     MissionTrackRequest = 58
+    RestRequest = 59

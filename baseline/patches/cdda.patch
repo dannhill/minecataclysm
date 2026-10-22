@@ -369,7 +369,7 @@ index d7e91fc..82129c8 100644
  
      body_part_set flags;
 diff --git a/src/avatar_action.h b/src/avatar_action.h
-index fe8ad11..01087a4 100644
+index fe8ad11..78b57f3 100644
 --- a/src/avatar_action.h
 +++ b/src/avatar_action.h
 @@ -11,6 +11,7 @@
@@ -380,7 +380,17 @@ index fe8ad11..01087a4 100644
  class avatar;
  class item;
  class item_location;
-@@ -39,6 +40,12 @@ inline bool move( avatar &you, map &m, const point &d )
+@@ -19,6 +20,9 @@ class turret_data;
+ 
+ namespace avatar_action
+ {
++// Original native menus, shared with the headless presentation.
++void wait();
++void sleep();
+ 
+ /** Eat food or fuel  'E' (or 'a') */
+ void eat( avatar &you, item_location &loc );
+@@ -39,6 +43,12 @@ inline bool move( avatar &you, map &m, const point &d )
      return move( you, m, tripoint( d, 0 ) );
  }
  
@@ -1137,7 +1147,7 @@ index c25584e..fdb835f 100644
          friend achievements_tracker &get_achievements();
          friend event_bus &get_event_bus();
 diff --git a/src/handle_action.cpp b/src/handle_action.cpp
-index 652ad80..b19d6b8 100644
+index 652ad80..09f077e 100644
 --- a/src/handle_action.cpp
 +++ b/src/handle_action.cpp
 @@ -77,6 +77,7 @@
@@ -1148,7 +1158,28 @@ index 652ad80..b19d6b8 100644
  #include "scores_ui.h"
  #include "sounds.h"
  #include "string_formatter.h"
-@@ -2075,6 +2076,30 @@ static std::map<action_id, std::string> get_actions_disabled_mounted()
+@@ -1050,7 +1051,7 @@ static int try_set_alarm()
+     return as_m.ret;
+ }
+ 
+-static void wait()
++void avatar_action::wait()
+ {
+     std::map<int, time_duration> durations;
+     uilist as_m;
+@@ -1196,9 +1197,10 @@ static void wait()
+     }
+ }
+ 
+-static void sleep()
++void avatar_action::sleep()
+ {
+     avatar &player_character = get_avatar();
++    if(player_character.controlling_vehicle){add_msg(m_info,_("You can't sleep while controlling a vehicle"));return;}
+     if( player_character.is_mounted() ) {
+         add_msg( m_info, _( "You cannot sleep while mounted." ) );
+         return;
+@@ -2075,6 +2077,30 @@ static std::map<action_id, std::string> get_actions_disabled_mounted()
      };
  }
  
@@ -1179,7 +1210,25 @@ index 652ad80..b19d6b8 100644
  bool game::do_regular_action( action_id &act, avatar &player_character,
                                const std::optional<tripoint> &mouse_target )
  {
-@@ -2604,22 +2629,7 @@ bool game::do_regular_action( action_id &act, avatar &player_character,
+@@ -2524,7 +2550,7 @@ bool game::do_regular_action( action_id &act, avatar &player_character,
+             break;
+ 
+         case ACTION_WAIT:
+-            wait();
++            avatar_action::wait();
+             break;
+ 
+         case ACTION_CRAFT:
+@@ -2559,7 +2585,7 @@ bool game::do_regular_action( action_id &act, avatar &player_character,
+             if( has_vehicle_control( player_character ) ) {
+                 add_msg( m_info, _( "You can't sleep while controlling a vehicle" ) );
+             } else {
+-                sleep();
++                avatar_action::sleep();
+             }
+             break;
+ 
+@@ -2604,22 +2630,7 @@ bool game::do_regular_action( action_id &act, avatar &player_character,
          }
  
          case ACTION_IGNORE_ENEMY:
@@ -4088,16 +4137,17 @@ index 0000000..af07174
 +
 diff --git a/src/cwm/cwm_map_exporter.cpp b/src/cwm/cwm_map_exporter.cpp
 new file mode 100644
-index 0000000..deeeb96
+index 0000000..cfb57e2
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.cpp
-@@ -0,0 +1,730 @@
+@@ -0,0 +1,733 @@
 +#include "cwm/product_language.hpp"
 +#include "cwm_motion.h"
 +// CDDA CWM Map & Entity Exporter Implementation
 +// Licensed under Apache-2.0
 +
 +#include "cwm_map_exporter.h"
++#include "cwm_rest.h"
 +#include "cwm_crafting.h"
 +#include "cwm_ranged.h"
 +#include "cwm_hotbar.h"
@@ -4322,7 +4372,7 @@ index 0000000..deeeb96
 +    bool include_chunks,
 +    ProjectionCache* cache, cdda::cwm::Identity identity,
 +    uint64_t base_revision, uint64_t state_id, uint64_t resync_id,
-+    uint64_t completed_command_id, const ClockView* clock, uint64_t activity_token, uint64_t weapon_token, uint64_t inventory_work_command, bool inventory_work_settled, uint32_t work_total_ms, uint32_t work_remaining_ms
++    uint64_t completed_command_id, const ClockView* clock, uint64_t activity_token, uint64_t weapon_token, uint64_t inventory_work_command, bool inventory_work_settled, uint32_t work_total_ms, uint32_t work_remaining_ms, uint64_t rest_token, bool rest_accelerated
 +) {
 +    enable_presentation(true);
 +    cdda::cwm::MessageBuilder builder(sequence_num, world_rev, identity);
@@ -4760,6 +4810,8 @@ index 0000000..deeeb96
 +    }
 +    const auto cue_vector = fbb.CreateVector(cues);
 +    const bool low_light = m.ambient_light_at(u.pos()) < LIGHT_AMBIENT_LIT;
++    const int rest_phase=RestTracker::phase(u);
++    const auto rest=rest_token && rest_phase>=0 ? CDDA::CWM::CreateRestState(fbb,rest_token,static_cast<CDDA::CWM::RestPhase>(rest_phase),RestTracker::interruptible(u),rest_accelerated,RestTracker::progress(u)) : flatbuffers::Offset<CDDA::CWM::RestState>{};
 +    auto world_snap = CDDA::CWM::CreateWorldSnapshot(
 +        fbb,
 +        world_rev,
@@ -4773,7 +4825,7 @@ index 0000000..deeeb96
 +        g.safe_mode == SAFE_MODE_STOP || u.has_effect(efftype_id("laserlocked")) ||
 +            (clock && (clock->pause_reasons & 4)),
 +        include_chunks, base_revision, state_id, resync_id, completed_command_id,
-+        spawned_vec, removed_vec, clock_state, ground_items_vec, owned_items_vec, avatar_status, consumption, first_aid, crafting, ranged, reload, transfer, inventory_work, quick_slots_vec, cue_vector, low_light, reading, disassembly
++        spawned_vec, removed_vec, clock_state, ground_items_vec, owned_items_vec, avatar_status, consumption, first_aid, crafting, ranged, reload, transfer, inventory_work, quick_slots_vec, cue_vector, low_light, reading, disassembly, rest
 +    );
 +
 +    return builder.finish_message(CDDA::CWM::Payload::WorldSnapshot, world_snap.Union());
@@ -4824,7 +4876,7 @@ index 0000000..deeeb96
 +} // namespace cwm
 diff --git a/src/cwm/cwm_map_exporter.h b/src/cwm/cwm_map_exporter.h
 new file mode 100644
-index 0000000..b8dd82d
+index 0000000..30bd76d
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.h
 @@ -0,0 +1,67 @@
@@ -4874,7 +4926,7 @@ index 0000000..b8dd82d
 +        uint64_t resync_id = 0, uint64_t completed_command_id = 0,
 +        const ClockView* clock = nullptr, uint64_t activity_token = 0, uint64_t weapon_token = 0,
 +        uint64_t inventory_work_command = 0, bool inventory_work_settled = false,
-+        uint32_t work_total_ms = 0, uint32_t work_remaining_ms = 0
++        uint32_t work_total_ms = 0, uint32_t work_remaining_ms = 0, uint64_t rest_token = 0, bool rest_accelerated = false
 +    );
 +
 +    static std::vector<uint8_t> export_tile_delta(
@@ -5203,12 +5255,79 @@ index 0000000..d077b2c
 +    return CDDA::CWM::CreateBookInfoDirect(wire,identified,moves,summary.substr(0,2048).c_str());
 +}
 +} // namespace cwm
+diff --git a/src/cwm/cwm_rest.h b/src/cwm/cwm_rest.h
+new file mode 100644
+index 0000000..f2a32e8
+--- /dev/null
++++ b/src/cwm/cwm_rest.h
+@@ -0,0 +1,61 @@
++#pragma once
++#include "avatar.h"
++#include "avatar_action.h"
++#include "do_turn.h"
++#include "player_activity.h"
++#include "../../../protocol/include/cwm/product_language.hpp"
++#include <chrono>
++#include <algorithm>
++#include <string>
++#include <vector>
++namespace cwm {
++struct RestTracker {
++    uint64_t token=0,next=1;int last=-1;
++    bool fast=true;std::chrono::steady_clock::time_point started{};
++    static int phase(const avatar& u) {
++        if(u.has_effect(efftype_id("sleep")))return 2;
++        const auto a=u.activity.id();
++        if(a==activity_id("ACT_TRY_SLEEP"))return 1;
++        if(a==activity_id("ACT_WAIT") || a==activity_id("ACT_WAIT_STAMINA") || a==activity_id("ACT_WAIT_WEATHER"))return 0;
++        return -1;
++    }
++    void refresh(const avatar& u) {
++        const int p=phase(u);
++        if(p!=last){last=p;token=p<0?0:next++;started=std::chrono::steady_clock::now();}
++    }
++    static bool interruptible(const avatar& u) {const int p=phase(u);return p>=0 && p<2 && u.activity.is_interruptible();}
++    static int progress(const avatar& u) {
++        return phase(u)==0 && u.activity.id()==activity_id("ACT_WAIT") && u.activity.moves_total>0 ?
++            std::clamp(100-int(100.0*u.activity.moves_left/u.activity.moves_total),0,100):-1;
++    }
++    bool accelerated(const avatar& u) const {
++        const int p=phase(u);
++        return fast && p>=0 && (p==2 || p==1 || u.activity.moves_total>=30000) &&
++            std::chrono::steady_clock::now()-started>=std::chrono::seconds(2);
++    }
++    static std::string error(const avatar& u) {
++        if(u.is_dead_state())return ::cwm::text("Rest unavailable after death.");
++        if(phase(u)<0 && (u.activity || u.in_sleep_state()))return ::cwm::text("Finish or interrupt the current activity first.");
++        return {};
++    }
++    bool menu(avatar& u) {
++        if(!error(u).empty())return false;
++        const int p=phase(u);std::vector<std::string> labels;
++        std::string text=::cwm::text("Rest and pass time");
++        if(p<0)labels={::cwm::text("Try to sleep"),::cwm::text("Wait or catch your breath"),::cwm::text("Cancel")};
++        else {
++            text+="\n"+::cwm::text(p==2?"Sleeping. Wake-up follows alarms, disturbances and your body's needs.":p==1?"Trying to fall asleep. Sleep is not guaranteed.":"Waiting. The world continues around you.");
++            if(interruptible(u))labels.push_back(::cwm::text("Interrupt rest"));
++            labels.push_back(::cwm::text(fast?"Continue at normal speed":"Fast-forward long rest"));
++            labels.push_back(::cwm::text("Keep resting"));
++        }
++        const int answer=external_ui_choice(text,labels);
++        if(answer<0 || size_t(answer)>=labels.size()-1)return true;
++        if(phase(u)!=p || !error(u).empty())return false;
++        if(p<0) {if(answer==0)avatar_action::sleep();else if(answer==1)avatar_action::wait();}
++        else if(interruptible(u) && answer==0)u.cancel_activity();
++        else fast=!fast;
++        return true;
++    }
++};
++}
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..93234fb
+index 0000000..2d4fb5b
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,1286 @@
+@@ -0,0 +1,1322 @@
 +#include "cwm/product_language.hpp"
 +#include "cwm_motion.h"
 +// CDDA CWM IPC Server Implementation
@@ -5316,6 +5435,8 @@ index 0000000..93234fb
 +    for (const auto& command : commands_)
 +        ledger_.complete({command.id, false, "Connection closed before execution", world_revision_});
 +    commands_.clear();
++    if(pending_rest_)ledger_.complete({pending_rest_->id,false,"Connection closed before rest menu",world_revision_});
++    pending_rest_.reset();
 +    crafting_selection_.clear(); ranged_selection_.clear();
 +    if (result_) ledger_.complete({result_->id, result_->accepted, result_->error, world_revision_});
 +    result_.reset();
@@ -5358,6 +5479,10 @@ index 0000000..93234fb
 +
 +void CwmServer::send_state(avatar& u, map& m, game& g, bool full, uint64_t completed) {
 +    if (!has_active_client() || !negotiated_ || rejecting_) return;
++    rest_.refresh(u);
++    const auto now=std::chrono::steady_clock::now();
++    if(rest_.accelerated(u) && !full && !completed && !pending_decision_ && !awaiting_state_ && now-last_rest_publication_<std::chrono::milliseconds(100))return;
++    last_rest_publication_=now;
 +    refresh_activity(u);
 +    Hotbar::refresh(u);
 +    if (refresh_inventory_work(u)) ++world_revision_;
@@ -5369,7 +5494,7 @@ index 0000000..93234fb
 +                    resync_id_, completed, realtime_ ? &clock : nullptr, activity_token_, ranged_selection_.refresh(u),
 +                    inventory_work_command_, inventory_work_settled_,
 +                    uint32_t(std::min(4294967., inventory_work_total_)*1000),
-+                    uint32_t(std::min({4294967., inventory_work_total_, clock_.remaining_work()})*1000));
++                    uint32_t(std::min({4294967., inventory_work_total_, clock_.remaining_work()})*1000), rest_.token, rest_.accelerated(u));
 +    const bool is_full = CDDA::CWM::GetCwmMessage(snapshot.data())->payload_as_WorldSnapshot()->full();
 +    if (emit(snapshot)) {
 +        snapshot_sent_ = true;
@@ -5466,17 +5591,33 @@ index 0000000..93234fb
 +        ((!ready_ || !has_active_client()) ? uint32_t(Recovery) : 0u) | ((pending_decision_ || trade_context_) ? uint32_t(Decision) : 0u);
 +}
 +
++void CwmServer::process_rest(avatar& u,map& m,game& g) {
++    if(!pending_rest_ || !external_ui_active())return;
++    const auto command=*pending_rest_;pending_rest_.reset();rest_.refresh(u);
++    auto error=RestTracker::error(u);
++    if(command.token!=rest_.token || (realtime_ && pause_reasons(g)))error=::cwm::text("Rest state changed or game paused. Open the rest menu again.");
++    if(!error.empty()){send_result({command.id,false,error},u,m,g);return;}
++    drop_realtime_input(u,m,g);inventory_selection_.clear();crafting_selection_.clear();ranged_selection_.clear();
++    const int moves=u.moves,speed=u.get_speed();
++    const bool accepted=rest_.menu(u);
++    if(realtime_ && moves>u.moves)clock_.charge_action(moves-u.moves,speed);
++    rest_.refresh(u);++world_revision_;
++    send_result({command.id,accepted,accepted?"":::cwm::text("Rest state changed. Open the rest menu again.")},u,m,g);
++}
++
 +void CwmServer::service_clock(avatar& u, map& m, game& g) {
-+    clock_.sample(cdda::cwm::SimulationClock::Wall::now(), pause_reasons(g) == 0);
++    clock_.sample(cdda::cwm::SimulationClock::Wall::now(), pause_reasons(g) == 0, rest_.accelerated(u));
 +    update(u, m, g);
-+    clock_.sample(cdda::cwm::SimulationClock::Wall::now(), pause_reasons(g) == 0);
++    process_rest(u,m,g);
++    if(RestTracker::phase(u)==0 || RestTracker::phase(u)==1)detect_threats(u,m,g);
++    clock_.sample(cdda::cwm::SimulationClock::Wall::now(), pause_reasons(g) == 0, rest_.accelerated(u));
 +    if (refresh_inventory_work(u)) { ++world_revision_; send_state(u, m, g); }
 +    if (continuous_ && (pause_reasons(g) || (!intent_x_ && !intent_y_) || !clock_.action_due()))
 +        motion_sample_ = clock_.elapsed();
 +}
 +
 +bool CwmServer::sample_motion(avatar& u, map& m, game& g, bool flush) {
-+    if (!continuous_ || u.activity || pause_reasons(g) || !clock_.action_due() || (!intent_x_ && !intent_y_)) return false;
++    if (!continuous_ || u.activity || u.in_sleep_state() || pause_reasons(g) || !clock_.action_due() || (!intent_x_ && !intent_y_)) return false;
 +    const double dt = clock_.elapsed() - motion_sample_;
 +    // 25 wall samples/s. A delayed frame is capped, never caught up in bursts.
 +    if (dt <= 1e-8 || (!flush && dt < .04 * clock_.scale())) return false;
@@ -5502,6 +5643,7 @@ index 0000000..93234fb
 +
 +void CwmServer::drop_realtime_input(avatar& u, map& m, game& g) {
 +    held_direction_ = 0; intent_x_ = intent_y_ = 0;
++    if(pending_rest_){auto id=pending_rest_->id;pending_rest_.reset();send_result({id,false,"Rest menu cancelled before execution"},u,m,g);}
 +    motion_sample_ = clock_.elapsed();
 +    const auto cancelled = std::move(commands_);
 +    commands_.clear();
@@ -5545,6 +5687,7 @@ index 0000000..93234fb
 +                              const std::function<bool()>& keep_running) {
 +    while (keep_running()) {
 +        service_clock(u, m, g);
++        if(u.activity || u.in_sleep_state() || u.moves<=0)return false;
 +        if (pause_reasons(g)) { std::this_thread::sleep_for(std::chrono::milliseconds(1)); continue; }
 +        if (clock_.tick_due()) {
 +            if (held_direction_ || intent_x_ || intent_y_ || !commands_.empty()) {
@@ -5643,6 +5786,8 @@ index 0000000..93234fb
 +        if (realtime_) { detect_threats(u, m, g); return realtime_action(u, m, g, keep_running); }
 +        while (keep_running()) {
 +            update(u, m, g);
++            process_rest(u,m,g);
++            if(u.activity || u.in_sleep_state() || u.moves<=0)return false;
 +            if (!commands_.empty()) {
 +                const Command command = commands_.front();
 +                commands_.pop_front();
@@ -5657,7 +5802,7 @@ index 0000000..93234fb
 +        return false;
 +    }, [&](const std::string& text, const std::vector<std::string>& choices) {
 +        return ask_decision(text, choices, u, m, g, keep_running, external_medical_options());
-+    }, realtime_ ? std::function<bool()>([&]() { return pace_world(u, m, g, keep_running); }) : std::function<bool()>{}, [&](int moves, int speed) {
++    }, std::function<bool()>([&]() { if(realtime_)return pace_world(u,m,g,keep_running);update(u,m,g);process_rest(u,m,g);return keep_running(); }), [&](int moves, int speed) {
 +        if (realtime_) clock_.charge_work(moves, speed);
 +    });
 +    if (!ended) {
@@ -5741,7 +5886,7 @@ index 0000000..93234fb
 +    if (command.ranged_action < 0) ranged_selection_.end_aim();
 +    // Revalidate busy state at execution as well as admission: multiple
 +    // commands may arrive before the first starts its native activity.
-+    if (u.activity) {
++    if (u.activity || u.in_sleep_state()) {
 +        result_ = Result{command.id, false, ::cwm::tr("Interrupt or finish the activity before acting.", "Interrompi o concludi l'attivita prima di agire.")};
 +        return false;
 +    }
@@ -6069,7 +6214,9 @@ index 0000000..93234fb
 +    }
 +    uint64_t id = 0;
 +    std::string signature;
-+    if(const auto* request=msg->payload_as_MissionTrackRequest()) {
++    if(const auto* request=msg->payload_as_RestRequest()) {
++        id=request->command_id();signature="rest:"+std::to_string(request->expected_token());
++    } else if(const auto* request=msg->payload_as_MissionTrackRequest()) {
 +        id=request->command_id();signature="mission-track:"+std::to_string(request->view_id())+":"+std::to_string(request->mission_id())+":"+std::to_string(request->expected_tracked_id());
 +    } else if (const auto* request = msg->payload_as_MoveRequest()) {
 +        id = request->command_id(); signature = "move:" + std::to_string(int(request->direction()));
@@ -6163,6 +6310,14 @@ index 0000000..93234fb
 +    }
 +    if (status == Status::Expired) { send_result({id, false, "Command identity expired"}, u, m, g); return; }
 +    if (status != Status::Fresh) { server_->client()->close(); return; }
++    if(const auto* request=msg->payload_as_RestRequest()) {
++        rest_.refresh(u);
++        const auto error=RestTracker::error(u);
++        if(pending_rest_ || request->expected_token()!=rest_.token || !error.empty() || (realtime_ && pause_reasons(g)))
++            send_result({id,false,error.empty()?::cwm::text("Rest state changed or game paused. Open the rest menu again."):error},u,m,g);
++        else pending_rest_=RestCommand{id,request->expected_token()};
++        return; // Serviced inside the native external-choice scope, also while busy.
++    }
 +    if(const auto* request=msg->payload_as_MissionTrackRequest()) {
 +        const auto error=mission_journal_.track(u,request->view_id(),request->mission_id(),request->expected_tracked_id());
 +        if(error.empty())++world_revision_;
@@ -6233,7 +6388,7 @@ index 0000000..93234fb
 +            length <= 1.415 &&
 +            (length < 1e-6 ||
 +             (input_available &&
-+              !u.activity &&
++              !u.activity && !u.in_sleep_state() &&
 +              !u.in_vehicle &&
 +              !u.is_mounted() &&
 +              u.get_grab_type() == object_type::NONE));
@@ -6251,7 +6406,7 @@ index 0000000..93234fb
 +    if (const auto* request = msg->payload_as_MovementIntentRequest()) {
 +        const int direction = int(request->direction());
 +        const bool valid = realtime_ && !continuous_ && direction >= 0 && direction <= 8 &&
-+            (direction == 0 || (!u.activity && !pause_reasons(g)));
++            (direction == 0 || (!u.activity && !u.in_sleep_state() && !pause_reasons(g)));
 +        if (valid) { held_direction_ = direction; ++world_revision_; }
 +        send_result({id, valid, valid ? "" : "Movement intent unavailable or invalid"}, u, m, g);
 +        return;
@@ -6378,7 +6533,7 @@ index 0000000..93234fb
 +            }
 +        }
 +    } else return;
-+    if (u.activity) error = ::cwm::tr("Interrupt or finish the activity before acting.", "Interrompi o concludi l'attivita prima di agire.");
++    if (u.activity || u.in_sleep_state()) error = ::cwm::tr("Interrupt or finish the activity before acting.", "Interrompi o concludi l'attivita prima di agire.");
 +    if (commands_.size() >= 32) error = "Command queue full";
 +    if (realtime_ && pause_reasons(g)) error = "Simulation is paused";
 +    if (!error.empty()) send_result(Result{command.id, false, error}, u, m, g);
@@ -6497,10 +6652,10 @@ index 0000000..93234fb
 +} // namespace cwm
 diff --git a/src/cwm/cwm_server.h b/src/cwm/cwm_server.h
 new file mode 100644
-index 0000000..462f36a
+index 0000000..20e0e05
 --- /dev/null
 +++ b/src/cwm/cwm_server.h
-@@ -0,0 +1,166 @@
+@@ -0,0 +1,172 @@
 +// CDDA CWM IPC Server
 +// Licensed under Apache-2.0
 +#pragma once
@@ -6518,6 +6673,7 @@ index 0000000..462f36a
 +#include "cwm_crafting.h"
 +#include "cwm_ranged.h"
 +#include "cwm_missions.h"
++#include "cwm_rest.h"
 +#include "cwm/cwm_session.hpp"
 +#include "cwm/cwm_clock.hpp"
 +
@@ -6597,6 +6753,11 @@ index 0000000..462f36a
 +    RangedSelection ranged_selection_;
 +    CraftingSelection crafting_selection_;
 +    MissionJournal mission_journal_;
++    RestTracker rest_;
++    struct RestCommand {uint64_t id,token;};
++    std::optional<RestCommand> pending_rest_;
++    std::chrono::steady_clock::time_point last_rest_publication_{};
++    void process_rest(avatar& u,map& m,game& g);
 +    std::chrono::steady_clock::time_point next_crafting_query_{};
 +    std::chrono::steady_clock::time_point next_inventory_query_{};
 +    std::chrono::steady_clock::time_point handshake_deadline_;
@@ -10321,10 +10482,10 @@ index 0000000..39d991c
 +}
 diff --git a/tests/cwm_runtime_test.cpp b/tests/cwm_runtime_test.cpp
 new file mode 100644
-index 0000000..f6b99dd
+index 0000000..39491ac
 --- /dev/null
 +++ b/tests/cwm_runtime_test.cpp
-@@ -0,0 +1,719 @@
+@@ -0,0 +1,740 @@
 +#include "cwm_motion.h"
 +#include "cata_catch.h"
 +#include "avatar.h"
@@ -11043,4 +11204,25 @@ index 0000000..f6b99dd
 +    CHECK(limited);CHECK(rng_get_engine()==engine);
 +    limited=false;const auto clipped=cwm::MissionJournal::text(std::string(4095,'x')+"è",u,"",limited,4096);
 +    CHECK(clipped.size()==4095);CHECK(limited);
++}
++
++TEST_CASE("cwm_native_rest_keeps_sleep_and_wait_distinct", "[cwm][rest]") {
++    prepare_runtime();auto& u=get_avatar();
++    cwm::RestTracker rest;rest.refresh(u);CHECK(rest.token==0);CHECK(cwm::RestTracker::phase(u)==-1);
++    const auto pos=u.pos();const auto turn=calendar::turn;int prompts=0;
++    u.moves=1000;
++    do_turn_with_action([&]{
++        const auto time=calendar::turn;const auto moves=u.moves;const auto engine=rng_get_engine();
++        CHECK(rest.menu(u));CHECK(calendar::turn==time);CHECK(u.moves==moves);CHECK(rng_get_engine()==engine);
++        finish_external_action_phase();return false;
++    },[&](const std::string&,const std::vector<std::string>& choices){++prompts;return int(choices.size())-1;});
++    CHECK(prompts==1);CHECK_FALSE(u.activity);CHECK(u.pos()==pos);
++    u.try_to_sleep(1_hours);rest.refresh(u);const auto trying=rest.token;
++    REQUIRE(trying!=0);CHECK(rest.last==1);CHECK(cwm::RestTracker::interruptible(u));CHECK(cwm::RestTracker::progress(u)==-1);
++    u.cancel_activity();rest.refresh(u);CHECK(rest.token==0);
++    u.fall_asleep(5_minutes);rest.refresh(u);REQUIRE(rest.token!=0);CHECK(rest.token!=trying);CHECK(rest.last==2);
++    CHECK_FALSE(cwm::RestTracker::interruptible(u));CHECK(cwm::RestTracker::progress(u)==-1);
++    u.wake_up();u.remove_effect(efftype_id("sleep"));rest.refresh(u);CHECK(rest.token==0);
++    u.assign_activity(activity_id("ACT_WAIT"),2000);rest.refresh(u);CHECK(rest.last==0);CHECK(cwm::RestTracker::interruptible(u));
++    CHECK(cwm::RestTracker::progress(u)>=0);u.cancel_activity();rest.refresh(u);CHECK(rest.token==0);
 +}
