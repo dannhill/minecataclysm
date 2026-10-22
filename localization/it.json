@@ -11,5 +11,6 @@
   "Interrupt disassembly": "Interrompi smontaggio",
   "Disassemble": "Smonta",
   "Disassembling: ": "Smontaggio: ",
-  "Disassembly in progress: ": "Smontaggio in corso: "
+  "Disassembly in progress: ": "Smontaggio in corso: ",
+  "You cannot disassemble this.": "Non puoi smontare questo oggetto."
 }

@@ -7247,7 +7247,7 @@
   {
     "path": "src/cdda/cdda_bridge.cpp",
     "mode": "100644",
-    "sha256": "ef8fcb7247ad4f919e006d37dbdc8d1bfa3b3a18aa41213307d1ccc5801787e7"
+    "sha256": "171f6227bda5b6bd7df4340f56e6b2152050bd6887fcb537b0fc653e158b765c"
   },
   {
     "path": "src/cdda/cdda_bridge.h",
@@ -7282,7 +7282,7 @@
   {
     "path": "src/cdda/equipment_inventory.h",
     "mode": "100644",
-    "sha256": "76b21ef5471dd32c47987c591d4bfbd1fb2b62124f272e1edacc51b400777a2a"
+    "sha256": "0235ebe358f6737ea59623cf8473d09e367ccddd957e31fbaf73812b8b2151a3"
   },
   {
     "path": "src/cdda/ground_item_formspec.h",

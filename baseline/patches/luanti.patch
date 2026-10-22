@@ -2149,7 +2149,7 @@ index 0000000..e1e7236
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..bce616b
+index 0000000..74104c0
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
 @@ -0,0 +1,3258 @@
@@ -2476,7 +2476,7 @@ index 0000000..bce616b
 +            else if (transfer && queued_transfer_->action == 3) inventory_work_label_ = ::cwm::wide("Deposit in storage", "Deposita nel contenitore");
 +            else if (transfer) inventory_work_label_ = queued_transfer_->action ? (::cwm::wide("Stow in container", "Riponi nel contenitore")) : (::cwm::wide("Drop on ground", "Deposita a terra"));
 +            else {
-+                const std::array<std::wstring,8> labels{{(::cwm::wide("Wield", "Impugna")), (::cwm::wide("Stow", "Riponi")), (::cwm::wide("Wear", "Indossa")), (::cwm::wide("Take off", "Togli")), (::cwm::wide("Eat / drink", "Mangia / bevi")), (::cwm::wide("Treat", "Medica")), (::cwm::wide("Read", "Leggi")), ::cwm::wide("Disassemble", "Smonta")}};
++                const std::array<std::wstring,8> labels{{(::cwm::wide("Wield", "Impugna")), (::cwm::wide("Stow", "Riponi")), (::cwm::wide("Wear", "Indossa")), (::cwm::wide("Take off", "Togli")), (::cwm::wide("Eat / drink", "Mangia / bevi")), (::cwm::wide("Treat", "Medica")), (::cwm::wide("Read", "Leggi")), ::cwm::wide("Disassemble")}};
 +                inventory_work_label_ = labels[queued_equipment_->action];
 +                if (const auto* selected = equipment_view_.entry(queued_equipment_->item)) inventory_work_label_ += L": " + utf8_to_wide(selected->name);
 +            }
@@ -4754,7 +4754,7 @@ index 0000000..bce616b
 +    if (!i.connection_->send_message(bytes.data(), bytes.size())) return;
 +    i.dismiss_inventory_work();
 +    i.inventory_work_command_ = id;
-+    const std::array<std::wstring,8> names{{(::cwm::wide("Wield", "Impugna")),(::cwm::wide("Stow", "Riponi")),(::cwm::wide("Wear", "Indossa")),(::cwm::wide("Take off", "Togli")),(::cwm::wide("Consume", "Consuma")),(::cwm::wide("Treat", "Medica")), (::cwm::wide("Read", "Leggi")), ::cwm::wide("Disassemble", "Smonta")}};
++    const std::array<std::wstring,8> names{{(::cwm::wide("Wield", "Impugna")),(::cwm::wide("Stow", "Riponi")),(::cwm::wide("Wear", "Indossa")),(::cwm::wide("Take off", "Togli")),(::cwm::wide("Consume", "Consuma")),(::cwm::wide("Treat", "Medica")), (::cwm::wide("Read", "Leggi")), ::cwm::wide("Disassemble")}};
 +    i.inventory_work_label_ = names[action] + L": " + utf8_to_wide(slot.item.name);
 +    i.pending_move_ = id; i.move_acked_ = false; i.sent_move_ = std::chrono::steady_clock::now();
 +    ++i.quick_use_sent_;
@@ -5132,7 +5132,7 @@ index 0000000..bce616b
 +    const int work_left = std::max(10, (int(screen.Width) - work_width) / 2);
 +    const int work_top = std::max(165, int(screen.Height) - 270);
 +    pimpl_->inventory_work_text_->setRelativePosition(irr::core::rect<irr::s32>(work_left, work_top, work_left + work_width, work_top + 78));
-+    std::wstring work_text = pimpl_->disassembling_ ? ::cwm::wide("Disassembling: ","Smontaggio: ")+utf8_to_wide(pimpl_->disassembly_name_) : pimpl_->reading_ ?
++    std::wstring work_text = pimpl_->disassembling_ ? ::cwm::wide("Disassembling: ")+utf8_to_wide(pimpl_->disassembly_name_) : pimpl_->reading_ ?
 +        (pimpl_->reading_skimming_ ? ::cwm::wide("Skimming: ","Sfoglio: ") : ::cwm::wide("Reading: ","Lettura: "))+
 +        utf8_to_wide(pimpl_->reading_book_) : pimpl_->inventory_work_label_;
 +    if (pimpl_->inventory_time_pending()) {
@@ -5299,7 +5299,7 @@ index 0000000..bce616b
 +        std::wstring consumption_hint;
 +        if (pimpl_->activity_token_ && pimpl_->activity_total_ > 0) {
 +            const int percent = int(100LL * (pimpl_->activity_total_ - pimpl_->activity_remaining_) / pimpl_->activity_total_);
-+            consumption_hint = (pimpl_->disassembling_ ? ::cwm::wide("Disassembly in progress: ","Smontaggio in corso: ") : pimpl_->reading_ ? (pimpl_->reading_skimming_ ? ::cwm::wide("Skimming in progress: ", "Sfoglio in corso: ") : ::cwm::wide("Reading in progress: ", "Lettura in corso: ")) : pimpl_->transferring_ ? (::cwm::wide("Transfer in progress: ", "Trasferimento in corso: ")) : pimpl_->crafting_ ? (::cwm::wide("Crafting in progress: ", "Crafting in corso: ")) : pimpl_->first_aid_ ? (::cwm::wide("Treatment in progress: ", "Trattamento in corso: ")) : pimpl_->reloading_ ? (::cwm::wide("Reload in progress: ", "Ricarica in corso: ")) : (::cwm::wide("Consumption in progress: ", "Consumo in corso: "))) + std::to_wstring(percent) + (::cwm::wide("% - I: inspect / pause", "% - I: consulta / pausa"));
++            consumption_hint = (pimpl_->disassembling_ ? ::cwm::wide("Disassembly in progress: ") : pimpl_->reading_ ? (pimpl_->reading_skimming_ ? ::cwm::wide("Skimming in progress: ", "Sfoglio in corso: ") : ::cwm::wide("Reading in progress: ", "Lettura in corso: ")) : pimpl_->transferring_ ? (::cwm::wide("Transfer in progress: ", "Trasferimento in corso: ")) : pimpl_->crafting_ ? (::cwm::wide("Crafting in progress: ", "Crafting in corso: ")) : pimpl_->first_aid_ ? (::cwm::wide("Treatment in progress: ", "Trattamento in corso: ")) : pimpl_->reloading_ ? (::cwm::wide("Reload in progress: ", "Ricarica in corso: ")) : (::cwm::wide("Consumption in progress: ", "Consumo in corso: "))) + std::to_wstring(percent) + (::cwm::wide("% - I: inspect / pause", "% - I: consulta / pausa"));
 +        }
 +        if (pimpl_->transferring_ && !pimpl_->activity_total_) consumption_hint = (::cwm::wide("Transfer in progress - I: inspect / pause", "Trasferimento in corso - I: consulta / pausa"));
 +        const auto plain_hint = utf8_to_wide(decisionPlainText(wide_to_utf8(consumption_hint.empty() ? hint : consumption_hint)));
@@ -5884,10 +5884,10 @@ index 0000000..15c7818
 +} // namespace cdda_client
 diff --git a/src/cdda/equipment_inventory.h b/src/cdda/equipment_inventory.h
 new file mode 100644
-index 0000000..7c52afe
+index 0000000..672aa78
 --- /dev/null
 +++ b/src/cdda/equipment_inventory.h
-@@ -0,0 +1,439 @@
+@@ -0,0 +1,438 @@
 +#pragma once
 +#include "cwm/product_language.hpp"
 +#include "avatar_status.h"
@@ -6204,12 +6204,11 @@ index 0000000..7c52afe
 +        const auto pocket_count = std::count_if(view.pockets.begin(),view.pockets.end(),[&](const auto& p) { return p.owner == selected; });
 +        if (pocket_count) detail += ("\n<b>" + ::cwm::text("Pockets", "Tasche") + "</b>  ") + std::to_string(pocket_count) + (::cwm::text(" (see details)", " (vedi dettagli)"));
 +        if (!e->consume_warning.empty()) detail += ("\n\n<style color=#963F25><b>" + ::cwm::text("Warning", "Avviso") + "</b></style>\n") + equipmentMarkup(e->consume_warning);
-+        if(e->disassembly) detail+="\n\n<b>"+::cwm::text("Disassembly","Smontaggio")+"</b>\n"+
-+            ::cwm::text("Native estimate: ","Stima nativa: ")+std::to_string((e->disassembly_moves+99)/100)+
++        if(e->disassembly) detail+="\n\n<b>"+::cwm::text("Disassembly")+"</b>\n"+
++            ::cwm::text("Native estimate: ")+std::to_string((e->disassembly_moves+99)/100)+
 +            ::cwm::text(" game s"," s di gioco")+
 +            (e->disassembly_resume ? " · "+std::to_string(e->disassembly_progress/100000)+"%" : "")+
-+            "\n"+::cwm::text("Recovered components are placed nearby. Native tools and recovery rules apply.",
-+                "Componenti recuperati nelle vicinanze. Valgono utensili e regole di recupero nativi.");
++            "\n"+::cwm::text("Recovered components are placed nearby. Native tools and recovery rules apply.");
 +        if(e->book) {
 +            detail+="\n\n<style color=#25647A><b>"+::cwm::text("Reading","Lettura")+"</b></style>\n"+
 +                equipmentMarkup(e->book_summary);
@@ -6244,7 +6243,7 @@ index 0000000..7c52afe
 +            }
 +        }
 +        if(e->disassembly && !consumption_token) {
-+            const auto label=e->disassembly_resume ? ::cwm::text("Resume disassembly","Riprendi smontaggio") : ::cwm::text("Disassemble...","Smonta...");
++            const auto label=e->disassembly_resume ? ::cwm::text("Resume disassembly") : ::cwm::text("Disassemble...");
 +            const std::string work_y=e->book ? "6.6" : "10.1";
 +            if(e->actions & 128) f+="button[11.35,"+work_y+";4.15,0.6;action_7;"+label+"]";
 +            else f+="label[11.45,"+(e->book ? std::string("6.9") : std::string("10.4"))+";"+label+"]tooltip[11.35,"+work_y+";4.15,0.6;"+statusEscape(e->reasons[7])+"]";
@@ -6260,7 +6259,7 @@ index 0000000..7c52afe
 +    if (action_time_pending && notice.empty()) f += "label[0.5,10.65;" + ::cwm::text(
 +        "Applied · Time paused · Close resumes · Cannot undo",
 +        "Applicata · Tempo in pausa · Chiudi riprende · Non annullabile") + "]";
-+    if (consumption_token) f += "button[11.35,10.1;4.15,0.5;cancel_consume;" + std::string(disassembling ? ::cwm::text("Interrupt disassembly","Interrompi smontaggio") : reading ? (::cwm::text("Interrupt reading", "Interrompi lettura")) : transferring ? (::cwm::text("Interrupt transfer", "Interrompi trasferimento")) : crafting ? (::cwm::text("Interrupt crafting", "Interrompi crafting")) : first_aid ? (::cwm::text("Interrupt treatment", "Interrompi trattamento")) : reloading ? (::cwm::text("Interrupt reload", "Interrompi ricarica")) : (::cwm::text("Interrupt consumption", "Interrompi consumo"))) + "]";
++    if (consumption_token) f += "button[11.35,10.1;4.15,0.5;cancel_consume;" + std::string(disassembling ? ::cwm::text("Interrupt disassembly") : reading ? (::cwm::text("Interrupt reading", "Interrompi lettura")) : transferring ? (::cwm::text("Interrupt transfer", "Interrompi trasferimento")) : crafting ? (::cwm::text("Interrupt crafting", "Interrompi crafting")) : first_aid ? (::cwm::text("Interrupt treatment", "Interrompi trattamento")) : reloading ? (::cwm::text("Interrupt reload", "Interrompi ricarica")) : (::cwm::text("Interrupt consumption", "Interrompi consumo"))) + "]";
 +    if (!notice.empty()) f += "box[0.4,10.57;10.5,0.4;#F2CEAAFF]hypertext[0.5,10.58;10.3,0.4;;" +
 +        statusEscape("<global color=#6B2915 size=18><b>" + equipmentMarkup(notice) + "</b>") + "]";
 +    else if (view.truncated) f += ("label[0.5,10.8;" + ::cwm::text("Limited view: some contents are not shown.", "Vista limitata: parte dei contenuti non mostrata.") + "]");

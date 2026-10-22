@@ -2179,7 +2179,7 @@ index 0000000..d94c308
 +} // namespace cwm
 diff --git a/src/cwm/cwm_disassembly.h b/src/cwm/cwm_disassembly.h
 new file mode 100644
-index 0000000..618210b
+index 0000000..eecae77
 --- /dev/null
 +++ b/src/cwm/cwm_disassembly.h
 @@ -0,0 +1,61 @@
@@ -2215,24 +2215,24 @@ index 0000000..618210b
 +    return sources;
 +}
 +inline std::string disassembly_error(avatar& u, const item& it, const inventory* supplied = nullptr) {
-+    if (!it.is_disassemblable()) return ::cwm::tr("You cannot disassemble this.", "Non puoi smontare questo oggetto.");
++    if (!it.is_disassemblable()) return ::cwm::tr("You cannot disassemble this.");
 +    const auto sources = supplied ? inventory{} : disassembly_sources(u);
 +    const auto allowed = u.can_disassemble(it, supplied ? *supplied : sources);
 +    if (!allowed.success()) return remove_color_tags(allowed.str());
 +    const bool resume = it.typeId() == itype_id("disassembly");
 +    if ((!resume && it.count_by_charges()) || (resume && it.get_making_batch_size() != 1))
-+        return ::cwm::tr("Stack disassembly needs a quantity interface in a later update.", "Smontaggio pile: selezione quantita prevista in seguito.");
++        return ::cwm::tr("Stack disassembly needs a quantity interface in a later update.");
 +    const auto& recipe = disassembly_recipe(it);
 +    const auto moves = recipe.time_to_craft_moves(u, recipe_time_flag::ignore_proficiencies);
 +    if (moves < 0 || moves > INT_MAX)
-+        return ::cwm::tr("Disassembly duration is outside this interface's supported range.", "Durata smontaggio fuori dall'intervallo supportato.");
++        return ::cwm::tr("Disassembly duration is outside this interface's supported range.");
 +    const item& original = resume ? it.components.only_item() : it;
 +    // Never create sample items here: constructors and yields can consume RNG.
 +    for (const auto& component : original.get_uncraft_components())
 +        if (component.type->phase != phase_id::SOLID)
-+            return ::cwm::tr("Liquid or gas recovery needs a dedicated interface in a later update.", "Recupero liquidi o gas: interfaccia dedicata prevista in seguito.");
++            return ::cwm::tr("Liquid or gas recovery needs a dedicated interface in a later update.");
 +    if (!original.is_container_empty())
-+        return ::cwm::tr("Empty the item before disassembling it here.", "Svuota l'oggetto prima di smontarlo qui.");
++        return ::cwm::tr("Empty the item before disassembling it here.");
 +    return {};
 +}
 +inline flatbuffers::Offset<CDDA::CWM::DisassemblyInfo> export_disassembly_info(

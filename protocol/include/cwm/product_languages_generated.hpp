@@ -34,6 +34,7 @@ inline const char *catalog_translation(const std::string &code, const char *engl
             {"Recovered components are placed nearby. Native tools and recovery rules apply.", "Componenti recuperati nelle vicinanze. Valgono utensili e regole di recupero nativi."},
             {"Resume disassembly", "Riprendi smontaggio"},
             {"Stack disassembly needs a quantity interface in a later update.", "Smontaggio pile: selezione quantita prevista in seguito."},
+            {"You cannot disassemble this.", "Non puoi smontare questo oggetto."},
         }},
     };
     const auto catalog = catalogs.find(code);
