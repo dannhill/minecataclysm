@@ -29,7 +29,11 @@ Inspection exports native recipe duration as an estimate and unfinished
 progress, not guaranteed yield or a client timer. Concrete reachable tools and
 owned pseudo-tools are checked with Character::can_disassemble. Inspection
 excludes generated environmental pseudo-items (including randomized map water)
-so it does not advance RNG/cache generated resources. Environmental-only
+so it does not advance RNG/cache generated resources. Native disassembly
+requirement filtering reads the component type flag instead of constructing
+a randomized sample item; real stored component instance flags still follow
+the existing native recovery path. A data-wide native comparison checks the
+default-instance/type equivalence and unchanged filtered components. Environmental-only
 pseudo-tool availability is a follow-up; execution still rechecks CDDA's full
 crafting inventory. The interface never promises recovery success.
 

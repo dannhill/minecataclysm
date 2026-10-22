@@ -1719,6 +1719,21 @@ index 6e66b47..1d12175 100644
  };
  
  enum class recipe_time_flag : int {
+diff --git a/src/requirements.cpp b/src/requirements.cpp
+index 2b0a513..338e6de 100644
+--- a/src/requirements.cpp
++++ b/src/requirements.cpp
+@@ -1278,7 +1278,9 @@ requirement_data requirement_data::disassembly_requirements() const
+     []( std::vector<item_comp> &cov ) {
+         cov.erase( std::remove_if( cov.begin(), cov.end(),
+         []( const item_comp & comp ) {
+-            return !comp.recoverable || item( comp.type ).has_flag( STATIC( flag_id( "UNRECOVERABLE" ) ) );
++            // This is a type-level requirement, not a generated item. Constructing
++            // samples here consumes RNG merely to inspect an inventory/recipe.
++            return !comp.recoverable || comp.type->has_flag( STATIC( flag_id( "UNRECOVERABLE" ) ) );
+         } ), cov.end() );
+         return cov.empty();
+     } ), ret.components.end() );
 diff --git a/src/sounds.cpp b/src/sounds.cpp
 index 48f747f..d49deea 100644
 --- a/src/sounds.cpp
@@ -5788,10 +5803,10 @@ index 0000000..f5a7c0a
 +#endif // CATA_SRC_SAFE_MODE_ACTIONS_H
 diff --git a/tests/cwm_pickup_test.cpp b/tests/cwm_pickup_test.cpp
 new file mode 100644
-index 0000000..a5a0eda
+index 0000000..ab3e24a
 --- /dev/null
 +++ b/tests/cwm_pickup_test.cpp
-@@ -0,0 +1,2290 @@
+@@ -0,0 +1,2317 @@
 +#include "cata_catch.h"
 +#include "translations.h"
 +#include "options.h"
@@ -5808,6 +5823,8 @@ index 0000000..a5a0eda
 +#include "calendar.h"
 +#include "game.h"
 +#include "item.h"
++#include "item_factory.h"
++#include "flag.h"
 +#include "map.h"
 +#include "map_helpers.h"
 +#include "player_helpers.h"
@@ -8081,6 +8098,31 @@ index 0000000..a5a0eda
 +    target.remove_item();CHECK_FALSE(cwm::CwmServerTestAccess::execute(server));CHECK_FALSE(u.activity);
 +    cwm::CwmServerTestAccess::complete(server);
 +    cwm::CwmServerTestAccess::equipment(server,view,selected,7,1);CHECK_FALSE(server.has_queued_action());
++}
++
++TEST_CASE("cwm_disassembly_type_filter_preserves_default_component_semantics_without_rng", "[cwm][disassembly]") {
++    const flag_id unrecoverable("UNRECOVERABLE");
++    std::set<itype_id> verified;
++    for(const auto* type:item_controller->all()) {
++        const auto& rec=recipe_dictionary::get_uncraft(type->get_id());
++        if(!rec || !rec.reversible) continue;
++        auto expected=rec.simple_requirements().get_components();
++        for(auto& alternatives:expected) {
++            for(const auto& component:alternatives)if(verified.insert(component.type).second) {
++                INFO(component.type.str());
++                const item native_sample(component.type);
++                CHECK(native_sample.has_flag(unrecoverable)==component.type->has_flag(unrecoverable));
++            }
++            alternatives.erase(std::remove_if(alternatives.begin(),alternatives.end(),[&](const auto& c){
++                return !c.recoverable || c.type->has_flag(unrecoverable);
++            }),alternatives.end());
++        }
++        expected.erase(std::remove_if(expected.begin(),expected.end(),[](const auto& a){return a.empty();}),expected.end());
++        const auto rng=rng_get_engine();
++        CHECK(rec.disassembly_requirements().get_components()==expected);
++        CHECK(rng_get_engine()==rng);
++    }
++    CHECK(verified.size()>100);
 +}
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644
