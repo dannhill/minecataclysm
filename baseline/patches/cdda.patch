@@ -5257,7 +5257,7 @@ index 0000000..d077b2c
 +} // namespace cwm
 diff --git a/src/cwm/cwm_rest.h b/src/cwm/cwm_rest.h
 new file mode 100644
-index 0000000..2cb8c1e
+index 0000000..36adeef
 --- /dev/null
 +++ b/src/cwm/cwm_rest.h
 @@ -0,0 +1,61 @@
@@ -5289,7 +5289,7 @@ index 0000000..2cb8c1e
 +    static bool interruptible(const avatar& u) {const int p=phase(u);return p>=0 && p<2 && u.activity.is_interruptible();}
 +    static int progress(const avatar& u) {
 +        return phase(u)==0 && u.activity.id()==activity_id("ACT_WAIT") && u.activity.moves_total>0 ?
-+            std::clamp(100-int(100.0*u.activity.moves_left/u.activity.moves_total),0,100):-1;
++            std::clamp(100-int(100.0*std::clamp(u.activity.moves_left,0,u.activity.moves_total)/u.activity.moves_total),0,100):-1;
 +    }
 +    bool accelerated(const avatar& u) const {
 +        const int p=phase(u);
@@ -5324,10 +5324,10 @@ index 0000000..2cb8c1e
 +}
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..2d4fb5b
+index 0000000..6a2e404
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,1322 @@
+@@ -0,0 +1,1323 @@
 +#include "cwm/product_language.hpp"
 +#include "cwm_motion.h"
 +// CDDA CWM IPC Server Implementation
@@ -5595,6 +5595,7 @@ index 0000000..2d4fb5b
 +    if(!pending_rest_ || !external_ui_active())return;
 +    const auto command=*pending_rest_;pending_rest_.reset();rest_.refresh(u);
 +    auto error=RestTracker::error(u);
++    if(RestTracker::phase(u)<0 && (u.moves<0 || (realtime_ && !clock_.action_due())))error=::cwm::text("Finish the current action before resting.");
 +    if(command.token!=rest_.token || (realtime_ && pause_reasons(g)))error=::cwm::text("Rest state changed or game paused. Open the rest menu again.");
 +    if(!error.empty()){send_result({command.id,false,error},u,m,g);return;}
 +    drop_realtime_input(u,m,g);inventory_selection_.clear();crafting_selection_.clear();ranged_selection_.clear();
@@ -5687,8 +5688,8 @@ index 0000000..2d4fb5b
 +                              const std::function<bool()>& keep_running) {
 +    while (keep_running()) {
 +        service_clock(u, m, g);
-+        if(u.activity || u.in_sleep_state() || u.moves<=0)return false;
 +        if (pause_reasons(g)) { std::this_thread::sleep_for(std::chrono::milliseconds(1)); continue; }
++        if(u.activity || u.in_sleep_state() || u.moves<=0)return false;
 +        if (clock_.tick_due()) {
 +            if (held_direction_ || intent_x_ || intent_y_ || !commands_.empty()) {
 +                // Held intent still owns unused native credit. A wall boundary
@@ -10482,11 +10483,12 @@ index 0000000..39d991c
 +}
 diff --git a/tests/cwm_runtime_test.cpp b/tests/cwm_runtime_test.cpp
 new file mode 100644
-index 0000000..39491ac
+index 0000000..6a669e4
 --- /dev/null
 +++ b/tests/cwm_runtime_test.cpp
-@@ -0,0 +1,740 @@
+@@ -0,0 +1,742 @@
 +#include "cwm_motion.h"
++#include "cwm/cwm_rest.h"
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "move_mode.h"
@@ -11218,7 +11220,8 @@ index 0000000..39491ac
 +    },[&](const std::string&,const std::vector<std::string>& choices){++prompts;return int(choices.size())-1;});
 +    CHECK(prompts==1);CHECK_FALSE(u.activity);CHECK(u.pos()==pos);
 +    u.try_to_sleep(1_hours);rest.refresh(u);const auto trying=rest.token;
-+    REQUIRE(trying!=0);CHECK(rest.last==1);CHECK(cwm::RestTracker::interruptible(u));CHECK(cwm::RestTracker::progress(u)==-1);
++    REQUIRE(trying!=0);CHECK(rest.last==1);CHECK_FALSE(rest.accelerated(u));
++    calendar::turn+=8_seconds;CHECK(rest.accelerated(u));rest.fast=false;CHECK_FALSE(rest.accelerated(u));rest.fast=true;CHECK(cwm::RestTracker::interruptible(u));CHECK(cwm::RestTracker::progress(u)==-1);
 +    u.cancel_activity();rest.refresh(u);CHECK(rest.token==0);
 +    u.fall_asleep(5_minutes);rest.refresh(u);REQUIRE(rest.token!=0);CHECK(rest.token!=trying);CHECK(rest.last==2);
 +    CHECK_FALSE(cwm::RestTracker::interruptible(u));CHECK(cwm::RestTracker::progress(u)==-1);
