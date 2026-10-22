@@ -10483,10 +10483,10 @@ index 0000000..39d991c
 +}
 diff --git a/tests/cwm_runtime_test.cpp b/tests/cwm_runtime_test.cpp
 new file mode 100644
-index 0000000..074267e
+index 0000000..0456128
 --- /dev/null
 +++ b/tests/cwm_runtime_test.cpp
-@@ -0,0 +1,742 @@
+@@ -0,0 +1,760 @@
 +#include "cwm_motion.h"
 +#include "cwm/cwm_rest.h"
 +#include "cata_catch.h"
@@ -11228,4 +11228,22 @@ index 0000000..074267e
 +    u.wake_up();u.remove_effect(efftype_id("sleep"));rest.refresh(u);CHECK(rest.token==0);
 +    u.assign_activity(activity_id("ACT_WAIT"),2000);rest.refresh(u);CHECK(rest.last==0);CHECK(cwm::RestTracker::interruptible(u));
 +    CHECK(cwm::RestTracker::progress(u)>=0);u.cancel_activity();rest.refresh(u);CHECK(rest.token==0);
++}
++
++TEST_CASE("cwm_native_rest_wakes_through_effect_processing_and_respects_narcosis", "[cwm][rest]") {
++    const override_option no_autosave("AUTOSAVE","false");
++    prepare_runtime();auto& u=get_avatar();const auto position=u.pos();
++    get_map().furn_set(position,furn_str_id("f_bed"));u.set_fatigue(500);
++    u.fall_asleep(10_seconds);u.add_effect(efftype_id("narcosis"),1_minutes);
++    const auto duration=u.get_effect_dur(efftype_id("sleep"));
++    u.wake_up();CHECK(u.get_effect_dur(efftype_id("sleep"))==duration);
++    u.remove_effect(efftype_id("narcosis"));
++    cwm::RestTracker rest;rest.refresh(u);REQUIRE(rest.last==2);
++    const auto start=calendar::turn;
++    for(int n=0;n<25 && u.in_sleep_state();++n) {
++        REQUIRE_FALSE(do_turn_with_action([&]{finish_external_action_phase();return false;},
++            [](const std::string&,const std::vector<std::string>& choices){return int(choices.size())-1;}));
++    }
++    rest.refresh(u);CHECK_FALSE(u.in_sleep_state());CHECK(rest.token==0);
++    CHECK(calendar::turn>start);CHECK(u.pos()==position);CHECK_FALSE(u.activity);
 +}

@@ -2205,7 +2205,7 @@ index 0000000..e1e7236
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..ff324d3
+index 0000000..61ab1e3
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
 @@ -0,0 +1,3454 @@
@@ -4019,7 +4019,7 @@ index 0000000..ff324d3
 +    bool send_talk_request() {
 +        const auto it = entities_.find(pointed_actor_);
 +        if (!connection_ || !connection_->is_valid() || !session_.ready() || !player_ready_ ||
-+            pending_move_ || metrics_.pending_decision || metrics_.pause_reasons || rest_token_ || rest_token_ || activity_token_ ||
++            pending_move_ || metrics_.pending_decision || metrics_.pause_reasons || rest_token_ || activity_token_ ||
 +            equipment_open_ || ground_container_open_ || body_form_open_ || it == entities_.end() ||
 +            !it->second.humanoid || !it->second.perceived) return false;
 +        const uint64_t command = session_.next_command++;
