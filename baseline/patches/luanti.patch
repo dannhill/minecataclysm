@@ -344,7 +344,7 @@ index 16ceda4..20bd596 100644
  			float old_anim_speed = player->last_animation_speed;
  			m_velocity = v3f(0,0,0);
 diff --git a/src/client/game.cpp b/src/client/game.cpp
-index 27b5833..f99a923 100644
+index 27b5833..748ca91 100644
 --- a/src/client/game.cpp
 +++ b/src/client/game.cpp
 @@ -8,6 +8,10 @@
@@ -852,7 +852,7 @@ index 27b5833..f99a923 100644
  
  	core::line3d<f32> shootline;
  
-@@ -3365,6 +3687,58 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
+@@ -3365,6 +3687,57 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
  	// but the halo rendering code is already inefficient so there's no point in optimizing it here
  	hud->updateSelectionMesh(camera_offset);
  
@@ -887,8 +887,7 @@ index 27b5833..f99a923 100644
 +		if (!bridge.getMetrics().pending_decision && context_pressed && !close_pressed) {
 +            if (npc_pointed) bridge.talkPointedNpc();
 +            else if(liquid_source) {
-+                const auto p=bridge.luantiToCddaCoord(*liquid_source);
-+                bridge.handleInteract(p.X,p.Y,p.Z,0);
++                bridge.handlePointedLiquidSource(*liquid_source);
 +            } else if (items_pointed) {
 +				const auto form = bridge.activateGroundItems();
 +				if (!form.empty()) {
@@ -911,7 +910,7 @@ index 27b5833..f99a923 100644
  	// Allow digging again if button is not pressed
  	if (runData.digging_blocked && !isKeyDown(KeyType::DIG))
  		runData.digging_blocked = false;
-@@ -4247,7 +4621,8 @@ void Game::updateClouds(float dtime)
+@@ -4247,7 +4620,8 @@ void Game::updateClouds(float dtime)
  {
  	if (this->sky->getCloudsVisible()) {
  		this->clouds->setVisible(true);
@@ -921,7 +920,7 @@ index 27b5833..f99a923 100644
  		// this->camera->getPosition is not enough for third-person camera.
  		v3f camera_node_position = this->camera->getCameraNode()->getPosition();
  		v3s16 camera_offset      = this->camera->getOffset();
-@@ -4319,7 +4694,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
+@@ -4319,7 +4693,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
  	/*
  		Fog
  	*/
@@ -935,7 +934,7 @@ index 27b5833..f99a923 100644
  		this->driver->setFog(
  				fog_color,
  				video::EFT_FOG_LINEAR,
-@@ -4470,7 +4850,7 @@ void Game::showDeathFormspecLegacy()
+@@ -4470,7 +4849,7 @@ void Game::showDeathFormspecLegacy()
  }
  
  #define GET_KEY_NAME(KEY) gettext(getKeySetting(#KEY).name())
@@ -944,7 +943,7 @@ index 27b5833..f99a923 100644
  {
  	std::string control_text;
  
-@@ -4518,6 +4898,22 @@ void Game::showPauseMenu()
+@@ -4518,6 +4897,22 @@ void Game::showPauseMenu()
  		<< strgettext("Exit to Menu") << "]";
  	os		<< "button_exit[4," << (ypos++) << ";3,0.5;btn_exit_os;"
  		<< strgettext("Exit to OS")   << "]";
@@ -967,7 +966,7 @@ index 27b5833..f99a923 100644
  	if (!control_text.empty()) {
  	os		<< "textarea[7.5,0.25;3.9,6.25;;" << control_text << ";]";
  	}
-@@ -4536,8 +4932,8 @@ void Game::showPauseMenu()
+@@ -4536,8 +4931,8 @@ void Game::showPauseMenu()
  	}
  	os << "\n";
  	if (simple_singleplayer_mode || address.empty()) {
@@ -978,7 +977,7 @@ index 27b5833..f99a923 100644
  		// Note: Status of enable_damage and creative_mode settings is intentionally
  		// NOT shown here because the game might roll its own damage system and/or do
  		// a per-player Creative Mode, in which case writing it here would mislead.
-@@ -4559,10 +4955,15 @@ void Game::showPauseMenu()
+@@ -4559,10 +4954,15 @@ void Game::showPauseMenu()
  	}
  	os << ";]";
  
@@ -2227,10 +2226,10 @@ index 0000000..e1e7236
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..08075bf
+index 0000000..756da2c
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,3497 @@
+@@ -0,0 +1,3502 @@
 +#include "cwm/product_language.hpp"
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
@@ -4455,6 +4454,11 @@ index 0000000..08075bf
 +    return false;
 +}
 +
++bool CddaBridge::handlePointedLiquidSource(const v3s16& node) {
++    const auto tile=luantiToCddaCoord(node);
++    return handleInteract(tile.X,tile.Y,tile.Z,int(CDDA::CWM::InteractAction::EXAMINE));
++}
++
 +bool CddaBridge::handlePointedOpening(const v3s16& node, bool close) {
 +    if (!pimpl_) return false;
 +    const auto tile = luantiToCddaCoord(node);
@@ -5730,10 +5734,10 @@ index 0000000..08075bf
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.h b/src/cdda/cdda_bridge.h
 new file mode 100644
-index 0000000..ec28eb6
+index 0000000..dd93be0
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.h
-@@ -0,0 +1,201 @@
+@@ -0,0 +1,202 @@
 +// Luanti C++ CWM Presentation Bridge
 +// Licensed under Apache-2.0
 +#pragma once
@@ -5838,6 +5842,7 @@ index 0000000..ec28eb6
 +    double visualAnimationTime() const;
 +    float visualAnimationDelta() const;
 +    bool handleInteract(int x, int y, int z, int action);
++    bool handlePointedLiquidSource(const v3s16& node);
 +    bool handlePointedOpening(const v3s16& node, bool close);
 +    bool pointCombatTarget(const irr::core::line3d<float>& ray);
 +    float pointingRange() const;
@@ -6255,7 +6260,7 @@ index 0000000..15c7818
 +} // namespace cdda_client
 diff --git a/src/cdda/equipment_inventory.h b/src/cdda/equipment_inventory.h
 new file mode 100644
-index 0000000..36c9f7c
+index 0000000..942b17a
 --- /dev/null
 +++ b/src/cdda/equipment_inventory.h
 @@ -0,0 +1,444 @@
@@ -6616,8 +6621,8 @@ index 0000000..36c9f7c
 +            }
 +        }
 +        if(e->liquid && !consumption_token) {
-+            if(e->liquid_reason.empty())f+="button[11.35,10.1;4.15,0.6;pour_liquid;"+::cwm::text("Pour / handle liquid...")+"]";
-+            else f+="label[11.45,10.4;"+::cwm::text("Pour / handle liquid...")+"]tooltip[11.35,10.1;4.15,0.6;"+statusEscape(e->liquid_reason)+"]";
++            if(e->liquid_reason.empty())f+="button[11.35,10.1;4.15,0.6;pour_liquid;"+::cwm::text("Pour liquid...")+"]";
++            else f+="label[11.45,10.4;"+::cwm::text("Pour liquid...")+"]tooltip[11.35,10.1;4.15,0.6;"+statusEscape(e->liquid_reason)+"]";
 +        }
 +        if(e->disassembly && !e->liquid && !consumption_token) {
 +            const auto label=e->disassembly_resume ? ::cwm::text("Resume disassembly") : ::cwm::text("Disassemble...");

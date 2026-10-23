@@ -37352,7 +37352,7 @@
   {
     "path": "src/cwm/cwm_liquids.h",
     "mode": "100644",
-    "sha256": "1f0fccd92c4a7a3d5e1212474e724f09ac449604eafa6bc9791d7a8f2d32ffbc"
+    "sha256": "bd0f641ad4fe6a6dc57108b582eb03e089ad028607a9ae6261e0e9748418bcf9"
   },
   {
     "path": "src/cwm/cwm_main.cpp",
@@ -37740,6 +37740,11 @@
     "sha256": "3a7c15f031e47af801b7889a69dd74b56c2439baf974ee752de02d783bad622a"
   },
   {
+    "path": "src/external_liquids.h",
+    "mode": "100644",
+    "sha256": "46b115707c6b44ac2bc4e7c17a64f04776a7b8fb40c436d0da2ef5ca243bc838"
+  },
+  {
     "path": "src/external_trade.h",
     "mode": "100644",
     "sha256": "e3f27f3b52f91f8f863cef2b943b85e7f1baabaee447aac96962558daba0f3a9"
@@ -37902,7 +37907,7 @@
   {
     "path": "src/game_inventory.cpp",
     "mode": "100644",
-    "sha256": "45dfeb593589cff09025487e13fecfbd6a9bb033e7d32228891583ee12e376ea"
+    "sha256": "f53531e9a885a848c07d6d8116158a953e98e379e60ae367231c45e7eff0d8da"
   },
   {
     "path": "src/game_inventory.h",
@@ -37987,12 +37992,12 @@
   {
     "path": "src/handle_liquid.cpp",
     "mode": "100644",
-    "sha256": "8cd6ed7a307eb07272d93e9015c278cc6660de90fdc03db921828657403dccfa"
+    "sha256": "2560e923eee3bd0cdfc4462cf03f4d59896b405d04ea00037197c0543f72a11d"
   },
   {
     "path": "src/handle_liquid.h",
     "mode": "100644",
-    "sha256": "93fd1f62bd2807dbeb89132efec1829ac90dfb096f95263f8e1a6e97758a9df8"
+    "sha256": "5c9c6d1202cad6b1ce8b79149d6d006ac23920a24de85bfd2368e9d61cac613e"
   },
   {
     "path": "src/harvest.cpp",

@@ -1147,10 +1147,15 @@ index c25584e..fdb835f 100644
          friend achievements_tracker &get_achievements();
          friend event_bus &get_event_bus();
 diff --git a/src/game_inventory.cpp b/src/game_inventory.cpp
-index 85ff028..c08bf16 100644
+index 85ff028..e8c5a11 100644
 --- a/src/game_inventory.cpp
 +++ b/src/game_inventory.cpp
-@@ -30,6 +30,8 @@
+@@ -1,3 +1,4 @@
++#include "external_liquids.h"
+ #include "game_inventory.h"
+ 
+ #include <algorithm>
+@@ -30,6 +31,8 @@
  #include "enums.h"
  #include "flag.h"
  #include "game.h"
@@ -1159,7 +1164,7 @@ index 85ff028..c08bf16 100644
  #include "input.h"
  #include "inventory.h"
  #include "inventory_ui.h"
-@@ -504,6 +506,7 @@ class liquid_inventory_selector_preset : public inventory_selector_preset
+@@ -504,6 +507,7 @@ class liquid_inventory_selector_preset : public inventory_selector_preset
  item_location game_menus::inv::container_for( Character &you, const item &liquid, int radius,
          const item *const avoid )
  {
@@ -1274,10 +1279,15 @@ index 652ad80..09f077e 100644
  
          case ACTION_WHITELIST_ENEMY:
 diff --git a/src/handle_liquid.cpp b/src/handle_liquid.cpp
-index 0ce6825..320f3ad 100644
+index 0ce6825..4410b91 100644
 --- a/src/handle_liquid.cpp
 +++ b/src/handle_liquid.cpp
-@@ -20,6 +20,9 @@
+@@ -1,3 +1,4 @@
++#include "external_liquids.h"
+ #include "handle_liquid.h"
+ 
+ #include <algorithm>
+@@ -20,6 +21,9 @@
  #include "colony.h"
  #include "color.h"
  #include "debug.h"
@@ -1287,7 +1297,7 @@ index 0ce6825..320f3ad 100644
  #include "enums.h"
  #include "game_inventory.h"
  #include "iexamine.h"
-@@ -104,6 +107,50 @@ static void serialize_liquid_target( player_activity &act, const tripoint &pos )
+@@ -104,6 +108,50 @@ static void serialize_liquid_target( player_activity &act, const tripoint &pos )
  
  namespace liquid_handler
  {
@@ -1338,7 +1348,7 @@ index 0ce6825..320f3ad 100644
  void handle_all_liquid( item liquid, const int radius, const item *const avoid )
  {
      while( liquid.charges > 0 && can_handle_liquid( liquid ) ) {
-@@ -179,7 +226,7 @@ static bool get_liquid_target( item &liquid, const item *const source, const int
+@@ -179,7 +227,7 @@ static bool get_liquid_target( item &liquid, const item *const source, const int
      }
  
      Character &player_character = get_player_character();
@@ -1347,7 +1357,7 @@ index 0ce6825..320f3ad 100644
          switch( test_mode_spilling_action ) {
              case test_mode_spilling_action_t::spill_all:
                  target.pos = player_character.pos();
-@@ -262,6 +309,7 @@ static bool get_liquid_target( item &liquid, const item *const source, const int
+@@ -262,6 +310,7 @@ static bool get_liquid_target( item &liquid, const item *const source, const int
          }
      }
      for( vehicle *veh : opts ) {
@@ -1355,7 +1365,7 @@ index 0ce6825..320f3ad 100644
          if( veh == source_veh && veh->has_part( "FLUIDTANK", false ) ) {
              for( const vpart_reference &vp : veh->get_avail_parts( "FLUIDTANK" ) ) {
                  if( vp.part().get_base().can_reload_with( liquid, true ) ) {
-@@ -308,7 +356,20 @@ static bool get_liquid_target( item &liquid, const item *const source, const int
+@@ -308,7 +357,20 @@ static bool get_liquid_target( item &liquid, const item *const source, const int
  
          const std::string liqstr = string_format( _( "Pour %s where?" ), liquid_name );
  
@@ -1377,29 +1387,6 @@ index 0ce6825..320f3ad 100644
          if( !target_pos_ ) {
              return;
          }
-diff --git a/src/handle_liquid.h b/src/handle_liquid.h
-index 5051e44..ed6656d 100644
---- a/src/handle_liquid.h
-+++ b/src/handle_liquid.h
-@@ -7,6 +7,7 @@
- #include "map.h"
- #include "point.h"
- 
-+class Character;
- class item;
- class monster;
- class vehicle;
-@@ -30,6 +31,10 @@ struct liquid_dest_opt {
- // Contains functions that handle liquid
- namespace liquid_handler
- {
-+// Presentation-only selection/access helpers for the external native UI.
-+// Capacity/transfer/contamination still use the original native functions.
-+bool external_accessible( const item_location &location );
-+item_location external_container_for( Character &you, const item &liquid, const item *avoid );
- /**
-  * Consume / handle all of the liquid. The function can be used when the liquid needs
-  * to be handled and can not be put back to where it came from (e.g. when it's a newly
 diff --git a/src/iexamine.cpp b/src/iexamine.cpp
 index e2e738d..e3ed1a6 100644
 --- a/src/iexamine.cpp
@@ -3820,10 +3807,11 @@ index 0000000..8fa0a0b
 +} // namespace cwm
 diff --git a/src/cwm/cwm_liquids.h b/src/cwm/cwm_liquids.h
 new file mode 100644
-index 0000000..80a005b
+index 0000000..1fd1c97
 --- /dev/null
 +++ b/src/cwm/cwm_liquids.h
-@@ -0,0 +1,67 @@
+@@ -0,0 +1,68 @@
++#include "external_liquids.h"
 +#pragma once
 +#include "avatar.h"
 +#include "do_turn.h"
@@ -7445,6 +7433,21 @@ index 0000000..322e736
 +        external_conversation_scope( const external_conversation_scope & ) = delete;
 +        external_conversation_scope &operator=( const external_conversation_scope & ) = delete;
 +};
+diff --git a/src/external_liquids.h b/src/external_liquids.h
+new file mode 100644
+index 0000000..38a8150
+--- /dev/null
++++ b/src/external_liquids.h
+@@ -0,0 +1,9 @@
++#pragma once
++#include "item_location.h"
++class Character;
++class item;
++namespace liquid_handler {
++// External presentation only: native capacity and transfer functions own rules.
++bool external_accessible(const item_location &location);
++item_location external_container_for(Character &you,const item &liquid,const item *avoid);
++}
 diff --git a/src/external_trade.h b/src/external_trade.h
 new file mode 100644
 index 0000000..41692c0
