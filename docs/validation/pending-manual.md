@@ -1,5 +1,9 @@
 # Validazioni manuali del playable core
 
+Apertura sigilli (2026-10-23): **65 PENDING, nessun FAIL manuale aperto**.
+I precedenti 61 punti restano invariati; quattro nuove prove SEAL-01 sono
+rinviabili. Nessun PASS umano viene dedotto dalle verifiche automatiche.
+
 Fonti d’acqua e travasi (2026-10-23): **61 PENDING, nessun FAIL manuale aperto**.
 I precedenti 57 punti restano invariati; quattro nuove prove LIQ-01 sono
 rinviabili. Nessun PASS umano viene dedotto dalle verifiche automatiche.
@@ -1285,3 +1289,29 @@ Nella partita normale qualità e scorte sono quelle reali del mondo CDDA.
 Queste prove sono rinviabili: nessun gate personale richiesto adesso. Crafting
 con risultati liquidi/purificazione, usi speciali, apertura sigilli e serbatoi
 veicoli restano attività successive, senza allargare indefinitamente il core.
+
+
+## SEAL-01 — Apertura tasche sigillate — 4 PENDING
+
+`./seals-demo.sh --fresh`: scena isolata con bottiglia sigillata in mano,
+zaino, bottiglia per condimenti sigillata e lattina sigillata. La funzione è
+anche nella partita normale con `./start.sh`; non richiede un mondo nuovo.
+
+1. **PENDING — Apertura e annullamento.** I → bottiglia in mano → Open sealed
+   pocket... → Cancel: rimane sigillata. Ripeti confermando Open: sigillo rotto,
+   stessa acqua e quantità, Pour liquid... disponibile dopo aggiornamento.
+   Nessun tempo di apertura inventato; bere/travasare conserva i costi nativi.
+2. **PENDING — Accesso.** Non puoi consumare o trasferire direttamente il liquido
+   attraverso un sigillo. Apri il contenitore prima; dopo l’apertura torna
+   accessibile tramite le interfacce native. In contenitori annidati sigillati
+   apri prima quello esterno. Leggere l’inventario non deve aprire nulla.
+3. **PENDING — Lattina nello zaino.** Aprila esplicitamente: perde la chiusura
+   stagna; la gestione nativa propone cosa fare col liquido. Annullando quel
+   travaso successivo può posare la lattina aperta a terra per non versarla.
+   Il primo Cancel non rompe il sigillo; il Cancel dopo apertura non lo ricrea.
+4. **PENDING — Persistenza.** Apri la bottiglia in mano, lascia sigillata quella
+   per condimenti. Esci e riapri la demo senza --fresh: entrambi gli stati e
+   i contenuti restano corretti. Nessun comando ripetuto al caricamento.
+
+Nessun gate personale richiesto ora. Aperture mediante utensili/trasformazioni,
+usi speciali degli oggetti e crafting/purificazione liquidi restano separati.

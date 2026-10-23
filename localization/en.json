@@ -1,1 +1,10 @@
-{}
+{
+  "Open sealed pocket...": "Open sealed pocket...",
+  "Open sealed pocket": "Open sealed pocket",
+  "Select an owned container.": "Select an owned container.",
+  "Open the outer sealed container first.": "Open the outer sealed container first.",
+  "No sealed pocket to open.": "No sealed pocket to open.",
+  "Break a seal? Preservation changes; open containers may spill or be set on the ground.": "Break a seal? Preservation changes; open containers may spill or be set on the ground.",
+  "Open an owned seal without a preselected quantity or destination.": "Open an owned seal without a preselected quantity or destination.",
+  "Seal opening cancelled or unavailable.": "Seal opening cancelled or unavailable."
+}

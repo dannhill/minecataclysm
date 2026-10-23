@@ -187,6 +187,9 @@ struct EquipmentRequestBuilder;
 struct LiquidInfo;
 struct LiquidInfoBuilder;
 
+struct SealInfo;
+struct SealInfoBuilder;
+
 struct LiquidTransferState;
 struct LiquidTransferStateBuilder;
 
@@ -649,35 +652,38 @@ enum class ItemTransferAction : int8_t {
   TAKE_EXTERNAL = 2,
   DEPOSIT_EXTERNAL = 3,
   POUR = 4,
+  OPEN_SEAL = 5,
   MIN = DROP,
-  MAX = POUR
+  MAX = OPEN_SEAL
 };
 
-inline const ItemTransferAction (&EnumValuesItemTransferAction())[5] {
+inline const ItemTransferAction (&EnumValuesItemTransferAction())[6] {
   static const ItemTransferAction values[] = {
     ItemTransferAction::DROP,
     ItemTransferAction::INSERT,
     ItemTransferAction::TAKE_EXTERNAL,
     ItemTransferAction::DEPOSIT_EXTERNAL,
-    ItemTransferAction::POUR
+    ItemTransferAction::POUR,
+    ItemTransferAction::OPEN_SEAL
   };
   return values;
 }
 
 inline const char * const *EnumNamesItemTransferAction() {
-  static const char * const names[6] = {
+  static const char * const names[7] = {
     "DROP",
     "INSERT",
     "TAKE_EXTERNAL",
     "DEPOSIT_EXTERNAL",
     "POUR",
+    "OPEN_SEAL",
     nullptr
   };
   return names;
 }
 
 inline const char *EnumNameItemTransferAction(ItemTransferAction e) {
-  if (::flatbuffers::IsOutRange(e, ItemTransferAction::DROP, ItemTransferAction::POUR)) return "";
+  if (::flatbuffers::IsOutRange(e, ItemTransferAction::DROP, ItemTransferAction::OPEN_SEAL)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesItemTransferAction()[index];
 }
@@ -6016,7 +6022,8 @@ struct InventoryEntry FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_EXTERNAL = 52,
     VT_BOOK = 54,
     VT_DISASSEMBLY = 56,
-    VT_LIQUID = 58
+    VT_LIQUID = 58,
+    VT_SEAL = 60
   };
   uint32_t id() const {
     return GetField<uint32_t>(VT_ID, 0);
@@ -6186,6 +6193,12 @@ struct InventoryEntry FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   CDDA::CWM::LiquidInfo *mutable_liquid() {
     return GetPointer<CDDA::CWM::LiquidInfo *>(VT_LIQUID);
   }
+  const CDDA::CWM::SealInfo *seal() const {
+    return GetPointer<const CDDA::CWM::SealInfo *>(VT_SEAL);
+  }
+  CDDA::CWM::SealInfo *mutable_seal() {
+    return GetPointer<CDDA::CWM::SealInfo *>(VT_SEAL);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_ID, 4) &&
@@ -6227,6 +6240,8 @@ struct InventoryEntry FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyTable(disassembly()) &&
            VerifyOffset(verifier, VT_LIQUID) &&
            verifier.VerifyTable(liquid()) &&
+           VerifyOffset(verifier, VT_SEAL) &&
+           verifier.VerifyTable(seal()) &&
            verifier.EndTable();
   }
 };
@@ -6319,6 +6334,9 @@ struct InventoryEntryBuilder {
   void add_liquid(::flatbuffers::Offset<CDDA::CWM::LiquidInfo> liquid) {
     fbb_.AddOffset(InventoryEntry::VT_LIQUID, liquid);
   }
+  void add_seal(::flatbuffers::Offset<CDDA::CWM::SealInfo> seal) {
+    fbb_.AddOffset(InventoryEntry::VT_SEAL, seal);
+  }
   explicit InventoryEntryBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -6359,11 +6377,13 @@ inline ::flatbuffers::Offset<InventoryEntry> CreateInventoryEntry(
     bool external = false,
     ::flatbuffers::Offset<CDDA::CWM::BookInfo> book = 0,
     ::flatbuffers::Offset<CDDA::CWM::DisassemblyInfo> disassembly = 0,
-    ::flatbuffers::Offset<CDDA::CWM::LiquidInfo> liquid = 0) {
+    ::flatbuffers::Offset<CDDA::CWM::LiquidInfo> liquid = 0,
+    ::flatbuffers::Offset<CDDA::CWM::SealInfo> seal = 0) {
   InventoryEntryBuilder builder_(_fbb);
   builder_.add_length_mm(length_mm);
   builder_.add_volume_ml(volume_ml);
   builder_.add_weight_grams(weight_grams);
+  builder_.add_seal(seal);
   builder_.add_liquid(liquid);
   builder_.add_disassembly(disassembly);
   builder_.add_book(book);
@@ -6421,7 +6441,8 @@ inline ::flatbuffers::Offset<InventoryEntry> CreateInventoryEntryDirect(
     bool external = false,
     ::flatbuffers::Offset<CDDA::CWM::BookInfo> book = 0,
     ::flatbuffers::Offset<CDDA::CWM::DisassemblyInfo> disassembly = 0,
-    ::flatbuffers::Offset<CDDA::CWM::LiquidInfo> liquid = 0) {
+    ::flatbuffers::Offset<CDDA::CWM::LiquidInfo> liquid = 0,
+    ::flatbuffers::Offset<CDDA::CWM::SealInfo> seal = 0) {
   auto type_id__ = type_id ? _fbb.CreateString(type_id) : 0;
   auto name__ = name ? _fbb.CreateString(name) : 0;
   auto category__ = category ? _fbb.CreateString(category) : 0;
@@ -6458,7 +6479,8 @@ inline ::flatbuffers::Offset<InventoryEntry> CreateInventoryEntryDirect(
       external,
       book,
       disassembly,
-      liquid);
+      liquid,
+      seal);
 }
 
 struct InventoryPocket FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -7692,6 +7714,60 @@ inline ::flatbuffers::Offset<LiquidInfo> CreateLiquidInfoDirect(
     const char *reason = nullptr) {
   auto reason__ = reason ? _fbb.CreateString(reason) : 0;
   return CDDA::CWM::CreateLiquidInfo(
+      _fbb,
+      reason__);
+}
+
+struct SealInfo FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef SealInfoBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_REASON = 4
+  };
+  const ::flatbuffers::String *reason() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_REASON);
+  }
+  ::flatbuffers::String *mutable_reason() {
+    return GetPointer<::flatbuffers::String *>(VT_REASON);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_REASON) &&
+           verifier.VerifyString(reason()) &&
+           verifier.EndTable();
+  }
+};
+
+struct SealInfoBuilder {
+  typedef SealInfo Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_reason(::flatbuffers::Offset<::flatbuffers::String> reason) {
+    fbb_.AddOffset(SealInfo::VT_REASON, reason);
+  }
+  explicit SealInfoBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<SealInfo> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<SealInfo>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<SealInfo> CreateSealInfo(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<::flatbuffers::String> reason = 0) {
+  SealInfoBuilder builder_(_fbb);
+  builder_.add_reason(reason);
+  return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<SealInfo> CreateSealInfoDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    const char *reason = nullptr) {
+  auto reason__ = reason ? _fbb.CreateString(reason) : 0;
+  return CDDA::CWM::CreateSealInfo(
       _fbb,
       reason__);
 }

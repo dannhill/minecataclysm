@@ -8,3 +8,4 @@ class ItemTransferAction(object):
     TAKE_EXTERNAL = 2
     DEPOSIT_EXTERNAL = 3
     POUR = 4
+    OPEN_SEAL = 5

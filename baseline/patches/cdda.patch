@@ -3460,10 +3460,10 @@ index 0000000..0866007
 +} // namespace cwm
 diff --git a/src/cwm/cwm_inventory.h b/src/cwm/cwm_inventory.h
 new file mode 100644
-index 0000000..8fa0a0b
+index 0000000..4c23524
 --- /dev/null
 +++ b/src/cwm/cwm_inventory.h
-@@ -0,0 +1,346 @@
+@@ -0,0 +1,358 @@
 +#pragma once
 +#include "cwm/product_language.hpp"
 +#include <algorithm>
@@ -3489,6 +3489,7 @@ index 0000000..8fa0a0b
 +#include "cwm_reading.h"
 +#include "cwm_disassembly.h"
 +#include "cwm_liquids.h"
++#include "cwm_seals.h"
 +
 +namespace cwm {
 +// Bounded, ephemeral selection view. Native safe item_locations retain identity;
@@ -3500,6 +3501,7 @@ index 0000000..8fa0a0b
 +        std::string type;
 +        int charges;
 +        bool counted, worn, wielded, external;
++        std::vector<bool> seals;
 +    };
 +    uint64_t next_view_{1}, view_{0};
 +    tripoint origin_{};
@@ -3547,7 +3549,7 @@ index 0000000..8fa0a0b
 +            const auto* pocket = location.parent_pocket();
 +            if (!pocket || !pocket->is_type(pocket_type::CONTAINER))
 +                return ::cwm::tr("Technical contents require their dedicated native interaction.", "Contenuto tecnico: serve l'interazione nativa dedicata.");
-+            if (pocket->sealed()) return ::cwm::tr("Sealed pocket: opening it is not supported here yet.", "Tasca sigillata: apertura non ancora disponibile qui.");
++            if (pocket->sealed()) return ::cwm::tr("Sealed pocket: select its container and use Open sealed pocket... first.", "Tasca sigillata: seleziona il contenitore e usa Apri tasca sigillata... prima.");
 +            location = location.parent_item();
 +        }
 +        return {};
@@ -3605,6 +3607,9 @@ index 0000000..8fa0a0b
 +            return ::cwm::tr("Full open container: handle its liquids first.", "Contenitore aperto pieno: gestione dei liquidi richiesta.");
 +        return {};
 +    }
++    static std::vector<bool> seal_state(const item& it) {
++        std::vector<bool> out;for(const auto* p:it.get_all_contained_pockets())out.push_back(p->sealed());return out;
++    }
 +    std::string validate_binding(avatar& u, uint64_t view, uint32_t id) const {
 +        if (!view || view != view_ || !id || id > bindings_.size()) return ::cwm::tr("Inventory selection expired: reopen the inventory.", "Selezione inventario scaduta: riapri l'inventario.");
 +        const auto& selected = bindings_[id - 1];
@@ -3614,7 +3619,8 @@ index 0000000..8fa0a0b
 +            (!location.held_by(u) || !u.has_item(*location))) ||
 +            (selected.external ? external_parents(location) : u.parents(*location)) != selected.parents || location->typeId().str() != selected.type ||
 +            location->charges != selected.charges || location->count_by_charges() != selected.counted ||
-+            u.is_worn(*location) != selected.worn || u.is_wielding(*location) != selected.wielded)
++            u.is_worn(*location) != selected.worn || u.is_wielding(*location) != selected.wielded ||
++            seal_state(*location) != selected.seals)
 +            return ::cwm::tr("Item or pocket changed: reopen the inventory.", "Oggetto o tasca cambiati: riapri l'inventario.");
 +        return {};
 +    }
@@ -3661,6 +3667,11 @@ index 0000000..8fa0a0b
 +                                 uint32_t destination, int action) const {
 +        auto error = validate_binding(u, view, id); if (!error.empty()) return error;
 +        auto source = target(id);
++        if(action==5) {
++            if(external_item(id) || destination || quantity)return ::cwm::text("Open an owned seal without a preselected quantity or destination.");
++            if(get_map().getabs(u.pos())!=origin_)return ::cwm::text("Position changed: reopen the inventory.");
++            return seal_open_error(u,source);
++        }
 +        if(action==4) {
 +            if(external_item(id) || destination || quantity)return ::cwm::text("Open native pouring from an owned item without a preselected quantity or destination.");
 +            if(get_map().getabs(u.pos())!=origin_)return ::cwm::text("Position changed: reopen the inventory.");
@@ -3776,9 +3787,10 @@ index 0000000..8fa0a0b
 +                    units::to_millimeter<int64_t>(it->length()), access, actions, &reasons, consume_moves, consume_label, remove_color_tags(warning).c_str(), (exporting_external ? external_source_error(u,location) : transfer_source_error(u, location)).c_str(),
 +                    std::any_of(container_pockets.begin(), container_pockets.end(),
 +                        [](const auto* p) { return p->is_type(pocket_type::CONTAINER); }), exporting_external ? 0 : quick_slot, it->rotten(), exporting_external ? 0 : ui_order(*it), exporting_external, book, export_disassembly_info(fbb,u,*it),
-+                    !exporting_external && has_liquid_content(*it) ? CDDA::CWM::CreateLiquidInfoDirect(fbb,liquid_item_error(u,location).c_str()) : flatbuffers::Offset<CDDA::CWM::LiquidInfo>{}));
++                    !exporting_external && has_liquid_content(*it) ? CDDA::CWM::CreateLiquidInfoDirect(fbb,liquid_item_error(u,location).c_str()) : flatbuffers::Offset<CDDA::CWM::LiquidInfo>{},
++                    !exporting_external && has_sealed_pocket(*it) ? CDDA::CWM::CreateSealInfoDirect(fbb,seal_open_error(u,location).c_str()) : flatbuffers::Offset<CDDA::CWM::SealInfo>{}));
 +                bindings_.push_back({location, exporting_external ? external_parents(location) : ancestors, it->typeId().str(), it->charges,
-+                                     it->count_by_charges(), worn, wielded, exporting_external});
++                                     it->count_by_charges(), worn, wielded, exporting_external, seal_state(*it)});
 +                ids[it] = id;
 +                const auto own_pockets = it->get_all_contained_pockets();
 +                for (size_t i = 0; i < own_pockets.size(); ++i) {
@@ -5549,12 +5561,66 @@ index 0000000..36adeef
 +    }
 +};
 +}
+diff --git a/src/cwm/cwm_seals.h b/src/cwm/cwm_seals.h
+new file mode 100644
+index 0000000..e1c6222
+--- /dev/null
++++ b/src/cwm/cwm_seals.h
+@@ -0,0 +1,48 @@
++#pragma once
++#include "avatar.h"
++#include "contents_change_handler.h"
++#include "do_turn.h"
++#include "external_liquids.h"
++#include "item.h"
++#include "item_location.h"
++#include "item_pocket.h"
++#include "output.h"
++#include "cwm/product_language.hpp"
++namespace cwm {
++inline bool has_sealed_pocket(const item &source) {
++    for(const auto *p:source.get_all_contained_pockets())
++        if(p->is_type(pocket_type::CONTAINER) && p->sealed() && !p->empty())return true;
++    return false;
++}
++inline std::string seal_open_error(avatar &u,item_location source) {
++    if(!source || !source.held_by(u) || !u.has_item(*source))return ::cwm::text("Select an owned container.");
++    if(u.activity || u.in_sleep_state())return ::cwm::text("Finish or interrupt the current activity first.");
++    if(!liquid_handler::external_accessible(source))return ::cwm::text("Open the outer sealed container first.");
++    if(!has_sealed_pocket(*source))return ::cwm::text("No sealed pocket to open.");
++    return {};
++}
++// The native contents-change handler breaks a pocket seal without a separate
++// move debit. Retrieval, consumption and any spill/pour keep their own costs.
++// This exposes that native prefix as an explicit operation; it does not emulate
++// item-use transformations (e.g. a tool-dependent container opening).
++inline bool open_owned_seal(avatar &u,item_location source) {
++    if(!seal_open_error(u,source).empty())return false;
++    std::vector<item_pocket*> pockets;std::vector<std::string> labels;
++    for(auto *p:source->get_all_contained_pockets()) {
++        if(!p->is_type(pocket_type::CONTAINER) || !p->sealed() || p->empty())continue;
++        if(pockets.size()==256)break;
++        pockets.push_back(p);
++        labels.push_back(::cwm::text("Open")+" "+remove_color_tags(p->get_name().translated())+
++            " ("+std::to_string(pockets.size())+")");
++    }
++    labels.push_back(::cwm::text("Cancel"));
++    const int choice=external_ui_choice(::cwm::text("Break a seal? Preservation changes; open containers may spill or be set on the ground."),labels);
++    if(choice<0 || size_t(choice)>=pockets.size() || !seal_open_error(u,source).empty())return false;
++    auto *p=pockets[choice];
++    if(!p->sealed() || p->empty())return false;
++    contents_change_handler handler;
++    handler.unseal_pocket_containing(item_location(source,&p->front()));
++    handler.handle_by(u); // Native restacking, ancestor changes, spilling/drop.
++    return true; // source/content locations may now be invalid: never reuse.
++}
++}
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..204650f
+index 0000000..2b63d2b
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,1345 @@
+@@ -0,0 +1,1350 @@
 +#include "cwm/product_language.hpp"
 +#include "cwm_motion.h"
 +// CDDA CWM IPC Server Implementation
@@ -6165,7 +6231,12 @@ index 0000000..204650f
 +        auto destination = command.transfer_destination ? inventory_selection_.target(command.transfer_destination) : item_location::nowhere;
 +        const auto external_pos = command.transfer_action == 3 ? inventory_selection_.external_position() : u.pos();
 +        inventory_selection_.clear(); ranged_selection_.clear(); activity_token_ = 0;
-+        if(command.transfer_action==4) {
++        if(command.transfer_action==5) {
++            accepted=open_owned_seal(u,source);refresh_activity(u);
++            if(accepted)++world_revision_;
++            result_=Result{command.id,accepted,accepted?"": ::cwm::text("Seal opening cancelled or unavailable.")};
++            return accepted || u.moves!=before_moves;
++        } else if(command.transfer_action==4) {
 +            accepted=handle_owned_liquid(u,source);refresh_activity(u);++world_revision_;
 +            result_=Result{command.id,accepted,accepted?"": ::cwm::text("No liquid transferred. Native liquid handling was cancelled or unavailable.")};
 +            return accepted || u.moves!=before_moves;
@@ -10747,10 +10818,10 @@ index 0000000..39d991c
 +}
 diff --git a/tests/cwm_runtime_test.cpp b/tests/cwm_runtime_test.cpp
 new file mode 100644
-index 0000000..a32528a
+index 0000000..b72a108
 --- /dev/null
 +++ b/tests/cwm_runtime_test.cpp
-@@ -0,0 +1,897 @@
+@@ -0,0 +1,972 @@
 +#include "cwm_motion.h"
 +#include "cwm/cwm_rest.h"
 +#include "cata_catch.h"
@@ -11647,4 +11718,79 @@ index 0000000..a32528a
 +        return int(labels.size())-1;
 +    }));
 +    CHECK(direction_menus==1);
++}
++
++TEST_CASE("cwm_seal_opening_uses_native_contents_handler_without_invented_cost", "[cwm][seals]") {
++    const override_option no_autosave("AUTOSAVE","false");
++    prepare_runtime();auto& u=get_avatar();
++    const bool cancel=GENERATE(false,true);
++    item bottle(itype_id("bottle_plastic"),calendar::turn);
++    item water(itype_id("water_clean"),calendar::turn,2);
++    water.set_item_temperature(water.get_freeze_point()+units::from_celsius_delta(20));
++    REQUIRE(bottle.put_in(water,pocket_type::CONTAINER).success());REQUIRE(bottle.seal());
++    REQUIRE(u.wield(bottle));auto source=u.get_wielded_item();u.moves=1000;
++    int prompts=0;
++    REQUIRE_FALSE(do_turn_with_action([&]{
++        const auto engine=rng_get_engine();const int moves=u.moves;const auto turn=calendar::turn;
++        CHECK(cwm::open_owned_seal(u,source)==!cancel);
++        CHECK(source->any_pockets_sealed()==cancel);CHECK(source->all_items_top().front()->charges==2);
++        CHECK(u.moves==moves);CHECK(calendar::turn==turn);CHECK(rng_get_engine()==engine);
++        CHECK_FALSE(u.activity);CHECK(cwm::liquid_item_error(u,source).empty()==!cancel);
++        finish_external_action_phase();return false;
++    },[&](const std::string&,const std::vector<std::string>& labels){++prompts;CHECK(labels.back()=="Cancel");return cancel?int(labels.size())-1:0;}));
++    CHECK(prompts==1);
++}
++
++TEST_CASE("cwm_seal_views_guard_identity_parameters_seal_changes_and_ancestors", "[cwm][seals]") {
++    prepare_runtime();auto& u=get_avatar();REQUIRE(u.wear_item(item(itype_id("backpack"),calendar::turn),false));
++    auto source=u.i_add(item(itype_id("bottle_plastic"),calendar::turn));
++    item water(itype_id("water_clean"),calendar::turn,2);water.set_item_temperature(water.get_freeze_point()+units::from_celsius_delta(20));
++    REQUIRE(source->put_in(water,pocket_type::CONTAINER).success());REQUIRE(source->seal());
++    cwm::InventorySelection view;cdda::cwm::MessageBuilder wire(1,1);
++    const auto engine=rng_get_engine();const int moves=u.moves;
++    auto bytes=view.query(u,1,wire);const auto* data=CDDA::CWM::GetCwmMessage(bytes.data())->payload_as_InventoryView();
++    REQUIRE(cdda::cwm::valid_inventory(data));uint32_t id=0;
++    for(const auto* e:*data->entries())if(e->type_id()->str()=="bottle_plastic") {id=e->id();REQUIRE(e->seal());CHECK(e->seal()->reason()->str().empty());}
++    REQUIRE(id);CHECK(u.moves==moves);CHECK(rng_get_engine()==engine);CHECK(source->any_pockets_sealed());
++    CHECK(view.validate_transfer(u,view.view_id(),id,0,0,5).empty());
++    CHECK_FALSE(view.validate_transfer(u,view.view_id(),id,1,0,5).empty());
++    CHECK_FALSE(view.validate_transfer(u,view.view_id(),id,0,id,5).empty());
++    CHECK_FALSE(view.validate_transfer(u,view.view_id()+1,id,0,0,5).empty());
++    auto child=item_location(source,source->all_items_top().front());
++    CHECK_FALSE(cwm::InventorySelection::access_error(child).empty());
++    source->get_all_contained_pockets().front()->unseal();
++    CHECK_FALSE(view.validate_transfer(u,view.view_id(),id,0,0,5).empty());
++    view.clear();CHECK_FALSE(view.validate_transfer(u,data->view_id(),id,0,0,5).empty());
++}
++
++TEST_CASE("cwm_seal_open_container_keeps_native_spill_and_drop_policy", "[cwm][seals]") {
++    const override_option no_autosave("AUTOSAVE","false");
++    prepare_runtime();auto& u=get_avatar();auto& m=get_map();m.ter_set(u.pos(),ter_str_id("t_floor"));
++    REQUIRE(u.wear_item(item(itype_id("backpack"),calendar::turn),false));
++    auto source=u.i_add(item(itype_id("can_drink"),calendar::turn));
++    item water(itype_id("water_clean"),calendar::turn,1);water.set_item_temperature(water.get_freeze_point()+units::from_celsius_delta(20));
++    REQUIRE(source->put_in(water,pocket_type::CONTAINER).success());REQUIRE(source->seal());u.moves=1000;
++    int prompts=0;
++    REQUIRE_FALSE(do_turn_with_action([&]{
++        REQUIRE(cwm::open_owned_seal(u,source));
++        // Cancelling optional liquid handling cannot restore the broken seal:
++        // native handle_contents_changed instead sets the open can on the floor.
++        int cans=0,charges=0;
++        for(const auto& it:m.i_at(u.pos()))if(it.typeId()==itype_id("can_drink")) {
++            ++cans;CHECK_FALSE(it.any_pockets_sealed());for(const auto* content:it.all_items_top())charges+=content->charges;
++        }
++        CHECK(cans==1);CHECK(charges==1);CHECK_FALSE(source);CHECK_FALSE(u.activity);
++        finish_external_action_phase();return false;
++    },[&](const std::string&,const std::vector<std::string>& labels){++prompts;return prompts==1?0:int(labels.size())-1;}));
++    CHECK(prompts>=2);
++}
++
++TEST_CASE("cwm_seal_outer_container_is_opened_before_nested_pockets", "[cwm][seals]") {
++    prepare_runtime();auto& u=get_avatar();item outer(itype_id("jar_3l_glass_sealed"),calendar::turn);
++    item inner(itype_id("bottle_plastic"),calendar::turn);item water(itype_id("water_clean"),calendar::turn,2);
++    REQUIRE(inner.put_in(water,pocket_type::CONTAINER).success());REQUIRE(inner.seal());
++    REQUIRE(outer.put_in(inner,pocket_type::CONTAINER).success());
++    auto* pocket=outer.get_all_contained_pockets().front();REQUIRE(pocket->seal());REQUIRE(u.wield(outer));
++    auto source=u.get_wielded_item();auto child=item_location(source,source->all_items_top().front());
++    CHECK_FALSE(cwm::seal_open_error(u,child).empty());CHECK(cwm::seal_open_error(u,source).empty());
 +}

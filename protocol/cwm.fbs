@@ -375,6 +375,7 @@ table InventoryEntry {
     book: BookInfo;
     disassembly: DisassemblyInfo;
     liquid: LiquidInfo;
+    seal: SealInfo;
 }
 table InventoryPocket {
     owner_id: uint32;
@@ -444,9 +445,10 @@ table EquipmentRequest {
 }
 
 // Ephemeral owned-item identities, native quantities and destination container.
-// POUR opens native liquid handling; quantity and destination_id must be zero.
-enum ItemTransferAction : byte { DROP = 0, INSERT = 1, TAKE_EXTERNAL = 2, DEPOSIT_EXTERNAL = 3, POUR = 4 }
+// POUR / OPEN_SEAL open native choices; quantity and destination_id must be zero.
+enum ItemTransferAction : byte { DROP = 0, INSERT = 1, TAKE_EXTERNAL = 2, DEPOSIT_EXTERNAL = 3, POUR = 4, OPEN_SEAL = 5 }
 table LiquidInfo { reason: string; }
+table SealInfo { reason: string; }
 // Native ACT_FILL_LIQUID has no meaningful moves-total percentage.
 table LiquidTransferState { token: uint64; }
 table CancelLiquidTransferRequest { command_id: uint64; activity_token: uint64; }

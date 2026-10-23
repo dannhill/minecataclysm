@@ -245,8 +245,19 @@ class InventoryEntry(object):
             return obj
         return None
 
+    # InventoryEntry
+    def Seal(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(60))
+        if o != 0:
+            x = self._tab.Indirect(o + self._tab.Pos)
+            from CDDA.CWM.SealInfo import SealInfo
+            obj = SealInfo()
+            obj.Init(self._tab.Bytes, x)
+            return obj
+        return None
+
 def InventoryEntryStart(builder):
-    builder.StartObject(28)
+    builder.StartObject(29)
 
 def Start(builder):
     InventoryEntryStart(builder)
@@ -424,6 +435,12 @@ def InventoryEntryAddLiquid(builder, liquid):
 
 def AddLiquid(builder, liquid):
     InventoryEntryAddLiquid(builder, liquid)
+
+def InventoryEntryAddSeal(builder, seal):
+    builder.PrependUOffsetTRelativeSlot(28, flatbuffers.number_types.UOffsetTFlags.py_type(seal), 0)
+
+def AddSeal(builder, seal):
+    InventoryEntryAddSeal(builder, seal)
 
 def InventoryEntryEnd(builder):
     return builder.EndObject()

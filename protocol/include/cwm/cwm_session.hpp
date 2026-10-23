@@ -125,6 +125,7 @@ inline bool valid_inventory(const CDDA::CWM::InventoryView* view) {
         if ((entry->actions() & 16) && (!entry->consume_moves() || !entry->consume_label()->size())) return false;
         if ((entry->actions() & 64) && (!entry->book() || !entry->book()->chapter_moves())) return false;
         if ((entry->actions() & 128) && !entry->disassembly()) return false;
+        if(entry->seal() && (!text(entry->seal()->reason(),2048) || entry->external() || !entry->container()))return false;
         if(entry->liquid() && (!text(entry->liquid()->reason(),2048) || entry->external()))return false;
         if (const auto* work=entry->disassembly())
             if (work->estimated_moves()<0 || work->progress()<0 || work->progress()>10000000 ||

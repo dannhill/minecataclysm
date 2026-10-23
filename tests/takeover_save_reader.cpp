@@ -64,6 +64,7 @@ int main(int argc, const char *argv[]) {
     bool create_companions = false;
     bool create_rest = false;
     bool create_liquids = false;
+    bool create_seals = false;
     bool create_ranged = false;
     bool create_transfer = false;
     bool create_external = false;
@@ -81,6 +82,7 @@ int main(int argc, const char *argv[]) {
         else if (arg == "--create-transfer") { create = true; create_transfer = true; create_posture = true; }
         else if (arg == "--create-ranged") { create = true; create_ranged = true; create_posture = true; }
         else if (arg == "--create-crafting") { create = true; create_crafting = true; create_posture = true; }
+        else if (arg == "--create-seals") { create = true; create_seals = true; create_posture = true; }
         else if (arg == "--create-liquids") { create = true; create_liquids = true; create_posture = true; }
         else if (arg == "--create-rest") { create = true; create_rest = true; create_posture = true; }
         else if (arg == "--create-companions") { create = true; create_companions = true; create_conversation = true; create_posture = true; }
@@ -513,6 +515,20 @@ int main(int argc, const char *argv[]) {
             u.set_skill_level(skill_id("swimming"),10);
             get_weather().update_weather();
             if (!g->save()) return 5;
+        }
+        if(create_seals) {
+            u.remove_items_with([](const item&){return true;});u.remove_weapon();u.clear_worn();m.i_clear(u.pos());
+            u.wear_item(item(itype_id("backpack"),calendar::turn),false);
+            for(const auto& spec:std::vector<std::pair<std::string,int>>{{"bottle_plastic",2},{"condiment_bottle_sealed",2},{"can_drink",1}}) {
+                item container(itype_id(spec.first),calendar::turn);
+                item water(itype_id("water_clean"),calendar::turn,spec.second);
+                water.set_item_temperature(water.get_freeze_point()+units::from_celsius_delta(20));
+                if(!container.put_in(water,pocket_type::CONTAINER).success() || !container.seal())return 13;
+                container.set_var("uid","seal-"+spec.first);
+                if(spec.first=="bottle_plastic") {if(!u.wield(container))return 14;}else u.i_add(container);
+            }
+            m.ter_set(u.pos(),ter_str_id("t_floor"));m.furn_set(u.pos(),furn_str_id("f_null"));
+            g->set_safe_mode(SAFE_MODE_OFF);
         }
         if(create_liquids) {
             u.remove_items_with([](const item&){return true;});u.remove_weapon();u.clear_worn();

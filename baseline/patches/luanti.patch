@@ -2226,10 +2226,10 @@ index 0000000..e1e7236
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..94786ae
+index 0000000..224b032
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,3508 @@
+@@ -0,0 +1,3511 @@
 +#include "cwm/product_language.hpp"
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
@@ -2574,6 +2574,7 @@ index 0000000..94786ae
 +            inventory_work_command_ = id; inventory_work_settled_ = inventory_work_rejected_ = false;
 +            inventory_return_requested_ = true; inventory_return_armed_ = false; inventory_work_error_.clear();
 +            if (cancel) inventory_work_label_ = (::cwm::wide("Interrupting activity", "Interruzione dell’attivita"));
++            else if (transfer && queued_transfer_->action == 5) inventory_work_label_=::cwm::wide("Open sealed pocket");
 +            else if (transfer && queued_transfer_->action == 4) inventory_work_label_=::cwm::wide("Pour liquid");
 +            else if (transfer && queued_transfer_->action == 2) inventory_work_label_ = ::cwm::wide("Collect from storage", "Raccogli dal contenitore");
 +            else if (transfer && queued_transfer_->action == 3) inventory_work_label_ = ::cwm::wide("Deposit in storage", "Deposita nel contenitore");
@@ -5220,14 +5221,16 @@ index 0000000..94786ae
 +        if(fields.count("own_next") && (i.destination_page_+1)*27<i.equipment_view_.entries.size()-ext)++i.destination_page_;
 +        i.equipment_dirty_=true;return;
 +    }
-+    if(fields.count("pour_liquid")) {
++    if(fields.count("pour_liquid") || fields.count("open_seal")) {
 +        const auto* source=i.equipment_view_.entry(i.equipment_selected_);
-+        if(!source || !source->liquid)return;
-+        if(!source->liquid_reason.empty()){i.equipment_notice_=source->liquid_reason;i.equipment_dirty_=true;return;}
++        const bool opening=fields.count("open_seal");
++        if(!source || (opening ? !source->seal : !source->liquid))return;
++        const auto& reason=opening?source->seal_reason:source->liquid_reason;
++        if(!reason.empty()){i.equipment_notice_=reason;i.equipment_dirty_=true;return;}
 +        if(i.rest_token_ || i.activity_token_ || i.pending_move_ || (i.metrics_.pause_reasons & ~uint32_t(2))) {
 +            i.equipment_notice_=::cwm::text("Finish or interrupt the current activity first.");i.equipment_dirty_=true;return;
 +        }
-+        i.queued_transfer_=Impl::QueuedTransfer{i.equipment_view_.view,source->id,0,0,4};
++        i.queued_transfer_=Impl::QueuedTransfer{i.equipment_view_.view,source->id,0,0,opening?5:4};
 +        i.inventory_return_armed_=true;i.equipment_close_=true;return;
 +    }
 +    if (fields.count("transfers") || fields.count("back")) {
@@ -6266,10 +6269,10 @@ index 0000000..15c7818
 +} // namespace cdda_client
 diff --git a/src/cdda/equipment_inventory.h b/src/cdda/equipment_inventory.h
 new file mode 100644
-index 0000000..942b17a
+index 0000000..7bc9a95
 --- /dev/null
 +++ b/src/cdda/equipment_inventory.h
-@@ -0,0 +1,444 @@
+@@ -0,0 +1,450 @@
 +#pragma once
 +#include "cwm/product_language.hpp"
 +#include "avatar_status.h"
@@ -6296,6 +6299,7 @@ index 0000000..942b17a
 +    unsigned quick_slot{}; bool rotten{}; uint32_t ui_order{}; bool external{};
 +    bool disassembly{}, disassembly_resume{}; int64_t disassembly_moves{}; int disassembly_progress{};
 +    bool liquid{}; std::string liquid_reason;
++    bool seal{}; std::string seal_reason;
 +    bool book{}, book_identified{}; int chapter_moves{}; std::string book_summary;
 +};
 +struct EquipmentPocket {
@@ -6322,6 +6326,7 @@ index 0000000..942b17a
 +                e->type_id()->str(), e->name()->str(), e->category()->str(), e->charges(), e->access_moves(),
 +                e->count_by_charges(), e->worn(), e->wielded(), e->weight_grams(), e->volume_ml(), e->length_mm(), e->actions(), {}, e->consume_moves(), e->consume_label()->str(), e->consume_warning()->str(), e->transfer_reason()->str(), e->container(), e->quick_slot(), e->rotten(), e->ui_order(), e->external()};
 +            for (unsigned i = 0; i < 8; ++i) entry.reasons[i] = e->reasons()->Get(i)->str();
++            if(const auto* seal=e->seal()){entry.seal=true;entry.seal_reason=seal->reason()->str();}
 +            if(const auto* liquid=e->liquid()){entry.liquid=true;entry.liquid_reason=liquid->reason()->str();}
 +            if (const auto* work=e->disassembly()) {
 +                entry.disassembly=true; entry.disassembly_resume=work->resume();
@@ -6626,17 +6631,21 @@ index 0000000..942b17a
 +                    "tooltip[" + position + ";1.95,0.6;" + statusEscape(names[i] + ": " + e->reasons[i]) + "]";
 +            }
 +        }
-+        if(e->liquid && !consumption_token) {
++        if(e->seal && !consumption_token) {
++            if(e->seal_reason.empty())f+="button[11.35,10.1;4.15,0.6;open_seal;"+::cwm::text("Open sealed pocket...")+"]";
++            else f+="label[11.45,10.4;"+::cwm::text("Open sealed pocket...")+"]tooltip[11.35,10.1;4.15,0.6;"+statusEscape(e->seal_reason)+"]";
++        }
++        if(e->liquid && !e->seal && !consumption_token) {
 +            if(e->liquid_reason.empty())f+="button[11.35,10.1;4.15,0.6;pour_liquid;"+::cwm::text("Pour liquid...")+"]";
 +            else f+="label[11.45,10.4;"+::cwm::text("Pour liquid...")+"]tooltip[11.35,10.1;4.15,0.6;"+statusEscape(e->liquid_reason)+"]";
 +        }
-+        if(e->disassembly && !e->liquid && !consumption_token) {
++        if(e->disassembly && !e->liquid && !e->seal && !consumption_token) {
 +            const auto label=e->disassembly_resume ? ::cwm::text("Resume disassembly") : ::cwm::text("Disassemble...");
 +            const std::string work_y=e->book ? "6.6" : "10.1";
 +            if(e->actions & 128) f+="button[11.35,"+work_y+";4.15,0.6;action_7;"+label+"]";
 +            else f+="label[11.45,"+(e->book ? std::string("6.9") : std::string("10.4"))+";"+label+"]tooltip[11.35,"+work_y+";4.15,0.6;"+statusEscape(e->reasons[7])+"]";
 +        }
-+        if(e->book && !consumption_token) {
++        if(e->book && !e->seal && !consumption_token) {
 +            const auto label=e->book_identified ? ::cwm::text("Read...","Leggi...") : ::cwm::text("Skim book","Sfoglia libro");
 +            const std::string read_y="10.1";
 +            if(e->actions & 64)f+="button[11.35,"+read_y+";4.15,0.6;action_6;"+label+"]";

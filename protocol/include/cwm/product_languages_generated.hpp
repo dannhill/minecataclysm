@@ -19,8 +19,17 @@ inline const ProductLanguageDefinition *product_language(const std::string_view 
 inline const char *catalog_translation(const std::string &code, const char *english) {
     static const std::unordered_map<std::string, std::unordered_map<std::string, std::string>> catalogs{
         {"en", {
+            {"Break a seal? Preservation changes; open containers may spill or be set on the ground.", "Break a seal? Preservation changes; open containers may spill or be set on the ground."},
+            {"No sealed pocket to open.", "No sealed pocket to open."},
+            {"Open an owned seal without a preselected quantity or destination.", "Open an owned seal without a preselected quantity or destination."},
+            {"Open sealed pocket", "Open sealed pocket"},
+            {"Open sealed pocket...", "Open sealed pocket..."},
+            {"Open the outer sealed container first.", "Open the outer sealed container first."},
+            {"Seal opening cancelled or unavailable.", "Seal opening cancelled or unavailable."},
+            {"Select an owned container.", "Select an owned container."},
         }},
         {"it", {
+            {"Break a seal? Preservation changes; open containers may spill or be set on the ground.", "Rompere un sigillo? La conservazione cambia; i contenitori aperti possono versare il contenuto o essere posati a terra."},
             {"Disassemble", "Smonta"},
             {"Disassemble...", "Smonta..."},
             {"Disassembling: ", "Smontaggio: "},
@@ -31,8 +40,15 @@ inline const char *catalog_translation(const std::string &code, const char *engl
             {"Interrupt disassembly", "Interrompi smontaggio"},
             {"Liquid or gas recovery needs a dedicated interface in a later update.", "Recupero liquidi o gas: interfaccia dedicata prevista in seguito."},
             {"Native estimate: ", "Stima nativa: "},
+            {"No sealed pocket to open.", "Nessuna tasca sigillata da aprire."},
+            {"Open an owned seal without a preselected quantity or destination.", "Apri un sigillo posseduto senza quantita o destinazione preselezionate."},
+            {"Open sealed pocket", "Apri tasca sigillata"},
+            {"Open sealed pocket...", "Apri tasca sigillata..."},
+            {"Open the outer sealed container first.", "Apri prima il contenitore esterno sigillato."},
             {"Recovered components are placed nearby. Native tools and recovery rules apply.", "Componenti recuperati nelle vicinanze. Valgono utensili e regole di recupero nativi."},
             {"Resume disassembly", "Riprendi smontaggio"},
+            {"Seal opening cancelled or unavailable.", "Apertura del sigillo annullata o non disponibile."},
+            {"Select an owned container.", "Seleziona un contenitore posseduto."},
             {"Stack disassembly needs a quantity interface in a later update.", "Smontaggio pile: selezione quantita prevista in seguito."},
             {"You cannot disassemble this.", "Non puoi smontare questo oggetto."},
         }},
