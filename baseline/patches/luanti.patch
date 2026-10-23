@@ -2226,10 +2226,10 @@ index 0000000..e1e7236
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..77c9e4a
+index 0000000..94786ae
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,3502 @@
+@@ -0,0 +1,3508 @@
 +#include "cwm/product_language.hpp"
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
@@ -4595,8 +4595,14 @@ index 0000000..77c9e4a
 +    const auto player=pimpl_->entities_.find(1);if(player==pimpl_->entities_.end())return {};
 +    const auto origin=player->second.target_pos;float closest=1.f;std::optional<v3s16> selected;
 +    const v3f start=ray.start/10.f,delta=ray.getVector()/10.f;
-+    for(const auto& [base,height]:pimpl_->liquid_sources_) {
-+        if(base.Y!=std::round(origin.Y) || std::abs(base.X-std::round(origin.X))>1 || std::abs(base.Z-std::round(origin.Z))>1)continue;
++    // Native reach is the current tile and its eight neighbors. Looking at
++    // an ocean must not scan the entire cached reality bubble every frame.
++    const int px=std::lround(origin.X),py=std::lround(origin.Y),pz=std::lround(origin.Z);
++    for(int x=px-1;x<=px+1;++x)for(int z=pz-1;z<=pz+1;++z) {
++        if(x < -32767 || x > 32767 || z < -32767 || z > 32767)continue;
++        const auto found=pimpl_->liquid_sources_.find(v3s16(x,py,z));
++        if(found==pimpl_->liquid_sources_.end())continue;
++        const auto& base=found->first;const float height=found->second;
 +        float first=0.f,last=1.f;bool hit=true;
 +        const float lo[]={base.X-.5f,base.Y-.5f,base.Z-.5f};
 +        const float hi[]={base.X+.5f,base.Y+height,base.Z+.5f};

@@ -1,5 +1,9 @@
 # Validazioni manuali del playable core
 
+Fonti d’acqua e travasi (2026-10-23): **61 PENDING, nessun FAIL manuale aperto**.
+I precedenti 57 punti restano invariati; quattro nuove prove LIQ-01 sono
+rinviabili. Nessun PASS umano viene dedotto dalle verifiche automatiche.
+
 Riposo, sonno e attesa (2026-10-23): **57 PENDING, nessun FAIL manuale aperto**.
 I precedenti 53 punti restano invariati; quattro nuove prove REST-01 sono
 rinviabili. Nessun PASS umano viene dedotto dalle verifiche automatiche.
@@ -1247,3 +1251,37 @@ letto, stamina bassa, senza orologio o ostili vicini. Non modifica i tuoi mondi.
 
 Queste sono nuove prove personali rinviabili, non un gate richiesto adesso.
 Il riposo non completa i servizi avanzati NPC o l'accelerazione di ogni attività.
+
+
+## LIQ-01 — Fonti d’acqua e travasi nativi — 4 PENDING
+
+`./liquids-demo.sh --fresh`: sessione isolata con tanica impugnata, zaino,
+bottiglie piccole vuote, una pozza adiacente e un cubo di legno vicino che
+rappresenta un gabinetto con scorta finita preparata per la prova. Guarda la
+fonte da vicino: l’hint dice Liquid source; destro apre le scelte native.
+Nella partita normale qualità e scorte sono quelle reali del mondo CDDA.
+
+1. **PENDING — Fonte e interruzione.** Destro sulla pozza → Pour into a container
+   → tanica. I deve fermare il riempimento; Interrupt transfer deve interromperlo
+   conservando l’acqua già prelevata. Annullare il menu della fonte non riempie
+   oggetti. Nessuna percentuale finta per questa attività nativa.
+2. **PENDING — Travaso e capacità.** In I seleziona la tanica o il suo liquido e
+   premi Pour liquid... → Pour into a container → bottiglia piccola. La bottiglia
+   si riempie entro la capacità nativa e il resto rimane nella tanica. Un travaso
+   già applicato può mostrare tempo da pagare senza essere annullabile. Oggetti
+   pieni, liquidi incompatibili, sigilli e liquidi congelati non vanno aggirati.
+3. **PENDING — Scorta finita e consumo.** Destro sul cubo vicino: il menu nativo
+   identifica la fonte. Riempi un’altra bottiglia e/o scegli Consume it: la scorta
+   deve diminuire, senza diventare infinita. Il liquido mantiene il tipo nativo.
+   Bere segue la fisiologia CDDA: la sete può migliorare dopo l’assorbimento,
+   non necessariamente all’istante. L’acqua della partita normale può essere
+   pericolosa; questa interfaccia non la purifica.
+4. **PENDING — Persistenza.** Avvia un riempimento lungo, apri I per fermarlo e
+   chiudi il gioco. Riapri la stessa demo senza --fresh: riprende il riempimento
+   nativo, non un nuovo comando. Quantità già versate, resto e scorta finita
+   persistono. Il menu/pausa non viene salvato. Interrompi o lascia finire e
+   verifica ancora l’inventario.
+
+Queste prove sono rinviabili: nessun gate personale richiesto adesso. Crafting
+con risultati liquidi/purificazione, usi speciali, apertura sigilli e serbatoi
+veicoli restano attività successive, senza allargare indefinitamente il core.

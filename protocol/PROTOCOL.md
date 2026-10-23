@@ -6,10 +6,23 @@ captured implementation; it does not approve its gaps. The executable schema
 is [cwm.fbs](cwm.fbs). Audit findings and evidence are in
 [M5.5](../docs/audits/M5.5.md).
 
-The current runtime requires **CWM 2.32**. This breaks the old negotiation
+The current runtime requires **CWM 2.33**. This breaks the old negotiation
 contract; schema fields and union members are appended without changing the
 existing FlatBuffers offsets. Both executables must be rebuilt together.
 The historical coverage table below is retained as audit evidence.
+
+CWM 2.33 appends `CancelLiquidTransferRequest` (60), optional
+`WorldSnapshot.liquid_transfer`, `InventoryEntry.liquid:LiquidInfo`,
+`ItemTransferAction.POUR` (4), and semantic tile flag LIQUID_SOURCE (bit8).
+A source capability never samples/creates water or promises safety. Existing
+EXAMINE opens only recognized native sources, with native range/perception
+revalidation. POUR requires zero quantity/destination to open the original
+native optional handler. The old 8-bit equipment mask/indices stay unchanged.
+Liquid work carries a nonzero transient token and no fabricated percentage;
+typed cancellation validates kind, generation and pause state. All requests
+share existing view/command/connection fencing. Native saves own the contents,
+remaining source, quality, phase and ACT_FILL_LIQUID.
+[Liquid contract](../docs/design/native-liquids.md).
 
 CWM 2.32 appends `RestRequest` (59) and optional `WorldSnapshot.rest`.
 A nonzero transient generation identifies WAITING / TRYING_SLEEP / SLEEPING;
