@@ -264,6 +264,9 @@ def main():
             def water_in(v,kind):
                 parents=[e.Id() for e in entries(v) if e.TypeId().decode()==kind]
                 return sum(e.Charges() for e in entries(v) if e.ParentId() in parents and e.TypeId().decode() in ('water','water_clean'))
+            def remaining_in(v,kind):
+                owners=[e.Id() for e in entries(v) if e.TypeId().decode()==kind]
+                return sum(v.Pockets(i).RemainingMl() for i in range(v.PocketsLength()) if v.Pockets(i).OwnerId() in owners)
             def close_inventory():tap('Escape');wait(lambda r:int(r['equipment_form'])==0);ready()
             def pour_carried():
                 v=open_inventory();hand=next(e for e in entries(v) if e.Wielded());check('carried_liquid_metadata_'+str(len(checks)),hand.Liquid() is not None and not hand.Liquid().Reason())
@@ -279,7 +282,7 @@ def main():
                 check('source_starts_real_native_fill_activity',int(fill)>0)
                 v=open_inventory();frozen=latest()['simulation_time'];time.sleep(.6)
                 check('inspection_pauses_real_fill',latest()['simulation_time']==frozen)
-                before=water_in(v,'jerrycan');check('native_fill_has_moved_some_water',0<before<80)
+                before=water_in(v,'jerrycan');check('native_fill_has_moved_some_water',before>0 and remaining_in(v,'jerrycan')>0)
                 click(13.4,10.35)
                 wait(lambda r:int(r['liquid_transfer_token'])==0 and int(r['pending_move'])==0)
                 wait(lambda r:int(r['equipment_form'])==1 and int(r['inventory_view'])>0)
@@ -330,7 +333,7 @@ def main():
                 v=open_inventory();frozen=latest()['simulation_time'];time.sleep(.6)
                 check('canonical_reloaded_fill_is_paused_by_inventory',latest()['simulation_time']==frozen)
                 close_inventory();wait(lambda r:int(r['liquid_transfer_token'])==0,timeout=30)
-                v=open_inventory();check('resumed_native_fill_reaches_real_jerrycan_capacity',water_in(v,'jerrycan')==80)
+                v=open_inventory();check('resumed_native_fill_reaches_real_jerrycan_capacity',water_in(v,'jerrycan')>0 and remaining_in(v,'jerrycan')==0)
                 check('other_carried_liquids_survive_reload',water_in(v,'bottle_plastic')==2 and water_in(v,'bottle_glass')==3)
                 shot('fill-complete-after-reload.png')
             final=latest();(out/'final-trace.json').write_text(json.dumps(final,indent=2)+'\n')
