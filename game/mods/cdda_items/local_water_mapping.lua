@@ -9,3 +9,16 @@ else
     minetest.register_craftitem(name, definition)
 end
 cdda_items.visual_by_cdda_id["water_clean"] = name
+
+-- Native water collection also exposes untreated water; do not show food art.
+-- Only this presentation ID is overridden; generated batch mapping stays intact.
+local raw_name = "cdda_items:i_d3cacd4c82e5be70"
+local raw_definition = {description = "CDDA visual: untreated water",
+    inventory_image = "cdda_status_water.png^[colorize:#A08040:60", stack_max = 1,
+    groups = {not_in_creative_inventory = 1}}
+if minetest.registered_items[raw_name] then
+    minetest.override_item(raw_name, raw_definition)
+else
+    minetest.register_craftitem(raw_name, raw_definition)
+end
+cdda_items.visual_by_cdda_id["water"] = raw_name

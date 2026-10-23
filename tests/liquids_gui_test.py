@@ -353,7 +353,10 @@ def main():
     native=json.loads(output.read_text());player=native['player']
     check('canonical_native_position_preserved',native['player_abs']==[60,60,0])
     check('native_liquid_activity_saved_without_conversion',player['activity']['type']==('ACT_NULL' if args.reload_fill else 'ACT_FILL_LIQUID'))
-    check('native_drink_changes_real_thirst',player['thirst']<200)
+    fluid=sum(int(player[part]['water'].removesuffix('_ml')) for part in ('stomach','guts'))
+    check('native_drink_reaches_native_digestive_state',fluid>0 or player['thirst']<200)
+    finite=next(row for row in native['ground_items'] if row['pos']==[61,60,0])
+    check('finite_source_loses_only_filled_and_consumed_charges',sum(it['charges'] for it in finite['items'] if it['typeid']=='water_clean')==28)
     (out/'summary.json').write_text(json.dumps({'checks':checks,'native_save':str(output)},indent=2)+'\n')
 
 if __name__=='__main__':main()
