@@ -14,7 +14,9 @@ pockets are not bypassed. Choices are bounded to 256 compatible containers and
 paged through existing native decision IDs; final Cancel is safe on disconnect.
 Adjacent keg destinations use the original native logic. Vehicle tank selection
 is deferred. Ground pouring uses an external direction menu, then the original
-native destination checks and transfer routine. No curses selector is entered.
+native destination checks and transfer routine. Direction choices disclose no
+terrain/furniture names, including in darkness/blindness. No curses selector
+is entered.
 
 I adds Pour liquid... on a real owned liquid or a container holding it. CWM2.33
 appends optional LiquidInfo and ItemTransferAction.POUR (4), without widening

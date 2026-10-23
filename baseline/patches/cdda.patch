@@ -1279,7 +1279,7 @@ index 652ad80..09f077e 100644
  
          case ACTION_WHITELIST_ENEMY:
 diff --git a/src/handle_liquid.cpp b/src/handle_liquid.cpp
-index 0ce6825..4410b91 100644
+index 0ce6825..36c94a5 100644
 --- a/src/handle_liquid.cpp
 +++ b/src/handle_liquid.cpp
 @@ -1,3 +1,4 @@
@@ -1365,7 +1365,7 @@ index 0ce6825..4410b91 100644
          if( veh == source_veh && veh->has_part( "FLUIDTANK", false ) ) {
              for( const vpart_reference &vp : veh->get_avail_parts( "FLUIDTANK" ) ) {
                  if( vp.part().get_base().can_reload_with( liquid, true ) ) {
-@@ -308,7 +357,20 @@ static bool get_liquid_target( item &liquid, const item *const source, const int
+@@ -308,7 +357,25 @@ static bool get_liquid_target( item &liquid, const item *const source, const int
  
          const std::string liqstr = string_format( _( "Pour %s where?" ), liquid_name );
  
@@ -1377,12 +1377,17 @@ index 0ce6825..4410b91 100644
 +            for( const auto &p : here.points_in_radius( player_character.pos(), 1 ) ) {
 +                if( !here.inbounds( p ) || p.z != player_character.posz() ) continue;
 +                positions.push_back( p );
-+                labels.push_back( direction_name( direction_from( player_character.pos(), p ) ) +
-+                                  " — " + here.name( p ) );
++                // Direction selection must not disclose unseen terrain/furniture.
++                labels.push_back( p == player_character.pos() ? _( "At your feet" ) :
++                                  direction_name( direction_from( player_character.pos(), p ) ) );
 +            }
 +            labels.push_back( _( "Cancel" ) );
 +            const int choice = external_ui_choice( liqstr, labels );
-+            if( choice >= 0 && static_cast<size_t>( choice ) < positions.size() ) target_pos_ = positions[choice];
++            if( choice >= 0 && static_cast<size_t>( choice ) < positions.size() ) {
++                target_pos_ = positions[choice];
++                if( target_pos_->x > player_character.posx() ) player_character.facing = FacingDirection::RIGHT;
++                else if( target_pos_->x < player_character.posx() ) player_character.facing = FacingDirection::LEFT;
++            }
 +        } else target_pos_ = choose_adjacent( liqstr );
          if( !target_pos_ ) {
              return;
@@ -10742,10 +10747,10 @@ index 0000000..39d991c
 +}
 diff --git a/tests/cwm_runtime_test.cpp b/tests/cwm_runtime_test.cpp
 new file mode 100644
-index 0000000..4af00eb
+index 0000000..a32528a
 --- /dev/null
 +++ b/tests/cwm_runtime_test.cpp
-@@ -0,0 +1,866 @@
+@@ -0,0 +1,897 @@
 +#include "cwm_motion.h"
 +#include "cwm/cwm_rest.h"
 +#include "cata_catch.h"
@@ -11611,4 +11616,35 @@ index 0000000..4af00eb
 +    CHECK(bottle->get_remaining_capacity_for_liquid(water,u)>0);
 +    bottle->all_items_top().front()->set_item_temperature(water.get_freeze_point()-units::from_celsius_delta(10));
 +    CHECK_FALSE(cwm::liquid_item_error(u,bottle).empty());
++}
++
++TEST_CASE("cwm_liquid_ground_choice_does_not_disclose_terrain_and_drains_only_on_confirmation", "[cwm][liquids]") {
++    const override_option no_autosave("AUTOSAVE","false");
++    prepare_runtime();auto& u=get_avatar();auto& m=get_map();
++    m.ter_set(u.pos(),ter_str_id("t_floor"));m.furn_set(u.pos()+tripoint_east,furn_str_id("f_locker"));
++    item jug(itype_id("jerrycan"),calendar::turn);REQUIRE(u.wield(jug));auto source=u.get_wielded_item();
++    item water(itype_id("water_clean"),calendar::turn,2);water.set_item_temperature(water.get_freeze_point()+units::from_celsius_delta(20));
++    REQUIRE(source->put_in(water,pocket_type::CONTAINER).success());
++    const bool cancel=GENERATE(false,true);int direction_menus=0;
++    u.add_effect(efftype_id("blind"),1_hours);u.moves=1000;
++    REQUIRE_FALSE(do_turn_with_action([&]{
++        const int moves=u.moves;
++        CHECK(cwm::handle_owned_liquid(u,source)==!cancel);
++        CHECK(u.moves==moves-(cancel?0:100));
++        CHECK(source->all_items_top().empty()==!cancel);
++        int spilled=0;for(const auto& it:m.i_at(u.pos()))if(it.typeId()==itype_id("water_clean"))spilled+=it.charges;
++        CHECK(spilled==(cancel?0:2));
++        finish_external_action_phase();return false;
++    },[&](const std::string& text,const std::vector<std::string>& labels){
++        if(text.find("where?")!=std::string::npos) {
++            ++direction_menus;
++            for(const auto& label:labels)CHECK(label.find("locker")==std::string::npos);
++            if(!cancel)for(size_t n=0;n<labels.size();++n)if(labels[n]=="At your feet")return int(n);
++            return int(labels.size())-1;
++        }
++        if(direction_menus)return int(labels.size())-1;
++        for(size_t n=0;n<labels.size();++n)if(labels[n].find("Pour on the ground")!=std::string::npos)return int(n);
++        return int(labels.size())-1;
++    }));
++    CHECK(direction_menus==1);
 +}
