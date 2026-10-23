@@ -523,7 +523,8 @@ int main(int argc, const char *argv[]) {
             m.ter_set(u.pos(),ter_str_id("t_floor"));m.furn_set(u.pos(),furn_str_id("f_null"));
             m.ter_set(u.pos()+tripoint_north,ter_str_id("t_water_sh"));
             m.ter_set(u.pos()+tripoint_east,ter_str_id("t_floor"));m.furn_set(u.pos()+tripoint_east,furn_str_id("f_toilet"));
-            item water(itype_id("water_clean"),calendar::turn,32);m.add_item_or_charges(u.pos()+tripoint_east,water);
+            item water(itype_id("water_clean"),calendar::turn,32);
+            water.set_item_temperature(water.get_freeze_point()+units::from_celsius_delta(20));m.add_item_or_charges(u.pos()+tripoint_east,water);
             u.set_thirst(200);g->set_safe_mode(SAFE_MODE_OFF);
         }
         if(create_rest) {

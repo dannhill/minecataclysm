@@ -3807,10 +3807,10 @@ index 0000000..8fa0a0b
 +} // namespace cwm
 diff --git a/src/cwm/cwm_liquids.h b/src/cwm/cwm_liquids.h
 new file mode 100644
-index 0000000..1fd1c97
+index 0000000..3d5d50f
 --- /dev/null
 +++ b/src/cwm/cwm_liquids.h
-@@ -0,0 +1,68 @@
+@@ -0,0 +1,69 @@
 +#include "external_liquids.h"
 +#pragma once
 +#include "avatar.h"
@@ -3847,11 +3847,12 @@ index 0000000..1fd1c97
 +inline std::string liquid_item_error(avatar &u,item_location source) {
 +    if(!source || !source.held_by(u) || !u.has_item(*source))return ::cwm::text("Select an owned liquid or its container.");
 +    if(!liquid_handler::external_accessible(source))return ::cwm::text("Liquid is sealed or in an inaccessible pocket.");
++    if(source->made_of_from_type(phase_id::LIQUID) && !source->made_of(phase_id::LIQUID))return ::cwm::text("Frozen liquid must thaw before pouring.");
 +    if(!source->made_of_from_type(phase_id::LIQUID) && has_liquid_content(*source)) {
 +        bool accessible=false;
-+        for(auto* child:source->all_items_top())if(child->made_of_from_type(phase_id::LIQUID) &&
++        for(auto* child:source->all_items_top())if(child->made_of(phase_id::LIQUID) &&
 +            liquid_handler::external_accessible(item_location(source,child)))accessible=true;
-+        if(!accessible)return ::cwm::text("Liquid is sealed or in an inaccessible pocket.");
++        if(!accessible)return ::cwm::text("Thaw the liquid or open its pocket before pouring.");
 +    }
 +    if(!has_liquid_content(*source))return ::cwm::text("No liquid to pour from this item.");
 +    return {};
@@ -10741,10 +10742,10 @@ index 0000000..39d991c
 +}
 diff --git a/tests/cwm_runtime_test.cpp b/tests/cwm_runtime_test.cpp
 new file mode 100644
-index 0000000..b88bfba
+index 0000000..fa4d422
 --- /dev/null
 +++ b/tests/cwm_runtime_test.cpp
-@@ -0,0 +1,859 @@
+@@ -0,0 +1,865 @@
 +#include "cwm_motion.h"
 +#include "cwm/cwm_rest.h"
 +#include "cata_catch.h"
@@ -11528,7 +11529,9 @@ index 0000000..b88bfba
 +    const override_option no_autosave("AUTOSAVE","false");
 +    prepare_runtime();auto& u=get_avatar();auto& m=get_map();const auto p=u.pos()+tripoint_north;
 +    m.ter_set(p,ter_str_id("t_floor"));m.furn_set(p,furn_str_id("f_toilet"));
-+    item water(itype_id("water"),calendar::turn,12);water.poison=2;m.add_item_or_charges(p,water);
++    item water(itype_id("water"),calendar::turn,12);water.poison=2;water.set_item_temperature(water.get_freeze_point()+units::from_celsius_delta(20));
++    m.add_item_or_charges(p,water);
++    REQUIRE(m.i_at(p).size()==1);REQUIRE(m.i_at(p).begin()->made_of(phase_id::LIQUID));
 +    item jug(itype_id("jerrycan"),calendar::turn);REQUIRE(u.wield(jug));auto container=u.get_wielded_item();
 +    u.moves=100;
 +    int prompts=0;
@@ -11596,11 +11599,15 @@ index 0000000..b88bfba
 +TEST_CASE("cwm_liquid_seals_and_incompatible_contents_remain_native_barriers", "[cwm][liquids]") {
 +    prepare_runtime();auto& u=get_avatar();REQUIRE(u.wear_item(item(itype_id("backpack"),calendar::turn),false));
 +    auto bottle=u.i_add(item(itype_id("bottle_plastic"),calendar::turn));
-+    item water(itype_id("water_clean"),calendar::turn,1);REQUIRE(bottle->put_in(water,pocket_type::CONTAINER).success());
++    item water(itype_id("water_clean"),calendar::turn,2);water.set_item_temperature(water.get_freeze_point()+units::from_celsius_delta(20));
++    REQUIRE(bottle->put_in(water,pocket_type::CONTAINER).success());
 +    REQUIRE(bottle->seal());CHECK_FALSE(cwm::liquid_item_error(u,bottle).empty());
 +    const auto child=item_location(bottle,bottle->all_items_top().front());CHECK_FALSE(liquid_handler::external_accessible(child));
 +    for(auto* p:bottle->get_all_contained_pockets())p->unseal();
++    bottle->all_items_top().front()->charges=1;bottle->on_contents_changed();
 +    item salt(itype_id("salt_water"),calendar::turn,1);
 +    CHECK(bottle->get_remaining_capacity_for_liquid(salt,u)==0);
 +    CHECK(bottle->get_remaining_capacity_for_liquid(water,u)>0);
++    bottle->all_items_top().front()->set_item_temperature(water.get_freeze_point()-units::from_celsius_delta(10));
++    CHECK_FALSE(cwm::liquid_item_error(u,bottle).empty());
 +}
