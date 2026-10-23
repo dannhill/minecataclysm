@@ -10742,10 +10742,10 @@ index 0000000..39d991c
 +}
 diff --git a/tests/cwm_runtime_test.cpp b/tests/cwm_runtime_test.cpp
 new file mode 100644
-index 0000000..fa4d422
+index 0000000..4af00eb
 --- /dev/null
 +++ b/tests/cwm_runtime_test.cpp
-@@ -0,0 +1,865 @@
+@@ -0,0 +1,866 @@
 +#include "cwm_motion.h"
 +#include "cwm/cwm_rest.h"
 +#include "cata_catch.h"
@@ -11558,7 +11558,7 @@ index 0000000..fa4d422
 +    const override_option no_autosave("AUTOSAVE","false");
 +    prepare_runtime();auto& u=get_avatar();REQUIRE(u.wear_item(item(itype_id("backpack"),calendar::turn),false));
 +    item jug(itype_id("jerrycan"),calendar::turn);REQUIRE(u.wield(jug));auto source=u.get_wielded_item();
-+    item water(itype_id("water_clean"),calendar::turn,10);REQUIRE(source->put_in(water,pocket_type::CONTAINER).success());
++    item water(itype_id("water_clean"),calendar::turn,10);water.set_item_temperature(water.get_freeze_point()+units::from_celsius_delta(20));REQUIRE(source->put_in(water,pocket_type::CONTAINER).success());
 +    auto bottle=u.i_add(item(itype_id("bottle_plastic"),calendar::turn));
 +    const int capacity=bottle->get_remaining_capacity_for_liquid(water,u);REQUIRE(capacity>0);REQUIRE(capacity<10);
 +    u.moves=1000;bool result=false;
@@ -11577,14 +11577,15 @@ index 0000000..fa4d422
 +
 +TEST_CASE("cwm_liquid_menu_cancellation_and_binding_guards_do_not_transfer", "[cwm][liquids]") {
 +    prepare_runtime();auto& u=get_avatar();item jug(itype_id("jerrycan"),calendar::turn);REQUIRE(u.wield(jug));
-+    auto source=u.get_wielded_item();item water(itype_id("water_clean"),calendar::turn,4);REQUIRE(source->put_in(water,pocket_type::CONTAINER).success());
-+    u.moves=1000;
++    auto source=u.get_wielded_item();item water(itype_id("water_clean"),calendar::turn,4);water.set_item_temperature(water.get_freeze_point()+units::from_celsius_delta(20));REQUIRE(source->put_in(water,pocket_type::CONTAINER).success());
++    u.moves=1000;int prompts=0;
 +    REQUIRE_FALSE(do_turn_with_action([&]{
 +        const auto moves=u.moves;const auto engine=rng_get_engine();
 +        CHECK_FALSE(cwm::handle_owned_liquid(u,source));CHECK(u.moves==moves);CHECK(rng_get_engine()==engine);
 +        CHECK(source->all_items_top().front()->charges==4);
 +        finish_external_action_phase();return false;
-+    },[](const std::string&,const std::vector<std::string>& choices){return int(choices.size())-1;}));
++    },[&](const std::string&,const std::vector<std::string>& choices){++prompts;return int(choices.size())-1;}));
++    CHECK(prompts==1);
 +    cwm::InventorySelection view;cdda::cwm::MessageBuilder wire(1,1);
 +    auto bytes=view.query(u,1,wire);const auto* inventory=CDDA::CWM::GetCwmMessage(bytes.data())->payload_as_InventoryView();
 +    REQUIRE(cdda::cwm::valid_inventory(inventory));uint32_t id=0;
