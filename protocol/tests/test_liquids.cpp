@@ -10,7 +10,7 @@ std::vector<uint8_t> world(int bad) {
     Vec3f pos(0,0,0);Coord3i origin(0,0,0);
     std::vector<flatbuffers::Offset<EntityState>> actors{CreateEntityState(f,1,EntityType::PLAYER,0,&pos)};
     std::vector<flatbuffers::Offset<VehicleState>> vehicles;std::vector<flatbuffers::Offset<FieldState>> fields;
-    const auto a=f.CreateVector(actors),v=f.CreateVector(vehicles),s=f.CreateVector(fields);
+    const auto a=f.CreateVector(actors);const auto v=f.CreateVector(vehicles);const auto s=f.CreateVector(fields);
     WorldSnapshotBuilder b(f);b.add_state_id(1);b.add_origin(&origin);b.add_entities(a);b.add_vehicles(v);b.add_fields(s);
     b.add_liquid_transfer(liquid);b.add_crafting(other);return wire.finish_message(Payload::WorldSnapshot,b.Finish().Union());
 }

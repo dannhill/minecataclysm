@@ -10738,10 +10738,10 @@ index 0000000..39d991c
 +}
 diff --git a/tests/cwm_runtime_test.cpp b/tests/cwm_runtime_test.cpp
 new file mode 100644
-index 0000000..ca95a51
+index 0000000..51c4599
 --- /dev/null
 +++ b/tests/cwm_runtime_test.cpp
-@@ -0,0 +1,846 @@
+@@ -0,0 +1,847 @@
 +#include "cwm_motion.h"
 +#include "cwm/cwm_rest.h"
 +#include "cata_catch.h"
@@ -11540,7 +11540,8 @@ index 0000000..ca95a51
 +    }));
 +    REQUIRE(prompts==2);
 +    for(int n=0;n<20 && u.activity;++n)REQUIRE_FALSE(do_turn_with_action([&]{
-+        if(!u.activity)finish_external_action_phase();return false;
++        if(!u.activity) { finish_external_action_phase(); }
++        return false;
 +    },[](const std::string&,const std::vector<std::string>& choices){return int(choices.size())-1;}));
 +    CHECK_FALSE(u.activity);int charges=0;
 +    for(const auto* it:container->all_items_top()) {CHECK(it->typeId()==itype_id("water"));CHECK(it->poison==2);charges+=it->charges;}
@@ -11551,7 +11552,7 @@ index 0000000..ca95a51
 +    const override_option no_autosave("AUTOSAVE","false");
 +    prepare_runtime();auto& u=get_avatar();REQUIRE(u.wear_item(item(itype_id("backpack"),calendar::turn),false));
 +    item jug(itype_id("jerrycan"),calendar::turn);REQUIRE(u.wield(jug));auto source=u.get_wielded_item();
-+    item water(itype_id("water_clean"),calendar::turn,10);source->put_in(water,pocket_type::CONTAINER);
++    item water(itype_id("water_clean"),calendar::turn,10);REQUIRE(source->put_in(water,pocket_type::CONTAINER).success());
 +    auto bottle=item_location(u,&u.i_add(item(itype_id("bottle_plastic"),calendar::turn)));
 +    const int capacity=bottle->get_remaining_capacity_for_liquid(water,u);REQUIRE(capacity>0);REQUIRE(capacity<10);
 +    u.moves=1000;bool result=false;
@@ -11570,7 +11571,7 @@ index 0000000..ca95a51
 +
 +TEST_CASE("cwm_liquid_menu_cancellation_and_binding_guards_do_not_transfer", "[cwm][liquids]") {
 +    prepare_runtime();auto& u=get_avatar();item jug(itype_id("jerrycan"),calendar::turn);REQUIRE(u.wield(jug));
-+    auto source=u.get_wielded_item();item water(itype_id("water_clean"),calendar::turn,4);source->put_in(water,pocket_type::CONTAINER);
++    auto source=u.get_wielded_item();item water(itype_id("water_clean"),calendar::turn,4);REQUIRE(source->put_in(water,pocket_type::CONTAINER).success());
 +    u.moves=1000;
 +    REQUIRE_FALSE(do_turn_with_action([&]{
 +        const auto moves=u.moves;const auto engine=rng_get_engine();
