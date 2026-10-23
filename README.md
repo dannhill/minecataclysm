@@ -19,7 +19,13 @@ Windows 11 x64: the local installer is generated as
 [Windows build instructions](tools/windows/README.md). Real Windows hardware
 acceptance is recorded separately from automated Wine verification.
 
-Current Linux slice: [native water sources and liquid pouring](docs/fixes/native-liquids.md)
+Current Linux slice: [native sealed-pocket opening](docs/fixes/native-seals.md)
+in `./start.sh`. I → owned sealed container → **Open sealed pocket...**.
+Native preservation/spill rules and costs apply; Cancel before opening keeps
+the seal intact. `./seals-demo.sh --fresh` opens the isolated test scene.
+Both Linux runtimes use CWM2.34; the Windows installer remains CWM2.26.
+
+Previous Linux slice: [native water sources and liquid pouring](docs/fixes/native-liquids.md)
 in `./start.sh`. Right-click a recognized nearby source to collect/drink;
 I → selected liquid/container → **Pour liquid...**. Capacity, quality, remainder,
 freezing and costs are native. I pauses and interrupts real filling; canonical
@@ -33,7 +39,7 @@ available: right-click a local ally and choose **Companion orders and rules**.
 `./companions-demo.sh --fresh` opens the isolated ally scene.
 [Minimum-core outlook](docs/progress/core-outlook-2026-10-23.md): the estimate before
 this water slice was approximately **94% (93–96%)**, excluding pending personal
-tests. Essential seal opening, liquid crafting/purification/item uses and
+tests. Essential item uses, safe liquid crafting/purification and
 non-demo survival-loop/performance/recovery consolidation remain. This is an
 engineering estimate, not completion of the full approved game.
 

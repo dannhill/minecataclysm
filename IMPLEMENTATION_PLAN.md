@@ -10,6 +10,27 @@ un panorama più ampio; nebbia, memoria distante e rilievo restano da scegliere.
 Lo [stato implementato](IMPLEMENTATION_STATUS.md) e le evidenze restano separati
 dagli obiettivi. La roadmap originale M0–M9 conserva i propri significati.
 
+## Apertura sigilli nativi — 2026-10-23
+
+Fetta implementata: I → contenitore posseduto → **Open sealed pocket...**.
+Scelta esplicita della tasca e Cancel; gestione CDDA di sigilli, conservazione,
+restacking, versamento o deposito a terra. Il prefisso nativo di apertura non
+ha un costo separato: nessuna durata o attività inventata. Costi di prelievo,
+consumo e travaso restano nativi. Aprire prima il contenitore esterno sigillato;
+le trasformazioni mediante utensili restano una funzionalità distinta.
+CWM2.34 senza allargare la maschera di otto azioni; binding verifica anche
+stato dei sigilli. [Contratto](docs/design/native-seals.md),
+[consegna/verifiche](docs/fixes/native-seals.md).
+
+183 casi nativi /73.740 asserzioni, client 309 test /47 moduli, SDK19 e
+111 verifiche renderer/salvataggio PASS. Quattro nuove prove SEAL-01 rinviabili:
+**65 PENDING**, nessun FAIL manuale aperto; precedenti 61 invariati.
+Prossimi passi core: usi nativi essenziali; output liquidi con recovery sicura,
+purificazione/crafting; consolidamento del loop in mondi normali e prestazioni.
+I dettagli delle fette precedenti sotto sono storici; la stima precedente non
+viene aggiornata automaticamente. Windows ancora CWM2.26; mapping batch60,
+M5.5 FAILED / SAVE-001 OPEN invariati. Nessun PASS personale dedotto.
+
 ## Fonti d’acqua e travasi nativi — 2026-10-23
 
 Fetta implementata: destro su fonte nativa adiacente percepita; in I,

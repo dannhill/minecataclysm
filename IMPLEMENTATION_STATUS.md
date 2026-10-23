@@ -1,6 +1,29 @@
 # Implementation status
 
-Current scoped delivery: **native water sources and carried-liquid pouring**,
+Current scoped delivery: **native sealed-pocket opening**, CWM **2.34**, in
+normal Linux `start.sh`. I → owned sealed container → **Open sealed pocket...**
+with explicit pocket/Cancel choice. Native contents-change handling owns
+preservation, restacking and spill/ground placement. No invented opening time;
+retrieval/consumption/pouring retain native costs. Tool-dependent transformations
+remain separate. Query is read-only; bindings also fence pocket seal changes.
+[Contract](docs/design/native-seals.md), [delivery](docs/fixes/native-seals.md),
+[exact evidence](docs/fixes/native-seals-evidence.json).
+
+**183 native cases / 73,740 assertions PASS**, including four seal cases /63.
+Client **309 tests /47 modules**, 648 Catch assertions /4 cases; protocol
+**19**, language **9**, registry **3** PASS. **111 renderer/canonical checks
+PASS**, including real save restart, command replay, reconnect and installed
+liquids regression. Independent pinned-core save readback; incremental builds,
+not a cold audit. Both Linux runtimes installed; previous pair retained.
+
+**65 PENDING**, no open manual FAIL: previous 61 unchanged plus four SEAL-01.
+No human acceptance inferred. Next: essential item uses and safe mandatory
+liquid output/purification, then non-demo loop/recovery/save/performance
+consolidation. [Earlier minimum-core estimate](docs/progress/core-outlook-2026-10-23.md)
+is unchanged rather than mechanically incremented. Mapping batch60 unchanged;
+Windows remains CWM2.26; M5.5 FAILED / full SAVE-001 OPEN unchanged.
+
+Previous scoped delivery: **native water sources and carried-liquid pouring**,
 CWM **2.33**, in normal Linux `start.sh`. Right-click a perceived adjacent
 native source; I → selected liquid/container → **Pour liquid...**. Native
 capacity, compatibility, contamination, freezing, seals, remaining quantities

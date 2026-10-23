@@ -16,8 +16,8 @@ Item-use transformations requiring tools are a distinct, deferred mechanism.
 The native contents handler owns unsealing, restacking, ancestor invalidation,
 open-container spilling and ground placement on cancelled liquid handling.
 Confirmation Cancel occurs before mutation; cancelling a later spill choice
-cannot restore a seal already broken. Contents are not moved/consumed by opening
-itself. Sealed preservation multipliers change as defined by CDDA. Pocket seals
+cannot restore a seal already broken. Opening does not automatically retrieve or consume contents. Native spill/
+placement handling can relocate an open container or handle its liquid. Sealed preservation multipliers change as defined by CDDA. Pocket seals
 are not automatically resealable via this interface. Saves remain canonical.
 
 CWM2.34 appends InventoryEntry.seal (SealInfo.reason) and OPEN_SEAL=5 on the

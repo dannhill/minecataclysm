@@ -1,0 +1,290 @@
+{
+  "scope": "Explicit owned CONTAINER pocket opening through native contents_change_handler; native spill/ground placement, unchanged quantities and canonical seals; no invented opening cost or tool-use transformation",
+  "date": "2026-10-23",
+  "source_commit": "6f2361e35dfa0546d752cc718cb5e6823fbde2d8",
+  "native_capture_commit": "cc0d295966b16472bbbfef1cb1674d280aa1445e",
+  "client_capture_commit": "cc0d295966b16472bbbfef1cb1674d280aa1445e",
+  "reader_source_commit": "cc0d295966b16472bbbfef1cb1674d280aa1445e",
+  "build_mode": "Incremental captured reconstructions retaining caches. Native common/server/test units and Luanti rebuilt. SDK 19 tests. Canonical helper links only unmodified pinned native core. Not a cold-build audit.",
+  "source_trees": {
+    "cdda": {
+      "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+      "patch_sha256": "bd086a156ddfc73efe6a9843f2e5deea34d54bfbb115d848ef98e85be6fbfe85",
+      "tree_sha256": "0b1b644a2a481e8fb8cc0d42b56aa3f08bbff3d5a2c0173062f37cac8a3a81c9"
+    },
+    "luanti": {
+      "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
+      "patch_sha256": "29328f80d0e911d92cff7815204e0bf3e927f8442d619ddf246d48131009b76c",
+      "tree_sha256": "32d5bc613d8bea81b61a53aad3158eead19d42785a21abbfe2ba8800137b5f83"
+    },
+    "mineclonia": {
+      "commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36"
+    }
+  },
+  "environment": {
+    "kernel": "Linux-7.0.11-76070011-generic-x86_64-with-glibc2.35",
+    "compiler": "11.4.0",
+    "cmake": "cmake version 3.22.1",
+    "python": "3.10.12",
+    "renderer": "Private Xvfb 1280x800x24, Mesa software OpenGL, OpenAL null; actual start.sh, xdotool and real Luanti renderer"
+  },
+  "native": {
+    "cases": 183,
+    "assertions": 73740,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-seals-20261023/native-release.log",
+      "sha256": "7ca690081b372ac1211846a82fecbefab5a866ee95bf1ad7b037cfe81b26f66d"
+    }
+  },
+  "native_seals": {
+    "cases": 4,
+    "assertions": 63,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-seals-20261023/native-focused.log",
+      "sha256": "82349a3e5ce9a23e865b3bb916800d026c2cc68f9596d2c76c164152ee9dc9d8"
+    }
+  },
+  "client": {
+    "cases": 309,
+    "modules": 47,
+    "catch_cases": 4,
+    "catch_assertions": 648,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-seals-20261023/client-tests.log",
+      "sha256": "6df9484328bdab40f2b34b81115806346897a670ec1f9a86786ad744c38c4dd0"
+    }
+  },
+  "protocol": {
+    "cases": 19,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-seals-20261023/protocol-tests.log",
+      "sha256": "596e3f6492fec0404a382415036e6048ac8bb110fdd35294a522361ed29d0285"
+    }
+  },
+  "launcher_language": {
+    "cases": 9,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-seals-20261023/language-tests.log",
+      "sha256": "09a9d36468c125ecc0566ab1f92c9631cd48c05cca5b1bfd3fc1bb46edd8cc42"
+    }
+  },
+  "language_registry": {
+    "cases": 3,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-seals-20261023/registry-tests.log",
+      "sha256": "b49f3d80649f4fbc481d184a641f463d1ebe54b4924752b04dd4ff11d399aff0"
+    }
+  },
+  "renderer": {
+    "seals-release": {
+      "checks": 29,
+      "result": "PASS",
+      "checks_file": {
+        "path": "artifacts/native-seals-20261023/seals-release/checks.json",
+        "sha256": "5aff62f636975b9a8848f0af318356cf144fd5215b87897d740422dd7126b29c"
+      },
+      "native_readback": {
+        "path": "artifacts/native-seals-20261023/seals-release/native.json",
+        "sha256": "eee58d6197106dee789c19de91bdb54b0919ce5cc3901fe7e33c090098ce950e"
+      },
+      "client_wire": {
+        "path": "artifacts/native-seals-20261023/seals-release/client-wire.bin",
+        "sha256": "12ace30c993e5bfb4bdce3b42a0db18721d708974bc6342d4317dba97f21402a"
+      },
+      "server_wire": {
+        "path": "artifacts/native-seals-20261023/seals-release/server-wire.bin",
+        "sha256": "c10ff06bc8b18b140071cc79e3c322f88ed823212586d5ac69cdfabe75c70a01"
+      },
+      "trace": {
+        "path": "artifacts/native-seals-20261023/seals-release/camera.csv",
+        "sha256": "46294934eaafeb335c5b9d536ab0630d73f0d35080d107de668b1de49b23af07"
+      }
+    },
+    "seals-reloaded": {
+      "checks": 15,
+      "result": "PASS",
+      "checks_file": {
+        "path": "artifacts/native-seals-20261023/seals-reloaded/checks.json",
+        "sha256": "a3fc27ca673a364e406f951c56c6851413fb77104e88bd07ac6282d36f07ab95"
+      },
+      "native_readback": {
+        "path": "artifacts/native-seals-20261023/seals-reloaded/native.json",
+        "sha256": "9ea0a9d64563dd63bc19d3f5355569dfde0ff04a513c9d8cec5063421117226c"
+      },
+      "client_wire": {
+        "path": "artifacts/native-seals-20261023/seals-reloaded/client-wire.bin",
+        "sha256": "61f7850d1927b51eb1fe7b6ff1daa5dce119ad5134d9e4779b0ea57f8b3817cc"
+      },
+      "server_wire": {
+        "path": "artifacts/native-seals-20261023/seals-reloaded/server-wire.bin",
+        "sha256": "a64dbe0e9a170606877980394db22d99c4e27011e6c29f3661140df760e2e68a"
+      },
+      "trace": {
+        "path": "artifacts/native-seals-20261023/seals-reloaded/camera.csv",
+        "sha256": "8d2366877c72af52bbf7ef12e9aa9f4cea098a3cdc0750d54083df9fc1e41e47"
+      }
+    },
+    "installed-seals": {
+      "checks": 29,
+      "result": "PASS",
+      "checks_file": {
+        "path": "artifacts/native-seals-20261023/installed-seals/checks.json",
+        "sha256": "5aff62f636975b9a8848f0af318356cf144fd5215b87897d740422dd7126b29c"
+      },
+      "native_readback": {
+        "path": "artifacts/native-seals-20261023/installed-seals/native.json",
+        "sha256": "6ec32d7ffdd6587b53b25dae4dda9a0c9b7819c1131fd460ee249a0ad442b563"
+      },
+      "client_wire": {
+        "path": "artifacts/native-seals-20261023/installed-seals/client-wire.bin",
+        "sha256": "ce76e13d1c58740d918233126273e47c7322f56401b487d14671ce7869bb584a"
+      },
+      "server_wire": {
+        "path": "artifacts/native-seals-20261023/installed-seals/server-wire.bin",
+        "sha256": "6f2f5182cf02df06854742a7c3eed8653d030e21707900392c6df359771a97b1"
+      },
+      "trace": {
+        "path": "artifacts/native-seals-20261023/installed-seals/camera.csv",
+        "sha256": "64e2ca7e60c1cd0dd1bd8a579309736bf00af94514cf29d8295633bb3b32e12f"
+      }
+    },
+    "liquids-regression": {
+      "checks": 38,
+      "result": "PASS",
+      "checks_file": {
+        "path": "artifacts/native-seals-20261023/liquids-regression/checks.json",
+        "sha256": "f673879c1d1ef4b7ef6eca4b52aa1311317ef73a7496323798ecf88b0c9b627b"
+      },
+      "native_readback": {
+        "path": "artifacts/native-seals-20261023/liquids-regression/native.json",
+        "sha256": "26cf248d45486211b23fc253b7062bb6a553eefd3dff46431945ebae8840a4e2"
+      },
+      "client_wire": {
+        "path": "artifacts/native-seals-20261023/liquids-regression/client-wire.bin",
+        "sha256": "ca0ce3375c053dfc6fb8292fb653682394e9908936fd22ddc3503586dc1f2c12"
+      },
+      "server_wire": {
+        "path": "artifacts/native-seals-20261023/liquids-regression/server-wire.bin",
+        "sha256": "3a4016e3a6ef582d91cb49f1096607e8d1f2a976eac509027ed7d0a13732a3fb"
+      },
+      "trace": {
+        "path": "artifacts/native-seals-20261023/liquids-regression/camera.csv",
+        "sha256": "f56c7638357c7a422cc021dcb4328ed2e829d939383bd6d1d7869e65b74504d6"
+      }
+    }
+  },
+  "renderer_total": 111,
+  "installation": {
+    "native": {
+      "source": "artifacts/fnd03-session/workspace/cdda/build/src/cdda-server",
+      "installed": "cdda/build/src/cdda-server",
+      "sha256": "93409855ab52e8c1b9c7fc683d2a116551242daa3c2098dffa4af8a19fd74bcf",
+      "previous": "artifacts/native-seals-20261023/native-before-seals",
+      "previous_sha256": "f63b801db96324e43c42798e5670c76782c54014613471925d1b1923c2bfffc6"
+    },
+    "client": {
+      "source": "artifacts/language-20261011/workspace/luanti/bin/luanti",
+      "installed": "luanti/bin/luanti",
+      "sha256": "d28cba83c48ee283d83421a4d1e0338a9d77d21db7b9f71d18b1587e4b1a6dc4",
+      "previous": "artifacts/native-seals-20261023/client-before-seals",
+      "previous_sha256": "c967418b8515fc22973300c7ef6bb9acf9cb518d8a9d57716aca3e1f4cf11712"
+    }
+  },
+  "reader": {
+    "path": "artifacts/native-seals-20261023/native-save-reader",
+    "sha256": "71b8ec161512d6356cea07589a099691c0ff966326b802ce380b65cf11caf537"
+  },
+  "fixture": {
+    "path": "artifacts/native-seals-20261023/fixture/before.json",
+    "sha256": "cad78ceb787be2485d6536303fcee06109616d6c5de35a3886e1223ad38150f6"
+  },
+  "harness": {
+    "path": "tests/seals_gui_test.py",
+    "sha256": "e3632c634a973fc92efa49e8f35f2d9936939feefc37578a6b26785963c092ce"
+  },
+  "baseline": {
+    "path": "artifacts/native-seals-20261023/baseline-check.log",
+    "sha256": "ec590e4f918dc87ab1a07a86c94e34fe488bede16bc73ff24e5e68ad1257e2a0"
+  },
+  "refresh": {
+    "native": {
+      "path": "artifacts/native-seals-20261023/native-refresh.json",
+      "sha256": "a32b631bf01c06a96ec7e05162a04070ee2e1c1b950e5e0e19b86167ce88bad5"
+    },
+    "client": {
+      "path": "artifacts/native-seals-20261023/client-refresh.json",
+      "sha256": "8d9409d3cd952ba284a2e389cc27ad0f94d93a8659e385c1be6202b91ff9abee"
+    }
+  },
+  "build_logs": {
+    "native": {
+      "path": "artifacts/native-seals-20261023/native-build.log",
+      "sha256": "f0d4721a3a411579842a81c4085caf23ea171cc62bb148b28462001fce7eb2f1"
+    },
+    "client": {
+      "path": "artifacts/native-seals-20261023/client-build.log",
+      "sha256": "2d472e368118c1b44bc774838f5dff076aa31eff6641e4ed2c399e1ecc3946d1"
+    },
+    "protocol": {
+      "path": "artifacts/native-seals-20261023/protocol-build.log",
+      "sha256": "8815914dea667c4a49e054d13936a3af685fa22ac91e6f314f7fefc332efe162"
+    },
+    "reader": {
+      "path": "artifacts/native-seals-20261023/reader-build.log",
+      "sha256": "287894983fa06633c6d72ab8183800a26b2733ad0743bb7e9f980cce69eb9f97"
+    }
+  },
+  "wrappers": {
+    "run-gui.py": {
+      "path": "artifacts/native-seals-20261023/run-gui.py",
+      "sha256": "ccc28977fa5c71a1998a2a41ac829d29c470f58ed627a7ae7b6563aefe3f7907"
+    },
+    "install-and-verify.py": {
+      "path": "artifacts/native-seals-20261023/install-and-verify.py",
+      "sha256": "70589a9aa2d6a92d9332473dfb0dac1a9cfd44676038e2c4b4c21b27e831ef57"
+    }
+  },
+  "manual": {
+    "previous_pending": 61,
+    "new_pending": 4,
+    "pending": 65,
+    "open_fail": 0,
+    "human_acceptance_inferred": false
+  },
+  "limits": [
+    "Owned accessible pockets only; external portable containers deferred",
+    "Pocket-seal handler prefix exposed explicitly; native does not charge a separate opening cost. Retrieval/consume/pour charge native costs. No fabricated cancellable opening.",
+    "Item-use transformations requiring tools remain separate; no universal activation",
+    "Liquid/gas recipe outputs and byproducts still rejected pending safe mandatory-output recovery",
+    "Generated batch60 mapping unchanged; Windows installer remains CWM2.26",
+    "Historical M5.5 FAILED / full SAVE-001 OPEN unchanged; automated renderer checks are not human acceptance"
+  ],
+  "commands": [
+    "python3 tools/takeover_baseline.py capture",
+    "python3 tools/refresh_verification_workspace.py --workspace artifacts/fnd03-session/workspace --receipt artifacts/native-seals-20261023/native-refresh.json",
+    "python3 tools/refresh_verification_workspace.py --workspace artifacts/language-20261011/workspace --receipt artifacts/native-seals-20261023/client-refresh.json",
+    "cmake --build artifacts/fnd03-session/workspace/cdda/build --target cdda-server cata_test -j4",
+    "cmake --build artifacts/language-20261011/workspace/luanti/build --target luanti -j3",
+    "cmake --build artifacts/language-20261011/workspace/build/protocol -j3",
+    "ctest --test-dir artifacts/language-20261011/workspace/build/protocol --output-on-failure",
+    "cd artifacts/fnd03-session/workspace/cdda && CDDA_LOCALE_DIR=$PWD/lang/mo build/tests/cata_test '[seals]' --rng-seed 42 --user-dir=/home/dannhill/Projects/cdda-mineclonia/artifacts/native-seals-20261023/unit-seals",
+    "cd artifacts/fnd03-session/workspace/cdda && CDDA_LOCALE_DIR=$PWD/lang/mo build/tests/cata_test '[cwm],[reading]~[.],[melee]~[.],[ranged]~[.],[disassembly]~[.],[npc_talk]~[.],[mission]' --rng-seed 42 --user-dir=/home/dannhill/Projects/cdda-mineclonia/artifacts/native-seals-20261023/unit-release",
+    "artifacts/language-20261011/workspace/luanti/bin/luanti --run-unittests --logfile artifacts/native-seals-20261023/client-unit-engine.log",
+    "python3 tools/build_native_save_reader.py --pristine-cdda artifacts/m5.5/20261003-takeover/pristine-cdda --workspace artifacts/language-20261011/workspace --output artifacts/native-seals-20261023/native-save-reader --strip-debug",
+    "artifacts/native-seals-20261023/native-save-reader --create-seals --userdir artifacts/native-seals-20261023/fixture/user --datadir cdda/data --output artifacts/native-seals-20261023/fixture/before.json",
+    "python3 artifacts/native-seals-20261023/run-gui.py seals_gui_test.py artifacts/native-seals-20261023/fixture/user seals-release",
+    "python3 artifacts/native-seals-20261023/run-gui.py seals_gui_test.py artifacts/native-seals-20261023/seals-first/user seals-reloaded --reload-opening",
+    "python3 artifacts/native-seals-20261023/install-and-verify.py",
+    "python3 tests/product_language_test.py",
+    "python3 tests/product_language_registry_test.py",
+    "python3 tools/takeover_baseline.py check"
+  ]
+}
