@@ -1,0 +1,384 @@
+{
+  "scope": "Native rest, waiting and sleep menus; actual wait/try/sleep phases, owner-thread pacing, pause/recovery and canonical persistence",
+  "date": "2026-10-23",
+  "source_commit": "4f1c4104896dc6c1844fadb0a0e1a539baaa36ae",
+  "native_capture_commit": "c840afeb03bf2192a7aab84127845fc53d5b8c7c",
+  "client_capture_commit": "4f1c4104896dc6c1844fadb0a0e1a539baaa36ae",
+  "build_mode": "Incremental captured reconstructions retaining caches. SDK and affected native/client units rebuilt. Native fixture and readback link only the unmodified pinned native core. Not a cold-build conformance audit.",
+  "source_trees": {
+    "cdda": {
+      "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+      "patch_sha256": "2724bb8adf9dc41cbed27221c845193455dc3dc4a1ab1cdc89062e1b16d74e6a",
+      "tree_sha256": "1e786ba0d5d5d171a0e6463510cf3f0d3ab841258c5b25b7bed2ee811dfce3ff"
+    },
+    "luanti": {
+      "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
+      "patch_sha256": "b69f63aa54631f3871728d7a88267f49927612b975cc2020483418c387bcb73c",
+      "tree_sha256": "f7b28669725968ddc23ae7e38e6c9af3364b1327b30927b9d7169fe07a9cd809"
+    },
+    "mineclonia": {
+      "commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36"
+    }
+  },
+  "environment": {
+    "kernel": "Linux 7.0.11-76070011-generic x86_64 GNU/Linux",
+    "compiler": "g++ 11.4.0",
+    "cmake": "3.22.1",
+    "python": "3.10.12",
+    "renderer": "Private Xvfb 1280x800x24, Mesa software OpenGL, OpenAL null; actual xdotool keyboard and mouse through start.sh"
+  },
+  "native": {
+    "cases": 173,
+    "assertions": 73570,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-rest-20261023/native-release.log",
+      "sha256": "e6ebcae9b63fdd24857cb6dcf9937f6f7ac2ce5c07eef2033c06353f80d9d9f3"
+    }
+  },
+  "native_rest": {
+    "cases": 2,
+    "assertions": 44,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-rest-20261023/native-rest-unit-2.log",
+      "sha256": "7ff318dc4dab0ec9394796680d735db0af19d5cce624a8397cd44dc3081d369a"
+    }
+  },
+  "client": {
+    "cases": 309,
+    "modules": 47,
+    "catch_cases": 4,
+    "catch_assertions": 648,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-rest-20261023/client-final.log",
+      "sha256": "c6b54b05e49931818639c48b7c7315ffb33c6c6eed1400137ced289847b339de"
+    }
+  },
+  "protocol": {
+    "cases": 17,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-rest-20261023/sdk.log",
+      "sha256": "85b5f7ae01857b0ff8f8ab3cf58f02643c8ad5a21238d417ddcdce3d39d07466"
+    }
+  },
+  "launcher_language": {
+    "cases": 9,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-rest-20261023/language-final.log",
+      "sha256": "b021bccd5876af9a4ab3630b86cb10a45f6597a02c02060a20a68682d7bffe59"
+    }
+  },
+  "language_registry": {
+    "cases": 3,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-rest-20261023/registry-final.log",
+      "sha256": "628ccec8d77e544b34460a382dcd4fe8ed1ba772cfcafb580271d1169b436937"
+    }
+  },
+  "renderer": {
+    "reconstructed_rest": {
+      "checks": 39,
+      "result": "PASS",
+      "checks_file": {
+        "path": "artifacts/native-rest-20261023/rest-release/checks.json",
+        "sha256": "e1e6f54e9562717f498ab41c79ebafe223b947d7ae367734948b21f052ad12ce"
+      },
+      "summary": {
+        "path": "artifacts/native-rest-20261023/rest-release/summary.json",
+        "sha256": "b9a3326b20a7b2f227b2f7499853e19b1592ae0d65dd70872b90e8578da89c5a"
+      },
+      "canonical_readback": {
+        "path": "artifacts/native-rest-20261023/rest-release/native.json",
+        "sha256": "0ca12d343139cead3ab5286acf5f10520747debcd401d0cabf4bef56ace8072e"
+      },
+      "screenshots": [
+        {
+          "path": "artifacts/native-rest-20261023/rest-release/sleep-reconnected.png",
+          "sha256": "9c2fbeaf68c0bff48e0487bc712f3af90d465d37d5ab0282fe7bfa37011fb036"
+        },
+        {
+          "path": "artifacts/native-rest-20261023/rest-release/sleeping.png",
+          "sha256": "1e17b5a05b0e02a3b70bfd3844f2147c6a4afee681eddcfd64261e37e75fb99f"
+        }
+      ],
+      "client_capture_commit": "c840afeb03bf2192a7aab84127845fc53d5b8c7c",
+      "canonical_sleep_durations": [
+        35707
+      ]
+    },
+    "reloaded_rest": {
+      "checks": 22,
+      "result": "PASS",
+      "checks_file": {
+        "path": "artifacts/native-rest-20261023/rest-reloaded-final/checks.json",
+        "sha256": "ce17cac4bda110a24fa4940df616e0e87b19740fdc4f93eb86c30bae9aa2a316"
+      },
+      "summary": {
+        "path": "artifacts/native-rest-20261023/rest-reloaded-final/summary.json",
+        "sha256": "abc033c1234e64df9742466caf3e4c067ac8428da54dc03c0d08519ecf4e650b"
+      },
+      "canonical_readback": {
+        "path": "artifacts/native-rest-20261023/rest-reloaded-final/native.json",
+        "sha256": "ed8dc39f35f2a428569122a31a08755943767fab175ed5c5e56ff359afd7ea04"
+      },
+      "screenshots": [
+        {
+          "path": "artifacts/native-rest-20261023/rest-reloaded-final/sleep-reconnected.png",
+          "sha256": "7f25976b7dc1837c9f6b29e120d6d1f4f23a4b761f4ba19d27e4f04e251fa816"
+        },
+        {
+          "path": "artifacts/native-rest-20261023/rest-reloaded-final/sleeping.png",
+          "sha256": "c6840781f835ead32dbf1b18ee5f310b9072e1d76911e92c677b88ff45bc6de5"
+        }
+      ],
+      "client_capture_commit": "4f1c4104896dc6c1844fadb0a0e1a539baaa36ae",
+      "canonical_sleep_durations": [
+        35394
+      ]
+    },
+    "installed_rest": {
+      "checks": 39,
+      "result": "PASS",
+      "checks_file": {
+        "path": "artifacts/native-rest-20261023/installed-rest/checks.json",
+        "sha256": "e1e6f54e9562717f498ab41c79ebafe223b947d7ae367734948b21f052ad12ce"
+      },
+      "summary": {
+        "path": "artifacts/native-rest-20261023/installed-rest/summary.json",
+        "sha256": "9d94a39e605af93e39cc1e36f5cdac912f1fab70bc114caee5bf2f82985f02c3"
+      },
+      "canonical_readback": {
+        "path": "artifacts/native-rest-20261023/installed-rest/native.json",
+        "sha256": "b8fa2841c30118e2e304aedc7a11ab61326252fc3004d2855499fb7068045ab3"
+      },
+      "screenshots": [
+        {
+          "path": "artifacts/native-rest-20261023/installed-rest/sleep-reconnected.png",
+          "sha256": "ab265ed9ffa09bc1699108621c6fdee6ad57f07f54560163adf7776a481a63e9"
+        },
+        {
+          "path": "artifacts/native-rest-20261023/installed-rest/sleeping.png",
+          "sha256": "7a3733a4ebfe0d1a1955fa98424021cae63cfb5fbd9cca4ea8965c9f647b10fd"
+        }
+      ],
+      "client_capture_commit": "4f1c4104896dc6c1844fadb0a0e1a539baaa36ae",
+      "canonical_sleep_durations": [
+        35703
+      ]
+    },
+    "companion_regression": {
+      "checks": 29,
+      "result": "PASS",
+      "checks_file": {
+        "path": "artifacts/native-rest-20261023/companion-regression/checks.json",
+        "sha256": "4d2955a262b63b11725f5d738c2cc8d92eab54ade8eb05672d5f696d5ee0c6a8"
+      },
+      "summary": {
+        "path": "artifacts/native-rest-20261023/companion-regression/summary.json",
+        "sha256": "7cd7a65b9dfeea301a1cd2163102e0adf02be524433651bdfd1e49eea9095f18"
+      },
+      "canonical_readback": {
+        "path": "artifacts/native-rest-20261023/companion-regression/native.json",
+        "sha256": "d2fc4d762e45c076e19d1ba65a7313bb1ea2a9fba9a49ad727aefe3923945ea1"
+      },
+      "screenshots": [
+        {
+          "path": "artifacts/native-rest-20261023/companion-regression/companion-behavior.png",
+          "sha256": "f99bfd296f6322aba318fb9ff10c08572a3d2a62d59265f99374d2bb81afa45b"
+        },
+        {
+          "path": "artifacts/native-rest-20261023/companion-regression/companion-click-layout.png",
+          "sha256": "30ad3f4deda9eeeace0c1861b54a1101af3540b11f91bbeeebd5505ff06be1d9"
+        },
+        {
+          "path": "artifacts/native-rest-20261023/companion-regression/companion-combat.png",
+          "sha256": "a6c23550f2aa588d45cf155e640710f47e80365f3307083c5cd367ad3c09a526"
+        },
+        {
+          "path": "artifacts/native-rest-20261023/companion-regression/companion-following.png",
+          "sha256": "88fba4726d4e75c1177d11710fe2117ead9456981e243713c95ec8d7264f65a1"
+        },
+        {
+          "path": "artifacts/native-rest-20261023/companion-regression/companion-guard.png",
+          "sha256": "a2b510bd6dce6d43552847f6bc77cb9ee942ee0ed22be17ad393f4acaf4bfc83"
+        },
+        {
+          "path": "artifacts/native-rest-20261023/companion-regression/companion-home.png",
+          "sha256": "42e7f2f4b7cdf1004513eca918d9aa359a76c6ceafcfb54e5a3d6a83d58451ef"
+        },
+        {
+          "path": "artifacts/native-rest-20261023/companion-regression/companion-override.png",
+          "sha256": "6c0f037c1499bb8e05e017f3d5f3d4b750a006a8d731a2cefcfccca6463e0944"
+        },
+        {
+          "path": "artifacts/native-rest-20261023/companion-regression/companion-reconnected.png",
+          "sha256": "08b91887d4d7f5c7058a2cae157e8729873885d1892e7fa67fd1b92523f2731a"
+        },
+        {
+          "path": "artifacts/native-rest-20261023/companion-regression/companion-return-to-game.png",
+          "sha256": "ac58ffc262fec9e08f1581ce7c62ea04d954c9a6e8e9d4928ee6b3660d806108"
+        }
+      ],
+      "client_capture_commit": "4f1c4104896dc6c1844fadb0a0e1a539baaa36ae"
+    },
+    "total_checks": 129,
+    "screenshots_inspected_by": "LLM agent, representative images; not human acceptance",
+    "relay": "Actual renderer traffic captured through a transparent local relay; replay probes renumber client envelope sequences without changing gameplay command identity/payload. Connection replacement closes an open native menu without replaying rest."
+  },
+  "native_oracle": {
+    "upstream_pin": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+    "binary": {
+      "path": "artifacts/native-rest-20261023/native-save-reader",
+      "sha256": "ecd52cade69d1f070b66d1b21fbb7c64512a524b033c05f59cedb2b8d5feeaa1"
+    },
+    "build_receipt": {
+      "path": "artifacts/native-rest-20261023/native-save-reader.build.json",
+      "sha256": "f176e2dae117c10c6fc741a59d16fd2fc009e13f1bdc16a50ce4bdc7b9949dcf"
+    },
+    "fixture": {
+      "path": "artifacts/native-rest-20261023/fixture/before.json",
+      "sha256": "92de24338b394d450b2839eb95c394de254be8dcb3e5e66d23ac731f57c01c47"
+    },
+    "note": "A tired awake avatar on a bed is created and actual sleeping saves are read by the unmodified pinned core. No production fork object is linked."
+  },
+  "installation": {
+    "native": {
+      "source": "artifacts/fnd03-session/workspace/cdda/build/src/cdda-server",
+      "installed": "cdda/build/src/cdda-server",
+      "sha256": "37c49d310c7ad259bb15da02211b955de7c6080b170cae983ea4a84b9251bb93",
+      "previous": "artifacts/native-rest-20261023/native-before-rest",
+      "previous_sha256": "d2288bf481526e04b589266a6d4507fa8fd1c0650b1bd70ec79d0b1b2784f09a"
+    },
+    "client": {
+      "source": "artifacts/language-20261011/workspace/luanti/bin/luanti",
+      "installed": "luanti/bin/luanti",
+      "sha256": "25e63a5de0d8f0d3d97eb9dadc09426ade917a8b8343188ee18ad27040032303",
+      "previous": "artifacts/native-rest-20261023/client-before-rest",
+      "previous_sha256": "6eb9dbf75e5ce2562d85d1f87f1b10e700d34c570baefcce45d00620652cdfd5"
+    }
+  },
+  "source_check": {
+    "path": "artifacts/native-rest-20261023/baseline-check.log",
+    "sha256": "0ea8d46f35be4f736a0c89db14801f0b5a9165d46a49d181bf181c0f4dcbeb6f"
+  },
+  "installer_script": {
+    "path": "artifacts/native-rest-20261023/install-and-verify.py",
+    "sha256": "c13832452bc702106bea2ba120c4a4679298310bf5f058cac1523e99b1e856e9"
+  },
+  "build_logs": [
+    {
+      "path": "artifacts/native-rest-20261023/build-native-fixed.log",
+      "sha256": "75d4be2db91dc1a1e2770359225c7ed92881bcdd4fcfc3d2afbba0c404919977"
+    },
+    {
+      "path": "artifacts/native-rest-20261023/build-native-wake.log",
+      "sha256": "1faa4c3bb9cd52d27d2e8c8be27523f0b850aed12ee6e2c3633c6b7ff272ab45"
+    },
+    {
+      "path": "artifacts/native-rest-20261023/build-native-release.log",
+      "sha256": "aed6ce1a31d6221b4c01043b99bb6b99b87d3fd269ed1103325c361b1c6048e5"
+    },
+    {
+      "path": "artifacts/native-rest-20261023/build-client.log",
+      "sha256": "90d99612db1df97def2b8383c20c0bc852ce5df1387195a255b7b353a18891fc"
+    },
+    {
+      "path": "artifacts/native-rest-20261023/build-client-key.log",
+      "sha256": "137b98bbb25ebbfc1343510b65763593f3e8150f0c587597fd409719762c98f4"
+    },
+    {
+      "path": "artifacts/native-rest-20261023/build-client-release.log",
+      "sha256": "fc7d141753ef59ce22f1752dbb1b8e804228a0d6f3db3b52840d748f586534e3"
+    },
+    {
+      "path": "artifacts/native-rest-20261023/build-client-hints.log",
+      "sha256": "dc3c53c3ec8033e285a00f08c99f2b6a42db46a1c33f71756ac24db28147f7e2"
+    },
+    {
+      "path": "artifacts/native-rest-20261023/build-sdk.log",
+      "sha256": "b03c63be17bd7da27ba388fa95c10e67466f55dbf877997dc3e5f933d53a3271"
+    },
+    {
+      "path": "artifacts/native-rest-20261023/build-reader.log",
+      "sha256": "21786afcce2e46a6838410957d77185820a02c06c94671d4624c2d174457f526"
+    }
+  ],
+  "reconstruction_receipts": [
+    {
+      "path": "artifacts/native-rest-20261023/refresh-native-fixed.json",
+      "sha256": "44eb905593d6b859bd9e96fc9034969abed9127121cfbc819724505e2a78f9ee"
+    },
+    {
+      "path": "artifacts/native-rest-20261023/refresh-native-wake.json",
+      "sha256": "042ce1142df58c82cb6294257c45f89c715764f9267cf332ecbd7a821906de75"
+    },
+    {
+      "path": "artifacts/native-rest-20261023/refresh-native-release.json",
+      "sha256": "d0e8b9e38763a5d83e6607dc0d2f9afc912c7131fc0c720ad6b0ff10bdb841fe"
+    },
+    {
+      "path": "artifacts/native-rest-20261023/refresh-client.json",
+      "sha256": "2ccc4a345001783db523653f9a4d3cd054990c741135e9891284d3e09df7c6a3"
+    },
+    {
+      "path": "artifacts/native-rest-20261023/refresh-client-key.json",
+      "sha256": "1b4f4e3d5485a266f6bf5becc161614684457c26d5bb61b5bcbc9574e5f28a65"
+    },
+    {
+      "path": "artifacts/native-rest-20261023/refresh-client-release.json",
+      "sha256": "987f432e9cc51ac12d340c45c470f33a16797ebd876cba8813ac8dd8ddca73cb"
+    },
+    {
+      "path": "artifacts/native-rest-20261023/refresh-client-hints.json",
+      "sha256": "f9afda5a8cc81d0d0e9651852b38364d8793334e686c4f1e536bf87b91f22088"
+    }
+  ],
+  "gui_wrapper": {
+    "path": "artifacts/native-rest-20261023/run-gui.py",
+    "sha256": "d4dd93447e9bfe04518aae058dbd153c713fae78ee5d41b2977f51013f023914"
+  },
+  "manual": {
+    "pending": 57,
+    "open_fail": 0,
+    "added": "REST-01: four PENDING; prior 53 unchanged",
+    "human_acceptance": "No human PASS inferred from automation"
+  },
+  "next": "Essential liquid sources/transfers and item uses, then non-demo survival-loop and populated-performance consolidation; advanced NPC services/camps remain separate.",
+  "limits": [
+    "Historical M5.5 FAILED and full SAVE-001 OPEN unchanged; scoped evidence is not full certification.",
+    "No forced instant wake for actual sleep: native effects, alarms, needs, noise, damage and narcosis determine waking.",
+    "Rest-specific acceleration executes every native turn and is limited by simulation cost; it is not a general activity accelerator or a guaranteed 64x observed throughput.",
+    "Normal real-time start.sh is verified. The optional unpaced comparison bootstrap still waits for a queued gameplay action before servicing any rest menu; that mode is not certified for rest.",
+    "Native alarm menu and diverse terrain/traits/disturbance combinations remain deferred manual/broader cases.",
+    "Linux pair updated; Windows installer remains CWM2.26. Mapping batch60 unchanged.",
+    "Investigation logs retain an initial native expression/test include compilation fix, test invocation from wrong data cwd, refresh refusal while docs were uncommitted, B collision with upstream hotbar-previous, sleep/posture flooding and automated input before recovery pause cleared. Failed attempts are not counted as final PASS."
+  ],
+  "commands": [
+    "python3 tools/takeover_baseline.py capture",
+    "python3 tools/refresh_verification_workspace.py --workspace artifacts/fnd03-session/workspace --receipt artifacts/native-rest-20261023/refresh-native-release.json",
+    "python3 tools/refresh_verification_workspace.py --workspace artifacts/language-20261011/workspace --receipt artifacts/native-rest-20261023/refresh-client-hints.json",
+    "cmake --build artifacts/fnd03-session/workspace/cdda/build --target cdda-server cata_test -j3",
+    "cmake --build artifacts/language-20261011/workspace/luanti/build --target luanti -j3",
+    "cmake --build artifacts/language-20261011/workspace/build/protocol -j3",
+    "ctest --test-dir artifacts/language-20261011/workspace/build/protocol --output-on-failure",
+    "cd artifacts/fnd03-session/workspace/cdda && CDDA_LOCALE_DIR=$PWD/lang/mo ./build/tests/cata_test '[cwm],[reading]~[.],[melee]~[.],[ranged]~[.],[disassembly]~[.],[npc_talk]~[.],[mission]' --rng-seed 42 --user-dir=<new-isolated-absolute-directory>",
+    "artifacts/language-20261011/workspace/luanti/bin/luanti --run-unittests --logfile <isolated-log>",
+    "python3 tests/product_language_test.py",
+    "python3 tests/product_language_registry_test.py",
+    "python3 tools/build_native_save_reader.py --pristine-cdda artifacts/m5.5/20261003-takeover/pristine-cdda --workspace artifacts/language-20261011/workspace --output artifacts/native-rest-20261023/native-save-reader --strip-debug",
+    "artifacts/native-rest-20261023/native-save-reader --create-rest --userdir <new-fixture-userdir> --datadir cdda/data --output <fixture-before.json>",
+    "cp artifacts/fnd03-session/workspace/cdda/build/src/cdda-server artifacts/language-20261011/workspace/cdda/build/src/cdda-server",
+    "python3 artifacts/native-rest-20261023/run-gui.py rest_gui_test.py artifacts/native-rest-20261023/fixture/user <new-artifact-name>",
+    "python3 artifacts/native-rest-20261023/run-gui.py rest_gui_test.py artifacts/native-rest-20261023/rest-release/user <new-reload-artifact-name> --reload-sleep",
+    "CWM_TEST_INSTALLED=1 python3 artifacts/native-rest-20261023/run-gui.py rest_gui_test.py artifacts/native-rest-20261023/fixture/user <new-installed-artifact-name>",
+    "CWM_TEST_INSTALLED=1 python3 artifacts/native-rest-20261023/run-gui.py companion_gui_test.py artifacts/native-companions-20261022/fixture/user <new-companion-regression-artifact-name>",
+    "python3 tools/takeover_baseline.py check"
+  ]
+}

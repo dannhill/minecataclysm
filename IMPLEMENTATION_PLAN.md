@@ -10,6 +10,28 @@ un panorama più ampio; nebbia, memoria distante e rilievo restano da scegliere.
 Lo [stato implementato](IMPLEMENTATION_STATUS.md) e le evidenze restano separati
 dagli obiettivi. La roadmap originale M0–M9 conserva i propri significati.
 
+## Riposo, sonno e attesa nativi — 2026-10-23
+
+Fetta core implementata: **B** configurabile, menu originali di sonno/attesa,
+tentativo distinto dal sonno effettivo, interruzione nativa di attesa/tentativo,
+risveglio da effetti/allarmi/disturbi CDDA. I/Esc ferma il mondo. Accelerazione
+opzionale del riposo lungo senza saltare turni, ritorno a velocità normale e
+pubblicazione limitata; nessun risveglio gratuito, cura o completamento fittizio.
+Input di postura/movimento/mira bloccati durante il riposo; vecchi comandi non
+riavviano menu o sonno dopo replay/recovery. Salvataggio canonico di attività,
+effetti, postura e allarmi. [Contratto](docs/design/native-rest.md),
+[consegna e verifiche](docs/fixes/native-rest.md).
+
+Quattro prove REST-01 rinviabili: **57 PENDING**, nessun FAIL manuale aperto;
+i precedenti 53 invariati. Nessun PASS umano dedotto. CWM2.32 Linux; installer
+Windows ancora CWM2.26. M5.5 FAILED e SAVE-001 OPEN invariati.
+
+**Prossimo passo essenziale: fonti/travasi di liquidi e usi essenziali degli
+oggetti ancora mancanti**, poi consolidamento del loop di sopravvivenza in
+mondi non-demo, recovery/salvataggi e prestazioni con popolazioni reali. Questa
+fetta non certifica ogni combinazione di allarmi/tratti/disturbi o i servizi
+avanzati NPC e non estende il minimo core a ogni sistema CDDA.
+
 ## Compagni individuali e chiusura del core — 2026-10-22
 
 Fetta implementata: prima voce **Companion orders and rules** nel dialogo
@@ -28,7 +50,7 @@ Linux; installer Windows ancora CWM2.26. M5.5 FAILED e SAVE-001 OPEN invariati.
 [Stima aggiornata del core](docs/progress/core-outlook-2026-10-22.md):
 **90–95%, riferimento 92%, escludendo i test manuali**, circa 3–6 interventi
 sostanziali con incertezza. Non è una percentuale del gioco completo.
-**Prossimo passo essenziale: riposo/sonno e attesa nativi**, mantenendo tentativo,
+**Passo allora successivo, ora consegnato sopra: riposo/sonno e attesa nativi**, mantenendo tentativo,
 risveglio, interruzioni e tempo effettivo CDDA. L'indicatore della stanchezza
 non equivale a un comando per dormire. Seguono fonti/travasi di liquidi e usi
 essenziali ancora mancanti, poi consolidamento su mondo non-demo e prestazioni

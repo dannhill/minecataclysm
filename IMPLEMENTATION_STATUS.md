@@ -1,6 +1,30 @@
 # Implementation status
 
-Current scoped delivery: **individual native companion orders and rules**,
+Current scoped delivery: **native rest, sleep and waiting**, CWM **2.32**,
+in normal Linux `start.sh`. **B** opens the native rest context: original
+sleep/wait menus, distinct wait/try/sleep, native alarms and restrictions,
+interruptible wait/attempts, actual native waking. I/Esc pauses; long rest can
+accelerate without skipping turns, with normal/fast selection and bounded
+publication. No forced wake or unpaid-action replacement. Held movement,
+posture, aim and quick-use are fenced throughout rest. Canonical save/reload
+and reconnect do not issue another start command.
+[Contract](docs/design/native-rest.md), [delivery](docs/fixes/native-rest.md),
+[exact evidence](docs/fixes/native-rest-evidence.json).
+
+**173 native cases / 73,570 assertions PASS**; client **309 tests / 47 modules** and **648 Catch
+assertions / four cases**; protocol **17**, language **9**, registry **3** PASS.
+**129 renderer/canonical checks PASS**, including actual sleep restart,
+replay/reconnect and installed companion regression. Fixture/readback links
+unmodified pinned CDDA. Incremental captured builds, not a cold conformance audit.
+
+**57 PENDING**, no open manual FAIL: previous 53 unchanged plus four REST-01
+checks. No human acceptance inferred. Next essential slice: liquid sources/
+transfers and missing essential item uses; then non-demo survival-loop and
+populated-performance consolidation. Advanced NPC services/camps remain separate.
+M5.5 FAILED / full SAVE-001 OPEN unchanged. Mapping batch60 unchanged; Windows
+installer remains its earlier **CWM2.26 snapshot**.
+
+Previous scoped delivery: **individual native companion orders and rules**,
 CWM **2.31**, in normal Linux `start.sh`. Right-click a local ally and choose
 the first **Companion orders and rules** response. Native Guard/Follow,
 18 individual rules, engagement/aiming and CBM reserve/recharge preferences;
