@@ -6,10 +6,19 @@ captured implementation; it does not approve its gaps. The executable schema
 is [cwm.fbs](cwm.fbs). Audit findings and evidence are in
 [M5.5](../docs/audits/M5.5.md).
 
-The current runtime requires **CWM 2.33**. This breaks the old negotiation
+The current runtime requires **CWM 2.34**. This breaks the old negotiation
 contract; schema fields and union members are appended without changing the
 existing FlatBuffers offsets. Both executables must be rebuilt together.
 The historical coverage table below is retained as audit evidence.
+
+CWM 2.34 appends `InventoryEntry.seal:SealInfo` and
+`ItemTransferAction.OPEN_SEAL` (5), with quantity/destination zero. It exposes
+explicit native pocket-seal handling through owned inventory choices, without
+adding an EquipmentAction bit or a fictional opening activity. Seal state joins
+the inventory binding checks. Native contents-change handling owns spills,
+restacking, preservation and placement. Shared command outcomes/connection
+fencing prevent repeated opening. Metadata never authorizes Luanti mutation.
+[Seal contract](../docs/design/native-seals.md).
 
 CWM 2.33 appends `CancelLiquidTransferRequest` (60), optional
 `WorldSnapshot.liquid_transfer`, `InventoryEntry.liquid:LiquidInfo`,

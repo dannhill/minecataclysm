@@ -26,3 +26,11 @@ Vehicles, camps, every mission/mod/EOC service and final artwork stay outside
 the minimum. Keep the scope bounded. Manual PASS/FAIL belongs to the sole human
 developer and remains separate in pending-manual.md. Historical M5.5 FAILED
 and full SAVE-001 OPEN remain independent unresolved conformance gates.
+
+
+Subsequent bounded deliveries on this date: native water sources/pouring
+(CWM2.33) and explicit native sealed-pocket opening (CWM2.34). The latter
+exposes the original contents-change handler without inventing an opening time;
+tool-dependent item transformations remain separate. Next: essential item uses,
+safe mandatory liquid-output recovery/purification, and non-demo consolidation.
+This records progress without recalculating the earlier estimate mechanically.
