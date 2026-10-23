@@ -11,7 +11,7 @@
 namespace cdda::cwm {
 
 constexpr uint16_t PROTOCOL_VERSION_MAJOR = 2;
-constexpr uint16_t PROTOCOL_VERSION_MINOR = 32;
+constexpr uint16_t PROTOCOL_VERSION_MINOR = 33;
 
 struct Identity { uint64_t session{0}, player{0}, connection{0}; };
 
@@ -119,6 +119,10 @@ public:
     std::vector<uint8_t> build_cancel_reload(uint64_t id, uint64_t token) {
         auto req = CDDA::CWM::CreateCancelReloadRequest(fbb_, id, token);
         return finish_message(CDDA::CWM::Payload::CancelReloadRequest, req.Union());
+    }
+    std::vector<uint8_t> build_cancel_liquid_transfer(uint64_t id, uint64_t token) {
+        return finish_message(CDDA::CWM::Payload::CancelLiquidTransferRequest,
+            CDDA::CWM::CreateCancelLiquidTransferRequest(fbb_,id,token).Union());
     }
     std::vector<uint8_t> build_cancel_disassembly(uint64_t id, uint64_t token) {
         auto req = CDDA::CWM::CreateCancelDisassemblyRequest(fbb_, id, token);

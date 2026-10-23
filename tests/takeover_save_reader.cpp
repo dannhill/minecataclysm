@@ -63,6 +63,7 @@ int main(int argc, const char *argv[]) {
     bool create_journal = false;
     bool create_companions = false;
     bool create_rest = false;
+    bool create_liquids = false;
     bool create_ranged = false;
     bool create_transfer = false;
     bool create_external = false;
@@ -80,6 +81,7 @@ int main(int argc, const char *argv[]) {
         else if (arg == "--create-transfer") { create = true; create_transfer = true; create_posture = true; }
         else if (arg == "--create-ranged") { create = true; create_ranged = true; create_posture = true; }
         else if (arg == "--create-crafting") { create = true; create_crafting = true; create_posture = true; }
+        else if (arg == "--create-liquids") { create = true; create_liquids = true; create_posture = true; }
         else if (arg == "--create-rest") { create = true; create_rest = true; create_posture = true; }
         else if (arg == "--create-companions") { create = true; create_companions = true; create_conversation = true; create_posture = true; }
         else if (arg == "--create-journal") { create = true; create_journal = true; create_conversation = true; create_posture = true; }
@@ -511,6 +513,18 @@ int main(int argc, const char *argv[]) {
             u.set_skill_level(skill_id("swimming"),10);
             get_weather().update_weather();
             if (!g->save()) return 5;
+        }
+        if(create_liquids) {
+            u.remove_items_with([](const item&){return true;});u.remove_weapon();u.clear_worn();
+            u.wear_item(item(itype_id("backpack"),calendar::turn),false);
+            item jug(itype_id("jerrycan"),calendar::turn);if(!u.wield(jug))return 12;
+            u.i_add(item(itype_id("bottle_plastic"),calendar::turn));
+            u.i_add(item(itype_id("bottle_glass"),calendar::turn));
+            m.ter_set(u.pos(),ter_str_id("t_floor"));m.furn_set(u.pos(),furn_str_id("f_null"));
+            m.ter_set(u.pos()+tripoint_north,ter_str_id("t_water_sh"));
+            m.ter_set(u.pos()+tripoint_east,ter_str_id("t_floor"));m.furn_set(u.pos()+tripoint_east,furn_str_id("f_toilet"));
+            item water(itype_id("water_clean"),calendar::turn,32);m.add_item_or_charges(u.pos()+tripoint_east,water);
+            u.set_thirst(200);g->set_safe_mode(SAFE_MODE_OFF);
         }
         if(create_rest) {
             u.remove_items_with([](const item&){return true;});u.remove_weapon();u.clear_worn();

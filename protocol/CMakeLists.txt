@@ -117,3 +117,7 @@ add_test(NAME test_missions COMMAND test_missions)
 add_executable(test_rest tests/test_rest.cpp)
 target_link_libraries(test_rest PRIVATE cwm_protocol)
 add_test(NAME test_rest COMMAND test_rest)
+
+add_executable(test_liquids tests/test_liquids.cpp)
+target_link_libraries(test_liquids PRIVATE cwm_protocol)
+add_test(NAME test_liquids COMMAND test_liquids)

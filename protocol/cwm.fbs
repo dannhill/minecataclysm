@@ -245,6 +245,7 @@ table WorldSnapshot {
     reading: ReadingState;
     disassembly: DisassemblyState;
     rest: RestState;
+    liquid_transfer: LiquidTransferState;
 
 }
 
@@ -373,6 +374,7 @@ table InventoryEntry {
     external: bool;
     book: BookInfo;
     disassembly: DisassemblyInfo;
+    liquid: LiquidInfo;
 }
 table InventoryPocket {
     owner_id: uint32;
@@ -442,7 +444,12 @@ table EquipmentRequest {
 }
 
 // Ephemeral owned-item identities, native quantities and destination container.
-enum ItemTransferAction : byte { DROP = 0, INSERT = 1, TAKE_EXTERNAL = 2, DEPOSIT_EXTERNAL = 3 }
+// POUR opens native liquid handling; quantity and destination_id must be zero.
+enum ItemTransferAction : byte { DROP = 0, INSERT = 1, TAKE_EXTERNAL = 2, DEPOSIT_EXTERNAL = 3, POUR = 4 }
+table LiquidInfo { reason: string; }
+// Native ACT_FILL_LIQUID has no meaningful moves-total percentage.
+table LiquidTransferState { token: uint64; }
+table CancelLiquidTransferRequest { command_id: uint64; activity_token: uint64; }
 table ItemTransferRequest { command_id: uint64; view_id: uint64; item_id: uint32; quantity: int32; destination_id: uint32; action: ItemTransferAction; }
 table ItemTransferState { token: uint64; total_moves: int32; remaining_moves: int32; inserting: bool; }
 table CancelItemTransferRequest { command_id: uint64; activity_token: uint64; }
@@ -647,6 +654,7 @@ union Payload {
     ,MissionView
     ,MissionTrackRequest
     ,RestRequest
+    ,CancelLiquidTransferRequest
 }
 
 table CwmMessage {

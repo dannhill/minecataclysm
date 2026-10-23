@@ -505,8 +505,19 @@ class WorldSnapshot(object):
             return obj
         return None
 
+    # WorldSnapshot
+    def LiquidTransfer(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(70))
+        if o != 0:
+            x = self._tab.Indirect(o + self._tab.Pos)
+            from CDDA.CWM.LiquidTransferState import LiquidTransferState
+            obj = LiquidTransferState()
+            obj.Init(self._tab.Bytes, x)
+            return obj
+        return None
+
 def WorldSnapshotStart(builder):
-    builder.StartObject(33)
+    builder.StartObject(34)
 
 def Start(builder):
     WorldSnapshotStart(builder)
@@ -774,6 +785,12 @@ def WorldSnapshotAddRest(builder, rest):
 
 def AddRest(builder, rest):
     WorldSnapshotAddRest(builder, rest)
+
+def WorldSnapshotAddLiquidTransfer(builder, liquidTransfer):
+    builder.PrependUOffsetTRelativeSlot(33, flatbuffers.number_types.UOffsetTFlags.py_type(liquidTransfer), 0)
+
+def AddLiquidTransfer(builder, liquidTransfer):
+    WorldSnapshotAddLiquidTransfer(builder, liquidTransfer)
 
 def WorldSnapshotEnd(builder):
     return builder.EndObject()

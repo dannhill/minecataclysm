@@ -12,6 +12,7 @@ enum TileState : uint32_t {
     GOES_UP = 1u << 4,
     GOES_DOWN = 1u << 5,
     DIFFICULT_Z = 1u << 6,
+    LIQUID_SOURCE = 1u << 8, // recognized native water-source examination, not a water-quality claim
     STORAGE = 1u << 7, // native terrain/furniture CONTAINER, presentation only
 };
 // Presentation cues from the native avatar state; they never change coordinates

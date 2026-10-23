@@ -1146,6 +1146,27 @@ index c25584e..fdb835f 100644
          friend class exosuit_interact;
          friend achievements_tracker &get_achievements();
          friend event_bus &get_event_bus();
+diff --git a/src/game_inventory.cpp b/src/game_inventory.cpp
+index 85ff028..c08bf16 100644
+--- a/src/game_inventory.cpp
++++ b/src/game_inventory.cpp
+@@ -30,6 +30,8 @@
+ #include "enums.h"
+ #include "flag.h"
+ #include "game.h"
++#include "do_turn.h"
++#include "handle_liquid.h"
+ #include "input.h"
+ #include "inventory.h"
+ #include "inventory_ui.h"
+@@ -504,6 +506,7 @@ class liquid_inventory_selector_preset : public inventory_selector_preset
+ item_location game_menus::inv::container_for( Character &you, const item &liquid, int radius,
+         const item *const avoid )
+ {
++    if( external_ui_active() ) return liquid_handler::external_container_for( you, liquid, avoid );
+     return inv_internal( you, liquid_inventory_selector_preset( liquid, avoid ),
+                          string_format( _( "Container for %s | %s %s" ), liquid.display_name( liquid.charges ),
+                                         format_volume( liquid.volume() ), volume_units_abbr() ), radius,
 diff --git a/src/handle_action.cpp b/src/handle_action.cpp
 index 652ad80..09f077e 100644
 --- a/src/handle_action.cpp
@@ -1252,6 +1273,133 @@ index 652ad80..09f077e 100644
              break;
  
          case ACTION_WHITELIST_ENEMY:
+diff --git a/src/handle_liquid.cpp b/src/handle_liquid.cpp
+index 0ce6825..320f3ad 100644
+--- a/src/handle_liquid.cpp
++++ b/src/handle_liquid.cpp
+@@ -20,6 +20,9 @@
+ #include "colony.h"
+ #include "color.h"
+ #include "debug.h"
++#include "do_turn.h"
++#include "output.h"
++#include "item_pocket.h"
+ #include "enums.h"
+ #include "game_inventory.h"
+ #include "iexamine.h"
+@@ -104,6 +107,50 @@ static void serialize_liquid_target( player_activity &act, const tripoint &pos )
+ 
+ namespace liquid_handler
+ {
++bool external_accessible( const item_location &location )
++{
++    auto current = location;
++    for( int depth = 0; current.has_parent(); ++depth ) {
++        if( depth >= 32 ) return false;
++        const auto *pocket = current.parent_pocket();
++        if( !pocket || !pocket->is_type( pocket_type::CONTAINER ) || pocket->sealed() ) return false;
++        current = current.parent_item();
++    }
++    return true;
++}
++
++item_location external_container_for( Character &you, const item &liquid, const item *avoid )
++{
++    std::vector<item_location> candidates;
++    std::vector<std::string> labels;
++    for( auto location : you.all_items_loc() ) {
++        if( !location || location.get_item() == avoid || location->has_item( liquid ) ||
++            !external_accessible( location ) ) continue;
++        const int capacity = location->get_remaining_capacity_for_liquid( liquid, you );
++        if( capacity <= 0 ) continue;
++        const auto pockets = location->get_all_contained_pockets();
++        if( std::any_of( pockets.begin(), pockets.end(), []( const auto *p ) {
++            return p->is_type( pocket_type::CONTAINER ) && p->sealed();
++        } ) ) continue;
++        const std::string parent = location.has_parent() ? location.parent_item()->tname() : _( "Carried" );
++        labels.push_back( remove_color_tags( location->tname() ) + " — " + remove_color_tags( parent ) +
++                          " — " + string_format( _( "%d charges free" ), capacity ) );
++        candidates.push_back( location );
++        if( candidates.size() == 256 ) break;
++    }
++    if( candidates.empty() ) {
++        external_ui_choice( _( "You don't have a suitable accessible carried container." ), { _( "Cancel" ) } );
++        return item_location::nowhere;
++    }
++    labels.push_back( _( "Cancel" ) );
++    const int answer = external_ui_choice( _( "Choose a carried container for the liquid. Native capacity and mixing rules apply." ), labels );
++    if( answer < 0 || static_cast<size_t>( answer ) >= candidates.size() ) return item_location::nowhere;
++    auto result = candidates[answer];
++    if( !result || !result.held_by( you ) || !external_accessible( result ) ||
++        result->get_remaining_capacity_for_liquid( liquid, you ) <= 0 ) return item_location::nowhere;
++    return result;
++}
++
+ void handle_all_liquid( item liquid, const int radius, const item *const avoid )
+ {
+     while( liquid.charges > 0 && can_handle_liquid( liquid ) ) {
+@@ -179,7 +226,7 @@ static bool get_liquid_target( item &liquid, const item *const source, const int
+     }
+ 
+     Character &player_character = get_player_character();
+-    if( test_mode ) {
++    if( test_mode && !external_ui_active() ) {
+         switch( test_mode_spilling_action ) {
+             case test_mode_spilling_action_t::spill_all:
+                 target.pos = player_character.pos();
+@@ -262,6 +309,7 @@ static bool get_liquid_target( item &liquid, const item *const source, const int
+         }
+     }
+     for( vehicle *veh : opts ) {
++        if( external_ui_active() ) continue; // Native vehicle/tank selector is a separate vehicle slice.
+         if( veh == source_veh && veh->has_part( "FLUIDTANK", false ) ) {
+             for( const vpart_reference &vp : veh->get_avail_parts( "FLUIDTANK" ) ) {
+                 if( vp.part().get_base().can_reload_with( liquid, true ) ) {
+@@ -308,7 +356,20 @@ static bool get_liquid_target( item &liquid, const item *const source, const int
+ 
+         const std::string liqstr = string_format( _( "Pour %s where?" ), liquid_name );
+ 
+-        const std::optional<tripoint> target_pos_ = choose_adjacent( liqstr );
++        std::optional<tripoint> target_pos_;
++        if( external_ui_active() ) {
++            std::vector<tripoint> positions;
++            std::vector<std::string> labels;
++            for( const auto &p : here.points_in_radius( player_character.pos(), 1 ) ) {
++                if( !here.inbounds( p ) || p.z != player_character.posz() ) continue;
++                positions.push_back( p );
++                labels.push_back( direction_name( direction_from( player_character.pos(), p ) ) +
++                                  " — " + here.name( p ) );
++            }
++            labels.push_back( _( "Cancel" ) );
++            const int choice = external_ui_choice( liqstr, labels );
++            if( choice >= 0 && static_cast<size_t>( choice ) < positions.size() ) target_pos_ = positions[choice];
++        } else target_pos_ = choose_adjacent( liqstr );
+         if( !target_pos_ ) {
+             return;
+         }
+diff --git a/src/handle_liquid.h b/src/handle_liquid.h
+index 5051e44..ed6656d 100644
+--- a/src/handle_liquid.h
++++ b/src/handle_liquid.h
+@@ -7,6 +7,7 @@
+ #include "map.h"
+ #include "point.h"
+ 
++class Character;
+ class item;
+ class monster;
+ class vehicle;
+@@ -30,6 +31,10 @@ struct liquid_dest_opt {
+ // Contains functions that handle liquid
+ namespace liquid_handler
+ {
++// Presentation-only selection/access helpers for the external native UI.
++// Capacity/transfer/contamination still use the original native functions.
++bool external_accessible( const item_location &location );
++item_location external_container_for( Character &you, const item &liquid, const item *avoid );
+ /**
+  * Consume / handle all of the liquid. The function can be used when the liquid needs
+  * to be handled and can not be put back to where it came from (e.g. when it's a newly
 diff --git a/src/iexamine.cpp b/src/iexamine.cpp
 index e2e738d..e3ed1a6 100644
 --- a/src/iexamine.cpp
@@ -3320,10 +3468,10 @@ index 0000000..0866007
 +} // namespace cwm
 diff --git a/src/cwm/cwm_inventory.h b/src/cwm/cwm_inventory.h
 new file mode 100644
-index 0000000..078e363
+index 0000000..8fa0a0b
 --- /dev/null
 +++ b/src/cwm/cwm_inventory.h
-@@ -0,0 +1,338 @@
+@@ -0,0 +1,346 @@
 +#pragma once
 +#include "cwm/product_language.hpp"
 +#include <algorithm>
@@ -3348,6 +3496,7 @@ index 0000000..078e363
 +#include "cwm/cwm_protocol.hpp"
 +#include "cwm_reading.h"
 +#include "cwm_disassembly.h"
++#include "cwm_liquids.h"
 +
 +namespace cwm {
 +// Bounded, ephemeral selection view. Native safe item_locations retain identity;
@@ -3520,6 +3669,12 @@ index 0000000..078e363
 +                                 uint32_t destination, int action) const {
 +        auto error = validate_binding(u, view, id); if (!error.empty()) return error;
 +        auto source = target(id);
++        if(action==4) {
++            if(external_item(id) || destination || quantity)return ::cwm::text("Open native pouring from an owned item without a preselected quantity or destination.");
++            if(get_map().getabs(u.pos())!=origin_)return ::cwm::text("Position changed: reopen the inventory.");
++            if(u.activity || u.in_sleep_state())return ::cwm::text("Finish or interrupt the current activity first.");
++            return liquid_item_error(u,source);
++        }
 +        error = external_item(id) ? external_source_error(u, source) : transfer_source_error(u, source); if (!error.empty()) return error;
 +        const int available = source->count_by_charges() ? source->charges : 1;
 +        if (quantity <= 0 || quantity > available) return ::cwm::tr("Quantity is invalid or no longer available.", "Quantita non valida o non piu disponibile.");
@@ -3628,7 +3783,8 @@ index 0000000..078e363
 +                    units::to_gram<int64_t>(it->weight()), units::to_milliliter<int64_t>(it->volume()),
 +                    units::to_millimeter<int64_t>(it->length()), access, actions, &reasons, consume_moves, consume_label, remove_color_tags(warning).c_str(), (exporting_external ? external_source_error(u,location) : transfer_source_error(u, location)).c_str(),
 +                    std::any_of(container_pockets.begin(), container_pockets.end(),
-+                        [](const auto* p) { return p->is_type(pocket_type::CONTAINER); }), exporting_external ? 0 : quick_slot, it->rotten(), exporting_external ? 0 : ui_order(*it), exporting_external, book, export_disassembly_info(fbb,u,*it)));
++                        [](const auto* p) { return p->is_type(pocket_type::CONTAINER); }), exporting_external ? 0 : quick_slot, it->rotten(), exporting_external ? 0 : ui_order(*it), exporting_external, book, export_disassembly_info(fbb,u,*it),
++                    !exporting_external && has_liquid_content(*it) ? CDDA::CWM::CreateLiquidInfoDirect(fbb,liquid_item_error(u,location).c_str()) : flatbuffers::Offset<CDDA::CWM::LiquidInfo>{}));
 +                bindings_.push_back({location, exporting_external ? external_parents(location) : ancestors, it->typeId().str(), it->charges,
 +                                     it->count_by_charges(), worn, wielded, exporting_external});
 +                ids[it] = id;
@@ -3662,6 +3818,79 @@ index 0000000..078e363
 +    }
 +};
 +} // namespace cwm
+diff --git a/src/cwm/cwm_liquids.h b/src/cwm/cwm_liquids.h
+new file mode 100644
+index 0000000..80a005b
+--- /dev/null
++++ b/src/cwm/cwm_liquids.h
+@@ -0,0 +1,67 @@
++#pragma once
++#include "avatar.h"
++#include "do_turn.h"
++#include "handle_liquid.h"
++#include "iexamine.h"
++#include "item.h"
++#include "item_location.h"
++#include "map.h"
++#include "output.h"
++#include "../../../protocol/include/cwm/product_language.hpp"
++namespace cwm {
++inline int liquid_source_kind( const map &m, const tripoint &p ) {
++    if( !m.inbounds(p) ) return 0;
++    const auto &f=m.furn(p).obj();const auto &t=m.ter(p).obj();
++    if(f.has_examine(iexamine::water_source))return 1;
++    if(f.has_examine(iexamine::finite_water_source))return 2;
++    if(!f.id.is_null() && !f.has_examine(iexamine::none))return 0;
++    if(t.has_examine(iexamine::water_source))return 1;
++    if(t.has_examine(iexamine::finite_water_source))return 2;
++    return 0;
++}
++inline std::string liquid_source_error(avatar &u,map &m,const tripoint &p) {
++    if(p.z!=u.posz() || rl_dist(p,u.pos())>1 || !m.inbounds(p))return ::cwm::text("Liquid source is out of reach.");
++    if(!u.sees(p))return ::cwm::text("Liquid source is not perceived.");
++    if(!liquid_source_kind(m,p))return ::cwm::text("No supported native liquid source here.");
++    return {};
++}
++inline bool has_liquid_content(const item &source) {
++    if(source.made_of_from_type(phase_id::LIQUID))return true;
++    for(const auto *child:source.all_items_top())if(child->made_of_from_type(phase_id::LIQUID))return true;
++    return false;
++}
++inline std::string liquid_item_error(avatar &u,item_location source) {
++    if(!source || !source.held_by(u) || !u.has_item(*source))return ::cwm::text("Select an owned liquid or its container.");
++    if(!liquid_handler::external_accessible(source))return ::cwm::text("Liquid is sealed or in an inaccessible pocket.");
++    if(!source->made_of_from_type(phase_id::LIQUID) && has_liquid_content(*source)) {
++        bool accessible=false;
++        for(auto* child:source->all_items_top())if(child->made_of_from_type(phase_id::LIQUID) &&
++            liquid_handler::external_accessible(item_location(source,child)))accessible=true;
++        if(!accessible)return ::cwm::text("Liquid is sealed or in an inaccessible pocket.");
++    }
++    if(!has_liquid_content(*source))return ::cwm::text("No liquid to pour from this item.");
++    return {};
++}
++inline bool handle_owned_liquid(avatar &u,item_location source) {
++    if(!liquid_item_error(u,source).empty())return false;
++    if(!source->made_of_from_type(phase_id::LIQUID)) {
++        std::vector<item_location> choices;std::vector<std::string> labels;
++        for(auto *it:source->all_items_top())if(it->made_of_from_type(phase_id::LIQUID)) {
++            item_location child(source,it);
++            if(!liquid_handler::external_accessible(child))continue;
++            choices.push_back(child);labels.push_back(remove_color_tags(it->tname()));
++        }
++        if(choices.empty())return false;
++        int selected=0;
++        if(choices.size()>1){labels.push_back(::cwm::text("Cancel"));selected=external_ui_choice(::cwm::text("Choose the liquid to handle."),labels);}
++        if(selected<0 || size_t(selected)>=choices.size())return false;
++        source=choices[selected];
++    }
++    if(!source.has_parent() || !liquid_handler::external_accessible(source))return false;
++    const int before=source->charges;auto parent=source.parent_item();
++    const bool drained=liquid_handler::handle_liquid_from_container(source.get_item(),*parent,0);
++    const bool changed=source->charges!=before;
++    if(drained)source.remove_item();
++    return changed || u.activity;
++}
++}
 diff --git a/src/cwm/cwm_main.cpp b/src/cwm/cwm_main.cpp
 new file mode 100644
 index 0000000..af07174
@@ -4137,10 +4366,10 @@ index 0000000..af07174
 +
 diff --git a/src/cwm/cwm_map_exporter.cpp b/src/cwm/cwm_map_exporter.cpp
 new file mode 100644
-index 0000000..cfb57e2
+index 0000000..743a97c
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.cpp
-@@ -0,0 +1,733 @@
+@@ -0,0 +1,737 @@
 +#include "cwm/product_language.hpp"
 +#include "cwm_motion.h"
 +// CDDA CWM Map & Entity Exporter Implementation
@@ -4148,6 +4377,7 @@ index 0000000..cfb57e2
 +
 +#include "cwm_map_exporter.h"
 +#include "cwm_rest.h"
++#include "cwm_liquids.h"
 +#include "cwm_crafting.h"
 +#include "cwm_ranged.h"
 +#include "cwm_hotbar.h"
@@ -4349,6 +4579,7 @@ index 0000000..cfb57e2
 +        if (m.has_flag(ter_furn_flag::TFLAG_CONTAINER, p)) flags |= STORAGE;
 +        if (blocked && !f.has_flag(ter_furn_flag::TFLAG_SHORT)) flags |= TALL_FURNITURE;
 +    }
++    if(liquid_source_kind(m,p))flags |= LIQUID_SOURCE;
 +    uint8_t orientation = 0;
 +    if (door || window) {
 +        const auto connects = [&m](const tripoint& neighbor) {
@@ -4794,6 +5025,8 @@ index 0000000..cfb57e2
 +    const auto ranged = export_ranged_weapon(fbb, const_cast<avatar&>(u), weapon_token);
 +    const auto reload = activity_token && u.activity.id() == activity_id("ACT_RELOAD") && u.activity.moves_total>0 ?
 +        CDDA::CWM::CreateReloadState(fbb,activity_token,u.activity.moves_total,std::clamp(u.activity.moves_left,0,u.activity.moves_total)) : flatbuffers::Offset<CDDA::CWM::ReloadState>{};
++    const auto liquid_transfer=activity_token && u.activity.id()==activity_id("ACT_FILL_LIQUID") ?
++        CDDA::CWM::CreateLiquidTransferState(fbb,activity_token) : flatbuffers::Offset<CDDA::CWM::LiquidTransferState>{};
 +    const auto transfer = activity_token && (u.activity.id() == activity_id("ACT_DROP") || u.activity.id() == activity_id("ACT_INSERT_ITEM") || u.activity.id() == activity_id("ACT_PICKUP")) ?
 +        CDDA::CWM::CreateItemTransferState(fbb, activity_token, std::max(0, u.activity.moves_total),
 +            std::clamp(u.activity.moves_left, 0, std::max(0, u.activity.moves_total)), u.activity.id() == activity_id("ACT_INSERT_ITEM")) :
@@ -4825,7 +5058,7 @@ index 0000000..cfb57e2
 +        g.safe_mode == SAFE_MODE_STOP || u.has_effect(efftype_id("laserlocked")) ||
 +            (clock && (clock->pause_reasons & 4)),
 +        include_chunks, base_revision, state_id, resync_id, completed_command_id,
-+        spawned_vec, removed_vec, clock_state, ground_items_vec, owned_items_vec, avatar_status, consumption, first_aid, crafting, ranged, reload, transfer, inventory_work, quick_slots_vec, cue_vector, low_light, reading, disassembly, rest
++        spawned_vec, removed_vec, clock_state, ground_items_vec, owned_items_vec, avatar_status, consumption, first_aid, crafting, ranged, reload, transfer, inventory_work, quick_slots_vec, cue_vector, low_light, reading, disassembly, rest, liquid_transfer
 +    );
 +
 +    return builder.finish_message(CDDA::CWM::Payload::WorldSnapshot, world_snap.Union());
@@ -5324,10 +5557,10 @@ index 0000000..36adeef
 +}
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..4d9ad0b
+index 0000000..204650f
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,1323 @@
+@@ -0,0 +1,1345 @@
 +#include "cwm/product_language.hpp"
 +#include "cwm_motion.h"
 +// CDDA CWM IPC Server Implementation
@@ -5445,6 +5678,10 @@ index 0000000..4d9ad0b
 +}
 +
 +void CwmServer::refresh_activity(const avatar& u) {
++    if(u.activity.id()==activity_id("ACT_FILL_LIQUID")) {
++        if(!activity_token_ || activity_kind_!="ACT_FILL_LIQUID")activity_token_=next_activity_token_++;
++        activity_kind_="ACT_FILL_LIQUID";activity_total_=activity_remaining_=0;return;
++    }
 +    if (auto work = u.activity.id() == activity_id("ACT_DISASSEMBLE") ? active_disassembly(u) : active_craft(u)) {
 +        const int remaining = 10000000 - std::clamp(work->item_counter, 0, 10000000);
 +        if (!activity_token_ || activity_kind_ != u.activity.id().str() || remaining > activity_remaining_)
@@ -5934,7 +6171,11 @@ index 0000000..4d9ad0b
 +        auto destination = command.transfer_destination ? inventory_selection_.target(command.transfer_destination) : item_location::nowhere;
 +        const auto external_pos = command.transfer_action == 3 ? inventory_selection_.external_position() : u.pos();
 +        inventory_selection_.clear(); ranged_selection_.clear(); activity_token_ = 0;
-+        if (command.transfer_action == 2) {
++        if(command.transfer_action==4) {
++            accepted=handle_owned_liquid(u,source);refresh_activity(u);++world_revision_;
++            result_=Result{command.id,accepted,accepted?"": ::cwm::text("No liquid transferred. Native liquid handling was cancelled or unavailable.")};
++            return accepted || u.moves!=before_moves;
++        } else if (command.transfer_action == 2) {
 +            u.pick_up({{source,command.transfer_quantity}});
 +        } else if (command.transfer_action == 3) {
 +            u.assign_activity(drop_activity_actor({drop_or_stash_item_info(source,command.transfer_quantity)}, external_pos-u.pos(),true));
@@ -6056,7 +6297,16 @@ index 0000000..4d9ad0b
 +    } else {
 +        const tripoint target = m.getlocal(tripoint(command.x, command.y, command.z));
 +        if (target.z == u.posz() && rl_dist(target, u.pos()) <= 1 && m.inbounds(target)) {
-+            if (command.action == int(CDDA::CWM::InteractAction::OPEN)) {
++            if(command.action==int(CDDA::CWM::InteractAction::EXAMINE)) {
++                const auto error=liquid_source_error(u,m,target);
++                if(!error.empty()){result_=Result{command.id,false,error};return false;}
++                inventory_selection_.clear();crafting_selection_.clear();activity_token_=0;
++                const int kind=liquid_source_kind(m,target);
++                if(kind==1)iexamine::water_source(u,target);else iexamine::finite_water_source(u,target);
++                accepted=bool(u.activity);refresh_activity(u);++world_revision_;
++                result_=Result{command.id,accepted,accepted?"": ::cwm::text("No native liquid activity started.")};
++                return accepted || u.moves!=before_moves;
++            } else if (command.action == int(CDDA::CWM::InteractAction::OPEN)) {
 +                accepted = m.open_door(u, target, !m.is_outside(u.pos()), false);
 +                if (accepted) u.moves -= 100; // native terrain-door OPEN cost
 +            } else if (command.action == int(CDDA::CWM::InteractAction::CLOSE)) {
@@ -6217,6 +6467,8 @@ index 0000000..4d9ad0b
 +    std::string signature;
 +    if(const auto* request=msg->payload_as_RestRequest()) {
 +        id=request->command_id();signature="rest:"+std::to_string(request->expected_token());
++    } else if(const auto* request=msg->payload_as_CancelLiquidTransferRequest()) {
++        id=request->command_id();signature="cancel-liquid:"+std::to_string(request->activity_token());
 +    } else if(const auto* request=msg->payload_as_MissionTrackRequest()) {
 +        id=request->command_id();signature="mission-track:"+std::to_string(request->view_id())+":"+std::to_string(request->mission_id())+":"+std::to_string(request->expected_tracked_id());
 +    } else if (const auto* request = msg->payload_as_MoveRequest()) {
@@ -6352,7 +6604,7 @@ index 0000000..4d9ad0b
 +        send_result({id, error.empty(), error}, u, m, g);
 +        return; // UI assignment has no action, move debit or calendar advancement.
 +    }
-+    if (msg->payload_as_CancelConsumptionRequest() || msg->payload_as_CancelFirstAidRequest() || msg->payload_as_CancelCraftingRequest() || msg->payload_as_CancelReloadRequest() || msg->payload_as_CancelItemTransferRequest() || msg->payload_as_CancelReadingRequest() || msg->payload_as_CancelDisassemblyRequest()) {
++    if (msg->payload_as_CancelConsumptionRequest() || msg->payload_as_CancelFirstAidRequest() || msg->payload_as_CancelCraftingRequest() || msg->payload_as_CancelReloadRequest() || msg->payload_as_CancelItemTransferRequest() || msg->payload_as_CancelReadingRequest() || msg->payload_as_CancelDisassemblyRequest() || msg->payload_as_CancelLiquidTransferRequest()) {
 +        const auto* meal = msg->payload_as_CancelConsumptionRequest();
 +        const auto* aid = msg->payload_as_CancelFirstAidRequest();
 +        const auto* craft = msg->payload_as_CancelCraftingRequest();
@@ -6360,11 +6612,12 @@ index 0000000..4d9ad0b
 +        const auto* transfer = msg->payload_as_CancelItemTransferRequest();
 +        const auto* reading = msg->payload_as_CancelReadingRequest();
 +        const auto* disassembly = msg->payload_as_CancelDisassemblyRequest();
-+        const auto token = disassembly ? disassembly->activity_token() : reading ? reading->activity_token() : transfer ? transfer->activity_token() : meal ? meal->activity_token() : aid ? aid->activity_token() : craft ? craft->activity_token() : reload->activity_token();
++        const auto* liquid=msg->payload_as_CancelLiquidTransferRequest();
++        const auto token = liquid ? liquid->activity_token() : disassembly ? disassembly->activity_token() : reading ? reading->activity_token() : transfer ? transfer->activity_token() : meal ? meal->activity_token() : aid ? aid->activity_token() : craft ? craft->activity_token() : reload->activity_token();
 +        refresh_activity(u);
 +        const bool valid = activity_token_ && token == activity_token_ &&
 +            (transfer ? (u.activity.id() == activity_id("ACT_DROP") || u.activity.id() == activity_id("ACT_INSERT_ITEM") || u.activity.id() == activity_id("ACT_PICKUP")) :
-+             u.activity.id() == activity_id(disassembly ? "ACT_DISASSEMBLE" : reading ? "ACT_READ" : meal ? "ACT_CONSUME" : aid ? "ACT_FIRSTAID" : craft ? "ACT_CRAFT" : "ACT_RELOAD")) &&
++             u.activity.id() == activity_id(liquid ? "ACT_FILL_LIQUID" : disassembly ? "ACT_DISASSEMBLE" : reading ? "ACT_READ" : meal ? "ACT_CONSUME" : aid ? "ACT_FIRSTAID" : craft ? "ACT_CRAFT" : "ACT_RELOAD")) &&
 +            u.activity.is_interruptible() && (!realtime_ || !pause_reasons(g));
 +        if (valid) {
 +            u.cancel_activity(); // Native interruption/backlog rules, no refund.
@@ -6521,6 +6774,8 @@ index 0000000..4d9ad0b
 +                    if (!m.close_door(local, inside, true)) error = "Target cannot be closed";
 +                    else if (continuous_ && cwm_motion::overlaps_tile(u,m,local))
 +                        error = ::cwm::tr("Move away from the opening before closing it.", "Allontanati dal varco prima di chiuderlo.");
++                } else if(command.action==int(CDDA::CWM::InteractAction::EXAMINE)) {
++                    error=liquid_source_error(u,m,local);
 +                } else if (command.action == int(CDDA::CWM::InteractAction::PICKUP)) {
 +                    if (!request->pickup_type_id() || request->pickup_type_id()->str().empty()) {
 +                        error = "Missing pickup item guard";
@@ -10483,10 +10738,10 @@ index 0000000..39d991c
 +}
 diff --git a/tests/cwm_runtime_test.cpp b/tests/cwm_runtime_test.cpp
 new file mode 100644
-index 0000000..0456128
+index 0000000..ca95a51
 --- /dev/null
 +++ b/tests/cwm_runtime_test.cpp
-@@ -0,0 +1,760 @@
+@@ -0,0 +1,846 @@
 +#include "cwm_motion.h"
 +#include "cwm/cwm_rest.h"
 +#include "cata_catch.h"
@@ -11246,4 +11501,90 @@ index 0000000..0456128
 +    }
 +    rest.refresh(u);CHECK_FALSE(u.in_sleep_state());CHECK(rest.token==0);
 +    CHECK(calendar::turn>start);CHECK(u.pos()==position);CHECK_FALSE(u.activity);
++}
++
++#include "cwm/cwm_liquids.h"
++#include "cwm/cwm_inventory.h"
++#include "game_inventory.h"
++
++TEST_CASE("cwm_liquid_capabilities_are_observational_and_sources_are_native", "[cwm][liquids]") {
++    prepare_runtime();auto& u=get_avatar();auto& m=get_map();const auto p=u.pos()+tripoint_north;
++    m.ter_set(p,ter_str_id("t_water_sh"));m.furn_set(p,furn_str_id("f_null"));
++    const auto engine=rng_get_engine();const auto time=calendar::turn;const auto moves=u.moves;
++    for(int n=0;n<3;++n) {
++        CHECK(cwm::liquid_source_kind(m,p)==1);
++        CHECK(cwm::CwmMapExporter::export_block(p,m,15).state_flags() & cdda::cwm::LIQUID_SOURCE);
++        CHECK(rng_get_engine()==engine);CHECK(calendar::turn==time);CHECK(u.moves==moves);
++    }
++    m.ter_set(p,ter_str_id("t_floor"));m.furn_set(p,furn_str_id("f_toilet"));
++    CHECK(cwm::liquid_source_kind(m,p)==2);CHECK(cwm::liquid_source_kind(m,u.pos())==0);
++    CHECK_FALSE(cwm::liquid_source_error(u,m,u.pos()+tripoint(3,0,0)).empty());
++}
++
++TEST_CASE("cwm_native_liquid_fill_debits_finite_source_and_preserves_liquid", "[cwm][liquids]") {
++    const override_option no_autosave("AUTOSAVE","false");
++    prepare_runtime();auto& u=get_avatar();auto& m=get_map();const auto p=u.pos()+tripoint_north;
++    m.ter_set(p,ter_str_id("t_floor"));m.furn_set(p,furn_str_id("f_toilet"));
++    item water(itype_id("water"),calendar::turn,12);water.poison=2;m.add_item_or_charges(p,water);
++    item jug(itype_id("jerrycan"),calendar::turn);REQUIRE(u.wield(jug));auto container=u.get_wielded_item();
++    u.moves=100;
++    int prompts=0;
++    REQUIRE_FALSE(do_turn_with_action([&]{
++        iexamine::finite_water_source(u,p);REQUIRE(u.activity.id()==activity_id("ACT_FILL_LIQUID"));
++        REQUIRE(u.activity.targets.size()==1);CHECK(u.activity.targets.front()==container);
++        finish_external_action_phase();return false;
++    },[&](const std::string&,const std::vector<std::string>& labels){
++        ++prompts;
++        for(size_t n=0;n<labels.size();++n)if(labels[n].find("Pour into a container")!=std::string::npos || labels[n].find("jerrycan")!=std::string::npos)return int(n);
++        return int(labels.size())-1;
++    }));
++    REQUIRE(prompts==2);
++    for(int n=0;n<20 && u.activity;++n)REQUIRE_FALSE(do_turn_with_action([&]{
++        if(!u.activity)finish_external_action_phase();return false;
++    },[](const std::string&,const std::vector<std::string>& choices){return int(choices.size())-1;}));
++    CHECK_FALSE(u.activity);int charges=0;
++    for(const auto* it:container->all_items_top()) {CHECK(it->typeId()==itype_id("water"));CHECK(it->poison==2);charges+=it->charges;}
++    CHECK(charges==12);CHECK(m.i_at(p).empty());
++}
++
++TEST_CASE("cwm_owned_liquid_transfer_preserves_partial_remainder_and_native_cost", "[cwm][liquids]") {
++    const override_option no_autosave("AUTOSAVE","false");
++    prepare_runtime();auto& u=get_avatar();REQUIRE(u.wear_item(item(itype_id("backpack"),calendar::turn),false));
++    item jug(itype_id("jerrycan"),calendar::turn);REQUIRE(u.wield(jug));auto source=u.get_wielded_item();
++    item water(itype_id("water_clean"),calendar::turn,10);source->put_in(water,pocket_type::CONTAINER);
++    auto bottle=item_location(u,&u.i_add(item(itype_id("bottle_plastic"),calendar::turn)));
++    const int capacity=bottle->get_remaining_capacity_for_liquid(water,u);REQUIRE(capacity>0);REQUIRE(capacity<10);
++    u.moves=1000;bool result=false;
++    REQUIRE_FALSE(do_turn_with_action([&]{
++        const int moves=u.moves;
++        result=cwm::handle_owned_liquid(u,source);CHECK(result);CHECK(u.moves==moves-100);
++        int remaining=0;for(const auto* it:source->all_items_top())remaining+=it->charges;
++        CHECK(remaining==10-capacity);CHECK_FALSE(u.activity);
++        finish_external_action_phase();return false;
++    },[&](const std::string&,const std::vector<std::string>& labels){
++        for(size_t n=0;n<labels.size();++n)if(labels[n].find("Pour into a container")!=std::string::npos || labels[n].find("plastic bottle")!=std::string::npos)return int(n);
++        return int(labels.size())-1;
++    }));
++    REQUIRE(result);int stored=0;for(const auto* it:bottle->all_items_top())stored+=it->charges;CHECK(stored==capacity);
++}
++
++TEST_CASE("cwm_liquid_menu_cancellation_and_binding_guards_do_not_transfer", "[cwm][liquids]") {
++    prepare_runtime();auto& u=get_avatar();item jug(itype_id("jerrycan"),calendar::turn);REQUIRE(u.wield(jug));
++    auto source=u.get_wielded_item();item water(itype_id("water_clean"),calendar::turn,4);source->put_in(water,pocket_type::CONTAINER);
++    u.moves=1000;
++    REQUIRE_FALSE(do_turn_with_action([&]{
++        const auto moves=u.moves;const auto engine=rng_get_engine();
++        CHECK_FALSE(cwm::handle_owned_liquid(u,source));CHECK(u.moves==moves);CHECK(rng_get_engine()==engine);
++        CHECK(source->all_items_top().front()->charges==4);
++        finish_external_action_phase();return false;
++    },[](const std::string&,const std::vector<std::string>& choices){return int(choices.size())-1;}));
++    cwm::InventorySelection view;cdda::cwm::MessageBuilder wire(1,1);
++    auto bytes=view.query(u,1,wire);const auto* inventory=CDDA::CWM::GetCwmMessage(bytes.data())->payload_as_InventoryView();
++    REQUIRE(cdda::cwm::valid_inventory(inventory));uint32_t id=0;
++    for(const auto* entry:*inventory->entries())if(entry->wielded())id=entry->id();
++    REQUIRE(id>0);CHECK(view.validate_transfer(u,view.view_id(),id,0,0,4).empty());
++    CHECK_FALSE(view.validate_transfer(u,view.view_id(),id,1,0,4).empty());
++    source->all_items_top().front()->charges=3;
++    uint32_t liquid_id=0;for(const auto* entry:*inventory->entries())if(entry->type_id()->str()=="water_clean")liquid_id=entry->id();
++    REQUIRE(liquid_id);CHECK_FALSE(view.validate_transfer(u,view.view_id(),liquid_id,0,0,4).empty());
 +}

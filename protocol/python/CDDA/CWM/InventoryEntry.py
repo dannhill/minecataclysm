@@ -234,8 +234,19 @@ class InventoryEntry(object):
             return obj
         return None
 
+    # InventoryEntry
+    def Liquid(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(58))
+        if o != 0:
+            x = self._tab.Indirect(o + self._tab.Pos)
+            from CDDA.CWM.LiquidInfo import LiquidInfo
+            obj = LiquidInfo()
+            obj.Init(self._tab.Bytes, x)
+            return obj
+        return None
+
 def InventoryEntryStart(builder):
-    builder.StartObject(27)
+    builder.StartObject(28)
 
 def Start(builder):
     InventoryEntryStart(builder)
@@ -407,6 +418,12 @@ def InventoryEntryAddDisassembly(builder, disassembly):
 
 def AddDisassembly(builder, disassembly):
     InventoryEntryAddDisassembly(builder, disassembly)
+
+def InventoryEntryAddLiquid(builder, liquid):
+    builder.PrependUOffsetTRelativeSlot(27, flatbuffers.number_types.UOffsetTFlags.py_type(liquid), 0)
+
+def AddLiquid(builder, liquid):
+    InventoryEntryAddLiquid(builder, liquid)
 
 def InventoryEntryEnd(builder):
     return builder.EndObject()

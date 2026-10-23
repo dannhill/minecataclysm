@@ -7,3 +7,4 @@ class ItemTransferAction(object):
     INSERT = 1
     TAKE_EXTERNAL = 2
     DEPOSIT_EXTERNAL = 3
+    POUR = 4

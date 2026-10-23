@@ -184,6 +184,15 @@ struct QuickbarUseRequestBuilder;
 struct EquipmentRequest;
 struct EquipmentRequestBuilder;
 
+struct LiquidInfo;
+struct LiquidInfoBuilder;
+
+struct LiquidTransferState;
+struct LiquidTransferStateBuilder;
+
+struct CancelLiquidTransferRequest;
+struct CancelLiquidTransferRequestBuilder;
+
 struct ItemTransferRequest;
 struct ItemTransferRequestBuilder;
 
@@ -639,33 +648,36 @@ enum class ItemTransferAction : int8_t {
   INSERT = 1,
   TAKE_EXTERNAL = 2,
   DEPOSIT_EXTERNAL = 3,
+  POUR = 4,
   MIN = DROP,
-  MAX = DEPOSIT_EXTERNAL
+  MAX = POUR
 };
 
-inline const ItemTransferAction (&EnumValuesItemTransferAction())[4] {
+inline const ItemTransferAction (&EnumValuesItemTransferAction())[5] {
   static const ItemTransferAction values[] = {
     ItemTransferAction::DROP,
     ItemTransferAction::INSERT,
     ItemTransferAction::TAKE_EXTERNAL,
-    ItemTransferAction::DEPOSIT_EXTERNAL
+    ItemTransferAction::DEPOSIT_EXTERNAL,
+    ItemTransferAction::POUR
   };
   return values;
 }
 
 inline const char * const *EnumNamesItemTransferAction() {
-  static const char * const names[5] = {
+  static const char * const names[6] = {
     "DROP",
     "INSERT",
     "TAKE_EXTERNAL",
     "DEPOSIT_EXTERNAL",
+    "POUR",
     nullptr
   };
   return names;
 }
 
 inline const char *EnumNameItemTransferAction(ItemTransferAction e) {
-  if (::flatbuffers::IsOutRange(e, ItemTransferAction::DROP, ItemTransferAction::DEPOSIT_EXTERNAL)) return "";
+  if (::flatbuffers::IsOutRange(e, ItemTransferAction::DROP, ItemTransferAction::POUR)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesItemTransferAction()[index];
 }
@@ -830,11 +842,12 @@ enum class Payload : uint8_t {
   MissionView = 57,
   MissionTrackRequest = 58,
   RestRequest = 59,
+  CancelLiquidTransferRequest = 60,
   MIN = NONE,
-  MAX = RestRequest
+  MAX = CancelLiquidTransferRequest
 };
 
-inline const Payload (&EnumValuesPayload())[60] {
+inline const Payload (&EnumValuesPayload())[61] {
   static const Payload values[] = {
     Payload::NONE,
     Payload::HelloRequest,
@@ -895,13 +908,14 @@ inline const Payload (&EnumValuesPayload())[60] {
     Payload::MissionQueryRequest,
     Payload::MissionView,
     Payload::MissionTrackRequest,
-    Payload::RestRequest
+    Payload::RestRequest,
+    Payload::CancelLiquidTransferRequest
   };
   return values;
 }
 
 inline const char * const *EnumNamesPayload() {
-  static const char * const names[61] = {
+  static const char * const names[62] = {
     "NONE",
     "HelloRequest",
     "HelloResponse",
@@ -962,13 +976,14 @@ inline const char * const *EnumNamesPayload() {
     "MissionView",
     "MissionTrackRequest",
     "RestRequest",
+    "CancelLiquidTransferRequest",
     nullptr
   };
   return names;
 }
 
 inline const char *EnumNamePayload(Payload e) {
-  if (::flatbuffers::IsOutRange(e, Payload::NONE, Payload::RestRequest)) return "";
+  if (::flatbuffers::IsOutRange(e, Payload::NONE, Payload::CancelLiquidTransferRequest)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesPayload()[index];
 }
@@ -1211,6 +1226,10 @@ template<> struct PayloadTraits<CDDA::CWM::MissionTrackRequest> {
 
 template<> struct PayloadTraits<CDDA::CWM::RestRequest> {
   static const Payload enum_value = Payload::RestRequest;
+};
+
+template<> struct PayloadTraits<CDDA::CWM::CancelLiquidTransferRequest> {
+  static const Payload enum_value = Payload::CancelLiquidTransferRequest;
 };
 
 bool VerifyPayload(::flatbuffers::Verifier &verifier, const void *obj, Payload type);
@@ -3256,7 +3275,8 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_LOW_LIGHT = 62,
     VT_READING = 64,
     VT_DISASSEMBLY = 66,
-    VT_REST = 68
+    VT_REST = 68,
+    VT_LIQUID_TRANSFER = 70
   };
   uint64_t world_revision() const {
     return GetField<uint64_t>(VT_WORLD_REVISION, 0);
@@ -3456,6 +3476,12 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   CDDA::CWM::RestState *mutable_rest() {
     return GetPointer<CDDA::CWM::RestState *>(VT_REST);
   }
+  const CDDA::CWM::LiquidTransferState *liquid_transfer() const {
+    return GetPointer<const CDDA::CWM::LiquidTransferState *>(VT_LIQUID_TRANSFER);
+  }
+  CDDA::CWM::LiquidTransferState *mutable_liquid_transfer() {
+    return GetPointer<CDDA::CWM::LiquidTransferState *>(VT_LIQUID_TRANSFER);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint64_t>(verifier, VT_WORLD_REVISION, 8) &&
@@ -3525,6 +3551,8 @@ struct WorldSnapshot FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyTable(disassembly()) &&
            VerifyOffset(verifier, VT_REST) &&
            verifier.VerifyTable(rest()) &&
+           VerifyOffset(verifier, VT_LIQUID_TRANSFER) &&
+           verifier.VerifyTable(liquid_transfer()) &&
            verifier.EndTable();
   }
 };
@@ -3632,6 +3660,9 @@ struct WorldSnapshotBuilder {
   void add_rest(::flatbuffers::Offset<CDDA::CWM::RestState> rest) {
     fbb_.AddOffset(WorldSnapshot::VT_REST, rest);
   }
+  void add_liquid_transfer(::flatbuffers::Offset<CDDA::CWM::LiquidTransferState> liquid_transfer) {
+    fbb_.AddOffset(WorldSnapshot::VT_LIQUID_TRANSFER, liquid_transfer);
+  }
   explicit WorldSnapshotBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -3677,7 +3708,8 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshot(
     bool low_light = false,
     ::flatbuffers::Offset<CDDA::CWM::ReadingState> reading = 0,
     ::flatbuffers::Offset<CDDA::CWM::DisassemblyState> disassembly = 0,
-    ::flatbuffers::Offset<CDDA::CWM::RestState> rest = 0) {
+    ::flatbuffers::Offset<CDDA::CWM::RestState> rest = 0,
+    ::flatbuffers::Offset<CDDA::CWM::LiquidTransferState> liquid_transfer = 0) {
   WorldSnapshotBuilder builder_(_fbb);
   builder_.add_completed_command_id(completed_command_id);
   builder_.add_resync_id(resync_id);
@@ -3685,6 +3717,7 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshot(
   builder_.add_base_revision(base_revision);
   builder_.add_simulation_time_seconds(simulation_time_seconds);
   builder_.add_world_revision(world_revision);
+  builder_.add_liquid_transfer(liquid_transfer);
   builder_.add_rest(rest);
   builder_.add_disassembly(disassembly);
   builder_.add_reading(reading);
@@ -3749,7 +3782,8 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshotDirect(
     bool low_light = false,
     ::flatbuffers::Offset<CDDA::CWM::ReadingState> reading = 0,
     ::flatbuffers::Offset<CDDA::CWM::DisassemblyState> disassembly = 0,
-    ::flatbuffers::Offset<CDDA::CWM::RestState> rest = 0) {
+    ::flatbuffers::Offset<CDDA::CWM::RestState> rest = 0,
+    ::flatbuffers::Offset<CDDA::CWM::LiquidTransferState> liquid_transfer = 0) {
   auto chunks__ = chunks ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::ChunkSnapshot>>(*chunks) : 0;
   auto entities__ = entities ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::EntityState>>(*entities) : 0;
   auto vehicles__ = vehicles ? _fbb.CreateVector<::flatbuffers::Offset<CDDA::CWM::VehicleState>>(*vehicles) : 0;
@@ -3795,7 +3829,8 @@ inline ::flatbuffers::Offset<WorldSnapshot> CreateWorldSnapshotDirect(
       low_light,
       reading,
       disassembly,
-      rest);
+      rest,
+      liquid_transfer);
 }
 
 struct InventoryWorkState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -5980,7 +6015,8 @@ struct InventoryEntry FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_UI_ORDER = 50,
     VT_EXTERNAL = 52,
     VT_BOOK = 54,
-    VT_DISASSEMBLY = 56
+    VT_DISASSEMBLY = 56,
+    VT_LIQUID = 58
   };
   uint32_t id() const {
     return GetField<uint32_t>(VT_ID, 0);
@@ -6144,6 +6180,12 @@ struct InventoryEntry FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   CDDA::CWM::DisassemblyInfo *mutable_disassembly() {
     return GetPointer<CDDA::CWM::DisassemblyInfo *>(VT_DISASSEMBLY);
   }
+  const CDDA::CWM::LiquidInfo *liquid() const {
+    return GetPointer<const CDDA::CWM::LiquidInfo *>(VT_LIQUID);
+  }
+  CDDA::CWM::LiquidInfo *mutable_liquid() {
+    return GetPointer<CDDA::CWM::LiquidInfo *>(VT_LIQUID);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_ID, 4) &&
@@ -6183,6 +6225,8 @@ struct InventoryEntry FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyTable(book()) &&
            VerifyOffset(verifier, VT_DISASSEMBLY) &&
            verifier.VerifyTable(disassembly()) &&
+           VerifyOffset(verifier, VT_LIQUID) &&
+           verifier.VerifyTable(liquid()) &&
            verifier.EndTable();
   }
 };
@@ -6272,6 +6316,9 @@ struct InventoryEntryBuilder {
   void add_disassembly(::flatbuffers::Offset<CDDA::CWM::DisassemblyInfo> disassembly) {
     fbb_.AddOffset(InventoryEntry::VT_DISASSEMBLY, disassembly);
   }
+  void add_liquid(::flatbuffers::Offset<CDDA::CWM::LiquidInfo> liquid) {
+    fbb_.AddOffset(InventoryEntry::VT_LIQUID, liquid);
+  }
   explicit InventoryEntryBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -6311,11 +6358,13 @@ inline ::flatbuffers::Offset<InventoryEntry> CreateInventoryEntry(
     uint32_t ui_order = 0,
     bool external = false,
     ::flatbuffers::Offset<CDDA::CWM::BookInfo> book = 0,
-    ::flatbuffers::Offset<CDDA::CWM::DisassemblyInfo> disassembly = 0) {
+    ::flatbuffers::Offset<CDDA::CWM::DisassemblyInfo> disassembly = 0,
+    ::flatbuffers::Offset<CDDA::CWM::LiquidInfo> liquid = 0) {
   InventoryEntryBuilder builder_(_fbb);
   builder_.add_length_mm(length_mm);
   builder_.add_volume_ml(volume_ml);
   builder_.add_weight_grams(weight_grams);
+  builder_.add_liquid(liquid);
   builder_.add_disassembly(disassembly);
   builder_.add_book(book);
   builder_.add_ui_order(ui_order);
@@ -6371,7 +6420,8 @@ inline ::flatbuffers::Offset<InventoryEntry> CreateInventoryEntryDirect(
     uint32_t ui_order = 0,
     bool external = false,
     ::flatbuffers::Offset<CDDA::CWM::BookInfo> book = 0,
-    ::flatbuffers::Offset<CDDA::CWM::DisassemblyInfo> disassembly = 0) {
+    ::flatbuffers::Offset<CDDA::CWM::DisassemblyInfo> disassembly = 0,
+    ::flatbuffers::Offset<CDDA::CWM::LiquidInfo> liquid = 0) {
   auto type_id__ = type_id ? _fbb.CreateString(type_id) : 0;
   auto name__ = name ? _fbb.CreateString(name) : 0;
   auto category__ = category ? _fbb.CreateString(category) : 0;
@@ -6407,7 +6457,8 @@ inline ::flatbuffers::Offset<InventoryEntry> CreateInventoryEntryDirect(
       ui_order,
       external,
       book,
-      disassembly);
+      disassembly,
+      liquid);
 }
 
 struct InventoryPocket FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -7588,6 +7639,161 @@ inline ::flatbuffers::Offset<EquipmentRequest> CreateEquipmentRequest(
   builder_.add_command_id(command_id);
   builder_.add_item_id(item_id);
   builder_.add_action(action);
+  return builder_.Finish();
+}
+
+struct LiquidInfo FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef LiquidInfoBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_REASON = 4
+  };
+  const ::flatbuffers::String *reason() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_REASON);
+  }
+  ::flatbuffers::String *mutable_reason() {
+    return GetPointer<::flatbuffers::String *>(VT_REASON);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_REASON) &&
+           verifier.VerifyString(reason()) &&
+           verifier.EndTable();
+  }
+};
+
+struct LiquidInfoBuilder {
+  typedef LiquidInfo Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_reason(::flatbuffers::Offset<::flatbuffers::String> reason) {
+    fbb_.AddOffset(LiquidInfo::VT_REASON, reason);
+  }
+  explicit LiquidInfoBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<LiquidInfo> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<LiquidInfo>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<LiquidInfo> CreateLiquidInfo(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<::flatbuffers::String> reason = 0) {
+  LiquidInfoBuilder builder_(_fbb);
+  builder_.add_reason(reason);
+  return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<LiquidInfo> CreateLiquidInfoDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    const char *reason = nullptr) {
+  auto reason__ = reason ? _fbb.CreateString(reason) : 0;
+  return CDDA::CWM::CreateLiquidInfo(
+      _fbb,
+      reason__);
+}
+
+struct LiquidTransferState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef LiquidTransferStateBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_TOKEN = 4
+  };
+  uint64_t token() const {
+    return GetField<uint64_t>(VT_TOKEN, 0);
+  }
+  bool mutate_token(uint64_t _token = 0) {
+    return SetField<uint64_t>(VT_TOKEN, _token, 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_TOKEN, 8) &&
+           verifier.EndTable();
+  }
+};
+
+struct LiquidTransferStateBuilder {
+  typedef LiquidTransferState Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_token(uint64_t token) {
+    fbb_.AddElement<uint64_t>(LiquidTransferState::VT_TOKEN, token, 0);
+  }
+  explicit LiquidTransferStateBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<LiquidTransferState> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<LiquidTransferState>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<LiquidTransferState> CreateLiquidTransferState(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t token = 0) {
+  LiquidTransferStateBuilder builder_(_fbb);
+  builder_.add_token(token);
+  return builder_.Finish();
+}
+
+struct CancelLiquidTransferRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef CancelLiquidTransferRequestBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_COMMAND_ID = 4,
+    VT_ACTIVITY_TOKEN = 6
+  };
+  uint64_t command_id() const {
+    return GetField<uint64_t>(VT_COMMAND_ID, 0);
+  }
+  bool mutate_command_id(uint64_t _command_id = 0) {
+    return SetField<uint64_t>(VT_COMMAND_ID, _command_id, 0);
+  }
+  uint64_t activity_token() const {
+    return GetField<uint64_t>(VT_ACTIVITY_TOKEN, 0);
+  }
+  bool mutate_activity_token(uint64_t _activity_token = 0) {
+    return SetField<uint64_t>(VT_ACTIVITY_TOKEN, _activity_token, 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_COMMAND_ID, 8) &&
+           VerifyField<uint64_t>(verifier, VT_ACTIVITY_TOKEN, 8) &&
+           verifier.EndTable();
+  }
+};
+
+struct CancelLiquidTransferRequestBuilder {
+  typedef CancelLiquidTransferRequest Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_command_id(uint64_t command_id) {
+    fbb_.AddElement<uint64_t>(CancelLiquidTransferRequest::VT_COMMAND_ID, command_id, 0);
+  }
+  void add_activity_token(uint64_t activity_token) {
+    fbb_.AddElement<uint64_t>(CancelLiquidTransferRequest::VT_ACTIVITY_TOKEN, activity_token, 0);
+  }
+  explicit CancelLiquidTransferRequestBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<CancelLiquidTransferRequest> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<CancelLiquidTransferRequest>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<CancelLiquidTransferRequest> CreateCancelLiquidTransferRequest(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t command_id = 0,
+    uint64_t activity_token = 0) {
+  CancelLiquidTransferRequestBuilder builder_(_fbb);
+  builder_.add_activity_token(activity_token);
+  builder_.add_command_id(command_id);
   return builder_.Finish();
 }
 
@@ -11038,6 +11244,9 @@ struct CwmMessage FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const CDDA::CWM::RestRequest *payload_as_RestRequest() const {
     return payload_type() == CDDA::CWM::Payload::RestRequest ? static_cast<const CDDA::CWM::RestRequest *>(payload()) : nullptr;
   }
+  const CDDA::CWM::CancelLiquidTransferRequest *payload_as_CancelLiquidTransferRequest() const {
+    return payload_type() == CDDA::CWM::Payload::CancelLiquidTransferRequest ? static_cast<const CDDA::CWM::CancelLiquidTransferRequest *>(payload()) : nullptr;
+  }
   void *mutable_payload() {
     return GetPointer<void *>(VT_PAYLOAD);
   }
@@ -11308,6 +11517,10 @@ template<> inline const CDDA::CWM::MissionTrackRequest *CwmMessage::payload_as<C
 
 template<> inline const CDDA::CWM::RestRequest *CwmMessage::payload_as<CDDA::CWM::RestRequest>() const {
   return payload_as_RestRequest();
+}
+
+template<> inline const CDDA::CWM::CancelLiquidTransferRequest *CwmMessage::payload_as<CDDA::CWM::CancelLiquidTransferRequest>() const {
+  return payload_as_CancelLiquidTransferRequest();
 }
 
 struct CwmMessageBuilder {
@@ -11610,6 +11823,10 @@ inline bool VerifyPayload(::flatbuffers::Verifier &verifier, const void *obj, Pa
     }
     case Payload::RestRequest: {
       auto ptr = reinterpret_cast<const CDDA::CWM::RestRequest *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::CancelLiquidTransferRequest: {
+      auto ptr = reinterpret_cast<const CDDA::CWM::CancelLiquidTransferRequest *>(obj);
       return verifier.VerifyTable(ptr);
     }
     default: return true;

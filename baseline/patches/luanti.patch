@@ -344,7 +344,7 @@ index 16ceda4..20bd596 100644
  			float old_anim_speed = player->last_animation_speed;
  			m_velocity = v3f(0,0,0);
 diff --git a/src/client/game.cpp b/src/client/game.cpp
-index 27b5833..50fdc83 100644
+index 27b5833..f99a923 100644
 --- a/src/client/game.cpp
 +++ b/src/client/game.cpp
 @@ -8,6 +8,10 @@
@@ -852,7 +852,7 @@ index 27b5833..50fdc83 100644
  
  	core::line3d<f32> shootline;
  
-@@ -3365,6 +3687,54 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
+@@ -3365,6 +3687,58 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
  	// but the halo rendering code is already inefficient so there's no point in optimizing it here
  	hud->updateSelectionMesh(camera_offset);
  
@@ -867,6 +867,7 @@ index 27b5833..50fdc83 100644
 +        if(pointed.type == POINTEDTHING_NODE && bridge.pointStorageNode(pointed.node_undersurface)) items_pointed=true;
 +		bridge.pointCombatTarget(item_ray);
 +        const auto opening = bridge.pointOpening(item_ray);
++        const auto liquid_source = bridge.pointLiquidSource(item_ray);
 +        const bool close_pressed = wasKeyPressed(KeyType::CDDA_CLOSE);
 +        if (close_pressed && opening && !bridge.getMetrics().pending_decision)
 +            bridge.handlePointedOpening(*opening, true);
@@ -878,14 +879,17 @@ index 27b5833..50fdc83 100644
 +        const bool right_pressed = wasKeyPressed(KeyType::PLACE);
 +        const bool npc_pointed = bridge.hasPointedNpc();
 +        const bool context = !bridge.hasPointedRangedTarget() && (npc_pointed || items_pointed ||
-+            opening.has_value());
++            opening.has_value() || liquid_source.has_value());
 +        const bool context_pressed = bridge.handleAimInput(isKeyDown(KeyType::PLACE), right_pressed,
 +            isKeyDown(KeyType::CDDA_AIM), context,
 +            device->isWindowActive() && device->isWindowFocused() && !isMenuActive() &&
 +                !guienv->hasFocus(gui_chat_console.get()), fire_pressed, reload_pressed);
 +		if (!bridge.getMetrics().pending_decision && context_pressed && !close_pressed) {
 +            if (npc_pointed) bridge.talkPointedNpc();
-+            else if (items_pointed) {
++            else if(liquid_source) {
++                const auto p=bridge.luantiToCddaCoord(*liquid_source);
++                bridge.handleInteract(p.X,p.Y,p.Z,0);
++            } else if (items_pointed) {
 +				const auto form = bridge.activateGroundItems();
 +				if (!form.empty()) {
 +					auto *&formspec = m_game_ui->updateFormspec("CWM_GROUND");
@@ -907,7 +911,7 @@ index 27b5833..50fdc83 100644
  	// Allow digging again if button is not pressed
  	if (runData.digging_blocked && !isKeyDown(KeyType::DIG))
  		runData.digging_blocked = false;
-@@ -4247,7 +4617,8 @@ void Game::updateClouds(float dtime)
+@@ -4247,7 +4621,8 @@ void Game::updateClouds(float dtime)
  {
  	if (this->sky->getCloudsVisible()) {
  		this->clouds->setVisible(true);
@@ -917,7 +921,7 @@ index 27b5833..50fdc83 100644
  		// this->camera->getPosition is not enough for third-person camera.
  		v3f camera_node_position = this->camera->getCameraNode()->getPosition();
  		v3s16 camera_offset      = this->camera->getOffset();
-@@ -4319,7 +4690,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
+@@ -4319,7 +4694,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
  	/*
  		Fog
  	*/
@@ -931,7 +935,7 @@ index 27b5833..50fdc83 100644
  		this->driver->setFog(
  				fog_color,
  				video::EFT_FOG_LINEAR,
-@@ -4470,7 +4846,7 @@ void Game::showDeathFormspecLegacy()
+@@ -4470,7 +4850,7 @@ void Game::showDeathFormspecLegacy()
  }
  
  #define GET_KEY_NAME(KEY) gettext(getKeySetting(#KEY).name())
@@ -940,7 +944,7 @@ index 27b5833..50fdc83 100644
  {
  	std::string control_text;
  
-@@ -4518,6 +4894,22 @@ void Game::showPauseMenu()
+@@ -4518,6 +4898,22 @@ void Game::showPauseMenu()
  		<< strgettext("Exit to Menu") << "]";
  	os		<< "button_exit[4," << (ypos++) << ";3,0.5;btn_exit_os;"
  		<< strgettext("Exit to OS")   << "]";
@@ -963,7 +967,7 @@ index 27b5833..50fdc83 100644
  	if (!control_text.empty()) {
  	os		<< "textarea[7.5,0.25;3.9,6.25;;" << control_text << ";]";
  	}
-@@ -4536,8 +4928,8 @@ void Game::showPauseMenu()
+@@ -4536,8 +4932,8 @@ void Game::showPauseMenu()
  	}
  	os << "\n";
  	if (simple_singleplayer_mode || address.empty()) {
@@ -974,7 +978,7 @@ index 27b5833..50fdc83 100644
  		// Note: Status of enable_damage and creative_mode settings is intentionally
  		// NOT shown here because the game might roll its own damage system and/or do
  		// a per-player Creative Mode, in which case writing it here would mislead.
-@@ -4559,10 +4951,15 @@ void Game::showPauseMenu()
+@@ -4559,10 +4955,15 @@ void Game::showPauseMenu()
  	}
  	os << ";]";
  
@@ -2223,10 +2227,10 @@ index 0000000..e1e7236
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..f6413ce
+index 0000000..08075bf
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,3458 @@
+@@ -0,0 +1,3497 @@
 +#include "cwm/product_language.hpp"
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
@@ -2408,6 +2412,7 @@ index 0000000..f6413ce
 +    bool origin_valid_{false};
 +    std::map<v3s16, std::vector<MapNode>> projected_blocks_;
 +    std::map<v3s16, CDDA::CWM::CwmBlock> terrain_tiles_;
++    std::map<v3s16,float> liquid_sources_;
 +    std::map<v3s16, bool> opening_tiles_;
 +    AimInput aim_input_;
 +    GroundItemProjection ground_items_;
@@ -2440,6 +2445,7 @@ index 0000000..f6413ce
 +    bool first_aid_{false}, crafting_{false};
 +    uint64_t rest_token_=0;int rest_phase_=-1,rest_progress_=-1;bool rest_accelerated_=false;
 +    bool disassembling_{false}; std::string disassembly_name_;
++    bool filling_liquid_{false};
 +    bool reloading_{false}, reading_{false}, reading_skimming_{false}, reading_panel_hidden_{false};
 +    std::string reading_book_, reading_progress_;
 +    uint64_t weapon_token_{0}, aim_sent_{0}, fire_sent_{0}, reload_sent_{0};
@@ -2529,7 +2535,7 @@ index 0000000..f6413ce
 +        crafting_query_pending_=crafting_favorite_refresh_=false;crafting_favorite_command_=0;
 +        crafting_close_ = crafting_open_;
 +        rest_token_=0;rest_phase_=-1;rest_progress_=-1;rest_accelerated_=false;
-+        queued_cancel_activity_.reset(); activity_token_ = 0; weapon_token_ = 0; disassembling_ = reloading_ = reading_ = reading_panel_hidden_ = false; disassembly_name_.clear(); reading_book_.clear(); reading_progress_.clear();
++        queued_cancel_activity_.reset(); filling_liquid_=false; activity_token_ = 0; weapon_token_ = 0; disassembling_ = reloading_ = reading_ = reading_panel_hidden_ = false; disassembly_name_.clear(); reading_book_.clear(); reading_progress_.clear();
 +        activity_total_ = activity_remaining_ = 0;
 +        queued_equipment_.reset(); queued_transfer_.reset(); external_anchor_.reset(); transferring_ = false; inventory_query_ = 0; equipment_view_ = {};
 +        equipment_close_ = equipment_open_;
@@ -2559,7 +2565,7 @@ index 0000000..f6413ce
 +        auto wire = session_.builder();
 +        const uint64_t id = session_.next_command++;
 +        const bool cancel = queued_cancel_activity_.has_value();
-+        const auto bytes = cancel ? (disassembling_ ? wire.build_cancel_disassembly(id, *queued_cancel_activity_) : reading_ ? wire.build_cancel_reading(id, *queued_cancel_activity_) : transferring_ ? wire.build_cancel_item_transfer(id, *queued_cancel_activity_) : crafting_ ? wire.build_cancel_crafting(id, *queued_cancel_activity_) : first_aid_ ? wire.build_cancel_first_aid(id, *queued_cancel_activity_) : reloading_ ? wire.build_cancel_reload(id, *queued_cancel_activity_) : wire.build_cancel_consumption(id, *queued_cancel_activity_)) : queued_transfer_ ? wire.build_item_transfer(id, queued_transfer_->view, queued_transfer_->item,
++        const auto bytes = cancel ? (filling_liquid_ ? wire.build_cancel_liquid_transfer(id,*queued_cancel_activity_) : disassembling_ ? wire.build_cancel_disassembly(id, *queued_cancel_activity_) : reading_ ? wire.build_cancel_reading(id, *queued_cancel_activity_) : transferring_ ? wire.build_cancel_item_transfer(id, *queued_cancel_activity_) : crafting_ ? wire.build_cancel_crafting(id, *queued_cancel_activity_) : first_aid_ ? wire.build_cancel_first_aid(id, *queued_cancel_activity_) : reloading_ ? wire.build_cancel_reload(id, *queued_cancel_activity_) : wire.build_cancel_consumption(id, *queued_cancel_activity_)) : queued_transfer_ ? wire.build_item_transfer(id, queued_transfer_->view, queued_transfer_->item,
 +            queued_transfer_->quantity, queued_transfer_->destination, static_cast<CDDA::CWM::ItemTransferAction>(queued_transfer_->action)) : queued_crafting_ ?
 +            wire.build_crafting_request(id, queued_crafting_->view, queued_crafting_->entry) : wire.build_equipment_request(id, queued_equipment_->view, queued_equipment_->item,
 +                static_cast<CDDA::CWM::EquipmentAction>(queued_equipment_->action));
@@ -2569,6 +2575,7 @@ index 0000000..f6413ce
 +            inventory_work_command_ = id; inventory_work_settled_ = inventory_work_rejected_ = false;
 +            inventory_return_requested_ = true; inventory_return_armed_ = false; inventory_work_error_.clear();
 +            if (cancel) inventory_work_label_ = (::cwm::wide("Interrupting activity", "Interruzione dell’attivita"));
++            else if (transfer && queued_transfer_->action == 4) inventory_work_label_=::cwm::wide("Pour liquid");
 +            else if (transfer && queued_transfer_->action == 2) inventory_work_label_ = ::cwm::wide("Collect from storage", "Raccogli dal contenitore");
 +            else if (transfer && queued_transfer_->action == 3) inventory_work_label_ = ::cwm::wide("Deposit in storage", "Deposita nel contenitore");
 +            else if (transfer) inventory_work_label_ = queued_transfer_->action ? (::cwm::wide("Stow in container", "Riponi nel contenitore")) : (::cwm::wide("Drop on ground", "Deposita a terra"));
@@ -3004,6 +3011,8 @@ index 0000000..f6413ce
 +    void place_cdda_tile(const v3s16& base, uint16_t material, uint32_t flags,
 +                         uint8_t light, uint8_t orientation, std::set<v3s16>& modified) {
 +        using namespace cdda::cwm;
++        if(flags & LIQUID_SOURCE)liquid_sources_[base]=(flags & FURNITURE) || material==OBSTACLE || material==LOW_OBSTACLE ? 2.5f : .55f;
++        else liquid_sources_.erase(base);
 +        if (material == DOOR_CLOSED || material == DOOR_OPEN || material == WINDOW ||
 +            material == WINDOW_OPEN || material == WINDOW_BOARDED) opening_tiles_[base] = material == DOOR_OPEN || material == WINDOW_OPEN;
 +        else opening_tiles_.erase(base);
@@ -3107,7 +3116,7 @@ index 0000000..f6413ce
 +        vehicles_.clear();
 +        std::set<v3s16> old_blocks;
 +        for (const auto& [pos, nodes] : projected_blocks_) old_blocks.insert(pos);
-+        projected_blocks_.clear(); terrain_tiles_.clear(); opening_tiles_.clear(); terrain_bounds_.clear();
++        projected_blocks_.clear(); terrain_tiles_.clear(); opening_tiles_.clear(); liquid_sources_.clear(); terrain_bounds_.clear();
 +        clear_ground_item_visuals();
 +        ground_items_.clear();
 +        owned_items_.clear(); last_ground_target_.reset(); cancel_pickup_selection(); cancel_equipment();
@@ -3488,7 +3497,8 @@ index 0000000..f6413ce
 +                rest_progress_=rest?rest->progress():-1;rest_accelerated_=rest && rest->accelerated();
 +                const auto* consumption = snap->consumption();
 +                const uint64_t previous_consumption = activity_token_;
-+                const auto* transfer = snap->item_transfer(); transferring_ = transfer != nullptr;
++                const auto* liquid_work=snap->liquid_transfer();filling_liquid_=liquid_work!=nullptr;
++                const auto* transfer = snap->item_transfer(); transferring_ = transfer != nullptr || filling_liquid_;
 +                const auto* reload = snap->reload(); reloading_ = reload != nullptr;
 +                const auto* gun = snap->ranged_weapon();
 +                if (weapon_token_ != (gun ? gun->token() : 0)) { aim_input_ = {}; deferred_ranged_.reset(); }
@@ -3504,9 +3514,9 @@ index 0000000..f6413ce
 +                reading_book_=reading ? reading->book_name()->str() : "";
 +                reading_progress_=reading ? reading->progress()->str() : "";
 +                reading_skimming_=reading && reading->skimming();
-+                activity_token_ = disassembly ? disassembly->token() : reading ? reading->token() : transfer ? transfer->token() : reload ? reload->token() : craft ? craft->token() : aid ? aid->token() : consumption ? consumption->token() : 0;
-+                activity_total_ = disassembly ? 10000000 : reading ? reading->total_moves() : transfer ? transfer->total_moves() : reload ? reload->total_moves() : craft ? 10000000 : aid ? aid->total_moves() : consumption ? consumption->total_moves() : 0;
-+                activity_remaining_ = disassembly ? 10000000-disassembly->progress() : reading ? reading->remaining_moves() : transfer ? transfer->remaining_moves() : reload ? reload->remaining_moves() : craft ? 10000000 - craft->progress() : aid ? aid->remaining_moves() : consumption ? consumption->remaining_moves() : 0;
++                activity_token_ = liquid_work ? liquid_work->token() : disassembly ? disassembly->token() : reading ? reading->token() : transfer ? transfer->token() : reload ? reload->token() : craft ? craft->token() : aid ? aid->token() : consumption ? consumption->token() : 0;
++                activity_total_ = liquid_work ? 0 : disassembly ? 10000000 : reading ? reading->total_moves() : transfer ? transfer->total_moves() : reload ? reload->total_moves() : craft ? 10000000 : aid ? aid->total_moves() : consumption ? consumption->total_moves() : 0;
++                activity_remaining_ = liquid_work ? 0 : disassembly ? 10000000-disassembly->progress() : reading ? reading->remaining_moves() : transfer ? transfer->remaining_moves() : reload ? reload->remaining_moves() : craft ? 10000000 - craft->progress() : aid ? aid->remaining_moves() : consumption ? consumption->remaining_moves() : 0;
 +                if(previous_consumption!=activity_token_)reading_panel_hidden_=false;
 +                if (previous_consumption != activity_token_ && equipment_open_) equipment_dirty_ = true;
 +                if (previous_consumption != activity_token_ && crafting_open_) crafting_dirty_ = true;
@@ -3532,7 +3542,7 @@ index 0000000..f6413ce
 +                    // only. A CDDA rebase must not remesh the world under the camera.
 +                    auto previous_blocks = std::move(projected_blocks_);
 +                    projected_blocks_.clear();
-+                    terrain_tiles_.clear(); opening_tiles_.clear();
++                    terrain_tiles_.clear(); opening_tiles_.clear(); liquid_sources_.clear();
 +
 +                    for (size_t ci = 0; ci < snap->chunks()->size(); ++ci) {
 +                        const auto* chunk = snap->chunks()->Get(ci);
@@ -4121,7 +4131,7 @@ index 0000000..f6413ce
 +    std::string trace_path;
 +    if (g_settings->getNoEx("cwm_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->trace_.open(trace_path);
-+        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog,ipc_connected,ipc_input,ipc_output,ipc_read_bytes,ipc_write_bytes,ipc_frames,ipc_dispatch_bytes,ipc_read_calls,ipc_write_calls,session_state,input_ready,session_id,player_id,connection_id,sequence,resync_count,entity_cache,vehicle_cache,scene_origin_x,scene_origin_y,simulation_time,realtime,pause_reasons,time_scale,sent_intent,continuous_motion,intent_x,intent_y,ipc_latency_ms,projection_ms,ground_tiles,owned_items,ground_container,ground_hover,queued_pickup,ground_visual_nodes,ground_hover_items,ground_target_items,ground_target_visual_nodes,ground_target_first_type,status_available,body_form,survival_visible,status_stamina,status_head,status_arm_l,combat_hover,attacks_sent,attack_target,attack_target_hp,attack_result,player_state_flags,player_eye_offset,visual_animation_time,visual_animation_delta,ground_item_rotation,status_hunger_level,status_thirst_level,status_fatigue_level,status_pain_level,hud_images_active,equipment_form,inventory_view,inventory_entries,equipment_selected,equipment_sent,pending_decision,consumption_token,consumption_total,consumption_remaining,cancel_consumption_sent,first_aid_token,first_aid_total,first_aid_remaining,crafting_form,crafting_view,crafting_selected,crafting_sent,crafting_token,crafting_progress,weapon_token,weapon_ammo,weapon_recoil,aim_sent,fire_sent,reload_sent,reload_token,reload_total,reload_remaining,transfer_form,transfers_sent,transfer_token,transfer_total,transfer_remaining,inventory_work_command,native_work_command,native_work_settled,inventory_return,inventory_work_visible,equipment_page,equipment_filter,equipment_search_open,quick_slot,quick_count,quick_wielded,quick_use_sent,quick_bind_command,aim_held,ranged_deferred,external_form,external_entries,decision_waiting,native_work_total_ms,native_work_remaining_ms,work_progress_visible,presentation_cues,sounds_dispatched,low_light,underwater,diagnostics,wield_texture,shot_kick,low_light_blend,reading_token,reading_total,reading_remaining,reading_skimming,disassembly_token,disassembly_progress,rest_token,rest_phase,rest_accelerated\n";
++        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog,ipc_connected,ipc_input,ipc_output,ipc_read_bytes,ipc_write_bytes,ipc_frames,ipc_dispatch_bytes,ipc_read_calls,ipc_write_calls,session_state,input_ready,session_id,player_id,connection_id,sequence,resync_count,entity_cache,vehicle_cache,scene_origin_x,scene_origin_y,simulation_time,realtime,pause_reasons,time_scale,sent_intent,continuous_motion,intent_x,intent_y,ipc_latency_ms,projection_ms,ground_tiles,owned_items,ground_container,ground_hover,queued_pickup,ground_visual_nodes,ground_hover_items,ground_target_items,ground_target_visual_nodes,ground_target_first_type,status_available,body_form,survival_visible,status_stamina,status_head,status_arm_l,combat_hover,attacks_sent,attack_target,attack_target_hp,attack_result,player_state_flags,player_eye_offset,visual_animation_time,visual_animation_delta,ground_item_rotation,status_hunger_level,status_thirst_level,status_fatigue_level,status_pain_level,hud_images_active,equipment_form,inventory_view,inventory_entries,equipment_selected,equipment_sent,pending_decision,consumption_token,consumption_total,consumption_remaining,cancel_consumption_sent,first_aid_token,first_aid_total,first_aid_remaining,crafting_form,crafting_view,crafting_selected,crafting_sent,crafting_token,crafting_progress,weapon_token,weapon_ammo,weapon_recoil,aim_sent,fire_sent,reload_sent,reload_token,reload_total,reload_remaining,transfer_form,transfers_sent,transfer_token,transfer_total,transfer_remaining,inventory_work_command,native_work_command,native_work_settled,inventory_return,inventory_work_visible,equipment_page,equipment_filter,equipment_search_open,quick_slot,quick_count,quick_wielded,quick_use_sent,quick_bind_command,aim_held,ranged_deferred,external_form,external_entries,decision_waiting,native_work_total_ms,native_work_remaining_ms,work_progress_visible,presentation_cues,sounds_dispatched,low_light,underwater,diagnostics,wield_texture,shot_kick,low_light_blend,reading_token,reading_total,reading_remaining,reading_skimming,disassembly_token,disassembly_progress,rest_token,rest_phase,rest_accelerated,liquid_transfer_token\n";
 +    }
 +    if (g_settings->getNoEx("cwm_entity_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->entity_trace_.open(trace_path);
@@ -4373,7 +4383,7 @@ index 0000000..f6413ce
 +        << ',' << wieldedTexture() << ',' << shotKick() << ',' << pimpl_->low_light_blend_ << ',' << (pimpl_->reading_ ? pimpl_->activity_token_ : 0)
 +        << ',' << (pimpl_->reading_ ? pimpl_->activity_total_ : 0) << ',' << (pimpl_->reading_ ? pimpl_->activity_remaining_ : 0)
 +        << ',' << pimpl_->reading_skimming_ << ',' << (pimpl_->disassembling_ ? pimpl_->activity_token_ : 0)
-+        << ',' << (pimpl_->disassembling_ ? 10000000-pimpl_->activity_remaining_ : 0) << ',' << pimpl_->rest_token_ << ',' << pimpl_->rest_phase_ << ',' << pimpl_->rest_accelerated_ << '\n';
++        << ',' << (pimpl_->disassembling_ ? 10000000-pimpl_->activity_remaining_ : 0) << ',' << pimpl_->rest_token_ << ',' << pimpl_->rest_phase_ << ',' << pimpl_->rest_accelerated_ << ',' << (pimpl_->filling_liquid_ ? pimpl_->activity_token_ : 0) << '\n';
 +    pimpl_->trace_.flush();
 +}
 +
@@ -4574,6 +4584,28 @@ index 0000000..f6413ce
 +    // Presentation eligibility only. CDDA still validates current range/state.
 +    return base.Y == std::round(p.Y) &&
 +        std::abs(base.X - std::round(p.X)) <= 1 && std::abs(base.Z - std::round(p.Z)) <= 1;
++}
++
++std::optional<v3s16> CddaBridge::pointLiquidSource(const irr::core::line3d<float>& ray) {
++    if(!pimpl_ || !pimpl_->session_.ready())return {};
++    const auto player=pimpl_->entities_.find(1);if(player==pimpl_->entities_.end())return {};
++    const auto origin=player->second.target_pos;float closest=1.f;std::optional<v3s16> selected;
++    const v3f start=ray.start/10.f,delta=ray.getVector()/10.f;
++    for(const auto& [base,height]:pimpl_->liquid_sources_) {
++        if(base.Y!=std::round(origin.Y) || std::abs(base.X-std::round(origin.X))>1 || std::abs(base.Z-std::round(origin.Z))>1)continue;
++        float first=0.f,last=1.f;bool hit=true;
++        const float lo[]={base.X-.5f,base.Y-.5f,base.Z-.5f};
++        const float hi[]={base.X+.5f,base.Y+height,base.Z+.5f};
++        const float from[]={start.X,start.Y,start.Z},dir[]={delta.X,delta.Y,delta.Z};
++        for(int n=0;n<3 && hit;++n) {
++            if(std::abs(dir[n])<1e-6f)hit=from[n]>=lo[n] && from[n]<=hi[n];
++            else {float a=(lo[n]-from[n])/dir[n],b=(hi[n]-from[n])/dir[n];if(a>b)std::swap(a,b);
++                first=std::max(first,a);last=std::min(last,b);hit=first<=last;}
++        }
++        if(hit && first<=closest){closest=first;selected=base;}
++    }
++    if(selected)pimpl_->hover_hint_=::cwm::wide("Liquid source — right click: collect / drink. Water may be unsafe.");
++    return selected;
 +}
 +
 +std::optional<v3s16> CddaBridge::pointOpening(const irr::core::line3d<float>& ray) {
@@ -4994,8 +5026,8 @@ index 0000000..f6413ce
 +
 +bool CddaBridge::dismissInventoryWork() {
 +    if (!pimpl_ || (!pimpl_->inventory_work_command_ && !pimpl_->inventory_return_armed_ &&
-+        !((pimpl_->reading_ || pimpl_->disassembling_) && !pimpl_->reading_panel_hidden_))) return false;
-+    if(pimpl_->reading_ || pimpl_->disassembling_)pimpl_->reading_panel_hidden_=true;
++        !((pimpl_->reading_ || pimpl_->disassembling_ || pimpl_->filling_liquid_) && !pimpl_->reading_panel_hidden_))) return false;
++    if(pimpl_->reading_ || pimpl_->disassembling_ || pimpl_->filling_liquid_)pimpl_->reading_panel_hidden_=true;
 +    if (pimpl_->inventory_return_armed_) {
 +        pimpl_->queued_equipment_.reset(); pimpl_->queued_transfer_.reset(); pimpl_->queued_cancel_activity_.reset();
 +    }
@@ -5177,6 +5209,16 @@ index 0000000..f6413ce
 +        if(fields.count("ext_next") && (i.equipment_page_+1)*27<size_t(ext))++i.equipment_page_;
 +        if(fields.count("own_next") && (i.destination_page_+1)*27<i.equipment_view_.entries.size()-ext)++i.destination_page_;
 +        i.equipment_dirty_=true;return;
++    }
++    if(fields.count("pour_liquid")) {
++        const auto* source=i.equipment_view_.entry(i.equipment_selected_);
++        if(!source || !source->liquid)return;
++        if(!source->liquid_reason.empty()){i.equipment_notice_=source->liquid_reason;i.equipment_dirty_=true;return;}
++        if(i.rest_token_ || i.activity_token_ || i.pending_move_ || (i.metrics_.pause_reasons & ~uint32_t(2))) {
++            i.equipment_notice_=::cwm::text("Finish or interrupt the current activity first.");i.equipment_dirty_=true;return;
++        }
++        i.queued_transfer_=Impl::QueuedTransfer{i.equipment_view_.view,source->id,0,0,4};
++        i.inventory_return_armed_=true;i.equipment_close_=true;return;
 +    }
 +    if (fields.count("transfers") || fields.count("back")) {
 +        if (fields.count("transfers")) {
@@ -5400,10 +5442,11 @@ index 0000000..f6413ce
 +    const int work_left = std::max(10, (int(screen.Width) - work_width) / 2);
 +    const int work_top = std::max(165, int(screen.Height) - 270);
 +    pimpl_->inventory_work_text_->setRelativePosition(irr::core::rect<irr::s32>(work_left, work_top, work_left + work_width, work_top + 78));
-+    std::wstring work_text = pimpl_->rest_token_ ? ::cwm::wide(pimpl_->rest_phase_==2?"Sleeping":pimpl_->rest_phase_==1?"Trying to fall asleep":"Waiting") : pimpl_->disassembling_ ? ::cwm::wide("Disassembling: ")+utf8_to_wide(pimpl_->disassembly_name_) : pimpl_->reading_ ?
++    std::wstring work_text = pimpl_->filling_liquid_ ? ::cwm::wide("Filling container") : pimpl_->rest_token_ ? ::cwm::wide(pimpl_->rest_phase_==2?"Sleeping":pimpl_->rest_phase_==1?"Trying to fall asleep":"Waiting") : pimpl_->disassembling_ ? ::cwm::wide("Disassembling: ")+utf8_to_wide(pimpl_->disassembly_name_) : pimpl_->reading_ ?
 +        (pimpl_->reading_skimming_ ? ::cwm::wide("Skimming: ","Sfoglio: ") : ::cwm::wide("Reading: ","Lettura: "))+
 +        utf8_to_wide(pimpl_->reading_book_) : pimpl_->inventory_work_label_;
-+    if(pimpl_->rest_token_) {
++    if(pimpl_->filling_liquid_) { /* Native fill has no finite move counter. */ }
++    else if(pimpl_->rest_token_) {
 +        if(pimpl_->rest_progress_>=0)work_text+=L" "+std::to_wstring(pimpl_->rest_progress_)+L"%";
 +    } else if (pimpl_->inventory_time_pending()) {
 +        // Upstream wear/takeoff (and wield/stow) mutate atomically and debit
@@ -5426,7 +5469,7 @@ index 0000000..f6413ce
 +        ::cwm::wide("I: inspect (pauses) · Esc: hide this panel", "I: consulta (pausa) · Esc: nascondi questo pannello"));
 +    pimpl_->inventory_work_text_->setText(work_text.c_str());
 +    pimpl_->inventory_work_text_->setVisible((pimpl_->rest_token_ || pimpl_->inventory_work_command_ ||
-+        ((pimpl_->reading_ || pimpl_->disassembling_) && !pimpl_->reading_panel_hidden_)) && pimpl_->session_.ready() &&
++        ((pimpl_->reading_ || pimpl_->disassembling_ || pimpl_->filling_liquid_) && !pimpl_->reading_panel_hidden_)) && pimpl_->session_.ready() &&
 +        !pimpl_->equipment_open_ && !pimpl_->crafting_open_ && !pimpl_->body_form_open_ &&
 +        !pimpl_->ground_container_open_ && !pimpl_->metrics_.pending_decision);
 +    if(!pimpl_->work_progress_) {
@@ -5687,10 +5730,10 @@ index 0000000..f6413ce
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.h b/src/cdda/cdda_bridge.h
 new file mode 100644
-index 0000000..a4c7432
+index 0000000..ec28eb6
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.h
-@@ -0,0 +1,200 @@
+@@ -0,0 +1,201 @@
 +// Luanti C++ CWM Presentation Bridge
 +// Licensed under Apache-2.0
 +#pragma once
@@ -5809,6 +5852,7 @@ index 0000000..a4c7432
 +    void tradeFields(uint64_t id,uint64_t quote,uint64_t connection,const std::unordered_map<std::string,std::string>& fields);
 +    bool hasPointedRangedTarget() const;
 +    bool isPointedOpening(const v3s16& node) const;
++    std::optional<v3s16> pointLiquidSource(const irr::core::line3d<float>& ray);
 +    std::optional<v3s16> pointOpening(const irr::core::line3d<float>& ray);
 +    bool handleAimInput(bool right, bool pressed, bool fallback, bool context,
 +                        bool focused, bool fire, bool reload);
@@ -6211,10 +6255,10 @@ index 0000000..15c7818
 +} // namespace cdda_client
 diff --git a/src/cdda/equipment_inventory.h b/src/cdda/equipment_inventory.h
 new file mode 100644
-index 0000000..672aa78
+index 0000000..36c9f7c
 --- /dev/null
 +++ b/src/cdda/equipment_inventory.h
-@@ -0,0 +1,438 @@
+@@ -0,0 +1,444 @@
 +#pragma once
 +#include "cwm/product_language.hpp"
 +#include "avatar_status.h"
@@ -6240,6 +6284,7 @@ index 0000000..672aa78
 +    std::string transfer_reason; bool container{};
 +    unsigned quick_slot{}; bool rotten{}; uint32_t ui_order{}; bool external{};
 +    bool disassembly{}, disassembly_resume{}; int64_t disassembly_moves{}; int disassembly_progress{};
++    bool liquid{}; std::string liquid_reason;
 +    bool book{}, book_identified{}; int chapter_moves{}; std::string book_summary;
 +};
 +struct EquipmentPocket {
@@ -6266,6 +6311,7 @@ index 0000000..672aa78
 +                e->type_id()->str(), e->name()->str(), e->category()->str(), e->charges(), e->access_moves(),
 +                e->count_by_charges(), e->worn(), e->wielded(), e->weight_grams(), e->volume_ml(), e->length_mm(), e->actions(), {}, e->consume_moves(), e->consume_label()->str(), e->consume_warning()->str(), e->transfer_reason()->str(), e->container(), e->quick_slot(), e->rotten(), e->ui_order(), e->external()};
 +            for (unsigned i = 0; i < 8; ++i) entry.reasons[i] = e->reasons()->Get(i)->str();
++            if(const auto* liquid=e->liquid()){entry.liquid=true;entry.liquid_reason=liquid->reason()->str();}
 +            if (const auto* work=e->disassembly()) {
 +                entry.disassembly=true; entry.disassembly_resume=work->resume();
 +                entry.disassembly_moves=work->estimated_moves(); entry.disassembly_progress=work->progress();
@@ -6569,7 +6615,11 @@ index 0000000..672aa78
 +                    "tooltip[" + position + ";1.95,0.6;" + statusEscape(names[i] + ": " + e->reasons[i]) + "]";
 +            }
 +        }
-+        if(e->disassembly && !consumption_token) {
++        if(e->liquid && !consumption_token) {
++            if(e->liquid_reason.empty())f+="button[11.35,10.1;4.15,0.6;pour_liquid;"+::cwm::text("Pour / handle liquid...")+"]";
++            else f+="label[11.45,10.4;"+::cwm::text("Pour / handle liquid...")+"]tooltip[11.35,10.1;4.15,0.6;"+statusEscape(e->liquid_reason)+"]";
++        }
++        if(e->disassembly && !e->liquid && !consumption_token) {
 +            const auto label=e->disassembly_resume ? ::cwm::text("Resume disassembly") : ::cwm::text("Disassemble...");
 +            const std::string work_y=e->book ? "6.6" : "10.1";
 +            if(e->actions & 128) f+="button[11.35,"+work_y+";4.15,0.6;action_7;"+label+"]";

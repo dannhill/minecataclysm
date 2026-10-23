@@ -37347,7 +37347,12 @@
   {
     "path": "src/cwm/cwm_inventory.h",
     "mode": "100644",
-    "sha256": "d8af8e08421046664b671d0396350017248e2ee66cc07b3a3eff2bab82e3f51a"
+    "sha256": "6db9221fdee1273ff174fa2822253642ced7768a11a8bb2d0cbefe4d2abdd4ef"
+  },
+  {
+    "path": "src/cwm/cwm_liquids.h",
+    "mode": "100644",
+    "sha256": "1f0fccd92c4a7a3d5e1212474e724f09ac449604eafa6bc9791d7a8f2d32ffbc"
   },
   {
     "path": "src/cwm/cwm_main.cpp",
@@ -37357,7 +37362,7 @@
   {
     "path": "src/cwm/cwm_map_exporter.cpp",
     "mode": "100644",
-    "sha256": "b024e65e886504a1320b39023105b2b0735b9af8ec3c7612c8df78b596c0238c"
+    "sha256": "cfecac07059a25c2c7e0f06356a281637a5fa4f78afd8637495b87c197071275"
   },
   {
     "path": "src/cwm/cwm_map_exporter.h",
@@ -37392,7 +37397,7 @@
   {
     "path": "src/cwm/cwm_server.cpp",
     "mode": "100644",
-    "sha256": "4ca3fb6bcca5ca3ee7eff5230d86e9666cd2868054f638196eeeb8772f12c93a"
+    "sha256": "64c85d5d1223e20f35bfbc84de1ad8095fba3fc33032e870fb570be7cb0db465"
   },
   {
     "path": "src/cwm/cwm_server.h",
@@ -37897,7 +37902,7 @@
   {
     "path": "src/game_inventory.cpp",
     "mode": "100644",
-    "sha256": "ae7cae4c06942aa5baa6540d582ee5e7930254f01799d3489799ffb9e4e3444f"
+    "sha256": "45dfeb593589cff09025487e13fecfbd6a9bb033e7d32228891583ee12e376ea"
   },
   {
     "path": "src/game_inventory.h",
@@ -37982,12 +37987,12 @@
   {
     "path": "src/handle_liquid.cpp",
     "mode": "100644",
-    "sha256": "62291cb13ed897967d328c01621e9701341fbbba887c71084f49682336242c92"
+    "sha256": "8cd6ed7a307eb07272d93e9015c278cc6660de90fdc03db921828657403dccfa"
   },
   {
     "path": "src/handle_liquid.h",
     "mode": "100644",
-    "sha256": "5c9c6d1202cad6b1ce8b79149d6d006ac23920a24de85bfd2368e9d61cac613e"
+    "sha256": "93fd1f62bd2807dbeb89132efec1829ac90dfb096f95263f8e1a6e97758a9df8"
   },
   {
     "path": "src/harvest.cpp",
@@ -40962,7 +40967,7 @@
   {
     "path": "tests/cwm_runtime_test.cpp",
     "mode": "100644",
-    "sha256": "e5b238618973690582d34be65c9b9ebedb26774fa7da3628e36a24bb5bc64480"
+    "sha256": "7034c7a178eb08ec0251dab958b00509ab2ad1459358e7ba0733e8c226407d70"
   },
   {
     "path": "tests/data/name.json",
