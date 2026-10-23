@@ -10741,10 +10741,10 @@ index 0000000..39d991c
 +}
 diff --git a/tests/cwm_runtime_test.cpp b/tests/cwm_runtime_test.cpp
 new file mode 100644
-index 0000000..51c4599
+index 0000000..b88bfba
 --- /dev/null
 +++ b/tests/cwm_runtime_test.cpp
-@@ -0,0 +1,847 @@
+@@ -0,0 +1,859 @@
 +#include "cwm_motion.h"
 +#include "cwm/cwm_rest.h"
 +#include "cata_catch.h"
@@ -11556,7 +11556,7 @@ index 0000000..51c4599
 +    prepare_runtime();auto& u=get_avatar();REQUIRE(u.wear_item(item(itype_id("backpack"),calendar::turn),false));
 +    item jug(itype_id("jerrycan"),calendar::turn);REQUIRE(u.wield(jug));auto source=u.get_wielded_item();
 +    item water(itype_id("water_clean"),calendar::turn,10);REQUIRE(source->put_in(water,pocket_type::CONTAINER).success());
-+    auto bottle=item_location(u,&u.i_add(item(itype_id("bottle_plastic"),calendar::turn)));
++    auto bottle=u.i_add(item(itype_id("bottle_plastic"),calendar::turn));
 +    const int capacity=bottle->get_remaining_capacity_for_liquid(water,u);REQUIRE(capacity>0);REQUIRE(capacity<10);
 +    u.moves=1000;bool result=false;
 +    REQUIRE_FALSE(do_turn_with_action([&]{
@@ -11591,4 +11591,16 @@ index 0000000..51c4599
 +    source->all_items_top().front()->charges=3;
 +    uint32_t liquid_id=0;for(const auto* entry:*inventory->entries())if(entry->type_id()->str()=="water_clean")liquid_id=entry->id();
 +    REQUIRE(liquid_id);CHECK_FALSE(view.validate_transfer(u,view.view_id(),liquid_id,0,0,4).empty());
++}
++
++TEST_CASE("cwm_liquid_seals_and_incompatible_contents_remain_native_barriers", "[cwm][liquids]") {
++    prepare_runtime();auto& u=get_avatar();REQUIRE(u.wear_item(item(itype_id("backpack"),calendar::turn),false));
++    auto bottle=u.i_add(item(itype_id("bottle_plastic"),calendar::turn));
++    item water(itype_id("water_clean"),calendar::turn,1);REQUIRE(bottle->put_in(water,pocket_type::CONTAINER).success());
++    REQUIRE(bottle->seal());CHECK_FALSE(cwm::liquid_item_error(u,bottle).empty());
++    const auto child=item_location(bottle,bottle->all_items_top().front());CHECK_FALSE(liquid_handler::external_accessible(child));
++    for(auto* p:bottle->get_all_contained_pockets())p->unseal();
++    item salt(itype_id("salt_water"),calendar::turn,1);
++    CHECK(bottle->get_remaining_capacity_for_liquid(salt,u)==0);
++    CHECK(bottle->get_remaining_capacity_for_liquid(water,u)>0);
 +}

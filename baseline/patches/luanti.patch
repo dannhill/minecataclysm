@@ -2226,7 +2226,7 @@ index 0000000..e1e7236
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..756da2c
+index 0000000..77c9e4a
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
 @@ -0,0 +1,3502 @@
@@ -3010,7 +3010,7 @@ index 0000000..756da2c
 +    void place_cdda_tile(const v3s16& base, uint16_t material, uint32_t flags,
 +                         uint8_t light, uint8_t orientation, std::set<v3s16>& modified) {
 +        using namespace cdda::cwm;
-+        if(flags & LIQUID_SOURCE)liquid_sources_[base]=(flags & FURNITURE) || material==OBSTACLE || material==LOW_OBSTACLE ? 2.5f : .55f;
++        if(flags & cdda::cwm::LIQUID_SOURCE)liquid_sources_[base]=(flags & FURNITURE) || material==OBSTACLE || material==LOW_OBSTACLE ? 2.5f : .55f;
 +        else liquid_sources_.erase(base);
 +        if (material == DOOR_CLOSED || material == DOOR_OPEN || material == WINDOW ||
 +            material == WINDOW_OPEN || material == WINDOW_BOARDED) opening_tiles_[base] = material == DOOR_OPEN || material == WINDOW_OPEN;
