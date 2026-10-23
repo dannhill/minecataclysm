@@ -51,6 +51,6 @@ English remains default; missing Italian WIP text uses the shared fallback.
 This slice does not enable liquid/gas crafting results or universal item use.
 Mandatory native output handling requires a separate safe recovery/shutdown
 path before liquid recipes/purification can be enabled. Opening sealed pockets,
-vehicle fuel/tanks, external portable-container pouring and arbitrary quantity
-selection remain separate. Normal real-time start.sh is the target. Windows
+vehicle fuel/tanks, keg extraction, external portable-container pouring and
+arbitrary quantity selection remain separate. Normal real-time start.sh is the target. Windows
 installer remains CWM2.26; historical M5.5 FAILED / full SAVE-001 OPEN remain.

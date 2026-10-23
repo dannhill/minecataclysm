@@ -1,0 +1,404 @@
+{
+  "scope": "Native recognized water sources, carried liquid pouring, native fill/consume activities, capacity/seals/freezing/privacy, pause/recovery and canonical persistence",
+  "date": "2026-10-23",
+  "source_commit": "df0f4a0b368ef3de8c8e24e73dd777d27b1d0d78",
+  "native_capture_commit": "df0f4a0b368ef3de8c8e24e73dd777d27b1d0d78",
+  "client_capture_commit": "dd1a5648789c34164b6b8419abb51c0a99e3852b",
+  "reader_source_commit": "1a472a8d4f6316fcefce611ff5740cc77a6a75a1",
+  "build_mode": "Incremental captured reconstructions retaining caches. Native common/server/test units and client rebuilt. SDK code unchanged after its passing 18-test run. Canonical fixture/reader links only unmodified pinned core. Not a cold-build audit.",
+  "source_trees": {
+    "cdda": {
+      "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+      "patch_sha256": "3bfcf14bce6c243f14ca12bc648b10fdb0eecf63096ed659f2c72f42ce982786",
+      "tree_sha256": "701faf9881cdd19d201cc607da4e30b73e4e882661ed2eb800857e79a4fdff77"
+    },
+    "luanti": {
+      "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
+      "patch_sha256": "c61979ac70de2614a575f3af314189a910e7109c1e174c73440965a6ed8e3f7b",
+      "tree_sha256": "02e31b34b245fae3476ead03180c121e1dfbc1a82eb97ed0b2517bbe6e1c54cc"
+    },
+    "mineclonia": {
+      "commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36"
+    }
+  },
+  "environment": {
+    "kernel": "Linux 7.0.11-76070011-generic x86_64 GNU/Linux",
+    "compiler": "g++ 11.4.0",
+    "cmake": "3.22.1",
+    "python": "3.10.12",
+    "renderer": "Private Xvfb 1280x800x24, Mesa software OpenGL, OpenAL null; actual start.sh, xdotool and real Luanti renderer"
+  },
+  "native": {
+    "cases": 179,
+    "assertions": 73677,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-liquids-20261023/native-release.log",
+      "sha256": "8239b4e33f96c744224c1bb00f1a9d17e7cd54fc092115cc9a889003adbee16b"
+    }
+  },
+  "native_liquids": {
+    "cases": 6,
+    "assertions": 107,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-liquids-20261023/native-liquids-release.log",
+      "sha256": "9b5cf18298b9bd3aac21aec4d77711fc84de32ec58620b28e1a9b1844f9277f3"
+    }
+  },
+  "client": {
+    "cases": 309,
+    "modules": 47,
+    "catch_cases": 4,
+    "catch_assertions": 648,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-liquids-20261023/client-final.log",
+      "sha256": "3762e23b22e2a40158ae08ad497dbb63d847a7e7941bbefd9231165d78c86f70"
+    }
+  },
+  "protocol": {
+    "cases": 18,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-liquids-20261023/sdk.log",
+      "sha256": "c8bf7ef2f7b61dda34a85bde31d26893864ee9c453d43c449f6ea169bdb3ab4d"
+    }
+  },
+  "launcher_language": {
+    "cases": 9,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-liquids-20261023/language.log",
+      "sha256": "551875a85363c7c054d1b98f8e7931f5e7a683cd1489ba0606c128fd325b49a2"
+    }
+  },
+  "language_registry": {
+    "cases": 3,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/native-liquids-20261023/registry.log",
+      "sha256": "cebe3e12286121203da4668cf7da36ea746639f34299d65d72922676e1328e50"
+    }
+  },
+  "renderer": {
+    "reconstructed_liquids": {
+      "checks": 38,
+      "result": "PASS",
+      "checks_file": {
+        "path": "artifacts/native-liquids-20261023/liquids-release/checks.json",
+        "sha256": "f673879c1d1ef4b7ef6eca4b52aa1311317ef73a7496323798ecf88b0c9b627b"
+      },
+      "summary": {
+        "path": "artifacts/native-liquids-20261023/liquids-release/summary.json",
+        "sha256": "8c71f6a80c66846f977baee6ec03b15fe5999876b621abaf1caf4e4fec090d49"
+      },
+      "canonical_readback": {
+        "path": "artifacts/native-liquids-20261023/liquids-release/native.json",
+        "sha256": "7046b7126ccc456fdd78a4c600380d0ea5013fa62fa2578610c2ff5291ffd46b"
+      },
+      "native_capture_commit": "1a472a8d4f6316fcefce611ff5740cc77a6a75a1",
+      "client_capture_commit": "a3874fb93025fd23310d2a567a2071ef3e9fb2cb",
+      "screenshots": [
+        {
+          "path": "artifacts/native-liquids-20261023/liquids-release/fill-paused-for-save.png",
+          "sha256": "6383905e7d88f3ff915620cbcea4b06ebb354423bca8838ca443709b950ee16e"
+        },
+        {
+          "path": "artifacts/native-liquids-20261023/liquids-release/inventory-pour.png",
+          "sha256": "68b5703ca813b339ce40662755cd775084da9514faab223deb58345ca457436a"
+        },
+        {
+          "path": "artifacts/native-liquids-20261023/liquids-release/inventory.png",
+          "sha256": "6383905e7d88f3ff915620cbcea4b06ebb354423bca8838ca443709b950ee16e"
+        }
+      ],
+      "native_activity": "ACT_FILL_LIQUID",
+      "finite_source_remaining": 28,
+      "native_ingested_water_ml": 250
+    },
+    "reloaded_liquids": {
+      "checks": 12,
+      "result": "PASS",
+      "checks_file": {
+        "path": "artifacts/native-liquids-20261023/liquids-reloaded-final/checks.json",
+        "sha256": "f1b57abe92301a21f665129c222bbd55bfc75fd8a26a6e71ae1bd3016ca760fa"
+      },
+      "summary": {
+        "path": "artifacts/native-liquids-20261023/liquids-reloaded-final/summary.json",
+        "sha256": "5bdd14aee611264c90079d711a2827e8d57d7551087b0c6077d454b91e46d787"
+      },
+      "canonical_readback": {
+        "path": "artifacts/native-liquids-20261023/liquids-reloaded-final/native.json",
+        "sha256": "ed1af45b043be4fb947204a2195618c59fb559802d28e81c112241e986d2e15e"
+      },
+      "native_capture_commit": "1a472a8d4f6316fcefce611ff5740cc77a6a75a1",
+      "client_capture_commit": "dd1a5648789c34164b6b8419abb51c0a99e3852b",
+      "screenshots": [
+        {
+          "path": "artifacts/native-liquids-20261023/liquids-reloaded-final/fill-complete-after-reload.png",
+          "sha256": "cd1b068e562e9c59190c6757a4329d3b5a45821325e70f6fb0f87aa85332e062"
+        },
+        {
+          "path": "artifacts/native-liquids-20261023/liquids-reloaded-final/inventory.png",
+          "sha256": "cd1b068e562e9c59190c6757a4329d3b5a45821325e70f6fb0f87aa85332e062"
+        }
+      ],
+      "native_activity": "ACT_NULL",
+      "finite_source_remaining": 28,
+      "native_ingested_water_ml": 250
+    },
+    "installed_liquids": {
+      "checks": 38,
+      "result": "PASS",
+      "checks_file": {
+        "path": "artifacts/native-liquids-20261023/installed-liquids/checks.json",
+        "sha256": "f673879c1d1ef4b7ef6eca4b52aa1311317ef73a7496323798ecf88b0c9b627b"
+      },
+      "summary": {
+        "path": "artifacts/native-liquids-20261023/installed-liquids/summary.json",
+        "sha256": "aa9f854da43c039ea0b419d6d7f8d939c091b60e88b66af25b4308df7618309c"
+      },
+      "canonical_readback": {
+        "path": "artifacts/native-liquids-20261023/installed-liquids/native.json",
+        "sha256": "9b39cecf7642dad3da4588f922bed0272e9740c84b4f469c17dfb152a361e4c1"
+      },
+      "native_capture_commit": "df0f4a0b368ef3de8c8e24e73dd777d27b1d0d78",
+      "client_capture_commit": "dd1a5648789c34164b6b8419abb51c0a99e3852b",
+      "screenshots": [
+        {
+          "path": "artifacts/native-liquids-20261023/installed-liquids/fill-paused-for-save.png",
+          "sha256": "3cf5dbc80b722f4cd888f5491befa7366d311e463f4c4942d19c6729e705d084"
+        },
+        {
+          "path": "artifacts/native-liquids-20261023/installed-liquids/inventory-pour.png",
+          "sha256": "8d27ac7a9b65d2332c2a2019ef056c4e153ccc663d585549e0c531fb3aefeae5"
+        },
+        {
+          "path": "artifacts/native-liquids-20261023/installed-liquids/inventory.png",
+          "sha256": "3cf5dbc80b722f4cd888f5491befa7366d311e463f4c4942d19c6729e705d084"
+        }
+      ],
+      "native_activity": "ACT_FILL_LIQUID",
+      "finite_source_remaining": 28,
+      "native_ingested_water_ml": 250
+    },
+    "rest_regression": {
+      "checks": 39,
+      "result": "PASS",
+      "checks_file": {
+        "path": "artifacts/native-liquids-20261023/rest-regression/checks.json",
+        "sha256": "e1e6f54e9562717f498ab41c79ebafe223b947d7ae367734948b21f052ad12ce"
+      },
+      "summary": {
+        "path": "artifacts/native-liquids-20261023/rest-regression/summary.json",
+        "sha256": "bf7a4780a74f62b790b03d4f2c319d322b818a003e22b0eb449da583848b3bb1"
+      },
+      "canonical_readback": {
+        "path": "artifacts/native-liquids-20261023/rest-regression/native.json",
+        "sha256": "c305aa25430ff95a010c9b8b16b0e63f63ebb13d31709e7de3a79e87ae599d56"
+      },
+      "native_capture_commit": "df0f4a0b368ef3de8c8e24e73dd777d27b1d0d78",
+      "client_capture_commit": "dd1a5648789c34164b6b8419abb51c0a99e3852b",
+      "screenshots": [
+        {
+          "path": "artifacts/native-liquids-20261023/rest-regression/sleep-reconnected.png",
+          "sha256": "e8a71b9f2834b724d5f45a419867f4f7baec281276ead3e893d9798805683128"
+        },
+        {
+          "path": "artifacts/native-liquids-20261023/rest-regression/sleeping.png",
+          "sha256": "468c4aa9873185e2ed5e35328220fafce8091c3341dc8cb914145b662e1f6faa"
+        }
+      ]
+    },
+    "total_checks": 127,
+    "screenshots_inspected_by": "LLM agent, representative images; not personal human acceptance",
+    "relay": "Transparent local capture and explicit old-POUR replay with envelope sequence renumbering only; actual gameplay identity/payload unchanged. Connection replacement during native filling never issues a replacement source request."
+  },
+  "installation": {
+    "native": {
+      "source": "artifacts/fnd03-session/workspace/cdda/build/src/cdda-server",
+      "installed": "cdda/build/src/cdda-server",
+      "sha256": "f63b801db96324e43c42798e5670c76782c54014613471925d1b1923c2bfffc6",
+      "previous": "artifacts/native-liquids-20261023/native-before-liquids",
+      "previous_sha256": "37c49d310c7ad259bb15da02211b955de7c6080b170cae983ea4a84b9251bb93"
+    },
+    "client": {
+      "source": "artifacts/language-20261011/workspace/luanti/bin/luanti",
+      "installed": "luanti/bin/luanti",
+      "sha256": "c967418b8515fc22973300c7ef6bb9acf9cb518d8a9d57716aca3e1f4cf11712",
+      "previous": "artifacts/native-liquids-20261023/client-before-liquids",
+      "previous_sha256": "25e63a5de0d8f0d3d97eb9dadc09426ade917a8b8343188ee18ad27040032303"
+    }
+  },
+  "native_oracle": {
+    "upstream_pin": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+    "binary": {
+      "path": "artifacts/native-liquids-20261023/native-save-reader-warm",
+      "sha256": "9243c9cb240260c54f47c2810c1bf9756ddfeae8648986122a7ee16381916041"
+    },
+    "build_receipt": {
+      "path": "artifacts/native-liquids-20261023/native-save-reader-warm.build.json",
+      "sha256": "3f6f22343992eab6faa7a92260ef17f88e62d1fb5035042a9eb96865cc765228"
+    },
+    "fixture": {
+      "path": "artifacts/native-liquids-20261023/fixture-warm/before.json",
+      "sha256": "2bcc632cbf06cdddf199faf01324471a516eb2fb935702042b3e4bc1ffbef685"
+    },
+    "note": "Unmodified pinned core, never production fork objects. Canonical awake fixture: empty carried bottles, finite warm clean-water source, native outdoor source and jerrycan. Readback verifies native activity, source remainder, inventory and digestive water."
+  },
+  "media_override": {
+    "path": "game/mods/cdda_items/local_water_mapping.lua",
+    "sha256": "28b169e2bfcf29ac78f42932102386f9c5a1c483a5d7984a1be1aedbeae00088"
+  },
+  "protocol_schema": {
+    "path": "protocol/cwm.fbs",
+    "sha256": "6809f3f06cfd4f2b84ad7fbd97db039ff015c7aecc8442209b14658afd760cee"
+  },
+  "gui_driver": {
+    "path": "tests/liquids_gui_test.py",
+    "sha256": "7cb2eadaf6eebca8e3018740fca453ab7af2affb6b629172a9ddc262d614f0b2"
+  },
+  "source_check": {
+    "path": "artifacts/native-liquids-20261023/baseline-check.log",
+    "sha256": "f654f9f80cdb64aa9e56724be0412e03e8367b4d5855c13cd916a1d504912820"
+  },
+  "gui_wrapper": {
+    "path": "artifacts/native-liquids-20261023/run-gui.py",
+    "sha256": "3d38b658bdde5a40abd099647a7371bc3ff32f8d31345cf7695bfd3cbb48fa74"
+  },
+  "gui_wrapper_source": "import os,sys,subprocess,fcntl\nfrom pathlib import Path\nroot=Path(__file__).resolve().parents[2]\nout=Path(__file__).resolve().parent\nr,w=os.pipe()\nhigh=fcntl.fcntl(w,fcntl.F_DUPFD,64);os.close(w);w=high\nwith (out/(sys.argv[3]+'-xvfb.log')).open('w') as log:\n p=subprocess.Popen(['Xvfb','-displayfd',str(w),'-screen','0','1280x800x24','-nolisten','tcp','-noreset','-dpi','96'],pass_fds=(w,),stdout=log,stderr=subprocess.STDOUT)\n os.close(w);\n with os.fdopen(r) as ready: display=ready.readline().strip()\n if not display:\n  p.wait(timeout=10);raise RuntimeError('Xvfb failed before launching any game process')\n env=dict(os.environ,DISPLAY=':'+display,CWM_GUI_NO_WM='1',LIBGL_ALWAYS_SOFTWARE='1',ALSOFT_DRIVERS='null',CDDA_LANGUAGE='en',__GLX_VENDOR_LIBRARY_NAME='mesa');env.pop('XAUTHORITY',None)\n try:\n  cmd=[sys.executable,str(root/'tests'/sys.argv[1]),'--workspace',str(root) if os.environ.get('CWM_TEST_INSTALLED')=='1' else str(root/'artifacts/language-20261011/workspace'),'--artifacts',str(out/sys.argv[3]),*sys.argv[4:]]\n  if sys.argv[1]!='actor_gui_test.py':\n   cmd.extend(['--fixture',str(root/sys.argv[2]),'--native-reader',str(root/'artifacts/native-liquids-20261023/native-save-reader-warm')])\n  result=subprocess.run(cmd,env=env,timeout=420)\n finally:\n  p.terminate();p.wait(timeout=10)\n sys.exit(result.returncode)\n",
+  "installation_script": {
+    "path": "artifacts/native-liquids-20261023/install-and-verify.py",
+    "sha256": "777375408172532e60f253340f606e1cc45effcafbe11f456a8cfe338ba42b1d"
+  },
+  "build_logs": [
+    {
+      "path": "artifacts/native-liquids-20261023/build-native.log",
+      "sha256": "012ad1c582ff06601c1231169be344db9b117813533beee0956e2c92ed25cd9d"
+    },
+    {
+      "path": "artifacts/native-liquids-20261023/build-native-fixed.log",
+      "sha256": "e6b333cbd49df3865ef2969f86a47662aace788d72159d141a52ed611cc9ee0d"
+    },
+    {
+      "path": "artifacts/native-liquids-20261023/build-native-warm.log",
+      "sha256": "1de5958a79f43d3b0e9338119e1a5327672d4ba9e6730a1990927a758ef680dc"
+    },
+    {
+      "path": "artifacts/native-liquids-20261023/build-native-release.log",
+      "sha256": "1ed8f5f89bb026beed93e1a3ac7c2c938fcf928beff73c8cd638d75f50da4eb6"
+    },
+    {
+      "path": "artifacts/native-liquids-20261023/build-client.log",
+      "sha256": "05b658ae2a474254ab812b05396fe6347aded50fef13927eb3545da360e15e96"
+    },
+    {
+      "path": "artifacts/native-liquids-20261023/build-client-fixed.log",
+      "sha256": "79751120c6fbd9b6847532453b649d9c8f16885c9e3b042e82859f5c66d120ac"
+    },
+    {
+      "path": "artifacts/native-liquids-20261023/build-client-final.log",
+      "sha256": "c48385767bfa146d938a63a088f4c40fcff910756bbde3f688fdf4762c123f40"
+    },
+    {
+      "path": "artifacts/native-liquids-20261023/build-sdk.log",
+      "sha256": "0b518bfea1d47ebe249fb9499afa2da2b16043fb90bf4153ba70ada6f2dc55cb"
+    },
+    {
+      "path": "artifacts/native-liquids-20261023/build-reader-warm.log",
+      "sha256": "497338438ef8b718b880631ec8a53ce63e295e7d8cc92dcf392c1e7496c66787"
+    }
+  ],
+  "reconstruction_receipts": [
+    {
+      "path": "artifacts/native-liquids-20261023/refresh-native.json",
+      "sha256": "835137dfe619645736ff1c6978164294578736b614674bef240128152aca1028"
+    },
+    {
+      "path": "artifacts/native-liquids-20261023/refresh-native-fixed.json",
+      "sha256": "88cd69893f45b5e6a8a0c9d64e003dcbf408f25e3816a87c49ec4999d25733d3"
+    },
+    {
+      "path": "artifacts/native-liquids-20261023/refresh-native-warm.json",
+      "sha256": "df26a5a54ae2769f4b3b1b7b2d4902a067af93d44445b7ec6fe31a4784c04184"
+    },
+    {
+      "path": "artifacts/native-liquids-20261023/refresh-native-release.json",
+      "sha256": "d1cd271c1346db59f638ff6c3e182e25e51a2ef043d54cb14c0f6d89ffe897e0"
+    },
+    {
+      "path": "artifacts/native-liquids-20261023/refresh-client.json",
+      "sha256": "2762e3b42d7bda2e95b6e364347026fd7d9d438f02777f56b32a5d640c7034d9"
+    },
+    {
+      "path": "artifacts/native-liquids-20261023/refresh-client-fixed.json",
+      "sha256": "88cd69893f45b5e6a8a0c9d64e003dcbf408f25e3816a87c49ec4999d25733d3"
+    },
+    {
+      "path": "artifacts/native-liquids-20261023/refresh-reader-warm.json",
+      "sha256": "df26a5a54ae2769f4b3b1b7b2d4902a067af93d44445b7ec6fe31a4784c04184"
+    },
+    {
+      "path": "artifacts/native-liquids-20261023/refresh-gui-release.json",
+      "sha256": "9821a41dbbfc01b0901f5c50d025f1b1651ab811384de3150cb58b8324daac24"
+    },
+    {
+      "path": "artifacts/native-liquids-20261023/refresh-client-final.json",
+      "sha256": "1822ae312065639556525afca9905a53b3e15e9f0a1c0b89faa8a689c33b521f"
+    }
+  ],
+  "manual": {
+    "pending": 61,
+    "open_fail": 0,
+    "added": "LIQ-01: four PENDING; previous 57 unchanged",
+    "acceptance": "No human PASS inferred from automation"
+  },
+  "core_estimate_at_start": {
+    "reference_percent": 94,
+    "range_percent": [
+      93,
+      96
+    ],
+    "remaining_steps": [
+      2,
+      5
+    ],
+    "excludes": "Pending human tests and full approved CDDA feature scope",
+    "document": "docs/progress/core-outlook-2026-10-23.md"
+  },
+  "limits": [
+    "Historical M5.5 FAILED / full SAVE-001 OPEN unchanged; scoped verification, not global certification.",
+    "Sources are recognized native water_source/finite_water_source handlers. Other source interactions, keg extraction, portable external-container pouring, vehicle tanks/fuel and opening seals remain separate. Native adjacent-keg destinations remain available.",
+    "Native whole-stack/capacity-limited carried pouring, not arbitrary requested liquid quantities. Partial transfer success preserves the remainder.",
+    "Liquid/gas crafting and byproducts stay rejected. Mandatory result handling needs safe disconnect/shutdown behavior before purification/liquid recipes can be enabled. Other essential item uses still remain.",
+    "Drinking reaches native digestion first; thirst can initially remain unchanged or increase as ordinary time passes. Frozen or sealed liquids are not silently converted/opened.",
+    "Linux pair updated in start.sh; Windows installer remains CWM2.26. Generated mapping batch60 unchanged; only raw-water local glyph added beside existing clean-water override.",
+    "Incremental captured builds, isolated saves/configs and selected native regression suite, not full upstream/cold-build certification.",
+    "Investigation artifacts retain: native i_add return type / engine enum qualification compilation fixes, initially frozen finite-water fixture, incomplete-bottle seal assumption, incorrect immediate-thirst assertion and mistaken 20L jerrycan expectation. Fixed tests follow observed native digestion and pocket capacity."
+  ],
+  "commands": [
+    "python3 tools/takeover_baseline.py capture",
+    "python3 tools/refresh_verification_workspace.py --workspace artifacts/fnd03-session/workspace --receipt artifacts/native-liquids-20261023/refresh-native-release.json",
+    "python3 tools/refresh_verification_workspace.py --workspace artifacts/language-20261011/workspace --receipt artifacts/native-liquids-20261023/refresh-client-final.json",
+    "cmake --build artifacts/fnd03-session/workspace/cdda/build --target cdda-server cata_test -j4",
+    "cmake --build artifacts/language-20261011/workspace/luanti/build --target luanti -j3",
+    "cmake --build artifacts/language-20261011/workspace/build/protocol -j3",
+    "ctest --test-dir artifacts/language-20261011/workspace/build/protocol --output-on-failure",
+    "cd artifacts/fnd03-session/workspace/cdda && CDDA_LOCALE_DIR=$PWD/lang/mo ./build/tests/cata_test '[cwm],[reading]~[.],[melee]~[.],[ranged]~[.],[disassembly]~[.],[npc_talk]~[.],[mission]' --rng-seed 42 --user-dir=<new-isolated-absolute-directory>",
+    "artifacts/language-20261011/workspace/luanti/bin/luanti --run-unittests --logfile <isolated-log>",
+    "python3 tests/product_language_test.py",
+    "python3 tests/product_language_registry_test.py",
+    "python3 tools/build_native_save_reader.py --pristine-cdda artifacts/m5.5/20261003-takeover/pristine-cdda --workspace artifacts/language-20261011/workspace --output artifacts/native-liquids-20261023/native-save-reader-warm --strip-debug",
+    "artifacts/native-liquids-20261023/native-save-reader-warm --create-liquids --userdir <new-fixture-userdir> --datadir cdda/data --output <fixture-before.json>",
+    "cp artifacts/fnd03-session/workspace/cdda/build/src/cdda-server artifacts/language-20261011/workspace/cdda/build/src/cdda-server",
+    "python3 artifacts/native-liquids-20261023/run-gui.py liquids_gui_test.py artifacts/native-liquids-20261023/fixture-warm/user <new-collection-artifact-name>",
+    "python3 artifacts/native-liquids-20261023/run-gui.py liquids_gui_test.py artifacts/native-liquids-20261023/liquids-release/user <new-reload-artifact-name> --reload-fill",
+    "CWM_TEST_INSTALLED=1 python3 artifacts/native-liquids-20261023/run-gui.py liquids_gui_test.py artifacts/native-liquids-20261023/fixture-warm/user <new-installed-artifact-name>",
+    "CWM_TEST_INSTALLED=1 python3 artifacts/native-liquids-20261023/run-gui.py rest_gui_test.py artifacts/native-rest-20261023/fixture/user <new-rest-regression-artifact-name>",
+    "DISPLAY=<private-X11-display> CWM_GUI_NO_WM=1 LIBGL_ALWAYS_SOFTWARE=1 ALSOFT_DRIVERS=null CDDA_LANGUAGE=en python3 tests/liquids_gui_test.py --workspace <reconstruction> --fixture <native-fixture-userdir> --native-reader <pinned-native-reader> --artifacts <new-output-directory>",
+    "python3 tools/takeover_baseline.py check"
+  ]
+}

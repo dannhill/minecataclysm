@@ -1,6 +1,34 @@
 # Implementation status
 
-Current scoped delivery: **native rest, sleep and waiting**, CWM **2.32**,
+Current scoped delivery: **native water sources and carried-liquid pouring**,
+CWM **2.33**, in normal Linux `start.sh`. Right-click a perceived adjacent
+native source; I → selected liquid/container → **Pour liquid...**. Native
+capacity, compatibility, contamination, freezing, seals, remaining quantities
+and costs remain authoritative. Source collection is real ACT_FILL_LIQUID,
+paused/interruptible through I with typed cancellation and no fake percentage.
+Carried pours may apply immediately with native paid time. Reconnect/reload
+preserves activity and contents without a new source command. Raw water has a
+local water glyph, not food art. Generated mapping batch60 is unchanged.
+[Contract](docs/design/native-liquids.md), [delivery](docs/fixes/native-liquids.md),
+[exact evidence](docs/fixes/native-liquids-evidence.json).
+
+**179 native cases / 73,677 assertions PASS**; six liquid cases / 107 assertions.
+Client **309 tests / 47 modules**, 648 Catch assertions / four cases; protocol
+**18**, language **9**, registry **3** PASS. **127 renderer/canonical checks
+PASS**, including actual fill restart, replay/reconnect and installed rest
+regression. Fixture/readback uses unmodified pinned CDDA. Incremental captured
+builds, not a cold conformance audit or full upstream suite.
+
+**61 PENDING**, no open manual FAIL: previous 57 unchanged plus four LIQ-01
+checks. No human acceptance inferred. [Core outlook](docs/progress/core-outlook-2026-10-23.md)
+records the estimate before this slice: **94% (93–96%), excluding manual tests**,
+roughly 2–5 substantial steps with uncertainty. Next: essential seal opening,
+liquid crafting/purification/item uses, then non-demo loop/performance/recovery
+consolidation. Mandatory liquid-output handling still needs safe disconnect/
+shutdown before liquid recipes can be enabled. M5.5 FAILED / full SAVE-001 OPEN
+unchanged. Windows installer remains the earlier **CWM2.26 snapshot**.
+
+Previous scoped delivery: **native rest, sleep and waiting**, CWM **2.32**,
 in normal Linux `start.sh`. **B** opens the native rest context: original
 sleep/wait menus, distinct wait/try/sleep, native alarms and restrictions,
 interruptible wait/attempts, actual native waking. I/Esc pauses; long rest can

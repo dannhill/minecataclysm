@@ -19,19 +19,23 @@ Windows 11 x64: the local installer is generated as
 [Windows build instructions](tools/windows/README.md). Real Windows hardware
 acceptance is recorded separately from automated Wine verification.
 
-Current Linux slice: [native rest, sleep and waiting](docs/fixes/native-rest.md)
-in `./start.sh`. **Press B** for the original native sleep/wait menus, distinct
-sleep attempts and actual sleep, interruptible waiting, optional rest acceleration
-and native wake-up rules. I/Esc pauses; canonical sleep/activities survive reload.
-`./rest-demo.sh --fresh` opens an isolated tired character on a bed.
+Current Linux slice: [native water sources and liquid pouring](docs/fixes/native-liquids.md)
+in `./start.sh`. Right-click a recognized nearby source to collect/drink;
+I → selected liquid/container → **Pour liquid...**. Capacity, quality, remainder,
+freezing and costs are native. I pauses and interrupts real filling; canonical
+fill work survives reload. `./liquids-demo.sh --fresh` opens the isolated scene.
+
+[Native rest, sleep and waiting](docs/fixes/native-rest.md) remains available:
+**B** opens its native context; `./rest-demo.sh --fresh` opens the isolated bed scene.
 
 [Individual companion orders/rules](docs/fixes/native-companions.md) remain
 available: right-click a local ally and choose **Companion orders and rules**.
 `./companions-demo.sh --fresh` opens the isolated ally scene.
-[Minimum-core outlook](docs/progress/core-outlook-2026-10-22.md) records the earlier
-engineering estimate, excluding pending personal tests; it is not completion
-of the full approved game. Liquid sources/transfers and non-demo survival-loop
-consolidation are the next essential work.
+[Minimum-core outlook](docs/progress/core-outlook-2026-10-23.md): the estimate before
+this water slice was approximately **94% (93–96%)**, excluding pending personal
+tests. Essential seal opening, liquid crafting/purification/item uses and
+non-demo survival-loop/performance/recovery consolidation remain. This is an
+engineering estimate, not completion of the full approved game.
 
 [Known mission journal](docs/fixes/native-journal.md) remains available in
 `./start.sh`. **Press J** for native Active / Completed / Failed histories,
@@ -43,7 +47,7 @@ a perceived non-hostile NPC and choose its native trade reply.
 [Native conversations](docs/fixes/native-conversation.md) and
 [item disassembly](docs/fixes/native-disassembly.md) remain available.
 Human rechecks are recorded separately in the ledger. Linux uses paired
-CWM2.32 runtimes; the Windows installer remains its earlier CWM2.26 snapshot.
+CWM2.33 runtimes; the Windows installer remains its earlier CWM2.26 snapshot.
 
 This project aims to merge the 2D turn based videogame Cataclysm Dark Days Ahead(CDDA) with the 3D voxel real time game Mineclonia(as the name suggests, an open source minecraft clone) with the goal to provide CDDA with a 3D voxel engine.
 FAQ

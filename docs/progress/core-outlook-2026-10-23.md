@@ -14,8 +14,8 @@ Drinking water first enters native digestion; the thirst number need not drop
 immediately. A filled source container is different from a completed drink.
 
 Remaining emphasis after that slice: essential liquid crafting/purification
-and item activation (necessary tools/medicines); consolidated non-demo survival
-loops, interruption/recovery/save regression and populated performance.
+and essential sealed-container opening/item activation (necessary tools/medicines);
+consolidated non-demo survival loops, interruption/recovery/save regression and populated performance.
 The current crafting interface still rejects liquid/gas results. Its mandatory
 native output-handling loop needs a safe disconnect/shutdown design before
 liquid recipes can be enabled; a native optional pouring menu alone does not

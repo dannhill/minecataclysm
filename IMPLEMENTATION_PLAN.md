@@ -10,6 +10,34 @@ un panorama più ampio; nebbia, memoria distante e rilievo restano da scegliere.
 Lo [stato implementato](IMPLEMENTATION_STATUS.md) e le evidenze restano separati
 dagli obiettivi. La roadmap originale M0–M9 conserva i propri significati.
 
+## Fonti d’acqua e travasi nativi — 2026-10-23
+
+Fetta implementata: destro su fonte nativa adiacente percepita; in I,
+**Pour liquid...** su liquido o contenitore posseduto. Handler nativi di fonte,
+travaso e consumo; capacità, compatibilità, sigilli, congelamento, qualità,
+scorte e costi CDDA. Attività ACT_FILL_LIQUID reale con pausa/I/interruzione
+senza percentuale inventata; travaso posseduto anche atomico con tempo nativo
+da pagare. Resto conservato, replay non duplica, caricamento prosegue attività
+canonica e la chiude a capacità reale. Menu terra senza nomi di terreni nascosti;
+picking limitato alle nove celle raggiungibili. [Contratto](docs/design/native-liquids.md),
+[consegna e verifiche](docs/fixes/native-liquids.md). Glifo locale di water corretto;
+mapping generati batch60 invariati. CWM2.33 Linux; Windows ancora CWM2.26.
+
+Quattro prove LIQ-01 rinviabili: **61 PENDING**, nessun FAIL manuale aperto;
+i precedenti 57 invariati. Nessun PASS personale dedotto dalle prove automatiche.
+[Stima richiesta prima della fetta](docs/progress/core-outlook-2026-10-23.md):
+**94%, intervallo 93–96%, escludendo i test manuali**, circa 2–5 interventi
+sostanziali con incertezza, non una percentuale del gioco completo.
+
+**Prossimi passi core:** apertura sigilli essenziale; crafting/purificazione dei
+liquidi e usi nativi essenziali degli oggetti; consolidamento del loop completo
+in mondi normali, recovery/save e prestazioni con popolazioni reali. Il menu
+opzionale di travaso non risolve il ciclo obbligatorio di output delle ricette:
+risultati liquidi/gassosi e sottoprodotti restano bloccati finché non esiste una
+uscita sicura su disconnessione/shutdown. Estrazione da keg, serbatoi veicoli e
+contenitori portatili esterni restano separati. M5.5 FAILED / SAVE-001 OPEN
+rimangono invariati; non estendere indefinitamente il minimo core.
+
 ## Riposo, sonno e attesa nativi — 2026-10-23
 
 Fetta core implementata: **B** configurabile, menu originali di sonno/attesa,
@@ -26,8 +54,8 @@ Quattro prove REST-01 rinviabili: **57 PENDING**, nessun FAIL manuale aperto;
 i precedenti 53 invariati. Nessun PASS umano dedotto. CWM2.32 Linux; installer
 Windows ancora CWM2.26. M5.5 FAILED e SAVE-001 OPEN invariati.
 
-**Prossimo passo essenziale: fonti/travasi di liquidi e usi essenziali degli
-oggetti ancora mancanti**, poi consolidamento del loop di sopravvivenza in
+**Passo allora successivo: fonti/travasi di liquidi (ora consegnati sopra) e
+usi essenziali degli oggetti ancora mancanti**, poi consolidamento del loop di sopravvivenza in
 mondi non-demo, recovery/salvataggi e prestazioni con popolazioni reali. Questa
 fetta non certifica ogni combinazione di allarmi/tratti/disturbi o i servizi
 avanzati NPC e non estende il minimo core a ogni sistema CDDA.
