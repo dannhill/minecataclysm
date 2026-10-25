@@ -10831,7 +10831,7 @@ index 0000000..39d991c
 +}
 diff --git a/tests/cwm_runtime_test.cpp b/tests/cwm_runtime_test.cpp
 new file mode 100644
-index 0000000..84103b9
+index 0000000..dbb2541
 --- /dev/null
 +++ b/tests/cwm_runtime_test.cpp
 @@ -0,0 +1,1007 @@
@@ -11821,7 +11821,7 @@ index 0000000..84103b9
 +        CHECK(rest.menu(u));CHECK(rest.speed_multiplier()==1024);CHECK(rest.accelerated(u));
 +        CHECK(rest.menu(u));CHECK(rest.speed_multiplier()==1);CHECK_FALSE(rest.accelerated(u));
 +        CHECK(calendar::turn==time);CHECK(rng_get_engine()==engine);CHECK(u.moves==moves);CHECK(u.in_sleep_state());
-+        return false;
++        u.wake_up();u.remove_effect(efftype_id("sleep"));return true;
 +    }));CHECK(prompts==2);
 +}
 +TEST_CASE("cwm_open_ground_can_can_be_drained_with_native_pouring_then_collected", "[cwm][liquids][playtest_fixes]") {
