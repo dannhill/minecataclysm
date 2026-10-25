@@ -65,6 +65,7 @@ int main(int argc, const char *argv[]) {
     bool create_rest = false;
     bool create_liquids = false;
     bool create_seals = false;
+    bool create_night = false;
     bool create_ranged = false;
     bool create_transfer = false;
     bool create_external = false;
@@ -82,6 +83,7 @@ int main(int argc, const char *argv[]) {
         else if (arg == "--create-transfer") { create = true; create_transfer = true; create_posture = true; }
         else if (arg == "--create-ranged") { create = true; create_ranged = true; create_posture = true; }
         else if (arg == "--create-crafting") { create = true; create_crafting = true; create_posture = true; }
+        else if (arg == "--create-night") { create = true; create_night = true; create_posture = true; }
         else if (arg == "--create-seals") { create = true; create_seals = true; create_posture = true; }
         else if (arg == "--create-liquids") { create = true; create_liquids = true; create_posture = true; }
         else if (arg == "--create-rest") { create = true; create_rest = true; create_posture = true; }
@@ -516,6 +518,7 @@ int main(int argc, const char *argv[]) {
             get_weather().update_weather();
             if (!g->save()) return 5;
         }
+        if(create_night) {calendar::turn=calendar::turn_zero+2_days;get_weather().update_weather();}
         if(create_seals) {
             u.remove_items_with([](const item&){return true;});u.remove_weapon();u.clear_worn();m.i_clear(u.pos());
             u.wear_item(item(itype_id("backpack"),calendar::turn),false);

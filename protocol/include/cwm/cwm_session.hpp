@@ -22,7 +22,7 @@ inline uint64_t fresh_identity() {
     return value ? value : 1;
 }
 inline bool valid_rest(const CDDA::CWM::RestState* rest) {
-    return rest && rest->token() && int(rest->phase())>=0 && int(rest->phase())<=2 && rest->progress()>=-1 && rest->progress()<=100 &&
+    return rest && (rest->speed_multiplier()==1 || rest->speed_multiplier()==64 || rest->speed_multiplier()==256 || rest->speed_multiplier()==1024) && (!rest->accelerated() || rest->speed_multiplier()>1) && rest->token() && int(rest->phase())>=0 && int(rest->phase())<=2 && rest->progress()>=-1 && rest->progress()<=100 &&
         (rest->phase()==CDDA::CWM::RestPhase::WAITING || rest->progress()==-1) &&
         (rest->phase()!=CDDA::CWM::RestPhase::SLEEPING || !rest->interruptible());
 }
@@ -126,7 +126,7 @@ inline bool valid_inventory(const CDDA::CWM::InventoryView* view) {
         if ((entry->actions() & 64) && (!entry->book() || !entry->book()->chapter_moves())) return false;
         if ((entry->actions() & 128) && !entry->disassembly()) return false;
         if(entry->seal() && (!text(entry->seal()->reason(),2048) || entry->external() || !entry->container()))return false;
-        if(entry->liquid() && (!text(entry->liquid()->reason(),2048) || entry->external()))return false;
+        if(entry->liquid() && (!text(entry->liquid()->reason(),2048)))return false;
         if (const auto* work=entry->disassembly())
             if (work->estimated_moves()<0 || work->progress()<0 || work->progress()>10000000 ||
                 (!work->resume() && work->progress()) ||

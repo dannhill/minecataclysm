@@ -59,8 +59,15 @@ class RestState(object):
             return self._tab.Get(flatbuffers.number_types.Int32Flags, o + self._tab.Pos)
         return -1
 
+    # RestState
+    def SpeedMultiplier(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(14))
+        if o != 0:
+            return self._tab.Get(flatbuffers.number_types.Uint16Flags, o + self._tab.Pos)
+        return 64
+
 def RestStateStart(builder):
-    builder.StartObject(5)
+    builder.StartObject(6)
 
 def Start(builder):
     RestStateStart(builder)
@@ -94,6 +101,12 @@ def RestStateAddProgress(builder, progress):
 
 def AddProgress(builder, progress):
     RestStateAddProgress(builder, progress)
+
+def RestStateAddSpeedMultiplier(builder, speedMultiplier):
+    builder.PrependUint16Slot(5, speedMultiplier, 64)
+
+def AddSpeedMultiplier(builder, speedMultiplier):
+    RestStateAddSpeedMultiplier(builder, speedMultiplier)
 
 def RestStateEnd(builder):
     return builder.EndObject()

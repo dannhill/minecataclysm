@@ -20,5 +20,17 @@
   "No sealed pocket to open.": "Nessuna tasca sigillata da aprire.",
   "Break a seal? Preservation changes; open containers may spill or be set on the ground.": "Rompere un sigillo? La conservazione cambia; i contenitori aperti possono versare il contenuto o essere posati a terra.",
   "Open an owned seal without a preselected quantity or destination.": "Apri un sigillo posseduto senza quantita o destinazione preselezionate.",
-  "Seal opening cancelled or unavailable.": "Apertura del sigillo annullata o non disponibile."
+  "Seal opening cancelled or unavailable.": "Apertura del sigillo annullata o non disponibile.",
+  "Rest acceleration x64": "Accelerazione riposo x64",
+  "Rest acceleration x256": "Accelerazione riposo x256",
+  "Rest acceleration x1024": "Accelerazione riposo x1024",
+  "Rest multiplier": "Moltiplicatore riposo",
+  "Target speed = F8 global speed x rest multiplier; actual speed depends on simulation load": "Velocità obiettivo = velocità globale F8 x moltiplicatore riposo; la velocità effettiva dipende dal carico della simulazione",
+  "FAST REST": "RIPOSO ACCELERATO",
+  "FAST REST · warming up": "RIPOSO ACCELERATO · avvio",
+  "NORMAL REST": "RIPOSO NORMALE",
+  "x target": "x obiettivo",
+  ": rest speed / menu · Actual speed depends on simulation load": ": velocità riposo / menu · La velocità effettiva dipende dal carico",
+  "Collect this item with native pickup before handling its liquid.": "Raccogli questo oggetto con la raccolta nativa prima di gestirne il liquido.",
+  "Open native pouring without a preselected quantity or destination.": "Apri il travaso nativo senza quantità o destinazione preselezionate."
 }

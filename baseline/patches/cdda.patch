@@ -3460,10 +3460,10 @@ index 0000000..0866007
 +} // namespace cwm
 diff --git a/src/cwm/cwm_inventory.h b/src/cwm/cwm_inventory.h
 new file mode 100644
-index 0000000..4c23524
+index 0000000..4e0957c
 --- /dev/null
 +++ b/src/cwm/cwm_inventory.h
-@@ -0,0 +1,358 @@
+@@ -0,0 +1,359 @@
 +#pragma once
 +#include "cwm/product_language.hpp"
 +#include <algorithm>
@@ -3673,10 +3673,11 @@ index 0000000..4c23524
 +            return seal_open_error(u,source);
 +        }
 +        if(action==4) {
-+            if(external_item(id) || destination || quantity)return ::cwm::text("Open native pouring from an owned item without a preselected quantity or destination.");
++            if(destination || quantity)return ::cwm::text("Open native pouring without a preselected quantity or destination.");
++            if(external_item(id)){error=validate_external(u);if(!error.empty())return error;}
 +            if(get_map().getabs(u.pos())!=origin_)return ::cwm::text("Position changed: reopen the inventory.");
 +            if(u.activity || u.in_sleep_state())return ::cwm::text("Finish or interrupt the current activity first.");
-+            return liquid_item_error(u,source);
++            return liquid_item_error(u,source,external_item(id));
 +        }
 +        error = external_item(id) ? external_source_error(u, source) : transfer_source_error(u, source); if (!error.empty()) return error;
 +        const int available = source->count_by_charges() ? source->charges : 1;
@@ -3787,7 +3788,7 @@ index 0000000..4c23524
 +                    units::to_millimeter<int64_t>(it->length()), access, actions, &reasons, consume_moves, consume_label, remove_color_tags(warning).c_str(), (exporting_external ? external_source_error(u,location) : transfer_source_error(u, location)).c_str(),
 +                    std::any_of(container_pockets.begin(), container_pockets.end(),
 +                        [](const auto* p) { return p->is_type(pocket_type::CONTAINER); }), exporting_external ? 0 : quick_slot, it->rotten(), exporting_external ? 0 : ui_order(*it), exporting_external, book, export_disassembly_info(fbb,u,*it),
-+                    !exporting_external && has_liquid_content(*it) ? CDDA::CWM::CreateLiquidInfoDirect(fbb,liquid_item_error(u,location).c_str()) : flatbuffers::Offset<CDDA::CWM::LiquidInfo>{},
++                    has_liquid_content(*it) ? CDDA::CWM::CreateLiquidInfoDirect(fbb,liquid_item_error(u,location,exporting_external).c_str()) : flatbuffers::Offset<CDDA::CWM::LiquidInfo>{},
 +                    !exporting_external && has_sealed_pocket(*it) ? CDDA::CWM::CreateSealInfoDirect(fbb,seal_open_error(u,location).c_str()) : flatbuffers::Offset<CDDA::CWM::SealInfo>{}));
 +                bindings_.push_back({location, exporting_external ? external_parents(location) : ancestors, it->typeId().str(), it->charges,
 +                                     it->count_by_charges(), worn, wielded, exporting_external, seal_state(*it)});
@@ -3824,10 +3825,10 @@ index 0000000..4c23524
 +} // namespace cwm
 diff --git a/src/cwm/cwm_liquids.h b/src/cwm/cwm_liquids.h
 new file mode 100644
-index 0000000..3d5d50f
+index 0000000..b56e396
 --- /dev/null
 +++ b/src/cwm/cwm_liquids.h
-@@ -0,0 +1,69 @@
+@@ -0,0 +1,70 @@
 +#include "external_liquids.h"
 +#pragma once
 +#include "avatar.h"
@@ -3861,8 +3862,9 @@ index 0000000..3d5d50f
 +    for(const auto *child:source.all_items_top())if(child->made_of_from_type(phase_id::LIQUID))return true;
 +    return false;
 +}
-+inline std::string liquid_item_error(avatar &u,item_location source) {
-+    if(!source || !source.held_by(u) || !u.has_item(*source))return ::cwm::text("Select an owned liquid or its container.");
++inline std::string liquid_item_error(avatar &u,item_location source,bool external=false) {
++    if(!source || (!external && (!source.held_by(u) || !u.has_item(*source))))return ::cwm::text("Select an owned liquid or its container.");
++    if(external && !source->is_owned_by(u,true))return ::cwm::text("Collect this item with native pickup before handling its liquid.");
 +    if(!liquid_handler::external_accessible(source))return ::cwm::text("Liquid is sealed or in an inaccessible pocket.");
 +    if(source->made_of_from_type(phase_id::LIQUID) && !source->made_of(phase_id::LIQUID))return ::cwm::text("Frozen liquid must thaw before pouring.");
 +    if(!source->made_of_from_type(phase_id::LIQUID) && has_liquid_content(*source)) {
@@ -3874,8 +3876,8 @@ index 0000000..3d5d50f
 +    if(!has_liquid_content(*source))return ::cwm::text("No liquid to pour from this item.");
 +    return {};
 +}
-+inline bool handle_owned_liquid(avatar &u,item_location source) {
-+    if(!liquid_item_error(u,source).empty())return false;
++inline bool handle_owned_liquid(avatar &u,item_location source,bool external=false) {
++    if(!liquid_item_error(u,source,external).empty())return false;
 +    if(!source->made_of_from_type(phase_id::LIQUID)) {
 +        std::vector<item_location> choices;std::vector<std::string> labels;
 +        for(auto *it:source->all_items_top())if(it->made_of_from_type(phase_id::LIQUID)) {
@@ -4372,7 +4374,7 @@ index 0000000..af07174
 +
 diff --git a/src/cwm/cwm_map_exporter.cpp b/src/cwm/cwm_map_exporter.cpp
 new file mode 100644
-index 0000000..743a97c
+index 0000000..c029b15
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.cpp
 @@ -0,0 +1,737 @@
@@ -4609,7 +4611,7 @@ index 0000000..743a97c
 +    bool include_chunks,
 +    ProjectionCache* cache, cdda::cwm::Identity identity,
 +    uint64_t base_revision, uint64_t state_id, uint64_t resync_id,
-+    uint64_t completed_command_id, const ClockView* clock, uint64_t activity_token, uint64_t weapon_token, uint64_t inventory_work_command, bool inventory_work_settled, uint32_t work_total_ms, uint32_t work_remaining_ms, uint64_t rest_token, bool rest_accelerated
++    uint64_t completed_command_id, const ClockView* clock, uint64_t activity_token, uint64_t weapon_token, uint64_t inventory_work_command, bool inventory_work_settled, uint32_t work_total_ms, uint32_t work_remaining_ms, uint64_t rest_token, bool rest_accelerated, uint16_t rest_multiplier
 +) {
 +    enable_presentation(true);
 +    cdda::cwm::MessageBuilder builder(sequence_num, world_rev, identity);
@@ -5050,7 +5052,7 @@ index 0000000..743a97c
 +    const auto cue_vector = fbb.CreateVector(cues);
 +    const bool low_light = m.ambient_light_at(u.pos()) < LIGHT_AMBIENT_LIT;
 +    const int rest_phase=RestTracker::phase(u);
-+    const auto rest=rest_token && rest_phase>=0 ? CDDA::CWM::CreateRestState(fbb,rest_token,static_cast<CDDA::CWM::RestPhase>(rest_phase),RestTracker::interruptible(u),rest_accelerated,RestTracker::progress(u)) : flatbuffers::Offset<CDDA::CWM::RestState>{};
++    const auto rest=rest_token && rest_phase>=0 ? CDDA::CWM::CreateRestState(fbb,rest_token,static_cast<CDDA::CWM::RestPhase>(rest_phase),RestTracker::interruptible(u),rest_accelerated,RestTracker::progress(u),rest_multiplier) : flatbuffers::Offset<CDDA::CWM::RestState>{};
 +    auto world_snap = CDDA::CWM::CreateWorldSnapshot(
 +        fbb,
 +        world_rev,
@@ -5115,7 +5117,7 @@ index 0000000..743a97c
 +} // namespace cwm
 diff --git a/src/cwm/cwm_map_exporter.h b/src/cwm/cwm_map_exporter.h
 new file mode 100644
-index 0000000..30bd76d
+index 0000000..5b5189f
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.h
 @@ -0,0 +1,67 @@
@@ -5165,7 +5167,7 @@ index 0000000..30bd76d
 +        uint64_t resync_id = 0, uint64_t completed_command_id = 0,
 +        const ClockView* clock = nullptr, uint64_t activity_token = 0, uint64_t weapon_token = 0,
 +        uint64_t inventory_work_command = 0, bool inventory_work_settled = false,
-+        uint32_t work_total_ms = 0, uint32_t work_remaining_ms = 0, uint64_t rest_token = 0, bool rest_accelerated = false
++        uint32_t work_total_ms = 0, uint32_t work_remaining_ms = 0, uint64_t rest_token = 0, bool rest_accelerated = false, uint16_t rest_multiplier = 64
 +    );
 +
 +    static std::vector<uint8_t> export_tile_delta(
@@ -5496,10 +5498,10 @@ index 0000000..d077b2c
 +} // namespace cwm
 diff --git a/src/cwm/cwm_rest.h b/src/cwm/cwm_rest.h
 new file mode 100644
-index 0000000..36adeef
+index 0000000..80151a7
 --- /dev/null
 +++ b/src/cwm/cwm_rest.h
-@@ -0,0 +1,61 @@
+@@ -0,0 +1,71 @@
 +#pragma once
 +#include "avatar.h"
 +#include "avatar_action.h"
@@ -5513,7 +5515,8 @@ index 0000000..36adeef
 +namespace cwm {
 +struct RestTracker {
 +    uint64_t token=0,next=1;int last=-1;
-+    bool fast=true;time_point started=calendar::turn;
++    bool fast=true;unsigned multiplier=256;time_point started=calendar::turn;
++    unsigned speed_multiplier() const {return fast?multiplier:1;}
 +    static int phase(const avatar& u) {
 +        if(u.has_effect(efftype_id("sleep")))return 2;
 +        const auto a=u.activity.id();
@@ -5549,6 +5552,11 @@ index 0000000..36adeef
 +            text+="\n"+::cwm::text(p==2?"Sleeping. Wake-up follows alarms, disturbances and your body's needs.":p==1?"Trying to fall asleep. Sleep is not guaranteed.":"Waiting. The world continues around you.");
 +            if(interruptible(u))labels.push_back(::cwm::text("Interrupt rest"));
 +            labels.push_back(::cwm::text(fast?"Continue at normal speed":"Fast-forward long rest"));
++            labels.push_back(::cwm::text("Rest acceleration x64"));
++            labels.push_back(::cwm::text("Rest acceleration x256"));
++            labels.push_back(::cwm::text("Rest acceleration x1024"));
++            text+="\n"+::cwm::text("Rest multiplier")+": x"+std::to_string(speed_multiplier())+
++                "\n"+::cwm::text("Target speed = F8 global speed x rest multiplier; actual speed depends on simulation load");
 +            labels.push_back(::cwm::text("Keep resting"));
 +        }
 +        const int answer=external_ui_choice(text,labels);
@@ -5556,7 +5564,11 @@ index 0000000..36adeef
 +        if(phase(u)!=p || !error(u).empty())return false;
 +        if(p<0) {if(answer==0)avatar_action::sleep();else if(answer==1)avatar_action::wait();}
 +        else if(interruptible(u) && answer==0)u.cancel_activity();
-+        else fast=!fast;
++        else {
++            const int selection=answer-(interruptible(u)?1:0);
++            if(selection==0)fast=!fast;
++            else {multiplier=selection==1?64:selection==2?256:1024;fast=true;}
++        }
 +        return true;
 +    }
 +};
@@ -5617,10 +5629,10 @@ index 0000000..e1c6222
 +}
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..2b63d2b
+index 0000000..93aca39
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,1350 @@
+@@ -0,0 +1,1351 @@
 +#include "cwm/product_language.hpp"
 +#include "cwm_motion.h"
 +// CDDA CWM IPC Server Implementation
@@ -5791,7 +5803,7 @@ index 0000000..2b63d2b
 +                    resync_id_, completed, realtime_ ? &clock : nullptr, activity_token_, ranged_selection_.refresh(u),
 +                    inventory_work_command_, inventory_work_settled_,
 +                    uint32_t(std::min(4294967., inventory_work_total_)*1000),
-+                    uint32_t(std::min({4294967., inventory_work_total_, clock_.remaining_work()})*1000), rest_.token, rest_.accelerated(u));
++                    uint32_t(std::min({4294967., inventory_work_total_, clock_.remaining_work()})*1000), rest_.token, rest_.accelerated(u), rest_.speed_multiplier());
 +    const bool is_full = CDDA::CWM::GetCwmMessage(snapshot.data())->payload_as_WorldSnapshot()->full();
 +    if (emit(snapshot)) {
 +        snapshot_sent_ = true;
@@ -5904,11 +5916,11 @@ index 0000000..2b63d2b
 +}
 +
 +void CwmServer::service_clock(avatar& u, map& m, game& g) {
-+    clock_.sample(cdda::cwm::SimulationClock::Wall::now(), pause_reasons(g) == 0, rest_.accelerated(u));
++    clock_.sample(cdda::cwm::SimulationClock::Wall::now(), pause_reasons(g) == 0, rest_.accelerated(u), rest_.speed_multiplier());
 +    update(u, m, g);
 +    process_rest(u,m,g);
 +    if(RestTracker::phase(u)==0 || RestTracker::phase(u)==1)detect_threats(u,m,g);
-+    clock_.sample(cdda::cwm::SimulationClock::Wall::now(), pause_reasons(g) == 0, rest_.accelerated(u));
++    clock_.sample(cdda::cwm::SimulationClock::Wall::now(), pause_reasons(g) == 0, rest_.accelerated(u), rest_.speed_multiplier());
 +    if (refresh_inventory_work(u)) { ++world_revision_; send_state(u, m, g); }
 +    if (continuous_ && (pause_reasons(g) || (!intent_x_ && !intent_y_) || !clock_.action_due()))
 +        motion_sample_ = clock_.elapsed();
@@ -6228,6 +6240,7 @@ index 0000000..2b63d2b
 +        if (realtime_ && pause_reasons(g)) error = "Simulation is paused";
 +        if (!error.empty()) { result_ = Result{command.id, false, error}; return false; }
 +        auto source = inventory_selection_.target(command.inventory_item);
++        const bool external_source=inventory_selection_.external_item(command.inventory_item);
 +        auto destination = command.transfer_destination ? inventory_selection_.target(command.transfer_destination) : item_location::nowhere;
 +        const auto external_pos = command.transfer_action == 3 ? inventory_selection_.external_position() : u.pos();
 +        inventory_selection_.clear(); ranged_selection_.clear(); activity_token_ = 0;
@@ -6237,7 +6250,7 @@ index 0000000..2b63d2b
 +            result_=Result{command.id,accepted,accepted?"": ::cwm::text("Seal opening cancelled or unavailable.")};
 +            return accepted || u.moves!=before_moves;
 +        } else if(command.transfer_action==4) {
-+            accepted=handle_owned_liquid(u,source);refresh_activity(u);++world_revision_;
++            accepted=handle_owned_liquid(u,source,external_source);refresh_activity(u);++world_revision_;
 +            result_=Result{command.id,accepted,accepted?"": ::cwm::text("No liquid transferred. Native liquid handling was cancelled or unavailable.")};
 +            return accepted || u.moves!=before_moves;
 +        } else if (command.transfer_action == 2) {
@@ -10818,10 +10831,10 @@ index 0000000..39d991c
 +}
 diff --git a/tests/cwm_runtime_test.cpp b/tests/cwm_runtime_test.cpp
 new file mode 100644
-index 0000000..b72a108
+index 0000000..d878e9d
 --- /dev/null
 +++ b/tests/cwm_runtime_test.cpp
-@@ -0,0 +1,972 @@
+@@ -0,0 +1,1007 @@
 +#include "cwm_motion.h"
 +#include "cwm/cwm_rest.h"
 +#include "cata_catch.h"
@@ -11793,4 +11806,39 @@ index 0000000..b72a108
 +    auto* pocket=outer.get_all_contained_pockets().front();REQUIRE(pocket->seal());REQUIRE(u.wield(outer));
 +    auto source=u.get_wielded_item();auto child=item_location(source,source->all_items_top().front());
 +    CHECK_FALSE(cwm::seal_open_error(u,child).empty());CHECK(cwm::seal_open_error(u,source).empty());
++}
++
++TEST_CASE("cwm_rest_speed_choices_change_only_pacing_preferences", "[cwm][rest][playtest_fixes]") {
++    const override_option no_autosave("AUTOSAVE","false");prepare_runtime();auto& u=get_avatar();
++    u.fall_asleep(1_hours);cwm::RestTracker rest;rest.refresh(u);calendar::turn+=8_seconds;u.moves=1000;
++    CHECK(rest.speed_multiplier()==256);int prompts=0;
++    REQUIRE_FALSE(do_turn_with_action([&]{
++        const auto time=calendar::turn;const auto engine=rng_get_engine();const int moves=u.moves;
++        CHECK(rest.menu(u));CHECK(rest.speed_multiplier()==1024);CHECK(rest.accelerated(u));
++        CHECK(rest.menu(u));CHECK(rest.speed_multiplier()==1);CHECK_FALSE(rest.accelerated(u));
++        CHECK(calendar::turn==time);CHECK(rng_get_engine()==engine);CHECK(u.moves==moves);CHECK(u.in_sleep_state());
++        finish_external_action_phase();return false;
++    },[&](const std::string&,const std::vector<std::string>& labels){
++        const std::string wanted=++prompts==1?"Rest acceleration x1024":"Continue at normal speed";
++        for(size_t n=0;n<labels.size();++n)if(labels[n]==wanted)return int(n);
++        return int(labels.size())-1;
++    }));CHECK(prompts==2);
++}
++TEST_CASE("cwm_open_ground_can_can_be_drained_with_native_pouring_then_collected", "[cwm][liquids][playtest_fixes]") {
++    const override_option no_autosave("AUTOSAVE","false");prepare_runtime();auto& u=get_avatar();auto& m=get_map();
++    m.ter_set(u.pos(),ter_str_id("t_floor"));item bottle(itype_id("bottle_plastic"),calendar::turn);REQUIRE(u.wield(bottle));
++    item can(itype_id("can_drink"),calendar::turn);can.set_owner(u);
++    item water(itype_id("water_clean"),calendar::turn,1);water.set_item_temperature(water.get_freeze_point()+units::from_celsius_delta(20));
++    REQUIRE(can.put_in(water,pocket_type::CONTAINER).success());auto& ptr=m.add_item_or_charges(u.pos(),can);
++    item_location source(map_cursor(u.pos()),&ptr);REQUIRE(source);CHECK_FALSE(cwm::liquid_item_error(u,source).empty());CHECK(cwm::liquid_item_error(u,source,true).empty());u.moves=1000;
++    REQUIRE_FALSE(do_turn_with_action([&]{
++        const int moves=u.moves;CHECK(cwm::handle_owned_liquid(u,source,true));CHECK(u.moves==moves-100);
++        CHECK(source->all_items_top().empty());CHECK_FALSE(source->any_pockets_sealed());
++        CHECK(cwm::InventorySelection::external_source_error(u,source).empty());
++        REQUIRE(u.get_wielded_item()->all_items_top().size()==1);CHECK(u.get_wielded_item()->all_items_top().front()->charges==1);
++        finish_external_action_phase();return false;
++    },[&](const std::string&,const std::vector<std::string>& labels){
++        for(size_t n=0;n<labels.size();++n)if(labels[n].find("Pour into a container")!=std::string::npos || labels[n].find("plastic bottle")!=std::string::npos)return int(n);
++        return int(labels.size())-1;
++    }));
 +}

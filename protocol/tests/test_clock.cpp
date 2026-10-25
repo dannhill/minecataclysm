@@ -49,5 +49,12 @@ int main() {
     rest.sample(t(.25),false);const auto frozen=rest.elapsed();rest.sample(t(900),false);
     CHECK(rest.elapsed()==frozen);rest.sample(t(901),true,false);CHECK(rest.elapsed()==frozen);
     rest.sample(t(901.25),true,false);CHECK(std::abs(rest.elapsed()-frozen-.25)<1e-8);
+    SimulationClock fast;fast.set_scale(4);fast.sample(t(0),true,true,256);fast.sample(t(.25),true,true,256);
+    CHECK(std::abs(fast.elapsed()-256)<1e-8);
+    int ticks=0;while(fast.tick_due() && ticks<100){fast.complete_tick();++ticks;}
+    CHECK(ticks>=32 && ticks<=34); // Bounded credit, not one tick after a stall.
+    const auto before_pause=fast.elapsed();fast.sample(t(.25),false,true,256);fast.sample(t(80),false,true,256);
+    CHECK(fast.elapsed()==before_pause);fast.sample(t(81),true,false);fast.sample(t(81.25),true,false);
+    CHECK(std::abs(fast.elapsed()-before_pause-1)<1e-8); // Normal 4x, no sleep multiplier left.
     std::cout<<"Clock invariants PASS ("<<checks<<" checks)\n";
 }

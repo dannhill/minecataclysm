@@ -133,11 +133,10 @@ minetest.register_on_joinplayer(function(player)
     player:set_physics_override({speed = 0, jump = 0, gravity = 0})
 end)
 
--- Keep Luanti's sky at daytime; real lighting comes from CDDA per tile.
+-- Native CWM snapshots set the visual sky time; voxel light remains CDDA-owned.
 minetest.register_on_mods_loaded(function()
     minetest.settings:set("time_speed", "0")
 end)
-minetest.after(0, function() minetest.set_timeofday(0.5) end)
 
 -- Static native storage projection; inventory and costs belong to CDDA.
 minetest.register_node("cdda_nodes:storage", {

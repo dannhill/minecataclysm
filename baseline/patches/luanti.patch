@@ -1237,7 +1237,7 @@ index ca47c12..eac711d 100644
  	int argc, char *argv[]);
  
 diff --git a/src/gui/guiFormSpecMenu.cpp b/src/gui/guiFormSpecMenu.cpp
-index ed1c300..9dd44bc 100644
+index ed1c300..7253dce 100644
 --- a/src/gui/guiFormSpecMenu.cpp
 +++ b/src/gui/guiFormSpecMenu.cpp
 @@ -1,3 +1,5 @@
@@ -1246,7 +1246,36 @@ index ed1c300..9dd44bc 100644
  // Luanti
  // SPDX-License-Identifier: LGPL-2.1-or-later
  // Copyright (C) 2013 celeron55, Perttu Ahola <celeron55@gmail.com>
-@@ -169,6 +171,10 @@ void GUIFormSpecMenu::removeTooltip()
+@@ -120,6 +122,9 @@ GUIFormSpecMenu::~GUIFormSpecMenu()
+ 	delete m_text_dst;
+ }
+ 
++// Presentation-only continuity across CWM menu/command/menu transitions.
++static std::optional<v2f> cwm_menu_pointer;
++
+ void GUIFormSpecMenu::create(GUIFormSpecMenu *&cur_formspec, Client *client,
+ 	gui::IGUIEnvironment *guienv, JoystickController *joystick, IFormSource *fs_src,
+ 	TextDest *txt_dest, const std::string &formspecPrepend, ISoundManager *sound_manager)
+@@ -137,6 +142,7 @@ void GUIFormSpecMenu::create(GUIFormSpecMenu *&cur_formspec, Client *client,
+ 		cur_formspec = nullptr;
+ 	}
+ 
++    const bool creating = cur_formspec == nullptr;
+ 	if (cur_formspec == nullptr) {
+ 		cur_formspec = new GUIFormSpecMenu(joystick, guiroot, -1, &g_menumgr,
+ 			client, guienv, client->getTextureSource(), sound_manager, fs_src,
+@@ -155,6 +161,10 @@ void GUIFormSpecMenu::create(GUIFormSpecMenu *&cur_formspec, Client *client,
+ 		cur_formspec->setTextDest(txt_dest);
+ 	}
+ 
++    if(creating && cwm_menu_pointer && txt_dest && txt_dest->m_formname.rfind("CWM_",0)==0) {
++        auto* cursor=RenderingEngine::get_raw_device()->getCursorControl();
++        if(cursor) {cursor->setRelativeMode(false);cursor->setPosition(cwm_menu_pointer->X,cwm_menu_pointer->Y);}
++    }
+ 	cur_formspec->doPause = false;
+ }
+ 
+@@ -169,6 +179,10 @@ void GUIFormSpecMenu::removeTooltip()
  
  void GUIFormSpecMenu::setInitialFocus()
  {
@@ -1257,7 +1286,7 @@ index ed1c300..9dd44bc 100644
  	// Set initial focus according to following order of precedence:
  	// 1. first empty editbox
  	// 2. first editbox
-@@ -1526,7 +1532,15 @@ void GUIFormSpecMenu::createTextField(parserData *data, FieldSpec &spec,
+@@ -1526,7 +1540,15 @@ void GUIFormSpecMenu::createTextField(parserData *data, FieldSpec &spec,
  	}
  
  	gui::IGUIEditBox *e = nullptr;
@@ -1274,7 +1303,7 @@ index ed1c300..9dd44bc 100644
  		e = new GUIEditBoxWithScrollBar(spec.fdefault.c_str(), true, Environment,
  				data->current_parent, spec.fid, rect, m_tsrc, is_editable, true);
  	} else if (is_editable) {
-@@ -1545,7 +1559,7 @@ void GUIFormSpecMenu::createTextField(parserData *data, FieldSpec &spec,
+@@ -1545,7 +1567,7 @@ void GUIFormSpecMenu::createTextField(parserData *data, FieldSpec &spec,
  			e->setMultiLine(true);
  			e->setWordWrap(true);
  			e->setTextAlignment(gui::EGUIA_UPPERLEFT, gui::EGUIA_UPPERLEFT);
@@ -1283,7 +1312,7 @@ index ed1c300..9dd44bc 100644
  			irr::SEvent evt;
  			evt.EventType            = EET_KEY_INPUT_EVENT;
  			evt.KeyInput.Key         = KEY_END;
-@@ -2922,6 +2936,32 @@ void GUIFormSpecMenu::parseElement(parserData* data, const std::string &element)
+@@ -2922,6 +2944,32 @@ void GUIFormSpecMenu::parseElement(parserData* data, const std::string &element)
  	// They remain here due to bool flags, for now
  	data->type = type;
  
@@ -1316,7 +1345,7 @@ index ed1c300..9dd44bc 100644
  	auto it = element_parsers.find(type);
  	if (it != element_parsers.end()) {
  		it->second(this, data, description);
-@@ -2945,6 +2985,16 @@ void GUIFormSpecMenu::regenerateGui(v2u32 screensize)
+@@ -2945,6 +2993,16 @@ void GUIFormSpecMenu::regenerateGui(v2u32 screensize)
  
  	// Preserve stuff only on same form, not on a new form.
  	if (m_text_dst->m_formname == m_last_formname) {
@@ -1333,7 +1362,7 @@ index ed1c300..9dd44bc 100644
  		// Preserve tables/textlists
  		for (auto &m_table : m_tables) {
  			std::string tablename = m_table.first.fname;
-@@ -2989,6 +3039,11 @@ void GUIFormSpecMenu::regenerateGui(v2u32 screensize)
+@@ -2989,6 +3047,11 @@ void GUIFormSpecMenu::regenerateGui(v2u32 screensize)
  	m_tables.clear();
  	m_checkboxes.clear();
  	m_scrollbars.clear();
@@ -1345,7 +1374,7 @@ index ed1c300..9dd44bc 100644
  	m_fields.clear();
  	m_tooltips.clear();
  	m_tooltip_rects.clear();
-@@ -3269,6 +3324,10 @@ void GUIFormSpecMenu::regenerateGui(v2u32 screensize)
+@@ -3269,6 +3332,10 @@ void GUIFormSpecMenu::regenerateGui(v2u32 screensize)
  	}
  
  	// Set initial focus if parser didn't set it
@@ -1356,7 +1385,7 @@ index ed1c300..9dd44bc 100644
  	gui::IGUIElement *focused_element = Environment->getFocus();
  	if (!focused_element
  			|| !isMyChild(focused_element)
-@@ -3577,6 +3636,7 @@ void GUIFormSpecMenu::drawMenu()
+@@ -3577,6 +3644,7 @@ void GUIFormSpecMenu::drawMenu()
  		Draw dragged item stack
  	*/
  	drawSelectedItem();
@@ -1364,7 +1393,22 @@ index ed1c300..9dd44bc 100644
  
  	skin->setFont(old_font);
  }
-@@ -3900,13 +3960,138 @@ void GUIFormSpecMenu::acceptInput(FormspecQuitMode quitmode)
+@@ -3764,6 +3832,14 @@ s16 GUIFormSpecMenu::getNextInventoryRing(
+ 
+ void GUIFormSpecMenu::acceptInput(FormspecQuitMode quitmode)
+ {
++    if(m_text_dst && m_text_dst->m_formname.rfind("CWM_",0)==0) {
++        auto* device=RenderingEngine::get_raw_device();auto* cursor=device->getCursorControl();
++        const auto size=device->getVideoDriver()->getScreenSize();
++        if(cursor && size.Width && size.Height) {
++            const auto pos=cursor->getPosition();
++            cwm_menu_pointer=v2f(std::clamp(float(pos.X)/size.Width,0.f,1.f),std::clamp(float(pos.Y)/size.Height,0.f,1.f));
++        }
++    }
+ 	if(m_text_dst)
+ 	{
+ 		StringMap fields;
+@@ -3900,13 +3976,143 @@ void GUIFormSpecMenu::acceptInput(FormspecQuitMode quitmode)
  	}
  }
  
@@ -1475,6 +1519,11 @@ index ed1c300..9dd44bc 100644
  bool GUIFormSpecMenu::preprocessEvent(const SEvent& event)
  {
 +    // Decision shortcuts must be intercepted before the focused child widget.
++    if(m_cwm_decision && event.EventType==EET_KEY_INPUT_EVENT && event.KeyInput.PressedDown) {
++        auto* device=RenderingEngine::get_raw_device();auto* cursor=device->getCursorControl();
++        const auto size=device->getVideoDriver()->getScreenSize();
++        if(cursor && size.Width && size.Height) {const auto pos=cursor->getPosition();cwm_menu_pointer=v2f(std::clamp(float(pos.X)/size.Width,0.f,1.f),std::clamp(float(pos.Y)/size.Height,0.f,1.f));}
++    }
 +    if(m_cwm_decision && event.EventType==EET_KEY_INPUT_EVENT) {
 +        const auto key=event.KeyInput.Key;
 +        if((key>=KEY_KEY_1 && key<=KEY_KEY_9) || key==KEY_ESCAPE || key==KEY_RETURN ||
@@ -1503,7 +1552,7 @@ index ed1c300..9dd44bc 100644
  	// The IGUITabControl renders visually using the skin's selected
  	// font, which we override for the duration of form drawing,
  	// but computes tab hotspots based on how it would have rendered
-@@ -3990,6 +4175,15 @@ bool GUIFormSpecMenu::preprocessEvent(const SEvent& event)
+@@ -3990,6 +4196,15 @@ bool GUIFormSpecMenu::preprocessEvent(const SEvent& event)
  
  void GUIFormSpecMenu::tryClose()
  {
@@ -1519,7 +1568,7 @@ index ed1c300..9dd44bc 100644
  	if (m_allowclose) {
  		doPause = false;
  		acceptInput(quit_mode_cancel);
-@@ -4001,6 +4195,21 @@ void GUIFormSpecMenu::tryClose()
+@@ -4001,6 +4216,21 @@ void GUIFormSpecMenu::tryClose()
  
  bool GUIFormSpecMenu::OnEvent(const SEvent& event)
  {
@@ -1541,7 +1590,7 @@ index ed1c300..9dd44bc 100644
  	if (event.EventType==EET_KEY_INPUT_EVENT) {
  		KeyPress kp(event.KeyInput);
  		if (event.KeyInput.PressedDown && (
-@@ -4757,6 +4966,22 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
+@@ -4757,6 +4987,22 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
  	}
  
  	if (event.EventType == EET_GUI_EVENT) {
@@ -2226,10 +2275,10 @@ index 0000000..e1e7236
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..224b032
+index 0000000..79d2320
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,3511 @@
+@@ -0,0 +1,3518 @@
 +#include "cwm/product_language.hpp"
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
@@ -2442,7 +2491,7 @@ index 0000000..224b032
 +    uint64_t activity_token_{0}, cancel_activity_sent_{0};
 +    int activity_total_{0}, activity_remaining_{0};
 +    bool first_aid_{false}, crafting_{false};
-+    uint64_t rest_token_=0;int rest_phase_=-1,rest_progress_=-1;bool rest_accelerated_=false;
++    uint64_t rest_token_=0;int rest_phase_=-1,rest_progress_=-1;bool rest_accelerated_=false;unsigned rest_multiplier_=1;
 +    bool disassembling_{false}; std::string disassembly_name_;
 +    bool filling_liquid_{false};
 +    bool reloading_{false}, reading_{false}, reading_skimming_{false}, reading_panel_hidden_{false};
@@ -3494,7 +3543,7 @@ index 0000000..224b032
 +                else if (inventory_work_rejected_ && snap->completed_command_id() == inventory_work_command_)
 +                    inventory_work_settled_ = true; // Admission rejection has no native debit.
 +                const auto* rest=snap->rest();rest_token_=rest?rest->token():0;rest_phase_=rest?int(rest->phase()):-1;
-+                rest_progress_=rest?rest->progress():-1;rest_accelerated_=rest && rest->accelerated();
++                rest_progress_=rest?rest->progress():-1;rest_accelerated_=rest && rest->accelerated();rest_multiplier_=rest?rest->speed_multiplier():1;
 +                const auto* consumption = snap->consumption();
 +                const uint64_t previous_consumption = activity_token_;
 +                const auto* liquid_work=snap->liquid_transfer();filling_liquid_=liquid_work!=nullptr;
@@ -3713,6 +3762,8 @@ index 0000000..224b032
 +                }
 +
 +                metrics_.simulation_time = snap->simulation_time_seconds();
++                client_->getEnv().setTimeOfDaySpeed(0.f);
++                client_->getEnv().setTimeOfDay(uint32_t((metrics_.simulation_time%86400)*24000/86400));
 +                metrics_.realtime = snap->clock() && snap->clock()->realtime();
 +                metrics_.continuous_motion = snap->clock() && snap->clock()->continuous_motion();
 +                metrics_.pause_reasons = snap->clock() ? snap->clock()->pause_reasons() : 0;
@@ -4131,7 +4182,7 @@ index 0000000..224b032
 +    std::string trace_path;
 +    if (g_settings->getNoEx("cwm_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->trace_.open(trace_path);
-+        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog,ipc_connected,ipc_input,ipc_output,ipc_read_bytes,ipc_write_bytes,ipc_frames,ipc_dispatch_bytes,ipc_read_calls,ipc_write_calls,session_state,input_ready,session_id,player_id,connection_id,sequence,resync_count,entity_cache,vehicle_cache,scene_origin_x,scene_origin_y,simulation_time,realtime,pause_reasons,time_scale,sent_intent,continuous_motion,intent_x,intent_y,ipc_latency_ms,projection_ms,ground_tiles,owned_items,ground_container,ground_hover,queued_pickup,ground_visual_nodes,ground_hover_items,ground_target_items,ground_target_visual_nodes,ground_target_first_type,status_available,body_form,survival_visible,status_stamina,status_head,status_arm_l,combat_hover,attacks_sent,attack_target,attack_target_hp,attack_result,player_state_flags,player_eye_offset,visual_animation_time,visual_animation_delta,ground_item_rotation,status_hunger_level,status_thirst_level,status_fatigue_level,status_pain_level,hud_images_active,equipment_form,inventory_view,inventory_entries,equipment_selected,equipment_sent,pending_decision,consumption_token,consumption_total,consumption_remaining,cancel_consumption_sent,first_aid_token,first_aid_total,first_aid_remaining,crafting_form,crafting_view,crafting_selected,crafting_sent,crafting_token,crafting_progress,weapon_token,weapon_ammo,weapon_recoil,aim_sent,fire_sent,reload_sent,reload_token,reload_total,reload_remaining,transfer_form,transfers_sent,transfer_token,transfer_total,transfer_remaining,inventory_work_command,native_work_command,native_work_settled,inventory_return,inventory_work_visible,equipment_page,equipment_filter,equipment_search_open,quick_slot,quick_count,quick_wielded,quick_use_sent,quick_bind_command,aim_held,ranged_deferred,external_form,external_entries,decision_waiting,native_work_total_ms,native_work_remaining_ms,work_progress_visible,presentation_cues,sounds_dispatched,low_light,underwater,diagnostics,wield_texture,shot_kick,low_light_blend,reading_token,reading_total,reading_remaining,reading_skimming,disassembly_token,disassembly_progress,rest_token,rest_phase,rest_accelerated,liquid_transfer_token\n";
++        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog,ipc_connected,ipc_input,ipc_output,ipc_read_bytes,ipc_write_bytes,ipc_frames,ipc_dispatch_bytes,ipc_read_calls,ipc_write_calls,session_state,input_ready,session_id,player_id,connection_id,sequence,resync_count,entity_cache,vehicle_cache,scene_origin_x,scene_origin_y,simulation_time,realtime,pause_reasons,time_scale,sent_intent,continuous_motion,intent_x,intent_y,ipc_latency_ms,projection_ms,ground_tiles,owned_items,ground_container,ground_hover,queued_pickup,ground_visual_nodes,ground_hover_items,ground_target_items,ground_target_visual_nodes,ground_target_first_type,status_available,body_form,survival_visible,status_stamina,status_head,status_arm_l,combat_hover,attacks_sent,attack_target,attack_target_hp,attack_result,player_state_flags,player_eye_offset,visual_animation_time,visual_animation_delta,ground_item_rotation,status_hunger_level,status_thirst_level,status_fatigue_level,status_pain_level,hud_images_active,equipment_form,inventory_view,inventory_entries,equipment_selected,equipment_sent,pending_decision,consumption_token,consumption_total,consumption_remaining,cancel_consumption_sent,first_aid_token,first_aid_total,first_aid_remaining,crafting_form,crafting_view,crafting_selected,crafting_sent,crafting_token,crafting_progress,weapon_token,weapon_ammo,weapon_recoil,aim_sent,fire_sent,reload_sent,reload_token,reload_total,reload_remaining,transfer_form,transfers_sent,transfer_token,transfer_total,transfer_remaining,inventory_work_command,native_work_command,native_work_settled,inventory_return,inventory_work_visible,equipment_page,equipment_filter,equipment_search_open,quick_slot,quick_count,quick_wielded,quick_use_sent,quick_bind_command,aim_held,ranged_deferred,external_form,external_entries,decision_waiting,native_work_total_ms,native_work_remaining_ms,work_progress_visible,presentation_cues,sounds_dispatched,low_light,underwater,diagnostics,wield_texture,shot_kick,low_light_blend,reading_token,reading_total,reading_remaining,reading_skimming,disassembly_token,disassembly_progress,rest_token,rest_phase,rest_accelerated,liquid_transfer_token,rest_multiplier,sky_time\n";
 +    }
 +    if (g_settings->getNoEx("cwm_entity_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->entity_trace_.open(trace_path);
@@ -4383,7 +4434,7 @@ index 0000000..224b032
 +        << ',' << wieldedTexture() << ',' << shotKick() << ',' << pimpl_->low_light_blend_ << ',' << (pimpl_->reading_ ? pimpl_->activity_token_ : 0)
 +        << ',' << (pimpl_->reading_ ? pimpl_->activity_total_ : 0) << ',' << (pimpl_->reading_ ? pimpl_->activity_remaining_ : 0)
 +        << ',' << pimpl_->reading_skimming_ << ',' << (pimpl_->disassembling_ ? pimpl_->activity_token_ : 0)
-+        << ',' << (pimpl_->disassembling_ ? 10000000-pimpl_->activity_remaining_ : 0) << ',' << pimpl_->rest_token_ << ',' << pimpl_->rest_phase_ << ',' << pimpl_->rest_accelerated_ << ',' << (pimpl_->filling_liquid_ ? pimpl_->activity_token_ : 0) << '\n';
++        << ',' << (pimpl_->disassembling_ ? 10000000-pimpl_->activity_remaining_ : 0) << ',' << pimpl_->rest_token_ << ',' << pimpl_->rest_phase_ << ',' << pimpl_->rest_accelerated_ << ',' << (pimpl_->filling_liquid_ ? pimpl_->activity_token_ : 0) << ',' << pimpl_->rest_multiplier_ << ',' << pimpl_->client_->getEnv().getTimeOfDay() << '\n';
 +    pimpl_->trace_.flush();
 +}
 +
@@ -5210,17 +5261,6 @@ index 0000000..224b032
 +        else { i.queued_cancel_activity_ = i.activity_token_; i.inventory_return_armed_ = true; i.equipment_close_ = true; return; }
 +        i.equipment_dirty_ = true; return;
 +    }
-+    if (i.external_anchor_) {
-+        if(fields.count("refresh")){i.query_inventory();return;}
-+        for(const auto& e:i.equipment_view_.entries) if(fields.count("item_"+std::to_string(e.id))) {i.equipment_selected_=e.id;i.transfer_quantity_=1;}
-+        if(fields.count("all")) {const auto* e=i.equipment_view_.entry(i.equipment_selected_);if(e)i.transfer_quantity_=e->counted?e->charges:1;}
-+        if(fields.count("ext_prev") && i.equipment_page_) --i.equipment_page_;
-+        if(fields.count("own_prev") && i.destination_page_) --i.destination_page_;
-+        const auto ext=std::count_if(i.equipment_view_.entries.begin(),i.equipment_view_.entries.end(),[](const auto& e){return e.external;});
-+        if(fields.count("ext_next") && (i.equipment_page_+1)*27<size_t(ext))++i.equipment_page_;
-+        if(fields.count("own_next") && (i.destination_page_+1)*27<i.equipment_view_.entries.size()-ext)++i.destination_page_;
-+        i.equipment_dirty_=true;return;
-+    }
 +    if(fields.count("pour_liquid") || fields.count("open_seal")) {
 +        const auto* source=i.equipment_view_.entry(i.equipment_selected_);
 +        const bool opening=fields.count("open_seal");
@@ -5232,6 +5272,17 @@ index 0000000..224b032
 +        }
 +        i.queued_transfer_=Impl::QueuedTransfer{i.equipment_view_.view,source->id,0,0,opening?5:4};
 +        i.inventory_return_armed_=true;i.equipment_close_=true;return;
++    }
++    if (i.external_anchor_) {
++        if(fields.count("refresh")){i.query_inventory();return;}
++        for(const auto& e:i.equipment_view_.entries) if(fields.count("item_"+std::to_string(e.id))) {i.equipment_selected_=e.id;i.transfer_quantity_=1;}
++        if(fields.count("all")) {const auto* e=i.equipment_view_.entry(i.equipment_selected_);if(e)i.transfer_quantity_=e->counted?e->charges:1;}
++        if(fields.count("ext_prev") && i.equipment_page_) --i.equipment_page_;
++        if(fields.count("own_prev") && i.destination_page_) --i.destination_page_;
++        const auto ext=std::count_if(i.equipment_view_.entries.begin(),i.equipment_view_.entries.end(),[](const auto& e){return e.external;});
++        if(fields.count("ext_next") && (i.equipment_page_+1)*27<size_t(ext))++i.equipment_page_;
++        if(fields.count("own_next") && (i.destination_page_+1)*27<i.equipment_view_.entries.size()-ext)++i.destination_page_;
++        i.equipment_dirty_=true;return;
 +    }
 +    if (fields.count("transfers") || fields.count("back")) {
 +        if (fields.count("transfers")) {
@@ -5454,7 +5505,7 @@ index 0000000..224b032
 +    const int work_width = std::min(560, int(screen.Width) - 20);
 +    const int work_left = std::max(10, (int(screen.Width) - work_width) / 2);
 +    const int work_top = std::max(165, int(screen.Height) - 270);
-+    pimpl_->inventory_work_text_->setRelativePosition(irr::core::rect<irr::s32>(work_left, work_top, work_left + work_width, work_top + 78));
++    pimpl_->inventory_work_text_->setRelativePosition(irr::core::rect<irr::s32>(work_left, work_top, work_left + work_width, work_top + (pimpl_->rest_token_?110:78)));
 +    std::wstring work_text = pimpl_->filling_liquid_ ? ::cwm::wide("Filling container") : pimpl_->rest_token_ ? ::cwm::wide(pimpl_->rest_phase_==2?"Sleeping":pimpl_->rest_phase_==1?"Trying to fall asleep":"Waiting") : pimpl_->disassembling_ ? ::cwm::wide("Disassembling: ")+utf8_to_wide(pimpl_->disassembly_name_) : pimpl_->reading_ ?
 +        (pimpl_->reading_skimming_ ? ::cwm::wide("Skimming: ","Sfoglio: ") : ::cwm::wide("Reading: ","Lettura: "))+
 +        utf8_to_wide(pimpl_->reading_book_) : pimpl_->inventory_work_label_;
@@ -5474,8 +5525,13 @@ index 0000000..224b032
 +    } else if (pimpl_->activity_token_ && pimpl_->activity_total_ > 0) work_text += L"  " + std::to_wstring(
 +        std::clamp(100 - int(100.0 * pimpl_->activity_remaining_ / pimpl_->activity_total_), 0, 100)) + L"%";
 +    else work_text += pimpl_->inventory_work_settled_ ? (::cwm::wide(" — finished", " — conclusa")) : (::cwm::wide(" — waiting for CDDA", " — attesa di CDDA"));
-+    if(pimpl_->rest_token_)work_text+=L"\n"+std::wstring(pimpl_->rest_accelerated_ ? ::cwm::wide("Fast-forward · ") : L"")+
-+        utf8_to_wide(getKeySetting("keymap_cdda_rest").name())+::cwm::wide(": rest menu");
++    if(pimpl_->rest_token_) {
++        const auto number=[](float value){std::wostringstream out;out<<std::setprecision(5)<<value;return out.str();};
++        work_text+=L"\n"+std::wstring(pimpl_->rest_accelerated_ ? ::cwm::wide("FAST REST") : pimpl_->rest_multiplier_>1 ? ::cwm::wide("FAST REST · warming up") : ::cwm::wide("NORMAL REST"));
++        work_text+=L" · F8 "+number(pimpl_->metrics_.time_scale)+L"x × "+std::to_wstring(pimpl_->rest_accelerated_?pimpl_->rest_multiplier_:1)+L" = "+
++            number(pimpl_->metrics_.time_scale*(pimpl_->rest_accelerated_?pimpl_->rest_multiplier_:1))+::cwm::wide("x target");
++        work_text+=L"\n"+utf8_to_wide(getKeySetting("keymap_cdda_rest").name())+::cwm::wide(": rest speed / menu · Actual speed depends on simulation load");
++    }
 +    if(pimpl_->reading_ && !pimpl_->reading_progress_.empty())work_text+=L"\n"+utf8_to_wide(pimpl_->reading_progress_);
 +    work_text += L"\n" + (pimpl_->rest_token_ ?
 +        ::cwm::wide("I: inspect (pauses) · Esc: pause menu", "I: consulta (pausa) · Esc: menu di pausa") :
@@ -5951,11 +6007,12 @@ index 0000000..dd93be0
 +} // namespace cdda_client
 diff --git a/src/cdda/crafting_inventory.h b/src/cdda/crafting_inventory.h
 new file mode 100644
-index 0000000..4584bd7
+index 0000000..aec818d
 --- /dev/null
 +++ b/src/cdda/crafting_inventory.h
-@@ -0,0 +1,80 @@
+@@ -0,0 +1,77 @@
 +#pragma once
++#include "presentation_theme.h"
 +#include "cwm/product_language.hpp"
 +#include "equipment_inventory.h"
 +namespace cdda_client {
@@ -5979,11 +6036,7 @@ index 0000000..4584bd7
 +inline std::string craftingForm(const CraftingView& view, size_t page, uint32_t selected,
 +        const std::string& search, unsigned batch, const std::string& notice,
 +        const std::function<std::string(const std::string&)>& icon, bool busy, CDDA::CWM::CraftingFilter filter=CDDA::CWM::CraftingFilter::ALL, bool updating=false) {
-+    std::string f = "formspec_version[4]size[16,11]no_prepend[]bgcolor[#00000000]"
-+        "background9[0,0;16,11;mcl_base_textures_background9.png;false;7]"
-+        "style_type[label;textcolor=#323232]"
-+        "style_type[textarea;textcolor=#323232]"
-+        "style_type[button;border=false;bgimg=mcl_inventory_button9.png;bgimg_pressed=mcl_inventory_button9_pressed.png;bgimg_middle=2,2]" +
++    std::string f = presentationPanel(16,11,false) +
 +        ("label[0.4,0.4;" + ::cwm::text("Crafting - known recipes and unfinished work", "Crafting - ricette note e lavori incompleti") + "]") +
 +        "field[0.4,1;5.6,0.65;search;;" + statusEscape(search) + "]field_close_on_enter[search;false]" +
 +        ("button[6.1,1;1.6,0.65;find;" + ::cwm::text("Search", "Cerca") + "]label[8,0.7;" + ::cwm::text("Batch", "Lotto") + "]dropdown[8,1;3.3,0.65;batch;");
@@ -6069,43 +6122,22 @@ index 0000000..d02b91f
 +}
 diff --git a/src/cdda/decision_dialog.h b/src/cdda/decision_dialog.h
 new file mode 100644
-index 0000000..44f960b
+index 0000000..ff859ec
 --- /dev/null
 +++ b/src/cdda/decision_dialog.h
-@@ -0,0 +1,114 @@
+@@ -0,0 +1,91 @@
 +#pragma once
 +#include "avatar_status.h"
++#include "decision_model.h"
++#include "presentation_theme.h"
 +#include "decision_text.h"
 +#include "cwm/cwm_generated.h"
 +#include "cwm/product_language.hpp"
 +#include <vector>
 +namespace cdda_client {
-+struct MedicalOptionView {
-+    int choice{-1}, quarters{-1}, current{-1}, maximum{-1};
-+    std::string id, name, description, health_text;
-+};
-+struct DecisionDialog {
-+    uint64_t id{},connection{};int cancel{-1};bool submitted{};
-+    std::string body;std::vector<std::string> choices;
-+    std::vector<MedicalOptionView> medical;
-+    uint64_t npc{};
-+    std::string speaker, history;
-+    bool history_truncated{}, companion_controls{};
-+    void read(const CDDA::CWM::DecisionPrompt& prompt,uint64_t generation) {
-+        id=prompt.decision_id();connection=generation;cancel=prompt.cancel_choice();submitted=false;
-+        body=prompt.text()->str();choices.clear();for(const auto* label:*prompt.choices())choices.push_back(label->str());
-+        npc=0; speaker.clear(); history.clear(); history_truncated=false; companion_controls=false;
-+        if(const auto* c=prompt.conversation()) {
-+            npc=c->npc_id(); speaker=c->speaker()->str(); history=c->history()->str(); history_truncated=c->history_truncated(); companion_controls=c->companion_controls();
-+        }
-+        medical.clear(); if(prompt.medical())for(const auto* p:*prompt.medical())medical.push_back({
-+            p->choice(),p->health_quarters(),p->hp_current(),p->hp_max(),p->body_id()->str(),p->name()->str(),p->description()->str(),p->health_text()->str()});
-+    }
-+    bool permits(uint64_t expected,uint64_t generation,int choice) const {
-+        return id && expected==id && generation==connection && !submitted && choice>=0 && size_t(choice)<choices.size();
-+    }
++struct DecisionDialog : DecisionModel {
 +    std::string medicalForm(std::string f) const {
-+        f += "hypertext[0.55,1.85;14.9,1.0;prompt;" + statusEscape("<global color=#323232 size=18>"+decisionRichText(body)) + "]";
++        f += "hypertext[0.55,1.85;14.9,1.0;prompt;" + statusEscape("<global color=#323232 size=18>"+decisionRichText(decisionTrimFullStop(body))) + "]";
 +        const double height = medical.size()*2.8 + choices.size()*.85;
 +        f += "scrollbaroptions[min=0;max="+std::to_string(int(std::max(1.,(height-6.7)*10)))+";smallstep=5;largestep=24;thumbsize=67]scrollbar[15.05,3.1;0.4,6.7;vertical;medical_scroll;0]scroll_container[0.55,3.1;14.3,6.7;medical_scroll;vertical;0.1]";
 +        double y=0;std::vector<bool> shown(choices.size(),false);
@@ -6125,28 +6157,28 @@ index 0000000..44f960b
 +            y+=2.8;
 +        }
 +        for(size_t n=0;n<choices.size();++n)if(!shown[n]) {
-+            f+="button[0,"+std::to_string(y)+";14.25,0.72;choice_"+std::to_string(n)+";"+std::to_string(n+1)+". "+statusEscape(decisionPlainText(choices[n]))+"]";y+=.85;
++            f+="button[0,"+std::to_string(y)+";14.25,0.72;choice_"+std::to_string(n)+";"+std::to_string(n+1)+". "+statusEscape(decisionChoiceText(choices[n]))+"]";y+=.85;
 +        }
 +        f+="scroll_container_end[]label[0.55,10.05;"+::cwm::text("Choose a body part. Effects shown are expectations, not guaranteed healing.","Scegli una parte. Gli effetti indicati non garantiscono la guarigione.")+"]";
-+        if(cancel>=0 && size_t(cancel)<choices.size())f+="button[0.55,10.65;14.9,0.75;cancel;Esc: "+statusEscape(decisionPlainText(choices[cancel]))+"]";
++        if(cancel>=0 && size_t(cancel)<choices.size())f+="button[0.55,10.65;14.9,0.75;cancel;Esc: "+statusEscape(decisionChoiceText(choices[cancel]))+"]";
 +        return f;
 +    }
 +    std::string companionForm(std::string f) const {
 +        f += "label[0.55,1.95;"+statusEscape(speaker)+"]";
-+        f += "hypertext[0.55,2.3;6.0,7.7;companion_profile;"+statusEscape("<global color=#323232 size=18>"+decisionRichText(body))+"]";
++        f += "hypertext[0.55,2.3;6.0,7.7;companion_profile;"+statusEscape("<global color=#323232 size=18>"+decisionRichText(decisionTrimFullStop(body)))+"]";
 +        for(size_t n=0;n<choices.size();++n) {
 +            if(int(n)==cancel)continue;
 +            const auto name="choice_"+std::to_string(n);
-+            f+="button[7,"+std::to_string(2.3+n*.91)+";7.9,0.78;"+name+";"+std::to_string(n+1)+". "+statusEscape(decisionPlainText(choices[n]))+"]tooltip["+name+";"+statusEscape(decisionPlainText(choices[n]))+"]";
++            f+="button[7,"+std::to_string(2.3+n*.91)+";7.9,0.78;"+name+";"+std::to_string(n+1)+". "+statusEscape(decisionChoiceText(choices[n]))+"]tooltip["+name+";"+statusEscape(decisionChoiceText(choices[n]))+"]";
 +        }
 +        f+="label[0.55,10.2;"+::cwm::text("Orders apply to this companion only. Temporary overrides take priority.")+"]";
-+        if(cancel>=0 && size_t(cancel)<choices.size())f+="button[0.55,10.65;14.9,0.75;cancel;Esc: "+statusEscape(decisionPlainText(choices[cancel]))+"]";
++        if(cancel>=0 && size_t(cancel)<choices.size())f+="button[0.55,10.65;14.9,0.75;cancel;Esc: "+statusEscape(decisionChoiceText(choices[cancel]))+"]";
 +        return f;
 +    }
 +    std::string conversationForm(std::string f) const {
 +        f += "label[0.55,1.95;"+statusEscape(speaker)+"]";
 +        const auto transcript=(history_truncated ? ::cwm::text("Earlier conversation text omitted from this view.")+"\n" : "")+history;
-+        f += "hypertext[0.55,2.3;9.05,2.2;conversation_current;"+statusEscape("<global color=#323232 size=18>"+decisionRichText(body))+"]";
++        f += "hypertext[0.55,2.3;9.05,2.2;conversation_current;"+statusEscape("<global color=#323232 size=18>"+decisionRichText(decisionTrimFullStop(body)))+"]";
 +        f += "label[0.55,4.85;"+::cwm::text("Conversation history")+"]";
 +        f += "hypertext[0.55,5.15;9.05,4.85;conversation_history;"+statusEscape("<global color=#323232 size=18>"+decisionRichText(transcript))+"]set_focus[conversation_history;true]";
 +        const int maximum=std::max(1,int(choices.size()*23)-76);
@@ -6157,32 +6189,30 @@ index 0000000..44f960b
 +            f+="hypertext[0.85,"+y+";4.2,2.1;reply_"+std::to_string(n)+";"+statusEscape("<global color=#323232 size=16>"+decisionRichText(choices[n]))+"]";
 +        }
 +        f+="scroll_container_end[]label[0.55,10.2;"+::cwm::text("Choose a numbered response. Trials and consequences follow CDDA rules.")+"]";
-+        if(cancel>=0 && size_t(cancel)<choices.size())f+="button[0.55,10.65;14.9,0.75;cancel;Esc: "+statusEscape(decisionPlainText(choices[cancel]))+"]";
++        if(cancel>=0 && size_t(cancel)<choices.size())f+="button[0.55,10.65;14.9,0.75;cancel;Esc: "+statusEscape(decisionChoiceText(choices[cancel]))+"]";
 +        return f;
 +    }
 +    std::string form() const {
-+        std::string f="formspec_version[4]size[16,12]no_prepend[]bgcolor[#00000000]"
-+            "background9[0,0;16,12;mcl_base_textures_background9.png;false;7]"
-+            "style_type[label;textcolor=#323232]style_type[button;border=false;bgimg=mcl_inventory_button9.png;bgimg_pressed=mcl_inventory_button9_pressed.png;bgimg_middle=2,2]";
++        std::string f=presentationPanel(16,12,false);
 +        f+="cwm_decision["+std::string(submitted?"1":"0")+"]image[0.55,0.4;0.65,0.65;cdda_status_unknown.png]";
 +        f+="label[1.45,0.75;"+::cwm::text("Choose an action","Scegli un'azione")+"]";
 +        f+="label[0.55,1.35;"+std::string(submitted?::cwm::text("Response sent · waiting for the game","Risposta inviata · in attesa del gioco"): ::cwm::text("Time is paused while you choose","Il tempo e fermo mentre scegli"))+"]";
 +        if(npc && companion_controls && !submitted)return companionForm(f);
 +        if(npc && !submitted)return conversationForm(f);
 +        if(!medical.empty() && !submitted)return medicalForm(f);
-+        f+="hypertext[0.55,1.85;14.9,3.9;prompt;"+statusEscape("<global color=#323232 size=18>"+decisionRichText(body))+"]set_focus[prompt;true]";
++        f+="hypertext[0.55,1.85;14.9,3.9;prompt;"+statusEscape("<global color=#323232 size=18>"+decisionRichText(decisionTrimFullStop(body)))+"]set_focus[prompt;true]";
 +        if(submitted)return f+"label[0.55,6.3;"+::cwm::text("Waiting for the game...","In attesa del gioco...")+"]";
 +        const int maximum=std::max(0,int(choices.size()*8.5)-36);
 +        f+="scrollbaroptions[min=0;max="+std::to_string(std::max(1,maximum))+";smallstep=4;largestep=12;thumbsize=36]scrollbar[15.05,6;0.4,3.65;vertical;choices_scroll;0]scroll_container[0.55,6;14.3,3.65;choices_scroll;vertical;0.1]";
 +        for(size_t n=0;n<choices.size();++n) {
-+            const auto name="choice_"+std::to_string(n);auto label=decisionPlainText(choices[n]);
++            const auto name="choice_"+std::to_string(n);auto label=decisionChoiceText(choices[n]);
 +            std::string single_line;for(char c:label) {if(c=='\n')single_line+=" · ";else if(c!='\r')single_line+=c;}label=std::move(single_line);
 +            // Full text remains in the tooltip; do not cut in the middle of UTF-8.
 +            if(label.size()>95) {size_t end=95;while(end && (static_cast<unsigned char>(label[end])&0xC0)==0x80)--end;label=label.substr(0,end)+"...";}
-+            f+="button[0,"+std::to_string(n*.85)+";14.25,0.72;"+name+";"+std::to_string(n+1)+". "+statusEscape(label)+"]tooltip["+name+";"+statusEscape(decisionPlainText(choices[n]))+"]";
++            f+="button[0,"+std::to_string(n*.85)+";14.25,0.72;"+name+";"+std::to_string(n+1)+". "+statusEscape(label)+"]tooltip["+name+";"+statusEscape(decisionChoiceText(choices[n]))+"]";
 +        }
 +        f+="scroll_container_end[]label[0.55,10.05;"+::cwm::text("Click a choice or press 1–9. Enter never approves automatically.","Clic su una scelta o 1–9. Invio non approva automaticamente.")+"]";
-+        if(cancel>=0 && size_t(cancel)<choices.size())f+="button[0.55,10.65;14.9,0.75;cancel;Esc: "+statusEscape(decisionPlainText(choices[cancel]))+"]";
++        if(cancel>=0 && size_t(cancel)<choices.size())f+="button[0.55,10.65;14.9,0.75;cancel;Esc: "+statusEscape(decisionChoiceText(choices[cancel]))+"]";
 +        return f;
 +    }
 +};
@@ -6208,12 +6238,49 @@ index 0000000..38421b3
 +};
 +inline DecisionInput& decisionInput() {static DecisionInput input;return input;}
 +} // namespace cdda_client
+diff --git a/src/cdda/decision_model.h b/src/cdda/decision_model.h
+new file mode 100644
+index 0000000..9084746
+--- /dev/null
++++ b/src/cdda/decision_model.h
+@@ -0,0 +1,31 @@
++#pragma once
++#include "cwm/cwm_generated.h"
++#include <string>
++#include <vector>
++namespace cdda_client {
++struct MedicalOptionView {
++    int choice{-1}, quarters{-1}, current{-1}, maximum{-1};
++    std::string id, name, description, health_text;
++};
++struct DecisionModel {
++    uint64_t id{},connection{};int cancel{-1};bool submitted{};
++    std::string body;std::vector<std::string> choices;
++    std::vector<MedicalOptionView> medical;
++    uint64_t npc{};
++    std::string speaker, history;
++    bool history_truncated{}, companion_controls{};
++    void read(const CDDA::CWM::DecisionPrompt& prompt,uint64_t generation) {
++        id=prompt.decision_id();connection=generation;cancel=prompt.cancel_choice();submitted=false;
++        body=prompt.text()->str();choices.clear();for(const auto* label:*prompt.choices())choices.push_back(label->str());
++        npc=0; speaker.clear(); history.clear(); history_truncated=false; companion_controls=false;
++        if(const auto* c=prompt.conversation()) {
++            npc=c->npc_id(); speaker=c->speaker()->str(); history=c->history()->str(); history_truncated=c->history_truncated(); companion_controls=c->companion_controls();
++        }
++        medical.clear(); if(prompt.medical())for(const auto* p:*prompt.medical())medical.push_back({
++            p->choice(),p->health_quarters(),p->hp_current(),p->hp_max(),p->body_id()->str(),p->name()->str(),p->description()->str(),p->health_text()->str()});
++    }
++    bool permits(uint64_t expected,uint64_t generation,int choice) const {
++        return id && expected==id && generation==connection && !submitted && choice>=0 && size_t(choice)<choices.size();
++    }
++};
++}
 diff --git a/src/cdda/decision_text.h b/src/cdda/decision_text.h
 new file mode 100644
-index 0000000..15c7818
+index 0000000..f33096b
 --- /dev/null
 +++ b/src/cdda/decision_text.h
-@@ -0,0 +1,53 @@
+@@ -0,0 +1,66 @@
 +#pragma once
 +#include <string>
 +#include <string_view>
@@ -6237,6 +6304,19 @@ index 0000000..15c7818
 +        text += source[i++];
 +    }
 +    return text;
++}
++inline std::string decisionTrimFullStop(std::string source) {
++    size_t end=source.size();
++    while(end) {
++        if(source[end-1]==' ' || source[end-1]=='\n' || source[end-1]=='\r' || source[end-1]=='\t'){--end;continue;}
++        if(end>=8 && source.compare(end-8,8,"</color>")==0){end-=8;continue;}
++        break;
++    }
++    if(end && source[end-1]=='.' && (end<2 || source[end-2]!='.'))source.erase(end-1,1);
++    return source;
++}
++inline std::string decisionChoiceText(std::string_view source) {
++    return decisionTrimFullStop(decisionPlainText(source));
 +}
 +inline std::string decisionMarkup(std::string_view source) {
 +    std::string out;
@@ -6269,11 +6349,12 @@ index 0000000..15c7818
 +} // namespace cdda_client
 diff --git a/src/cdda/equipment_inventory.h b/src/cdda/equipment_inventory.h
 new file mode 100644
-index 0000000..7bc9a95
+index 0000000..04e8d4b
 --- /dev/null
 +++ b/src/cdda/equipment_inventory.h
-@@ -0,0 +1,450 @@
+@@ -0,0 +1,446 @@
 +#pragma once
++#include "presentation_theme.h"
 +#include "cwm/product_language.hpp"
 +#include "avatar_status.h"
 +#include "cwm/cwm_generated.h"
@@ -6444,10 +6525,7 @@ index 0000000..7bc9a95
 +inline std::string externalStorageForm(const EquipmentView& view, size_t external_page, size_t owned_page,
 +        uint32_t selected, int quantity, const std::string& notice,
 +        const std::function<std::string(const std::string&)>& icon) {
-+    std::string f="formspec_version[4]size[22,9]no_prepend[]bgcolor[#00000000]"
-+        "background9[0,0;22,9;mcl_base_textures_background9.png;false;7]"
-+        "style_type[label;textcolor=#323232]style_type[button;border=false;bgimg=mcl_inventory_button9.png;bgimg_pressed=mcl_inventory_button9_pressed.png;bgimg_middle=2,2]"
-+        "style_type[image_button;border=false;bgimg=;bgimg_pressed=]";
++    std::string f=presentationPanel(22,9,true);
 +    f+="label[0.5,0.4;"+statusEscape(view.external_label.empty()?::cwm::text("Storage / ground","Contenitore / terra"):view.external_label)+"]";
 +    f+="label[11.5,0.4;"+::cwm::text("Your inventory","Il tuo inventario")+"]";
 +    f+="button[17.5,0.15;1.8,0.65;refresh;"+::cwm::text("Refresh","Aggiorna")+"]button_exit[19.6,0.15;1.9,0.65;close;"+::cwm::text("Close","Chiudi")+"]set_focus[refresh;false]";
@@ -6479,6 +6557,10 @@ index 0000000..7bc9a95
 +    f+="label[0.5,6.8;"+::cwm::text("Free space: ","Spazio libero: ")+equipmentAmount(view.external_remaining)+" / "+equipmentAmount(view.external_capacity)+" L]";
 +    if(const auto* e=view.entry(selected)) {
 +        f+="label[0.5,7.45;"+statusEscape(e->name)+"]";
++        if(e->liquid) {
++            if(e->liquid_reason.empty())f+="button[16,6.95;5,0.65;pour_liquid;"+::cwm::text("Pour liquid...")+"]";
++            else f+="label[16,7.25;"+::cwm::text("Pour liquid...")+"]tooltip[16,6.95;5,0.65;"+statusEscape(e->liquid_reason)+"]";
++        }
 +        f+="label[11.5,6.6;"+::cwm::text("Quantity to move","Quantita da spostare")+"]field[11.5,6.95;2.2,0.65;quantity;;"+std::to_string(quantity)+"]field_close_on_enter[quantity;false]button[14,6.95;1.8,0.65;all;"+::cwm::text("All","Tutto")+"]";
 +    }
 +    f+="hypertext[0.5,8.05;21,0.7;;"+statusEscape("<global color=#963F25 size=18><b>"+equipmentMarkup(notice)+"</b>")+"]";
@@ -6492,10 +6574,7 @@ index 0000000..7bc9a95
 +        bool search_open = false, bool details_open = false, size_t worn_page = 0, bool focus_search = false, unsigned quick_slot = 1,
 +        bool action_time_pending = false, bool reading = false, bool disassembling = false) {
 +    (void)search_open;
-+    std::string f = "formspec_version[4]size[16,11]no_prepend[]bgcolor[#00000000]"
-+        "background9[0,0;16,11;mcl_base_textures_background9.png;false;7]"
-+        "style_type[label;textcolor=#323232]style_type[textarea;textcolor=#323232]"
-+        "style_type[button;border=false;bgimg=mcl_inventory_button9.png;bgimg_pressed=mcl_inventory_button9_pressed.png;bgimg_middle=2,2]" +
++    std::string f = presentationPanel(16,11,false) +
 +        ("label[0.5,0.4;" + ::cwm::text("Inventory", "Inventario") + "]button[11.6,0.2;3.9,0.6;transfers;" + ::cwm::text("Quantities and transfers", "Quantita e trasferimenti") + "]") +
 +        ("button[11.3,0.95;2.1,0.6;refresh;" + ::cwm::text("Refresh", "Aggiorna") + "]button_exit[13.7,0.95;1.8,0.6;close;" + ::cwm::text("Close", "Chiudi") + "]") +
 +        "style_type[image_button;border=false;bgimg=;bgimg_pressed=]box[11.05,1.75;0.025,8.75;#77777770]";
@@ -6666,10 +6745,7 @@ index 0000000..7bc9a95
 +inline std::string transferForm(const EquipmentView& view, size_t page, uint32_t source,
 +        uint32_t destination, size_t destination_page, int quantity, const std::string& notice,
 +        const std::function<std::string(const std::string&)>& icon, uint64_t activity_token = 0) {
-+    std::string f = "formspec_version[4]size[16,11]no_prepend[]bgcolor[#00000000]"
-+        "background9[0,0;16,11;mcl_base_textures_background9.png;false;7]"
-+        "style_type[label;textcolor=#323232]"
-+        "style_type[button;border=false;bgimg=mcl_inventory_button9.png;bgimg_pressed=mcl_inventory_button9_pressed.png;bgimg_middle=2,2]" +
++    std::string f = presentationPanel(16,11,false) +
 +        ("label[0.5,0.4;" + ::cwm::text("Quantities and transfers", "Quantita e trasferimenti") + "]button[8,0.2;3.4,0.6;back;" + ::cwm::text("Equipment", "Equipaggiamento") + "]") +
 +        ("button[11.6,0.2;1.8,0.6;refresh;" + ::cwm::text("Refresh", "Aggiorna") + "]button_exit[13.7,0.2;1.8,0.6;close;" + ::cwm::text("Close", "Chiudi") + "]") +
 +        ("label[0.5,1.2;" + ::cwm::text("Item to move", "Oggetto da spostare") + "]label[8,1.2;" + ::cwm::text("Owned destination container", "Contenitore posseduto di destinazione") + "]");
@@ -6911,11 +6987,12 @@ index 0000000..7d869d1
 +} // namespace cdda_client
 diff --git a/src/cdda/mission_journal.h b/src/cdda/mission_journal.h
 new file mode 100644
-index 0000000..886ceac
+index 0000000..f5fe432
 --- /dev/null
 +++ b/src/cdda/mission_journal.h
-@@ -0,0 +1,59 @@
+@@ -0,0 +1,60 @@
 +#pragma once
++#include "presentation_theme.h"
 +#include "decision_text.h"
 +#include "avatar_status.h"
 +#include "cwm/cwm_generated.h"
@@ -6941,7 +7018,7 @@ index 0000000..886ceac
 +    const JournalEntry* entry(int id) const {for(const auto& e:entries)if(e.id==id)return &e;return nullptr;}
 +    std::string form() const {
 +        const char* tabs[]={"Active","Completed","Failed"};
-+        std::string f="formspec_version[4]size[16,12]no_prepend[]bgcolor[#00000000]background9[0,0;16,12;mcl_base_textures_background9.png;false;7]style_type[label;textcolor=#323232]style_type[button;border=false;bgimg=mcl_inventory_button9.png;bgimg_pressed=mcl_inventory_button9_pressed.png;bgimg_middle=2,2]";
++        std::string f=presentationPanel(16,12,false);
 +        f+="label[0.5,0.5;"+::cwm::text("Mission journal")+"]label[0.5,1;"+::cwm::text("Time is paused. Browsing does not complete or accept missions.")+"]";
 +        for(int n=0;n<3;++n) {
 +            unsigned count=0;for(const auto& e:entries)if(e.state==n)++count;
@@ -7029,6 +7106,29 @@ index 0000000..ca45474
 +    }
 +};
 +} // namespace cdda_client
+diff --git a/src/cdda/presentation_theme.h b/src/cdda/presentation_theme.h
+new file mode 100644
+index 0000000..bf3d5f4
+--- /dev/null
++++ b/src/cdda/presentation_theme.h
+@@ -0,0 +1,17 @@
++#pragma once
++#include <string>
++namespace cdda_client {
++struct PresentationTheme {
++    static constexpr const char* panel="mcl_base_textures_background9.png";
++    static constexpr const char* button="mcl_inventory_button9.png";
++    static constexpr const char* pressed="mcl_inventory_button9_pressed.png";
++    static constexpr const char* text="#323232";
++};
++inline std::string presentationPanel(int width,int height,bool image_buttons=false) {
++    const auto size=std::to_string(width)+","+std::to_string(height);
++    return "formspec_version[4]size["+size+"]no_prepend[]bgcolor[#00000000]background9[0,0;"+size+";"+PresentationTheme::panel+";false;7]"+
++        "style_type[label;textcolor="+PresentationTheme::text+"]style_type[textarea;textcolor="+PresentationTheme::text+"]"+
++        "style_type[button;border=false;bgimg="+PresentationTheme::button+";bgimg_pressed="+PresentationTheme::pressed+";bgimg_middle=2,2]"+
++        (image_buttons?"style_type[image_button;border=false;bgimg=;bgimg_pressed=]":"");
++}
++}
 diff --git a/src/cdda/quickbar.h b/src/cdda/quickbar.h
 new file mode 100644
 index 0000000..2338ed6
@@ -7053,11 +7153,12 @@ index 0000000..2338ed6
 +} // namespace cdda_client
 diff --git a/src/cdda/trade_dialog.h b/src/cdda/trade_dialog.h
 new file mode 100644
-index 0000000..b743423
+index 0000000..7c864c2
 --- /dev/null
 +++ b/src/cdda/trade_dialog.h
 @@ -0,0 +1,83 @@
 +#pragma once
++#include "presentation_theme.h"
 +#include "equipment_inventory.h"
 +#include "decision_text.h"
 +#include <cstdint>
@@ -7094,8 +7195,7 @@ index 0000000..b743423
 +    const TradeRow* row(unsigned n) const {return n && n<=rows.size()?&rows[n-1]:nullptr;}
 +    static std::string money(int64_t cents) {std::ostringstream s;s<<std::fixed<<std::setprecision(2)<<cents/100.;return "$"+s.str();}
 +    std::string form(const std::function<std::string(const std::string&)>& icon) const {
-+        std::string f="formspec_version[4]size[22,12]no_prepend[]bgcolor[#00000000]background9[0,0;22,12;mcl_base_textures_background9.png;false;7]"
-+            "style_type[label;textcolor=#323232]style_type[button;border=false;bgimg=mcl_inventory_button9.png;bgimg_pressed=mcl_inventory_button9_pressed.png;bgimg_middle=2,2]style_type[image_button;border=false;bgimg=;bgimg_pressed=]";
++        std::string f=presentationPanel(22,12,true);
 +        f+="cwm_inventory["+std::to_string(quote)+";"+std::to_string(selected)+";1]";
 +        f+="label[0.5,0.45;"+statusEscape(name)+"]label[11.5,0.45;"+::cwm::text("Your inventory")+"]";
 +        f+="label[0.5,0.95;"+::cwm::text("Time is paused. Items move only after the native confirmation.")+"]";

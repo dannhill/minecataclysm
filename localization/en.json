@@ -6,5 +6,17 @@
   "No sealed pocket to open.": "No sealed pocket to open.",
   "Break a seal? Preservation changes; open containers may spill or be set on the ground.": "Break a seal? Preservation changes; open containers may spill or be set on the ground.",
   "Open an owned seal without a preselected quantity or destination.": "Open an owned seal without a preselected quantity or destination.",
-  "Seal opening cancelled or unavailable.": "Seal opening cancelled or unavailable."
+  "Seal opening cancelled or unavailable.": "Seal opening cancelled or unavailable.",
+  "Rest acceleration x64": "Rest acceleration x64",
+  "Rest acceleration x256": "Rest acceleration x256",
+  "Rest acceleration x1024": "Rest acceleration x1024",
+  "Rest multiplier": "Rest multiplier",
+  "Target speed = F8 global speed x rest multiplier; actual speed depends on simulation load": "Target speed = F8 global speed x rest multiplier; actual speed depends on simulation load",
+  "FAST REST": "FAST REST",
+  "FAST REST · warming up": "FAST REST · warming up",
+  "NORMAL REST": "NORMAL REST",
+  "x target": "x target",
+  ": rest speed / menu · Actual speed depends on simulation load": ": rest speed / menu · Actual speed depends on simulation load",
+  "Collect this item with native pickup before handling its liquid.": "Collect this item with native pickup before handling its liquid.",
+  "Open native pouring without a preselected quantity or destination.": "Open native pouring without a preselected quantity or destination."
 }

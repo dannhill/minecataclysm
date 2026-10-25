@@ -517,7 +517,7 @@ table ConversationInfo {
 }
 
 enum RestPhase : byte { WAITING = 0, TRYING_SLEEP = 1, SLEEPING = 2 }
-table RestState { token: uint64; phase: RestPhase; interruptible: bool; accelerated: bool; progress: int32 = -1; }
+table RestState { token: uint64; phase: RestPhase; interruptible: bool; accelerated: bool; progress: int32 = -1; speed_multiplier: uint16 = 64; }
 // Open the native rest menu, bound to the last projected rest generation (0 idle).
 table RestRequest { command_id: uint64; expected_token: uint64; }
 

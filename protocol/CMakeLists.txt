@@ -125,3 +125,7 @@ add_test(NAME test_liquids COMMAND test_liquids)
 add_executable(test_seals tests/test_seals.cpp)
 target_link_libraries(test_seals PRIVATE cwm_protocol)
 add_test(NAME test_seals COMMAND test_seals)
+
+add_executable(test_menu_presentation tests/test_menu_presentation.cpp)
+target_link_libraries(test_menu_presentation PRIVATE cwm_protocol)
+add_test(NAME test_menu_presentation COMMAND test_menu_presentation)

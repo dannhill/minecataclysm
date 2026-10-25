@@ -9202,7 +9202,8 @@ struct RestState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_PHASE = 6,
     VT_INTERRUPTIBLE = 8,
     VT_ACCELERATED = 10,
-    VT_PROGRESS = 12
+    VT_PROGRESS = 12,
+    VT_SPEED_MULTIPLIER = 14
   };
   uint64_t token() const {
     return GetField<uint64_t>(VT_TOKEN, 0);
@@ -9234,6 +9235,12 @@ struct RestState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   bool mutate_progress(int32_t _progress = -1) {
     return SetField<int32_t>(VT_PROGRESS, _progress, -1);
   }
+  uint16_t speed_multiplier() const {
+    return GetField<uint16_t>(VT_SPEED_MULTIPLIER, 64);
+  }
+  bool mutate_speed_multiplier(uint16_t _speed_multiplier = 64) {
+    return SetField<uint16_t>(VT_SPEED_MULTIPLIER, _speed_multiplier, 64);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint64_t>(verifier, VT_TOKEN, 8) &&
@@ -9241,6 +9248,7 @@ struct RestState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyField<uint8_t>(verifier, VT_INTERRUPTIBLE, 1) &&
            VerifyField<uint8_t>(verifier, VT_ACCELERATED, 1) &&
            VerifyField<int32_t>(verifier, VT_PROGRESS, 4) &&
+           VerifyField<uint16_t>(verifier, VT_SPEED_MULTIPLIER, 2) &&
            verifier.EndTable();
   }
 };
@@ -9264,6 +9272,9 @@ struct RestStateBuilder {
   void add_progress(int32_t progress) {
     fbb_.AddElement<int32_t>(RestState::VT_PROGRESS, progress, -1);
   }
+  void add_speed_multiplier(uint16_t speed_multiplier) {
+    fbb_.AddElement<uint16_t>(RestState::VT_SPEED_MULTIPLIER, speed_multiplier, 64);
+  }
   explicit RestStateBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -9281,10 +9292,12 @@ inline ::flatbuffers::Offset<RestState> CreateRestState(
     CDDA::CWM::RestPhase phase = CDDA::CWM::RestPhase::WAITING,
     bool interruptible = false,
     bool accelerated = false,
-    int32_t progress = -1) {
+    int32_t progress = -1,
+    uint16_t speed_multiplier = 64) {
   RestStateBuilder builder_(_fbb);
   builder_.add_token(token);
   builder_.add_progress(progress);
+  builder_.add_speed_multiplier(speed_multiplier);
   builder_.add_accelerated(accelerated);
   builder_.add_interruptible(interruptible);
   builder_.add_phase(phase);

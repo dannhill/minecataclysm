@@ -9,13 +9,13 @@ enum PauseReason : unsigned { Manual = 1, Menu = 2, Threat = 4, Recovery = 8, De
 class SimulationClock {
 public:
     using Wall = std::chrono::steady_clock;
-    void sample(Wall::time_point now, bool running, bool accelerated = false) {
+    void sample(Wall::time_point now, bool running, bool accelerated = false, unsigned rest_multiplier = 64) {
         if(accelerated_ && (!running || !accelerated))tick_end_=std::max(tick_end_,elapsed_);
         accelerated_=running && accelerated;
         if (started_ && running_ && running) {
             // Suspend/stalls lose wall time rather than creating catch-up turns.
             const double dt = std::chrono::duration<double>(now - last_).count();
-            elapsed_ += std::clamp(dt, 0.0, 0.25) * scale_ * (accelerated_ ? 64.0 : 1.0);
+            elapsed_ += std::clamp(dt, 0.0, 0.25) * scale_ * (accelerated_ ? double(std::clamp(rest_multiplier, 1u, 1024u)) : 1.0);
         }
         last_ = now; started_ = true; running_ = running;
     }
@@ -41,7 +41,10 @@ public:
     }
     void complete_tick() {
         tick_end_ += 1.0;
-        if (tick_due()) tick_end_ = elapsed_ + 1.0;
+        // Keep bounded credit only for deliberate fast rest. Every credit still
+        // requires one native world tick; pause/wake discard unused credit.
+        if (accelerated_) tick_end_ = std::max(tick_end_, elapsed_ - 32.0);
+        else if (tick_due()) tick_end_ = elapsed_ + 1.0;
     }
 private:
     Wall::time_point last_{};

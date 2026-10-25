@@ -7247,7 +7247,7 @@
   {
     "path": "src/cdda/cdda_bridge.cpp",
     "mode": "100644",
-    "sha256": "9d02531c86d0269b40f3a7f30659683bfc83ac21a414e56009e73ae1c0fd188c"
+    "sha256": "51b51f161c3e767ab502bbef239f4392a383537f82d354237ba42797cf6db324"
   },
   {
     "path": "src/cdda/cdda_bridge.h",
@@ -7257,7 +7257,7 @@
   {
     "path": "src/cdda/crafting_inventory.h",
     "mode": "100644",
-    "sha256": "d44fe7aa071a66466d317f4dbc27c409dd7c1ad4ced1f5b97215c98dcc32f59d"
+    "sha256": "c388d614c35d0455f88f787c4a61e4b23cf54734fb4ee2ee5355566c3d1c6321"
   },
   {
     "path": "src/cdda/creature_visual.h",
@@ -7267,7 +7267,7 @@
   {
     "path": "src/cdda/decision_dialog.h",
     "mode": "100644",
-    "sha256": "cb30cc2ebaebec2acab6ce90a8cf862bcbd10235f1597aead90cd04fbc661bff"
+    "sha256": "8b00482203d3f9b670035a6cd388185885a4b1c851f9d0cafb4a28b0648c2750"
   },
   {
     "path": "src/cdda/decision_input.h",
@@ -7275,14 +7275,19 @@
     "sha256": "d75ecf2fb0d0c672d2a63727f8f6a4aa4854fe726817c61ca3cf0e145bd83b57"
   },
   {
+    "path": "src/cdda/decision_model.h",
+    "mode": "100644",
+    "sha256": "3bd28eac5d08a49525f1c00296a9087a8cb6ba4e747c47024d050d2802ec7ac8"
+  },
+  {
     "path": "src/cdda/decision_text.h",
     "mode": "100644",
-    "sha256": "7d4a4faae17acf6b87de3a5d54e666484b8cf2937f03dd38c2e0d9f01354b9d7"
+    "sha256": "e6b4489fcb1f4024b2457b774180ea3de16ca28b8e36bd163f83605d1c651b47"
   },
   {
     "path": "src/cdda/equipment_inventory.h",
     "mode": "100644",
-    "sha256": "8b86531563e3a790fd888bf8109d6cee762f0dcdc40d8e475b7e4ab849e995c8"
+    "sha256": "99569f4ce2b09152fb707cda09461e008be154298fe57719fe1d593c2b6c0e7c"
   },
   {
     "path": "src/cdda/ground_item_formspec.h",
@@ -7307,12 +7312,17 @@
   {
     "path": "src/cdda/mission_journal.h",
     "mode": "100644",
-    "sha256": "da5c2659e1fc641eda0227cd9903062c33520ca7351d3fa5245963decade778d"
+    "sha256": "0951579d0321bb600daef64cb379c05870365f3bb60034358568188749835e2a"
   },
   {
     "path": "src/cdda/posture_input.h",
     "mode": "100644",
     "sha256": "1761176733e13c2c269e78cace593dcb877235f352713c603480c0cdf483b9d8"
+  },
+  {
+    "path": "src/cdda/presentation_theme.h",
+    "mode": "100644",
+    "sha256": "dee53efa0e8c1948a6e36410d874bb0f5c4b666874dde8c14171979e384b2276"
   },
   {
     "path": "src/cdda/quickbar.h",
@@ -7322,7 +7332,7 @@
   {
     "path": "src/cdda/trade_dialog.h",
     "mode": "100644",
-    "sha256": "d8308f6d9d59ae5f5ae7ce6d4345ab496c325e5cc91024ffa964ca1a50364a85"
+    "sha256": "dc642be12952d480079d2749b65f3e75bdb721a0bfa677f08b53ed32251a2f86"
   },
   {
     "path": "src/chat.cpp",
@@ -8417,7 +8427,7 @@
   {
     "path": "src/gui/guiFormSpecMenu.cpp",
     "mode": "100644",
-    "sha256": "1ffcb46aedee0822e3316b15a354f06238e6a7328c6e974f57d2f32bace84560"
+    "sha256": "3169718bb53450599d28297a93d0d913166d3c165fde0055b12ed90bb1c778a4"
   },
   {
     "path": "src/gui/guiFormSpecMenu.h",
