@@ -344,7 +344,7 @@ index 16ceda4..20bd596 100644
  			float old_anim_speed = player->last_animation_speed;
  			m_velocity = v3f(0,0,0);
 diff --git a/src/client/game.cpp b/src/client/game.cpp
-index 27b5833..530ffa6 100644
+index 27b5833..f60c36e 100644
 --- a/src/client/game.cpp
 +++ b/src/client/game.cpp
 @@ -8,6 +8,10 @@
@@ -910,22 +910,20 @@ index 27b5833..530ffa6 100644
  	// Allow digging again if button is not pressed
  	if (runData.digging_blocked && !isKeyDown(KeyType::DIG))
  		runData.digging_blocked = false;
-@@ -3536,7 +3909,14 @@ PointedThing Game::updatePointedThing(
- 				light_level = node_light;
- 		}
- 
--		u32 daynight_ratio = client->getEnv().getDayNightRatio();
-+	    // The presentation server's legacy TimeOfDay packets must not replace the
+@@ -4074,6 +4447,13 @@ void Game::updateFrame(ProfilerGraph *graph, RunStats *stats, f32 dtime,
+ 	/*
+ 		Calculate general brightness
+ 	*/
++    // The presentation server's legacy TimeOfDay packets must not replace the
 +    // native sky, including while CWM is paused and publishes no new snapshot.
 +    const auto& cwm_bridge=cdda_client::CddaBridge::getInstance();
 +    if(cwm_bridge.ownsPlayer(client)) {
 +        client->getEnv().setTimeOfDaySpeed(0.f);
 +        client->getEnv().setTimeOfDay(uint32_t((cwm_bridge.getMetrics().simulation_time%86400)*24000/86400));
 +    }
-+	u32 daynight_ratio = client->getEnv().getDayNightRatio();
- 		video::SColor c;
- 		final_color_blend(&c, light_level, daynight_ratio);
- 
+ 	u32 daynight_ratio = client->getEnv().getDayNightRatio();
+ 	float time_brightness = decode_light_f((float)daynight_ratio / 1000.0);
+ 	float direct_brightness;
 @@ -4247,7 +4627,8 @@ void Game::updateClouds(float dtime)
  {
  	if (this->sky->getCloudsVisible()) {
@@ -1680,7 +1678,7 @@ index f30c4f3..74e7a6a 100644
  	material.TextureLayers[0].MagFilter = video::ETMAGF_NEAREST;
  	material.BackfaceCulling = false;
 diff --git a/src/network/clientpackethandler.cpp b/src/network/clientpackethandler.cpp
-index 9f987cc..005fbfb 100644
+index 9f987cc..8d0ab0c 100644
 --- a/src/network/clientpackethandler.cpp
 +++ b/src/network/clientpackethandler.cpp
 @@ -3,6 +3,7 @@
@@ -1715,7 +1713,17 @@ index 9f987cc..005fbfb 100644
  	if (m_localdb) {
  		ServerMap::saveBlock(block, m_localdb);
  	}
-@@ -599,6 +610,8 @@ void Client::handleCommand_Breath(NetworkPacket* pkt)
+@@ -353,6 +364,9 @@ void Client::handleCommand_Inventory(NetworkPacket* pkt)
+ 
+ void Client::handleCommand_TimeOfDay(NetworkPacket* pkt)
+ {
++    // CDDA owns the integrated clock. Ignore the presentation server clock,
++    // including paused sessions, so it cannot rewind sky/day count between snapshots.
++    if(cdda_client::CddaBridge::getInstance().ownsPlayer(this))return;
+ 	if (pkt->getSize() < 2)
+ 		return;
+ 
+@@ -599,6 +613,8 @@ void Client::handleCommand_Breath(NetworkPacket* pkt)
  
  void Client::handleCommand_MovePlayer(NetworkPacket* pkt)
  {
@@ -1724,7 +1732,7 @@ index 9f987cc..005fbfb 100644
  	LocalPlayer *player = m_env.getLocalPlayer();
  	assert(player != NULL);
  
-@@ -630,6 +643,8 @@ void Client::handleCommand_MovePlayer(NetworkPacket* pkt)
+@@ -630,6 +646,8 @@ void Client::handleCommand_MovePlayer(NetworkPacket* pkt)
  
  void Client::handleCommand_MovePlayerRel(NetworkPacket *pkt)
  {

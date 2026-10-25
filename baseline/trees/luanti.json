@@ -7517,7 +7517,7 @@
   {
     "path": "src/client/game.cpp",
     "mode": "100644",
-    "sha256": "2d4b7aa7626f1f3aa88192cfd1ab5aeb178ec40406ea618ace635c188fc6195b"
+    "sha256": "333d39d637b63cc7eade12c566f3539206abb3fbe8a38a7e927a9c4d69af9a3b"
   },
   {
     "path": "src/client/game.h",
@@ -9047,7 +9047,7 @@
   {
     "path": "src/network/clientpackethandler.cpp",
     "mode": "100644",
-    "sha256": "1cfd4f0e94182c1174986a2870d4036d935b5f6a94be272d0e82c17e3067cb83"
+    "sha256": "3df3e0e9534a7837e7896bf145b00edc82f195f3c8ec67847cc9f4ee04a1623f"
   },
   {
     "path": "src/network/connection.cpp",
