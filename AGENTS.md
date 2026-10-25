@@ -28,6 +28,8 @@ silently finalized by an agent.
   and styling. Reuse the shared presentation theme; future visual redesigns
   must not require gameplay/protocol rewrites. Confirmation action labels omit
   terminal full stops; retain wire choices, semantic punctuation and narrative.
+- Time speed uses the single contextual F8 control. Rest can extend its range;
+  never reintroduce an independent sleep multiplier or a second speed menu.
 - A missing delta requires a full authoritative resynchronization; never infer missing state.
 - Preserve the upstream pins and complete patches in `baseline/manifest.json`.
   The ignored fork directories are working copies, not root-repository source history.

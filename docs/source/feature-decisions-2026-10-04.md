@@ -169,3 +169,13 @@ Luanti: bridge C++, movimento/physics, picking e formspec GUI.
 Mineclonia: inventory/craftguide/player animations/armor/mobs/villager,
 mappe/weather/farming. Asset e presentazione riutilizzabili; backend gameplay
 autonomi da adattare o eliminare secondo scope.
+
+
+## Integrazione 2026-10-25 — Unica velocità F8
+
+La [direttiva successiva](unified-f8-feedback-2026-10-25.md) sostituisce il
+moltiplicatore separato introdotto in CWM2.35. Un unico controllo F8 imposta
+la velocità assoluta; la scala si amplia nel sonno/riposo lungo e torna a
+quella ordinaria al termine. Evidenziare il contesto nell'HUD. Il menu B
+non controlla una seconda velocità. Conservare precedente velocità ordinaria,
+pausa, costi, turni nativi e salvataggio canonico.

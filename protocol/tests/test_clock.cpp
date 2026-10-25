@@ -50,7 +50,7 @@ int main() {
     CHECK(std::abs(rest.elapsed()-256)<1e-8);CHECK(rest.tick_due());
     int ticks=0;while(rest.tick_due() && ticks<100){rest.complete_tick();++ticks;}
     CHECK(ticks>=32 && ticks<=34);
-    CHECK(rest.set_scale(1024,true));CHECK(!rest.set_scale(4,false));CHECK(rest.scale()==1024);
+    CHECK(rest.set_scale(4096,true));CHECK(rest.scale()==4096);CHECK(rest.set_scale(1024,true));CHECK(!rest.set_scale(4,false));CHECK(rest.scale()==1024);
     CHECK(!rest.set_scale(4097,true));CHECK(rest.set_scale(1,true));
     CHECK(rest.scale()==1);const auto frozen=rest.elapsed();
     rest.sample(t(.25),false);rest.sample(t(900),false);CHECK(rest.elapsed()==frozen);

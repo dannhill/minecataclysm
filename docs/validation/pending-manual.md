@@ -1,5 +1,14 @@
 # Validazioni manuali del playable core
 
+Ultimo riscontro (2026-10-25, successivo a CWM2.35): **FB-01.3 e .4 PASS**;
+**FB-01.1 e .2 FAIL di avvio della demo**, quindi le prove funzionali non sono
+state raggiunte. Il PASS 3 include una richiesta esplicita di sostituire il
+moltiplicatore separato con l'unico controllo F8. [Fonte e diagnosi](../source/unified-f8-feedback-2026-10-25.md).
+**58 PENDING +2 FAIL di avvio**: 57 altri punti ancora pendenti più il nuovo
+UF8-01.1 per il design modificato. Le verifiche automatiche non chiudono i
+FAIL personali; riprovare 1 e 2 dopo il fix dell'avvio, senza accettarli d'ufficio.
+
+
 Secondo riscontro umano del 2026-10-25: **SEAL-01.3, REST-01.2, REST-01.3 e
 DIS-01.3 PASS** nei quattro scenari proposti. Il backlog scende da 61 a 57;
 quattro nuovi ricontrolli FB-01 delle modifiche successive lo portano a
@@ -1351,32 +1360,49 @@ sopra conserva il riscontro originario. Il conteggio di 61 include i nuovi FB-01
 i PASS funzionali precedenti restano validi.
 
 
-## FB-01 — Ricontrolli dopo i riscontri del 2026-10-25 — 4 PENDING
+## FB-01 — 1, 2 FAIL di avvio; 3, 4 PASS umani (CWM2.35, 2026-10-25)
 
 Quattro nuovi casi riferiti alle correzioni successive, non ripetizioni dei
 quattro PASS precedenti. Proporli dopo la consegna verificata degli interventi.
 
-1. **PENDING — Cursore e conferme.** `./liquid-recovery-demo.sh --fresh`:
+1. **FAIL di avvio 2026-10-25 — Cursore e conferme.** `./liquid-recovery-demo.sh --fresh`:
    I → bottiglia impugnata → Open sealed pocket..., prima Cancel, poi conferma
    e ritorna al menu. Tieni la lattina per la prova 2. Il cursore deve mantenere una
    posizione coerente nei passaggi, senza saltare al centro dopo ogni azione.
    Prova anche una conferma Yes/No dal riposo B: etichette senza punto fermo
    finale; domande, puntini di sospensione e testo narrativo restano sensati.
-2. **PENDING — Recupero della lattina.** Nella stessa demo apri la lattina nello
+2. **FAIL di avvio 2026-10-25 — Recupero della lattina.** Nella stessa demo apri la lattina nello
    zaino e annulla il travaso, lasciandola a terra. Destro sul drop apre la vista
    esterna; seleziona lattina → Pour liquid... → Pour into a container → glass
    bottle vuota preparata nella demo. Dopo il travaso, raccogli la lattina vuota
    trascinandola verso il pannello del tuo inventario. Acqua nella bottiglia,
    lattina recuperabile, nessuna perdita/duplicazione. Una lattina piena aperta
    rimane soggetta alle regole native: il gesto non la rende stagna.
-3. **PENDING — Ritmo del riposo esplicito.** `./rest-demo.sh --fresh`, B → Try to
+3. **PASS funzionale 2026-10-25 — Ritmo del riposo esplicito (design CWM2.35 poi superato).** `./rest-demo.sh --fresh`, B → Try to
    sleep → Yes. Leggi fase, NORMAL/FAST REST e velocità F8 × moltiplicatore =
    obiettivo. B permette normale e x64/x256/x1024; prova x1024 e normale,
    chiudi il menu B con Keep resting, cambia F8 e verifica che la formula si aggiorni. I/Esc ferma comunque il
    tempo. Il throughput effettivo dipende dalla simulazione; valuta se la
    durata reale è ora accettabile. Dopo il riposo niente accelerazione residua.
-4. **PENDING — Cielo notturno.** `./night-demo.sh --fresh`: guarda verso l'alto
+4. **PASS umano 2026-10-25 — Cielo notturno.** `./night-demo.sh --fresh`: guarda verso l'alto
    attraverso l'apertura sopra il personaggio. Cielo notturno coerente col
    terreno scuro, senza fondo azzurro diurno. F7/Esc e attendi alcuni secondi:
    il cielo non deve ritornare diurno. Confronta col giorno in una demo diurna
    o nella partita normale; la pausa non deve far avanzare sole/luna.
+
+
+## UF8-01 — Unica velocità F8 contestuale — 1 PENDING
+
+La precedente prova FB-01.3 resta PASS della vecchia funzione, accompagnata
+alla richiesta di semplificarla. Questo è il ricontrollo della nuova funzione.
+
+1. **PENDING — Un solo F8, pause e ritorno al gioco.** `./rest-demo.sh --fresh`:
+   prima di dormire scegli con F8 una velocità ordinaria riconoscibile, per
+   esempio 2x. B → Try to sleep → Yes. Appena compare il sonno, F8 cicla sulla
+   scala ampliata 1/4/64/256/1024/4096x; seleziona 1x per leggere con calma,
+   poi un valore alto. L'HUD mostra un solo numero e un colore/etichetta
+   distinti, senza prodotti tra due moltiplicatori. B non offre velocità.
+   I/Esc ferma il tempo. Al risveglio o all'interruzione di un'attesa lunga
+   torna la precedente velocità da svegli (2x nell'esempio), senza raffiche
+   arretrate. Salva/riapri durante il sonno: continua l'attività nativa, non
+   parte un nuovo tentativo; la velocità selezionata è una preferenza transitoria.
