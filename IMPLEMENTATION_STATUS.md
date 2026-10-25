@@ -1,6 +1,31 @@
 # Implementation status
 
-Current Linux scoped delivery: **single contextual F8 and public recovery-demo
+Current Linux scoped delivery: **continuous action-menu presentation**,
+paired **CWM2.37**, in normal `start.sh`. Related inventory/external storage,
+native choice, crafting, progress and result screens reuse one live modal.
+Only an explicitly selected native operation releases Menu pause while its
+window remains visible; ordinary inspection and manual/safety/recovery pauses
+retain their effects. I can inspect during an in-flight equipment ACK; atomic
+clothing mutations stay applied with native debt. F7/F8 work inside the action
+view. Explicit Return to game/Esc leaves without refunding admitted work;
+reconnect discards stale local return intent and does not replay the command.
+Native crafting now exports the existing work-completion identity, with no
+changed crafting rules, time debit, CWM fields or canonical save format.
+The minor-version fence requires the matching completion guarantee.
+[Contract](docs/design/menu-continuity.md), [delivery](docs/fixes/menu-continuity.md),
+[exact evidence](docs/fixes/menu-continuity-evidence.json).
+
+Latest human results: **FB-01.1/.2 PASS**, confirming the repaired demo, pointer
+and can recovery on CWM2.36. Previous .3/.4 PASS retained. The separate menu
+flash report requests the new presentation, rather than retracting those
+validations. **59 PENDING, no open manual FAIL**: prior 58 plus MENU-01.1;
+UF8-01.1 remains pending. [Source](docs/source/modal-continuity-feedback-2026-10-26.md).
+Automated checks never imply human acceptance. Next core work remains essential
+item uses, safe liquid output/purification, then non-demo consolidation.
+Mapping batch60, Windows CWM2.26 and historical M5.5 FAILED / SAVE-001 OPEN
+remain unchanged.
+
+Previous Linux scoped delivery: **single contextual F8 and public recovery-demo
 startup repair**, paired **CWM2.36**, installed in normal `start.sh`.
 F8 uses one absolute target: awake 0.5/1/2/4x; long rest
 1/4/64/256/1024/4096x, initially 1024x. B has no speed choices. Native waking

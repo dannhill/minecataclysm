@@ -2377,10 +2377,10 @@ index 0000000..e1e7236
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..22757a1
+index 0000000..7f69d39
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,3612 @@
+@@ -0,0 +1,3614 @@
 +#include "cwm/product_language.hpp"
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
@@ -4606,7 +4606,9 @@ index 0000000..22757a1
 +                i.equipment_dirty_ = true;
 +            }
 +        }
-+        if (i.inventory_work_command_ && i.inventory_work_settled_ && !i.pending_move_ &&
++        // A settled previous operation cannot consume the return intent of a
++        // newly queued selection while MENU_CLOSE is still being acknowledged.
++        if (i.inventory_work_command_ && i.inventory_work_settled_ && !i.inventory_return_armed_ && !i.pending_move_ &&
 +            i.session_.ready() && i.player_ready_ && !i.metrics_.pending_decision && (i.action_menu_open_ || !i.metrics_.pause_reasons) &&
 +            !i.rest_token_ && !i.activity_token_ && i.sent_menu_pause_ != 1 && !i.equipment_open_ && !i.crafting_open_ &&
 +            !i.body_form_open_ && !i.ground_container_open_) {

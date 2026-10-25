@@ -1429,5 +1429,7 @@ alla richiesta di semplificarla. Questo è il ricontrollo della nuova funzione.
    un'azione indossa/togli e l'interruzione di un'attività da I/K: il lavoro
    conserva i costi CDDA mentre la finestra rimane visibile. Pause and inspect
    (anche I) ferma il tempo senza annullare il lavoro; Return to game/Esc esce
-   volontariamente. Nessun comando duplicato e cursore coerente. I PASS FB-01
+   volontariamente. F7 ferma/riprende l’azione nella finestra e F8 cambia
+   l’unica velocità senza far avanzare il tempo quando è in pausa. Nessun
+   comando duplicato e cursore coerente. I PASS FB-01
    rimangono validi; questo è un ricontrollo della nuova presentazione.

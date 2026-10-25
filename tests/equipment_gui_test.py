@@ -709,8 +709,7 @@ def main():
                 else:
                     check('actual_wire_separates_ack_from_paid_completion',all(id in early and id in paid for id in operations[:3]))
                     check('all_three_returns_reference_paid_authoritative_revision',all(first_return.get(id,0)>=paid[id] for id in operations[:3]))
-                    work_rows=[r for r in rows() if int(r.get('inventory_work_visible',0))]
-                    check('work_panel_is_visible_without_modal_pause',any(int(r['pause_reasons'])==0 and int(r['equipment_form'])==0 for r in work_rows))
+                    check('selected_work_advances_behind_visible_modal',any(int(r['pause_reasons'])==0 and int(r['action_menu'])==1 and int(r['modal_count'])>0 for r in rows()))
             elif args.presentation_only:
                 es = entries(view)
                 image = Image.open(out / 'inventory.png').convert('RGB')

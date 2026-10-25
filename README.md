@@ -19,15 +19,20 @@ Windows 11 x64: the local installer is generated as
 [Windows build instructions](tools/windows/README.md). Real Windows hardware
 acceptance is recorded separately from automated Wine verification.
 
-Current Linux slice: [one contextual F8 speed and repaired recovery-demo startup](docs/fixes/unified-f8.md)
-in `./start.sh`. F8 cycles 0.5/1/2/4x during ordinary play and
-1/4/64/256/1024/4096x during native long rest, without a second multiplier or
-B speed menu. Waking restores the previous awake rate; all native turns execute.
-`./liquid-recovery-demo.sh --fresh` now starts with a valid engine player name.
-Ground-can recovery, pointer continuity and the native night sky remain from
-the [previous slice](docs/fixes/playtest-feedback-2026-10-25.md).
-`./rest-demo.sh --fresh` and `./night-demo.sh --fresh` provide isolated scenes.
-Linux uses paired CWM2.36 runtimes; the Windows installer remains CWM2.26.
+Current Linux slice: [continuous action menus](docs/fixes/menu-continuity.md)
+in `./start.sh`. Inventory, native confirmations, work progress and results
+replace one another within the same modal, without a brief return to gameplay.
+Native work still pays its time; **I / Pause and inspect** freezes it, while
+**Return to game / Esc** explicitly leaves. F7 pause and contextual F8 speed
+remain available in the action view. Paired Linux runtimes use **CWM2.37**.
+
+The previous [single-F8 and public-demo repair](docs/fixes/unified-f8.md)
+remains: F8 cycles 0.5/1/2/4x awake and 1/4/64/256/1024/4096x during long rest;
+there is no second multiplier or B speed menu. Waking restores the awake rate.
+`./liquid-recovery-demo.sh --fresh`, `./rest-demo.sh --fresh` and
+`./night-demo.sh --fresh` open isolated scenes. The developer confirmed
+FB-01.1/2 PASS after retry; revised F8 and the new menu presentation have
+separate checks in the manual ledger. Windows remains CWM2.26.
 
 Previous Linux slice: [native sealed-pocket opening](docs/fixes/native-seals.md)
 in `./start.sh`. I → owned sealed container → **Open sealed pocket...**.
