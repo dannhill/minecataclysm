@@ -1,5 +1,16 @@
 # Validazioni manuali del playable core
 
+Riscontro umano del 2026-10-25: **61 PENDING**, nessun nuovo FAIL funzionale.
+L'unico sviluppatore ha validato **LIQ-01.1, LIQ-01.2, LIQ-01.4 e SEAL-01.1**
+nei quattro scenari proposti. [Riscontro e corrispondenza esatta](../source/manual-liquids-seals-feedback-2026-10-25.md).
+La segnalazione **UX-CURSOR-01 è OPEN**: il puntatore si sposta dopo alcune
+azioni; causa e frequenza da accertare. Non revoca i quattro PASS e non aggiunge
+un test numerato al contatore. Le consegne datate sotto mantengono i conti storici.
+
+Prossimo giro di quattro prove, tutte già pendenti e senza duplicare quelle
+eseguite: **1 → SEAL-01.3; 2 → REST-01.2; 3 → REST-01.3; 4 → DIS-01.3**.
+
+
 Apertura sigilli (2026-10-23): **65 PENDING, nessun FAIL manuale aperto**.
 I precedenti 61 punti restano invariati; quattro nuove prove SEAL-01 sono
 rinviabili. Nessun PASS umano viene dedotto dalle verifiche automatiche.
@@ -1257,7 +1268,7 @@ Queste sono nuove prove personali rinviabili, non un gate richiesto adesso.
 Il riposo non completa i servizi avanzati NPC o l'accelerazione di ogni attività.
 
 
-## LIQ-01 — Fonti d’acqua e travasi nativi — 4 PENDING
+## LIQ-01 — Fonti d’acqua e travasi nativi — 1, 2, 4 PASS umani; 3 PENDING (2026-10-25)
 
 `./liquids-demo.sh --fresh`: sessione isolata con tanica impugnata, zaino,
 bottiglie piccole vuote, una pozza adiacente e un cubo di legno vicino che
@@ -1265,11 +1276,11 @@ rappresenta un gabinetto con scorta finita preparata per la prova. Guarda la
 fonte da vicino: l’hint dice Liquid source; destro apre le scelte native.
 Nella partita normale qualità e scorte sono quelle reali del mondo CDDA.
 
-1. **PENDING — Fonte e interruzione.** Destro sulla pozza → Pour into a container
+1. **PASS umano 2026-10-25 — Fonte e interruzione.** Destro sulla pozza → Pour into a container
    → tanica. I deve fermare il riempimento; Interrupt transfer deve interromperlo
    conservando l’acqua già prelevata. Annullare il menu della fonte non riempie
    oggetti. Nessuna percentuale finta per questa attività nativa.
-2. **PENDING — Travaso e capacità.** In I seleziona la tanica o il suo liquido e
+2. **PASS umano 2026-10-25 — Travaso e capacità.** In I seleziona la tanica o il suo liquido e
    premi Pour liquid... → Pour into a container → bottiglia piccola. La bottiglia
    si riempie entro la capacità nativa e il resto rimane nella tanica. Un travaso
    già applicato può mostrare tempo da pagare senza essere annullabile. Oggetti
@@ -1280,24 +1291,27 @@ Nella partita normale qualità e scorte sono quelle reali del mondo CDDA.
    Bere segue la fisiologia CDDA: la sete può migliorare dopo l’assorbimento,
    non necessariamente all’istante. L’acqua della partita normale può essere
    pericolosa; questa interfaccia non la purifica.
-4. **PENDING — Persistenza.** Avvia un riempimento lungo, apri I per fermarlo e
+4. **PASS umano 2026-10-25 — Persistenza.** Avvia un riempimento lungo, apri I per fermarlo e
    chiudi il gioco. Riapri la stessa demo senza --fresh: riprende il riempimento
    nativo, non un nuovo comando. Quantità già versate, resto e scorta finita
    persistono. Il menu/pausa non viene salvato. Interrompi o lascia finire e
    verifica ancora l’inventario.
 
-Queste prove sono rinviabili: nessun gate personale richiesto adesso. Crafting
-con risultati liquidi/purificazione, usi speciali, apertura sigilli e serbatoi
-veicoli restano attività successive, senza allargare indefinitamente il core.
+Il riscontro del 2026-10-25 accetta riempimento/pausa/interruzione, travaso con
+capacità e resto conservati e la persistenza nel caso proposto. Congelamento,
+miscele incompatibili e annullamento del primo menu non sono automaticamente
+provati personalmente da quei PASS. LIQ-01.3 resta pendente. Crafting dei liquidi,
+purificazione e serbatoi veicoli restano fette distinte; l'apertura sigilli ha
+la propria sezione seguente.
 
 
-## SEAL-01 — Apertura tasche sigillate — 4 PENDING
+## SEAL-01 — Apertura tasche sigillate — 1 PASS umano; 2–4 PENDING (2026-10-25)
 
 `./seals-demo.sh --fresh`: scena isolata con bottiglia sigillata in mano,
 zaino, bottiglia per condimenti sigillata e lattina sigillata. La funzione è
 anche nella partita normale con `./start.sh`; non richiede un mondo nuovo.
 
-1. **PENDING — Apertura e annullamento.** I → bottiglia in mano → Open sealed
+1. **PASS umano 2026-10-25 — Apertura e annullamento.** I → bottiglia in mano → Open sealed
    pocket... → Cancel: rimane sigillata. Ripeti confermando Open: sigillo rotto,
    stessa acqua e quantità, Pour liquid... disponibile dopo aggiornamento.
    Nessun tempo di apertura inventato; bere/travasare conserva i costi nativi.
@@ -1315,3 +1329,13 @@ anche nella partita normale con `./start.sh`; non richiede un mondo nuovo.
 
 Nessun gate personale richiesto ora. Aperture mediante utensili/trasformazioni,
 usi speciali degli oggetti e crafting/purificazione liquidi restano separati.
+
+
+## UX-CURSOR-01 — OPEN: spostamento indesiderato del puntatore
+
+Segnalazione umana del 2026-10-25, [testo originale e contesto](../source/manual-liquids-seals-feedback-2026-10-25.md).
+Dopo aver premuto un'azione il cursore viene dislocato, con frequenza ancora
+incerta. Da riprodurre nei passaggi inventario/scelte native/ritorno al menu;
+rendere coerente la posizione tra menu correlati senza interferire col controllo
+della visuale. Non è ancora diagnosticato né risolto. Nessun nuovo test numerato
+aggiunto ai 61 pendenti; i quattro PASS funzionali di questo riscontro restano.

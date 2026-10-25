@@ -10,6 +10,17 @@ un panorama più ampio; nebbia, memoria distante e rilievo restano da scegliere.
 Lo [stato implementato](IMPLEMENTATION_STATUS.md) e le evidenze restano separati
 dagli obiettivi. La roadmap originale M0–M9 conserva i propri significati.
 
+## Riscontro umano e priorità UX — 2026-10-25
+
+PASS personali ricevuti per LIQ-01.1, .2, .4 e SEAL-01.1; backlog a **61 PENDING**.
+[Provenienza e limiti della copertura](docs/source/manual-liquids-seals-feedback-2026-10-25.md).
+**UX-CURSOR-01 OPEN:** riprodurre il salto del cursore dopo le azioni e correggere
+la continuità tra inventario/scelte native/ritorno al menu, prima di ampliare
+ulteriormente i menu degli oggetti. Nessuna causa attribuita senza indagine;
+questo riscontro non modifica runtime/binari né revoca i quattro PASS.
+Prossime quattro prove già pendenti: SEAL-01.3, REST-01.2, REST-01.3, DIS-01.3.
+Le consegne datate sotto conservano i conteggi storici.
+
 ## Apertura sigilli nativi — 2026-10-23
 
 Fetta implementata: I → contenitore posseduto → **Open sealed pocket...**.

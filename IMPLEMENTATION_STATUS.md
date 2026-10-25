@@ -1,5 +1,13 @@
 # Implementation status
 
+Latest human feedback — **2026-10-25**: the sole developer reports PASS for
+**LIQ-01.1, .2, .4 and SEAL-01.1**, reducing the personal backlog from 65 to
+**61 PENDING**. Scope follows the four scenarios actually requested.
+**UX-CURSOR-01 OPEN**: pointer relocation after actions is reported as
+unpleasant; cause/frequency remain to be investigated. These four functional
+PASS results remain accepted. [Human feedback and next four priorities](docs/source/manual-liquids-seals-feedback-2026-10-25.md).
+This records human validation only; runtime, binaries and protocol are unchanged.
+
 Current scoped delivery: **native sealed-pocket opening**, CWM **2.34**, in
 normal Linux `start.sh`. I → owned sealed container → **Open sealed pocket...**
 with explicit pocket/Cancel choice. Native contents-change handling owns
@@ -16,8 +24,9 @@ PASS**, including real save restart, command replay, reconnect and installed
 liquids regression. Independent pinned-core save readback; incremental builds,
 not a cold audit. Both Linux runtimes installed; previous pair retained.
 
-**65 PENDING**, no open manual FAIL: previous 61 unchanged plus four SEAL-01.
-No human acceptance inferred. Next: essential item uses and safe mandatory
+At delivery: **65 PENDING**, no open manual FAIL; four SEAL-01 were added.
+After the 2026-10-25 human feedback: **61 PENDING**, with UX-CURSOR-01 open.
+Human acceptance is limited to the four explicitly reported scenarios. Next: essential item uses and safe mandatory
 liquid output/purification, then non-demo loop/recovery/save/performance
 consolidation. [Earlier minimum-core estimate](docs/progress/core-outlook-2026-10-23.md)
 is unchanged rather than mechanically incremented. Mapping batch60 unchanged;
