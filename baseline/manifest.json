@@ -17,9 +17,9 @@
       "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
       "shallow": true,
       "patch": "baseline/patches/luanti.patch",
-      "patch_sha256": "08536a232f8277c7b71a2b64a7d6af0fc702253597c9b983125836a54216e356",
+      "patch_sha256": "7d8c10f83da6f375fc50bc09702a336c2b6594785d954b7787b76697be6c466a",
       "tree_inventory": "baseline/trees/luanti.json",
-      "tree_sha256": "553c6b611f3c5ae36d2a40fc2ce6eb6710720a646c2964e09b90977ac08723d0",
+      "tree_sha256": "83072d883cc711e352e62922a5a93928f56b8ffbfec4db1bfcf8331e53ca106b",
       "file_count": 2271,
       "original_status": " M builtin/mainmenu/settings/dlg_settings.lua\n M builtin/settingtypes.txt\n M src/CMakeLists.txt\n M src/client/CMakeLists.txt\n M src/client/camera.cpp\n M src/client/camera.h\n M src/client/client.cpp\n M src/client/clientenvironment.cpp\n M src/client/content_cao.cpp\n M src/client/game.cpp\n M src/client/hud.cpp\n M src/client/inputhandler.cpp\n M src/client/keys.h\n M src/client/mesh_generator_thread.cpp\n M src/client/mesh_generator_thread.h\n M src/defaultsettings.cpp\n M src/filesys.cpp\n M src/gettext.cpp\n M src/gettext.h\n M src/gui/guiFormSpecMenu.cpp\n M src/gui/guiFormSpecMenu.h\n M src/gui/guiScene.cpp\n M src/network/clientpackethandler.cpp\n M src/server/player_sao.cpp\n M src/unittest/test_mapblock.cpp\n M src/util/string.cpp\n?? builtin/mainmenu/settings/product_languages.lua\n?? src/cdda/action_menu.h\n?? src/cdda/aim_input.h\n?? src/cdda/avatar_status.h\n?? src/cdda/cdda_bridge.cpp\n?? src/cdda/cdda_bridge.h\n?? src/cdda/crafting_inventory.h\n?? src/cdda/creature_visual.h\n?? src/cdda/decision_dialog.h\n?? src/cdda/decision_input.h\n?? src/cdda/decision_model.h\n?? src/cdda/decision_text.h\n?? src/cdda/equipment_inventory.h\n?? src/cdda/ground_item_formspec.h\n?? src/cdda/ground_item_projection.h\n?? src/cdda/ground_item_visual.h\n?? src/cdda/humanoid_animation.h\n?? src/cdda/mission_journal.h\n?? src/cdda/posture_input.h\n?? src/cdda/presentation_theme.h\n?? src/cdda/quickbar.h\n?? src/cdda/trade_dialog.h\n"
     },

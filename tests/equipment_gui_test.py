@@ -661,16 +661,17 @@ def main():
                     wait(lambda r:int(r['native_work_settled'])==1,timeout=25)
                     check('escape_opts_out_without_reopening',int(latest()['equipment_form'])==0)
                     view=open_inventory();check('escape_does_not_undo_native_wear',item(view,'hat_ball').Worn())
-                    # Manual pause must suppress automatic return after a paid short action.
+                    # Manual pause freezes the same action behind its modal.
                     select_item(item(view,'hat_ball'));sent=int(latest()['equipment_sent'])
                     click(14.525,8.9);wait(lambda r:int(r['equipment_sent'])==sent+1)
                     wait(lambda r:int(r['pending_move'])==0 and int(r['native_work_command'])==int(r['inventory_work_command']))
-                    tap('F7');wait(lambda r:int(r['pause_reasons'])&1)
+                    modal_start=len(rows());tap('F7');wait(lambda r:int(r['pause_reasons'])&1)
                     paused=latest()['simulation_time'];time.sleep(.8)
                     check('manual_pause_takes_precedence',latest()['simulation_time']==paused and int(latest()['equipment_form'])==0)
-                    tap('F7');wait(lambda r:int(r['pause_reasons'])==0)
+                    tap('F7');wait(lambda r:not int(r['pause_reasons'])&1)
                     wait(lambda r:int(r['native_work_settled'])==1,timeout=25)
-                    check('manual_resume_does_not_force_inventory',int(latest()['equipment_form'])==0)
+                    wait(lambda r:int(r['equipment_form'])==1 and int(r['inventory_view'])>0)
+                    check('manual_resume_keeps_the_same_modal_return',all(int(r['modal_count'])>0 for r in rows()[modal_start:]))
                     # Actual connection loss during pending return must drop its stale intent.
                     view=open_inventory();select_item(item(view,'hat_ball'));sent=int(latest()['equipment_sent']);connection_id=latest()['connection_id']
                     click(12.325,8.9);wait(lambda r:int(r['equipment_sent'])==sent+1)
