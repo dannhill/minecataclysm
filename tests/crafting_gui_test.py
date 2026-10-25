@@ -361,13 +361,18 @@ def main():
                     check('crafting_does_not_queue_held_movement',latest()['target_x']==r['target_x'] and latest()['target_z']==r['target_z'])
                     view=open_crafting();frozen=latest()['crafting_progress'];time.sleep(.7)
                     check('menu_freezes_native_craft_counter',latest()['crafting_progress']==frozen)
-                    shot('crafting-paused.png');modal_start=len(rows());click(11.5,2.2)
+                    shot('crafting-paused.png');modal_start=len(rows());sent_before_cancel=latest()['crafting_sent'];click(11.5,2.2)
                     wait(lambda r:int(r['crafting_token'])==0 and int(r['pending_move'])==0)
                     view=open_crafting();view=search();e=select_recipe(view,True)
                     if args.modal_continuity:
                         span=rows()[modal_start:]
                         check('craft_interruption_keeps_modal_and_native_incomplete',len(span)>5 and all(int(r['modal_count'])>0 for r in span))
-                    check('interrupted_work_is_native_resumable_item',e.Resume() and e.Progress()==int(frozen))
+                    # MENU_CLOSE permits native time before the typed cancel is
+                    # admitted. A final paid turn may advance the real craft;
+                    # cancelling must retain that work, never restore the UI's
+                    # previously paused counter or start a new craft.
+                    check('interrupted_work_is_native_resumable_item',e.Resume() and int(frozen)<=e.Progress()<10000000)
+                    check('interruption_retains_native_progress_without_new_craft',latest()['crafting_sent']==sent_before_cancel)
                     shot('incomplete-work.png')
                     sent = latest()['crafting_sent']; index = e.Id() - 1
                     click(.5+(index%6)*1.18+.825,2.7+(index//6)*1.12+.225)

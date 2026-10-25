@@ -1433,3 +1433,5 @@ alla richiesta di semplificarla. Questo è il ricontrollo della nuova funzione.
    l’unica velocità senza far avanzare il tempo quando è in pausa. Nessun
    comando duplicato e cursore coerente. I PASS FB-01
    rimangono validi; questo è un ricontrollo della nuova presentazione.
+   Per indossa/togli usa `./equipment-demo.sh --fresh`; per il lavoro e
+   l'interruzione da K usa `./crafting-demo.sh --fresh`.
