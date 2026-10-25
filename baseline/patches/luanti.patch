@@ -344,7 +344,7 @@ index 16ceda4..20bd596 100644
  			float old_anim_speed = player->last_animation_speed;
  			m_velocity = v3f(0,0,0);
 diff --git a/src/client/game.cpp b/src/client/game.cpp
-index 27b5833..748ca91 100644
+index 27b5833..530ffa6 100644
 --- a/src/client/game.cpp
 +++ b/src/client/game.cpp
 @@ -8,6 +8,10 @@
@@ -910,7 +910,23 @@ index 27b5833..748ca91 100644
  	// Allow digging again if button is not pressed
  	if (runData.digging_blocked && !isKeyDown(KeyType::DIG))
  		runData.digging_blocked = false;
-@@ -4247,7 +4620,8 @@ void Game::updateClouds(float dtime)
+@@ -3536,7 +3909,14 @@ PointedThing Game::updatePointedThing(
+ 				light_level = node_light;
+ 		}
+ 
+-		u32 daynight_ratio = client->getEnv().getDayNightRatio();
++	    // The presentation server's legacy TimeOfDay packets must not replace the
++    // native sky, including while CWM is paused and publishes no new snapshot.
++    const auto& cwm_bridge=cdda_client::CddaBridge::getInstance();
++    if(cwm_bridge.ownsPlayer(client)) {
++        client->getEnv().setTimeOfDaySpeed(0.f);
++        client->getEnv().setTimeOfDay(uint32_t((cwm_bridge.getMetrics().simulation_time%86400)*24000/86400));
++    }
++	u32 daynight_ratio = client->getEnv().getDayNightRatio();
+ 		video::SColor c;
+ 		final_color_blend(&c, light_level, daynight_ratio);
+ 
+@@ -4247,7 +4627,8 @@ void Game::updateClouds(float dtime)
  {
  	if (this->sky->getCloudsVisible()) {
  		this->clouds->setVisible(true);
@@ -920,7 +936,7 @@ index 27b5833..748ca91 100644
  		// this->camera->getPosition is not enough for third-person camera.
  		v3f camera_node_position = this->camera->getCameraNode()->getPosition();
  		v3s16 camera_offset      = this->camera->getOffset();
-@@ -4319,7 +4693,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
+@@ -4319,7 +4700,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
  	/*
  		Fog
  	*/
@@ -934,7 +950,7 @@ index 27b5833..748ca91 100644
  		this->driver->setFog(
  				fog_color,
  				video::EFT_FOG_LINEAR,
-@@ -4470,7 +4849,7 @@ void Game::showDeathFormspecLegacy()
+@@ -4470,7 +4856,7 @@ void Game::showDeathFormspecLegacy()
  }
  
  #define GET_KEY_NAME(KEY) gettext(getKeySetting(#KEY).name())
@@ -943,7 +959,7 @@ index 27b5833..748ca91 100644
  {
  	std::string control_text;
  
-@@ -4518,6 +4897,22 @@ void Game::showPauseMenu()
+@@ -4518,6 +4904,22 @@ void Game::showPauseMenu()
  		<< strgettext("Exit to Menu") << "]";
  	os		<< "button_exit[4," << (ypos++) << ";3,0.5;btn_exit_os;"
  		<< strgettext("Exit to OS")   << "]";
@@ -966,7 +982,7 @@ index 27b5833..748ca91 100644
  	if (!control_text.empty()) {
  	os		<< "textarea[7.5,0.25;3.9,6.25;;" << control_text << ";]";
  	}
-@@ -4536,8 +4931,8 @@ void Game::showPauseMenu()
+@@ -4536,8 +4938,8 @@ void Game::showPauseMenu()
  	}
  	os << "\n";
  	if (simple_singleplayer_mode || address.empty()) {
@@ -977,7 +993,7 @@ index 27b5833..748ca91 100644
  		// Note: Status of enable_damage and creative_mode settings is intentionally
  		// NOT shown here because the game might roll its own damage system and/or do
  		// a per-player Creative Mode, in which case writing it here would mislead.
-@@ -4559,10 +4954,15 @@ void Game::showPauseMenu()
+@@ -4559,10 +4961,15 @@ void Game::showPauseMenu()
  	}
  	os << ";]";
  
@@ -1237,7 +1253,7 @@ index ca47c12..eac711d 100644
  	int argc, char *argv[]);
  
 diff --git a/src/gui/guiFormSpecMenu.cpp b/src/gui/guiFormSpecMenu.cpp
-index ed1c300..7253dce 100644
+index ed1c300..39c0660 100644
 --- a/src/gui/guiFormSpecMenu.cpp
 +++ b/src/gui/guiFormSpecMenu.cpp
 @@ -1,3 +1,5 @@
@@ -1568,10 +1584,15 @@ index ed1c300..7253dce 100644
  	if (m_allowclose) {
  		doPause = false;
  		acceptInput(quit_mode_cancel);
-@@ -4001,6 +4216,21 @@ void GUIFormSpecMenu::tryClose()
+@@ -4001,6 +4216,26 @@ void GUIFormSpecMenu::tryClose()
  
  bool GUIFormSpecMenu::OnEvent(const SEvent& event)
  {
++    if(m_text_dst && m_text_dst->m_formname.rfind("CWM_",0)==0 && event.EventType==EET_MOUSE_INPUT_EVENT) {
++        const auto size=RenderingEngine::get_raw_device()->getVideoDriver()->getScreenSize();
++        if(size.Width && size.Height)cwm_menu_pointer=v2f(std::clamp(float(event.MouseInput.X)/size.Width,0.f,1.f),std::clamp(float(event.MouseInput.Y)/size.Height,0.f,1.f));
++    }
++
 +    if(m_cwm_decision && event.EventType==EET_KEY_INPUT_EVENT) {
 +        const auto key=event.KeyInput.Key;
 +        const bool fresh=event.KeyInput.PressedDown && cdda_client::decisionInput().fresh(unsigned(key));
@@ -1590,7 +1611,7 @@ index ed1c300..7253dce 100644
  	if (event.EventType==EET_KEY_INPUT_EVENT) {
  		KeyPress kp(event.KeyInput);
  		if (event.KeyInput.PressedDown && (
-@@ -4757,6 +4987,22 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
+@@ -4757,6 +4992,22 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
  	}
  
  	if (event.EventType == EET_GUI_EVENT) {
@@ -6122,7 +6143,7 @@ index 0000000..d02b91f
 +}
 diff --git a/src/cdda/decision_dialog.h b/src/cdda/decision_dialog.h
 new file mode 100644
-index 0000000..ff859ec
+index 0000000..7d28dd8
 --- /dev/null
 +++ b/src/cdda/decision_dialog.h
 @@ -0,0 +1,91 @@
@@ -6165,7 +6186,7 @@ index 0000000..ff859ec
 +    }
 +    std::string companionForm(std::string f) const {
 +        f += "label[0.55,1.95;"+statusEscape(speaker)+"]";
-+        f += "hypertext[0.55,2.3;6.0,7.7;companion_profile;"+statusEscape("<global color=#323232 size=18>"+decisionRichText(decisionTrimFullStop(body)))+"]";
++        f += "hypertext[0.55,2.3;6.0,7.7;companion_profile;"+statusEscape("<global color=#323232 size=18>"+decisionRichText(body))+"]";
 +        for(size_t n=0;n<choices.size();++n) {
 +            if(int(n)==cancel)continue;
 +            const auto name="choice_"+std::to_string(n);
@@ -6178,7 +6199,7 @@ index 0000000..ff859ec
 +    std::string conversationForm(std::string f) const {
 +        f += "label[0.55,1.95;"+statusEscape(speaker)+"]";
 +        const auto transcript=(history_truncated ? ::cwm::text("Earlier conversation text omitted from this view.")+"\n" : "")+history;
-+        f += "hypertext[0.55,2.3;9.05,2.2;conversation_current;"+statusEscape("<global color=#323232 size=18>"+decisionRichText(decisionTrimFullStop(body)))+"]";
++        f += "hypertext[0.55,2.3;9.05,2.2;conversation_current;"+statusEscape("<global color=#323232 size=18>"+decisionRichText(body))+"]";
 +        f += "label[0.55,4.85;"+::cwm::text("Conversation history")+"]";
 +        f += "hypertext[0.55,5.15;9.05,4.85;conversation_history;"+statusEscape("<global color=#323232 size=18>"+decisionRichText(transcript))+"]set_focus[conversation_history;true]";
 +        const int maximum=std::max(1,int(choices.size()*23)-76);

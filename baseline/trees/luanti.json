@@ -7267,7 +7267,7 @@
   {
     "path": "src/cdda/decision_dialog.h",
     "mode": "100644",
-    "sha256": "8b00482203d3f9b670035a6cd388185885a4b1c851f9d0cafb4a28b0648c2750"
+    "sha256": "2b15a6f860092284a9d9a3416d57643c3b2fdfa4d8417d74e913a68579e118a0"
   },
   {
     "path": "src/cdda/decision_input.h",
@@ -7517,7 +7517,7 @@
   {
     "path": "src/client/game.cpp",
     "mode": "100644",
-    "sha256": "bbb9a7fc1ec708bcddfe6deccd3f527dd96f4ebefcda4ad6fddeac06b352b979"
+    "sha256": "2d4b7aa7626f1f3aa88192cfd1ab5aeb178ec40406ea618ace635c188fc6195b"
   },
   {
     "path": "src/client/game.h",
@@ -8427,7 +8427,7 @@
   {
     "path": "src/gui/guiFormSpecMenu.cpp",
     "mode": "100644",
-    "sha256": "3169718bb53450599d28297a93d0d913166d3c165fde0055b12ed90bb1c778a4"
+    "sha256": "704223cc0e0fcc498a8064c5cad95d998e41c0fb772bf3fe54e8b3e98b02cbdf"
   },
   {
     "path": "src/gui/guiFormSpecMenu.h",

@@ -10831,7 +10831,7 @@ index 0000000..39d991c
 +}
 diff --git a/tests/cwm_runtime_test.cpp b/tests/cwm_runtime_test.cpp
 new file mode 100644
-index 0000000..d878e9d
+index 0000000..84103b9
 --- /dev/null
 +++ b/tests/cwm_runtime_test.cpp
 @@ -0,0 +1,1007 @@
@@ -11812,16 +11812,16 @@ index 0000000..d878e9d
 +    const override_option no_autosave("AUTOSAVE","false");prepare_runtime();auto& u=get_avatar();
 +    u.fall_asleep(1_hours);cwm::RestTracker rest;rest.refresh(u);calendar::turn+=8_seconds;u.moves=1000;
 +    CHECK(rest.speed_multiplier()==256);int prompts=0;
-+    REQUIRE_FALSE(do_turn_with_action([&]{
++    REQUIRE_FALSE(do_turn_with_action([]{return false;},[&](const std::string&,const std::vector<std::string>& labels){
++        const std::string wanted=++prompts==1?"Rest acceleration x1024":"Continue at normal speed";
++        for(size_t n=0;n<labels.size();++n)if(labels[n]==wanted)return int(n);
++        return int(labels.size())-1;
++    }, [&]{
 +        const auto time=calendar::turn;const auto engine=rng_get_engine();const int moves=u.moves;
 +        CHECK(rest.menu(u));CHECK(rest.speed_multiplier()==1024);CHECK(rest.accelerated(u));
 +        CHECK(rest.menu(u));CHECK(rest.speed_multiplier()==1);CHECK_FALSE(rest.accelerated(u));
 +        CHECK(calendar::turn==time);CHECK(rng_get_engine()==engine);CHECK(u.moves==moves);CHECK(u.in_sleep_state());
-+        finish_external_action_phase();return false;
-+    },[&](const std::string&,const std::vector<std::string>& labels){
-+        const std::string wanted=++prompts==1?"Rest acceleration x1024":"Continue at normal speed";
-+        for(size_t n=0;n<labels.size();++n)if(labels[n]==wanted)return int(n);
-+        return int(labels.size())-1;
++        return false;
 +    }));CHECK(prompts==2);
 +}
 +TEST_CASE("cwm_open_ground_can_can_be_drained_with_native_pouring_then_collected", "[cwm][liquids][playtest_fixes]") {

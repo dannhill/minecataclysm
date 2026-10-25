@@ -66,6 +66,7 @@ int main(int argc, const char *argv[]) {
     bool create_liquids = false;
     bool create_seals = false;
     bool create_night = false;
+    bool create_liquid_recovery = false;
     bool create_ranged = false;
     bool create_transfer = false;
     bool create_external = false;
@@ -83,6 +84,7 @@ int main(int argc, const char *argv[]) {
         else if (arg == "--create-transfer") { create = true; create_transfer = true; create_posture = true; }
         else if (arg == "--create-ranged") { create = true; create_ranged = true; create_posture = true; }
         else if (arg == "--create-crafting") { create = true; create_crafting = true; create_posture = true; }
+        else if (arg == "--create-liquid-recovery") { create = true; create_liquid_recovery = true; create_seals = true; create_posture = true; }
         else if (arg == "--create-night") { create = true; create_night = true; create_posture = true; }
         else if (arg == "--create-seals") { create = true; create_seals = true; create_posture = true; }
         else if (arg == "--create-liquids") { create = true; create_liquids = true; create_posture = true; }
@@ -530,6 +532,7 @@ int main(int argc, const char *argv[]) {
                 container.set_var("uid","seal-"+spec.first);
                 if(spec.first=="bottle_plastic") {if(!u.wield(container))return 14;}else u.i_add(container);
             }
+            if(create_liquid_recovery)u.i_add(item(itype_id("bottle_glass"),calendar::turn));
             m.ter_set(u.pos(),ter_str_id("t_floor"));m.furn_set(u.pos(),furn_str_id("f_null"));
             g->set_safe_mode(SAFE_MODE_OFF);
         }
