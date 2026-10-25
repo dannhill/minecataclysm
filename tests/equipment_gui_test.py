@@ -634,7 +634,13 @@ def main():
                     if args.modal_continuity:
                         span=rows()[modal_start:]
                         check('paid_equipment_keeps_modal_'+str(sent),len(span)>2 and all(int(r['modal_count'])>0 for r in span))
+                        check('modal_work_does_not_send_unrequested_posture_'+str(sent),all(int(r['player_state_flags'])&(1<<8) for r in span))
                     return views()[-1]
+                if args.modal_continuity:
+                    tap('Escape');wait(lambda r:int(r['equipment_form'])==0 and int(r['pause_reasons'])==0)
+                    xdo('keydown','--window',window,'Shift_L');wait(lambda r:int(r['player_state_flags'])&(1<<8) and int(r['pending_move'])==0)
+                    view=open_inventory();xdo('keyup','--window',window,'Shift_L')
+                    check('crouch_is_retained_when_key_released_in_inventory',int(latest()['player_state_flags'])&(1<<8))
                 start_time=int(latest()['simulation_time'])
                 # Select a native filtered item; keep the optional search open across work.
                 click(4.9,4.95);xdo('type','--clearmodifiers','cap');click(6.5,4.95)
