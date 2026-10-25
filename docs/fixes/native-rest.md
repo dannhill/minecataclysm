@@ -1,5 +1,9 @@
 # Native rest, sleep and waiting — 2026-10-23
 
+This is the original CWM2.32 delivery/evidence record. Current pacing uses
+[one contextual F8 rate](../design/unified-f8.md), superseding the separate
+multiplier and B speed menu described below. Native sleep/waking rules remain.
+
 Normal Linux **`./start.sh` now supports B**, configurable as
 `keymap_cdda_rest`. Try to sleep / Wait or catch your breath call the original
 CDDA actions and their native menus: confirmation, optional save, active-item

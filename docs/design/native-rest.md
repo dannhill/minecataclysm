@@ -24,10 +24,13 @@ are cached without reopening old menus. Busy unrelated activities and unpaid
 move/time debt cannot be replaced by sleeping. Gameplay/held movement is blocked
 while asleep; held direction needs release before reuse after rest.
 
-The coordinator offers long-rest x64/x256/x1024 multipliers (x256 default),
-applied to the selected global F8 pace,
-after eight native seconds of warmup. Short waits stay at normal speed. B can
-switch an active rest to normal speed. Every native turn, effect, AI update,
+The coordinator uses the [single contextual F8 rate](unified-f8.md): ordinary
+play cycles 0.5/1/2/4x; attempts, actual sleep and long waits cycle
+1/4/64/256/1024/4096x, defaulting to 1024x. These are absolute alternatives,
+never multiplied by an awake rate. B only manages native rest choices and
+interruption; there is no second speed menu or warmup. Short waits keep the
+awake rate. Leaving long rest restores the previous awake preference.
+Every native turn, effect, AI update,
 need, sound and alarm still executes; calendar time is never assigned forward.
 The clock retains at most 32 native ticks of deliberate rest credit, bounds
 wall stalls and drops unused acceleration budget when paused
@@ -41,13 +44,14 @@ limit. Projection-cache comparisons span the last emitted canonical state;
 revision/sequence validation and full resync are unchanged. Publication rate
 never changes native turns or creates inferred client state.
 
-RestState carries a transient token, phase, interruptibility, acceleration,
-CWM2.35 speed multiplier and
+RestState carries a transient token, phase, interruptibility, acceleration and
 honest finite-wait progress. Canonical activities, effects, alarms and posture
 are saved only by CDDA. Menu pause, generation IDs and acceleration preference
 are not canonical save fields. Save/reload/reconnect preserves real work/sleep
 without issuing another start command. Normal UI gives a readable sleep/rest
 status even when native sleep removes visual perception.
+As of CWM2.36 the deprecated wire multiplier is always 1; clock state carries
+the effective rate and explicit PLAY/REST context.
 
 English remains default, Italian WIP uses shared catalog fallback. Windows
 installer remains its earlier snapshot until a dedicated rebuild. Historical

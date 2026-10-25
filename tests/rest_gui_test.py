@@ -288,12 +288,17 @@ def main():
                 deadline=time.monotonic()+10
                 while len(messages(Payload.SnapshotAck,'client'))<=snapshots and time.monotonic()<deadline:time.sleep(.05)
                 check('cached_full_state_installed_before_next_command',len(messages(Payload.SnapshotAck,'client'))>snapshots)
-                time.sleep(.3)
-                wait(lambda r:int(r['input_ready'])==1 and int(r['pause_reasons'])==0)
+                # Native interruption can leave a paid turn to settle. At the
+                # deliberately slower awake 2x rate a fixed .3s is insufficient;
+                # a rejected "Finish the current action" is correct behavior.
+                resumed=float(latest()['simulation_time'])
+                wait(lambda r:int(r['input_ready'])==1 and int(r['pause_reasons'])==0 and float(r['simulation_time'])>=resumed+3)
                 rest_menu();pick('Wait or catch your breath');pick('Wait till daylight');idle()
                 wait(lambda row:int(row['rest_speed_context'])==1);speed(1)
                 rest_menu();pick('Interrupt rest');idle();wait(lambda row:int(row['rest_phase'])==-1)
                 check('ending_long_rest_restores_previous_awake_F8_rate',float(latest()['time_scale'])==2 and int(latest()['rest_speed_context'])==0)
+                resumed=float(latest()['simulation_time'])
+                wait(lambda r:float(r['simulation_time'])>=resumed+3)
                 rest_menu();pick('Try to sleep');shot('sleep-confirmation.png');pick('No.');idle()
                 check('native_sleep_decline_stays_awake',phase()==-1)
                 rest_menu();pick('Try to sleep');pick('Yes.');idle()

@@ -3,6 +3,11 @@
 Scope follows the sole developer's human [feedback](../source/manual-rest-recovery-feedback-2026-10-25.md)
 and the earlier pointer report. CDDA remains gameplay/time/save authority.
 
+**Historical CWM2.35 contract.** The later human review accepted FB-01.3/4,
+reported that the recovery demo could not start, and requested one contextual
+F8 feature. The speed section below is superseded by the
+[CWM2.36 contract](unified-f8.md); the other scoped behaviors remain.
+
 ## Rest pacing and its presentation
 
 Global F8 speed remains 0.25–4. Long rest adds a native coordinator preference:

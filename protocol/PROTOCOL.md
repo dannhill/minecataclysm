@@ -6,13 +6,25 @@ captured implementation; it does not approve its gaps. The executable schema
 is [cwm.fbs](cwm.fbs). Audit findings and evidence are in
 [M5.5](../docs/audits/M5.5.md).
 
-The current runtime requires **CWM 2.35**. This breaks the old negotiation
+The current runtime requires **CWM 2.36**. This breaks the old negotiation
 contract; schema fields and union members are appended without changing the
 existing FlatBuffers offsets. Both executables must be rebuilt together.
 The historical coverage table below is retained as audit evidence.
 
-CWM 2.35 appends `RestState.speed_multiplier` (1/64/256/1024; accelerated
-requires >1). Global clock scale stays independent: target =scale × multiplier.
+CWM 2.36 appends `speed_context:SpeedContext` to `SimulationState` and
+`SimulationControlRequest`: PLAY (0) or REST (1). `time_scale` is the sole
+absolute target, in simulated seconds per wall second. PLAY accepts 0.25–4;
+REST accepts 0.25–4096 and requires real-time native rest. A SET_SPEED request
+must match the current context; unknown/stale contexts are rejected and context
+joins the command-ledger signature. Awake and rest preferences are alternative
+transient rates, never multiplied. Native waking restores the awake preference.
+The deprecated `RestState.speed_multiplier` retains its old layout but must
+equal 1; acceleration means REST with `time_scale >4`. A rest-bearing snapshot
+must agree with that clock state. All turns still execute. Both runtimes must
+match. [Single-F8 contract](../docs/design/unified-f8.md).
+
+CWM 2.35 introduced `RestState.speed_multiplier`; its independent multiplier
+and B speed choices were superseded by 2.36 at the developer's request.
 POUR also admits a selected liquid/container in a validated reachable external
 view, retaining zero quantity/destination and native ownership/access checks.
 Confirmation punctuation, pointer coordinates and skin remain local; the wire
