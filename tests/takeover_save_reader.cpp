@@ -520,7 +520,11 @@ int main(int argc, const char *argv[]) {
             get_weather().update_weather();
             if (!g->save()) return 5;
         }
-        if(create_night) {calendar::turn=calendar::turn_zero+2_days;get_weather().update_weather();}
+        if(create_night) {
+            calendar::turn=calendar::turn_zero+2_days;get_weather().update_weather();
+            for(int z=1;z<=3;++z)for(int x=58;x<=62;++x)for(int y=58;y<=62;++y)
+                m.ter_set(tripoint(x,y,z),ter_str_id("t_open_air_rooved"));
+        }
         if(create_seals) {
             u.remove_items_with([](const item&){return true;});u.remove_weapon();u.clear_worn();m.i_clear(u.pos());
             u.wear_item(item(itype_id("backpack"),calendar::turn),false);
