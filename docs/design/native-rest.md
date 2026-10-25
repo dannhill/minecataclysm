@@ -24,11 +24,13 @@ are cached without reopening old menus. Busy unrelated activities and unpaid
 move/time debt cannot be replaced by sleeping. Gameplay/held movement is blocked
 while asleep; held direction needs release before reuse after rest.
 
-The coordinator can accelerate long rest 64 times the selected global pace,
+The coordinator offers long-rest x64/x256/x1024 multipliers (x256 default),
+applied to the selected global F8 pace,
 after eight native seconds of warmup. Short waits stay at normal speed. B can
 switch an active rest to normal speed. Every native turn, effect, AI update,
 need, sound and alarm still executes; calendar time is never assigned forward.
-The clock bounds wall stalls and drops unused acceleration budget when paused
+The clock retains at most 32 native ticks of deliberate rest credit, bounds
+wall stalls and drops unused acceleration budget when paused
 or returning to normal play. This is rest-specific, not global long-activity
 acceleration. Visible new threats pause aware waiting/attempts through the
 existing safety path; sleep retains native sensory limits and disturbances.
@@ -39,7 +41,8 @@ limit. Projection-cache comparisons span the last emitted canonical state;
 revision/sequence validation and full resync are unchanged. Publication rate
 never changes native turns or creates inferred client state.
 
-RestState carries a transient token, phase, interruptibility, acceleration and
+RestState carries a transient token, phase, interruptibility, acceleration,
+CWM2.35 speed multiplier and
 honest finite-wait progress. Canonical activities, effects, alarms and posture
 are saved only by CDDA. Menu pause, generation IDs and acceleration preference
 are not canonical save fields. Save/reload/reconnect preserves real work/sleep

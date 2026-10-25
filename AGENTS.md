@@ -24,6 +24,10 @@ silently finalized by an agent.
   Language definitions/catalogs live in `localization/`; regenerate shared
   metadata with `tools/generate_product_languages.py`. Add future languages
   through that registry/catalog path, not bilingual enums or menu branches.
+- Keep UI view data/identities and native command routing separate from rendering
+  and styling. Reuse the shared presentation theme; future visual redesigns
+  must not require gameplay/protocol rewrites. Confirmation action labels omit
+  terminal full stops; retain wire choices, semantic punctuation and narrative.
 - A missing delta requires a full authoritative resynchronization; never infer missing state.
 - Preserve the upstream pins and complete patches in `baseline/manifest.json`.
   The ignored fork directories are working copies, not root-repository source history.

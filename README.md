@@ -19,7 +19,13 @@ Windows 11 x64: the local installer is generated as
 [Windows build instructions](tools/windows/README.md). Real Windows hardware
 acceptance is recorded separately from automated Wine verification.
 
-Current Linux slice: [native sealed-pocket opening](docs/fixes/native-seals.md)
+Current Linux slice: [playtest recovery/presentation fixes](docs/fixes/playtest-feedback-2026-10-25.md)
+in `./start.sh`: clearer/faster native rest with x64/x256/x1024, ground-container
+pouring and empty-can pickup, stable menu pointer, consistent confirmations,
+a shared skin/model boundary and a native night sky. `./liquid-recovery-demo.sh --fresh`, `./rest-demo.sh --fresh`, `./night-demo.sh --fresh` provide isolated
+scenes. Linux uses CWM2.35; the Windows installer remains CWM2.26.
+
+Previous Linux slice: [native sealed-pocket opening](docs/fixes/native-seals.md)
 in `./start.sh`. I → owned sealed container → **Open sealed pocket...**.
 Native preservation/spill rules and costs apply; Cancel before opening keeps
 the seal intact. `./seals-demo.sh --fresh` opens the isolated test scene.

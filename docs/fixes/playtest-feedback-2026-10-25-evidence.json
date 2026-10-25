@@ -1,0 +1,381 @@
+{
+  "scope": "Human-feedback follow-up: bounded faster native rest, explicit pacing HUD, accessible ground-container pouring, CWM cursor continuity, confirmation formatting, independent decision model/shared presentation skin and canonical sky clock",
+  "date": "2026-10-25",
+  "source_commit": "b112e6865dbc96a0a10184f5627b9cf9ebfe1364",
+  "native_capture_commit": "47f4227226e25f89f1469daa21bb217b35b807ca",
+  "client_capture_commit": "b112e6865dbc96a0a10184f5627b9cf9ebfe1364",
+  "reader_capture_commit": "fcd872423229da2c0fdd6ac4cbef904359c536c4",
+  "native_production_capture_commit": "223265cd2b725188eeceea0ea62a5284cff8923c",
+  "build_mode": "Incremental captured reconstructions retaining caches. Native/server/test and client units rebuilt. Selected native suite, not full upstream or cold-build conformance. Canonical reader links unmodified pinned native core.",
+  "source_trees": {
+    "cdda": {
+      "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+      "tree_sha256": "4060df44b27d80df00b44e936fa031de6797ef106f49919e9d3533bd4651cd5d",
+      "patch_sha256": "90f1699821c3b910e5c3d187f79afca3f98e2e98e051789b92e61280d3f0e5d4"
+    },
+    "luanti": {
+      "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
+      "tree_sha256": "30840d413c2e7785ea477a2893d5751d78f67668bbee8bca7de61a61c71bf70b",
+      "patch_sha256": "b48ccf2b9cfd6574e2640481b5f3266e692e8b1871be2fcbaae079a7f26a19ac"
+    },
+    "mineclonia": {
+      "commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+      "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "environment": {
+    "kernel": "Linux-7.0.11-76070011-generic-x86_64-with-glibc2.35",
+    "python": "3.10.12",
+    "compiler": "11.4.0",
+    "renderer": "Private Xvfb 1280x800x24; actual Luanti renderer, Mesa llvmpipe LLVM15, OpenAL null, xdotool; isolated saves/configuration"
+  },
+  "native": {
+    "cases": 185,
+    "assertions": 73766,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/playtest-feedback-20261025/native-release.log",
+      "sha256": "abe1dabf94e85e50a5957963424d7b609f94267df70ab155fa543951ef640dde"
+    }
+  },
+  "native_focused": {
+    "cases": 2,
+    "assertions": 26,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/playtest-feedback-20261025/native-focused-release.log",
+      "sha256": "622cd51e9d83dad794b5b0a87a63e80b2ae6cbdeb62019c8e35be762f7b63350"
+    }
+  },
+  "client": {
+    "cases": 309,
+    "modules": 47,
+    "catch_cases": 4,
+    "catch_assertions": 648,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/playtest-feedback-20261025/client-tests-verified.log",
+      "sha256": "ff470c905b6d694ed68ed438fbfd676e6a2e42c11ca847dbe85dd37941408899"
+    }
+  },
+  "protocol": {
+    "cases": 20,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/playtest-feedback-20261025/protocol-tests-verified.log",
+      "sha256": "9c6959251ad0e0d2f4aa7796402c46416b02a34069d22445735d9e9fd841651f"
+    }
+  },
+  "language": {
+    "cases": 9,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/playtest-feedback-20261025/language-tests.log",
+      "sha256": "5165976b886171473cc0673893680ffd0800b0c5a5a84aeeedc10f75e43c74f7"
+    }
+  },
+  "language_registry": {
+    "cases": 3,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/playtest-feedback-20261025/registry-tests.log",
+      "sha256": "60f7bf070ceb3f8bc681c6ac954cdb05823db903a335f8c8f080de9507fa14ff"
+    }
+  },
+  "renderer": {
+    "recovery-release": {
+      "checks": 19,
+      "result": "PASS",
+      "client_capture_commit": "fcd872423229da2c0fdd6ac4cbef904359c536c4",
+      "checks_file": {
+        "path": "artifacts/playtest-feedback-20261025/recovery-release/checks.json",
+        "sha256": "cb37184e671e30ef82df28dd9cecc1d5d55122ee74a5c9754e8c292a00d4053c"
+      },
+      "native_readback": {
+        "path": "artifacts/playtest-feedback-20261025/recovery-release/native.json",
+        "sha256": "d219805923086f8ad3dcaad16d8921fc65f869660c77790364e6c330e6d08270"
+      },
+      "trace": {
+        "path": "artifacts/playtest-feedback-20261025/recovery-release/camera.csv",
+        "sha256": "ed629d14b7fe9e51e14620f1634d4e298c7d5c30c73ea08e75e89eb6523b6808"
+      },
+      "client_wire": {
+        "path": "artifacts/playtest-feedback-20261025/recovery-release/client-wire.bin",
+        "sha256": "c169f4f8a5d541986f78f45afc5d8c5748b9f5b4ec6ed931eb63375c0791fe57"
+      },
+      "server_wire": {
+        "path": "artifacts/playtest-feedback-20261025/recovery-release/server-wire.bin",
+        "sha256": "f69ea224ee52d4f81837ad78f7b9410756e04501110a41bccc86c7d5e27c6f94"
+      }
+    },
+    "rest-verified": {
+      "checks": 41,
+      "result": "PASS",
+      "client_capture_commit": "fcd872423229da2c0fdd6ac4cbef904359c536c4",
+      "checks_file": {
+        "path": "artifacts/playtest-feedback-20261025/rest-verified/checks.json",
+        "sha256": "877f107eb2c27d02ede31a99bd82a71688d14d32388d665b1150b9d727784377"
+      },
+      "native_readback": {
+        "path": "artifacts/playtest-feedback-20261025/rest-verified/native.json",
+        "sha256": "1fc43bb665ff4f94ea06512ad3bcb030762a4851165a27188b5c8cbd5b37da6a"
+      },
+      "trace": {
+        "path": "artifacts/playtest-feedback-20261025/rest-verified/camera.csv",
+        "sha256": "8b5f6592fa3288ea69b55078030a6bc79120824a45a91d346290bd73e4bc4828"
+      },
+      "client_wire": {
+        "path": "artifacts/playtest-feedback-20261025/rest-verified/client-wire.bin",
+        "sha256": "6fd7d8665f1247bd9abc6fa5b16e6cad023d8ea809354a0a9efc9697d7c9a04c"
+      },
+      "server_wire": {
+        "path": "artifacts/playtest-feedback-20261025/rest-verified/server-wire.bin",
+        "sha256": "a7a130e23eba99e9845f666b61c454f1492576dd3cced848c7a29635addbdb82"
+      }
+    },
+    "night-verified": {
+      "checks": 9,
+      "result": "PASS",
+      "client_capture_commit": "b112e6865dbc96a0a10184f5627b9cf9ebfe1364",
+      "checks_file": {
+        "path": "artifacts/playtest-feedback-20261025/night-verified/checks.json",
+        "sha256": "769ad1e8af0ddc2eaceb1abb2c1ef2f3b331f1c70853d3204bc8c99c603a90c8"
+      },
+      "native_readback": {
+        "path": "artifacts/playtest-feedback-20261025/night-verified/native.json",
+        "sha256": "313c435d864c0b8ed7c2aec7bfc1bf3a2dfb85b31ed5bc553636951f79510781"
+      },
+      "trace": {
+        "path": "artifacts/playtest-feedback-20261025/night-verified/camera.csv",
+        "sha256": "5de3798ebb441392025c56492c6dedf0db427ac199064cf8b378b206a93409ea"
+      },
+      "client_wire": {
+        "path": "artifacts/playtest-feedback-20261025/night-verified/client-wire.bin",
+        "sha256": "a18e6c4bcbb54918ffa03ab1a5b3b1b1ccb097d339ebe18363fb380cf7c59336"
+      },
+      "server_wire": {
+        "path": "artifacts/playtest-feedback-20261025/night-verified/server-wire.bin",
+        "sha256": "37ce01b55ed6716b2ff4560c65c65ea3082a7f80ccb67927b3646f0bef4d81c1"
+      }
+    },
+    "installed-recovery": {
+      "checks": 19,
+      "result": "PASS",
+      "client_capture_commit": "b112e6865dbc96a0a10184f5627b9cf9ebfe1364",
+      "checks_file": {
+        "path": "artifacts/playtest-feedback-20261025/installed-recovery/checks.json",
+        "sha256": "cb37184e671e30ef82df28dd9cecc1d5d55122ee74a5c9754e8c292a00d4053c"
+      },
+      "native_readback": {
+        "path": "artifacts/playtest-feedback-20261025/installed-recovery/native.json",
+        "sha256": "b40524a2434c1a102626a51ca7afccdfd9849be9fd9fd51da3c0fe7b0e8660f8"
+      },
+      "trace": {
+        "path": "artifacts/playtest-feedback-20261025/installed-recovery/camera.csv",
+        "sha256": "9e5a07a1e2b3376a2cfc8c29baecbdde0fa5741f770b26690c2191bcd8a0bf5c"
+      },
+      "client_wire": {
+        "path": "artifacts/playtest-feedback-20261025/installed-recovery/client-wire.bin",
+        "sha256": "34dae1fcaa9fac8d0a4881f17d307a83f002ca846063c8f6378bafb2e2110510"
+      },
+      "server_wire": {
+        "path": "artifacts/playtest-feedback-20261025/installed-recovery/server-wire.bin",
+        "sha256": "f3408a6161cc5f4ac2eb7fa8e6c8fa675479bb7463e0b9be5f68b6587e918ac0"
+      }
+    },
+    "installed-rest": {
+      "checks": 41,
+      "result": "PASS",
+      "client_capture_commit": "b112e6865dbc96a0a10184f5627b9cf9ebfe1364",
+      "checks_file": {
+        "path": "artifacts/playtest-feedback-20261025/installed-rest/checks.json",
+        "sha256": "877f107eb2c27d02ede31a99bd82a71688d14d32388d665b1150b9d727784377"
+      },
+      "native_readback": {
+        "path": "artifacts/playtest-feedback-20261025/installed-rest/native.json",
+        "sha256": "88d2511250582d00db9ddd6988cf2049c352d50b6b6aa43e262ad034b4ed6644"
+      },
+      "trace": {
+        "path": "artifacts/playtest-feedback-20261025/installed-rest/camera.csv",
+        "sha256": "7a636ac168441000689558c7290895f4d7f7e688428f36156c8369ace4a3a204"
+      },
+      "client_wire": {
+        "path": "artifacts/playtest-feedback-20261025/installed-rest/client-wire.bin",
+        "sha256": "d27de5e3a67eb03ba51ff111522c36165b732eb8dc036fc0bfdedea8c2a51be9"
+      },
+      "server_wire": {
+        "path": "artifacts/playtest-feedback-20261025/installed-rest/server-wire.bin",
+        "sha256": "88372a3fefa5373a93f9178f6b8941df7a523b5340ec1058e20842e2cdf0cc9c"
+      }
+    },
+    "installed-night": {
+      "checks": 9,
+      "result": "PASS",
+      "client_capture_commit": "b112e6865dbc96a0a10184f5627b9cf9ebfe1364",
+      "checks_file": {
+        "path": "artifacts/playtest-feedback-20261025/installed-night/checks.json",
+        "sha256": "769ad1e8af0ddc2eaceb1abb2c1ef2f3b331f1c70853d3204bc8c99c603a90c8"
+      },
+      "native_readback": {
+        "path": "artifacts/playtest-feedback-20261025/installed-night/native.json",
+        "sha256": "b548362b8b5a634d4218d6875a0a1486d3ce57e5203f447a054639fb74229925"
+      },
+      "trace": {
+        "path": "artifacts/playtest-feedback-20261025/installed-night/camera.csv",
+        "sha256": "e7474bcc832da24b70569030bac92e5fa67aa20b864d0a548486370bb244bc8f"
+      },
+      "client_wire": {
+        "path": "artifacts/playtest-feedback-20261025/installed-night/client-wire.bin",
+        "sha256": "2e84959753692f9f51b5c1c6e5b4b085c65c8a742e329b605f989aa368288c30"
+      },
+      "server_wire": {
+        "path": "artifacts/playtest-feedback-20261025/installed-night/server-wire.bin",
+        "sha256": "1035f34c521513a8cdef7a7a52c5f802f9c741b71b4034c82f3c760ee0071188"
+      }
+    }
+  },
+  "renderer_total": 138,
+  "installation": {
+    "native": {
+      "source": "artifacts/fnd03-session/workspace/cdda/build/src/cdda-server",
+      "installed": "cdda/build/src/cdda-server",
+      "sha256": "dd71ad3a0ec5b595adbc06174b0a856224629d76a1a953646dd3ff3e7b3d737a",
+      "previous": "artifacts/playtest-feedback-20261025/native-before-feedback",
+      "previous_sha256": "93409855ab52e8c1b9c7fc683d2a116551242daa3c2098dffa4af8a19fd74bcf"
+    },
+    "client": {
+      "source": "artifacts/language-20261011/workspace/luanti/bin/luanti",
+      "installed": "luanti/bin/luanti",
+      "sha256": "550edfc36a9b190891565bdca7d1e1592eddfe281c6d59d70392ef4fd3d5cd5a",
+      "previous": "artifacts/playtest-feedback-20261025/client-before-feedback",
+      "previous_sha256": "d28cba83c48ee283d83421a4d1e0338a9d77d21db7b9f71d18b1587e4b1a6dc4"
+    }
+  },
+  "reader": {
+    "path": "artifacts/playtest-feedback-20261025/native-save-reader-final",
+    "sha256": "6a94c8e6ead08981df06ebcd6b4adc07b36c79c96932e0b78af51c07d938e033"
+  },
+  "fixtures": {
+    "liquid-recovery": {
+      "path": "artifacts/playtest-feedback-20261025/liquid-recovery/before.json",
+      "sha256": "7c148c8e3bc78d97861b65bbf0c3077b6633730ad634445bb5f004b5e3938a87"
+    },
+    "night-release": {
+      "path": "artifacts/playtest-feedback-20261025/night-release/before.json",
+      "sha256": "f04126166f962c9b07f5c4ea5ad7280e996b800e8bc536f5e0cf6004c8f203c4"
+    }
+  },
+  "baseline": {
+    "path": "artifacts/playtest-feedback-20261025/baseline-check.log",
+    "sha256": "1e3ad80d859348376c24462fe62d04528ef5d2c568b852ebea7fe5757871dd58"
+  },
+  "harnesses": {
+    "playtest_feedback_gui_test.py": {
+      "path": "tests/playtest_feedback_gui_test.py",
+      "sha256": "8e6c1b2cdd6b9ded941b06bc623ecf55ad02de5609d4ead4e2c101f6d91f4337"
+    },
+    "rest_gui_test.py": {
+      "path": "tests/rest_gui_test.py",
+      "sha256": "dc6049fc1761e089aab01ed97b3c8a9b8e5cd639aa8c6e0adee568dbffb57ceb"
+    }
+  },
+  "build_logs": {
+    "native": {
+      "path": "artifacts/playtest-feedback-20261025/native-build-checked.log",
+      "sha256": "8c0baf96e86594c2794a052c311d3b9302f1b0952c7eda02174892d921185aa8"
+    },
+    "client": {
+      "path": "artifacts/playtest-feedback-20261025/client-build-final-labels.log",
+      "sha256": "aec4aa81856c346c88c1ab1614feb8eef316b85b281ed46a6790c933a01b9dcd"
+    },
+    "sdk": {
+      "path": "artifacts/playtest-feedback-20261025/protocol-build-verified.log",
+      "sha256": "dcee775959acebb649810488d13fab26642268148f270c079d59067b2d9c1633"
+    },
+    "reader": {
+      "path": "artifacts/playtest-feedback-20261025/reader-build-final.log",
+      "sha256": "a3ebe0f4ecfe3a668959bf7106453074c73a9700bb884e111f849335c3324954"
+    }
+  },
+  "refreshes": {
+    "native": {
+      "path": "artifacts/playtest-feedback-20261025/native-refresh-checked.json",
+      "sha256": "5a25b4c59a17055cf956dc583c587c7237b8790cff72677766522134d8c98129"
+    },
+    "client": {
+      "path": "artifacts/playtest-feedback-20261025/client-refresh-final-labels.json",
+      "sha256": "c0cc5853436f19af406995329497e235e0d9c1cb79a2cd1a595e6acfe562fc82"
+    }
+  },
+  "wrappers": {
+    "run-gui.py": {
+      "path": "artifacts/playtest-feedback-20261025/run-gui.py",
+      "sha256": "4682b8cc4a7ab31f1ba5568bca37da014ee942da30027aebb2ed28a7f9c8125f"
+    },
+    "install-pair.py": {
+      "path": "artifacts/playtest-feedback-20261025/install-pair.py",
+      "sha256": "e20a789c52b11ef06f3775e55ae1f0ddc0de7736b3e862ad53b1f6848db78d7b"
+    }
+  },
+  "manual": {
+    "previous_pending": 61,
+    "human_pass": [
+      "SEAL-01.3",
+      "REST-01.2",
+      "REST-01.3",
+      "DIS-01.3"
+    ],
+    "remaining_after_pass": 57,
+    "new_pending": [
+      "FB-01.1",
+      "FB-01.2",
+      "FB-01.3",
+      "FB-01.4"
+    ],
+    "pending": 61,
+    "human_acceptance_of_repairs_inferred": false
+  },
+  "excluded_runs": {
+    "native_focused": "Initial test returned false from the world gate, invoking native shutdown cleanup. Corrected test cleanup; final isolated native-focused-release and broader suite pass.",
+    "rest_release": "Initial old native executable was still running while a non-atomic reconstruction copy failed with Text file busy. Replaced after shutdown and confirmed hashes before final runs.",
+    "recovery_first": "Old pair setup run excluded; no gameplay trace accepted.",
+    "night_first": "Old pair setup run excluded.",
+    "rest_final": "Old pair setup run excluded.",
+    "night_release_gui": "Substantive failure exposed legacy TimeOfDay overwrite while paused; corrected packet/frame path and repeated actual renderer checks."
+  },
+  "limits": [
+    "Target rest rate is global F8 speed times factor; actual throughput is CPU/world-load dependent",
+    "All native turns/AI/effects execute; acceleration is not a calendar skip",
+    "Shared theme foundation and independent DecisionModel are not a complete final UI design",
+    "Visual sky uses native time with Luanti sun/moon model; full seasonal astronomy/weather matching deferred",
+    "Ground pouring uses explicit nearby external view and native ownership/range/perception barriers; no vehicle tank or full open-container INSERT bypass",
+    "Liquid/gas crafting and mandatory-output recovery remain separate",
+    "Mapping batch60 unchanged; Windows remains CWM2.26; historical M5.5 FAILED / full SAVE-001 OPEN unchanged"
+  ],
+  "commands": [
+    "python3 tools/takeover_baseline.py capture",
+    "python3 tools/refresh_verification_workspace.py --workspace artifacts/fnd03-session/workspace --receipt artifacts/playtest-feedback-20261025/native-refresh-checked.json",
+    "python3 tools/refresh_verification_workspace.py --workspace artifacts/language-20261011/workspace --receipt artifacts/playtest-feedback-20261025/client-refresh-final-labels.json",
+    "cmake --build artifacts/fnd03-session/workspace/cdda/build --target cdda-server cata_test -j4",
+    "cmake --build artifacts/language-20261011/workspace/luanti/build --target luanti -j3",
+    "cmake --build artifacts/language-20261011/workspace/build/protocol -j3",
+    "ctest --test-dir artifacts/language-20261011/workspace/build/protocol --output-on-failure",
+    "cd artifacts/fnd03-session/workspace/cdda && CDDA_LOCALE_DIR=$PWD/lang/mo build/tests/cata_test '[playtest_fixes]' --rng-seed 42 --user-dir=/home/dannhill/Projects/cdda-mineclonia/artifacts/playtest-feedback-20261025/unit-focused-release",
+    "cd artifacts/fnd03-session/workspace/cdda && CDDA_LOCALE_DIR=$PWD/lang/mo build/tests/cata_test '[cwm],[reading]~[.],[melee]~[.],[ranged]~[.],[disassembly]~[.],[npc_talk]~[.],[mission]' --rng-seed 42 --user-dir=/home/dannhill/Projects/cdda-mineclonia/artifacts/playtest-feedback-20261025/unit-release",
+    "artifacts/language-20261011/workspace/luanti/bin/luanti --run-unittests --logfile artifacts/playtest-feedback-20261025/client-unit-verified.log",
+    "python3 tools/build_native_save_reader.py --pristine-cdda artifacts/m5.5/20261003-takeover/pristine-cdda --workspace artifacts/language-20261011/workspace --output artifacts/playtest-feedback-20261025/native-save-reader-final --strip-debug",
+    "artifacts/playtest-feedback-20261025/native-save-reader-final --create-liquid-recovery --userdir artifacts/playtest-feedback-20261025/liquid-recovery/user --datadir cdda/data --output artifacts/playtest-feedback-20261025/liquid-recovery/before.json",
+    "artifacts/playtest-feedback-20261025/native-save-reader-final --create-night --userdir artifacts/playtest-feedback-20261025/night-release/user --datadir cdda/data --output artifacts/playtest-feedback-20261025/night-release/before.json",
+    "python3 artifacts/playtest-feedback-20261025/run-gui.py playtest_feedback_gui_test.py artifacts/playtest-feedback-20261025/liquid-recovery/user recovery-release --scenario recovery",
+    "python3 artifacts/playtest-feedback-20261025/run-gui.py playtest_feedback_gui_test.py artifacts/playtest-feedback-20261025/night-release/user night-verified --scenario night",
+    "python3 artifacts/playtest-feedback-20261025/run-gui.py rest_gui_test.py artifacts/native-rest-20261023/fixture/user rest-verified",
+    "python3 artifacts/playtest-feedback-20261025/install-pair.py",
+    "CWM_TEST_INSTALLED=1 python3 artifacts/playtest-feedback-20261025/run-gui.py playtest_feedback_gui_test.py artifacts/playtest-feedback-20261025/liquid-recovery/user installed-recovery --scenario recovery",
+    "CWM_TEST_INSTALLED=1 python3 artifacts/playtest-feedback-20261025/run-gui.py playtest_feedback_gui_test.py artifacts/playtest-feedback-20261025/night-release/user installed-night --scenario night",
+    "CWM_TEST_INSTALLED=1 python3 artifacts/playtest-feedback-20261025/run-gui.py rest_gui_test.py artifacts/native-rest-20261023/fixture/user installed-rest",
+    "python3 tests/product_language_test.py",
+    "python3 tests/product_language_registry_test.py",
+    "python3 tools/takeover_baseline.py check"
+  ]
+}

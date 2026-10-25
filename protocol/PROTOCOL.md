@@ -6,10 +6,19 @@ captured implementation; it does not approve its gaps. The executable schema
 is [cwm.fbs](cwm.fbs). Audit findings and evidence are in
 [M5.5](../docs/audits/M5.5.md).
 
-The current runtime requires **CWM 2.34**. This breaks the old negotiation
+The current runtime requires **CWM 2.35**. This breaks the old negotiation
 contract; schema fields and union members are appended without changing the
 existing FlatBuffers offsets. Both executables must be rebuilt together.
 The historical coverage table below is retained as audit evidence.
+
+CWM 2.35 appends `RestState.speed_multiplier` (1/64/256/1024; accelerated
+requires >1). Global clock scale stays independent: target =scale × multiplier.
+POUR also admits a selected liquid/container in a validated reachable external
+view, retaining zero quantity/destination and native ownership/access checks.
+Confirmation punctuation, pointer coordinates and skin remain local; the wire
+choice strings/IDs are unchanged. Sky derives from existing native seconds;
+no renderer time structure is introduced. Both runtimes must match.
+[Follow-up contract](../docs/design/playtest-feedback-2026-10-25.md).
 
 CWM 2.34 appends `InventoryEntry.seal:SealInfo` and
 `ItemTransferAction.OPEN_SEAL` (5), with quantity/destination zero. It exposes

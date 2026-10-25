@@ -1,6 +1,30 @@
 # Implementation status
 
-Latest human feedback — **2026-10-25**: the sole developer reports PASS for
+Current Linux scoped delivery: **playtest recovery/presentation fixes**, CWM
+**2.35**, installed in normal `start.sh`. Faster native rest (x64/x256/x1024,
+default x256), explicit F8 × rest factor target, bounded native tick credit;
+open ground-can pouring and empty pickup; retained menu pointer; consistent
+confirmation labels; separate decision model/shared panel theme; native sky
+clock resistant to legacy TimeOfDay packets, including pause.
+[Contract](docs/design/playtest-feedback-2026-10-25.md), [delivery](docs/fixes/playtest-feedback-2026-10-25.md),
+[exact evidence](docs/fixes/playtest-feedback-2026-10-25-evidence.json).
+
+**185 native cases /73,766 assertions PASS**; two focused cases /26. Client
+**309 tests /47 modules** plus 648 Catch assertions /4 cases; SDK **20**, language
+**9**, registry **3** PASS. **138 renderer/canonical checks PASS**, including
+all three scenarios on the installed pair. Incremental builds with isolated
+saves; independent pinned-core readback. Previous runtime pair retained.
+
+New human PASS: **SEAL-01.3, REST-01.2, REST-01.3, DIS-01.3**. 61 previous
+pending minus four =57; four separate new FB-01 rechecks give **61 PENDING**.
+These are human reports, distinct from automated acceptance of the repairs.
+[Source](docs/source/manual-rest-recovery-feedback-2026-10-25.md).
+Next core: essential native item uses, safe liquid outputs/purification, then
+non-demo consolidation. Target acceleration remains CPU/world-load dependent.
+Mapping batch60 unchanged; Windows remains CWM2.26; historical M5.5 FAILED /
+full SAVE-001 OPEN unchanged.
+
+Earlier human feedback — **2026-10-25**: the sole developer reports PASS for
 **LIQ-01.1, .2, .4 and SEAL-01.1**, reducing the personal backlog from 65 to
 **61 PENDING**. Scope follows the four scenarios actually requested.
 **UX-CURSOR-01 OPEN**: pointer relocation after actions is reported as
@@ -8,7 +32,7 @@ unpleasant; cause/frequency remain to be investigated. These four functional
 PASS results remain accepted. [Human feedback and next four priorities](docs/source/manual-liquids-seals-feedback-2026-10-25.md).
 This records human validation only; runtime, binaries and protocol are unchanged.
 
-Current scoped delivery: **native sealed-pocket opening**, CWM **2.34**, in
+Previous scoped delivery: **native sealed-pocket opening**, CWM **2.34**, in
 normal Linux `start.sh`. I → owned sealed container → **Open sealed pocket...**
 with explicit pocket/Cancel choice. Native contents-change handling owns
 preservation, restacking and spill/ground placement. No invented opening time;

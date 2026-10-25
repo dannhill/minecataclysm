@@ -10,6 +10,25 @@ un panorama più ampio; nebbia, memoria distante e rilievo restano da scegliere.
 Lo [stato implementato](IMPLEMENTATION_STATUS.md) e le evidenze restano separati
 dagli obiettivi. La roadmap originale M0–M9 conserva i propri significati.
 
+## Seguito dei playtest: recupero e presentazione — 2026-10-25
+
+Implementati in Linux start.sh/CWM2.35: moltiplicatori riposo x64/x256/x1024
+(default x256), formula F8 × fattore esplicita e credito limitato a 32 turni
+nativi senza saltare simulazione; travaso da contenitore portatile a terra
+con successiva raccolta da vuoto; continuità del cursore; conferme senza punto
+fermo finale; modello delle decisioni separato dal disegno e base tema condivisa;
+cielo legato all'orologio CDDA anche in pausa, bloccando TimeOfDay di Luanti.
+[Contratto](docs/design/playtest-feedback-2026-10-25.md),
+[consegna/verifiche](docs/fixes/playtest-feedback-2026-10-25.md).
+
+Ricevuti quattro PASS personali: SEAL-01.3, REST-01.2, REST-01.3, DIS-01.3.
+57 vecchi punti rimasti +quattro FB-01 nuovi = **61 PENDING**. I PASS precedenti
+restano; i nuovi interventi non sono accettati automaticamente. 185 casi nativi,
+SDK20, client309 e 138 verifiche renderer/canoniche PASS. Prossimo lavoro core:
+usi essenziali degli oggetti e gestione sicura degli output liquidi/purificazione,
+poi consolidamento non-demo. UI definitiva, piena astronomia/meteo e veicoli
+restano separati. Le sezioni datate sotto sono cronologia delle consegne.
+
 ## Riscontro umano e priorità UX — 2026-10-25
 
 PASS personali ricevuti per LIQ-01.1, .2, .4 e SEAL-01.1; backlog a **61 PENDING**.

@@ -1339,14 +1339,16 @@ Nessun gate personale richiesto ora. Aperture mediante utensili/trasformazioni,
 usi speciali degli oggetti e crafting/purificazione liquidi restano separati.
 
 
-## UX-CURSOR-01 — OPEN: spostamento indesiderato del puntatore
+## UX-CURSOR-01 — Intervento implementato; ricontrollo personale FB-01.1 PENDING
 
 Segnalazione umana del 2026-10-25, [testo originale e contesto](../source/manual-liquids-seals-feedback-2026-10-25.md).
 Dopo aver premuto un'azione il cursore viene dislocato, con frequenza ancora
 incerta. Da riprodurre nei passaggi inventario/scelte native/ritorno al menu;
 rendere coerente la posizione tra menu correlati senza interferire col controllo
-della visuale. Non è ancora diagnosticato né risolto. Nessun nuovo test numerato
-aggiunto ai 61 pendenti; i quattro PASS funzionali di questo riscontro restano.
+della visuale. L'intervento CWM2.35 conserva la posizione normalizzata tra menu;
+la verifica automatica passa e il ricontrollo personale è FB-01.1. La descrizione
+sopra conserva il riscontro originario. Il conteggio di 61 include i nuovi FB-01;
+i PASS funzionali precedenti restano validi.
 
 
 ## FB-01 — Ricontrolli dopo i riscontri del 2026-10-25 — 4 PENDING
@@ -1355,8 +1357,8 @@ Quattro nuovi casi riferiti alle correzioni successive, non ripetizioni dei
 quattro PASS precedenti. Proporli dopo la consegna verificata degli interventi.
 
 1. **PENDING — Cursore e conferme.** `./liquid-recovery-demo.sh --fresh`:
-   seleziona un oggetto in I, avvia Open sealed pocket... o Pour liquid...,
-   scegli/annulla con il mouse e ritorna al menu. Il cursore deve mantenere una
+   I → bottiglia impugnata → Open sealed pocket..., prima Cancel, poi conferma
+   e ritorna al menu. Tieni la lattina per la prova 2. Il cursore deve mantenere una
    posizione coerente nei passaggi, senza saltare al centro dopo ogni azione.
    Prova anche una conferma Yes/No dal riposo B: etichette senza punto fermo
    finale; domande, puntini di sospensione e testo narrativo restano sensati.
@@ -1370,7 +1372,7 @@ quattro PASS precedenti. Proporli dopo la consegna verificata degli interventi.
 3. **PENDING — Ritmo del riposo esplicito.** `./rest-demo.sh --fresh`, B → Try to
    sleep → Yes. Leggi fase, NORMAL/FAST REST e velocità F8 × moltiplicatore =
    obiettivo. B permette normale e x64/x256/x1024; prova x1024 e normale,
-   cambia F8 e verifica che la formula si aggiorni. I/Esc ferma comunque il
+   chiudi il menu B con Keep resting, cambia F8 e verifica che la formula si aggiorni. I/Esc ferma comunque il
    tempo. Il throughput effettivo dipende dalla simulazione; valuta se la
    durata reale è ora accettabile. Dopo il riposo niente accelerazione residua.
 4. **PENDING — Cielo notturno.** `./night-demo.sh --fresh`: guarda verso l'alto
