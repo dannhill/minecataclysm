@@ -28,6 +28,7 @@ def main():
     parser.add_argument('--action-driven', action='store_true', help='Verify ordinary start.sh mode without the real-time scheduler')
     parser.add_argument('--recipe-shortcuts', action='store_true')
     parser.add_argument('--catalog-feedback', action='store_true')
+    parser.add_argument('--modal-continuity', action='store_true')
     parser.add_argument('--resume-only', action='store_true')
     parser.add_argument('--save-active', action='store_true')
     parser.add_argument('--resume-active', action='store_true')
@@ -212,7 +213,8 @@ def main():
                 return found[-1]
             def entries(v):return [v.Entries(n) for n in range(v.EntriesLength())]
             def open_crafting():
-                tap('k');wait(lambda r:int(r['crafting_form'])==1 and int(r['crafting_view'])>0)
+                if int(latest()['crafting_form'])!=1:tap('i' if int(latest().get('action_menu',0)) else 'k')
+                wait(lambda r:int(r['crafting_form'])==1 and int(r['crafting_view'])>0 and int(r['pause_reasons'])&2)
                 return catalog()
             view=open_crafting();check('native_crafting_catalog_opened',True);shot('catalog.png')
             from PIL import Image
@@ -332,14 +334,21 @@ def main():
                 view=search();e=select_recipe(view)
                 check('native_requirements_duration_and_available_recipe',not e.Reason() and e.ExpectedMoves()>0 and b'cotton' in e.Requirements().lower())
                 shot('recipe-details.png')
-                start();choose(approve=False)
+                modal_start=len(rows());start();choose(approve=False)
+                view=open_crafting()
                 check('declined_confirm_has_no_craft_activity',int(latest()['crafting_token'])==0)
+                if args.modal_continuity:
+                    span=rows()[modal_start:]
+                    check('declining_components_returns_directly_to_catalog',len(span)>5 and all(int(r['modal_count'])>0 for r in span))
                 if args.recipe_shortcuts:
                     view=open_crafting();view=tab(2);check('declined_craft_never_enters_recent',view.EntriesLength()==0);tap('Escape');wait(lambda r:int(r['crafting_form'])==0)
-                view=open_crafting();view=search();select_recipe(view);start();choose(approve=True)
+                view=open_crafting();view=search();select_recipe(view);modal_start=len(rows());start();choose(approve=True)
                 wait(lambda r:int(r['crafting_token'])==0,timeout=20)
                 check('first_native_craft_completes',True)
                 view=open_crafting()
+                if args.modal_continuity:
+                    span=rows()[modal_start:]
+                    check('native_craft_confirmation_work_and_result_keep_modal',len(span)>5 and all(int(r['modal_count'])>0 for r in span))
                 if args.recipe_shortcuts:
                     view=tab(2);check('started_craft_enters_native_recent_without_search',any(e.RecipeId()==b'bandages_makeshift' and e.RecentRank()==1 for e in entries(view)));shot('recent-recipes.png');view=tab(0)
                 view=search();view=set_batch(2);e=select_recipe(view)
@@ -352,9 +361,12 @@ def main():
                     check('crafting_does_not_queue_held_movement',latest()['target_x']==r['target_x'] and latest()['target_z']==r['target_z'])
                     view=open_crafting();frozen=latest()['crafting_progress'];time.sleep(.7)
                     check('menu_freezes_native_craft_counter',latest()['crafting_progress']==frozen)
-                    shot('crafting-paused.png');click(11.5,2.2)
-                    wait(lambda r:int(r['crafting_form'])==0 and int(r['crafting_token'])==0 and int(r['pending_move'])==0)
+                    shot('crafting-paused.png');modal_start=len(rows());click(11.5,2.2)
+                    wait(lambda r:int(r['crafting_token'])==0 and int(r['pending_move'])==0)
                     view=open_crafting();view=search();e=select_recipe(view,True)
+                    if args.modal_continuity:
+                        span=rows()[modal_start:]
+                        check('craft_interruption_keeps_modal_and_native_incomplete',len(span)>5 and all(int(r['modal_count'])>0 for r in span))
                     check('interrupted_work_is_native_resumable_item',e.Resume() and e.Progress()==int(frozen))
                     shot('incomplete-work.png')
                     sent = latest()['crafting_sent']; index = e.Id() - 1

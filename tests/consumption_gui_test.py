@@ -27,10 +27,12 @@ def main():
         parser.add_argument('--' + name, type=Path, required=True)
     parser.add_argument('--action-driven', action='store_true', help='Verify ordinary start.sh mode without the real-time scheduler')
     parser.add_argument('--automatic-return', action='store_true', help='Verify native actor UX-02 return instead of opting out')
+    parser.add_argument('--modal-continuity', action='store_true')
     parser.add_argument('--resume-only', action='store_true')
     parser.add_argument('--save-active', action='store_true')
     parser.add_argument('--resume-active', action='store_true')
     args = parser.parse_args()
+    if args.modal_continuity:args.automatic_return=True
     if args.resume_active: args.resume_only = True
     ws, out = args.workspace.resolve(), args.artifacts.resolve()
     out.mkdir(parents=True, exist_ok=False)
@@ -250,7 +252,7 @@ def main():
                 wait(lambda r: int(r['equipment_sent']) == sent+1)
                 if not args.automatic_return:
                     tap('Escape')  # Legacy suite opts out; dedicated UX-02 run uses the default return.
-                wait(lambda r: int(r['equipment_form']) == 0)
+                if not args.automatic_return:wait(lambda r: int(r['equipment_form']) == 0)
             def finish_action():
                 wait(lambda r: int(r['pending_move']) == 0 and (int(r['pause_reasons']) == 0 or (int(r['equipment_form']) == 1 and int(r['native_work_settled']) == 1)))
             def item(v, name):
@@ -282,7 +284,7 @@ def main():
                 fresh_id, fresh_charges = first.Id(), first.Charges()
                 stopped = latest()['simulation_time'];time.sleep(.7)
                 check('inventory_query_remains_readonly_and_paused', latest()['simulation_time'] == stopped)
-                select_item(first);shot('food-detail.png')
+                select_item(first);shot('food-detail.png');modal_start=len(rows())
                 action(4);finish_action()
                 if not args.action_driven:
                     wait(lambda r: int(r['consumption_token']) > 0)
@@ -292,7 +294,7 @@ def main():
                         image=Image.open(out/'work-panel.png').convert('RGB')
                         work_left=max(10,(image.width-420)//2);work_top=max(165,image.height-270)
                         panel=image.crop((work_left,work_top,work_left+420,work_top+56))
-                        check('nonmodal_work_text_is_drawn_above_hud_not_covered_by_debug',sum(min(rgb)>180 and max(rgb)-min(rgb)<30 for rgb in panel.getdata())>100)
+                        check('native_work_status_is_visible',sum(min(rgb)>180 and max(rgb)-min(rgb)<30 for rgb in panel.getdata())>100)
                     check('native_progress_announced_before_serving_removed', int(progress['consumption_total']) == first.ConsumeMoves() and int(progress['consumption_remaining']) > 0)
                     xdo('keydown','w');time.sleep(.5);xdo('keyup','w');time.sleep(.3)
                     check('movement_during_meal_is_not_deferred', latest()['target_x'] == progress['target_x'] and latest()['target_z'] == progress['target_z'])
@@ -301,13 +303,21 @@ def main():
                     check('started_meal_keeps_item_until_native_finish', selected.TypeId() == b'apple' and selected.Charges() == fresh_charges)
                     frozen = latest()['consumption_remaining'];time.sleep(.7)
                     check('menu_freezes_native_consumption_progress', latest()['consumption_remaining'] == frozen)
+                    if args.modal_continuity:
+                        span=rows()[modal_start:]
+                        check('meal_start_progress_and_inspection_keep_modal',len(span)>5 and all(int(r['modal_count'])>0 for r in span))
                     shot('cancel-consumption.png')
+                    modal_start=len(rows())
                     click(13.4,10.35)
                     wait(lambda r: int(r['cancel_consumption_sent']) == 1)
                     finish_action();wait(lambda r: int(r['consumption_token']) == 0)
                     check('cancel_reaches_busy_actor_immediately', True)
                     view = open_inventory()
                     check('cancel_preserves_food_and_quantity', view.Entries(fresh_id-1).Charges() == fresh_charges)
+                    if args.modal_continuity:
+                        span=rows()[modal_start:]
+                        check('cancel_meal_returns_without_world_frame',len(span)>2 and all(int(r['modal_count'])>0 for r in span))
+                    modal_start=len(rows())
                     select_item(food(view));action(4);finish_action()
                     wait(lambda r: int(r['consumption_token']) > 0)
                     check('resumed_meal_has_new_cancellation_token', latest()['consumption_token'] != token)
@@ -315,6 +325,9 @@ def main():
                 if args.automatic_return:
                     wait(lambda r:int(r['equipment_form'])==1 and int(r['inventory_view'])>0 and int(r['native_work_settled'])==1)
                     check('meal_automatically_returns_only_after_native_settlement',True)
+                    if args.modal_continuity:
+                        span=rows()[modal_start:]
+                        check('meal_completion_keeps_modal_through_paid_return',len(span)>5 and all(int(r['modal_count'])>0 for r in span))
                     shot('meal-automatic-return.png')
                 view = open_inventory()
                 fresh_now = sum(max(1,e.Charges()) for e in entries(view) if e.TypeId() == b'apple' and not e.ConsumeWarning())

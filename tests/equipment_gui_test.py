@@ -30,6 +30,7 @@ def main():
     parser.add_argument('--resume-only', action='store_true')
     parser.add_argument('--drag-equipment', action='store_true')
     parser.add_argument('--sequential', action='store_true', help='Exercise UX-02 paid completion and automatic return')
+    parser.add_argument('--modal-continuity', action='store_true')
     parser.add_argument('--native-equipment-time', action='store_true', help='Atomic clothing, inspection during delayed ACK, frozen/resumed native debit')
     parser.add_argument('--live-search', action='store_true')
     parser.add_argument('--quickbar', action='store_true', help='Verify UX-03 shortcuts, focus, native costs, pause and persistence')
@@ -39,6 +40,7 @@ def main():
     parser.add_argument('--language-menu-change', choices=('en', 'it'), help='Change the actual pause-menu language preference before exiting')
     parser.add_argument('--use-saved-language', action='store_true', help='Verify launcher preference resolution without a language environment override')
     args = parser.parse_args()
+    if args.modal_continuity:args.sequential=True
     ws, out = args.workspace.resolve(), args.artifacts.resolve()
     sys.path.insert(0, str(ws / 'tools'))
     out.mkdir(parents=True, exist_ok=False)
@@ -620,6 +622,7 @@ def main():
                     return found
                 def paid_return(number):
                     sent=int(latest()['equipment_sent']);old_view=latest()['inventory_view']
+                    modal_start=len(rows())
                     click(12.325+(number%2)*2.2,8.15+(number//2)*.75)
                     wait(lambda r:int(r['equipment_sent'])==sent+1)
                     if number==0:
@@ -628,6 +631,9 @@ def main():
                         tap('1') # Fixture explicitly chooses native Store in inventory.
                     wait(lambda r:int(r['equipment_form'])==1 and int(r['inventory_view'])>0 and r['inventory_view']!=old_view,timeout=25)
                     check('automatic_return_'+str(sent),int(latest()['native_work_settled'])==1 and int(latest()['equipment_selected'])==0)
+                    if args.modal_continuity:
+                        span=rows()[modal_start:]
+                        check('paid_equipment_keeps_modal_'+str(sent),len(span)>2 and all(int(r['modal_count'])>0 for r in span))
                     return views()[-1]
                 start_time=int(latest()['simulation_time'])
                 # Select a native filtered item; keep the optional search open across work.
