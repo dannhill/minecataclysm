@@ -1,5 +1,13 @@
 # Validazioni manuali del playable core
 
+Secondo riscontro umano del 2026-10-25: **SEAL-01.3, REST-01.2, REST-01.3 e
+DIS-01.3 PASS** nei quattro scenari proposti. Il backlog scende da 61 a 57;
+quattro nuovi ricontrolli FB-01 delle modifiche successive lo portano a
+**61 PENDING**. [Riscontro e direttive](../source/manual-rest-recovery-feedback-2026-10-25.md).
+I PASS non attestano automaticamente i nuovi livelli di accelerazione, la
+correzione del cursore/skybox o il recupero della lattina: questi hanno test propri.
+
+
 Riscontro umano del 2026-10-25: **61 PENDING**, nessun nuovo FAIL funzionale.
 L'unico sviluppatore ha validato **LIQ-01.1, LIQ-01.2, LIQ-01.4 e SEAL-01.1**
 nei quattro scenari proposti. [Riscontro e corrispondenza esatta](../source/manual-liquids-seals-feedback-2026-10-25.md).
@@ -1068,7 +1076,7 @@ proprie prove LANG-02 e non eredita questo PASS.
    quella cartella per disinstallare il programma.
 
 
-## DIS-01 — Smontaggio nativo — 4 PENDING
+## DIS-01 — Smontaggio nativo — 3 PASS umano; 1, 2, 4 PENDING (2026-10-25)
 
 `./disassembly-demo.sh --fresh` crea una copia isolata: fasce per piedi in
 pelliccia sintetica, lampada e zaino. Stesse azioni nel normale `./start.sh`
@@ -1081,7 +1089,7 @@ con oggetti smontabili realmente posseduti. Non occorre fare queste prove ora.
 2. **PENDING — Lavoro e pausa.** Conferma lo smontaggio: compare il progresso.
    Apri I durante il lavoro: progresso e mondo fermi. Chiudi I: riprende.
    Non è un'azione istantanea: il tempo e i requisiti sono quelli di CDDA.
-3. **PENDING — Interrompi e riprendi.** I → Interrompi smontaggio. Rimane un
+3. **PASS umano 2026-10-25 — Interrompi e riprendi.** I → Interrompi smontaggio. Rimane un
    oggetto di smontaggio incompleto. Selezionalo → Riprendi smontaggio:
    conserva il progresso già fatto. A fine lavoro appaiono nelle vicinanze
    due pezze di pelliccia sintetica; il vecchio oggetto non deve duplicarsi.
@@ -1236,7 +1244,7 @@ radio/comandi di gruppo e servizi/accampamenti complessi restano fette separate.
 Non è richiesto nessun gate manuale adesso; i precedenti PASS restano storici.
 
 
-## REST-01 — Riposo, sonno e attesa nativi — 4 PENDING
+## REST-01 — Riposo, sonno e attesa nativi — 2, 3 PASS umani; 1, 4 PENDING (2026-10-25)
 
 **B** nella partita normale apre il menu di riposo; il tasto è configurabile.
 `./rest-demo.sh --fresh` prepara una sessione isolata con personaggio stanco,
@@ -1247,13 +1255,13 @@ letto, stamina bassa, senza orologio o ostili vicini. Non modifica i tuoi mondi.
    leggi. B → Interrupt rest interrompe l'attesa. Annullare il primo menu non
    deve avviare attività; tenere premuto movimento durante l'attesa non deve
    accodare passi da eseguire dopo.
-2. **PENDING — Tentativo e sonno effettivo.** B → Try to sleep: No lascia svegli;
+2. **PASS umano 2026-10-25 — Tentativo e sonno effettivo.** B → Try to sleep: No lascia svegli;
    Yes usa il tentativo nativo. Puoi interrompere il tentativo, non forzare
    gratuitamente il risveglio durante il sonno effettivo. Nella demo sul letto
    il personaggio è abbastanza stanco da addormentarsi. Controlla il messaggio
    Sleeping anche quando non vedi il mondo. Nessuna percentuale inventata
    del sonno; se possiedi una sveglia, conserva le scelte di allarme native.
-3. **PENDING — Velocità e risveglio.** Le attese brevi restano a velocità normale.
+3. **PASS umano 2026-10-25 — Velocità e risveglio.** Le attese brevi restano a velocità normale.
    Sonno/attese lunghe possono accelerare dopo qualche secondo simulato; B →
    Continue at normal speed rallenta, Fast-forward long rest riaccelera.
    I/Esc continua a fermare il mondo. Controlla che il ritorno al gioco dopo
@@ -1305,7 +1313,7 @@ purificazione e serbatoi veicoli restano fette distinte; l'apertura sigilli ha
 la propria sezione seguente.
 
 
-## SEAL-01 — Apertura tasche sigillate — 1 PASS umano; 2–4 PENDING (2026-10-25)
+## SEAL-01 — Apertura tasche sigillate — 1, 3 PASS umani; 2, 4 PENDING (2026-10-25)
 
 `./seals-demo.sh --fresh`: scena isolata con bottiglia sigillata in mano,
 zaino, bottiglia per condimenti sigillata e lattina sigillata. La funzione è
@@ -1319,7 +1327,7 @@ anche nella partita normale con `./start.sh`; non richiede un mondo nuovo.
    attraverso un sigillo. Apri il contenitore prima; dopo l’apertura torna
    accessibile tramite le interfacce native. In contenitori annidati sigillati
    apri prima quello esterno. Leggere l’inventario non deve aprire nulla.
-3. **PENDING — Lattina nello zaino.** Aprila esplicitamente: perde la chiusura
+3. **PASS umano 2026-10-25 — Lattina nello zaino.** Aprila esplicitamente: perde la chiusura
    stagna; la gestione nativa propone cosa fare col liquido. Annullando quel
    travaso successivo può posare la lattina aperta a terra per non versarla.
    Il primo Cancel non rompe il sigillo; il Cancel dopo apertura non lo ricrea.
@@ -1339,3 +1347,34 @@ incerta. Da riprodurre nei passaggi inventario/scelte native/ritorno al menu;
 rendere coerente la posizione tra menu correlati senza interferire col controllo
 della visuale. Non è ancora diagnosticato né risolto. Nessun nuovo test numerato
 aggiunto ai 61 pendenti; i quattro PASS funzionali di questo riscontro restano.
+
+
+## FB-01 — Ricontrolli dopo i riscontri del 2026-10-25 — 4 PENDING
+
+Quattro nuovi casi riferiti alle correzioni successive, non ripetizioni dei
+quattro PASS precedenti. Proporli dopo la consegna verificata degli interventi.
+
+1. **PENDING — Cursore e conferme.** `./liquid-recovery-demo.sh --fresh`:
+   seleziona un oggetto in I, avvia Open sealed pocket... o Pour liquid...,
+   scegli/annulla con il mouse e ritorna al menu. Il cursore deve mantenere una
+   posizione coerente nei passaggi, senza saltare al centro dopo ogni azione.
+   Prova anche una conferma Yes/No dal riposo B: etichette senza punto fermo
+   finale; domande, puntini di sospensione e testo narrativo restano sensati.
+2. **PENDING — Recupero della lattina.** Nella stessa demo apri la lattina nello
+   zaino e annulla il travaso, lasciandola a terra. Destro sul drop apre la vista
+   esterna; seleziona lattina → Pour liquid... → Pour into a container → glass
+   bottle vuota preparata nella demo. Dopo il travaso, raccogli la lattina vuota
+   trascinandola verso il pannello del tuo inventario. Acqua nella bottiglia,
+   lattina recuperabile, nessuna perdita/duplicazione. Una lattina piena aperta
+   rimane soggetta alle regole native: il gesto non la rende stagna.
+3. **PENDING — Ritmo del riposo esplicito.** `./rest-demo.sh --fresh`, B → Try to
+   sleep → Yes. Leggi fase, NORMAL/FAST REST e velocità F8 × moltiplicatore =
+   obiettivo. B permette normale e x64/x256/x1024; prova x1024 e normale,
+   cambia F8 e verifica che la formula si aggiorni. I/Esc ferma comunque il
+   tempo. Il throughput effettivo dipende dalla simulazione; valuta se la
+   durata reale è ora accettabile. Dopo il riposo niente accelerazione residua.
+4. **PENDING — Cielo notturno.** `./night-demo.sh --fresh`: guarda verso l'alto
+   attraverso l'apertura sopra il personaggio. Cielo notturno coerente col
+   terreno scuro, senza fondo azzurro diurno. F7/Esc e attendi alcuni secondi:
+   il cielo non deve ritornare diurno. Confronta col giorno in una demo diurna
+   o nella partita normale; la pausa non deve far avanzare sole/luna.
