@@ -183,6 +183,12 @@ def main():
     window = None
     with (out / 'launcher.log').open('w') as log:
         if args.public_demo:
+            # A reconstruction does not archive ignored canonical fixture artifacts.
+            # Link only the supplied immutable test template, never a user session.
+            fixture_entry=ws/'artifacts/playtest-feedback-20261025/liquid-recovery'
+            if not fixture_entry.exists():
+                fixture_entry.parent.mkdir(parents=True,exist_ok=True)
+                fixture_entry.symlink_to(args.fixture.resolve().parent,target_is_directory=True)
             (ws/'artifacts').mkdir(exist_ok=True)
             demo_sessions=Path(tempfile.mkdtemp(prefix='public-demo-',dir=ws/'artifacts'))
             env['CDDA_DEMO_SESSIONS']=str(demo_sessions)
