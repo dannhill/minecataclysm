@@ -344,7 +344,7 @@ index 16ceda4..20bd596 100644
  			float old_anim_speed = player->last_animation_speed;
  			m_velocity = v3f(0,0,0);
 diff --git a/src/client/game.cpp b/src/client/game.cpp
-index 27b5833..f60c36e 100644
+index 27b5833..f00d3e4 100644
 --- a/src/client/game.cpp
 +++ b/src/client/game.cpp
 @@ -8,6 +8,10 @@
@@ -358,7 +358,7 @@ index 27b5833..f60c36e 100644
  #include "client.h"
  #include "client/clientevent.h"
  #include "client/gameui.h"
-@@ -118,6 +122,80 @@ struct TextDestPlayerInventory : public TextDest
+@@ -118,6 +122,91 @@ struct TextDestPlayerInventory : public TextDest
  	Client *m_client;
  };
  
@@ -402,6 +402,17 @@ index 27b5833..f60c36e 100644
 +    }
 +};
 +
++struct CwmActionFormHandler : public TextDest {
++    uint64_t generation;
++    CwmActionFormHandler(uint64_t g):generation(g){m_formname="CWM_ACTION";}
++    void gotText(const std::wstring& text) override {
++        if(text==L"MenuQuit")gotText(StringMap{{"leave","true"}});
++    }
++    void gotText(const StringMap& fields) override {
++        cdda_client::CddaBridge::getInstance().actionMenuFields(generation,fields);
++    }
++};
++
 +struct CwmBodyFormHandler : public TextDest
 +{
 +	CwmBodyFormHandler() { m_formname = "CWM_BODY"; }
@@ -439,7 +450,7 @@ index 27b5833..f60c36e 100644
  struct LocalFormspecHandler : public TextDest
  {
  	LocalFormspecHandler(const std::string &formname)
-@@ -134,6 +212,10 @@ struct LocalFormspecHandler : public TextDest
+@@ -134,6 +223,10 @@ struct LocalFormspecHandler : public TextDest
  	void gotText(const StringMap &fields)
  	{
  		if (m_formname == "MT_PAUSE_MENU") {
@@ -450,7 +461,7 @@ index 27b5833..f60c36e 100644
  			if (fields.find("btn_sound") != fields.end()) {
  				g_gamecallback->changeVolume();
  				return;
-@@ -443,12 +525,15 @@ class GameGlobalShaderConstantSetter : public IShaderConstantSetter
+@@ -443,12 +536,15 @@ class GameGlobalShaderConstantSetter : public IShaderConstantSetter
  		get_sunlight_color(&sunlight, daynight_ratio);
  		m_day_light.set(sunlight, services);
  
@@ -468,7 +479,7 @@ index 27b5833..f60c36e 100644
  		m_animation_timer_delta_vertex.set(&animation_timer_delta_f, services);
  		m_animation_timer_delta_pixel.set(&animation_timer_delta_f, services);
  
-@@ -811,6 +896,7 @@ class Game {
+@@ -811,6 +907,7 @@ class Game {
  
  	void showDeathFormspecLegacy();
  	void showPauseMenu();
@@ -476,7 +487,7 @@ index 27b5833..f60c36e 100644
  
  	void pauseAnimation();
  	void resumeAnimation();
-@@ -932,6 +1018,7 @@ class Game {
+@@ -932,6 +1029,7 @@ class Game {
  	bool m_first_loop_after_window_activation = false;
  	bool m_camera_offset_changed = false;
  	bool m_game_focused = false;
@@ -484,7 +495,7 @@ index 27b5833..f60c36e 100644
  
  	bool m_does_lost_focus_pause_game = false;
  
-@@ -1009,6 +1096,8 @@ Game::Game() :
+@@ -1009,6 +1107,8 @@ Game::Game() :
  
  Game::~Game()
  {
@@ -493,7 +504,7 @@ index 27b5833..f60c36e 100644
  	delete client;
  	delete soundmaker;
  	sound_manager.reset();
-@@ -1181,6 +1270,13 @@ void Game::run()
+@@ -1181,6 +1281,13 @@ void Game::run()
  		updateCamera(dtime);
  		updateSound(dtime);
  		processPlayerInteraction(dtime, m_game_ui->m_flags.show_hud);
@@ -507,7 +518,7 @@ index 27b5833..f60c36e 100644
  		updateFrame(&graph, &stats, dtime, cam_view);
  		updateProfilerGraphs(&graph);
  
-@@ -1239,6 +1335,8 @@ void Game::shutdown()
+@@ -1239,6 +1346,8 @@ void Game::shutdown()
  		}
  	}
  
@@ -516,7 +527,7 @@ index 27b5833..f60c36e 100644
  	delete client;
  	client = nullptr;
  	delete soundmaker;
-@@ -2046,14 +2144,47 @@ void Game::processUserInput(f32 dtime)
+@@ -2046,14 +2155,47 @@ void Game::processUserInput(f32 dtime)
  	if (m_cache_doubletap_jump && runData.jump_timer_down <= 0.4f)
  		runData.jump_timer_down += dtime;
  
@@ -567,7 +578,7 @@ index 27b5833..f60c36e 100644
  		dropSelectedItem(isKeyDown(KeyType::SNEAK));
  	} else if (wasKeyDown(KeyType::AUTOFORWARD)) {
  		toggleAutoforward();
-@@ -2063,6 +2194,8 @@ void Game::processKeyInput()
+@@ -2063,6 +2205,8 @@ void Game::processKeyInput()
  	} else if (wasKeyDown(KeyType::INVENTORY)) {
  		openInventory();
  	} else if (input->cancelPressed()) {
@@ -576,7 +587,7 @@ index 27b5833..f60c36e 100644
  #ifdef __ANDROID__
  		m_android_chat_open = false;
  #endif
-@@ -2083,7 +2216,8 @@ void Game::processKeyInput()
+@@ -2083,7 +2227,8 @@ void Game::processKeyInput()
  	} else if (wasKeyDown(KeyType::FREEMOVE)) {
  		toggleFreeMove();
  	} else if (wasKeyDown(KeyType::JUMP)) {
@@ -586,7 +597,7 @@ index 27b5833..f60c36e 100644
  	} else if (wasKeyDown(KeyType::PITCHMOVE)) {
  		togglePitchMove();
  	} else if (wasKeyDown(KeyType::FASTMOVE)) {
-@@ -2137,12 +2271,13 @@ void Game::processKeyInput()
+@@ -2137,12 +2282,13 @@ void Game::processKeyInput()
  		toggleMinimap(isKeyDown(KeyType::SNEAK));
  	} else if (wasKeyPressed(KeyType::TOGGLE_CHAT)) {
  		m_game_ui->toggleChat(client);
@@ -602,7 +613,7 @@ index 27b5833..f60c36e 100644
  	} else if (wasKeyPressed(KeyType::TOGGLE_PROFILER)) {
  		m_game_ui->toggleProfiler();
  	} else if (wasKeyDown(KeyType::INCREASE_VIEWING_RANGE)) {
-@@ -2154,9 +2289,17 @@ void Game::processKeyInput()
+@@ -2154,9 +2300,17 @@ void Game::processKeyInput()
  	} else if (wasKeyDown(KeyType::ZOOM)) {
  		checkZoomEnabled();
  	} else if (wasKeyDown(KeyType::QUICKTUNE_NEXT)) {
@@ -622,7 +633,7 @@ index 27b5833..f60c36e 100644
  	} else if (wasKeyDown(KeyType::QUICKTUNE_INC)) {
  		quicktune->inc();
  	} else if (wasKeyDown(KeyType::QUICKTUNE_DEC)) {
-@@ -2178,6 +2321,22 @@ void Game::processItemSelection(u16 *new_playeritem)
+@@ -2178,6 +2332,22 @@ void Game::processItemSelection(u16 *new_playeritem)
  	LocalPlayer *player = client->getEnv().getLocalPlayer();
  
  	*new_playeritem = player->getWieldIndex();
@@ -645,7 +656,7 @@ index 27b5833..f60c36e 100644
  	u16 max_item = player->getMaxHotbarItemcount();
  	if (max_item == 0)
  		return;
-@@ -2238,6 +2397,18 @@ void Game::dropSelectedItem(bool single_item)
+@@ -2238,6 +2408,18 @@ void Game::dropSelectedItem(bool single_item)
  
  void Game::openInventory()
  {
@@ -664,7 +675,7 @@ index 27b5833..f60c36e 100644
  	/*
  	 * Don't permit to open inventory is CAO or player doesn't exists.
  	 * This prevent showing an empty inventory at player load
-@@ -2737,8 +2908,68 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
+@@ -2737,8 +2919,68 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
  		control.aux1 = control.aux1 ^ true;
  	}
  
@@ -733,7 +744,7 @@ index 27b5833..f60c36e 100644
  	//tt.stop();
  }
  
-@@ -2784,6 +3015,93 @@ inline void Game::step(f32 dtime)
+@@ -2784,6 +3026,106 @@ inline void Game::step(f32 dtime)
  
  	if (!m_is_paused)
  		client->step(dtime);
@@ -771,8 +782,16 @@ index 27b5833..f60c36e 100644
 +		}
 +		if (bridge.takeEquipmentInventoryClose()) {
 +            auto *formspec = m_game_ui->getFormspecGUI();
-+            if (formspec && m_game_ui->getFormspecName() == "CWM_EQUIPMENT") formspec->quitMenu();
++            if (formspec && m_game_ui->getFormspecName() == "CWM_EQUIPMENT" && !bridge.actionMenuActive()) formspec->quitMenu();
 +        }
++        if (bridge.takeCraftingClose()) {
++            auto *formspec = m_game_ui->getFormspecGUI();
++            if (formspec && m_game_ui->getFormspecName() == "CWM_CRAFTING" && !bridge.actionMenuActive()) formspec->quitMenu();
++        }
++        bridge.setMenuPause(g_menumgr.menuCount() > 0 && !bridge.menuRunsNativeWork(m_game_ui->getFormspecName()));
++		bridge.update(dtime);
++        // Apply incoming results before drawing. Related screens replace the
++        // existing modal directly; the world never receives an intervening frame.
 +        const auto equipment_update = bridge.takeEquipmentInventoryUpdate();
 +        if (!equipment_update.empty()) {
 +            auto *&formspec = m_game_ui->updateFormspec("CWM_EQUIPMENT");
@@ -780,18 +799,12 @@ index 27b5833..f60c36e 100644
 +                &input->joystick, new FormspecFormSource(equipment_update), new CwmEquipmentFormHandler(),
 +                "", sound_manager.get());
 +        }
-+        if (bridge.takeCraftingClose()) {
-+            auto *formspec = m_game_ui->getFormspecGUI();
-+            if (formspec && m_game_ui->getFormspecName() == "CWM_CRAFTING") formspec->quitMenu();
-+        }
 +        const auto crafting_update = bridge.takeCraftingUpdate();
 +        if (!crafting_update.empty()) {
 +            auto *&formspec = m_game_ui->updateFormspec("CWM_CRAFTING");
 +            GUIFormSpecMenu::create(formspec, client, m_rendering_engine->get_gui_env(),
 +                &input->joystick, new FormspecFormSource(crafting_update), new CwmCraftingFormHandler(), "", sound_manager.get());
 +        }
-+        bridge.setMenuPause(g_menumgr.menuCount() > 0);
-+		bridge.update(dtime);
 +        if(bridge.takeMissionJournalClose()) {
 +            auto *form=m_game_ui->getFormspecGUI();if(form && m_game_ui->getFormspecName()=="CWM_MISSIONS")form->quitMenu();
 +        }
@@ -802,7 +815,7 @@ index 27b5833..f60c36e 100644
 +                new FormspecFormSource(journal_update),new CwmMissionFormHandler(bridge.missionJournalView(),bridge.missionJournalConnection()),"",sound_manager.get());
 +        }
 +        auto *decision_menu=m_game_ui->getFormspecGUI();
-+        if(decision_menu && m_game_ui->getFormspecName()=="CWM_DECISION" && !bridge.getMetrics().pending_decision)
++        if(decision_menu && m_game_ui->getFormspecName()=="CWM_DECISION" && !bridge.getMetrics().pending_decision && !bridge.retainDecisionMenu())
 +            decision_menu->quitMenu();
 +        if(bridge.takeTradeClose()) {
 +            auto *form=m_game_ui->getFormspecGUI();
@@ -822,12 +835,23 @@ index 27b5833..f60c36e 100644
 +                new FormspecFormSource(decision_update),new CwmDecisionFormHandler(bridge.getMetrics().pending_decision,bridge.decisionDialogConnection()),"",sound_manager.get());
 +            form->allowClose(false); // Only an explicit native cancellation may dismiss it.
 +        }
++        const auto action_update=bridge.takeActionMenuUpdate();
++        if(!action_update.empty()) {
++            auto *&form=m_game_ui->updateFormspec("CWM_ACTION");
++            GUIFormSpecMenu::create(form,client,m_rendering_engine->get_gui_env(),&input->joystick,
++                new FormspecFormSource(action_update),new CwmActionFormHandler(bridge.actionMenuGeneration()),"",sound_manager.get());
++            form->allowClose(false);
++        }
++        if(bridge.takeActionMenuClose()) {
++            auto *form=m_game_ui->getFormspecGUI();
++            if(form && m_game_ui->getFormspecName()=="CWM_ACTION")form->quitMenu();
++        }
 +		bridge.renderDebugOverlay(m_rendering_engine->get_gui_env(), g_menumgr.menuCount() > 0);
 +	}
  }
  
  static void pauseNodeAnimation(PausedNodesList &paused, scene::ISceneNode *node) {
-@@ -3246,6 +3564,7 @@ void Game::updateCamera(f32 dtime)
+@@ -3246,6 +3588,7 @@ void Game::updateCamera(f32 dtime)
  	tool_reload_ratio = MYMIN(tool_reload_ratio, 1.0);
  	camera->update(player, dtime, tool_reload_ratio);
  	camera->step(dtime);
@@ -835,7 +859,7 @@ index 27b5833..f60c36e 100644
  
  	f32 camera_fov = camera->getFovMax();
  	v3s16 camera_offset = camera->getOffset();
-@@ -3262,6 +3581,7 @@ void Game::updateCamera(f32 dtime)
+@@ -3262,6 +3605,7 @@ void Game::updateCamera(f32 dtime)
  		if (m_camera_offset_changed) {
  			client->updateCameraOffset(camera_offset);
  			client->getEnv().updateCameraOffset(camera_offset);
@@ -843,7 +867,7 @@ index 27b5833..f60c36e 100644
  
  			if (clouds)
  				clouds->updateCameraOffset(camera_offset);
-@@ -3314,6 +3634,8 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
+@@ -3314,6 +3658,8 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
  
  	const ItemDefinition &selected_def = selected_item.getDefinition(itemdef_manager);
  	f32 d = getToolRange(selected_item, hand_item, itemdef_manager);
@@ -852,7 +876,7 @@ index 27b5833..f60c36e 100644
  
  	core::line3d<f32> shootline;
  
-@@ -3365,6 +3687,57 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
+@@ -3365,6 +3711,57 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
  	// but the halo rendering code is already inefficient so there's no point in optimizing it here
  	hud->updateSelectionMesh(camera_offset);
  
@@ -910,7 +934,7 @@ index 27b5833..f60c36e 100644
  	// Allow digging again if button is not pressed
  	if (runData.digging_blocked && !isKeyDown(KeyType::DIG))
  		runData.digging_blocked = false;
-@@ -4074,6 +4447,13 @@ void Game::updateFrame(ProfilerGraph *graph, RunStats *stats, f32 dtime,
+@@ -4074,6 +4471,13 @@ void Game::updateFrame(ProfilerGraph *graph, RunStats *stats, f32 dtime,
  	/*
  		Calculate general brightness
  	*/
@@ -924,7 +948,7 @@ index 27b5833..f60c36e 100644
  	u32 daynight_ratio = client->getEnv().getDayNightRatio();
  	float time_brightness = decode_light_f((float)daynight_ratio / 1000.0);
  	float direct_brightness;
-@@ -4247,7 +4627,8 @@ void Game::updateClouds(float dtime)
+@@ -4247,7 +4651,8 @@ void Game::updateClouds(float dtime)
  {
  	if (this->sky->getCloudsVisible()) {
  		this->clouds->setVisible(true);
@@ -934,7 +958,7 @@ index 27b5833..f60c36e 100644
  		// this->camera->getPosition is not enough for third-person camera.
  		v3f camera_node_position = this->camera->getCameraNode()->getPosition();
  		v3s16 camera_offset      = this->camera->getOffset();
-@@ -4319,7 +4700,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
+@@ -4319,7 +4724,12 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
  	/*
  		Fog
  	*/
@@ -948,7 +972,7 @@ index 27b5833..f60c36e 100644
  		this->driver->setFog(
  				fog_color,
  				video::EFT_FOG_LINEAR,
-@@ -4470,7 +4856,7 @@ void Game::showDeathFormspecLegacy()
+@@ -4470,7 +4880,7 @@ void Game::showDeathFormspecLegacy()
  }
  
  #define GET_KEY_NAME(KEY) gettext(getKeySetting(#KEY).name())
@@ -957,7 +981,7 @@ index 27b5833..f60c36e 100644
  {
  	std::string control_text;
  
-@@ -4518,6 +4904,22 @@ void Game::showPauseMenu()
+@@ -4518,6 +4928,22 @@ void Game::showPauseMenu()
  		<< strgettext("Exit to Menu") << "]";
  	os		<< "button_exit[4," << (ypos++) << ";3,0.5;btn_exit_os;"
  		<< strgettext("Exit to OS")   << "]";
@@ -980,7 +1004,7 @@ index 27b5833..f60c36e 100644
  	if (!control_text.empty()) {
  	os		<< "textarea[7.5,0.25;3.9,6.25;;" << control_text << ";]";
  	}
-@@ -4536,8 +4938,8 @@ void Game::showPauseMenu()
+@@ -4536,8 +4962,8 @@ void Game::showPauseMenu()
  	}
  	os << "\n";
  	if (simple_singleplayer_mode || address.empty()) {
@@ -991,7 +1015,7 @@ index 27b5833..f60c36e 100644
  		// Note: Status of enable_damage and creative_mode settings is intentionally
  		// NOT shown here because the game might roll its own damage system and/or do
  		// a per-player Creative Mode, in which case writing it here would mislead.
-@@ -4559,10 +4961,15 @@ void Game::showPauseMenu()
+@@ -4559,10 +4985,15 @@ void Game::showPauseMenu()
  	}
  	os << ";]";
  
@@ -1251,7 +1275,7 @@ index ca47c12..eac711d 100644
  	int argc, char *argv[]);
  
 diff --git a/src/gui/guiFormSpecMenu.cpp b/src/gui/guiFormSpecMenu.cpp
-index ed1c300..39c0660 100644
+index ed1c300..620e222 100644
 --- a/src/gui/guiFormSpecMenu.cpp
 +++ b/src/gui/guiFormSpecMenu.cpp
 @@ -1,3 +1,5 @@
@@ -1278,7 +1302,7 @@ index ed1c300..39c0660 100644
  	if (cur_formspec == nullptr) {
  		cur_formspec = new GUIFormSpecMenu(joystick, guiroot, -1, &g_menumgr,
  			client, guienv, client->getTextureSource(), sound_manager, fs_src,
-@@ -155,6 +161,10 @@ void GUIFormSpecMenu::create(GUIFormSpecMenu *&cur_formspec, Client *client,
+@@ -155,7 +161,14 @@ void GUIFormSpecMenu::create(GUIFormSpecMenu *&cur_formspec, Client *client,
  		cur_formspec->setTextDest(txt_dest);
  	}
  
@@ -1287,9 +1311,13 @@ index ed1c300..39c0660 100644
 +        if(cursor) {cursor->setRelativeMode(false);cursor->setPosition(cwm_menu_pointer->X,cwm_menu_pointer->Y);}
 +    }
  	cur_formspec->doPause = false;
++    // The same live modal can change roles without being destroyed. Native
++    // decisions/trade opt out again at their call sites; other views close.
++    cur_formspec->allowClose(true);
  }
  
-@@ -169,6 +179,10 @@ void GUIFormSpecMenu::removeTooltip()
+ void GUIFormSpecMenu::removeTooltip()
+@@ -169,6 +182,10 @@ void GUIFormSpecMenu::removeTooltip()
  
  void GUIFormSpecMenu::setInitialFocus()
  {
@@ -1300,7 +1328,7 @@ index ed1c300..39c0660 100644
  	// Set initial focus according to following order of precedence:
  	// 1. first empty editbox
  	// 2. first editbox
-@@ -1526,7 +1540,15 @@ void GUIFormSpecMenu::createTextField(parserData *data, FieldSpec &spec,
+@@ -1526,7 +1543,15 @@ void GUIFormSpecMenu::createTextField(parserData *data, FieldSpec &spec,
  	}
  
  	gui::IGUIEditBox *e = nullptr;
@@ -1317,7 +1345,7 @@ index ed1c300..39c0660 100644
  		e = new GUIEditBoxWithScrollBar(spec.fdefault.c_str(), true, Environment,
  				data->current_parent, spec.fid, rect, m_tsrc, is_editable, true);
  	} else if (is_editable) {
-@@ -1545,7 +1567,7 @@ void GUIFormSpecMenu::createTextField(parserData *data, FieldSpec &spec,
+@@ -1545,7 +1570,7 @@ void GUIFormSpecMenu::createTextField(parserData *data, FieldSpec &spec,
  			e->setMultiLine(true);
  			e->setWordWrap(true);
  			e->setTextAlignment(gui::EGUIA_UPPERLEFT, gui::EGUIA_UPPERLEFT);
@@ -1326,7 +1354,7 @@ index ed1c300..39c0660 100644
  			irr::SEvent evt;
  			evt.EventType            = EET_KEY_INPUT_EVENT;
  			evt.KeyInput.Key         = KEY_END;
-@@ -2922,6 +2944,32 @@ void GUIFormSpecMenu::parseElement(parserData* data, const std::string &element)
+@@ -2922,6 +2947,32 @@ void GUIFormSpecMenu::parseElement(parserData* data, const std::string &element)
  	// They remain here due to bool flags, for now
  	data->type = type;
  
@@ -1359,7 +1387,7 @@ index ed1c300..39c0660 100644
  	auto it = element_parsers.find(type);
  	if (it != element_parsers.end()) {
  		it->second(this, data, description);
-@@ -2945,6 +2993,16 @@ void GUIFormSpecMenu::regenerateGui(v2u32 screensize)
+@@ -2945,6 +2996,16 @@ void GUIFormSpecMenu::regenerateGui(v2u32 screensize)
  
  	// Preserve stuff only on same form, not on a new form.
  	if (m_text_dst->m_formname == m_last_formname) {
@@ -1376,7 +1404,7 @@ index ed1c300..39c0660 100644
  		// Preserve tables/textlists
  		for (auto &m_table : m_tables) {
  			std::string tablename = m_table.first.fname;
-@@ -2989,6 +3047,11 @@ void GUIFormSpecMenu::regenerateGui(v2u32 screensize)
+@@ -2989,6 +3050,11 @@ void GUIFormSpecMenu::regenerateGui(v2u32 screensize)
  	m_tables.clear();
  	m_checkboxes.clear();
  	m_scrollbars.clear();
@@ -1388,7 +1416,7 @@ index ed1c300..39c0660 100644
  	m_fields.clear();
  	m_tooltips.clear();
  	m_tooltip_rects.clear();
-@@ -3269,6 +3332,10 @@ void GUIFormSpecMenu::regenerateGui(v2u32 screensize)
+@@ -3269,6 +3335,10 @@ void GUIFormSpecMenu::regenerateGui(v2u32 screensize)
  	}
  
  	// Set initial focus if parser didn't set it
@@ -1399,7 +1427,7 @@ index ed1c300..39c0660 100644
  	gui::IGUIElement *focused_element = Environment->getFocus();
  	if (!focused_element
  			|| !isMyChild(focused_element)
-@@ -3577,6 +3644,7 @@ void GUIFormSpecMenu::drawMenu()
+@@ -3577,6 +3647,7 @@ void GUIFormSpecMenu::drawMenu()
  		Draw dragged item stack
  	*/
  	drawSelectedItem();
@@ -1407,7 +1435,7 @@ index ed1c300..39c0660 100644
  
  	skin->setFont(old_font);
  }
-@@ -3764,6 +3832,14 @@ s16 GUIFormSpecMenu::getNextInventoryRing(
+@@ -3764,6 +3835,14 @@ s16 GUIFormSpecMenu::getNextInventoryRing(
  
  void GUIFormSpecMenu::acceptInput(FormspecQuitMode quitmode)
  {
@@ -1422,7 +1450,7 @@ index ed1c300..39c0660 100644
  	if(m_text_dst)
  	{
  		StringMap fields;
-@@ -3900,13 +3976,143 @@ void GUIFormSpecMenu::acceptInput(FormspecQuitMode quitmode)
+@@ -3900,13 +3979,148 @@ void GUIFormSpecMenu::acceptInput(FormspecQuitMode quitmode)
  	}
  }
  
@@ -1538,6 +1566,11 @@ index ed1c300..39c0660 100644
 +        const auto size=device->getVideoDriver()->getScreenSize();
 +        if(cursor && size.Width && size.Height) {const auto pos=cursor->getPosition();cwm_menu_pointer=v2f(std::clamp(float(pos.X)/size.Width,0.f,1.f),std::clamp(float(pos.Y)/size.Height,0.f,1.f));}
 +    }
++    if(m_text_dst && m_text_dst->m_formname=="CWM_ACTION" && event.EventType==EET_KEY_INPUT_EVENT &&
++        KeyPress(event.KeyInput)==getKeySetting("keymap_inventory")) {
++        if(event.KeyInput.PressedDown)m_text_dst->gotText(StringMap{{"inspect","true"}});
++        return true;
++    }
 +    if(m_cwm_decision && event.EventType==EET_KEY_INPUT_EVENT) {
 +        const auto key=event.KeyInput.Key;
 +        if((key>=KEY_KEY_1 && key<=KEY_KEY_9) || key==KEY_ESCAPE || key==KEY_RETURN ||
@@ -1566,7 +1599,7 @@ index ed1c300..39c0660 100644
  	// The IGUITabControl renders visually using the skin's selected
  	// font, which we override for the duration of form drawing,
  	// but computes tab hotspots based on how it would have rendered
-@@ -3990,6 +4196,15 @@ bool GUIFormSpecMenu::preprocessEvent(const SEvent& event)
+@@ -3990,6 +4204,15 @@ bool GUIFormSpecMenu::preprocessEvent(const SEvent& event)
  
  void GUIFormSpecMenu::tryClose()
  {
@@ -1582,7 +1615,7 @@ index ed1c300..39c0660 100644
  	if (m_allowclose) {
  		doPause = false;
  		acceptInput(quit_mode_cancel);
-@@ -4001,6 +4216,26 @@ void GUIFormSpecMenu::tryClose()
+@@ -4001,6 +4224,26 @@ void GUIFormSpecMenu::tryClose()
  
  bool GUIFormSpecMenu::OnEvent(const SEvent& event)
  {
@@ -1609,7 +1642,7 @@ index ed1c300..39c0660 100644
  	if (event.EventType==EET_KEY_INPUT_EVENT) {
  		KeyPress kp(event.KeyInput);
  		if (event.KeyInput.PressedDown && (
-@@ -4757,6 +4992,22 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
+@@ -4757,6 +5000,22 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
  	}
  
  	if (event.EventType == EET_GUI_EVENT) {
@@ -2130,6 +2163,40 @@ index 0000000..29ecbdd
 +    ["en"] = "English",
 +    ["it"] = "Italiano (WIP)",
 +}
+diff --git a/src/cdda/action_menu.h b/src/cdda/action_menu.h
+new file mode 100644
+index 0000000..7786928
+--- /dev/null
++++ b/src/cdda/action_menu.h
+@@ -0,0 +1,28 @@
++#pragma once
++#include <algorithm>
++#include "avatar_status.h"
++#include "presentation_theme.h"
++#include "decision_text.h"
++
++namespace cdda_client {
++// Observational view only. Native work, cancellation and time stay in CDDA.
++struct ActionMenuView {
++    std::string title, detail;
++    int progress=-1;
++    bool inspect=false;
++};
++inline std::string actionMenuForm(const ActionMenuView& view) {
++    auto f=presentationPanel(16,11);
++    f+="label[0.55,0.65;"+statusEscape(view.title)+"]";
++    f+="hypertext[0.55,1.3;14.9,5;action_status;"+statusEscape("<global color=#323232 size=18>"+decisionRichText(view.detail))+"]set_focus[action_status;true]";
++    if(view.progress>=0) {
++        f+="box[0.55,6.6;14.9,0.3;#B0B0B0]";
++        if(view.progress>0)f+="box[0.55,6.6;"+std::to_string(14.9*std::clamp(view.progress,0,100)/100)+",0.3;#41857D]";
++        f+="label[0.55,7.35;"+std::to_string(std::clamp(view.progress,0,100))+"%]";
++    }
++    f+="label[0.55,8.3;"+::cwm::text("The world advances only to perform the selected native action")+"]";
++    if(view.inspect)f+="button[0.55,9.4;7.2,0.8;inspect;"+::cwm::text("Pause and inspect")+"]";
++    f+="button[8,9.4;7.45,0.8;leave;"+::cwm::text("Return to game")+"]";
++    return f;
++}
++}
 diff --git a/src/cdda/aim_input.h b/src/cdda/aim_input.h
 new file mode 100644
 index 0000000..ff43f9c
@@ -2304,10 +2371,10 @@ index 0000000..e1e7236
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..a64dcb1
+index 0000000..09f4cc9
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
-@@ -0,0 +1,3518 @@
+@@ -0,0 +1,3609 @@
 +#include "cwm/product_language.hpp"
 +// Luanti C++ CWM Presentation Bridge Implementation
 +// Licensed under Apache-2.0
@@ -2322,6 +2389,8 @@ index 0000000..a64dcb1
 +#include "crafting_inventory.h"
 +#include "decision_text.h"
 +#include "decision_dialog.h"
++#include "action_menu.h"
++#include "gui/mainmenumanager.h"
 +#include "trade_dialog.h"
 +#include "mission_journal.h"
 +#include "cwm/cwm_clock.hpp"
@@ -2568,6 +2637,34 @@ index 0000000..a64dcb1
 +    irr::gui::IGUIStaticText* inventory_work_text_{nullptr};
 +    irr::gui::IGUIStaticText* work_progress_{nullptr};
 +
++    enum class ActionMenuTarget { Inventory, Crafting };
++    ActionMenuTarget action_menu_target_{ActionMenuTarget::Inventory};
++    bool action_menu_open_{false}, action_menu_close_{false};
++    uint64_t action_menu_generation_{0};
++    std::string action_menu_rendered_;
++    void begin_action_menu(ActionMenuTarget target) {
++        action_menu_target_=target;action_menu_open_=true;action_menu_close_=false;
++        ++action_menu_generation_;action_menu_rendered_.clear();
++    }
++    void end_action_menu() {
++        if(action_menu_open_)action_menu_close_=true;
++        action_menu_open_=false;action_menu_rendered_.clear();
++    }
++    ActionMenuView action_menu_view() const {
++        ActionMenuView view;
++        view.title=inventory_work_label_.empty()?::cwm::text("Applying action"):wide_to_utf8(inventory_work_label_);
++        if(metrics_.pause_reasons & uint32_t(1|4|8))view.detail=::cwm::text("Paused: native work has stopped");
++        else if(inventory_time_pending()) {
++            const auto tenths=(uint64_t(native_work_remaining_ms_)+99)/100;
++            view.detail=::cwm::text("Applied · Native time remaining: ")+std::to_string(tenths/10)+"."+std::to_string(tenths%10)+::cwm::text(" game s")+"\n"+::cwm::text("This action cannot be undone");
++        } else if(activity_token_) {
++            view.detail=::cwm::text("Native work in progress");
++            if(activity_total_>0)view.progress=std::clamp(100-int(100.0*activity_remaining_/activity_total_),0,100);
++        } else view.detail=::cwm::text("Waiting for the game...");
++        view.inspect=inventory_work_command_ && !pending_move_ && !metrics_.pending_decision;
++        return view;
++    }
++
 +    void dismiss_inventory_work() {
 +        inventory_work_command_ = 0; inventory_return_requested_ = inventory_return_armed_ = false;
 +        inventory_work_settled_ = inventory_work_rejected_ = false; inventory_work_error_.clear();
@@ -2604,6 +2701,7 @@ index 0000000..a64dcb1
 +            equipment_search_open_, equipment_details_open_, equipment_worn_page_, equipment_focus_search_, quick_slot_, inventory_time_pending() && !inventory_work_rejected_, reading_, disassembling_);
 +    }
 +    void cancel_equipment() {
++        end_action_menu();
 +        inventory_inspection_pending_ = false;
 +        dismiss_inventory_work(); native_work_command_ = 0; native_work_settled_ = false;
 +        quick_slots_ = {}; quick_bind_command_ = 0; quick_bind_refresh_ = false;
@@ -2652,6 +2750,7 @@ index 0000000..a64dcb1
 +            inventory_work_command_ = id; inventory_work_settled_ = inventory_work_rejected_ = false;
 +            inventory_return_requested_ = true; inventory_return_armed_ = false; inventory_work_error_.clear();
 +            if (cancel) inventory_work_label_ = (::cwm::wide("Interrupting activity", "Interruzione dell’attivita"));
++            else if(craft)inventory_work_label_=::cwm::wide("Crafting");
 +            else if (transfer && queued_transfer_->action == 5) inventory_work_label_=::cwm::wide("Open sealed pocket");
 +            else if (transfer && queued_transfer_->action == 4) inventory_work_label_=::cwm::wide("Pour liquid");
 +            else if (transfer && queued_transfer_->action == 2) inventory_work_label_ = ::cwm::wide("Collect from storage", "Raccogli dal contenitore");
@@ -3930,7 +4029,7 @@ index 0000000..a64dcb1
 +                }
 +                metrics_.current_revision = session_.revision;
 +                player_ready_ = session_.ready() && entities_.count(1) != 0;
-+                if (!player_ready_ || entities_.at(1).hp_percent == 0) dismiss_inventory_work();
++                if (!player_ready_ || entities_.at(1).hp_percent == 0) {dismiss_inventory_work();end_action_menu();}
 +                metrics_.projection_ms = std::chrono::duration<float, std::milli>(
 +                    std::chrono::steady_clock::now() - projection_started).count();
 +                // ACK can arrive before simulation ends. Unlock only when its
@@ -4212,7 +4311,7 @@ index 0000000..a64dcb1
 +    std::string trace_path;
 +    if (g_settings->getNoEx("cwm_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->trace_.open(trace_path);
-+        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog,ipc_connected,ipc_input,ipc_output,ipc_read_bytes,ipc_write_bytes,ipc_frames,ipc_dispatch_bytes,ipc_read_calls,ipc_write_calls,session_state,input_ready,session_id,player_id,connection_id,sequence,resync_count,entity_cache,vehicle_cache,scene_origin_x,scene_origin_y,simulation_time,realtime,pause_reasons,time_scale,sent_intent,continuous_motion,intent_x,intent_y,ipc_latency_ms,projection_ms,ground_tiles,owned_items,ground_container,ground_hover,queued_pickup,ground_visual_nodes,ground_hover_items,ground_target_items,ground_target_visual_nodes,ground_target_first_type,status_available,body_form,survival_visible,status_stamina,status_head,status_arm_l,combat_hover,attacks_sent,attack_target,attack_target_hp,attack_result,player_state_flags,player_eye_offset,visual_animation_time,visual_animation_delta,ground_item_rotation,status_hunger_level,status_thirst_level,status_fatigue_level,status_pain_level,hud_images_active,equipment_form,inventory_view,inventory_entries,equipment_selected,equipment_sent,pending_decision,consumption_token,consumption_total,consumption_remaining,cancel_consumption_sent,first_aid_token,first_aid_total,first_aid_remaining,crafting_form,crafting_view,crafting_selected,crafting_sent,crafting_token,crafting_progress,weapon_token,weapon_ammo,weapon_recoil,aim_sent,fire_sent,reload_sent,reload_token,reload_total,reload_remaining,transfer_form,transfers_sent,transfer_token,transfer_total,transfer_remaining,inventory_work_command,native_work_command,native_work_settled,inventory_return,inventory_work_visible,equipment_page,equipment_filter,equipment_search_open,quick_slot,quick_count,quick_wielded,quick_use_sent,quick_bind_command,aim_held,ranged_deferred,external_form,external_entries,decision_waiting,native_work_total_ms,native_work_remaining_ms,work_progress_visible,presentation_cues,sounds_dispatched,low_light,underwater,diagnostics,wield_texture,shot_kick,low_light_blend,reading_token,reading_total,reading_remaining,reading_skimming,disassembly_token,disassembly_progress,rest_token,rest_phase,rest_accelerated,liquid_transfer_token,rest_multiplier,sky_time,rest_speed_context\n";
++        pimpl_->trace_ << "time_ns,camera_x,camera_y,camera_z,target_x,target_y,target_z,pending_move,dir_x,dir_y,dir_z,revision,terrain_style,terrain_fog,ipc_connected,ipc_input,ipc_output,ipc_read_bytes,ipc_write_bytes,ipc_frames,ipc_dispatch_bytes,ipc_read_calls,ipc_write_calls,session_state,input_ready,session_id,player_id,connection_id,sequence,resync_count,entity_cache,vehicle_cache,scene_origin_x,scene_origin_y,simulation_time,realtime,pause_reasons,time_scale,sent_intent,continuous_motion,intent_x,intent_y,ipc_latency_ms,projection_ms,ground_tiles,owned_items,ground_container,ground_hover,queued_pickup,ground_visual_nodes,ground_hover_items,ground_target_items,ground_target_visual_nodes,ground_target_first_type,status_available,body_form,survival_visible,status_stamina,status_head,status_arm_l,combat_hover,attacks_sent,attack_target,attack_target_hp,attack_result,player_state_flags,player_eye_offset,visual_animation_time,visual_animation_delta,ground_item_rotation,status_hunger_level,status_thirst_level,status_fatigue_level,status_pain_level,hud_images_active,equipment_form,inventory_view,inventory_entries,equipment_selected,equipment_sent,pending_decision,consumption_token,consumption_total,consumption_remaining,cancel_consumption_sent,first_aid_token,first_aid_total,first_aid_remaining,crafting_form,crafting_view,crafting_selected,crafting_sent,crafting_token,crafting_progress,weapon_token,weapon_ammo,weapon_recoil,aim_sent,fire_sent,reload_sent,reload_token,reload_total,reload_remaining,transfer_form,transfers_sent,transfer_token,transfer_total,transfer_remaining,inventory_work_command,native_work_command,native_work_settled,inventory_return,inventory_work_visible,equipment_page,equipment_filter,equipment_search_open,quick_slot,quick_count,quick_wielded,quick_use_sent,quick_bind_command,aim_held,ranged_deferred,external_form,external_entries,decision_waiting,native_work_total_ms,native_work_remaining_ms,work_progress_visible,presentation_cues,sounds_dispatched,low_light,underwater,diagnostics,wield_texture,shot_kick,low_light_blend,reading_token,reading_total,reading_remaining,reading_skimming,disassembly_token,disassembly_progress,rest_token,rest_phase,rest_accelerated,liquid_transfer_token,rest_multiplier,sky_time,rest_speed_context,modal_count,action_menu\n";
 +    }
 +    if (g_settings->getNoEx("cwm_entity_trace_file", trace_path) && !trace_path.empty()) {
 +        pimpl_->entity_trace_.open(trace_path);
@@ -4464,7 +4563,7 @@ index 0000000..a64dcb1
 +        << ',' << wieldedTexture() << ',' << shotKick() << ',' << pimpl_->low_light_blend_ << ',' << (pimpl_->reading_ ? pimpl_->activity_token_ : 0)
 +        << ',' << (pimpl_->reading_ ? pimpl_->activity_total_ : 0) << ',' << (pimpl_->reading_ ? pimpl_->activity_remaining_ : 0)
 +        << ',' << pimpl_->reading_skimming_ << ',' << (pimpl_->disassembling_ ? pimpl_->activity_token_ : 0)
-+        << ',' << (pimpl_->disassembling_ ? 10000000-pimpl_->activity_remaining_ : 0) << ',' << pimpl_->rest_token_ << ',' << pimpl_->rest_phase_ << ',' << pimpl_->rest_accelerated_ << ',' << (pimpl_->filling_liquid_ ? pimpl_->activity_token_ : 0) << ',' << pimpl_->rest_multiplier_ << ',' << pimpl_->client_->getEnv().getTimeOfDay() << ',' << pimpl_->metrics_.rest_speed << '\n';
++        << ',' << (pimpl_->disassembling_ ? 10000000-pimpl_->activity_remaining_ : 0) << ',' << pimpl_->rest_token_ << ',' << pimpl_->rest_phase_ << ',' << pimpl_->rest_accelerated_ << ',' << (pimpl_->filling_liquid_ ? pimpl_->activity_token_ : 0) << ',' << pimpl_->rest_multiplier_ << ',' << pimpl_->client_->getEnv().getTimeOfDay() << ',' << pimpl_->metrics_.rest_speed << ',' << g_menumgr.menuCount() << ',' << pimpl_->action_menu_open_ << '\n';
 +    pimpl_->trace_.flush();
 +}
 +
@@ -4501,18 +4600,35 @@ index 0000000..a64dcb1
 +            }
 +        }
 +        if (i.inventory_work_command_ && i.inventory_work_settled_ && !i.pending_move_ &&
-+            i.session_.ready() && i.player_ready_ && !i.metrics_.pending_decision && !i.metrics_.pause_reasons &&
++            i.session_.ready() && i.player_ready_ && !i.metrics_.pending_decision && (i.action_menu_open_ || !i.metrics_.pause_reasons) &&
 +            !i.rest_token_ && !i.activity_token_ && i.sent_menu_pause_ != 1 && !i.equipment_open_ && !i.crafting_open_ &&
 +            !i.body_form_open_ && !i.ground_container_open_) {
 +            const bool returning = i.inventory_return_requested_;
 +            const auto error = i.inventory_work_error_;
 +            i.dismiss_inventory_work();
 +            if (returning) {
-+                i.equipment_open_ = i.equipment_dirty_ = true; i.equipment_close_ = false;
++                const bool craft=i.action_menu_open_ && i.action_menu_target_==Impl::ActionMenuTarget::Crafting;
++                i.end_action_menu();
 +                setMenuPause(true);
-+                if (!i.query_inventory()) i.equipment_view_.error = (::cwm::text("Inventory unavailable: try again.", "Inventario non disponibile: riprova."));
-+                i.equipment_notice_ = error.empty() ? ::cwm::text("Native work finished. Review the updated inventory.","Lavoro nativo terminato. Controlla l'inventario aggiornato.") : error;
++                if(craft) {
++                    i.crafting_open_=i.crafting_dirty_=true;i.crafting_close_=false;
++                    if(!i.query_crafting(true))i.crafting_view_.error=::cwm::text("Catalog unavailable: try again.","Catalogo non disponibile: riprova.");
++                    i.crafting_notice_=error;
++                } else {
++                    i.equipment_open_ = i.equipment_dirty_ = true; i.equipment_close_ = false;
++                    if (!i.query_inventory()) i.equipment_view_.error = (::cwm::text("Inventory unavailable: try again.", "Inventario non disponibile: riprova."));
++                    i.equipment_notice_ = error.empty() ? ::cwm::text("Native work finished. Review the updated inventory.","Lavoro nativo terminato. Controlla l'inventario aggiornato.") : error;
++                }
 +            }
++        }
++        // A pre-admission cancellation has no debit and must still return
++        // directly to its originating menu, without exposing world input.
++        if(i.action_menu_open_ && !i.inventory_work_command_ && !i.inventory_return_armed_ &&
++            !i.pending_move_ && !i.metrics_.pending_decision && i.session_.ready() && i.player_ready_) {
++            const bool craft=i.action_menu_target_==Impl::ActionMenuTarget::Crafting;
++            i.end_action_menu();setMenuPause(true);
++            if(craft) {i.crafting_open_=i.crafting_dirty_=true;i.query_crafting(true);}
++            else {i.equipment_open_=i.equipment_dirty_=true;i.query_inventory();}
 +        }
 +    }
 +}
@@ -5109,6 +5225,10 @@ index 0000000..a64dcb1
 +}
 +bool CddaBridge::takeCraftingClose() {
 +    if (!pimpl_ || !pimpl_->crafting_open_ || !pimpl_->crafting_close_) return false;
++    if(pimpl_->queued_crafting_ || pimpl_->queued_cancel_activity_) {
++        pimpl_->inventory_return_armed_=true;
++        pimpl_->begin_action_menu(Impl::ActionMenuTarget::Crafting);
++    }
 +    pimpl_->crafting_open_ = pimpl_->crafting_close_ = pimpl_->crafting_dirty_ = false; return true;
 +}
 +std::string CddaBridge::takeCraftingUpdate() {
@@ -5123,8 +5243,44 @@ index 0000000..a64dcb1
 +    if (pimpl_->inventory_return_armed_) {
 +        pimpl_->queued_equipment_.reset(); pimpl_->queued_transfer_.reset(); pimpl_->queued_cancel_activity_.reset();
 +    }
-+    pimpl_->dismiss_inventory_work();
++    pimpl_->dismiss_inventory_work();pimpl_->end_action_menu();
 +    return true;
++}
++
++bool CddaBridge::actionMenuActive() const {return pimpl_ && pimpl_->action_menu_open_;}
++bool CddaBridge::menuRunsNativeWork(const std::string& name) const {
++    if(!pimpl_ || !pimpl_->action_menu_open_)return false;
++    const auto& i=*pimpl_;
++    return name=="CWM_ACTION" || (name=="CWM_EQUIPMENT" && !i.equipment_open_) ||
++        (name=="CWM_CRAFTING" && !i.crafting_open_) ||
++        (name=="CWM_DECISION" && i.decision_dialog_.submitted);
++}
++bool CddaBridge::retainDecisionMenu() const {
++    return pimpl_ && pimpl_->session_.ready() && pimpl_->player_ready_ &&
++        (pimpl_->pending_move_ || pimpl_->action_menu_open_);
++}
++uint64_t CddaBridge::actionMenuGeneration() const {return pimpl_?pimpl_->action_menu_generation_:0;}
++std::string CddaBridge::takeActionMenuUpdate() {
++    if(!pimpl_ || !pimpl_->action_menu_open_ || pimpl_->metrics_.pending_decision ||
++        pimpl_->equipment_open_ || pimpl_->crafting_open_ || pimpl_->trade_dialog_.id)return {};
++    auto form=actionMenuForm(pimpl_->action_menu_view());
++    if(form==pimpl_->action_menu_rendered_)return {};
++    pimpl_->action_menu_rendered_=form;return form;
++}
++bool CddaBridge::takeActionMenuClose() {
++    if(!pimpl_ || !pimpl_->action_menu_close_)return false;
++    pimpl_->action_menu_close_=false;return true;
++}
++void CddaBridge::actionMenuFields(uint64_t generation,const std::unordered_map<std::string,std::string>& fields) {
++    if(!pimpl_ || !pimpl_->action_menu_open_ || generation!=pimpl_->action_menu_generation_ || pimpl_->metrics_.pending_decision)return;
++    auto& i=*pimpl_;
++    if(fields.count("leave") || fields.count("quit")) {dismissInventoryWork();return;}
++    if(!fields.count("inspect") || !i.action_menu_view().inspect)return;
++    const bool craft=i.action_menu_target_==Impl::ActionMenuTarget::Crafting;
++    i.end_action_menu();i.inventory_return_requested_=i.inventory_return_armed_=false;
++    setMenuPause(true);
++    if(craft) {i.crafting_open_=i.crafting_dirty_=true;i.crafting_close_=false;i.query_crafting(true);}
++    else openEquipmentInventory();
 +}
 +
 +unsigned CddaBridge::quickSlot() const { return pimpl_ ? pimpl_->quick_slot_ : 1; }
@@ -5157,6 +5313,7 @@ index 0000000..a64dcb1
 +        (pimpl_->pending_move_ && pimpl_->pending_move_ != pimpl_->inventory_work_command_) ||
 +        pimpl_->body_form_open_ || pimpl_->crafting_open_ || pimpl_->ground_container_open_ || pimpl_->metrics_.pending_decision) return {};
 +    auto& i = *pimpl_;
++    i.end_action_menu();
 +    // Inspecting is neither cancellation nor opting out of work feedback.
 +    // Suppress automatic return, but preserve the native debit and its panel.
 +    i.inventory_return_requested_ = i.inventory_return_armed_ = false;
@@ -5431,6 +5588,7 @@ index 0000000..a64dcb1
 +}
 +bool CddaBridge::takeEquipmentInventoryClose() {
 +    if (!pimpl_ || !pimpl_->equipment_open_ || !pimpl_->equipment_close_) return false;
++    if(pimpl_->inventory_return_armed_)pimpl_->begin_action_menu(Impl::ActionMenuTarget::Inventory);
 +    pimpl_->equipment_open_ = pimpl_->equipment_close_ = pimpl_->equipment_dirty_ = false;
 +    return true;
 +}
@@ -5828,10 +5986,10 @@ index 0000000..a64dcb1
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.h b/src/cdda/cdda_bridge.h
 new file mode 100644
-index 0000000..79d0038
+index 0000000..aa454a7
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.h
-@@ -0,0 +1,203 @@
+@@ -0,0 +1,211 @@
 +// Luanti C++ CWM Presentation Bridge
 +// Licensed under Apache-2.0
 +#pragma once
@@ -5987,6 +6145,14 @@ index 0000000..79d0038
 +    std::string takeCraftingUpdate();
 +    // Esc abandons the return intent, not the native activity/cost.
 +    bool dismissInventoryWork();
++    // A visible modal can release only the menu pause while executing work.
++    bool menuRunsNativeWork(const std::string& formname) const;
++    bool actionMenuActive() const;
++    bool retainDecisionMenu() const;
++    std::string takeActionMenuUpdate();
++    bool takeActionMenuClose();
++    uint64_t actionMenuGeneration() const;
++    void actionMenuFields(uint64_t generation,const std::unordered_map<std::string,std::string>& fields);
 +    std::string openEquipmentInventory();
 +    void equipmentInventoryFields(const std::unordered_map<std::string, std::string>& fields);
 +    bool takeEquipmentInventoryClose();

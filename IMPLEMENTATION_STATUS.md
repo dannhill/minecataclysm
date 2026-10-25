@@ -20,10 +20,12 @@ all F8 rates, awake-rate restoration, pause, reconnect, independent native
 save readback and actual sleeping-save restart on the installed pair.
 Captured incremental builds with isolated saves, not a fresh conformance audit.
 
-Latest human feedback: **FB-01.3 and .4 PASS** of the previous build;
-**FB-01.1/.2 startup FAIL** remain until the developer retries the repaired
-demo. Revised F8 has one new UF8-01.1 check: **58 PENDING +2 startup FAIL**.
-Automated checks do not imply personal acceptance. [Source](docs/source/unified-f8-feedback-2026-10-25.md).
+Latest human feedback (2026-10-26): **FB-01.1/.2 PASS** on CWM2.36;
+previous FB-01.3/.4 PASS retained. Both startup failures are closed. A separate
+menu-transition flash report requests continuous modal presentation while
+native costs execute. Revised F8 remains UF8-01.1 PENDING. New MENU-01.1 gives
+**59 PENDING, no open manual FAIL**. [Source](docs/source/modal-continuity-feedback-2026-10-26.md).
+Automated checks do not imply personal acceptance.
 Next core: essential native item uses and safe liquid outputs/purification,
 then non-demo consolidation. Mapping batch60, Windows CWM2.26, historical
 M5.5 FAILED / full SAVE-001 OPEN remain unchanged.

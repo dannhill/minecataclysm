@@ -2,6 +2,7 @@
 #include "../../luanti/src/cdda/decision_text.h"
 #include "../../luanti/src/cdda/presentation_theme.h"
 #include "../../luanti/src/cdda/decision_model.h"
+#include "../../luanti/src/cdda/action_menu.h"
 #include <stdexcept>
 #include <iostream>
 using namespace CDDA::CWM;using namespace cdda::cwm;using namespace cdda_client;
@@ -17,5 +18,10 @@ int main(){
  DecisionModel model;model.read(*wire,42);CHECK(model.choices[0]=="Yes.");CHECK(model.permits(77,42,0));CHECK(!model.permits(77,43,0));
  model.submitted=true;CHECK(!model.permits(77,42,0));CHECK(wire->choices()->Get(0)->str()=="Yes.");
  CHECK(presentationPanel(16,11).find("size[16,11]")!=std::string::npos);
+ ActionMenuView action{"Work [native]","Waiting; no counter",-1,false};
+ auto panel=actionMenuForm(action);CHECK(panel.find(";inspect;")==std::string::npos);CHECK(panel.find("0%") == std::string::npos);
+ CHECK(panel.find("Work \\[native\\]")!=std::string::npos);
+ action.inspect=true;action.progress=140;panel=actionMenuForm(action);
+ CHECK(panel.find(";inspect;")!=std::string::npos);CHECK(panel.find("100%")!=std::string::npos);CHECK(panel.find("140%") == std::string::npos);
  std::cout<<"Presentation formatting retains semantic labels, identities, Unicode and explicit input fencing PASS\n";
 }

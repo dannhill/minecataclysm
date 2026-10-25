@@ -22,5 +22,12 @@
   "F8 controls the single time speed; higher rates are available during long rest": "F8 controls the single time speed; higher rates are available during long rest",
   "F8 · REST FAST-FORWARD ": "F8 · REST FAST-FORWARD ",
   "F8 · TIME SPEED ": "F8 · TIME SPEED ",
-  "Target game s / real s · Limited by simulation load": "Target game s / real s · Limited by simulation load"
+  "Target game s / real s · Limited by simulation load": "Target game s / real s · Limited by simulation load",
+  "Applying action": "Applying action",
+  "Paused: native work has stopped": "Paused: native work has stopped",
+  "This action cannot be undone": "This action cannot be undone",
+  "Native work in progress": "Native work in progress",
+  "The world advances only to perform the selected native action": "The world advances only to perform the selected native action",
+  "Pause and inspect": "Pause and inspect",
+  "Return to game": "Return to game"
 }

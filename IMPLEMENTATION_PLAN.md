@@ -10,6 +10,16 @@ un panorama più ampio; nebbia, memoria distante e rilievo restano da scegliere.
 Lo [stato implementato](IMPLEMENTATION_STATUS.md) e le evidenze restano separati
 dagli obiettivi. La roadmap originale M0–M9 conserva i propri significati.
 
+## Continuità delle schermate — direttiva 2026-10-26
+
+FB-01.1 e .2 PASS confermati; i due FAIL di avvio sono chiusi. Nuova direttiva:
+nessun ritorno momentaneo al gioco tra azioni/cancellazioni/menu correlati.
+La finestra rimane visibile cambiando contenuto; il tempo necessario al lavoro
+può avanzare sotto l'interfaccia, con costi e interruzioni nativi. Ispezione e
+pause di sicurezza restano ferme. [Fonte](docs/source/modal-continuity-feedback-2026-10-26.md).
+La nuova presentazione è da verificare; MENU-01.1 porta il backlog a
+**59 PENDING, nessun FAIL aperto**. UF8-01.1 non è stata accettata da questo riscontro.
+
 ## Revisione richiesta: un solo F8 e avvio della demo — 2026-10-25
 
 Implementati in start.sh/CWM2.36: **unica velocità assoluta F8**, scala ordinaria

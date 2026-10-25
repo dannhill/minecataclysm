@@ -1,5 +1,12 @@
 # Validazioni manuali del playable core
 
+Ultimo riscontro umano (2026-10-26): **FB-01.1 e FB-01.2 PASS**, confermati
+anche dopo la nuova segnalazione sui passaggi dei menu. Chiusi entrambi i FAIL
+di avvio. **59 PENDING, nessun FAIL aperto**: i precedenti 58 invariati più
+MENU-01.1 per la nuova continuità delle schermate. UF8-01.1 rimane pendente.
+[Fonte e direttiva](../source/modal-continuity-feedback-2026-10-26.md).
+Le sezioni datate sotto conservano la cronologia dei conteggi.
+
 Ultimo riscontro (2026-10-25, successivo a CWM2.35): **FB-01.3 e .4 PASS**;
 **FB-01.1 e .2 FAIL di avvio della demo**, quindi le prove funzionali non sono
 state raggiunte. Il PASS 3 include una richiesta esplicita di sostituire il
@@ -1353,7 +1360,7 @@ Nessun gate personale richiesto ora. Aperture mediante utensili/trasformazioni,
 usi speciali degli oggetti e crafting/purificazione liquidi restano separati.
 
 
-## UX-CURSOR-01 — Intervento implementato; FB-01.1 da riprovare dopo il fix di avvio
+## UX-CURSOR-01 — PASS umano 2026-10-26 tramite FB-01.1
 
 Segnalazione umana del 2026-10-25, [testo originale e contesto](../source/manual-liquids-seals-feedback-2026-10-25.md).
 Dopo aver premuto un'azione il cursore viene dislocato, con frequenza ancora
@@ -1365,18 +1372,18 @@ sopra conserva il riscontro originario. Il conteggio di 61 include i nuovi FB-01
 i PASS funzionali precedenti restano validi.
 
 
-## FB-01 — 1, 2 FAIL di avvio; 3, 4 PASS umani (CWM2.35, 2026-10-25)
+## FB-01 — 4 PASS umani (3, 4 il 2026-10-25; 1, 2 il 2026-10-26)
 
 Quattro nuovi casi riferiti alle correzioni successive, non ripetizioni dei
 quattro PASS precedenti. Proporli dopo la consegna verificata degli interventi.
 
-1. **FAIL di avvio 2026-10-25 — Cursore e conferme.** `./liquid-recovery-demo.sh --fresh`:
+1. **PASS umano 2026-10-26 — Cursore e conferme (precedente FAIL di avvio chiuso).** `./liquid-recovery-demo.sh --fresh`:
    I → bottiglia impugnata → Open sealed pocket..., prima Cancel, poi conferma
    e ritorna al menu. Tieni la lattina per la prova 2. Il cursore deve mantenere una
    posizione coerente nei passaggi, senza saltare al centro dopo ogni azione.
    Prova anche una conferma Yes/No dal riposo B: etichette senza punto fermo
    finale; domande, puntini di sospensione e testo narrativo restano sensati.
-2. **FAIL di avvio 2026-10-25 — Recupero della lattina.** Nella stessa demo apri la lattina nello
+2. **PASS umano 2026-10-26 — Recupero della lattina (precedente FAIL di avvio chiuso).** Nella stessa demo apri la lattina nello
    zaino e annulla il travaso, lasciandola a terra. Destro sul drop apre la vista
    esterna; seleziona lattina → Pour liquid... → Pour into a container → glass
    bottle vuota preparata nella demo. Dopo il travaso, raccogli la lattina vuota
@@ -1411,3 +1418,16 @@ alla richiesta di semplificarla. Questo è il ricontrollo della nuova funzione.
    torna la precedente velocità da svegli (2x nell'esempio), senza raffiche
    arretrate. Salva/riapri durante il sonno: continua l'attività nativa, non
    parte un nuovo tentativo; la velocità selezionata è una preferenza transitoria.
+
+
+## MENU-01 — Continuità delle schermate e lavoro nativo — 1 PENDING
+
+1. **PENDING — Nessun ritorno momentaneo al gioco tra menu correlati.**
+   `./liquid-recovery-demo.sh --fresh`: I → lattina → Open sealed pocket →
+   conferma → Cancel del travaso; l'interfaccia passa direttamente tra scelte
+   native, attesa e inventario, senza un fotogramma del solo gioco. Ripeti
+   un'azione indossa/togli e l'interruzione di un'attività da I/K: il lavoro
+   conserva i costi CDDA mentre la finestra rimane visibile. Pause and inspect
+   (anche I) ferma il tempo senza annullare il lavoro; Return to game/Esc esce
+   volontariamente. Nessun comando duplicato e cursore coerente. I PASS FB-01
+   rimangono validi; questo è un ricontrollo della nuova presentazione.

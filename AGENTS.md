@@ -30,6 +30,9 @@ silently finalized by an agent.
   terminal full stops; retain wire choices, semantic punctuation and narrative.
 - Time speed uses the single contextual F8 control. Rest can extend its range;
   never reintroduce an independent sleep multiplier or a second speed menu.
+- Related menus replace their content without an intervening gameplay frame.
+  Visible modal work may release the menu pause only for an explicitly selected
+  native action; keep inspection, manual/safety pauses and native costs intact.
 - A missing delta requires a full authoritative resynchronization; never infer missing state.
 - Preserve the upstream pins and complete patches in `baseline/manifest.json`.
   The ignored fork directories are working copies, not root-repository source history.

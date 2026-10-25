@@ -5617,7 +5617,7 @@ index 0000000..e1c6222
 +}
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..309c94a
+index 0000000..9ca48af
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
 @@ -0,0 +1,1356 @@
@@ -6175,7 +6175,7 @@ index 0000000..309c94a
 +    const bool was_busy = bool(u.activity);
 +    const bool acted = execute_native(command, u, m, g);
 +    // A rejected request during someone else's work cannot replace its identity.
-+    if (!was_busy && (command.equipment_action >= 0 || command.transfer_action >= 0)) {
++    if (!was_busy && (command.equipment_action >= 0 || command.transfer_action >= 0 || command.crafting_view)) {
 +        inventory_work_command_ = command.id; inventory_work_settled_ = false; inventory_work_total_ = 0;
 +    }
 +    return acted;

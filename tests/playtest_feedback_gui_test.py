@@ -28,6 +28,7 @@ def main():
     for name in ('workspace', 'fixture', 'native-reader', 'artifacts'):
         parser.add_argument('--' + name, type=Path, required=True)
     parser.add_argument('--public-demo', action='store_true')
+    parser.add_argument('--modal-continuity', action='store_true')
     parser.add_argument('--scenario', choices=['recovery','night'], required=True)
     args = parser.parse_args()
     ws, out = args.workspace.resolve(), args.artifacts.resolve()
@@ -297,6 +298,7 @@ def main():
                 actual=pointer();return max(abs(actual[n]-expected[n]) for n in range(2))<=3
             if args.scenario=='recovery':
                 v=open_inventory();select_item('can_drink');shot('inventory.png')
+                modal_start=len(rows())
                 expected=click(13.4,10.4);wait(lambda row:int(row['pending_decision'])>0)
                 check('cursor_retained_from_inventory_into_native_confirmation',same_pointer(expected))
                 choose(0);wait(lambda row:int(row['pending_decision'])>0)
@@ -304,10 +306,14 @@ def main():
                 choose(len(labels(prompt()))-1);idle();v=open_inventory()
                 check('cancelled_spill_leaves_can_outside_owned_inventory',not any(e.TypeId()==b'can_drink' and not e.External() for e in entries(v)))
                 check('cursor_retained_when_inventory_returns',same_pointer(expected))
+                if args.modal_continuity:
+                    span=rows()[modal_start:]
+                    check('seal_choices_and_cancel_return_without_a_world_frame',len(span)>5 and all(int(r['modal_count'])>0 for r in span))
                 close_inventory();turn(0,-85);wait(lambda row:int(row['ground_hover'])==1)
                 xdo('click','3');wait(lambda row:int(row['external_form'])==1 and int(row['inventory_view'])>0)
                 v=view();can=next(e for e in entries(v) if e.TypeId()==b'can_drink' and e.External())
                 check('ground_can_exports_real_liquid_action',can.Liquid() is not None and not can.Liquid().Reason())
+                modal_start=len(rows())
                 external=[e for e in entries(v) if e.External()];index=next(n for n,e in enumerate(external) if e.Id()==can.Id())
                 shot('inventory.png');click(.5+(index%9)*1.12+.525,2+(index//9)*1.15+.525,22,9)
                 wait(lambda row:int(row['equipment_selected'])==can.Id());shot('ground-can-pour.png');shot('inventory.png')
@@ -316,6 +322,9 @@ def main():
                 pick('Pour into a container');pick('glass bottle');idle()
                 wait(lambda row:int(row['equipment_form'])==1 and int(row['inventory_view'])>0)
                 v=view();check('ground_can_drained_into_real_carried_bottle',water_in(v,'bottle_glass')==1 and water_in(v,'can_drink')==0)
+                if args.modal_continuity:
+                    span=rows()[modal_start:]
+                    check('external_pour_and_return_without_a_world_frame',len(span)>5 and all(int(r['modal_count'])>0 for r in span))
                 shot('inventory.png')
                 # The empty can is now an ordinary native pickup. Drag to owned pane.
                 x1,y1,unit=geometry(out/'inventory.png',22,9)

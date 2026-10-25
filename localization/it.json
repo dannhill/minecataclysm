@@ -36,5 +36,12 @@
   "F8 controls the single time speed; higher rates are available during long rest": "F8 controlla l’unica velocità del tempo; durante il riposo lungo sono disponibili valori maggiori",
   "F8 · REST FAST-FORWARD ": "F8 · RIPOSO ACCELERATO ",
   "F8 · TIME SPEED ": "F8 · VELOCITÀ TEMPO ",
-  "Target game s / real s · Limited by simulation load": "Obiettivo s gioco / s reali · Limitato dal carico"
+  "Target game s / real s · Limited by simulation load": "Obiettivo s gioco / s reali · Limitato dal carico",
+  "Applying action": "Applicazione azione",
+  "Paused: native work has stopped": "In pausa: il lavoro nativo è fermo",
+  "This action cannot be undone": "Questa azione non può essere annullata",
+  "Native work in progress": "Lavoro nativo in corso",
+  "The world advances only to perform the selected native action": "Il mondo avanza per eseguire l’azione nativa selezionata",
+  "Pause and inspect": "Metti in pausa e consulta",
+  "Return to game": "Torna al gioco"
 }
