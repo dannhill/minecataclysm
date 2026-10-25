@@ -32,7 +32,7 @@ public:
     }
     bool rest_context() const {return rest_context_;}
     bool set_scale(double value) {
-        if(!std::isfinite(value) || value<.25 || value>(rest_context_?1024.:4.))return false;
+        if(!std::isfinite(value) || value<.25 || value>(rest_context_?4096.:4.))return false;
         if(rest_context_ && value<scale_)tick_end_=std::max(tick_end_,elapsed_);
         scale_=value;
         if(rest_context_)rest_scale_=value;else normal_scale_=value;
@@ -42,7 +42,7 @@ public:
         return expected_rest_context==rest_context_ && set_scale(value);
     }
     static double next_scale(double current,bool rest) {
-        if(rest) {for(double value:{1.,4.,64.,256.,1024.})if(value>current+1e-5)return value;return 1.;}
+        if(rest) {for(double value:{1.,4.,64.,256.,1024.,4096.})if(value>current+1e-5)return value;return 1.;}
         for(double value:{.5,1.,2.,4.})if(value>current+1e-5)return value;
         return .5;
     }
@@ -72,7 +72,7 @@ public:
 private:
     Wall::time_point last_{};
     bool started_{false}, running_{false}, accelerated_{false}, rest_context_{false};
-    double normal_scale_{1.},rest_scale_{256.};
+    double normal_scale_{1.},rest_scale_{1024.};
     double elapsed_{0.0}, scale_{1.0}, tick_end_{1.0}, action_due_{0.0};
 };
 }

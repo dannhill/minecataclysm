@@ -290,7 +290,7 @@ def main():
                 check('cached_full_state_installed_before_next_command',len(messages(Payload.SnapshotAck,'client'))>snapshots)
                 time.sleep(.3)
                 wait(lambda r:int(r['input_ready'])==1 and int(r['pause_reasons'])==0)
-                rest_menu();pick('Wait or catch your breath');pick('Wait 1800 heartbeats');idle()
+                rest_menu();pick('Wait or catch your breath');pick('Wait till daylight');idle()
                 wait(lambda row:int(row['rest_speed_context'])==1);speed(1)
                 rest_menu();pick('Interrupt rest');idle();wait(lambda row:int(row['rest_phase'])==-1)
                 check('ending_long_rest_restores_previous_awake_F8_rate',float(latest()['time_scale'])==2 and int(latest()['rest_speed_context'])==0)

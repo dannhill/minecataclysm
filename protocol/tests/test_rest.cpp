@@ -15,7 +15,7 @@ int main(){
   MessageBuilder b(1,1);auto& f=b.builder();Coord3i origin(0,0,0);Vec3f pos(0,0,0);
   const auto context=bad==3?SpeedContext(2):bad==1?SpeedContext::PLAY:SpeedContext::REST;
   const auto rest=bad==2?flatbuffers::Offset<RestState>{}:CreateRestState(f,1,RestPhase::SLEEPING,false,true,-1,1);
-  const auto clock=CreateSimulationState(f,bad!=6,0,bad==4?1025.f:bad==5?0.f:256.f,false,context);
+  const auto clock=CreateSimulationState(f,bad!=6,0,bad==4?4097.f:bad==5?0.f:256.f,false,context);
   std::vector<flatbuffers::Offset<EntityState>> actors{CreateEntityState(f,1,EntityType::PLAYER,0,&pos)};
   std::vector<flatbuffers::Offset<VehicleState>> vehicles;std::vector<flatbuffers::Offset<FieldState>> fields;
   const auto av=f.CreateVector(actors);const auto vv=f.CreateVector(vehicles);const auto fv=f.CreateVector(fields);

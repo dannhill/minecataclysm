@@ -306,7 +306,7 @@ inline bool valid_world(const CDDA::CWM::WorldSnapshot* world) {
         }
     }
     if (const auto* clock = world->clock()) {
-        if (!std::isfinite(clock->time_scale()) || clock->time_scale() < .25f || clock->time_scale() > (clock->speed_context()==CDDA::CWM::SpeedContext::REST?1024.f:4.f) ||
+        if (!std::isfinite(clock->time_scale()) || clock->time_scale() < .25f || clock->time_scale() > (clock->speed_context()==CDDA::CWM::SpeedContext::REST?4096.f:4.f) ||
             int(clock->speed_context())<0 || int(clock->speed_context())>1 ||
             (clock->speed_context()==CDDA::CWM::SpeedContext::REST && (!clock->realtime() || !world->rest())) ||
             (clock->pause_reasons() & ~uint32_t(31)) ||

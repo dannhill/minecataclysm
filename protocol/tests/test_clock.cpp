@@ -45,13 +45,13 @@ int main() {
     CHECK(!work.action_due()); work.sample(t(92.6),true); CHECK(work.action_due());
     CHECK(work.charge_work(-100,100)==0); CHECK(work.action_due());
     SimulationClock rest;CHECK(rest.set_scale(2));rest.set_rest_context(true);
-    CHECK(rest.rest_context());CHECK(rest.scale()==256);
+    CHECK(rest.rest_context());CHECK(rest.scale()==1024);
     rest.sample(t(0),true);rest.sample(t(.25),true);
-    CHECK(std::abs(rest.elapsed()-64)<1e-8);CHECK(rest.tick_due());
+    CHECK(std::abs(rest.elapsed()-256)<1e-8);CHECK(rest.tick_due());
     int ticks=0;while(rest.tick_due() && ticks<100){rest.complete_tick();++ticks;}
     CHECK(ticks>=32 && ticks<=34);
     CHECK(rest.set_scale(1024,true));CHECK(!rest.set_scale(4,false));CHECK(rest.scale()==1024);
-    CHECK(!rest.set_scale(1025,true));CHECK(rest.set_scale(1,true));
+    CHECK(!rest.set_scale(4097,true));CHECK(rest.set_scale(1,true));
     CHECK(rest.scale()==1);const auto frozen=rest.elapsed();
     rest.sample(t(.25),false);rest.sample(t(900),false);CHECK(rest.elapsed()==frozen);
     rest.sample(t(901),true);rest.sample(t(901.25),true);CHECK(std::abs(rest.elapsed()-frozen-.25)<1e-8);
@@ -59,7 +59,7 @@ int main() {
     CHECK(!rest.set_scale(4,true));CHECK(!rest.set_scale(256,false));CHECK(rest.scale()==2);
     rest.set_rest_context(true);CHECK(rest.scale()==1); // The last rest choice is an alternative, not a factor.
     CHECK(SimulationClock::next_scale(4,false)==.5);CHECK(SimulationClock::next_scale(4,true)==64);
-    CHECK(SimulationClock::next_scale(256,true)==1024);CHECK(SimulationClock::next_scale(1024,true)==1);
+    CHECK(SimulationClock::next_scale(256,true)==1024);CHECK(SimulationClock::next_scale(1024,true)==4096);CHECK(SimulationClock::next_scale(4096,true)==1);
     // Changing context never clears already charged work.
     SimulationClock debt;debt.sample(t(0),true);debt.charge_work(500,100);
     const auto owed=debt.remaining_work();debt.set_rest_context(true);debt.set_rest_context(false);CHECK(debt.remaining_work()==owed);
