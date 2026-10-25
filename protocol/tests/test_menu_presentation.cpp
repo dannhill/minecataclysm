@@ -7,7 +7,7 @@
 using namespace CDDA::CWM;using namespace cdda::cwm;using namespace cdda_client;
 #define CHECK(x) do{if(!(x))throw std::runtime_error(#x);}while(false)
 int main(){
- CHECK(decisionChoiceText("Yes.")=="Yes");CHECK(decisionChoiceText("<color_c_red>No.</color>")=="No");
+ CHECK(decisionChoiceText("Yes.\n")=="Yes");CHECK(decisionChoiceText("Yes.")=="Yes");CHECK(decisionChoiceText("<color_c_red>No.</color>")=="No");
  CHECK(decisionChoiceText("Cancel...")=="Cancel...");CHECK(decisionChoiceText("Really?")=="Really?");
  CHECK(decisionChoiceText("Version 2.0")=="Version 2.0");CHECK(decisionChoiceText("Città.")=="Città");
  CHECK(decisionTrimFullStop("<color_c_red>Stop.</color>")=="<color_c_red>Stop</color>");

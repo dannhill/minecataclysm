@@ -6306,10 +6306,10 @@ index 0000000..9084746
 +}
 diff --git a/src/cdda/decision_text.h b/src/cdda/decision_text.h
 new file mode 100644
-index 0000000..f33096b
+index 0000000..e47f4d9
 --- /dev/null
 +++ b/src/cdda/decision_text.h
-@@ -0,0 +1,66 @@
+@@ -0,0 +1,68 @@
 +#pragma once
 +#include <string>
 +#include <string_view>
@@ -6345,7 +6345,9 @@ index 0000000..f33096b
 +    return source;
 +}
 +inline std::string decisionChoiceText(std::string_view source) {
-+    return decisionTrimFullStop(decisionPlainText(source));
++    auto text=decisionTrimFullStop(decisionPlainText(source));
++    while(!text.empty() && (text.back()==' ' || text.back()=='\n' || text.back()=='\r' || text.back()=='\t'))text.pop_back();
++    return text;
 +}
 +inline std::string decisionMarkup(std::string_view source) {
 +    std::string out;

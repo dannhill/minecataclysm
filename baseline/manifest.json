@@ -17,9 +17,9 @@
       "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
       "shallow": true,
       "patch": "baseline/patches/luanti.patch",
-      "patch_sha256": "62644db82b433cbb377a3345986c7c9459b2ff5fdb38dedfde195423e7bb759d",
+      "patch_sha256": "b48ccf2b9cfd6574e2640481b5f3266e692e8b1871be2fcbaae079a7f26a19ac",
       "tree_inventory": "baseline/trees/luanti.json",
-      "tree_sha256": "a2538dc3ee31c360e6760a169f8a15530e167c70295fb79d1c7e8a2bcd22a970",
+      "tree_sha256": "30840d413c2e7785ea477a2893d5751d78f67668bbee8bca7de61a61c71bf70b",
       "file_count": 2270,
       "original_status": " M builtin/mainmenu/settings/dlg_settings.lua\n M builtin/settingtypes.txt\n M src/CMakeLists.txt\n M src/client/CMakeLists.txt\n M src/client/camera.cpp\n M src/client/camera.h\n M src/client/client.cpp\n M src/client/clientenvironment.cpp\n M src/client/content_cao.cpp\n M src/client/game.cpp\n M src/client/hud.cpp\n M src/client/inputhandler.cpp\n M src/client/keys.h\n M src/client/mesh_generator_thread.cpp\n M src/client/mesh_generator_thread.h\n M src/defaultsettings.cpp\n M src/filesys.cpp\n M src/gettext.cpp\n M src/gettext.h\n M src/gui/guiFormSpecMenu.cpp\n M src/gui/guiFormSpecMenu.h\n M src/gui/guiScene.cpp\n M src/network/clientpackethandler.cpp\n M src/server/player_sao.cpp\n M src/unittest/test_mapblock.cpp\n M src/util/string.cpp\n?? builtin/mainmenu/settings/product_languages.lua\n?? src/cdda/aim_input.h\n?? src/cdda/avatar_status.h\n?? src/cdda/cdda_bridge.cpp\n?? src/cdda/cdda_bridge.h\n?? src/cdda/crafting_inventory.h\n?? src/cdda/creature_visual.h\n?? src/cdda/decision_dialog.h\n?? src/cdda/decision_input.h\n?? src/cdda/decision_model.h\n?? src/cdda/decision_text.h\n?? src/cdda/equipment_inventory.h\n?? src/cdda/ground_item_formspec.h\n?? src/cdda/ground_item_projection.h\n?? src/cdda/ground_item_visual.h\n?? src/cdda/humanoid_animation.h\n?? src/cdda/mission_journal.h\n?? src/cdda/posture_input.h\n?? src/cdda/presentation_theme.h\n?? src/cdda/quickbar.h\n?? src/cdda/trade_dialog.h\n"
     },
