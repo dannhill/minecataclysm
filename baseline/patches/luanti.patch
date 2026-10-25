@@ -2377,7 +2377,7 @@ index 0000000..e1e7236
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..7f69d39
+index 0000000..0f57cc5
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
 @@ -0,0 +1,3614 @@
@@ -4748,7 +4748,7 @@ index 0000000..7f69d39
 +        flags & cdda::cwm::CROUCHING ? 2 : flags & cdda::cwm::RUNNING ? 1 : 0;
 +    const bool allowed = impl.connection_ && impl.connection_->is_valid() && impl.session_.ready() &&
 +        impl.player_ready_ && !impl.rest_token_ && !impl.activity_token_ && !impl.metrics_.pending_decision && !impl.metrics_.pause_reasons &&
-+        impl.sent_menu_pause_ != 1 && !impl.body_form_open_ && !impl.ground_container_open_ && !impl.equipment_open_;
++        impl.sent_menu_pause_ != 1 && !impl.body_form_open_ && !impl.ground_container_open_ && !impl.equipment_open_ && !impl.action_menu_open_;
 +    const int desired = impl.posture_input_.sample({run, crouch, prone},
 +        g_settings->getBool("cwm_run_toggle"), g_settings->getBool("cwm_crouch_toggle"), allowed, confirmed);
 +    if (desired < 0 || desired == confirmed || impl.pending_move_) return;
