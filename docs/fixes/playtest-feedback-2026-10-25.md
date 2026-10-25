@@ -1,5 +1,9 @@
 # Playtest feedback follow-up — 2026-10-25
 
+Historical CWM2.35 delivery. The later [single contextual F8 and launcher
+repair](unified-f8.md) supersedes its independent rest multiplier/B speed menu
+and fixes the public recovery-demo alias. The original evidence below remains.
+
 Normal Linux **start.sh now uses CWM2.35** with the following scoped repairs:
 
 - Native long rest offers x64/x256/x1024 (default x256) in B and normal speed.

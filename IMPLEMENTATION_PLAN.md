@@ -10,7 +10,27 @@ un panorama più ampio; nebbia, memoria distante e rilievo restano da scegliere.
 Lo [stato implementato](IMPLEMENTATION_STATUS.md) e le evidenze restano separati
 dagli obiettivi. La roadmap originale M0–M9 conserva i propri significati.
 
-## Seguito dei playtest: recupero e presentazione — 2026-10-25
+## Revisione richiesta: un solo F8 e avvio della demo — 2026-10-25
+
+Implementati in start.sh/CWM2.36: **unica velocità assoluta F8**, scala ordinaria
+0,5/1/2/4x e scala sonno/riposo lungo 1/4/64/256/1024/4096x, inizialmente
+1024x. Nessun prodotto tra velocità, nessun secondo menu B; etichetta/colore
+dedicati e ripristino della precedente velocità da svegli. Turni CDDA eseguiti
+integralmente, pause e debiti nativi conservati. Questa decisione approvata
+sostituisce il design a moltiplicatore della sezione storica sotto.
+
+Corretto l'avvio di liquid-recovery-demo.sh: il precedente nome da 20 byte
+superava il limite Luanti di 19. La verifica usa ora il vero script pubblico,
+senza rimpiazzarne il nome con quello del driver di test.
+[Contratto](docs/design/unified-f8.md), [consegna/verifiche](docs/fixes/unified-f8.md).
+
+Riscontro umano FB-01.3 e .4 PASS; .1 e .2 FAIL di avvio, da riprovare dopo il
+fix. UF8-01.1 è il solo nuovo ricontrollo: **58 PENDING +2 FAIL di avvio**.
+Le prove automatiche non chiudono i FAIL personali. Prossime fette core:
+usi essenziali degli oggetti e output liquidi/purificazione con recovery sicura,
+poi consolidamento non-demo; invariati i gate storici e la build Windows.
+
+## Seguito dei playtest: recupero e presentazione — 2026-10-25 (design riposo superato)
 
 Implementati in Linux start.sh/CWM2.35: moltiplicatori riposo x64/x256/x1024
 (default x256), formula F8 × fattore esplicita e credito limitato a 32 turni

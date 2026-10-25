@@ -8,6 +8,11 @@ moltiplicatore separato con l'unico controllo F8. [Fonte e diagnosi](../source/u
 UF8-01.1 per il design modificato. Le verifiche automatiche non chiudono i
 FAIL personali; riprovare 1 e 2 dopo il fix dell'avvio, senza accettarli d'ufficio.
 
+Il fix CWM2.36 è installato in start.sh: nome demo valido `recovery_demo`,
+un solo F8 con scala contestuale. [Consegna e prove automatiche](../fixes/unified-f8.md).
+Rilanciare `./liquid-recovery-demo.sh --fresh` per FB-01.1/.2 e
+`./rest-demo.sh --fresh` per UF8-01.1. Non occorre ripetere il cielo FB-01.4.
+
 
 Secondo riscontro umano del 2026-10-25: **SEAL-01.3, REST-01.2, REST-01.3 e
 DIS-01.3 PASS** nei quattro scenari proposti. Il backlog scende da 61 a 57;
@@ -1348,7 +1353,7 @@ Nessun gate personale richiesto ora. Aperture mediante utensili/trasformazioni,
 usi speciali degli oggetti e crafting/purificazione liquidi restano separati.
 
 
-## UX-CURSOR-01 — Intervento implementato; ricontrollo personale FB-01.1 PENDING
+## UX-CURSOR-01 — Intervento implementato; FB-01.1 da riprovare dopo il fix di avvio
 
 Segnalazione umana del 2026-10-25, [testo originale e contesto](../source/manual-liquids-seals-feedback-2026-10-25.md).
 Dopo aver premuto un'azione il cursore viene dislocato, con frequenza ancora

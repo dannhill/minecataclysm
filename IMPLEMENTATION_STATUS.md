@@ -1,6 +1,34 @@
 # Implementation status
 
-Current Linux scoped delivery: **playtest recovery/presentation fixes**, CWM
+Current Linux scoped delivery: **single contextual F8 and public recovery-demo
+startup repair**, paired **CWM2.36**, installed in normal `start.sh`.
+F8 uses one absolute target: awake 0.5/1/2/4x; long rest
+1/4/64/256/1024/4096x, initially 1024x. B has no speed choices. Native waking
+restores the previous awake preference; pause/deceleration discard unused fast
+credit, retaining action/work debt. No native turns are skipped. Rest HUD labels
+the one target in amber when accelerated. The public demo's old 20-byte alias
+exceeded Luanti's 19-byte limit; `recovery_demo` fixes startup. Automated tests
+now execute the actual public script without a test-name override.
+[Contract](docs/design/unified-f8.md), [delivery](docs/fixes/unified-f8.md),
+[exact evidence](docs/fixes/unified-f8-evidence.json).
+
+Scoped verification: **185 native cases /73,766 assertions**, focused **1/14**;
+client **309 tests /47 modules** plus 648 Catch assertions /4 cases;
+SDK **20**, demo-launcher **3**, language **9**, registry **3** PASS.
+**119 renderer/canonical checks PASS**, including real public-launcher ground-can recovery,
+all F8 rates, awake-rate restoration, pause, reconnect, independent native
+save readback and actual sleeping-save restart on the installed pair.
+Captured incremental builds with isolated saves, not a fresh conformance audit.
+
+Latest human feedback: **FB-01.3 and .4 PASS** of the previous build;
+**FB-01.1/.2 startup FAIL** remain until the developer retries the repaired
+demo. Revised F8 has one new UF8-01.1 check: **58 PENDING +2 startup FAIL**.
+Automated checks do not imply personal acceptance. [Source](docs/source/unified-f8-feedback-2026-10-25.md).
+Next core: essential native item uses and safe liquid outputs/purification,
+then non-demo consolidation. Mapping batch60, Windows CWM2.26, historical
+M5.5 FAILED / full SAVE-001 OPEN remain unchanged.
+
+Previous Linux scoped delivery: **playtest recovery/presentation fixes**, CWM
 **2.35**, installed in normal `start.sh`. Faster native rest (x64/x256/x1024,
 default x256), explicit F8 × rest factor target, bounded native tick credit;
 open ground-can pouring and empty pickup; retained menu pointer; consistent

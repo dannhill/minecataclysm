@@ -1,0 +1,381 @@
+{
+  "scope": "CWM2.36: single absolute contextual F8 clock, no independent B sleep speed; valid public recovery-demo alias and actual entry-point regression",
+  "date": "2026-10-25",
+  "native_capture_commit": "bb13628c6388e389a225a2d740c47032c35566d9",
+  "client_capture_commit": "bb13628c6388e389a225a2d740c47032c35566d9",
+  "renderer_driver_commit": "9e6a2a35418a71dadcd4b34281ab3fefdc9e8359",
+  "build_mode": "Incremental captured reconstructions; matching native/client rebuilt; selected native suite, not full upstream or cold conformance. Isolated saves/configs. Independent canonical reader reused from the previous verified delivery, linked to unmodified pinned CDDA.",
+  "source_trees": {
+    "cdda": {
+      "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+      "tree_sha256": "3df6153a841d27716af36db714abb22510a94b12ef0ebc08a246711259ed97db",
+      "patch_sha256": "04537d0f150cf3c7f2b5dbe9b2725a48bc263c48dfd153e73bc5352a6544bd69"
+    },
+    "luanti": {
+      "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
+      "tree_sha256": "d18a7268d5aa0041bdf6c7a77797ac40e400980907d0b270b42a20cc0d892f6c",
+      "patch_sha256": "00091bad7f9a34e51f199b080677d5ab8fa792bea05be31df1628a448421d96d"
+    },
+    "mineclonia": {
+      "commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+      "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "environment": {
+    "kernel": "Linux-7.0.11-76070011-generic-x86_64-with-glibc2.35",
+    "python": "3.10.12",
+    "compiler": "11.4.0",
+    "renderer": "Private Xvfb 1280x800x24, Mesa llvmpipe, actual Luanti renderer and xdotool keyboard/mouse, OpenAL null"
+  },
+  "build_logs": {
+    "native": {
+      "path": "artifacts/unified-f8-20261025/native-build-final.log",
+      "sha256": "3806cc16b662d4fcb409560ef17f6c67b16e85a60263f30d0e6a658556fda4e1"
+    },
+    "native_confirmed": {
+      "path": "artifacts/unified-f8-20261025/native-build-confirmed.log",
+      "sha256": "f710e496cd581b08a1b0fe7ebd5a0fbe767364494d4c67e4938c742f3f28027d"
+    },
+    "client": {
+      "path": "artifacts/unified-f8-20261025/client-build-final.log",
+      "sha256": "ca0c6d9fee0fb8982645b56ed3b41b9b91e04edd915f4bbf6a5a62bb987f70a6"
+    },
+    "client_confirmed": {
+      "path": "artifacts/unified-f8-20261025/client-build-confirmed.log",
+      "sha256": "6f2c8bff30e028919a97d3b931af34dcb05dd60f1e6ded85a0a5c3f3ba4ded68"
+    },
+    "protocol": {
+      "path": "artifacts/unified-f8-20261025/protocol-build-final.log",
+      "sha256": "72107df258b0b9ba0104bf9405235a0e7cba7f73ee73f9c31da30c6e15da6872"
+    }
+  },
+  "capture_receipts": {
+    "native": {
+      "path": "artifacts/unified-f8-20261025/native-refresh-final.json",
+      "sha256": "662a92d094d34615b343ec159988767deea1a3cbafc1b8d8c1a162054bd1ec0f"
+    },
+    "client": {
+      "path": "artifacts/unified-f8-20261025/client-refresh-final.json",
+      "sha256": "662a92d094d34615b343ec159988767deea1a3cbafc1b8d8c1a162054bd1ec0f"
+    },
+    "baseline_check": {
+      "path": "artifacts/unified-f8-20261025/baseline-check.log",
+      "sha256": "1e3ad80d859348376c24462fe62d04528ef5d2c568b852ebea7fe5757871dd58"
+    }
+  },
+  "native": {
+    "cases": 185,
+    "assertions": 73766,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/unified-f8-20261025/native-tests.log",
+      "sha256": "15d3b2725225926982c8eb195c89ca392f0eddd4cd66d50f54facbaee38c92fa"
+    }
+  },
+  "native_focused": {
+    "cases": 1,
+    "assertions": 14,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/unified-f8-20261025/native-focused.log",
+      "sha256": "391117fc965bccc7a53e8fbd89b454975f35c02d09f6d818883a39abfb72911e"
+    }
+  },
+  "client": {
+    "cases": 309,
+    "modules": 47,
+    "catch_cases": 4,
+    "catch_assertions": 648,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/unified-f8-20261025/client-units.log",
+      "sha256": "b27d79647090fe003d44b3d355680c524786bc61170242bd992309966f2e648f"
+    }
+  },
+  "protocol": {
+    "cases": 20,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/unified-f8-20261025/protocol-tests-final.log",
+      "sha256": "695363a416cb256229f69b09f51fc6dec8bc167c2835f48846b4f0505faa63f6"
+    }
+  },
+  "demo_launcher": {
+    "cases": 3,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/unified-f8-20261025/demo-launcher-final.log",
+      "sha256": "cafe0befc6204d742636f5a24376ea4683600e3bfa4dbf7d1f6d93fa609e5024"
+    }
+  },
+  "language": {
+    "cases": 9,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/unified-f8-20261025/language.log",
+      "sha256": "2b1899e151a4998cdf6f1ff6c3dde02eef9a629905458b8601172918c68417ee"
+    }
+  },
+  "language_registry": {
+    "cases": 3,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/unified-f8-20261025/registry.log",
+      "sha256": "f0eef0e8006820db229b2dd74a0dc56d8dadde93c7557bcefd294b501fa7bb84"
+    }
+  },
+  "renderer": {
+    "public-recovery": {
+      "checks": 20,
+      "result": "PASS",
+      "checks_file": {
+        "path": "artifacts/unified-f8-20261025/public-recovery/checks.json",
+        "sha256": "10e10279fdeced1edbe82a6e4a38a1f7edaa47236e0114ca43c57d5a15bf51e1"
+      },
+      "summary": {
+        "path": "artifacts/unified-f8-20261025/public-recovery/summary.json",
+        "sha256": "6fdd7d1be32421915275153725a1fc56a27b6acd8946fe5aad538d00f8b7503e"
+      },
+      "log": {
+        "path": "artifacts/unified-f8-20261025/public-recovery.log",
+        "sha256": "6cc5b5d38f5f66e1724f0195b4ce63cb27cf7d243e04102ec777312da1f4c953"
+      },
+      "native_readback": {
+        "path": "artifacts/unified-f8-20261025/public-recovery/native.json",
+        "sha256": "003cc1b10f099f019f6d7b57c70bf083e11d4fa3fdc36dab0e585896bd85da46"
+      },
+      "trace": {
+        "path": "artifacts/unified-f8-20261025/public-recovery/camera.csv",
+        "sha256": "51522a12f2865bf9e186e5d0b45e49045d14b15211aa1f67c926f520d1b9e989"
+      }
+    },
+    "rest-settled": {
+      "checks": 46,
+      "result": "PASS",
+      "checks_file": {
+        "path": "artifacts/unified-f8-20261025/rest-settled/checks.json",
+        "sha256": "55856671dc44292ff89168857055ee48b62b337b6f41128e745ebf7d8ba8b690"
+      },
+      "summary": {
+        "path": "artifacts/unified-f8-20261025/rest-settled/summary.json",
+        "sha256": "65bf911b2275093eba767f632a864e2c9215091e51334eec1dadc26971efc0f9"
+      },
+      "log": {
+        "path": "artifacts/unified-f8-20261025/rest-settled.log",
+        "sha256": "351c92c61fcdffaae9c9fc559cacdf6f7efe4e36ae453b6bb177d33422a66b91"
+      },
+      "native_readback": {
+        "path": "artifacts/unified-f8-20261025/rest-settled/native.json",
+        "sha256": "027fac57aa59d7b9650479d196a05f2247d789b24c54cf4cc525444a29955157"
+      },
+      "trace": {
+        "path": "artifacts/unified-f8-20261025/rest-settled/camera.csv",
+        "sha256": "1fd38fc8ea3eea342f214734eaf07fb271598a46ed2407b27f83fa3f8f21c687"
+      }
+    },
+    "night": {
+      "checks": 9,
+      "result": "PASS",
+      "checks_file": {
+        "path": "artifacts/unified-f8-20261025/night/checks.json",
+        "sha256": "769ad1e8af0ddc2eaceb1abb2c1ef2f3b331f1c70853d3204bc8c99c603a90c8"
+      },
+      "summary": {
+        "path": "artifacts/unified-f8-20261025/night/summary.json",
+        "sha256": "d96af6c5ffc4883907e0c38ad5bba1c3e2e9249e33f32404dead022e8d3692ea"
+      },
+      "log": {
+        "path": "artifacts/unified-f8-20261025/night.log",
+        "sha256": "016589fcffb976e80b326e39374b197f31b18e9963c3630c9e2c6ee2d80560a6"
+      },
+      "native_readback": {
+        "path": "artifacts/unified-f8-20261025/night/native.json",
+        "sha256": "29aa5309f63932fa300fab7f2a7159ac544a299152501e82f6282c664f38599e"
+      },
+      "trace": {
+        "path": "artifacts/unified-f8-20261025/night/camera.csv",
+        "sha256": "c4987bc7f67e928e0cb423e95662059a921e2a5d4da1d797d93147da64e92625"
+      }
+    },
+    "installed-public-recovery": {
+      "checks": 20,
+      "result": "PASS",
+      "checks_file": {
+        "path": "artifacts/unified-f8-20261025/installed-public-recovery/checks.json",
+        "sha256": "10e10279fdeced1edbe82a6e4a38a1f7edaa47236e0114ca43c57d5a15bf51e1"
+      },
+      "summary": {
+        "path": "artifacts/unified-f8-20261025/installed-public-recovery/summary.json",
+        "sha256": "b9fdf77c56f76b660b0838644825f20b3d425dcc1201937f7fb5bb1c11c0cdae"
+      },
+      "log": {
+        "path": "artifacts/unified-f8-20261025/installed-public-recovery.log",
+        "sha256": "6cc5b5d38f5f66e1724f0195b4ce63cb27cf7d243e04102ec777312da1f4c953"
+      },
+      "native_readback": {
+        "path": "artifacts/unified-f8-20261025/installed-public-recovery/native.json",
+        "sha256": "378c132da13f97ef947679e787aa55dc899dd469bbdb41dbc6df5d392806290e"
+      },
+      "trace": {
+        "path": "artifacts/unified-f8-20261025/installed-public-recovery/camera.csv",
+        "sha256": "e83e4507515e003fb6114b7e51f3454bbace21b95ff0928ca845998f24a22c59"
+      }
+    },
+    "installed-rest-reload": {
+      "checks": 24,
+      "result": "PASS",
+      "checks_file": {
+        "path": "artifacts/unified-f8-20261025/installed-rest-reload/checks.json",
+        "sha256": "b13c9975884471e5f60a632b61b69b62ba146182078b26b6def9d27644147811"
+      },
+      "summary": {
+        "path": "artifacts/unified-f8-20261025/installed-rest-reload/summary.json",
+        "sha256": "c43a27ebc7cb72159cc5414ef068d628a2ed62a65a9711c1971f371feda81beb"
+      },
+      "log": {
+        "path": "artifacts/unified-f8-20261025/installed-rest-reload.log",
+        "sha256": "7cd889c3e7bbf1f7f9815dbcfe2ade3bb4e9841fdfb8cee2c53e0bef739f7fe7"
+      },
+      "native_readback": {
+        "path": "artifacts/unified-f8-20261025/installed-rest-reload/native.json",
+        "sha256": "8daba018ad1a3520c7717b1c7982922fa93a9f2bb71f268be0e0a9fa8e4afe42"
+      },
+      "trace": {
+        "path": "artifacts/unified-f8-20261025/installed-rest-reload/camera.csv",
+        "sha256": "637b197198cada587f17a23b8f72b1b1dc85c37844695eb72dd54ce9b347564d"
+      }
+    }
+  },
+  "renderer_checks_total": 119,
+  "observed_native_context_rates": [
+    {
+      "context": "PLAY",
+      "rate": 0.5
+    },
+    {
+      "context": "PLAY",
+      "rate": 1.0
+    },
+    {
+      "context": "PLAY",
+      "rate": 2.0
+    },
+    {
+      "context": "PLAY",
+      "rate": 4.0
+    },
+    {
+      "context": "REST",
+      "rate": 1.0
+    },
+    {
+      "context": "REST",
+      "rate": 4.0
+    },
+    {
+      "context": "REST",
+      "rate": 64.0
+    },
+    {
+      "context": "REST",
+      "rate": 256.0
+    },
+    {
+      "context": "REST",
+      "rate": 1024.0
+    },
+    {
+      "context": "REST",
+      "rate": 4096.0
+    }
+  ],
+  "test_drivers": {
+    "demo_launcher_test.py": {
+      "path": "tests/demo_launcher_test.py",
+      "sha256": "1147c9cd2b6d9657d5d11185dec703db8e0024a90d92ff32e077c7dc559f2d22"
+    },
+    "playtest_feedback_gui_test.py": {
+      "path": "tests/playtest_feedback_gui_test.py",
+      "sha256": "df0b4a52b5a0d499bed5d44fee83387353a0f1520c200f51bc2128076cea9a91"
+    },
+    "rest_gui_test.py": {
+      "path": "tests/rest_gui_test.py",
+      "sha256": "a345404d61b54671bc0bb5c4d028c9a06a848cb5195e7b7043fff5be2c4695e3"
+    }
+  },
+  "installation": {
+    "native": {
+      "source": "artifacts/fnd03-session/workspace/cdda/build/src/cdda-server",
+      "installed": "cdda/build/src/cdda-server",
+      "sha256": "289ce8265caad2c48683f49e74aec1f4ea860140f4caed69ad6e6f4bf5155eee",
+      "previous": "artifacts/unified-f8-20261025/native-before-unified-f8",
+      "previous_sha256": "dd71ad3a0ec5b595adbc06174b0a856224629d76a1a953646dd3ff3e7b3d737a"
+    },
+    "client": {
+      "source": "artifacts/language-20261011/workspace/luanti/bin/luanti",
+      "installed": "luanti/bin/luanti",
+      "sha256": "97d22d2a404c25554e984f89b33289c63f4a09682794a7816a191afde4ea2b35",
+      "previous": "artifacts/unified-f8-20261025/client-before-unified-f8",
+      "previous_sha256": "550edfc36a9b190891565bdca7d1e1592eddfe281c6d59d70392ef4fd3d5cd5a"
+    }
+  },
+  "installation_receipt": {
+    "path": "artifacts/unified-f8-20261025/installation.json",
+    "sha256": "69ec53efc0a6f20278c40ccd934f815ee48ff8941d45fbf48da5fc0ebd2dfb7e"
+  },
+  "independent_reader": {
+    "binary": {
+      "path": "artifacts/playtest-feedback-20261025/native-save-reader-final",
+      "sha256": "6a94c8e6ead08981df06ebcd6b4adc07b36c79c96932e0b78af51c07d938e033"
+    },
+    "pinned_cdda_commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+    "reader_capture_commit": "fcd872423229da2c0fdd6ac4cbef904359c536c4",
+    "previous_evidence": "docs/fixes/playtest-feedback-2026-10-25-evidence.json"
+  },
+  "commands": [
+    "cmake --build artifacts/fnd03-session/workspace/cdda/build --target cdda-server cata_test -j4",
+    "cd artifacts/fnd03-session/workspace/cdda && CDDA_LOCALE_DIR=$PWD/lang/mo build/tests/cata_test '[cwm],[reading]~[.],[melee]~[.],[ranged]~[.],[disassembly]~[.],[npc_talk]~[.],[mission]' --rng-seed 42 --user-dir=<isolated-directory>",
+    "cd artifacts/fnd03-session/workspace/cdda && CDDA_LOCALE_DIR=$PWD/lang/mo build/tests/cata_test '[unified_f8]' --rng-seed 42 --user-dir=<isolated-directory>",
+    "cmake --build artifacts/language-20261011/workspace/luanti/build --target luanti -j3",
+    "artifacts/language-20261011/workspace/luanti/bin/luanti --run-unittests --logfile <isolated-log>",
+    "cmake --build artifacts/language-20261011/workspace/build/protocol -j3 && ctest --test-dir artifacts/language-20261011/workspace/build/protocol --output-on-failure",
+    "python3 artifacts/language-20261011/workspace/tests/demo_launcher_test.py",
+    "python3 tests/product_language_test.py && python3 tests/product_language_registry_test.py",
+    "python3 artifacts/unified-f8-20261025/run-gui.py playtest_feedback_gui_test.py artifacts/playtest-feedback-20261025/liquid-recovery/user public-recovery --scenario recovery --public-demo",
+    "python3 artifacts/unified-f8-20261025/run-gui.py rest_gui_test.py artifacts/native-rest-20261023/fixture/user rest-settled",
+    "python3 artifacts/unified-f8-20261025/run-gui.py playtest_feedback_gui_test.py artifacts/playtest-feedback-20261025/night-release/user night --scenario night",
+    "CWM_TEST_INSTALLED=1 python3 artifacts/unified-f8-20261025/run-gui.py playtest_feedback_gui_test.py artifacts/playtest-feedback-20261025/liquid-recovery/user installed-public-recovery --scenario recovery --public-demo",
+    "CWM_TEST_INSTALLED=1 python3 artifacts/unified-f8-20261025/run-gui.py rest_gui_test.py artifacts/unified-f8-20261025/rest-settled/user installed-rest-reload --reload-sleep",
+    "python3 tools/takeover_baseline.py check"
+  ],
+  "retained_failed_attempts": [
+    {
+      "path": "artifacts/unified-f8-20261025/rest.log",
+      "reason": "Test sent a new native rest request before paid interruption work settled at awake 2x. Correct Finish the current action rejection; driver now waits native simulated time. No production bypass. Excluded from PASS totals."
+    }
+  ],
+  "human_validation": {
+    "source": "docs/source/unified-f8-feedback-2026-10-25.md",
+    "accepted_previous_build": [
+      "FB-01.3",
+      "FB-01.4"
+    ],
+    "startup_failures_awaiting_human_recheck": [
+      "FB-01.1",
+      "FB-01.2"
+    ],
+    "new_pending": [
+      "UF8-01.1"
+    ],
+    "pending": 58,
+    "startup_failures": 2,
+    "automated_checks_are_not_human_acceptance": true
+  },
+  "unchanged": [
+    "mapping batch60",
+    "Windows CWM2.26 snapshot",
+    "historical M5.5 FAILED",
+    "full SAVE-001 OPEN"
+  ]
+}
