@@ -27,6 +27,10 @@ pauses their remaining native time rather than inventing a cancellable actor.
 already admitted native work/debt. Before admission it may discard the unsent
 selection, as the previous UI dismissal did. This explicit exit is distinct from
 an involuntary flash between related screens.
+The configured F7 pause and F8 speed shortcuts remain active in the action
+view, with physical key-repeat fencing. Pausing there preserves its return
+target; resuming completes the same native work and returns directly to the
+originating menu. Changing speed while paused does not advance work.
 
 Crafting joins the existing native observational InventoryWorkState identity.
 This reports completion after native activity and remaining coordinator debt;

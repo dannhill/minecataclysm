@@ -668,6 +668,9 @@ def main():
                     modal_start=len(rows());tap('F7');wait(lambda r:int(r['pause_reasons'])&1)
                     paused=latest()['simulation_time'];time.sleep(.8)
                     check('manual_pause_takes_precedence',latest()['simulation_time']==paused and int(latest()['equipment_form'])==0)
+                    if args.modal_continuity:
+                        tap('F8');wait(lambda r:float(r['time_scale'])==1)
+                        check('F8_in_work_modal_changes_only_rate_while_paused',latest()['simulation_time']==paused and int(latest()['pause_reasons'])&1)
                     tap('F7');wait(lambda r:not int(r['pause_reasons'])&1)
                     wait(lambda r:int(r['native_work_settled'])==1,timeout=25)
                     wait(lambda r:int(r['equipment_form'])==1 and int(r['inventory_view'])>0)
