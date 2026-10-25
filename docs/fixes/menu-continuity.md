@@ -27,6 +27,12 @@ routing, so later visual redesign does not require gameplay changes.
 
 ## Verification
 
+**185 native cases /73,766 assertions**, **309 client tests /47 modules** plus
+648 Catch assertions /4 cases, **20 SDK/presentation**, **9 language** and
+**3 registry tests PASS**. **178 renderer/canonical checks PASS**: reconstructed
+equipment 34 and crafting 30; installed recovery 22, consumption 40,
+delayed equipment inspection 28 and sleeping-save restart 24.
+
 Captured incremental builds and isolated saves/configuration were used. Native
 regression selects the existing CWM/reading/disassembly/melee/ranged/NPC/mission
 suite, rather than the entire upstream suite or a cold conformance audit.
@@ -47,8 +53,13 @@ Screenshots were inspected by the LLM agent, not accepted by a human.
 Exploratory runs retain two wrong-equipment-fixture failures (the food scene
 has no hat) and one real F7 interception regression in the new work modal.
 The latter was fixed by routing configured pause/speed shortcuts through the
-modal with physical key-repeat fencing. Failed attempts are excluded from
-passing verification totals.
+modal with physical key-repeat fencing. A subsequent crafting sequence exposed
+prior settled work consuming a newly queued return; the armed-selection fence
+fixes it. The cancellation test also now permits actual native progress before
+typed interruption, retaining that progress rather than restoring a stale UI
+counter. A wrapper exit143 after all rest checks was excluded and repeated with
+an isolated driver session and explicit exit0 receipt, without attributing an
+unverified cause. Failed/excluded attempts are outside final PASS totals.
 
 ## Human validation and next work
 

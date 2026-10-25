@@ -15,6 +15,13 @@ The minor-version fence requires the matching completion guarantee.
 [Contract](docs/design/menu-continuity.md), [delivery](docs/fixes/menu-continuity.md),
 [exact evidence](docs/fixes/menu-continuity-evidence.json).
 
+Scoped PASS: **185 native cases /73,766 assertions**; client **309 tests /47
+modules**, plus 648 Catch assertions /4 cases; SDK **20**, language **9**,
+registry **3**. **178 renderer/canonical checks PASS**, including installed
+recovery, consumption, delayed-ACK inspection and actual sleeping-save reload.
+Frame traces check modal continuity; canonical readback links unmodified pinned
+CDDA. Captured incremental builds, not a cold conformance audit or full suite.
+
 Latest human results: **FB-01.1/.2 PASS**, confirming the repaired demo, pointer
 and can recovery on CWM2.36. Previous .3/.4 PASS retained. The separate menu
 flash report requests the new presentation, rather than retracting those

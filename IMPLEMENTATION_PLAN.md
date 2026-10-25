@@ -17,7 +17,9 @@ nessun ritorno momentaneo al gioco tra azioni/cancellazioni/menu correlati.
 La finestra rimane visibile cambiando contenuto; il tempo necessario al lavoro
 può avanzare sotto l'interfaccia, con costi e interruzioni nativi. Ispezione e
 pause di sicurezza restano ferme. [Fonte](docs/source/modal-continuity-feedback-2026-10-26.md).
-La presentazione CWM2.37 è implementata e in verifica; [contratto](docs/design/menu-continuity.md),
+La presentazione CWM2.37 è implementata e verificata automaticamente in start.sh;
+185 casi nativi, client309, SDK20 e 178 controlli renderer/salvataggio PASS.
+[Contratto](docs/design/menu-continuity.md),
 [consegna/evidenze](docs/fixes/menu-continuity.md). MENU-01.1 porta il backlog a
 **59 PENDING, nessun FAIL aperto**. UF8-01.1 non è stata accettata da questo riscontro.
 

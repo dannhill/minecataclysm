@@ -1,0 +1,429 @@
+{
+  "scope": "CWM2.37 continuous inventory/external/native-decision/crafting/work/result menus, existing native pacing/debt and cancellation, configured F7/F8 within work view, posture and prior-command return fencing",
+  "date": "2026-10-26",
+  "protocol": "2.37",
+  "native_capture_commit": "9420654a48c410065623f040865b8cb6db96d37b",
+  "client_capture_commit": "54d7e39d6b354bbe8c26d560509164996bb40159",
+  "renderer_driver_commit": "8f829fee3ae4d48ad81453c58df079aefb97f516",
+  "build_mode": "Incremental captured reconstructions with retained build caches; isolated saves/configuration. Selected native suite, not full upstream or cold conformance. Matching native/client installed after successful renderer/canonical checks. Independent pinned-core reader reused.",
+  "source_trees": {
+    "cdda": {
+      "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+      "tree_sha256": "459ff54af0b0c8f687eee86625e17e3307064314b2f2493573532d951ce5d058",
+      "patch_sha256": "cba1cd2e7c5cdb060b2fc432ce187a03c09ecb724ea60aa4827cbf05f17bc2f1"
+    },
+    "luanti": {
+      "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
+      "tree_sha256": "b46777e625d7a6a1ca2af695408eb2375d3e15389c1d23856ccd04c3119574ff",
+      "patch_sha256": "6b95a91f14c95db5e8caedb8638f16cdf0e9060422f5f3094326f60ba74c6881"
+    },
+    "mineclonia": {
+      "commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+      "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "environment": {
+    "kernel": "Linux-7.0.11-76070011-generic-x86_64-with-glibc2.35",
+    "python": "3.10.12",
+    "compiler": "11.4.0",
+    "renderer": "Private Xvfb 1280x800x24, Mesa llvmpipe, actual Luanti renderer with xdotool keyboard/mouse; OpenAL null"
+  },
+  "capture_receipts": {
+    "native": {
+      "path": "artifacts/modal-continuity-20261026/native-refresh-release.json",
+      "sha256": "03b78aead8beb5db29e22a7f8218aac15a0cd74d344b955e54a800112f558302"
+    },
+    "client": {
+      "path": "artifacts/modal-continuity-20261026/client-refresh-final.json",
+      "sha256": "b5ff5e05bdc097c59242718be3a40d5618ce74d522279009358eed309d95ab4a"
+    },
+    "source_check": {
+      "path": "artifacts/modal-continuity-20261026/baseline-check-final.log",
+      "sha256": "3b53813c36a04c6ebf4eed7427c173edd07a179debb1f39906f3d148b5cb2bbd"
+    }
+  },
+  "build_logs": {
+    "native": {
+      "path": "artifacts/modal-continuity-20261026/native-build-release.log",
+      "sha256": "7ef6253717bdbc67022e0c436c706a3a14dfa03c6b8a4357adaf88a9f82d721e"
+    },
+    "client": {
+      "path": "artifacts/modal-continuity-20261026/client-build-final.log",
+      "sha256": "6f7cde8c357622beaee71f2e3a2c4146077f5b0b48d746d5a6df2074841435e8"
+    },
+    "protocol": {
+      "path": "artifacts/modal-continuity-20261026/protocol-build-release.log",
+      "sha256": "bac5c26c5c885c9a36f2cca823325a00916b6437cad7d5efc1b7fc8196fdc70f"
+    }
+  },
+  "native": {
+    "cases": 185,
+    "assertions": 73766,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/modal-continuity-20261026/native-tests-release.log",
+      "sha256": "c6ae5b7ab33818bb9f396c9ffa93fe9e0ed0cdd7eafb697af092f7c2db78f9d4"
+    }
+  },
+  "client": {
+    "cases": 309,
+    "modules": 47,
+    "catch_cases": 4,
+    "catch_assertions": 648,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/modal-continuity-20261026/client-units-final.log",
+      "sha256": "ea2039ecfd9a2832f9e8c1013943c5d75a4b77dfd7cef23769b5de65fe64faf0"
+    }
+  },
+  "protocol_presentation_sdk": {
+    "cases": 20,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/modal-continuity-20261026/protocol-tests-release.log",
+      "sha256": "c464fa991b59146bab9a297f84bd637f3fca6a08a1496256b47521ac423c0cc0"
+    }
+  },
+  "language": {
+    "cases": 9,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/modal-continuity-20261026/language-release.log",
+      "sha256": "c37fb9278043516bfdf8f4e724f225baa8f296437b3f876dede8c073038b9348"
+    }
+  },
+  "language_registry": {
+    "cases": 3,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/modal-continuity-20261026/registry-release.log",
+      "sha256": "6e0d1bc5bb846eb5001c5b4f9412daec6fceb257aa22375015ea1e92b1a8c377"
+    }
+  },
+  "renderer": {
+    "equipment-final": {
+      "checks": 34,
+      "result": "PASS",
+      "binary_pair": "reconstructed, identical binary hashes",
+      "checks_file": {
+        "path": "artifacts/modal-continuity-20261026/equipment-final/checks.json",
+        "sha256": "0fa129610d1f0c7a050ccdd710438c50ef9f931f3919a5f80915d499d635f18c"
+      },
+      "summary": {
+        "path": "artifacts/modal-continuity-20261026/equipment-final/summary.json",
+        "sha256": "737dba2de20ffabd1469c6f8891d219b8ff08b6bdc77789dcc4f4575f6727868"
+      },
+      "native_readback": {
+        "path": "artifacts/modal-continuity-20261026/equipment-final/native.json",
+        "sha256": "b06b59b1214c2abd0bb4d97db3f428f7a6ab7b434974e01c2e82254685dbda2d"
+      },
+      "trace": {
+        "path": "artifacts/modal-continuity-20261026/equipment-final/camera.csv",
+        "sha256": "22c72f9f5b26e8ddc75ed90c23fcc5b7a39f529a76dc596e846d30bdd80831d4"
+      },
+      "log": {
+        "path": "artifacts/modal-continuity-20261026/equipment-final.log",
+        "sha256": "26a1f50aa49f9786d57cace38582443aac501c4739ee2306ffee1a1a659a517b"
+      }
+    },
+    "crafting-native-cancel": {
+      "checks": 30,
+      "result": "PASS",
+      "binary_pair": "reconstructed, identical binary hashes",
+      "checks_file": {
+        "path": "artifacts/modal-continuity-20261026/crafting-native-cancel/checks.json",
+        "sha256": "f06e532e7e2579b52868d2736cd1df85277c31de2c110d7b6f788d0da9e5e6e0"
+      },
+      "summary": {
+        "path": "artifacts/modal-continuity-20261026/crafting-native-cancel/summary.json",
+        "sha256": "bad36c79c690f61b752c2a927cff5323e6d607a991043fe793b423c017a18161"
+      },
+      "native_readback": {
+        "path": "artifacts/modal-continuity-20261026/crafting-native-cancel/native.json",
+        "sha256": "6466a5a5dd8c25fdb99d81372903ed495291f73f2ce6dcd33b347fbb500343dd"
+      },
+      "trace": {
+        "path": "artifacts/modal-continuity-20261026/crafting-native-cancel/camera.csv",
+        "sha256": "91ccb4c62e892e2fcd90fdbed05194146ef36ccfaca16c49ba4dc5e0e43ef37b"
+      },
+      "log": {
+        "path": "artifacts/modal-continuity-20261026/crafting-native-cancel.log",
+        "sha256": "d943e5baf94ee46c3aa18345a0b684877cd989421bc22893172b9da06478c1c7"
+      }
+    },
+    "installed-recovery": {
+      "checks": 22,
+      "result": "PASS",
+      "binary_pair": "installed",
+      "checks_file": {
+        "path": "artifacts/modal-continuity-20261026/installed-recovery/checks.json",
+        "sha256": "3d15d5b96ab2ceed3c7b7b0f739b2c4355076bf48c9e0d21c1251728e457c817"
+      },
+      "summary": {
+        "path": "artifacts/modal-continuity-20261026/installed-recovery/summary.json",
+        "sha256": "462ad4dfe06e622eb96576680717058a5e6a1d8599a1f7d77b1e7c111cf0d923"
+      },
+      "native_readback": {
+        "path": "artifacts/modal-continuity-20261026/installed-recovery/native.json",
+        "sha256": "391e0985ff9d0512af4b74fb7bfcd23583ff456e561ae764cc720a717c25915a"
+      },
+      "trace": {
+        "path": "artifacts/modal-continuity-20261026/installed-recovery/camera.csv",
+        "sha256": "4c7296cd64e90837a681c5cdd433435b3b2c4324f2c69dce380095636718c669"
+      },
+      "log": {
+        "path": "artifacts/modal-continuity-20261026/installed-recovery.log",
+        "sha256": "fee8688087bb49f4cb31fe665555c8435072da430896f4f663d6601e59bb8186"
+      }
+    },
+    "installed-consumption": {
+      "checks": 40,
+      "result": "PASS",
+      "binary_pair": "installed",
+      "checks_file": {
+        "path": "artifacts/modal-continuity-20261026/installed-consumption/checks.json",
+        "sha256": "d8df354ab5983ba81413bab75435c1d70ba3b828520bd1868192cd005a4588dd"
+      },
+      "summary": {
+        "path": "artifacts/modal-continuity-20261026/installed-consumption/summary.json",
+        "sha256": "7e37ff48a04fb09fd3847f64bd7ce92b982916b12683b776da71678096449951"
+      },
+      "native_readback": {
+        "path": "artifacts/modal-continuity-20261026/installed-consumption/native.json",
+        "sha256": "7521f01faf5c2b140aff5936d1b119b55ecd64c4c50c067452c61d3c34defc7f"
+      },
+      "trace": {
+        "path": "artifacts/modal-continuity-20261026/installed-consumption/camera.csv",
+        "sha256": "db7543a3909b3c68ab995af5fc80847cb8de91df25a3d8712323ad11305dc86c"
+      },
+      "log": {
+        "path": "artifacts/modal-continuity-20261026/installed-consumption.log",
+        "sha256": "4bfabdb92970013c9374474ca03babdd77eca55a5034001a8bfa16288088e0e9"
+      }
+    },
+    "installed-debit": {
+      "checks": 28,
+      "result": "PASS",
+      "binary_pair": "installed",
+      "checks_file": {
+        "path": "artifacts/modal-continuity-20261026/installed-debit/checks.json",
+        "sha256": "d03048b17bf909f13f49e8691c2cb121c103f794ec66de00e0355767268b1a7c"
+      },
+      "summary": {
+        "path": "artifacts/modal-continuity-20261026/installed-debit/summary.json",
+        "sha256": "5b08f690c5a9aeb570ac4b6c4c5625548c23f96617a32f6a4bf52f49c4db9d85"
+      },
+      "native_readback": {
+        "path": "artifacts/modal-continuity-20261026/installed-debit/native.json",
+        "sha256": "b541efe96b7ab90c42cb0f3ce56021bcae86de92e9038517cd5b8836a85e3f1b"
+      },
+      "trace": {
+        "path": "artifacts/modal-continuity-20261026/installed-debit/camera.csv",
+        "sha256": "f9b575d16f0904346f434319fade9785aa4bec02867659af51e75445eec0e3ac"
+      },
+      "log": {
+        "path": "artifacts/modal-continuity-20261026/installed-debit.log",
+        "sha256": "4371ab699eeb6478ffd4a7e0d7a0d634487e26d4596869d427406341172608d2"
+      }
+    },
+    "installed-rest-recorded": {
+      "checks": 24,
+      "result": "PASS",
+      "binary_pair": "installed",
+      "checks_file": {
+        "path": "artifacts/modal-continuity-20261026/installed-rest-recorded/checks.json",
+        "sha256": "b13c9975884471e5f60a632b61b69b62ba146182078b26b6def9d27644147811"
+      },
+      "summary": {
+        "path": "artifacts/modal-continuity-20261026/installed-rest-recorded/summary.json",
+        "sha256": "8fc98218e51346af68c5bbb88fdb2b4771fe77296ab252d3c413ad9220dc460d"
+      },
+      "native_readback": {
+        "path": "artifacts/modal-continuity-20261026/installed-rest-recorded/native.json",
+        "sha256": "698da0a3445d83033ef8df936b01713d7ac4bba7a4f57cad837d223d47dc446c"
+      },
+      "trace": {
+        "path": "artifacts/modal-continuity-20261026/installed-rest-recorded/camera.csv",
+        "sha256": "7f019a6ea4366a04315c9b09d8c8a56aa2d10d63949dacef12e0619195b07d06"
+      },
+      "log": {
+        "path": "artifacts/modal-continuity-20261026/installed-rest-recorded.log",
+        "sha256": "7cd889c3e7bbf1f7f9815dbcfe2ade3bb4e9841fdfb8cee2c53e0bef739f7fe7"
+      }
+    }
+  },
+  "renderer_checks_total": 178,
+  "test_drivers": {
+    "equipment_gui_test.py": {
+      "path": "tests/equipment_gui_test.py",
+      "sha256": "ad627d4a4db1b1c6e6342a311dad4781a765329a0aa7d46e73ebf8d17e461a88"
+    },
+    "crafting_gui_test.py": {
+      "path": "tests/crafting_gui_test.py",
+      "sha256": "a3a27b5ee916843d8f8d999fd7a4be8d02e4b6719c82dff2819af4ded15e7729"
+    },
+    "consumption_gui_test.py": {
+      "path": "tests/consumption_gui_test.py",
+      "sha256": "e21349975e45eb490c92a80227759276a11dd2abafd72f9014d3058d8c4b3878"
+    },
+    "playtest_feedback_gui_test.py": {
+      "path": "tests/playtest_feedback_gui_test.py",
+      "sha256": "b9d7f8c1cb277e3133dbae8dbec629b8b39330dc2a0437a8ccd0d88d96e2f92a"
+    },
+    "rest_gui_test.py": {
+      "path": "tests/rest_gui_test.py",
+      "sha256": "a345404d61b54671bc0bb5c4d028c9a06a848cb5195e7b7043fff5be2c4695e3"
+    }
+  },
+  "xvfb_runners": {
+    "ordinary": {
+      "path": "artifacts/modal-continuity-20261026/run-gui.py",
+      "sha256": "4682b8cc4a7ab31f1ba5568bca37da014ee942da30027aebb2ed28a7f9c8125f"
+    },
+    "recorded_isolated_session": {
+      "path": "artifacts/modal-continuity-20261026/run-gui-recorded.py",
+      "sha256": "dc62203dc885f570de4f8f0dfbfb91bbe3c14c78f3df0a9e29b0df03761545cd"
+    },
+    "recorded_result": {
+      "path": "artifacts/modal-continuity-20261026/installed-rest-recorded-runner-result.json",
+      "sha256": "59798ffdaebb806542bfe8e69f74d2c06948de939ffe74ae1dfff97bf3ff0d82"
+    }
+  },
+  "installation": {
+    "native": {
+      "source": "artifacts/fnd03-session/workspace/cdda/build/src/cdda-server",
+      "installed": "cdda/build/src/cdda-server",
+      "sha256": "f3086583d9ff70d96075687861cb8b6871d44535335e51a982ebd3809b723e8e",
+      "previous": "artifacts/modal-continuity-20261026/native-before-modal-continuity",
+      "previous_sha256": "289ce8265caad2c48683f49e74aec1f4ea860140f4caed69ad6e6f4bf5155eee"
+    },
+    "client": {
+      "source": "artifacts/language-20261011/workspace/luanti/bin/luanti",
+      "installed": "luanti/bin/luanti",
+      "sha256": "b4f4f0087d780859f2c39eadca656b156de1ca9fc2f24abd50739b143f53f3a9",
+      "previous": "artifacts/modal-continuity-20261026/client-before-modal-continuity",
+      "previous_sha256": "97d22d2a404c25554e984f89b33289c63f4a09682794a7816a191afde4ea2b35"
+    }
+  },
+  "installation_receipt": {
+    "path": "artifacts/modal-continuity-20261026/installation.json",
+    "sha256": "ab9cd55b7016d148e7e8a059c9de1a66a0db85ae1d1604295ab908ed6604db57"
+  },
+  "independent_reader": {
+    "binary": {
+      "path": "artifacts/playtest-feedback-20261025/native-save-reader-final",
+      "sha256": "6a94c8e6ead08981df06ebcd6b4adc07b36c79c96932e0b78af51c07d938e033"
+    },
+    "pinned_cdda_commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+    "reader_capture_commit": "fcd872423229da2c0fdd6ac4cbef904359c536c4",
+    "provenance": "docs/fixes/playtest-feedback-2026-10-25-evidence.json"
+  },
+  "commands": [
+    "cmake --build artifacts/fnd03-session/workspace/cdda/build --target cdda-server cata_test -j4",
+    "cd artifacts/fnd03-session/workspace/cdda && CDDA_LOCALE_DIR=$PWD/lang/mo build/tests/cata_test '[cwm],[reading]~[.],[melee]~[.],[ranged]~[.],[disassembly]~[.],[npc_talk]~[.],[mission]' --rng-seed 42 --user-dir=<isolated-directory>",
+    "cmake --build artifacts/language-20261011/workspace/luanti/build --target luanti -j3",
+    "artifacts/language-20261011/workspace/luanti/bin/luanti --run-unittests --logfile <isolated-log>",
+    "cmake --build artifacts/language-20261011/workspace/build/protocol -j3 && ctest --test-dir artifacts/language-20261011/workspace/build/protocol --output-on-failure",
+    "python3 tests/product_language_test.py && python3 tests/product_language_registry_test.py",
+    "python3 artifacts/modal-continuity-20261026/run-gui.py equipment_gui_test.py artifacts/native-equipment-20261008/fixture/user equipment-final --modal-continuity",
+    "python3 artifacts/modal-continuity-20261026/run-gui.py crafting_gui_test.py artifacts/native-crafting-20261008/fixture/user crafting-native-cancel --modal-continuity",
+    "CWM_TEST_INSTALLED=1 python3 artifacts/modal-continuity-20261026/run-gui.py playtest_feedback_gui_test.py artifacts/playtest-feedback-20261025/liquid-recovery/user installed-recovery --scenario recovery --public-demo --modal-continuity",
+    "CWM_TEST_INSTALLED=1 python3 artifacts/modal-continuity-20261026/run-gui.py consumption_gui_test.py artifacts/native-consumption-20261008/fixture/user installed-consumption --modal-continuity",
+    "CWM_TEST_INSTALLED=1 python3 artifacts/modal-continuity-20261026/run-gui.py equipment_gui_test.py artifacts/native-equipment-20261008/fixture/user installed-debit --native-equipment-time",
+    "CWM_TEST_INSTALLED=1 python3 artifacts/modal-continuity-20261026/run-gui-recorded.py rest_gui_test.py artifacts/unified-f8-20261025/rest-settled/user installed-rest-recorded --reload-sleep",
+    "python3 tools/takeover_baseline.py check"
+  ],
+  "retained_failed_or_excluded_attempts": [
+    {
+      "log": {
+        "path": "artifacts/modal-continuity-20261026/equipment.log",
+        "sha256": "0b8f6cf5a91a3939adbccec6f2965f1dc1e51d20c23b1b4b18a66486d4686cda"
+      },
+      "reason": "Wrong exploratory food fixture has no hat; no production failure.",
+      "counted_as_pass": false
+    },
+    {
+      "log": {
+        "path": "artifacts/modal-continuity-20261026/equipment-debit.log",
+        "sha256": "247cbd55653d07ccf0c3a2c50972919274c69064092f16cce4602a7889c0cd27"
+      },
+      "reason": "Same wrong exploratory equipment fixture; no production failure.",
+      "counted_as_pass": false
+    },
+    {
+      "log": {
+        "path": "artifacts/modal-continuity-20261026/equipment-correct.log",
+        "sha256": "cda7bfd0c69406fff198406125eda9ebe1da55b69a13e603dae9b5e10677effa"
+      },
+      "reason": "Real missing F7 dispatch in the new modal; fixed with configured, fresh-key pause/speed routing.",
+      "counted_as_pass": false
+    },
+    {
+      "log": {
+        "path": "artifacts/modal-continuity-20261026/equipment-release.log",
+        "sha256": "42689725a9d8851a7c893532e9205163835379756e0bcb8be60a21e1f5b50cc1"
+      },
+      "reason": "Retired test assumed the nonmodal HUD must be visible during modal work; replaced with actual modal visibility and native time checks.",
+      "counted_as_pass": false
+    },
+    {
+      "log": {
+        "path": "artifacts/modal-continuity-20261026/crafting-release.log",
+        "sha256": "7ef46e11127fb86c15b4d2fa8ad62b6ca2a985d583fbba54858b7835a2643bd1"
+      },
+      "reason": "Real race: prior settled work consumed a newly armed return before dispatch. Fixed by fencing the new armed selection.",
+      "counted_as_pass": false
+    },
+    {
+      "log": {
+        "path": "artifacts/modal-continuity-20261026/crafting-final.log",
+        "sha256": "2457272f69d3a59a0a5e98b7881e76e74c0dbe94ca19b2a72bd82f1b4d60af44"
+      },
+      "reason": "Old assertion assumed zero native progress between MENU_CLOSE and typed cancellation. Native counter advanced one actual paid turn. Test now requires retained, unfinished native progress and no extra craft request, plus canonical output/readback.",
+      "counted_as_pass": false
+    },
+    {
+      "log": {
+        "path": "artifacts/modal-continuity-20261026/installed-rest.log",
+        "sha256": "7cd889c3e7bbf1f7f9815dbcfe2ade3bb4e9841fdfb8cee2c53e0bef739f7fe7"
+      },
+      "reason": "All 24 checks and summary completed, but the exec wrapper reported exit143. Excluded; isolated-session repetition records test exit0 explicitly. No unverified cause attributed.",
+      "counted_as_pass": false
+    }
+  ],
+  "exploratory_successes_excluded_from_final_total": [
+    "recovery",
+    "consumption",
+    "crafting",
+    "equipment-debit-correct",
+    "recovery-release"
+  ],
+  "human_validation": {
+    "source": "docs/source/modal-continuity-feedback-2026-10-26.md",
+    "confirmed_on_previous_build": [
+      "FB-01.1",
+      "FB-01.2"
+    ],
+    "previous_pass_retained": [
+      "FB-01.3",
+      "FB-01.4"
+    ],
+    "closed_startup_failures": [
+      "FB-01.1",
+      "FB-01.2"
+    ],
+    "new_pending": [
+      "MENU-01.1"
+    ],
+    "UF8-01.1": "still pending",
+    "pending": 59,
+    "open_manual_failures": 0,
+    "automated_checks_are_not_human_acceptance": true
+  },
+  "limits": [
+    "Frame sampling and source inspection plus LLM screenshot review; personal visual acceptance remains pending.",
+    "No whole-game/cold-build or full save-conformance certification.",
+    "Mapping batch60, Windows CWM2.26 snapshot, historical M5.5 FAILED and full SAVE-001 OPEN unchanged."
+  ]
+}
