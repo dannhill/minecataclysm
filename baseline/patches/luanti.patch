@@ -2165,7 +2165,7 @@ index 0000000..29ecbdd
 +}
 diff --git a/src/cdda/action_menu.h b/src/cdda/action_menu.h
 new file mode 100644
-index 0000000..7786928
+index 0000000..10b585f
 --- /dev/null
 +++ b/src/cdda/action_menu.h
 @@ -0,0 +1,28 @@
@@ -2191,7 +2191,7 @@ index 0000000..7786928
 +        if(view.progress>0)f+="box[0.55,6.6;"+std::to_string(14.9*std::clamp(view.progress,0,100)/100)+",0.3;#41857D]";
 +        f+="label[0.55,7.35;"+std::to_string(std::clamp(view.progress,0,100))+"%]";
 +    }
-+    f+="label[0.55,8.3;"+::cwm::text("The world advances only to perform the selected native action")+"]";
++    f+="label[0.55,8.3;"+::cwm::text("Time passes while this action is performed")+"]";
 +    if(view.inspect)f+="button[0.55,9.4;7.2,0.8;inspect;"+::cwm::text("Pause and inspect")+"]";
 +    f+="button[8,9.4;7.45,0.8;leave;"+::cwm::text("Return to game")+"]";
 +    return f;
@@ -2371,7 +2371,7 @@ index 0000000..e1e7236
 +} // namespace cdda_client
 diff --git a/src/cdda/cdda_bridge.cpp b/src/cdda/cdda_bridge.cpp
 new file mode 100644
-index 0000000..835c0f5
+index 0000000..f053237
 --- /dev/null
 +++ b/src/cdda/cdda_bridge.cpp
 @@ -0,0 +1,3610 @@
@@ -2653,12 +2653,12 @@ index 0000000..835c0f5
 +    ActionMenuView action_menu_view() const {
 +        ActionMenuView view;
 +        view.title=inventory_work_label_.empty()?::cwm::text("Applying action"):wide_to_utf8(inventory_work_label_);
-+        if(metrics_.pause_reasons & uint32_t(1|4|8))view.detail=::cwm::text("Paused: native work has stopped");
++        if(metrics_.pause_reasons & uint32_t(1|4|8))view.detail=::cwm::text("Paused: the action is on hold");
 +        else if(inventory_time_pending()) {
 +            const auto tenths=(uint64_t(native_work_remaining_ms_)+99)/100;
-+            view.detail=::cwm::text("Applied · Native time remaining: ")+std::to_string(tenths/10)+"."+std::to_string(tenths%10)+::cwm::text(" game s")+"\n"+::cwm::text("This action cannot be undone");
++            view.detail=::cwm::text("Applied · Time remaining: ")+std::to_string(tenths/10)+"."+std::to_string(tenths%10)+::cwm::text(" game s")+"\n"+::cwm::text("This action cannot be undone");
 +        } else if(activity_token_) {
-+            view.detail=::cwm::text("Native work in progress");
++            view.detail=::cwm::text("Work in progress");
 +            if(activity_total_>0)view.progress=std::clamp(100-int(100.0*activity_remaining_/activity_total_),0,100);
 +        } else view.detail=::cwm::text("Waiting for the game...");
 +        view.inspect=inventory_work_command_ && !metrics_.pending_decision &&

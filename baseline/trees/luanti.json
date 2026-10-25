@@ -7237,7 +7237,7 @@
   {
     "path": "src/cdda/action_menu.h",
     "mode": "100644",
-    "sha256": "b2f1d16f274855f316ba112b8869e83007bb55a19557d26f29466b05bf3c6185"
+    "sha256": "578ecf1e4d2d25a0f27e631cc271fceb2a4ce9b0626be9c8cfe972ddf2d581b3"
   },
   {
     "path": "src/cdda/aim_input.h",
@@ -7252,7 +7252,7 @@
   {
     "path": "src/cdda/cdda_bridge.cpp",
     "mode": "100644",
-    "sha256": "753c2f6efbe299ac71fc21bc47add8180666a4f666c98e7902b7516caceba15e"
+    "sha256": "207ccd5828ae834b3e0dfe0244bf57d12a0380b88b8d85705f69d47151ed74a7"
   },
   {
     "path": "src/cdda/cdda_bridge.h",

@@ -47,3 +47,8 @@ Personal FB-01.3/4 remain PASS of the reviewed build. FB-01.1/2 remain recorded
 as startup failures until the developer retries them; revised F8 behavior has
 its own UF8-01.1 check in the [manual ledger](../validation/pending-manual.md).
 Automated verification never supplies human acceptance.
+
+
+Subsequent human retry (2026-10-26) confirmed FB-01.1/2 PASS and closed their
+startup failures. The [new menu directive](../source/modal-continuity-feedback-2026-10-26.md)
+retains those validations; UF8-01.1 is still a separate pending check.

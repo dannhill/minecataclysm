@@ -61,6 +61,12 @@ No production gameplay was changed to bypass the debt check.
 
 ## Human ledger and next work
 
+Subsequent human retry, 2026-10-26: **FB-01.1/2 PASS**, confirming both repairs
+and closing the startup failures below. UF8-01.1 remains pending. A separate
+[menu-transition report](../source/modal-continuity-feedback-2026-10-26.md)
+requests continuous presentation; the delivery-time counts below are historical.
+
+
 FB-01.3/4 remain human PASS of the previous build. FB-01.1/2 remain startup
 FAIL until the developer retries the repaired demo. UF8-01.1 covers the revised
 F8 design: **58 PENDING +2 startup FAIL**, 60 points awaiting personal acceptance.

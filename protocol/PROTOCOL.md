@@ -6,10 +6,20 @@ captured implementation; it does not approve its gaps. The executable schema
 is [cwm.fbs](cwm.fbs). Audit findings and evidence are in
 [M5.5](../docs/audits/M5.5.md).
 
-The current runtime requires **CWM 2.36**. This breaks the old negotiation
+The current runtime requires **CWM 2.37**. This breaks the old negotiation
 contract; schema fields and union members are appended without changing the
 existing FlatBuffers offsets. Both executables must be rebuilt together.
 The historical coverage table below is retained as audit evidence.
+
+CWM 2.37 extends the existing `InventoryWorkState` completion identity to
+native crafting commands, including declined starts. Settled still requires
+no native activity, positive move credit and paid coordinator debt. This lets a
+visible action menu await authoritative completion rather than infer it from
+an ACK or UI time. Fields/offsets are unchanged, but the semantic guarantee
+requires matching runtimes; an older server must not be paired with this client.
+Menu visibility is now independent of the Menu pause bit while an explicitly
+selected operation executes. Ordinary inspection and all other pause reasons
+retain their meaning. [Presentation contract](../docs/design/menu-continuity.md).
 
 CWM 2.36 appends `speed_context:SpeedContext` to `SimulationState` and
 `SimulationControlRequest`: PLAY (0) or REST (1). `time_scale` is the sole

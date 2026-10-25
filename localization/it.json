@@ -38,10 +38,11 @@
   "F8 · TIME SPEED ": "F8 · VELOCITÀ TEMPO ",
   "Target game s / real s · Limited by simulation load": "Obiettivo s gioco / s reali · Limitato dal carico",
   "Applying action": "Applicazione azione",
-  "Paused: native work has stopped": "In pausa: il lavoro nativo è fermo",
   "This action cannot be undone": "Questa azione non può essere annullata",
-  "Native work in progress": "Lavoro nativo in corso",
-  "The world advances only to perform the selected native action": "Il mondo avanza per eseguire l’azione nativa selezionata",
   "Pause and inspect": "Metti in pausa e consulta",
-  "Return to game": "Torna al gioco"
+  "Return to game": "Torna al gioco",
+  "Paused: the action is on hold": "In pausa: l’azione è sospesa",
+  "Work in progress": "Lavoro in corso",
+  "Time passes while this action is performed": "Il tempo scorre durante l’esecuzione di questa azione",
+  "Applied · Time remaining: ": "Applicata · Tempo restante: "
 }
