@@ -52,8 +52,15 @@ class SimulationState(object):
             return bool(self._tab.Get(flatbuffers.number_types.BoolFlags, o + self._tab.Pos))
         return False
 
+    # SimulationState
+    def SpeedContext(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(12))
+        if o != 0:
+            return self._tab.Get(flatbuffers.number_types.Int8Flags, o + self._tab.Pos)
+        return 0
+
 def SimulationStateStart(builder):
-    builder.StartObject(4)
+    builder.StartObject(5)
 
 def Start(builder):
     SimulationStateStart(builder)
@@ -81,6 +88,12 @@ def SimulationStateAddContinuousMotion(builder, continuousMotion):
 
 def AddContinuousMotion(builder, continuousMotion):
     SimulationStateAddContinuousMotion(builder, continuousMotion)
+
+def SimulationStateAddSpeedContext(builder, speedContext):
+    builder.PrependInt8Slot(4, speedContext, 0)
+
+def AddSpeedContext(builder, speedContext):
+    SimulationStateAddSpeedContext(builder, speedContext)
 
 def SimulationStateEnd(builder):
     return builder.EndObject()

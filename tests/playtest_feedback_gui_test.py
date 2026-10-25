@@ -27,6 +27,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ('workspace', 'fixture', 'native-reader', 'artifacts'):
         parser.add_argument('--' + name, type=Path, required=True)
+    parser.add_argument('--public-demo', action='store_true')
     parser.add_argument('--scenario', choices=['recovery','night'], required=True)
     args = parser.parse_args()
     ws, out = args.workspace.resolve(), args.artifacts.resolve()
@@ -34,8 +35,8 @@ def main():
     from CDDA.CWM.CwmMessage import CwmMessage
     out.mkdir(parents=True, exist_ok=False)
     user = out / 'user'
-    shutil.copytree(args.fixture.resolve(), user)
-    (user / 'config/options.json').write_text(json.dumps([
+    if not args.public_demo:shutil.copytree(args.fixture.resolve(), user)
+    if not args.public_demo:(user / 'config/options.json').write_text(json.dumps([
         {'name': 'SAFEMODE', 'value': 'false'}, {'name': 'AUTOSAFEMODE', 'value': 'false'},
         {'name': 'AUTOSAVE', 'value': 'false'}, {'name': 'QUERY_DISASSEMBLE', 'value': 'true'}]))
     checks = {}
@@ -122,12 +123,13 @@ def main():
     relay_thread = threading.Thread(target=relay, daemon=True)
     relay_thread.start()
     wrapper = out / 'client-relay.py'
-    wrapper.write_text("#!/usr/bin/env python3\nimport os,sys,re\nfrom pathlib import Path\n" +
+    wrapper.write_text("#!/usr/bin/env python3\nimport os,sys,re,json\nfrom pathlib import Path\n" +
         "args=sys.argv[1:]\ni=args.index('--config')+1\np=Path(args[i])\ns=p.read_text()\n" +
         f"Path({str(native_path)!r}).write_text(re.findall(r'^cwm_socket_path = (.+)$',s,re.M)[-1])\n" +
         f"p=Path({str(out / 'relay-client.conf')!r})\n" +
         f"p.write_text(s+'\\ncwm_socket_path = {relay_path}\\n')\nargs[i]=str(p)\n" +
         f"os.execv({str(ws / 'luanti/bin/luanti')!r},[{str(ws / 'luanti/bin/luanti')!r},*args])\n")
+    wrapper.write_text(wrapper.read_text().replace("args=sys.argv[1:]", "args=sys.argv[1:]\nPath("+repr(str(out/'luanti-argv.json'))+").write_text(json.dumps(args))").replace("p.write_text(s+", "p.write_text(s+"+repr('\ncwm_trace_file = '+str(trace)+'\n')+"+"))
     wrapper.chmod(0o755)
     env['LUANTI_BIN'] = str(wrapper)
     def rows():
@@ -180,7 +182,14 @@ def main():
         time.sleep(.4)
     window = None
     with (out / 'launcher.log').open('w') as log:
-        proc = subprocess.Popen([str(ws / 'start.sh'), '--go', '--name', 'conversation_tester', '--port', str(port), '--info'],
+        if args.public_demo:
+            (ws/'artifacts').mkdir(exist_ok=True)
+            demo_sessions=Path(tempfile.mkdtemp(prefix='public-demo-',dir=ws/'artifacts'))
+            env['CDDA_DEMO_SESSIONS']=str(demo_sessions)
+            (out/'demo-sessions.path').write_text(str(demo_sessions)+'\n')
+            command=[str(ws/'liquid-recovery-demo.sh'),'--fresh','--port',str(port),'--info']
+        else:command=[str(ws/'start.sh'),'--go','--name','conversation_tester','--port',str(port),'--info']
+        proc = subprocess.Popen(command,
                                 env=env, stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
         try:
             deadline = time.monotonic() + 85
@@ -199,6 +208,12 @@ def main():
                 if window and len(rows()) > 20:
                     break
                 time.sleep(.2)
+            if args.public_demo and (demo_sessions/'last-session').exists():
+                session=Path((demo_sessions/'last-session').read_text().strip()).resolve()
+                assert session.is_relative_to(demo_sessions)
+                user.symlink_to(session/'user',target_is_directory=True)
+                argv=json.loads((out/'luanti-argv.json').read_text())
+                check('public_demo_alias_reaches_engine_without_test_override',len(argv[argv.index('--name')+1].encode())<=19 and argv[argv.index('--name')+1]!='conversation_tester')
             check('actual_start_ready', bool(window) and len(rows()) > 20)
             xdo('windowactivate', '--sync', window)
             time.sleep(1)

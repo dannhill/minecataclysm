@@ -45,8 +45,15 @@ class SimulationControlRequest(object):
             return self._tab.Get(flatbuffers.number_types.Float32Flags, o + self._tab.Pos)
         return 1.0
 
+    # SimulationControlRequest
+    def SpeedContext(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(10))
+        if o != 0:
+            return self._tab.Get(flatbuffers.number_types.Int8Flags, o + self._tab.Pos)
+        return 0
+
 def SimulationControlRequestStart(builder):
-    builder.StartObject(3)
+    builder.StartObject(4)
 
 def Start(builder):
     SimulationControlRequestStart(builder)
@@ -68,6 +75,12 @@ def SimulationControlRequestAddTimeScale(builder, timeScale):
 
 def AddTimeScale(builder, timeScale):
     SimulationControlRequestAddTimeScale(builder, timeScale)
+
+def SimulationControlRequestAddSpeedContext(builder, speedContext):
+    builder.PrependInt8Slot(3, speedContext, 0)
+
+def AddSpeedContext(builder, speedContext):
+    SimulationControlRequestAddSpeedContext(builder, speedContext)
 
 def SimulationControlRequestEnd(builder):
     return builder.EndObject()

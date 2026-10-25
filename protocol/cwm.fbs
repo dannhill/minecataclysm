@@ -256,11 +256,13 @@ table InventoryWorkState {
     remaining_time_ms: uint32;
 }
 
+enum SpeedContext : byte { PLAY = 0, REST = 1 }
 table SimulationState {
     realtime: bool;
     pause_reasons: uint32;
     time_scale: float32 = 1.0;
     continuous_motion: bool;
+    speed_context: SpeedContext;
 }
 
 enum SimulationControl : byte { PAUSE = 0, RESUME = 1, SET_SPEED = 2, MENU_OPEN = 3, MENU_CLOSE = 4 }
@@ -268,6 +270,7 @@ table SimulationControlRequest {
     command_id: uint64;
     action: SimulationControl;
     time_scale: float32 = 1.0;
+    speed_context: SpeedContext;
 }
 // An idempotent intent update; native actions are generated only while held.
 table MovementIntentRequest {
@@ -517,7 +520,8 @@ table ConversationInfo {
 }
 
 enum RestPhase : byte { WAITING = 0, TRYING_SLEEP = 1, SLEEPING = 2 }
-table RestState { token: uint64; phase: RestPhase; interruptible: bool; accelerated: bool; progress: int32 = -1; speed_multiplier: uint16 = 64; }
+table RestState { token: uint64; phase: RestPhase; interruptible: bool; accelerated: bool; progress: int32 = -1; speed_multiplier: uint16 = 64; // Deprecated: CWM2.36 always emits 1; time_scale is the sole rate.
+}
 // Open the native rest menu, bound to the last projected rest generation (0 idle).
 table RestRequest { command_id: uint64; expected_token: uint64; }
 

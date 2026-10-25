@@ -32,5 +32,9 @@
   "x target": "x obiettivo",
   ": rest speed / menu · Actual speed depends on simulation load": ": velocità riposo / menu · La velocità effettiva dipende dal carico",
   "Collect this item with native pickup before handling its liquid.": "Raccogli questo oggetto con la raccolta nativa prima di gestirne il liquido.",
-  "Open native pouring without a preselected quantity or destination.": "Apri il travaso nativo senza quantità o destinazione preselezionate."
+  "Open native pouring without a preselected quantity or destination.": "Apri il travaso nativo senza quantità o destinazione preselezionate.",
+  "F8 controls the single time speed; higher rates are available during long rest": "F8 controlla l’unica velocità del tempo; durante il riposo lungo sono disponibili valori maggiori",
+  "F8 · REST FAST-FORWARD ": "F8 · RIPOSO ACCELERATO ",
+  "F8 · TIME SPEED ": "F8 · VELOCITÀ TEMPO ",
+  "Target game s / real s · Limited by simulation load": "Obiettivo s gioco / s reali · Limitato dal carico"
 }

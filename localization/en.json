@@ -18,5 +18,9 @@
   "x target": "x target",
   ": rest speed / menu · Actual speed depends on simulation load": ": rest speed / menu · Actual speed depends on simulation load",
   "Collect this item with native pickup before handling its liquid.": "Collect this item with native pickup before handling its liquid.",
-  "Open native pouring without a preselected quantity or destination.": "Open native pouring without a preselected quantity or destination."
+  "Open native pouring without a preselected quantity or destination.": "Open native pouring without a preselected quantity or destination.",
+  "F8 controls the single time speed; higher rates are available during long rest": "F8 controls the single time speed; higher rates are available during long rest",
+  "F8 · REST FAST-FORWARD ": "F8 · REST FAST-FORWARD ",
+  "F8 · TIME SPEED ": "F8 · TIME SPEED ",
+  "Target game s / real s · Limited by simulation load": "Target game s / real s · Limited by simulation load"
 }

@@ -15,7 +15,9 @@ def main():
     args, client_args = parser.parse_known_args()
     root = Path(__file__).resolve().parents[1]
     fixture = root / 'artifacts/playtest-feedback-20261025/liquid-recovery'
-    directory = root / 'artifacts/liquid-recovery-demo'
+    directory = Path(os.environ.get('CDDA_DEMO_SESSIONS', root / 'artifacts/liquid-recovery-demo')).resolve()
+    if not directory.is_relative_to(root / 'artifacts'):
+        raise RuntimeError('Demo sessions must be inside this project artifacts directory')
     directory.mkdir(parents=True, exist_ok=True)
     pointer = directory / 'last-session'
     if pointer.exists() and not args.fresh:
@@ -45,7 +47,7 @@ def main():
     print('Right click the can, select it and use Pour liquid... into the empty glass bottle.', flush=True)
     print('Once empty, drag the can to your inventory in the storage view.', flush=True)
     print('I / Esc pauses. Relaunch without --fresh to keep the canonical activity/effects.', flush=True)
-    os.execve(root / 'start.sh', [str(root / 'start.sh'), '--go', '--name', 'liquid_recovery_demo', *client_args], env)
+    os.execve(root / 'start.sh', [str(root / 'start.sh'), '--go', '--name', 'recovery_demo', *client_args], env)
 
 
 if __name__ == '__main__':

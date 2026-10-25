@@ -484,6 +484,36 @@ inline const char *EnumNamePresentationKind(PresentationKind e) {
   return EnumNamesPresentationKind()[index];
 }
 
+enum class SpeedContext : int8_t {
+  PLAY = 0,
+  REST = 1,
+  MIN = PLAY,
+  MAX = REST
+};
+
+inline const SpeedContext (&EnumValuesSpeedContext())[2] {
+  static const SpeedContext values[] = {
+    SpeedContext::PLAY,
+    SpeedContext::REST
+  };
+  return values;
+}
+
+inline const char * const *EnumNamesSpeedContext() {
+  static const char * const names[3] = {
+    "PLAY",
+    "REST",
+    nullptr
+  };
+  return names;
+}
+
+inline const char *EnumNameSpeedContext(SpeedContext e) {
+  if (::flatbuffers::IsOutRange(e, SpeedContext::PLAY, SpeedContext::REST)) return "";
+  const size_t index = static_cast<size_t>(e);
+  return EnumNamesSpeedContext()[index];
+}
+
 enum class SimulationControl : int8_t {
   PAUSE = 0,
   RESUME = 1,
@@ -3928,7 +3958,8 @@ struct SimulationState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_REALTIME = 4,
     VT_PAUSE_REASONS = 6,
     VT_TIME_SCALE = 8,
-    VT_CONTINUOUS_MOTION = 10
+    VT_CONTINUOUS_MOTION = 10,
+    VT_SPEED_CONTEXT = 12
   };
   bool realtime() const {
     return GetField<uint8_t>(VT_REALTIME, 0) != 0;
@@ -3954,12 +3985,19 @@ struct SimulationState FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   bool mutate_continuous_motion(bool _continuous_motion = 0) {
     return SetField<uint8_t>(VT_CONTINUOUS_MOTION, static_cast<uint8_t>(_continuous_motion), 0);
   }
+  CDDA::CWM::SpeedContext speed_context() const {
+    return static_cast<CDDA::CWM::SpeedContext>(GetField<int8_t>(VT_SPEED_CONTEXT, 0));
+  }
+  bool mutate_speed_context(CDDA::CWM::SpeedContext _speed_context = static_cast<CDDA::CWM::SpeedContext>(0)) {
+    return SetField<int8_t>(VT_SPEED_CONTEXT, static_cast<int8_t>(_speed_context), 0);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint8_t>(verifier, VT_REALTIME, 1) &&
            VerifyField<uint32_t>(verifier, VT_PAUSE_REASONS, 4) &&
            VerifyField<float>(verifier, VT_TIME_SCALE, 4) &&
            VerifyField<uint8_t>(verifier, VT_CONTINUOUS_MOTION, 1) &&
+           VerifyField<int8_t>(verifier, VT_SPEED_CONTEXT, 1) &&
            verifier.EndTable();
   }
 };
@@ -3980,6 +4018,9 @@ struct SimulationStateBuilder {
   void add_continuous_motion(bool continuous_motion) {
     fbb_.AddElement<uint8_t>(SimulationState::VT_CONTINUOUS_MOTION, static_cast<uint8_t>(continuous_motion), 0);
   }
+  void add_speed_context(CDDA::CWM::SpeedContext speed_context) {
+    fbb_.AddElement<int8_t>(SimulationState::VT_SPEED_CONTEXT, static_cast<int8_t>(speed_context), 0);
+  }
   explicit SimulationStateBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -3996,10 +4037,12 @@ inline ::flatbuffers::Offset<SimulationState> CreateSimulationState(
     bool realtime = false,
     uint32_t pause_reasons = 0,
     float time_scale = 1.0f,
-    bool continuous_motion = false) {
+    bool continuous_motion = false,
+    CDDA::CWM::SpeedContext speed_context = CDDA::CWM::SpeedContext::PLAY) {
   SimulationStateBuilder builder_(_fbb);
   builder_.add_time_scale(time_scale);
   builder_.add_pause_reasons(pause_reasons);
+  builder_.add_speed_context(speed_context);
   builder_.add_continuous_motion(continuous_motion);
   builder_.add_realtime(realtime);
   return builder_.Finish();
@@ -4010,7 +4053,8 @@ struct SimulationControlRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers:
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_COMMAND_ID = 4,
     VT_ACTION = 6,
-    VT_TIME_SCALE = 8
+    VT_TIME_SCALE = 8,
+    VT_SPEED_CONTEXT = 10
   };
   uint64_t command_id() const {
     return GetField<uint64_t>(VT_COMMAND_ID, 0);
@@ -4030,11 +4074,18 @@ struct SimulationControlRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers:
   bool mutate_time_scale(float _time_scale = 1.0f) {
     return SetField<float>(VT_TIME_SCALE, _time_scale, 1.0f);
   }
+  CDDA::CWM::SpeedContext speed_context() const {
+    return static_cast<CDDA::CWM::SpeedContext>(GetField<int8_t>(VT_SPEED_CONTEXT, 0));
+  }
+  bool mutate_speed_context(CDDA::CWM::SpeedContext _speed_context = static_cast<CDDA::CWM::SpeedContext>(0)) {
+    return SetField<int8_t>(VT_SPEED_CONTEXT, static_cast<int8_t>(_speed_context), 0);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint64_t>(verifier, VT_COMMAND_ID, 8) &&
            VerifyField<int8_t>(verifier, VT_ACTION, 1) &&
            VerifyField<float>(verifier, VT_TIME_SCALE, 4) &&
+           VerifyField<int8_t>(verifier, VT_SPEED_CONTEXT, 1) &&
            verifier.EndTable();
   }
 };
@@ -4052,6 +4103,9 @@ struct SimulationControlRequestBuilder {
   void add_time_scale(float time_scale) {
     fbb_.AddElement<float>(SimulationControlRequest::VT_TIME_SCALE, time_scale, 1.0f);
   }
+  void add_speed_context(CDDA::CWM::SpeedContext speed_context) {
+    fbb_.AddElement<int8_t>(SimulationControlRequest::VT_SPEED_CONTEXT, static_cast<int8_t>(speed_context), 0);
+  }
   explicit SimulationControlRequestBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -4067,10 +4121,12 @@ inline ::flatbuffers::Offset<SimulationControlRequest> CreateSimulationControlRe
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint64_t command_id = 0,
     CDDA::CWM::SimulationControl action = CDDA::CWM::SimulationControl::PAUSE,
-    float time_scale = 1.0f) {
+    float time_scale = 1.0f,
+    CDDA::CWM::SpeedContext speed_context = CDDA::CWM::SpeedContext::PLAY) {
   SimulationControlRequestBuilder builder_(_fbb);
   builder_.add_command_id(command_id);
   builder_.add_time_scale(time_scale);
+  builder_.add_speed_context(speed_context);
   builder_.add_action(action);
   return builder_.Finish();
 }

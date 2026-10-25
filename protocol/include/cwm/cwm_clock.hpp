@@ -3,25 +3,48 @@
 #include <algorithm>
 #include <chrono>
 #include <cmath>
+#include <initializer_list>
 
 namespace cdda::cwm {
 enum PauseReason : unsigned { Manual = 1, Menu = 2, Threat = 4, Recovery = 8, Decision = 16 };
 class SimulationClock {
 public:
     using Wall = std::chrono::steady_clock;
-    void sample(Wall::time_point now, bool running, bool accelerated = false, unsigned rest_multiplier = 64) {
-        if(accelerated_ && (!running || !accelerated))tick_end_=std::max(tick_end_,elapsed_);
-        accelerated_=running && accelerated;
-        if (started_ && running_ && running) {
-            // Suspend/stalls lose wall time rather than creating catch-up turns.
-            const double dt = std::chrono::duration<double>(now - last_).count();
-            elapsed_ += std::clamp(dt, 0.0, 0.25) * scale_ * (accelerated_ ? double(std::clamp(rest_multiplier, 1u, 1024u)) : 1.0);
+    // One effective rate. F8 edits that rate in the current native context.
+    // Context preferences are alternatives, never multiplied together.
+    void sample(Wall::time_point now, bool running) {
+        const bool fast=rest_context_ && scale_>4.;
+        if(accelerated_ && (!running || !fast))tick_end_=std::max(tick_end_,elapsed_);
+        accelerated_=running && fast;
+        if(started_ && running_ && running) {
+            const double dt=std::chrono::duration<double>(now-last_).count();
+            elapsed_+=std::clamp(dt,0.,.25)*scale_;
         }
-        last_ = now; started_ = true; running_ = running;
+        last_=now;started_=true;running_=running;
     }
+    void set_rest_context(bool rest) {
+        if(rest==rest_context_)return;
+        if(rest) {normal_scale_=scale_;scale_=rest_scale_;}
+        else {rest_scale_=scale_;scale_=normal_scale_;}
+        rest_context_=rest;
+        tick_end_=std::max(tick_end_,elapsed_); // Discard unused accelerated credit.
+        accelerated_=false;
+    }
+    bool rest_context() const {return rest_context_;}
     bool set_scale(double value) {
-        if (!std::isfinite(value) || value < 0.25 || value > 4.0) return false;
-        scale_ = value; return true;
+        if(!std::isfinite(value) || value<.25 || value>(rest_context_?1024.:4.))return false;
+        if(rest_context_ && value<scale_)tick_end_=std::max(tick_end_,elapsed_);
+        scale_=value;
+        if(rest_context_)rest_scale_=value;else normal_scale_=value;
+        return true;
+    }
+    bool set_scale(double value,bool expected_rest_context) {
+        return expected_rest_context==rest_context_ && set_scale(value);
+    }
+    static double next_scale(double current,bool rest) {
+        if(rest) {for(double value:{1.,4.,64.,256.,1024.})if(value>current+1e-5)return value;return 1.;}
+        for(double value:{.5,1.,2.,4.})if(value>current+1e-5)return value;
+        return .5;
     }
     double scale() const { return scale_; }
     double elapsed() const { return elapsed_; }
@@ -48,7 +71,8 @@ public:
     }
 private:
     Wall::time_point last_{};
-    bool started_{false}, running_{false}, accelerated_{false};
+    bool started_{false}, running_{false}, accelerated_{false}, rest_context_{false};
+    double normal_scale_{1.},rest_scale_{256.};
     double elapsed_{0.0}, scale_{1.0}, tick_end_{1.0}, action_due_{0.0};
 };
 }

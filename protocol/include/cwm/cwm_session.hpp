@@ -22,7 +22,7 @@ inline uint64_t fresh_identity() {
     return value ? value : 1;
 }
 inline bool valid_rest(const CDDA::CWM::RestState* rest) {
-    return rest && (rest->speed_multiplier()==1 || rest->speed_multiplier()==64 || rest->speed_multiplier()==256 || rest->speed_multiplier()==1024) && (!rest->accelerated() || rest->speed_multiplier()>1) && rest->token() && int(rest->phase())>=0 && int(rest->phase())<=2 && rest->progress()>=-1 && rest->progress()<=100 &&
+    return rest && rest->speed_multiplier()==1 && rest->token() && int(rest->phase())>=0 && int(rest->phase())<=2 && rest->progress()>=-1 && rest->progress()<=100 &&
         (rest->phase()==CDDA::CWM::RestPhase::WAITING || rest->progress()==-1) &&
         (rest->phase()!=CDDA::CWM::RestPhase::SLEEPING || !rest->interruptible());
 }
@@ -306,10 +306,14 @@ inline bool valid_world(const CDDA::CWM::WorldSnapshot* world) {
         }
     }
     if (const auto* clock = world->clock()) {
-        if (!std::isfinite(clock->time_scale()) || clock->time_scale() < .25f || clock->time_scale() > 4.f ||
+        if (!std::isfinite(clock->time_scale()) || clock->time_scale() < .25f || clock->time_scale() > (clock->speed_context()==CDDA::CWM::SpeedContext::REST?1024.f:4.f) ||
+            int(clock->speed_context())<0 || int(clock->speed_context())>1 ||
+            (clock->speed_context()==CDDA::CWM::SpeedContext::REST && (!clock->realtime() || !world->rest())) ||
             (clock->pause_reasons() & ~uint32_t(31)) ||
             (clock->continuous_motion() && !clock->realtime())) return false;
     }
+    if(world->clock() && world->rest() && world->rest()->accelerated()!=
+        (world->clock()->speed_context()==CDDA::CWM::SpeedContext::REST && world->clock()->time_scale()>4.f))return false;
     std::set<uint64_t> ids;
     std::unordered_map<uint64_t, const CDDA::CWM::EntityState*> actor_states;
     actor_states.reserve(world->entities()->size());

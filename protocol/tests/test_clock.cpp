@@ -44,17 +44,24 @@ int main() {
     for(int i=1;i<=9;++i) work.sample(t(90.1+i*.25),true);
     CHECK(!work.action_due()); work.sample(t(92.6),true); CHECK(work.action_due());
     CHECK(work.charge_work(-100,100)==0); CHECK(work.action_due());
-    SimulationClock rest;rest.sample(t(0),true,true);rest.sample(t(.25),true,true);
-    CHECK(std::abs(rest.elapsed()-16)<1e-8);CHECK(rest.tick_due());rest.complete_tick();
-    rest.sample(t(.25),false);const auto frozen=rest.elapsed();rest.sample(t(900),false);
-    CHECK(rest.elapsed()==frozen);rest.sample(t(901),true,false);CHECK(rest.elapsed()==frozen);
-    rest.sample(t(901.25),true,false);CHECK(std::abs(rest.elapsed()-frozen-.25)<1e-8);
-    SimulationClock fast;fast.set_scale(4);fast.sample(t(0),true,true,256);fast.sample(t(.25),true,true,256);
-    CHECK(std::abs(fast.elapsed()-256)<1e-8);
-    int ticks=0;while(fast.tick_due() && ticks<100){fast.complete_tick();++ticks;}
-    CHECK(ticks>=32 && ticks<=34); // Bounded credit, not one tick after a stall.
-    const auto before_pause=fast.elapsed();fast.sample(t(.25),false,true,256);fast.sample(t(80),false,true,256);
-    CHECK(fast.elapsed()==before_pause);fast.sample(t(81),true,false);fast.sample(t(81.25),true,false);
-    CHECK(std::abs(fast.elapsed()-before_pause-1)<1e-8); // Normal 4x, no sleep multiplier left.
+    SimulationClock rest;CHECK(rest.set_scale(2));rest.set_rest_context(true);
+    CHECK(rest.rest_context());CHECK(rest.scale()==256);
+    rest.sample(t(0),true);rest.sample(t(.25),true);
+    CHECK(std::abs(rest.elapsed()-64)<1e-8);CHECK(rest.tick_due());
+    int ticks=0;while(rest.tick_due() && ticks<100){rest.complete_tick();++ticks;}
+    CHECK(ticks>=32 && ticks<=34);
+    CHECK(rest.set_scale(1024,true));CHECK(!rest.set_scale(4,false));CHECK(rest.scale()==1024);
+    CHECK(!rest.set_scale(1025,true));CHECK(rest.set_scale(1,true));
+    CHECK(rest.scale()==1);const auto frozen=rest.elapsed();
+    rest.sample(t(.25),false);rest.sample(t(900),false);CHECK(rest.elapsed()==frozen);
+    rest.sample(t(901),true);rest.sample(t(901.25),true);CHECK(std::abs(rest.elapsed()-frozen-.25)<1e-8);
+    rest.set_rest_context(false);CHECK(!rest.rest_context());CHECK(rest.scale()==2);
+    CHECK(!rest.set_scale(4,true));CHECK(!rest.set_scale(256,false));CHECK(rest.scale()==2);
+    rest.set_rest_context(true);CHECK(rest.scale()==1); // The last rest choice is an alternative, not a factor.
+    CHECK(SimulationClock::next_scale(4,false)==.5);CHECK(SimulationClock::next_scale(4,true)==64);
+    CHECK(SimulationClock::next_scale(256,true)==1024);CHECK(SimulationClock::next_scale(1024,true)==1);
+    // Changing context never clears already charged work.
+    SimulationClock debt;debt.sample(t(0),true);debt.charge_work(500,100);
+    const auto owed=debt.remaining_work();debt.set_rest_context(true);debt.set_rest_context(false);CHECK(debt.remaining_work()==owed);
     std::cout<<"Clock invariants PASS ("<<checks<<" checks)\n";
 }
