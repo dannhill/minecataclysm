@@ -404,7 +404,7 @@ index fe8ad11..78b57f3 100644
  bool ramp_move( avatar &you, map &m, const tripoint &dest );
  
 diff --git a/src/character.cpp b/src/character.cpp
-index a90f830..84949ac 100644
+index a90f830..03300f9 100644
 --- a/src/character.cpp
 +++ b/src/character.cpp
 @@ -1,3 +1,6 @@
@@ -414,7 +414,7 @@ index a90f830..84949ac 100644
  #include "character.h"
  
  #include <algorithm>
-@@ -6979,9 +6982,28 @@ void Character::burn_move_stamina( int moves )
+@@ -6979,9 +6982,32 @@ void Character::burn_move_stamina( int moves )
      }
  
      burn_ratio *= move_mode->stamina_mult();
@@ -426,7 +426,11 @@ index a90f830..84949ac 100644
 +                      character_modifier_move_mode_move_cost_mod );
 +    if( cwm_motion::fractional_stamina() ) {
 +        double remainder = 0;
-+        std::istringstream( get_value( "cwm_stamina_fraction" ) ) >> remainder;
++        const std::string rem_raw = get_value( "cwm_stamina_fraction" );
++        if( !rem_raw.empty() ) {
++            char *endp = nullptr;
++            remainder = std::strtod( rem_raw.c_str(), &endp );
++        }
 +        if( !std::isfinite( remainder ) || remainder < 0 || remainder >= 1 ) remainder = 0;
 +        burn += remainder;
 +        // Repeated fractional samples can accumulate to values such as
@@ -434,9 +438,9 @@ index a90f830..84949ac 100644
 +        // Snap only across a tiny floating-point boundary so sampling rate
 +        // cannot change total stamina cost.
 +        const int whole = static_cast<int>( std::floor( burn + 1e-9 ) );
-+        std::ostringstream saved;
-+        saved << std::setprecision( 17 ) << std::max( 0.0, burn - whole );
-+        set_value( "cwm_stamina_fraction", saved.str() );
++        char rem_buf[64];
++        std::snprintf( rem_buf, sizeof( rem_buf ), "%.17g", std::max( 0.0, burn - whole ) );
++        set_value( "cwm_stamina_fraction", rem_buf );
 +        mod_stamina( -whole );
 +        // Random overburden pain remains a native tile-boundary effect rather
 +        // than acquiring a sampling-frequency dependency.
@@ -1538,7 +1542,7 @@ index 5dd44b0..7ca192e 100644
           * Remove a specific item from the inventory. The item is compared
           * by pointer. Contents of the item are removed as well.
 diff --git a/src/inventory_ui.cpp b/src/inventory_ui.cpp
-index deac48c..8ab60a5 100644
+index deac48c..098f160 100644
 --- a/src/inventory_ui.cpp
 +++ b/src/inventory_ui.cpp
 @@ -1,4 +1,5 @@
@@ -1547,95 +1551,100 @@ index deac48c..8ab60a5 100644
  
  #include <cstdint>
  #include <optional>
-@@ -3254,6 +3255,10 @@ std::string inventory_selector::action_bound_to_key( char key ) const
+@@ -3252,8 +3253,22 @@ std::string inventory_selector::action_bound_to_key( char key ) const
+     return ctxt.input_to_action( input_event( key, input_event_t::keyboard_char ) );
+ }
  
++namespace {
++bool reject_external_inventory_selector()
++{
++    if( !external_ui_active() ) {
++        return false;
++    }
++    external_ui_choice( _( "This item selection needs a dedicated interface.  Nothing was selected." ), { _( "Cancel" ) } );
++    return true;
++}
++} // namespace
++
  item_location inventory_pick_selector::execute()
  {
-+    if( external_ui_active() ) {
-+        external_ui_choice( _( "This item selection needs a dedicated interface.  Nothing was selected." ), { _( "Cancel" ) } );
++    if( reject_external_inventory_selector() ) {
 +        return item_location::nowhere;
 +    }
      shared_ptr_fast<ui_adaptor> ui = create_or_get_ui_adaptor();
      debug_print_timer( tp_start );
      item_location startDragItem;
-@@ -3394,6 +3399,10 @@ void ammo_inventory_selector::mod_chosen_count( inventory_entry &entry, int valu
+@@ -3394,6 +3409,9 @@ void ammo_inventory_selector::mod_chosen_count( inventory_entry &entry, int valu
  
  drop_location ammo_inventory_selector::execute()
  {
-+    if( external_ui_active() ) {
-+        external_ui_choice( _( "This item selection needs a dedicated interface.  Nothing was selected." ), { _( "Cancel" ) } );
++    if( reject_external_inventory_selector() ) {
 +        return {};
 +    }
      shared_ptr_fast<ui_adaptor> ui = create_or_get_ui_adaptor();
      debug_print_timer( tp_start );
      while( true ) {
-@@ -3662,6 +3671,10 @@ void inventory_multiselector::toggle_entries( int &count, const toggle_mode mode
+@@ -3662,6 +3680,9 @@ void inventory_multiselector::toggle_entries( int &count, const toggle_mode mode
  
  drop_locations inventory_multiselector::execute( bool allow_empty )
  {
-+    if( external_ui_active() ) {
-+        external_ui_choice( _( "This item selection needs a dedicated interface.  Nothing was selected." ), { _( "Cancel" ) } );
++    if( reject_external_inventory_selector() ) {
 +        return {};
 +    }
      shared_ptr_fast<ui_adaptor> ui = create_or_get_ui_adaptor();
      debug_print_timer( tp_start );
      while( true ) {
-@@ -3697,6 +3710,10 @@ inventory_compare_selector::inventory_compare_selector( Character &p ) :
+@@ -3697,6 +3718,9 @@ inventory_compare_selector::inventory_compare_selector( Character &p ) :
  
  std::pair<const item *, const item *> inventory_compare_selector::execute()
  {
-+    if( external_ui_active() ) {
-+        external_ui_choice( _( "This item selection needs a dedicated interface.  Nothing was selected." ), { _( "Cancel" ) } );
++    if( reject_external_inventory_selector() ) {
 +        return {};
 +    }
      shared_ptr_fast<ui_adaptor> ui = create_or_get_ui_adaptor();
      debug_print_timer( tp_start );
      while( true ) {
-@@ -3949,6 +3966,10 @@ std::string haul_selector_preset::get_denial( const item_location &item ) const
+@@ -3949,6 +3973,9 @@ std::string haul_selector_preset::get_denial( const item_location &item ) const
  
  drop_locations inventory_drop_selector::execute()
  {
-+    if( external_ui_active() ) {
-+        external_ui_choice( _( "This item selection needs a dedicated interface.  Nothing was selected." ), { _( "Cancel" ) } );
++    if( reject_external_inventory_selector() ) {
 +        return {};
 +    }
      shared_ptr_fast<ui_adaptor> ui = create_or_get_ui_adaptor();
      debug_print_timer( tp_start );
      while( true ) {
-@@ -4137,6 +4158,10 @@ void pickup_selector::apply_selection( std::vector<drop_location> selection )
+@@ -4137,6 +4164,9 @@ void pickup_selector::apply_selection( std::vector<drop_location> selection )
  
  drop_locations pickup_selector::execute()
  {
-+    if( external_ui_active() ) {
-+        external_ui_choice( _( "This item selection needs a dedicated interface.  Nothing was selected." ), { _( "Cancel" ) } );
++    if( reject_external_inventory_selector() ) {
 +        return {};
 +    }
      shared_ptr_fast<ui_adaptor> ui = create_or_get_ui_adaptor();
      debug_print_timer( tp_start );
  
-@@ -4312,6 +4337,10 @@ void inventory_examiner::force_max_window_size()
+@@ -4312,6 +4342,9 @@ void inventory_examiner::force_max_window_size()
  
  int inventory_examiner::execute()
  {
-+    if( external_ui_active() ) {
-+        external_ui_choice( _( "This item selection needs a dedicated interface.  Nothing was selected." ), { _( "Cancel" ) } );
++    if( reject_external_inventory_selector() ) {
 +        return -1;
 +    }
      if( !check_parent_item() ) {
          return NO_CONTENTS_TO_EXAMINE;
      }
-@@ -4405,6 +4434,10 @@ std::string unload_selector::hint_string()
+@@ -4405,6 +4438,9 @@ std::string unload_selector::hint_string()
  
  std::pair<item_location, bool> unload_selector::execute()
  {
-+    if( external_ui_active() ) {
-+        external_ui_choice( _( "This item selection needs a dedicated interface.  Nothing was selected." ), { _( "Cancel" ) } );
++    if( reject_external_inventory_selector() ) {
 +        return { item_location::nowhere, false };
 +    }
      shared_ptr_fast<ui_adaptor> ui = create_or_get_ui_adaptor();
      item_location startDragItem;
      bool dragActive = false;
-@@ -4477,8 +4510,10 @@ trade_selector::trade_selector( trade_ui *parent, Character &u,
+@@ -4477,8 +4513,10 @@ trade_selector::trade_selector( trade_ui *parent, Character &u,
      // CANCEL and OK are already set in inventory_selector
      ctxt.register_action( ACTION_SWITCH_PANES );
      ctxt.register_action( ACTION_AUTOBALANCE );
@@ -2386,7 +2395,7 @@ index c4c28c2..ebd39b2 100644
          create_window();
          _position = -1;
 diff --git a/src/trade_ui.cpp b/src/trade_ui.cpp
-index b1bf5f8..e64aa33 100644
+index b1bf5f8..f0f8215 100644
 --- a/src/trade_ui.cpp
 +++ b/src/trade_ui.cpp
 @@ -1,5 +1,11 @@
@@ -2475,18 +2484,41 @@ index b1bf5f8..e64aa33 100644
          if( np.max_credit_extended() == 0 ) {
              popup( _( "You'll need to offer me more than that." ) );
          } else {
-@@ -309,3 +327,101 @@ void trade_ui::_draw_header()
+@@ -309,3 +327,124 @@ void trade_ui::_draw_header()
                                           trade_selector::ACTION_AUTOBALANCE ),
                                             c_yellow ) ) );
  }
 +
 +namespace {
++void append_item_signature( std::string &out, const item &it, int depth = 0 ) {
++    out.append( it.typeId().str() );
++    out.push_back( ':' );
++    out.append( std::to_string( it.charges ) );
++    out.push_back( ':' );
++    out.append( std::to_string( it.damage() ) );
++    out.push_back( ':' );
++    out.push_back( it.rotten() ? 'R' : 'F' );
++    if( depth < 8 ) {
++        for( const item_pocket *pocket : it.get_all_contained_pockets() ) {
++            out.push_back( '[' );
++            out.push_back( pocket->sealed() ? 'S' : 'O' );
++            for( const item *child : pocket->all_items_top() ) {
++                if( child ) {
++                    append_item_signature( out, *child, depth + 1 );
++                }
++            }
++            out.push_back( ']' );
++        }
++    }
++    out.push_back( ';' );
++}
++
 +std::string trade_signature( const item_location &loc ) {
 +    if( !loc ) return {};
-+    std::ostringstream stream;
-+    JsonOut json( stream );
-+    loc->serialize( json );
-+    return stream.str();
++    std::string out;
++    out.reserve( 64 );
++    append_item_signature( out, *loc );
++    return out;
 +}
 +}
 +
@@ -3056,10 +3088,10 @@ index 0000000..1296d17
 +} // namespace cwm
 diff --git a/src/cwm/cwm_crafting.h b/src/cwm/cwm_crafting.h
 new file mode 100644
-index 0000000..d94c308
+index 0000000..9f6670a
 --- /dev/null
 +++ b/src/cwm/cwm_crafting.h
-@@ -0,0 +1,220 @@
+@@ -0,0 +1,236 @@
 +#pragma once
 +#include "cwm/product_language.hpp"
 +#include "avatar.h"
@@ -3156,15 +3188,23 @@ index 0000000..d94c308
 +            const auto& inv = u.crafting_inventory();
 +            const auto helpers = u.get_crafting_group();
 +            auto available = u.get_available_recipes(inv, &helpers);
-+            std::vector<Selection> candidates;
++            struct Candidate {
++                const recipe* rec;
++                item_location work;
++                bool resume;
++                uint8_t rank;
++                std::string result_name;
++            };
++            std::vector<Candidate> candidates;
 +            const auto include = [&](const recipe& rec,item_location work) {
 +                // Native nested categories are navigation, never executable
 +                // recipes. Their children are already in available_recipes.
 +                if (!rec || rec.obsolete || (!work && rec.is_nested())) return;
++                const uint8_t rank = recent_rank(rec);
 +                if(filter==CDDA::CWM::CraftingFilter::UNFINISHED && !work)return;
 +                if(filter==CDDA::CWM::CraftingFilter::FAVORITES && !uistate.favorite_recipes.count(rec.ident()))return;
-+                if(filter==CDDA::CWM::CraftingFilter::RECENT && !recent_rank(rec))return;
-+                candidates.push_back({&rec,work,bool(work)});
++                if(filter==CDDA::CWM::CraftingFilter::RECENT && !rank)return;
++                candidates.push_back({&rec,work,bool(work),rank,rec.result_name()});
 +            };
 +            for (auto loc:u.all_items_loc())if(loc->is_craft())include(loc->get_making(),loc);
 +            map& m=get_map();for(const auto& tile:m.points_in_radius(u.pos(),1)) {
@@ -3175,23 +3215,31 @@ index 0000000..d94c308
 +            if(filter==CDDA::CWM::CraftingFilter::AUTO) {
 +                const auto any=[&](auto predicate){return std::any_of(candidates.begin(),candidates.end(),predicate);};
 +                filter=any([](const auto& e){return e.resume;}) ? CDDA::CWM::CraftingFilter::UNFINISHED :
-+                    any([](const auto& e){return recent_rank(*e.rec)>0;}) ? CDDA::CWM::CraftingFilter::RECENT :
++                    any([](const auto& e){return e.rank>0;}) ? CDDA::CWM::CraftingFilter::RECENT :
 +                    any([](const auto& e){return uistate.favorite_recipes.count(e.rec->ident())>0;}) ? CDDA::CWM::CraftingFilter::FAVORITES : CDDA::CWM::CraftingFilter::ALL;
 +                candidates.erase(std::remove_if(candidates.begin(),candidates.end(),[&](const auto& e) {
 +                    return (filter==CDDA::CWM::CraftingFilter::UNFINISHED && !e.resume) ||
-+                        (filter==CDDA::CWM::CraftingFilter::RECENT && !recent_rank(*e.rec)) ||
++                        (filter==CDDA::CWM::CraftingFilter::RECENT && !e.rank) ||
 +                        (filter==CDDA::CWM::CraftingFilter::FAVORITES && !uistate.favorite_recipes.count(e.rec->ident()));
 +                }),candidates.end());
 +            }
-+            std::stable_sort(candidates.begin(),candidates.end(),[&](const auto& a,const auto& b) {
-+                if(filter==CDDA::CWM::CraftingFilter::RECENT && recent_rank(*a.rec)!=recent_rank(*b.rec))return recent_rank(*a.rec)<recent_rank(*b.rec);
-+                if(a.resume!=b.resume)return a.resume;
-+                return std::make_pair(a.rec->result_name(),a.rec->ident().str()) < std::make_pair(b.rec->result_name(),b.rec->ident().str());
-+            });
 +            const auto needle = lower(search);
-+            auto add = [&](const recipe& rec, item_location work) {
-+                const std::string name = work ? work->tname() : rec.result_name();
-+                if (!needle.empty() && lower(name + " " + rec.ident().str()).find(needle) == std::string::npos) return;
++            if (!needle.empty()) {
++                candidates.erase(std::remove_if(candidates.begin(), candidates.end(), [&](const auto& e) {
++                    const std::string name = e.work ? e.work->tname() : e.result_name;
++                    return lower(name + " " + e.rec->ident().str()).find(needle) == std::string::npos;
++                }), candidates.end());
++            }
++            std::stable_sort(candidates.begin(),candidates.end(),[&](const auto& a,const auto& b) {
++                if(filter==CDDA::CWM::CraftingFilter::RECENT && a.rank!=b.rank)return a.rank<b.rank;
++                if(a.resume!=b.resume)return a.resume;
++                if(a.result_name!=b.result_name)return a.result_name<b.result_name;
++                return a.rec->ident().str()<b.rec->ident().str();
++            });
++            auto add = [&](const Candidate& cand) {
++                const recipe& rec = *cand.rec;
++                item_location work = cand.work;
++                const std::string name = work ? work->tname() : cand.result_name;
 +                if (rows.size() >= 256) { truncated = true; return; }
 +                std::string reason = availability(u, rec, work ? work->get_making_batch_size() : batch, bool(work));
 +                if (work) {
@@ -3225,9 +3273,9 @@ index 0000000..d94c308
 +                const int64_t time = u.crafting_speed_multiplier(rec) > 0 ? std::max<int64_t>(0, u.expected_time_to_craft(rec, actual_batch)) : 0;
 +                rows.push_back(CDDA::CWM::CreateCraftingEntry(fbb, rows.size()+1, rid, type, title, req, why,
 +                    time, bool(work), work ? std::clamp(work->item_counter, 0, 10000000) : 0,
-+                    uistate.favorite_recipes.count(rec.ident()) != 0,recent_rank(rec)));
++                    uistate.favorite_recipes.count(rec.ident()) != 0,cand.rank));
 +            };
-+            for(const auto& candidate:candidates)add(*candidate.rec,candidate.work);
++            for(const auto& candidate:candidates)add(candidate);
 +        }
 +        if(filter==CDDA::CWM::CraftingFilter::AUTO)filter=CDDA::CWM::CraftingFilter::ALL;
 +        const auto list = fbb.CreateVector(rows); const auto why = fbb.CreateString(error);
@@ -3460,10 +3508,10 @@ index 0000000..0866007
 +} // namespace cwm
 diff --git a/src/cwm/cwm_inventory.h b/src/cwm/cwm_inventory.h
 new file mode 100644
-index 0000000..4e0957c
+index 0000000..581d605
 --- /dev/null
 +++ b/src/cwm/cwm_inventory.h
-@@ -0,0 +1,359 @@
+@@ -0,0 +1,361 @@
 +#pragma once
 +#include "cwm/product_language.hpp"
 +#include <algorithm>
@@ -3638,14 +3686,16 @@ index 0000000..4e0957c
 +        if (before) { error = validate_binding(u, view, before); if (!error.empty()) return error; }
 +        if (source == before) return {};
 +        std::vector<uint32_t> order;
++        order.reserve(bindings_.size());
++        std::vector<int> sort_keys(bindings_.size() + 1, 0);
 +        for (unsigned n = 1; n <= bindings_.size(); ++n) {
 +            error = validate_binding(u, view, n); if (!error.empty()) return error;
++            const int x = ui_order(*target(n));
++            sort_keys[n] = x > 0 ? x : 4096 + int(n);
 +            order.push_back(n);
 +        }
 +        std::stable_sort(order.begin(), order.end(), [&](unsigned a, unsigned b) {
-+            const int x = ui_order(*target(a));
-+            const int y = ui_order(*target(b));
-+            return (x > 0 ? x : 4096 + int(a)) < (y > 0 ? y : 4096 + int(b));
++            return sort_keys[a] < sort_keys[b];
 +        });
 +        order.erase(std::find(order.begin(), order.end(), source));
 +        order.insert(before ? std::find(order.begin(), order.end(), before) : order.end(), source);
@@ -3901,10 +3951,10 @@ index 0000000..b56e396
 +}
 diff --git a/src/cwm/cwm_main.cpp b/src/cwm/cwm_main.cpp
 new file mode 100644
-index 0000000..af07174
+index 0000000..16f008a
 --- /dev/null
 +++ b/src/cwm/cwm_main.cpp
-@@ -0,0 +1,467 @@
+@@ -0,0 +1,442 @@
 +// CDDA Headless CWM Server Entrypoint
 +// Licensed under Apache-2.0
 +
@@ -3942,6 +3992,7 @@ index 0000000..af07174
 +#include "rng.h"
 +#include "translations.h"
 +#include "cwm/product_language.hpp"
++#include "cwm/cwm_platform.hpp"
 +#include "monster.h"
 +#include "npc.h"
 +#include "vehicle.h"
@@ -3953,18 +4004,10 @@ index 0000000..af07174
 +}
 +#endif
 +
-+#ifdef _WIN32
-+#include <windows.h>
-+#include <shellapi.h>
-+#include "cwm/windows_pipe_transport.hpp"
-+static HANDLE cwm_stop_event = nullptr;
-+static std::string cwm_ready_event;
-+#endif
++static cdda::cwm::PlatformLifecycle g_platform;
 +static volatile std::sig_atomic_t g_running = 1;
 +static bool keep_running() {
-+#ifdef _WIN32
-+    if (cwm_stop_event && WaitForSingleObject(cwm_stop_event, 0) == WAIT_OBJECT_0) return false;
-+#endif
++    if (g_platform.stop_requested()) return false;
 +    return g_running != 0;
 +}
 +
@@ -4052,24 +4095,7 @@ index 0000000..af07174
 +}
 +
 +int main(int argc, const char* argv[]) {
-+#ifdef _WIN32
-+    // Preserve the native main friend boundary while reading Windows Unicode
-+    // arguments directly; the CRT narrow argv can use a legacy code page.
-+    int wide_argc = 0;
-+    LPWSTR *wide_argv = CommandLineToArgvW(GetCommandLineW(), &wide_argc);
-+    if (!wide_argv) return 2;
-+    std::vector<std::string> values;
-+    for (int i=0; i<wide_argc; ++i) {
-+        const int size=WideCharToMultiByte(CP_UTF8,0,wide_argv[i],-1,nullptr,0,nullptr,nullptr);
-+        std::string value(size, '\0');
-+        WideCharToMultiByte(CP_UTF8,0,wide_argv[i],-1,value.data(),size,nullptr,nullptr);
-+        value.pop_back(); values.push_back(std::move(value));
-+    }
-+    LocalFree(wide_argv);
-+    std::vector<const char*> args; for (const auto &value:values) args.push_back(value.c_str()); args.push_back(nullptr);
-+    argc=wide_argc; argv=args.data();
-+    struct StopEventGuard { ~StopEventGuard() { if(cwm_stop_event) CloseHandle(cwm_stop_event); } } stop_guard;
-+#endif
++    if (!g_platform.normalize_args(argc, argv)) return 2;
 +    std::string socket_path;
 +    std::string world_name = "cwm_world";
 +    std::string user_dir = "./user";
@@ -4085,16 +4111,12 @@ index 0000000..af07174
 +
 +    for (int i = 1; i < argc; ++i) {
 +        std::string arg = argv[i];
-+#ifdef _WIN32
-+        if (arg == "--stop-event" && i + 1 < argc) {
-+            const auto name = cdda::cwm::pipe_wide(argv[++i]);
-+            cwm_stop_event = OpenEventW(SYNCHRONIZE, FALSE, name.c_str());
-+            if (!cwm_stop_event) { std::cerr << "Cannot open launcher stop event\n"; return 2; }
-+        } else if (arg == "--ready-event" && i + 1 < argc) {
-+            cwm_ready_event = argv[++i];
-+        } else
-+#endif
-+        if (arg == "--socket" && i + 1 < argc) {
++        if (const int consumed = g_platform.consume_arg(arg, i, argc, argv); consumed != 0) {
++            if (consumed < 0) {
++                std::cerr << "Cannot open launcher stop event\n";
++                return 2;
++            }
++        } else if (arg == "--socket" && i + 1 < argc) {
 +            socket_path = argv[++i];
 +        } else if (arg == "--world" && i + 1 < argc) {
 +            world_name = argv[++i];
@@ -4178,14 +4200,21 @@ index 0000000..af07174
 +            "cdda/data",
 +            "../data",
 +            "../../data",
-+            "../cdda/data",
-+            "/home/dannhill/Projects/cdda-mineclonia/cdda/data"
++            "../cdda/data"
 +        };
++        if (const char* env_data = std::getenv("CDDA_DATA_DIR"); env_data && *env_data) {
++            candidates.insert(candidates.begin(), env_data);
++        }
++        if (const char* env_root = std::getenv("CWM_PROJECT_ROOT"); env_root && *env_root) {
++            candidates.push_back((fs::path(env_root) / "cdda" / "data").string());
++        }
 +        try {
-+            fs::path exe_dir = fs::path(argv[0]).parent_path();
++            fs::path exe_dir = fs::weakly_canonical(fs::path(argv[0])).parent_path();
++            candidates.push_back((exe_dir / "data").string());
 +            candidates.push_back((exe_dir / ".." / "data").string());
 +            candidates.push_back((exe_dir / ".." / ".." / "data").string());
 +            candidates.push_back((exe_dir / ".." / ".." / "cdda" / "data").string());
++            candidates.push_back((exe_dir / ".." / ".." / ".." / "cdda" / "data").string());
 +        } catch (...) {}
 +
 +        for (const auto& c : candidates) {
@@ -4311,16 +4340,12 @@ index 0000000..af07174
 +        std::cerr << "[CDDA-Server] ERROR: Failed to bind local IPC endpoint at " << socket_path << "\n";
 +        return 1;
 +    }
-+    std::cout << "[CDDA-Server] CWM IPC server listening on: " << socket_path << "\n";
++    std::cout << "[CDDA-Server] CWM IPC server listening on: " << socket_path << std::endl;
 +
-+#ifdef _WIN32
-+    if (!cwm_ready_event.empty()) {
-+        const auto name = cdda::cwm::pipe_wide(cwm_ready_event);
-+        const auto event = OpenEventW(EVENT_MODIFY_STATE, FALSE, name.c_str());
-+        if (!event || !SetEvent(event)) { std::cerr << "Cannot signal launcher readiness\n"; return 2; }
-+        CloseHandle(event);
++    if (!g_platform.signal_ready()) {
++        std::cerr << "Cannot signal launcher readiness\n";
++        return 2;
 +    }
-+#endif
 +    // Milestone 0.5 Automated acceptance mode
 +    if (headless) {
 +        std::cout << "[CDDA-Server] Running headless simulation for " << headless_ticks << " turns...\n";
@@ -4374,10 +4399,10 @@ index 0000000..af07174
 +
 diff --git a/src/cwm/cwm_map_exporter.cpp b/src/cwm/cwm_map_exporter.cpp
 new file mode 100644
-index 0000000..b6a6c83
+index 0000000..f6b36fb
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.cpp
-@@ -0,0 +1,737 @@
+@@ -0,0 +1,675 @@
 +#include "cwm/product_language.hpp"
 +#include "cwm_motion.h"
 +// CDDA CWM Map & Entity Exporter Implementation
@@ -4454,44 +4479,6 @@ index 0000000..b6a6c83
 +uint64_t CwmMapExporter::monster_entity_id(const monster& critter) {
 +    const int id = stored_monster_id(critter);
 +    return id ? monster_namespace | uint64_t(id) : 0;
-+}
-+
-+namespace {
-+bool presentation_enabled = false;
-+uint64_t cue_id = 0;
-+std::vector<PresentationCue> pending_cues;
-+void append_cue(CueKind kind, uint64_t actor, std::string text, std::string category = {}, int volume = 0) {
-+    if (pending_cues.size() >= 128) return; // Drop presentation, never block gameplay.
-+    pending_cues.push_back({++cue_id, kind, actor, std::move(text), std::move(category), std::clamp(volume, 0, 200)});
-+}
-+}
-+void enable_presentation(bool enabled) {
-+    presentation_enabled = enabled;
-+    if (!enabled) pending_cues.clear();
-+}
-+void record_presentation(CueKind kind, const Creature& actor) {
-+    if (!presentation_enabled) return;
-+    const avatar& viewer = get_avatar();
-+    if (!actor.is_avatar() && !viewer.sees(actor)) return;
-+    uint64_t id = actor.is_avatar() ? 1 : 0;
-+    if (const auto* mon = actor.as_monster()) {
-+        if (mon->is_hallucination()) return;
-+        id = CwmMapExporter::monster_entity_id(*mon);
-+    } else if (const auto* person = actor.as_character()) {
-+        if (!actor.is_avatar()) id = (uint64_t(1) << 63) | uint64_t(person->getID().get_value());
-+    }
-+    if (!id) return; // Newly spawned, unpublished identities are not invented here.
-+    std::string text;
-+    if (kind == CueKind::Death) text = actor.disp_name() + ::cwm::tr(" dies.", " muore.");
-+    append_cue(kind, id, text);
-+}
-+void record_heard_sound(const std::string& description, const std::string& category, int volume) {
-+    if (presentation_enabled) append_cue(CueKind::Sound, 0, description, category, volume);
-+}
-+std::vector<PresentationCue> drain_presentation() {
-+    std::vector<PresentationCue> result;
-+    result.swap(pending_cues);
-+    return result;
 +}
 +
 +flatbuffers::Offset<CDDA::CWM::AvatarStatus> CwmMapExporter::export_avatar_status(
@@ -4721,21 +4708,16 @@ index 0000000..b6a6c83
 +                        const std::string storage_label = storage ? remove_color_tags(m.name(p)) : "";
 +                        std::string item_signature = storage ? "storage:" + m.furn(p).id().str() + ":" + storage_label + ";" : "";
 +                        const bool perceived = !stack.empty() && u.sees(p) && m.could_see_items(p,u.pos()) && m.accessible_items(p);
-+                        std::vector<flatbuffers::Offset<CDDA::CWM::GroundItemState>> item_offsets;
-+                        uint32_t stack_index = 0;
-+                        for (const item& it : stack) {
-+                            if (!perceived) break;
-+                            const std::string type = it.typeId().str();
-+                            const std::string name = it.tname();
-+                            const bool by_charges = it.count_by_charges();
-+                            item_signature += std::to_string(type.size()) + ":" + type +
-+                                std::to_string(name.size()) + ":" + name +
-+                                ":" + std::to_string(it.charges) +
-+                                ":" + (by_charges ? "1;" : "0;");
-+                            item_offsets.push_back(CDDA::CWM::CreateGroundItemStateDirect(
-+                                fbb, stack_index++, type.c_str(), name.c_str(),
-+                                it.charges, by_charges, "", false, it.rotten(),
-+                                it.is_container()));
++                        if (perceived) {
++                            for (const item& it : stack) {
++                                const std::string type = it.typeId().str();
++                                const std::string name = it.tname();
++                                const bool by_charges = it.count_by_charges();
++                                item_signature += std::to_string(type.size()) + ":" + type +
++                                    std::to_string(name.size()) + ":" + name +
++                                    ":" + std::to_string(it.charges) +
++                                    ":" + (by_charges ? "1;" : "0;");
++                            }
 +                        }
 +
 +                        bool items_changed = include_chunks || !cache;
@@ -4761,6 +4743,19 @@ index 0000000..b6a6c83
 +                        }
 +
 +                        if (items_changed && (!item_signature.empty() || !include_chunks)) {
++                            std::vector<flatbuffers::Offset<CDDA::CWM::GroundItemState>> item_offsets;
++                            if (perceived) {
++                                item_offsets.reserve(stack.size());
++                                uint32_t stack_index = 0;
++                                for (const item& it : stack) {
++                                    const std::string type = it.typeId().str();
++                                    const std::string name = it.tname();
++                                    item_offsets.push_back(CDDA::CWM::CreateGroundItemStateDirect(
++                                        fbb, stack_index++, type.c_str(), name.c_str(),
++                                        it.charges, it.count_by_charges(), "", false, it.rotten(),
++                                        it.is_container()));
++                                }
++                            }
 +                            const CDDA::CWM::Coord3i coord(p.x, p.y, p.z);
 +                            ground_item_tiles.push_back(CDDA::CWM::CreateGroundItemTileState(
 +                                fbb, &coord, fbb.CreateVector(item_offsets), storage, fbb.CreateString(storage_label)));
@@ -4884,7 +4879,11 @@ index 0000000..b6a6c83
 +
 +    if (clock && clock->realtime) for (const auto& actor : entity_offsets) {
 +        auto* state = flatbuffers::GetMutableTemporaryPointer(fbb, actor);
-+        state->mutate_motion_seconds(state->id() == 1 ? clock->motion_seconds : 1.f / clock->scale);
++        // Fast rest still publishes every loaded actor, including unseen ones.
++        // Bound their visual interpolation to the wire contract; native turns
++        // and positions retain the full coordinator rate.
++        state->mutate_motion_seconds(state->id() == 1 ? clock->motion_seconds :
++            std::clamp(1.f / clock->scale, .01f, 60.f));
 +    }
 +    auto entities_vec = fbb.CreateVector(entity_offsets);
 +    std::set<uint64_t> actor_ids;
@@ -4928,9 +4927,15 @@ index 0000000..b6a6c83
 +        }
 +
 +        auto comps_vec = fbb.CreateVector(comp_offsets);
++        const tripoint abs_veh = m.getabs(wv.pos);
++        const uint64_t veh_id = (uint64_t(3) << 62) |
++            ((static_cast<uint64_t>(static_cast<uint32_t>(abs_veh.x)) & 0xFFFFF) << 40) |
++            ((static_cast<uint64_t>(static_cast<uint32_t>(abs_veh.y)) & 0xFFFFF) << 20) |
++            ((static_cast<uint64_t>(static_cast<uint32_t>(abs_veh.z + 32)) & 0xFF) << 12) |
++            (static_cast<uint64_t>(vehicle_offsets.size() + 1) & 0xFFF);
 +        vehicle_offsets.push_back(CDDA::CWM::CreateVehicleState(
 +            fbb,
-+            reinterpret_cast<uint64_t>(veh),
++            veh_id,
 +            veh_name,
 +            &pivot,
 +            rot,
@@ -4945,8 +4950,8 @@ index 0000000..b6a6c83
 +    std::vector<flatbuffers::Offset<CDDA::CWM::FieldState>> field_offsets;
 +    if (include_chunks) {
 +        for (int z_level = z_min; z_level <= z_max; ++z_level) {
-+            for (int y = 0; y < 128; ++y) {
-+                for (int x = 0; x < 128; ++x) {
++            for (int y = 0; y < MAPSIZE_Y; ++y) {
++                for (int x = 0; x < MAPSIZE_X; ++x) {
 +                    tripoint p(x, y, z_level);
 +                    if (m.has_field_at(p)) {
 +                        const field& fld = m.field_at(p);
@@ -5072,55 +5077,13 @@ index 0000000..b6a6c83
 +    return builder.finish_message(CDDA::CWM::Payload::WorldSnapshot, world_snap.Union());
 +}
 +
-+std::vector<uint8_t> CwmMapExporter::export_tile_delta(
-+    uint64_t sequence_num,
-+    uint64_t world_rev,
-+    const tripoint& p,
-+    map& m
-+) {
-+    cdda::cwm::MessageBuilder builder(sequence_num, world_rev);
-+
-+    const auto block = export_block(p, m, 15);
-+    return builder.build_tile_delta(p.x, p.y, p.z, block.material_id(),
-+                                    block.state_flags(), block.light_level(), block.orientation());
-+}
-+
-+std::vector<uint8_t> CwmMapExporter::export_entity_delta(
-+    uint64_t sequence_num,
-+    uint64_t world_rev,
-+    uint64_t entity_id,
-+    float x, float y, float z,
-+    float rotation,
-+    uint16_t anim_hint
-+) {
-+    cdda::cwm::MessageBuilder builder(sequence_num, world_rev);
-+    auto& fbb = builder.builder();
-+
-+    CDDA::CWM::Vec3f pos(x, y, z);
-+    auto empty_str = fbb.CreateString("");
-+
-+    auto state = CDDA::CWM::CreateEntityState(
-+        fbb,
-+        entity_id,
-+        (entity_id == 1) ? CDDA::CWM::EntityType::PLAYER : CDDA::CWM::EntityType::MONSTER,
-+        empty_str,
-+        &pos,
-+        rotation,
-+        anim_hint,
-+        100,
-+        empty_str
-+    );
-+
-+    return builder.finish_message(CDDA::CWM::Payload::EntityState, state.Union());
-+}
-+
 +} // namespace cwm
 diff --git a/src/cwm/cwm_map_exporter.h b/src/cwm/cwm_map_exporter.h
 new file mode 100644
-index 0000000..2d6bbba
+index 0000000..fedaf94
 --- /dev/null
 +++ b/src/cwm/cwm_map_exporter.h
-@@ -0,0 +1,67 @@
+@@ -0,0 +1,51 @@
 +// CDDA CWM Map & Entity Exporter
 +// Licensed under Apache-2.0
 +#pragma once
@@ -5168,22 +5131,6 @@ index 0000000..2d6bbba
 +        const ClockView* clock = nullptr, uint64_t activity_token = 0, uint64_t weapon_token = 0,
 +        uint64_t inventory_work_command = 0, bool inventory_work_settled = false,
 +        uint32_t work_total_ms = 0, uint32_t work_remaining_ms = 0, uint64_t rest_token = 0, bool rest_accelerated = false
-+    );
-+
-+    static std::vector<uint8_t> export_tile_delta(
-+        uint64_t sequence_num,
-+        uint64_t world_rev,
-+        const tripoint& p,
-+        map& m
-+    );
-+
-+    static std::vector<uint8_t> export_entity_delta(
-+        uint64_t sequence_num,
-+        uint64_t world_rev,
-+        uint64_t entity_id,
-+        float x, float y, float z,
-+        float rotation,
-+        uint16_t anim_hint
 +    );
 +};
 +
@@ -5617,10 +5564,10 @@ index 0000000..e1c6222
 +}
 diff --git a/src/cwm/cwm_server.cpp b/src/cwm/cwm_server.cpp
 new file mode 100644
-index 0000000..9ca48af
+index 0000000..e220f19
 --- /dev/null
 +++ b/src/cwm/cwm_server.cpp
-@@ -0,0 +1,1356 @@
+@@ -0,0 +1,1334 @@
 +#include "cwm/product_language.hpp"
 +#include "cwm_motion.h"
 +// CDDA CWM IPC Server Implementation
@@ -5667,19 +5614,8 @@ index 0000000..9ca48af
 +    point(1,1), point(0,1), point(-1,1), point(-1,0), point(-1,-1)};
 +
 +Creature* attack_target(uint64_t id, avatar& u, map& m, game& g) {
-+    Creature* target = nullptr;
-+    if (id & (uint64_t(1) << 63)) {
-+        for (npc& person : g.all_npcs())
-+            if (((uint64_t(1) << 63) | uint64_t(person.getID().get_value())) == id && !person.is_dead() && person.is_enemy())
-+                target = &person;
-+    } else if (id & (uint64_t(1) << 62)) {
-+        for (monster& critter : g.all_monsters())
-+            if (CwmMapExporter::monster_entity_id(critter) == id && !critter.is_dead() && !critter.is_hallucination() &&
-+                critter.friendly == 0 && !critter.has_effect(efftype_id("pet")) &&
-+                critter.attitude_to(u) == Creature::Attitude::HOSTILE) target = &critter;
-+    }
-+    if (!target || target->is_dead_state() || !m.inbounds(target->pos()) || target->posz() != u.posz() ||
-+        !u.is_adjacent(target, false) || !u.sees(*target) ||
++    Creature* target = perceived_hostile(id, u, g);
++    if (!target || target->posz() != u.posz() || !u.is_adjacent(target, false) ||
 +        !m.clear_path(u.pos(), target->pos(), 1, 1, 100)) return nullptr;
 +    return target;
 +}
@@ -5782,7 +5718,6 @@ index 0000000..9ca48af
 +    if((clock_.rest_context() && clock_.scale()>4.) && !full && !completed && !pending_decision_ && !awaiting_state_ && now-last_rest_publication_<std::chrono::milliseconds(100))return;
 +    last_rest_publication_=now;
 +    refresh_activity(u);
-+    Hotbar::refresh(u);
 +    if (refresh_inventory_work(u)) ++world_revision_;
 +    const auto state_id = next_state_++;
 +    const CwmMapExporter::ClockView clock{realtime_, pause_reasons(g),
@@ -6507,8 +6442,8 @@ index 0000000..9ca48af
 +        msg->payload_type() != Payload::MovementIntentRequest &&
 +        msg->payload_type() != Payload::ContinuousIntentRequest && msg->payload_type() != Payload::RestRequest) return;
 +    if (const auto* request = msg->payload_as_CraftingQueryRequest()) {
-+        if (!request->query_id() || !request->search() || request->search()->size() > 256 ||
-+            request->search()->str().find('\0') != std::string::npos || !request->batch() || request->batch() > 20 || int(request->filter()) > 4) {
++        if (!request->query_id() || !cdda::cwm::valid_cwm_string(request->search(), 256) ||
++            !request->batch() || request->batch() > 20 || int(request->filter()) > 4) {
 +            server_->client()->close(); return;
 +        }
 +        const auto now = std::chrono::steady_clock::now();
@@ -6534,10 +6469,12 @@ index 0000000..9ca48af
 +    }
 +    uint64_t id = 0;
 +    std::string signature;
++    const auto cancel_req = cdda::cwm::extract_cancel_request(*msg);
 +    if(const auto* request=msg->payload_as_RestRequest()) {
 +        id=request->command_id();signature="rest:"+std::to_string(request->expected_token());
-+    } else if(const auto* request=msg->payload_as_CancelLiquidTransferRequest()) {
-+        id=request->command_id();signature="cancel-liquid:"+std::to_string(request->activity_token());
++    } else if(cancel_req) {
++        id = cancel_req->command_id;
++        signature = "cancel-" + std::to_string(int(cancel_req->kind)) + ":" + std::to_string(cancel_req->activity_token);
 +    } else if(const auto* request=msg->payload_as_MissionTrackRequest()) {
 +        id=request->command_id();signature="mission-track:"+std::to_string(request->view_id())+":"+std::to_string(request->mission_id())+":"+std::to_string(request->expected_tracked_id());
 +    } else if (const auto* request = msg->payload_as_MoveRequest()) {
@@ -6555,28 +6492,14 @@ index 0000000..9ca48af
 +        }
 +    } else if (const auto* request = msg->payload_as_RangedRequest()) {
 +        id=request->command_id();signature="ranged:"+std::to_string(request->weapon_token())+":"+std::to_string(request->target_entity_id())+":"+std::to_string(int(request->action()));
-+    } else if (const auto* request = msg->payload_as_CancelReloadRequest()) {
-+        id=request->command_id();signature="cancel-reload:"+std::to_string(request->activity_token());
 +    } else if (const auto* request = msg->payload_as_CraftingFavoriteRequest()) {
 +        id=request->command_id();signature="craft-favorite:"+std::to_string(request->view_id())+":"+std::to_string(request->entry_id())+":"+std::to_string(request->favorite())+":"+std::to_string(request->expected_favorite());
 +    } else if (const auto* request = msg->payload_as_CraftingRequest()) {
 +        id = request->command_id(); signature = "craft:" + std::to_string(request->view_id()) + ":" + std::to_string(request->entry_id());
-+    } else if (const auto* request = msg->payload_as_CancelCraftingRequest()) {
-+        id = request->command_id(); signature = "cancel-craft:" + std::to_string(request->activity_token());
-+    } else if (const auto* request = msg->payload_as_CancelDisassemblyRequest()) {
-+        id = request->command_id(); signature = "cancel-disassembly:" + std::to_string(request->activity_token());
-+    } else if (const auto* request = msg->payload_as_CancelReadingRequest()) {
-+        id = request->command_id(); signature = "cancel-reading:" + std::to_string(request->activity_token());
-+    } else if (const auto* request = msg->payload_as_CancelFirstAidRequest()) {
-+        id = request->command_id(); signature = "cancel-first-aid:" + std::to_string(request->activity_token());
-+    } else if (const auto* request = msg->payload_as_CancelConsumptionRequest()) {
-+        id = request->command_id(); signature = "cancel-consumption:" + std::to_string(request->activity_token());
 +    } else if (const auto* request = msg->payload_as_ItemTransferRequest()) {
 +        id = request->command_id(); signature = "item-transfer:" + std::to_string(request->view_id()) + ":" +
 +            std::to_string(request->item_id()) + ":" + std::to_string(request->quantity()) + ":" +
 +            std::to_string(request->destination_id()) + ":" + std::to_string(int(request->action()));
-+    } else if (const auto* request = msg->payload_as_CancelItemTransferRequest()) {
-+        id = request->command_id(); signature = "cancel-item-transfer:" + std::to_string(request->activity_token());
 +    } else if (const auto* request = msg->payload_as_QuickbarSwapRequest()) {
 +        if (!request->expected_source() || !request->expected_target() ||
 +            request->expected_source()->size() != 32 || request->expected_target()->size() > 32 ||
@@ -6673,21 +6596,23 @@ index 0000000..9ca48af
 +        send_result({id, error.empty(), error}, u, m, g);
 +        return; // UI assignment has no action, move debit or calendar advancement.
 +    }
-+    if (msg->payload_as_CancelConsumptionRequest() || msg->payload_as_CancelFirstAidRequest() || msg->payload_as_CancelCraftingRequest() || msg->payload_as_CancelReloadRequest() || msg->payload_as_CancelItemTransferRequest() || msg->payload_as_CancelReadingRequest() || msg->payload_as_CancelDisassemblyRequest() || msg->payload_as_CancelLiquidTransferRequest()) {
-+        const auto* meal = msg->payload_as_CancelConsumptionRequest();
-+        const auto* aid = msg->payload_as_CancelFirstAidRequest();
-+        const auto* craft = msg->payload_as_CancelCraftingRequest();
-+        const auto* reload = msg->payload_as_CancelReloadRequest();
-+        const auto* transfer = msg->payload_as_CancelItemTransferRequest();
-+        const auto* reading = msg->payload_as_CancelReadingRequest();
-+        const auto* disassembly = msg->payload_as_CancelDisassemblyRequest();
-+        const auto* liquid=msg->payload_as_CancelLiquidTransferRequest();
-+        const auto token = liquid ? liquid->activity_token() : disassembly ? disassembly->activity_token() : reading ? reading->activity_token() : transfer ? transfer->activity_token() : meal ? meal->activity_token() : aid ? aid->activity_token() : craft ? craft->activity_token() : reload->activity_token();
++    if (cancel_req) {
++        using CDDA::CWM::ActivityKind;
 +        refresh_activity(u);
-+        const bool valid = activity_token_ && token == activity_token_ &&
-+            (transfer ? (u.activity.id() == activity_id("ACT_DROP") || u.activity.id() == activity_id("ACT_INSERT_ITEM") || u.activity.id() == activity_id("ACT_PICKUP")) :
-+             u.activity.id() == activity_id(liquid ? "ACT_FILL_LIQUID" : disassembly ? "ACT_DISASSEMBLE" : reading ? "ACT_READ" : meal ? "ACT_CONSUME" : aid ? "ACT_FIRSTAID" : craft ? "ACT_CRAFT" : "ACT_RELOAD")) &&
-+            u.activity.is_interruptible() && (!realtime_ || !pause_reasons(g));
++        const auto kind = cancel_req->kind;
++        const bool activity_matches = (kind == ActivityKind::ITEM_TRANSFER)
++            ? (u.activity.id() == activity_id("ACT_DROP") ||
++               u.activity.id() == activity_id("ACT_INSERT_ITEM") ||
++               u.activity.id() == activity_id("ACT_PICKUP"))
++            : u.activity.id() == activity_id(
++                  kind == ActivityKind::LIQUID_TRANSFER ? "ACT_FILL_LIQUID" :
++                  kind == ActivityKind::DISASSEMBLE     ? "ACT_DISASSEMBLE" :
++                  kind == ActivityKind::READ            ? "ACT_READ" :
++                  kind == ActivityKind::CONSUME         ? "ACT_CONSUME" :
++                  kind == ActivityKind::FIRST_AID       ? "ACT_FIRSTAID" :
++                  kind == ActivityKind::CRAFT           ? "ACT_CRAFT" : "ACT_RELOAD");
++        const bool valid = activity_token_ && cancel_req->activity_token == activity_token_ &&
++            activity_matches && u.activity.is_interruptible() && (!realtime_ || !pause_reasons(g));
 +        if (valid) {
 +            u.cancel_activity(); // Native interruption/backlog rules, no refund.
 +            inventory_work_command_ = id; inventory_work_settled_ = false;
@@ -7230,14 +7155,19 @@ index 0000000..eb8c27f
 +1 RT_MANIFEST "cwm_windows.manifest"
 diff --git a/src/cwm_motion.cpp b/src/cwm_motion.cpp
 new file mode 100644
-index 0000000..0106a99
+index 0000000..5e991fd
 --- /dev/null
 +++ b/src/cwm_motion.cpp
-@@ -0,0 +1,214 @@
+@@ -0,0 +1,308 @@
 +#include "cwm_motion.h"
++#include "cwm/cwm_presentation.h"
++#include "../../protocol/include/cwm/product_language.hpp"
 +
 +#include <algorithm>
++#include <charconv>
 +#include <cmath>
++#include <cstdio>
++#include <cstdlib>
 +#include <iomanip>
 +#include <sstream>
 +#include "avatar.h"
@@ -7245,14 +7175,81 @@ index 0000000..0106a99
 +#include "creature_tracker.h"
 +#include "game.h"
 +#include "map.h"
++#include "monster.h"
 +#include "npc.h"
 +#include "move_mode.h"
 +#include "flag.h"
++
++namespace cwm {
++namespace {
++constexpr uint64_t monster_namespace = uint64_t( 1 ) << 62;
++constexpr const char *monster_identity_key = "cwm_monster_id";
++
++int stored_monster_id( const monster &critter )
++{
++    const std::string stored = critter.get_value( monster_identity_key );
++    int id = 0;
++    const auto parsed = std::from_chars( stored.data(), stored.data() + stored.size(), id );
++    return parsed.ec == std::errc() && parsed.ptr == stored.data() + stored.size() && id > 0 ? id : 0;
++}
++
++bool presentation_enabled = false;
++uint64_t cue_id = 0;
++std::vector<PresentationCue> pending_cues;
++
++void append_cue( CueKind kind, uint64_t actor, std::string text, std::string category = {}, int volume = 0 )
++{
++    if( pending_cues.size() >= 128 ) return; // Drop presentation, never block gameplay.
++    pending_cues.push_back( { ++cue_id, kind, actor, std::move( text ), std::move( category ), std::clamp( volume, 0, 200 ) } );
++}
++} // namespace
++
++void enable_presentation( bool enabled )
++{
++    presentation_enabled = enabled;
++    if( !enabled ) pending_cues.clear();
++}
++
++void record_presentation( CueKind kind, const Creature &actor )
++{
++    if( !presentation_enabled ) return;
++    const avatar &viewer = get_avatar();
++    if( !actor.is_avatar() && !viewer.sees( actor ) ) return;
++    uint64_t id = actor.is_avatar() ? 1 : 0;
++    if( const auto *mon = actor.as_monster() ) {
++        if( mon->is_hallucination() ) return;
++        const int mid = stored_monster_id( *mon );
++        id = mid ? ( monster_namespace | uint64_t( mid ) ) : 0;
++    } else if( const auto *person = actor.as_character() ) {
++        if( !actor.is_avatar() ) id = ( uint64_t( 1 ) << 63 ) | uint64_t( person->getID().get_value() );
++    }
++    if( !id ) return; // Newly spawned, unpublished identities are not invented here.
++    std::string text;
++    if( kind == CueKind::Death ) text = actor.disp_name() + ::cwm::tr( " dies.", " muore." );
++    append_cue( kind, id, std::move( text ) );
++}
++
++void record_heard_sound( const std::string &description, const std::string &category, int volume )
++{
++    if( presentation_enabled ) append_cue( CueKind::Sound, 0, description, category, volume );
++}
++
++std::vector<PresentationCue> drain_presentation()
++{
++    std::vector<PresentationCue> result;
++    result.swap( pending_cues );
++    return result;
++}
++} // namespace cwm
 +
 +namespace cwm_motion {
 +namespace {
 +thread_local bool prepaid = false, fractional = false;
 +thread_local double stamina_units = 0;
++thread_local std::string cached_motion_raw;
++thread_local State cached_motion_parsed;
++thread_local bool cached_motion_valid = false;
++
 +struct Scope {
 +    bool &flag;
 +    bool previous;
@@ -7291,26 +7288,44 @@ index 0000000..0106a99
 +{
 +    State state;
 +    state.anchor = m.getabs( u.pos() );
-+    State saved;
-+    std::istringstream in( u.get_value( "cwm_motion_v1" ) );
-+    if( in >> saved.anchor.x >> saved.anchor.y >> saved.anchor.z >> saved.x >> saved.y >> saved.credit &&
-+        std::isfinite( saved.x ) && std::isfinite( saved.y ) && std::isfinite( saved.credit ) &&
-+        std::abs( saved.x ) < .50001 && std::abs( saved.y ) < .50001 &&
-+        saved.credit >= 0 && saved.credit < 1.00001 ) {
-+        // An external teleport/rebase must not attach a stale offset to a new
-+        // tile. Monetary rounding credit remains paid across teleports.
-+        state.credit = saved.credit;
-+        if( saved.anchor == state.anchor ) { state.x = saved.x; state.y = saved.y; }
++    const std::string raw = u.get_value( "cwm_motion_v1" );
++    if( raw.empty() ) return state;
++    if( !cached_motion_valid || raw != cached_motion_raw ) {
++        State saved;
++        std::istringstream in( raw );
++        if( in >> saved.anchor.x >> saved.anchor.y >> saved.anchor.z >> saved.x >> saved.y >> saved.credit &&
++            std::isfinite( saved.x ) && std::isfinite( saved.y ) && std::isfinite( saved.credit ) &&
++            std::abs( saved.x ) < .50001 && std::abs( saved.y ) < .50001 &&
++            saved.credit >= 0 && saved.credit < 1.00001 ) {
++            cached_motion_raw = raw;
++            cached_motion_parsed = saved;
++            cached_motion_valid = true;
++        } else {
++            return state;
++        }
++    }
++    // An external teleport/rebase must not attach a stale offset to a new
++    // tile. Monetary rounding credit remains paid across teleports.
++    state.credit = cached_motion_parsed.credit;
++    if( cached_motion_parsed.anchor == state.anchor ) {
++        state.x = cached_motion_parsed.x;
++        state.y = cached_motion_parsed.y;
 +    }
 +    return state;
 +}
 +void store( avatar &u, const map &m, State state )
 +{
 +    state.anchor = m.getabs( u.pos() );
-+    std::ostringstream out;
-+    out << std::setprecision( 17 ) << state.anchor.x << ' ' << state.anchor.y << ' ' <<
-+        state.anchor.z << ' ' << state.x << ' ' << state.y << ' ' << state.credit;
-+    u.set_value( "cwm_motion_v1", out.str() );
++    char buf[160];
++    const int n = std::snprintf(
++        buf, sizeof( buf ), "%d %d %d %.17g %.17g %.17g",
++        state.anchor.x, state.anchor.y, state.anchor.z,
++        state.x, state.y, state.credit );
++    std::string serialized( buf, n > 0 ? static_cast<size_t>( n ) : 0 );
++    cached_motion_raw = serialized;
++    cached_motion_parsed = state;
++    cached_motion_valid = true;
++    u.set_value( "cwm_motion_v1", serialized );
 +}
 +void recenter( avatar &u, const map &m )
 +{
@@ -7434,13 +7449,17 @@ index 0000000..0106a99
 +        u.recoil = MAX_RECOIL;
 +        u.last_target_pos = std::nullopt;
 +        double steps = 0;
-+        std::istringstream( u.get_value( "cwm_step_distance" ) ) >> steps;
++        const std::string step_raw = u.get_value( "cwm_step_distance" );
++        if( !step_raw.empty() ) {
++            char *endp = nullptr;
++            steps = std::strtod( step_raw.c_str(), &endp );
++        }
 +        if( !std::isfinite( steps ) || steps < 0 || steps >= 1 ) steps = 0;
 +        steps += result.distance;
 +        if( steps >= 1 ) { u.make_footstep_noise(); steps -= std::floor( steps ); }
-+        std::ostringstream saved;
-+        saved << std::setprecision( 17 ) << steps;
-+        u.set_value( "cwm_step_distance", saved.str() );
++        char step_buf[64];
++        std::snprintf( step_buf, sizeof( step_buf ), "%.17g", steps );
++        u.set_value( "cwm_step_distance", step_buf );
 +    }
 +    state.x = next_x - actual.x; state.y = next_y - actual.y;
 +    store( u, m, state );
@@ -10022,10 +10041,10 @@ index 0000000..a8244f4
 +}
 diff --git a/tests/cwm_projection_test.cpp b/tests/cwm_projection_test.cpp
 new file mode 100644
-index 0000000..39d991c
+index 0000000..abb99e7
 --- /dev/null
 +++ b/tests/cwm_projection_test.cpp
-@@ -0,0 +1,796 @@
+@@ -0,0 +1,844 @@
 +#include "cata_catch.h"
 +#include "avatar.h"
 +#include "move_mode.h"
@@ -10051,6 +10070,54 @@ index 0000000..39d991c
 +#include "cwm/cwm_map_exporter.h"
 +#include "cwm/cwm_status_gauges.h"
 +#include "cwm/tile_semantics.hpp"
++
++TEST_CASE("cwm_rest_rates_export_valid_full_delta_and_recovery_with_loaded_creatures", "[cwm][rest][actors]")
++{
++    clear_avatar(); clear_map(); clear_creatures();
++    avatar &u = get_avatar(); map &m = get_map();
++    u.setpos(tripoint(60, 60, 0));
++    calendar::turn = calendar::turn_zero + 36_hours;
++    npc &person = spawn_npc(point(63, 60), "test_talker");
++    REQUIRE(g->place_critter_at(mtype_id("mon_zombie"), tripoint(64, 60, 0)));
++    for (const bool rest_context : {false, true}) {
++        const std::vector<float> rates = rest_context ?
++            std::vector<float>{1.f, 4.f, 64.f, 256.f, 1024.f, 4096.f} :
++            std::vector<float>{.5f, 1.f, 2.f, 4.f};
++        for (const float rate : rates) {
++            CAPTURE(rest_context, rate);
++            u.activity = player_activity(activity_id("ACT_WAIT"), rest_context ? 90000 : 2000);
++            const auto turn = calendar::turn;
++            const int moves = u.moves, stamina = u.get_stamina();
++            const auto pos = u.pos();
++            const cwm::CwmMapExporter::ClockView clock{true, 0, rate, .2f, true, rest_context};
++            cwm::CwmMapExporter::ProjectionCache cache;
++            uint64_t revision = 0;
++            for (const bool full : {true, false, true}) {
++                // First full state, live delta, then an authoritative recovery.
++                auto bytes = cwm::CwmMapExporter::export_world_snapshot(
++                    revision + 1, revision + 1, u, m, *g, full, &cache, {}, revision,
++                    revision + 1, 0, 0, &clock, 0, 0, 0, false, 0, 0, 1,
++                    rest_context && rate > 4.f);
++                ++revision;
++                REQUIRE(cdda::cwm::MessageVerifier::verify(bytes.data(), bytes.size()));
++                const auto *world = CDDA::CWM::GetCwmMessage(bytes.data())->payload_as_WorldSnapshot();
++                REQUIRE(world->entities()->size() == 3);
++                CHECK(cdda::cwm::valid_world(world));
++                for (const auto *actor : *world->entities()) {
++                    CHECK(actor->motion_seconds() == Approx(actor->id() == 1 ? .2f :
++                          std::clamp(1.f / rate, .01f, 60.f)));
++                }
++                CHECK(calendar::turn == turn);
++                CHECK(u.moves == moves);
++                CHECK(u.get_stamina() == stamina);
++                CHECK(u.pos() == pos);
++                CHECK(person.pos() == tripoint(63, 60, 0));
++            }
++        }
++    }
++    u.activity = player_activity();
++    clear_creatures();
++}
 +
 +TEST_CASE("cwm_avatar_status_uses_native_visible_descriptions_without_mutation", "[cwm][body]")
 +{

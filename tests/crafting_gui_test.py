@@ -213,7 +213,7 @@ def main():
                 return found[-1]
             def entries(v):return [v.Entries(n) for n in range(v.EntriesLength())]
             def open_crafting():
-                if int(latest()['crafting_form'])!=1:tap('i' if int(latest().get('action_menu',0)) else 'k')
+                if int(latest()['crafting_form'])!=1:tap('k')
                 wait(lambda r:int(r['crafting_form'])==1 and int(r['crafting_view'])>0 and int(r['pause_reasons'])&2)
                 return catalog()
             view=open_crafting();check('native_crafting_catalog_opened',True);shot('catalog.png')

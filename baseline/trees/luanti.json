@@ -7252,12 +7252,17 @@
   {
     "path": "src/cdda/cdda_bridge.cpp",
     "mode": "100644",
-    "sha256": "da817ec2d7cf94d090eac133915dff360354651db55f2f2dad7575cfdfd38927"
+    "sha256": "306257545a5144cb91c0bf215f0a54ce86739c5e28d087ba95520c0fced502da"
   },
   {
     "path": "src/cdda/cdda_bridge.h",
     "mode": "100644",
-    "sha256": "ac9129716496ce466d78ac7ab5f30b3bbd4ccfd76fd670578fc8230ae108a80e"
+    "sha256": "11d2d1ebdc5b6874c7638ad111d985ca3a1510039e613dfb4a8fb071b7d4c475"
+  },
+  {
+    "path": "src/cdda/connection_watchdog.h",
+    "mode": "100644",
+    "sha256": "d93ea592ce8610d09d24ec62bf5ac1ea3416a8421d1ae2658445488809f40348"
   },
   {
     "path": "src/cdda/crafting_inventory.h",
@@ -7292,7 +7297,7 @@
   {
     "path": "src/cdda/equipment_inventory.h",
     "mode": "100644",
-    "sha256": "99569f4ce2b09152fb707cda09461e008be154298fe57719fe1d593c2b6c0e7c"
+    "sha256": "38dfeae774b92cd5b5f00ddb46399373e069557a2df0cd40a6c0e9975a0f8563"
   },
   {
     "path": "src/cdda/ground_item_formspec.h",
@@ -7647,12 +7652,12 @@
   {
     "path": "src/client/mesh_generator_thread.cpp",
     "mode": "100644",
-    "sha256": "4a546867a30daa5122ab876f358462daacaa26ef0dc12e1535e181d6f53191df"
+    "sha256": "91f55c50c7338d88ee781232056b86f054178e74c1d04d46964687e7c3a2adff"
   },
   {
     "path": "src/client/mesh_generator_thread.h",
     "mode": "100644",
-    "sha256": "3a6f6cc6c3a44e27ac692b4007312a940aa5b2228a34aa3dbce26e2f2de086a0"
+    "sha256": "328ee3cf7a6306dcefbd0bf755a3262ba6fb883ae174a188ce8babe5c2e50c08"
   },
   {
     "path": "src/client/meshgen/collector.cpp",
@@ -8432,7 +8437,7 @@
   {
     "path": "src/gui/guiFormSpecMenu.cpp",
     "mode": "100644",
-    "sha256": "4c18736aa4fccdb73ee3a482c7c79ddddd42ad835a51bd79be229dde2256da1d"
+    "sha256": "8e9b2f788796518b183e7b83092d1da1b318af5339c6502b7f37887f648c8beb"
   },
   {
     "path": "src/gui/guiFormSpecMenu.h",

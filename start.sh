@@ -14,7 +14,7 @@ CDDA_CONTINUOUS="${CDDA_CONTINUOUS:-$(if [[ "${CDDA_REALTIME:-0}" == 1 ]]; then 
 BASE_CONFIG="${LUANTI_CONFIG:-$HOME/.minetest/minetest.conf}"
 LANGUAGE_PREFERENCES="$CDDA_USERDIR/config/presentation-language.conf"
 LANGUAGE_ARGS=()
-if [[ -v CDDA_LANGUAGE ]]; then LANGUAGE_ARGS+=(--requested "$CDDA_LANGUAGE"); fi
+if [[ -n "${CDDA_LANGUAGE+x}" ]]; then LANGUAGE_ARGS+=(--requested "$CDDA_LANGUAGE"); fi
 PRODUCT_LANGUAGE="$(python3 "$PROJECT_DIR/tools/product_language.py" resolve \
     --config "$BASE_CONFIG" --preferences "$LANGUAGE_PREFERENCES" "${LANGUAGE_ARGS[@]}")"
 ENGINE_LANGUAGE="$(python3 "$PROJECT_DIR/tools/product_language.py" engine \
@@ -80,6 +80,7 @@ player_backend = sqlite3
 auth_backend = sqlite3
 load_mod_cdda_nodes = true
 load_mod_cdda_entities = true
+load_mod_cdda_items = true
 WORLD
 fi
 
@@ -91,7 +92,9 @@ if [[ -n "$CDDA_CHARACTER" ]]; then SERVER_ARGS+=(--character "$CDDA_CHARACTER")
 if [[ "${CDDA_TERRAIN_DEMO:-0}" == 1 ]]; then SERVER_ARGS+=(--terrain-demo); fi
 if [[ "${CDDA_REALTIME:-0}" == 1 ]]; then SERVER_ARGS+=(--realtime); fi
 if [[ "${CDDA_CONTINUOUS:-0}" == 1 ]]; then SERVER_ARGS+=(--continuous); fi
-stdbuf -oL -eL "$CDDA_BIN" --socket "$SOCKET_PATH" --world "$CDDA_WORLD" "${SERVER_ARGS[@]}" \
+STDBUF_CMD=()
+if command -v stdbuf >/dev/null 2>&1; then STDBUF_CMD=(stdbuf -oL -eL); fi
+"${STDBUF_CMD[@]}" "$CDDA_BIN" --socket "$SOCKET_PATH" --world "$CDDA_WORLD" "${SERVER_ARGS[@]}" \
     --userdir "$CDDA_USERDIR" --datadir "$PROJECT_DIR/cdda/data" \
     > "$LOG_DIR/cdda.log" 2>&1 &
 SERVER_PID=$!

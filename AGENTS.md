@@ -45,6 +45,10 @@ silently finalized by an agent.
   evidence. Scope subsequent functional fixes to the user's request, record
   the new source identity and verification, and preserve remaining failing
   conformance probes. Do not promote the whole gate from a scoped repair.
+- Manual validation requests must give the exact launcher, concrete ordered
+  actions and visible PASS/FAIL criteria. Explain the purpose in plain language;
+  do not ask the developer to verify unobservable internals. An unclear or
+  unperformed test remains pending, not failed. Map each numbered result explicitly.
 - Run tests against reconstructed sources with isolated saves/configuration.
   Never use or delete the user's existing worlds or shared benchmark save directories.
 - Do not execute `test_worldgen.py`, `patch_*`, or `fix_file.py` as tests: they

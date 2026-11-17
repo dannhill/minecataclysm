@@ -28,10 +28,12 @@ def main():
     parser.add_argument('--action-driven', action='store_true', help='Verify ordinary start.sh mode without the real-time scheduler')
     parser.add_argument('--automatic-return', action='store_true', help='Verify native actor UX-02 return instead of opting out')
     parser.add_argument('--modal-continuity', action='store_true')
+    parser.add_argument('--work-feedback', action='store_true')
     parser.add_argument('--resume-only', action='store_true')
     parser.add_argument('--save-active', action='store_true')
     parser.add_argument('--resume-active', action='store_true')
     args = parser.parse_args()
+    if args.work_feedback:args.modal_continuity=True
     if args.modal_continuity:args.automatic_return=True
     if args.resume_active: args.resume_only = True
     ws, out = args.workspace.resolve(), args.artifacts.resolve()
@@ -332,7 +334,24 @@ def main():
                 view = open_inventory()
                 fresh_now = sum(max(1,e.Charges()) for e in entries(view) if e.TypeId() == b'apple' and not e.ConsumeWarning())
                 check('meal_consumes_exactly_one_native_serving', fresh_now == 1)
+                if args.work_feedback:
+                    tap('Escape');wait(lambda r:int(r['equipment_form'])==0)
+                    tap('F8');wait(lambda r:float(r['time_scale'])==.5)
+                    view=open_inventory()
                 select_item(item(view,'water_clean'));action(4);finish_action()
+                if args.work_feedback:
+                    wait(lambda r:int(r['consumption_token'])>0 and int(r['action_menu'])==1)
+                    sent=latest()['equipment_sent']
+                    tap('Escape');wait(lambda r:int(r['action_menu'])==0 and int(r['modal_count'])==0)
+                    check('escape_hides_drinking_panel_without_cancelling',int(latest()['consumption_token'])>0)
+                    view=open_inventory();frozen=latest()['consumption_remaining'];clock=latest()['simulation_time'];time.sleep(.5)
+                    check('hidden_drink_inspection_pauses_native_consumption',latest()['consumption_remaining']==frozen and latest()['simulation_time']==clock)
+                    span_start=len(rows());tap('i')
+                    wait(lambda r:int(r['action_menu'])==1 and int(r['modal_count'])==1)
+                    check('drink_progress_reopens_in_same_modal_without_replay',latest()['equipment_sent']==sent and all(int(r['modal_count'])>0 for r in rows()[span_start:]))
+                    shot('drink-panel-reopened.png')
+                    for _ in range(3):tap('F8')
+                    wait(lambda r:float(r['time_scale'])==4)
                 wait(lambda r: int(r['consumption_token']) == 0,timeout=20)
                 view = open_inventory()
                 if args.automatic_return:

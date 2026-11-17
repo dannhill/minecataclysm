@@ -1,0 +1,444 @@
+{
+  "date": "2026-11-09",
+  "scope": "Native spontaneous decision -> same work modal; progress/inspection/hide/reopen for reading and drinking without native command replay; scoped human feedback retained",
+  "protocol": "2.37; no wire or native production changes introduced by this repair",
+  "runtime_capture": {
+    "commit": "804628bb9fd689f5e647cb0cff6f409e0576ee22",
+    "source": "artifacts/reading-feedback-20261109/source-final",
+    "original_head": "0a41352e5c04d3dc9d599c662c93a501d1772f86",
+    "files": 803,
+    "scope": "Tracked current working files plus explicit source directories, preserving pre-existing changes. User branch/index/HEAD untouched. Private history file excluded."
+  },
+  "source_identity": {
+    "path": "artifacts/reading-feedback-20261109/source-identity.json",
+    "sha256": "91c1019a1fb27495ad70e216b647f608da18e41990c0fb5db1e101002f49be8b"
+  },
+  "pre_existing_worktree": {
+    "path": "artifacts/reading-feedback-20261109/pre-existing-status.txt",
+    "sha256": "ca9194076522e110938170ffca0eb5a0553da7054c5c7ff150a0da8ca8c27c89"
+  },
+  "task_only_delta": {
+    "path": "artifacts/reading-feedback-20261109/task-only.patch",
+    "sha256": "82624c9d3e542c81b873142f0203112f4fd23fe7351a1dffb75aaf8930720a22"
+  },
+  "source_trees": {
+    "cdda": {
+      "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+      "tree_sha256": "e803fe8f97cc5312c36025c1dd752e6deb6a4bb314df7ec9295c543b96eb17a6",
+      "patch_sha256": "3e5b9882db221d9634dc54501c093f7b4b192a869b2c93c208d64bff40ec1255",
+      "file_count": 8601
+    },
+    "luanti": {
+      "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
+      "tree_sha256": "bbabe7f752cf223a94505ef10b2fcc05b1f9b4e49933d99832ce64ac3584822f",
+      "patch_sha256": "1620552115a496d8645c313ff97faea48d4c5fb46f5d27cd71899b49455975be",
+      "file_count": 2272
+    },
+    "mineclonia": {
+      "commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+      "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "file_count": 9359
+    }
+  },
+  "environment": {
+    "kernel": "Linux-7.0.11-76070011-generic-x86_64-with-glibc2.35",
+    "python": "3.10.12",
+    "renderer": "Private Xvfb 1280x800x24, Mesa llvmpipe, actual Luanti with xdotool; OpenAL null"
+  },
+  "build_mode": "Incremental reconstruction from private immutable source snapshot, build caches retained. Existing local refactors preserved. Final GUI regression drivers identified separately. Isolated saves/configs; no root branch/index commit/push.",
+  "capture_receipts": {
+    "source": {
+      "path": "artifacts/reading-feedback-20261109/working-snapshot.json",
+      "sha256": "90838e1374eedb3fc00aa17e43651d46626f46e31b92b40fbd6d669cbcc9b72a"
+    },
+    "refresh": {
+      "path": "artifacts/reading-feedback-20261109/client-refresh-final.json",
+      "sha256": "0760ee34e2517df2021fb579487561b6d6761b092b458c5d5cb7af7ec16ea273"
+    },
+    "baseline": {
+      "path": "artifacts/reading-feedback-20261109/capture-final.log",
+      "sha256": "a3cc1ace1e38d12991064097fda5c428b4922e474247e8b31542fb69a1702d25"
+    },
+    "final_inventory_check": {
+      "path": "artifacts/reading-feedback-20261109/baseline-check-final.log",
+      "sha256": "c949bb433596171b54fc5b1574b4790aa0b10ffe05062466be86f503fe7fa1d6"
+    }
+  },
+  "build_log": {
+    "path": "artifacts/reading-feedback-20261109/client-build-final.log",
+    "sha256": "2acc100302a1f9962b7baaee31a161dc4bb586c626cc3930b7d05af04d6cf094"
+  },
+  "client_units": {
+    "tests": 309,
+    "modules": 47,
+    "catch_assertions": 648,
+    "catch_cases": 4,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/reading-feedback-20261109/client-units.log",
+      "sha256": "848aa137a89746adb49220c7c1faceddbd733d1653607b6ab856837635e94afb"
+    }
+  },
+  "protocol_sdk": {
+    "tests": 21,
+    "result": "PASS",
+    "build": {
+      "path": "artifacts/reading-feedback-20261109/protocol-build.log",
+      "sha256": "d1d8cb0c8c8a3dc56b9dc1088f4fd16c9cceb6bfed8982a745a1a5d98a5faaa6"
+    },
+    "log": {
+      "path": "artifacts/reading-feedback-20261109/protocol-tests.log",
+      "sha256": "a952a7b2b92fc737f840c4909f13851b21b79b14060e6a83b4bd4678dd3f18af"
+    }
+  },
+  "renderer_runs": {
+    "cold-verified": {
+      "checks": 19,
+      "result": "PASS",
+      "pair": "reconstructed",
+      "summary": {
+        "path": "artifacts/reading-feedback-20261109/cold-verified/summary.json",
+        "sha256": "5b80a5eec97fb23457e6acdc019deabc4f1e38696746c5a8be4a16cc62d01461"
+      },
+      "checks_file": {
+        "path": "artifacts/reading-feedback-20261109/cold-verified/checks.json",
+        "sha256": "c80ee5feb57ba8c7c34632d63c5e46541c5ed5a69f3f6e8bd0397ba8930bbd29"
+      },
+      "trace": {
+        "path": "artifacts/reading-feedback-20261109/cold-verified/camera.csv",
+        "sha256": "160f460df78c8ec40efb2b5ef16cb215111ef34e31c8dcae80f4ca2fb0b7a85c"
+      },
+      "native_readback": {
+        "path": "artifacts/reading-feedback-20261109/cold-verified/native.json",
+        "sha256": "8f6599ee2dae4d2abd4a7f6999cb6fd45c1087ac72eef0f6c143b209cb5c26b2"
+      },
+      "runner_result": {
+        "path": "artifacts/reading-feedback-20261109/cold-verified-runner-result.json",
+        "sha256": "a01e73e9b38123a6b8efd81e4512db63b9cb9e2db02a15ca9e8219250855e01f"
+      },
+      "log": {
+        "path": "artifacts/reading-feedback-20261109/cold-verified.log",
+        "sha256": "4e3af6e0300e4d915cf81aff2d10ab2ddcf7e11bc95b13d54800c28960f02653"
+      }
+    },
+    "reading-save": {
+      "checks": 27,
+      "result": "PASS",
+      "pair": "reconstructed",
+      "summary": {
+        "path": "artifacts/reading-feedback-20261109/reading-save/summary.json",
+        "sha256": "5fd43b63ffc5c0c6fdaff87f532fd5aaa460dfd84dc2a28c3845ecf19ad17ef1"
+      },
+      "checks_file": {
+        "path": "artifacts/reading-feedback-20261109/reading-save/checks.json",
+        "sha256": "56825caaf691fba380d1f77d86bb30f1b8a1ee3c1e85ceea0752ce71e77e43a6"
+      },
+      "trace": {
+        "path": "artifacts/reading-feedback-20261109/reading-save/camera.csv",
+        "sha256": "3ffea802affe70cb8d4a348117c9d9b6380f49d16ed6f79051e43617c9a7a333"
+      },
+      "native_readback": {
+        "path": "artifacts/reading-feedback-20261109/reading-save/native.json",
+        "sha256": "d13fe24ac73c6b5c3cac9dc5f8dbaf2622fe6c129a9409cd58d984eeb7ebef0f"
+      },
+      "runner_result": {
+        "path": "artifacts/reading-feedback-20261109/reading-save-runner-result.json",
+        "sha256": "8d77e9f0c016c7bd523a5be932406b0320164e046a6679ea22646a018895fda9"
+      },
+      "log": {
+        "path": "artifacts/reading-feedback-20261109/reading-save.log",
+        "sha256": "a72fe7ec1e7ca7b3299a7b4955ff0883eceb6a9a92d3b60433c5ff9ea24d1193"
+      }
+    },
+    "reading-reload": {
+      "checks": 13,
+      "result": "PASS",
+      "pair": "reconstructed",
+      "summary": {
+        "path": "artifacts/reading-feedback-20261109/reading-reload/summary.json",
+        "sha256": "67183428877db539fdad739c6a73da188514b587eadc139f3090e1b9f0343d29"
+      },
+      "checks_file": {
+        "path": "artifacts/reading-feedback-20261109/reading-reload/checks.json",
+        "sha256": "51ba869f4d8e2d935ba4cef544ec6aacd816fb0409e1493981d402c6f399d7a9"
+      },
+      "trace": {
+        "path": "artifacts/reading-feedback-20261109/reading-reload/camera.csv",
+        "sha256": "f1567e38de99ead578e0b7667d635dbc1b0d8b69d73fc22274d85c45a4ebb194"
+      },
+      "native_readback": {
+        "path": "artifacts/reading-feedback-20261109/reading-reload/native.json",
+        "sha256": "0192647f7695a3d383b52cd2a123cc0b168d7ce6d4493de7ba1486a96e9cf038"
+      },
+      "runner_result": {
+        "path": "artifacts/reading-feedback-20261109/reading-reload-runner-result.json",
+        "sha256": "643c8cd53683ba2ba27a0875b85b1c8f36d532006838034745e07f751eec01b1"
+      },
+      "log": {
+        "path": "artifacts/reading-feedback-20261109/reading-reload.log",
+        "sha256": "03f39892448503b483033d8315a73b9fe8621994b69682e9341dcb1765bff1db"
+      }
+    },
+    "drinking-fixed": {
+      "checks": 43,
+      "result": "PASS",
+      "pair": "reconstructed",
+      "summary": {
+        "path": "artifacts/reading-feedback-20261109/drinking-fixed/summary.json",
+        "sha256": "9ca87ec5af42dbe02dbd27261642a1a0d6dc49b5286c3bfbc3702b4cb61cb3e6"
+      },
+      "checks_file": {
+        "path": "artifacts/reading-feedback-20261109/drinking-fixed/checks.json",
+        "sha256": "e41af52e04bc55616c893f5039a7ff7b254de9905338320ac038d7919ec0e473"
+      },
+      "trace": {
+        "path": "artifacts/reading-feedback-20261109/drinking-fixed/camera.csv",
+        "sha256": "ba26d31e0f2f59a4f3d35ffff9cb68050ac5e9e2c3b59fd0460ad983d6ddffcd"
+      },
+      "native_readback": {
+        "path": "artifacts/reading-feedback-20261109/drinking-fixed/native.json",
+        "sha256": "94aefe2538212f0de86cb31d94e63537dfb51f59faaad1268ba88b82511a7106"
+      },
+      "runner_result": {
+        "path": "artifacts/reading-feedback-20261109/drinking-fixed-runner-result.json",
+        "sha256": "d840ddb0338c78626ff119830c0d3e0682cf71cdfdeb985f8be742c9a5259cd0"
+      },
+      "log": {
+        "path": "artifacts/reading-feedback-20261109/drinking-fixed.log",
+        "sha256": "21a6b147d0638da3c7a8f0cf06b17330b2c4cfbfd47e16b63e0e8ab0940b43c5"
+      }
+    },
+    "installed-cold": {
+      "checks": 18,
+      "result": "PASS",
+      "pair": "installed",
+      "summary": {
+        "path": "artifacts/reading-feedback-20261109/installed-cold/summary.json",
+        "sha256": "84e5ac596a1d2dfaadb39d79d4a7870624f453cb5e21a8a21b4d966e87871dab"
+      },
+      "checks_file": {
+        "path": "artifacts/reading-feedback-20261109/installed-cold/checks.json",
+        "sha256": "0401ef6d63c0fd5a8d13e15be50e8f632baa8a2b6131104e14cc33e5ba1173e9"
+      },
+      "trace": {
+        "path": "artifacts/reading-feedback-20261109/installed-cold/camera.csv",
+        "sha256": "7563e2f9b6135d72410964cc5c261cc740f7634c85e7161935bd474447cfde2a"
+      },
+      "native_readback": {
+        "path": "artifacts/reading-feedback-20261109/installed-cold/native.json",
+        "sha256": "3dbd329b5592da301ea29e3ea3ef24ce019f5184e3324636ef889f69be153207"
+      },
+      "runner_result": {
+        "path": "artifacts/reading-feedback-20261109/installed-cold-runner-result.json",
+        "sha256": "4063e61692161d7458f725f491c76d1be910f5f7b77a92a83008711bd94a9d5e"
+      },
+      "log": {
+        "path": "artifacts/reading-feedback-20261109/installed-cold.log",
+        "sha256": "390e9b23a7429336c1b9cd62af7a581616d0f556f16c0beaacbcb727984c3b0e"
+      }
+    },
+    "installed-drinking": {
+      "checks": 43,
+      "result": "PASS",
+      "pair": "installed",
+      "summary": {
+        "path": "artifacts/reading-feedback-20261109/installed-drinking/summary.json",
+        "sha256": "60825608bb2fc5001393b321dc415c5bcbb3b8b3fe779037b4e7a2f8173f62f4"
+      },
+      "checks_file": {
+        "path": "artifacts/reading-feedback-20261109/installed-drinking/checks.json",
+        "sha256": "e41af52e04bc55616c893f5039a7ff7b254de9905338320ac038d7919ec0e473"
+      },
+      "trace": {
+        "path": "artifacts/reading-feedback-20261109/installed-drinking/camera.csv",
+        "sha256": "7e78eb7e117a9be4f09dd7646b4645c3c6ee425e4695ba52e030e83d538b043b"
+      },
+      "native_readback": {
+        "path": "artifacts/reading-feedback-20261109/installed-drinking/native.json",
+        "sha256": "b8eb8ada8f045f7ef85eb0dcbd29981457bdf9e466f45454246315f7183b5985"
+      },
+      "runner_result": {
+        "path": "artifacts/reading-feedback-20261109/installed-drinking-runner-result.json",
+        "sha256": "24fdd622eb8319e68dc009cda69ce2dcb30c6fd9e1d036efcbd9181553a7260f"
+      },
+      "log": {
+        "path": "artifacts/reading-feedback-20261109/installed-drinking.log",
+        "sha256": "21a6b147d0638da3c7a8f0cf06b17330b2c4cfbfd47e16b63e0e8ab0940b43c5"
+      }
+    }
+  },
+  "renderer_checks_total": 163,
+  "renderer_total_meaning": "Six runs: cold-distraction and drinking scenarios on reconstructed and installed pairs, plus ordinary reading save and reload. Optional additional native hurt-warning check contributes one extra check in reconstructed cold run; not 163 independent scenarios.",
+  "test_drivers": {
+    "reading_gui_test.py": {
+      "path": "tests/reading_gui_test.py",
+      "sha256": "efaf5836ab7c1479217abef4e3fef8c3b51abed43d43e54556c976dea7b458d5"
+    },
+    "consumption_gui_test.py": {
+      "path": "tests/consumption_gui_test.py",
+      "sha256": "20b47eedca0d7e6e9a9ef3b4f9cab5f921a99843f5f13dbe91e6027ba2b02261"
+    }
+  },
+  "test_driver_copies": {
+    "reading_gui_test.py": {
+      "path": "artifacts/reading-feedback-20261109/drivers/reading_gui_test.py",
+      "sha256": "efaf5836ab7c1479217abef4e3fef8c3b51abed43d43e54556c976dea7b458d5"
+    },
+    "consumption_gui_test.py": {
+      "path": "artifacts/reading-feedback-20261109/drivers/consumption_gui_test.py",
+      "sha256": "20b47eedca0d7e6e9a9ef3b4f9cab5f921a99843f5f13dbe91e6027ba2b02261"
+    }
+  },
+  "runner": {
+    "path": "artifacts/reading-feedback-20261109/run-gui-recorded.py",
+    "sha256": "dc62203dc885f570de4f8f0dfbfb91bbe3c14c78f3df0a9e29b0df03761545cd"
+  },
+  "screenshots_reviewed_by_llm": [
+    {
+      "path": "artifacts/reading-feedback-20261109/cold-verified/reading-progress-before-inspection.png",
+      "sha256": "2657bfa19284b42903d1625426e7fa75c3684928623f56cff5077b8aca17daa3"
+    },
+    {
+      "path": "artifacts/reading-feedback-20261109/cold-verified/reading-progress-after-inspection.png",
+      "sha256": "770cab7588ed13b163070779151abf820da2e0cb26cd5dd5b29236cf05e0654d"
+    },
+    {
+      "path": "artifacts/reading-feedback-20261109/drinking-fixed/drink-panel-reopened.png",
+      "sha256": "947be191b3074167af9263c22113f93f33ef3f960a422cf8adfa34b8c2fd9fd9"
+    }
+  ],
+  "installation": {
+    "client": {
+      "source": "artifacts/language-20261011/workspace/luanti/bin/luanti",
+      "installed": "luanti/bin/luanti",
+      "sha256": "57be307090c5b9cded613ecb2205ab627e7dfeb31a074793b6cdfa6ba77a3812",
+      "previous": "artifacts/reading-feedback-20261109/client-before-reading-feedback",
+      "previous_sha256": "e53597d5f0216654a1f51c24b2da5ace7a03b483f65d6612a392834bf9292dd2"
+    },
+    "native": {
+      "installed": "cdda/build/src/cdda-server",
+      "sha256": "73b0e71b27fdceb70d8708c87ffc95d0c39933ff2da7e91269fba0485b9fad97",
+      "reconstructed_sha256": "73b0e71b27fdceb70d8708c87ffc95d0c39933ff2da7e91269fba0485b9fad97",
+      "unchanged": true
+    },
+    "mode": "Atomic client replacement; existing user game processes left running on their original binary"
+  },
+  "installation_receipt": {
+    "path": "artifacts/reading-feedback-20261109/installation.json",
+    "sha256": "222991743495ba063b82e89fb45baf54a79c54a24d0b7adafd6fc39bdca281d6"
+  },
+  "install_script": {
+    "path": "artifacts/reading-feedback-20261109/install-client.py",
+    "sha256": "4e878b7ff1f9b9c00a8410e37fb413a0052c3b5fd5548f97728d6fdd8f8902f3"
+  },
+  "independent_reader": {
+    "binary": {
+      "path": "artifacts/playtest-feedback-20261025/native-save-reader-final",
+      "sha256": "6a94c8e6ead08981df06ebcd6b4adc07b36c79c96932e0b78af51c07d938e033"
+    },
+    "unmodified_core_pin": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+    "provenance": "docs/fixes/playtest-feedback-2026-10-25-evidence.json"
+  },
+  "reproduction_before_fix": {
+    "log": {
+      "path": "artifacts/reading-feedback-20261109/before-fix.log",
+      "sha256": "116aacbe55bdcd04cb647ee55a8c332025601df9f6d42c7abb2182c7227a574b"
+    },
+    "result": {
+      "path": "artifacts/reading-feedback-20261109/before-fix-runner-result.json",
+      "sha256": "1ad30370dd8d59524178a3f0db2e9e50c9d6984e707e19f8ec135075756b461c"
+    },
+    "checks": {
+      "path": "artifacts/reading-feedback-20261109/before-fix/checks.json",
+      "sha256": "ee6bda30463065725924cafb63911262013a54e2e4e2a87183a0e3a27e459875"
+    },
+    "trace": {
+      "path": "artifacts/reading-feedback-20261109/before-fix/camera.csv",
+      "sha256": "ac98c9ef5a0d638f7e9bd0284ad8a055e4b4585d47de01e38fc1af62697906b2"
+    },
+    "expected_failure": "After native freezing NO: pending_decision0, Menu pause2, active read, live stale modal; no later native prompt/progress. Driver exit1."
+  },
+  "excluded_attempts": [
+    {
+      "log": {
+        "path": "artifacts/reading-feedback-20261109/client-build.log.first",
+        "sha256": "b6afb5085433cf8559cebd62726e5b1828f2dc56f3f20ec11defb9cffe96fa8f"
+      },
+      "reason": "First compile missed cdda_bridge.h declaration for GUI call. Include added and runtime recaptured/rebuilt; not counted as PASS."
+    },
+    {
+      "log": {
+        "path": "artifacts/reading-feedback-20261109/cold-fixed.log",
+        "sha256": "1e626659a341f6f158a8b1d0a5b46823a7e3651ebbe925c4afda09ca8dd0c85f"
+      },
+      "result": {
+        "path": "artifacts/reading-feedback-20261109/cold-fixed-runner-result.json",
+        "sha256": "ec3fee783a474f222ddfa0ed02e6adf86b6b88a5c82cd99f18bdcba926aac984"
+      },
+      "reason": "Actual cold NO/IGNORE flow progressed but a further real native hurt decision needed an explicit response. Test refined to answer real additional distractions; no production auto-ignore. Failed attempts excluded from final total."
+    },
+    {
+      "log": {
+        "path": "artifacts/reading-feedback-20261109/cold-final.log",
+        "sha256": "4364286b037916b78b3c2a95db1948e3207558cc6409cf04a0a084ac2bd70c32"
+      },
+      "result": {
+        "path": "artifacts/reading-feedback-20261109/cold-final-runner-result.json",
+        "sha256": "136e6fb6237f0bc6f447edd6f253553b7b840216995840db43c2c9ba1bceea1b"
+      },
+      "reason": "Actual cold NO/IGNORE flow progressed but a further real native hurt decision needed an explicit response. Test refined to answer real additional distractions; no production auto-ignore. Failed attempts excluded from final total."
+    },
+    {
+      "log": {
+        "path": "artifacts/reading-feedback-20261109/cold-controlled.log",
+        "sha256": "48eba901f3e4db0da7e62431b696cc801b40499cbb5d46f0a385b07749f14dfe"
+      },
+      "result": {
+        "path": "artifacts/reading-feedback-20261109/cold-controlled-runner-result.json",
+        "sha256": "1737a8fd1a36d79db36beee38b9051d7c6caff29cadaf5a843afa8e06c272343"
+      },
+      "reason": "Actual cold NO/IGNORE flow progressed but a further real native hurt decision needed an explicit response. Test refined to answer real additional distractions; no production auto-ignore. Failed attempts excluded from final total."
+    }
+  ],
+  "human_validation": {
+    "source": "docs/source/manual-reading-feedback-2026-11-09.md",
+    "pass": [
+      "TRADE-01.4",
+      "READ-01.3",
+      "READ-01.4",
+      "SEAL-01.2"
+    ],
+    "new_pending": [
+      "READ-FB-01.1",
+      "WORK-FB-01.1"
+    ],
+    "pending": 49,
+    "calculation": "51 - 4 accepted + 2 new rechecks = 49",
+    "retained_open_issue": "LIQ-FB-01",
+    "automated_checks_are_not_human_acceptance": true
+  },
+  "limits": [
+    "Selected regression coverage, not cold conformance or whole-game certification.",
+    "Runtime snapshot includes pre-existing local refactors; root HEAD/index and unrelated work preserved.",
+    "No native production change or full upstream test rerun; native rules exercised through real GUI and independent canonical reader.",
+    "Windows CWM2.26, mapping batch60, historical M5.5 FAILED / full SAVE-001 OPEN unchanged."
+  ],
+  "commands": [
+    "python3 tools/takeover_baseline.py capture",
+    "python3 artifacts/reading-feedback-20261109/capture-final.py",
+    "python3 artifacts/reading-feedback-20261109/refresh-snapshot.py --workspace artifacts/language-20261011/workspace --receipt artifacts/reading-feedback-20261109/client-refresh-final.json",
+    "cmake --build artifacts/language-20261011/workspace/luanti/build --target luanti -j3",
+    "artifacts/language-20261011/workspace/luanti/bin/luanti --run-unittests --logfile artifacts/reading-feedback-20261109/client-units-engine.log",
+    "cmake --build artifacts/language-20261011/workspace/build/protocol -j3",
+    "ctest --test-dir artifacts/language-20261011/workspace/build/protocol --output-on-failure",
+    "python3 artifacts/reading-feedback-20261109/run-gui-recorded.py reading_gui_test.py artifacts/native-reading-20261018/fixture/user cold-verified --work-feedback",
+    "python3 artifacts/reading-feedback-20261109/run-gui-recorded.py consumption_gui_test.py artifacts/native-consumption-20261008/fixture/user drinking-fixed --work-feedback",
+    "python3 artifacts/reading-feedback-20261109/run-gui-recorded.py reading_gui_test.py artifacts/native-reading-20261018/fixture/user reading-save --save-active",
+    "python3 artifacts/reading-feedback-20261109/run-gui-recorded.py reading_gui_test.py artifacts/reading-feedback-20261109/reading-save/user reading-reload --resume-only",
+    "python3 artifacts/reading-feedback-20261109/install-client.py",
+    "CWM_TEST_INSTALLED=1 python3 artifacts/reading-feedback-20261109/run-gui-recorded.py reading_gui_test.py artifacts/native-reading-20261018/fixture/user installed-cold --work-feedback",
+    "CWM_TEST_INSTALLED=1 python3 artifacts/reading-feedback-20261109/run-gui-recorded.py consumption_gui_test.py artifacts/native-consumption-20261008/fixture/user installed-drinking --work-feedback",
+    "python3 tools/takeover_baseline.py check"
+  ]
+}

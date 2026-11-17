@@ -1,0 +1,372 @@
+{
+  "date": "2026-11-02",
+  "scope": "Configured crafting key pauses/inspects active crafting; bounded monotonic connection watchdog across resync state changes and engine pause, recovery diagnostics. Original intermittent incident cause unknown.",
+  "protocol": "2.37; no wire change introduced by these fixes",
+  "working_tree": {
+    "original_head": "0a41352e5c04d3dc9d599c662c93a501d1772f86",
+    "pre_existing_status": {
+      "path": "artifacts/manual-feedback-20261102/pre-existing-status.json",
+      "sha256": "a2202f3c8267961b1d1d84980fb4d2d0315ba2f994c54f377374aa2f1a6157af"
+    },
+    "source_snapshot": {
+      "commit": "e1875ce701a71dca841ef6279733ea934e43180a",
+      "source": "artifacts/manual-feedback-20261102/source",
+      "original_head": "0a41352e5c04d3dc9d599c662c93a501d1772f86",
+      "files": 799,
+      "scope": "Tracked current working files plus explicit source directories, preserving pre-existing changes. User branch/index/HEAD untouched. Private history file excluded."
+    },
+    "identity_check": {
+      "path": "artifacts/manual-feedback-20261102/source-identity.json",
+      "sha256": "0e6454e1ced9ae0aafae60a1cfcbb031a1694f5277ea0ae873e07ab6e15b4c64"
+    },
+    "task_only_delta": {
+      "path": "artifacts/manual-feedback-20261102/task-only.patch",
+      "sha256": "581c269b08f6f6bbb905ffe0b82e62669c20fc58e9b1e1368be83f05994fb51c"
+    },
+    "branch_index_not_written": true,
+    "commit_or_push": false,
+    "reason": "Existing uncommitted local refactors preserved; isolated private snapshot used for verification instead of publishing unrelated WIP."
+  },
+  "build_mode": "Incremental builds with retained caches, exact captured fork inventories and selected native suite; isolated canonical saves/configs. Not a cold conformance or full upstream audit.",
+  "source_trees": {
+    "cdda": {
+      "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+      "tree_sha256": "e803fe8f97cc5312c36025c1dd752e6deb6a4bb314df7ec9295c543b96eb17a6",
+      "patch_sha256": "3e5b9882db221d9634dc54501c093f7b4b192a869b2c93c208d64bff40ec1255",
+      "file_count": 8601
+    },
+    "luanti": {
+      "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
+      "tree_sha256": "94b0f6c067e306605c395220f68f448850b6516ae985717d86005d6f12a6d0b7",
+      "patch_sha256": "81cd85a2cdacc0019ef49b21447c0306514a86be88aff763f0de95afb4efe12f",
+      "file_count": 2272
+    },
+    "mineclonia": {
+      "commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+      "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36",
+      "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "file_count": 9359
+    }
+  },
+  "environment": {
+    "kernel": "Linux-7.0.11-76070011-generic-x86_64-with-glibc2.35",
+    "python": "3.10.12",
+    "renderer": "Private Xvfb 1280x800x24, Mesa llvmpipe, xdotool with actual Luanti renderer; OpenAL null"
+  },
+  "captures": {
+    "source": {
+      "path": "artifacts/manual-feedback-20261102/working-snapshot.json",
+      "sha256": "af8ef935608f9b7289382a13e7e11f75a1d113475dd65b55bd2da3d990ad58b6"
+    },
+    "baseline": {
+      "path": "artifacts/manual-feedback-20261102/capture.log",
+      "sha256": "b2b87c9b31f58a71f167c3427b7148edd095e2c76b404838ae087d95b4955066"
+    },
+    "native": {
+      "path": "artifacts/manual-feedback-20261102/native-refresh-verified.json",
+      "sha256": "5db6acdf3adc40d1d1e7ee221387fcb651410e06deda67c77b01771b70df4509"
+    },
+    "client": {
+      "path": "artifacts/manual-feedback-20261102/client-refresh-verified.json",
+      "sha256": "5db6acdf3adc40d1d1e7ee221387fcb651410e06deda67c77b01771b70df4509"
+    },
+    "cache_metadata_repair": {
+      "path": "artifacts/manual-feedback-20261102/cache-metadata-repair.json",
+      "sha256": "4ddad938cfffc5606c8941b3e0093997ac6e73f71afa302cbc66ad0c9f260194"
+    }
+  },
+  "build_logs": {
+    "native": {
+      "path": "artifacts/manual-feedback-20261102/native-build-verified.log",
+      "sha256": "9ab707631a4b837b4db3b32c31d0f41ce3a087a6a684c451a824ca24d9ac4695"
+    },
+    "client": {
+      "path": "artifacts/manual-feedback-20261102/client-build-verified.log",
+      "sha256": "14997b2c84824857f631dd6bc540c9f4bdbda412f336ec653dece62d3627f7c2"
+    },
+    "protocol": {
+      "path": "artifacts/manual-feedback-20261102/protocol-build.log",
+      "sha256": "b22b6a64bfd6f12e98f1d1c5ef08f2c2677721b809ad2fb4cb805286dc5c956d"
+    }
+  },
+  "native": {
+    "cases": 185,
+    "assertions": 73766,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/manual-feedback-20261102/native-tests.log",
+      "sha256": "de0a03ac7f2e6d272f28d3d89184453a11a7fabc9837658516a1875d6d0682f7"
+    }
+  },
+  "client": {
+    "cases": 309,
+    "modules": 47,
+    "catch_cases": 4,
+    "catch_assertions": 648,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/manual-feedback-20261102/client-units.log",
+      "sha256": "cbfe03bfcde11e28c3f65bfb734e969d7e62f49055023035de0530e24a79afaf"
+    }
+  },
+  "protocol_presentation_sdk": {
+    "cases": 21,
+    "result": "PASS",
+    "log": {
+      "path": "artifacts/manual-feedback-20261102/protocol-tests.log",
+      "sha256": "c7f291a426abc355f753acdd6f85577fc347f2c74519549669df6c93b1bae638"
+    }
+  },
+  "renderer": {
+    "crafting-key": {
+      "checks": 30,
+      "result": "PASS",
+      "binary_pair": "reconstructed",
+      "summary": {
+        "path": "artifacts/manual-feedback-20261102/crafting-key/summary.json",
+        "sha256": "a535e16664396464c1ff030b74747676f3dd2727834fca2973985aa8ea3f47e2"
+      },
+      "checks_file": {
+        "path": "artifacts/manual-feedback-20261102/crafting-key/checks.json",
+        "sha256": "f06e532e7e2579b52868d2736cd1df85277c31de2c110d7b6f788d0da9e5e6e0"
+      },
+      "native_readback": {
+        "path": "artifacts/manual-feedback-20261102/crafting-key/native.json",
+        "sha256": "5114ef55d5690d3ec31588fa986010f1596acff9b562d894b1b502b3b55bce4d"
+      },
+      "trace": {
+        "path": "artifacts/manual-feedback-20261102/crafting-key/camera.csv",
+        "sha256": "be5e65f3f13a49dde80256c61ab443dcbb2ae75b93838ce9a9c4a1dd7d04ede2"
+      },
+      "log": {
+        "path": "artifacts/manual-feedback-20261102/crafting-key.log",
+        "sha256": "d943e5baf94ee46c3aa18345a0b684877cd989421bc22893172b9da06478c1c7"
+      },
+      "process_result": {
+        "path": "artifacts/manual-feedback-20261102/crafting-key-runner-result.json",
+        "sha256": "3101f6ff2ac2315b0fd9cba6415ba86ed32f2355067c1f31849ca12b17cfc43d"
+      }
+    },
+    "sync-flap": {
+      "checks": 28,
+      "result": "PASS",
+      "binary_pair": "reconstructed",
+      "summary": {
+        "path": "artifacts/manual-feedback-20261102/sync-flap/summary.json",
+        "sha256": "3f974dfcc6978cb97d27332536765ee746a8de060bfa9e54945a3a6effb76104"
+      },
+      "checks_file": {
+        "path": "artifacts/manual-feedback-20261102/sync-flap/checks.json",
+        "sha256": "ce66430ee272761d6e83e61ff5b4a7e638520ec6b3f181d415aeb95b765ad7f5"
+      },
+      "native_readback": {
+        "path": "artifacts/manual-feedback-20261102/sync-flap/native.json",
+        "sha256": "0451744aaf8d13cbb253485d6bc48fbf0db732ddc3c3311a1e5a527a40b7b477"
+      },
+      "trace": {
+        "path": "artifacts/manual-feedback-20261102/sync-flap/camera.csv",
+        "sha256": "cdbbea7658475776ff80267c8d82da857c860aff3bafe8cafdf5c980a67f9ef4"
+      },
+      "log": {
+        "path": "artifacts/manual-feedback-20261102/sync-flap.log",
+        "sha256": "5102e649f760168d673850953f4bf463c78cc1f8333c5666dd49651dc6d305d2"
+      },
+      "process_result": {
+        "path": "artifacts/manual-feedback-20261102/sync-flap-runner-result.json",
+        "sha256": "fbd43c3ee9d1d2baa12788e294dfc5160e85d98e32218081eb959492f03c2fd6"
+      },
+      "fault_statistics": {
+        "corruptions": 34,
+        "disconnects": 1
+      },
+      "fault_receipt": {
+        "path": "artifacts/manual-feedback-20261102/sync-flap/fault-stats.json",
+        "sha256": "636c6d1aceb45922f2555699b9dabcc3d2d124142b5ae791ad88bc63cae244ab"
+      }
+    },
+    "installed-crafting": {
+      "checks": 30,
+      "result": "PASS",
+      "binary_pair": "installed",
+      "summary": {
+        "path": "artifacts/manual-feedback-20261102/installed-crafting/summary.json",
+        "sha256": "a78324ea8d4e453fcc24894a8cfc9cf7d4d0762aca955967f8ae9a65f304b325"
+      },
+      "checks_file": {
+        "path": "artifacts/manual-feedback-20261102/installed-crafting/checks.json",
+        "sha256": "f06e532e7e2579b52868d2736cd1df85277c31de2c110d7b6f788d0da9e5e6e0"
+      },
+      "native_readback": {
+        "path": "artifacts/manual-feedback-20261102/installed-crafting/native.json",
+        "sha256": "19b0163fe8068cf8476fa89c1d3e81c4a9e89926b811f561bb8e7b6d09711098"
+      },
+      "trace": {
+        "path": "artifacts/manual-feedback-20261102/installed-crafting/camera.csv",
+        "sha256": "f392410703a828758546dfbe72b32c9a8b96cd4127f07fb926923332c930d734"
+      },
+      "log": {
+        "path": "artifacts/manual-feedback-20261102/installed-crafting.log",
+        "sha256": "d943e5baf94ee46c3aa18345a0b684877cd989421bc22893172b9da06478c1c7"
+      },
+      "process_result": {
+        "path": "artifacts/manual-feedback-20261102/installed-crafting-runner-result.json",
+        "sha256": "26b4ef0549de1d7a7e31f8c502c68596922d637f008ad55584deffeac7d2d4f1"
+      }
+    },
+    "installed-sync": {
+      "checks": 28,
+      "result": "PASS",
+      "binary_pair": "installed",
+      "summary": {
+        "path": "artifacts/manual-feedback-20261102/installed-sync/summary.json",
+        "sha256": "52ace58cbfc23a31f00cbcc1ce7ff1d4df04daea0663a5a8c16a330bb809283b"
+      },
+      "checks_file": {
+        "path": "artifacts/manual-feedback-20261102/installed-sync/checks.json",
+        "sha256": "ce66430ee272761d6e83e61ff5b4a7e638520ec6b3f181d415aeb95b765ad7f5"
+      },
+      "native_readback": {
+        "path": "artifacts/manual-feedback-20261102/installed-sync/native.json",
+        "sha256": "aefcc86e65fa6c2edaf534c2702c3128603101447d1039d51e6e9a97bb3269e7"
+      },
+      "trace": {
+        "path": "artifacts/manual-feedback-20261102/installed-sync/camera.csv",
+        "sha256": "a2c07c4ee9a808e8a319ca0444984cbd81f3f09d24c3353d79af39cddb3f997a"
+      },
+      "log": {
+        "path": "artifacts/manual-feedback-20261102/installed-sync.log",
+        "sha256": "5102e649f760168d673850953f4bf463c78cc1f8333c5666dd49651dc6d305d2"
+      },
+      "process_result": {
+        "path": "artifacts/manual-feedback-20261102/installed-sync-runner-result.json",
+        "sha256": "27ba816cec529180d8292c9934ffa77a3eddabfaec6f589a8007c39051f92c57"
+      },
+      "fault_statistics": {
+        "corruptions": 34,
+        "disconnects": 1
+      },
+      "fault_receipt": {
+        "path": "artifacts/manual-feedback-20261102/installed-sync/fault-stats.json",
+        "sha256": "636c6d1aceb45922f2555699b9dabcc3d2d124142b5ae791ad88bc63cae244ab"
+      }
+    }
+  },
+  "renderer_checks_total": 116,
+  "renderer_total_meaning": "Two 30/28-check scenarios repeated on reconstructed and installed pairs; not 116 independent scenarios.",
+  "screenshots_reviewed_by_llm": [
+    {
+      "path": "artifacts/manual-feedback-20261102/installed-crafting/crafting-paused.png",
+      "sha256": "201fd561512dc04466ebff7c0ac5c35cb354a55b2372902803b2116eeffabcb7"
+    },
+    {
+      "path": "artifacts/manual-feedback-20261102/installed-sync/sleep-reconnected.png",
+      "sha256": "f015d1c5c85bac3458cab1934d086776fb02c4b5bd73d90bd7d503f35f5b5075"
+    }
+  ],
+  "drivers": {
+    "crafting_gui_test.py": {
+      "path": "tests/crafting_gui_test.py",
+      "sha256": "6363cf5344a89ef00f8cdb712801273d71b4dffaed501046410ae4b05a0074e1"
+    },
+    "rest_gui_test.py": {
+      "path": "tests/rest_gui_test.py",
+      "sha256": "5cfd057c5370753ffbf239e5c1d912284479968819291c6a278f5b7dd7643bf7"
+    }
+  },
+  "helpers": {
+    "capture-working-snapshot.py": {
+      "path": "artifacts/manual-feedback-20261102/capture-working-snapshot.py",
+      "sha256": "2ab00f86b8e1d5ec14838fe7447e04eeae52ad0743c218f020db72f865d19fb8"
+    },
+    "refresh-snapshot.py": {
+      "path": "artifacts/manual-feedback-20261102/refresh-snapshot.py",
+      "sha256": "fd55eb5424f810efa3bc8a39276380378c5e95092f70cfc29b5821f0733d4005"
+    },
+    "run-gui-recorded.py": {
+      "path": "artifacts/manual-feedback-20261102/run-gui-recorded.py",
+      "sha256": "dc62203dc885f570de4f8f0dfbfb91bbe3c14c78f3df0a9e29b0df03761545cd"
+    }
+  },
+  "installation": {
+    "native": {
+      "source": "artifacts/fnd03-session/workspace/cdda/build/src/cdda-server",
+      "installed": "cdda/build/src/cdda-server",
+      "sha256": "73b0e71b27fdceb70d8708c87ffc95d0c39933ff2da7e91269fba0485b9fad97",
+      "previous": "artifacts/manual-feedback-20261102/native-before-feedback",
+      "previous_sha256": "73b0e71b27fdceb70d8708c87ffc95d0c39933ff2da7e91269fba0485b9fad97"
+    },
+    "client": {
+      "source": "artifacts/language-20261011/workspace/luanti/bin/luanti",
+      "installed": "luanti/bin/luanti",
+      "sha256": "e53597d5f0216654a1f51c24b2da5ace7a03b483f65d6612a392834bf9292dd2",
+      "previous": "artifacts/manual-feedback-20261102/client-before-feedback",
+      "previous_sha256": "ee23eb2c0b4c2822625eb41ef2649521332cc61c38e701e5eccb2b1e1c4babc9"
+    }
+  },
+  "installation_receipt": {
+    "path": "artifacts/manual-feedback-20261102/installation.json",
+    "sha256": "1436559ed78ad568e9455a4c0465d9a717c8bc81ef0c81c8fd533038f29c0eac"
+  },
+  "independent_reader": {
+    "binary": {
+      "path": "artifacts/playtest-feedback-20261025/native-save-reader-final",
+      "sha256": "6a94c8e6ead08981df06ebcd6b4adc07b36c79c96932e0b78af51c07d938e033"
+    },
+    "pinned_cdda_commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+    "provenance": "docs/fixes/playtest-feedback-2026-10-25-evidence.json"
+  },
+  "retained_failed_preparation": {
+    "logs": [
+      {
+        "path": "artifacts/manual-feedback-20261102/native-refresh.log",
+        "sha256": "099ea5b011b219cd08a080e6a19dedf609f2cecbb1c1be59c483cb0a62d34bf3"
+      },
+      {
+        "path": "artifacts/manual-feedback-20261102/client-refresh.log",
+        "sha256": "099ea5b011b219cd08a080e6a19dedf609f2cecbb1c1be59c483cb0a62d34bf3"
+      }
+    ],
+    "reason": "Cache baseline metadata stale; refresh refused before compilation. Actual fork bytes then verified equal to independently captured pre-task baseline. Old metadata backed up before metadata repair and strict refresh. Excluded from PASS."
+  },
+  "human_validation": {
+    "source": "docs/source/manual-menu-rest-validation-2026-11-02.md",
+    "confirmed_pass": [
+      "MENU-01.1",
+      "UF8-01.1"
+    ],
+    "pending_current_four": [
+      "LIQ-01.3",
+      "SEAL-01.4"
+    ],
+    "new_pending": [
+      "KEY-K-01.1",
+      "SYNC-01.1"
+    ],
+    "not_inferred": "REST-01.4 sleep save/reload remains pending",
+    "pending_total": 59,
+    "automated_checks_are_not_human_acceptance": true
+  },
+  "limits": [
+    "Exact initial synchronization incident cause not established; fault regression verifies bounded recovery, not original trigger.",
+    "Includes preserved pre-existing local refactors; no full review or certification of all unrelated changes.",
+    "No full SAVE-001 or cold conformance certification; historical M5.5 FAILED and SAVE-001 OPEN remain.",
+    "Mapping batch60 and Windows CWM2.26 unchanged."
+  ],
+  "commands": [
+    "python3 tools/takeover_baseline.py capture",
+    "python3 artifacts/manual-feedback-20261102/capture-working-snapshot.py",
+    "python3 artifacts/manual-feedback-20261102/refresh-snapshot.py --workspace artifacts/fnd03-session/workspace --receipt artifacts/manual-feedback-20261102/native-refresh-verified.json",
+    "python3 artifacts/manual-feedback-20261102/refresh-snapshot.py --workspace artifacts/language-20261011/workspace --receipt artifacts/manual-feedback-20261102/client-refresh-verified.json",
+    "cmake --build artifacts/fnd03-session/workspace/cdda/build --target cdda-server cata_test -j4",
+    "cd artifacts/fnd03-session/workspace/cdda && CDDA_LOCALE_DIR=$PWD/lang/mo build/tests/cata_test '[cwm],[reading]~[.],[melee]~[.],[ranged]~[.],[disassembly]~[.],[npc_talk]~[.],[mission]' --rng-seed 42 --user-dir=<isolated-directory>",
+    "cmake --build artifacts/language-20261011/workspace/luanti/build --target luanti -j3",
+    "artifacts/language-20261011/workspace/luanti/bin/luanti --run-unittests --logfile <isolated-log>",
+    "cmake --build artifacts/language-20261011/workspace/build/protocol -j3",
+    "ctest --test-dir artifacts/language-20261011/workspace/build/protocol --output-on-failure",
+    "python3 artifacts/manual-feedback-20261102/run-gui-recorded.py crafting_gui_test.py artifacts/native-crafting-20261008/fixture/user crafting-key --modal-continuity",
+    "python3 artifacts/manual-feedback-20261102/run-gui-recorded.py rest_gui_test.py artifacts/unified-f8-20261025/rest-settled/user sync-flap --reload-sleep --sync-flap",
+    "CWM_TEST_INSTALLED=1 python3 artifacts/manual-feedback-20261102/run-gui-recorded.py crafting_gui_test.py artifacts/native-crafting-20261008/fixture/user installed-crafting --modal-continuity",
+    "CWM_TEST_INSTALLED=1 python3 artifacts/manual-feedback-20261102/run-gui-recorded.py rest_gui_test.py artifacts/unified-f8-20261025/rest-settled/user installed-sync --reload-sleep --sync-flap",
+    "python3 tools/takeover_baseline.py check"
+  ]
+}

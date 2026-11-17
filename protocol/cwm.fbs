@@ -310,6 +310,22 @@ table MovementModeRequest {
 
 // Progress is native ACT_CONSUME work, never a presentation timer. Token is
 // ephemeral to this server activity, not an item or canonical save field.
+enum ActivityKind : uint8 {
+    NONE = 0,
+    CONSUME = 1,
+    FIRST_AID = 2,
+    CRAFT = 3,
+    RELOAD = 4,
+    ITEM_TRANSFER = 5,
+    READ = 6,
+    DISASSEMBLE = 7,
+    LIQUID_TRANSFER = 8
+}
+table CancelActivityRequest {
+    command_id: uint64;
+    activity_token: uint64;
+    kind: ActivityKind = NONE;
+}
 table ConsumptionState { token: uint64; total_moves: int32; remaining_moves: int32; }
 table CancelConsumptionRequest { command_id: uint64; activity_token: uint64; }
 // Canonical ACT_FIRSTAID work. Neither progress nor token is saved by Luanti.
@@ -661,6 +677,7 @@ union Payload {
     ,MissionTrackRequest
     ,RestRequest
     ,CancelLiquidTransferRequest
+    ,CancelActivityRequest
 }
 
 table CwmMessage {

@@ -125,6 +125,8 @@ def main():
             time.sleep(.05)
         raise RuntimeError('GUI condition not reached; inspect trace/logs')
     def xdo(*argv):
+        if os.environ.get('CWM_GUI_NO_WM') == '1' and argv and argv[0] == 'windowactivate':
+            argv = ('windowfocus', *argv[1:])
         subprocess.run(['xdotool', *argv], check=True, capture_output=True, timeout=5)
     def tap(key, sneak=False):
         if sneak:

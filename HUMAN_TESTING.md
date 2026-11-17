@@ -27,11 +27,16 @@ has personally tested and marked `PASS` in the manual ledger, including core
 interactions, inventory/equipment, consumption, treatment, crafting, ranged
 combat, containers, dialogs and persistence within the tested scenarios.
 
-The latest [seven core gates](docs/source/manual-core-gates-2026-10-18.md) were
+The October 18 [seven core gates](docs/source/manual-core-gates-2026-10-18.md) were
 all reported PASS by the developer. The same feedback identified additional
 crafting, opening-control and lighting issues; passing a gate does not erase
 those observations. General playtesting informs the roadmap even when a
 checklist passes.
+
+The [human playtest index](docs/validation/human-playtests.md) groups the latest
+reported outcomes by feature. As of 2026-11-17, 21 manual checks remain,
+including three on a real Windows 11 PC. The detailed ledger contains each
+case, the developer's comments and historical results.
 
 The ledger preserves chronology, untested cases, failures and deferred personal
 rechecks. A PASS applies to the scenario and version actually played. Subsequent
@@ -42,6 +47,8 @@ on every later commit, or that all planned game features are complete.
 
 ## Where to find the evidence
 
+- **[Human playtest results by feature](docs/validation/human-playtests.md):**
+  the public index of reported results and remaining checks.
 - **[Manual PASS/FAIL, comments and outstanding tests](docs/validation/pending-manual.md):**
   the human testing ledger. Historical delivery counts are dated snapshots.
 - **[Implementation status](IMPLEMENTATION_STATUS.md):** what is implemented,

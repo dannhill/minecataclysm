@@ -1,5 +1,160 @@
 # Validazioni manuali del playable core
 
+**I PASS sono riportati dall’unico sviluppatore umano dopo aver giocato.**
+Questo registro è redatto e aggiornato da un LLM seguendo i suoi resoconti e
+le sue direttive. [Indice dei risultati per funzionalità](human-playtests.md) ·
+[Provenienza dei test e della redazione](../../HUMAN_TESTING.md)
+
+Quarto riscontro umano del 2026-11-17. **READ-FB-01.1, finestra/tende
+(ricontrollo 3), immersione (feedback 9) e oggetto in mano (feedback 4) PASS.**
+Restano **21 PENDING**. Il developer ha visto anche la domanda di ferita
+durante la lettura e la reazione rossa dello zombie al colpo. Registrata la
+nota visiva sulla Glock: scatto percepibile ma debole, con aspetto da spada
+del segnaposto. La tinta rossa conferma il lato bersaglio di feedback 2.
+La verifica della tinta quando è il giocatore a subire il colpo resta aperta.
+Nuovo giro: **1 → TRADE-01.3 (credito), 2 → JOURNAL-01.1, 3 → modello zombie
+(punto 2), 4 → audio (feedback 3)**.
+[Istruzioni e risposta sui comandi di mira](../source/manual-priority-tests-2026-11-17-followup.md#quarto-riscontro-e-prossimo-giro).
+
+Terzo riscontro umano del 2026-11-17. **COMP-01.1, ricerca dinamica e cursore
+(ricontrolli dopo i sette gate, punto 1), UX-05.2 e modello 3D del giocatore
+(punto 3) PASS.** Restano **25 PENDING**. Per la prova dei compagni il developer
+ha aperto gli altri pannelli senza toccare le opzioni. La ricerca era familiare.
+Il dettaglio nuovo del ricontrollo era inserire e cancellare a metà del campo
+verificando posizione del cursore e aggiornamento dei risultati.
+[Prossime quattro prove e istruzioni](../source/manual-priority-tests-2026-11-17-followup.md#terzo-riscontro-e-quattro-prove-successive).
+Ordine: **1 → READ-FB-01.1, 2 → chiusura finestra e tende (ricontrollo 3),
+3 → immersione (feedback 9), 4 → oggetto in mano (feedback 4)**.
+
+Secondo riscontro umano 2026-11-17: **NPC-01.1, TRADE-01.1 e NPC-01.4
+PASS**. COMP-01.1 **non eseguito: istruzioni non comprese**, resta PENDING,
+non è un FAIL. **32 meno tre =29 PENDING**, nessun nuovo caso. Il developer
+richiede istruzioni più chiare: comando preciso, passi concreti e risultato
+visibile che determina il PASS; evitare verifiche interne non osservabili.
+[Fonte e nuovo gruppo dettagliato](../source/manual-priority-tests-2026-11-17-followup.md).
+Prossime quattro prove: **1 → COMP-01.1 rispiegato; 2 → Ricontrolli dopo i
+sette gate, punto1; 3 → UX-05.2; 4 → Modelli e materiali umanoidi, punto3**.
+Il primo riprende la prova non eseguita; gli altri tre non sono ancora validati.
+REST-FB-02 OPEN e MENU-TOGGLE-01 TODO/proposta restano separati dai PASS.
+
+Riscontro umano 2026-11-17: **REST-01.1, JOURNAL-01.3, NPC-01.2 e
+LANG-02.1 PASS**. Chiuso il FAIL personale del riposo: **32 PENDING**, nessun
+FAIL aperto nelle checklist correnti (35 meno tre PENDING chiusi; chiuso anche
+l'unico FAIL). Nessun nuovo caso aggiunto. Commenti separati:
+**REST-FB-02 OPEN** per recupero del fiato quasi istantaneo partendo da1x e
+immobilità successiva di qualche secondo; **MENU-TOGGLE-01 TODO/proposta** per
+J/K che aprono e richiudono il proprio pannello, rispettando i campi di testo.
+I commenti non revocano i PASS né dichiarano una correzione già implementata.
+[Fonte, analisi e prossimi controlli](../source/manual-priority-tests-2026-11-17.md).
+Prossimo ordine: **1 → NPC-01.1; 2 → TRADE-01.1; 3 → COMP-01.1;
+4 → NPC-01.4**. Sono tutti punti già pendenti; prima ingresso e annullamento,
+poi consultazione dei sottopannelli e infine persistenza della conversazione.
+
+Secondo riscontro umano 2026-11-15: **REST-01.1 FAIL**; raccolta sfusa
+punto2, JOURNAL-01.2 e DIS-01.2 **PASS**. **35 PENDING +1 FAIL =36 punti
+ancora aperti** (39 precedenti meno tre PASS; il quarto passa da PENDING a FAIL).
+Nessun nuovo test aggiunto. Il riposo fallisce ripetutamente a0.5x/1x/2x,
+non osservato a4x; pausa I e interruzione B confermate separatamente.
+[Fonte e ordine per dipendenze](../source/manual-priority-tests-2026-11-15.md).
+Richiesto un ordine che riduca le ripetizioni: verificare prima le fondamenta
+condivise e fermare le prove dipendenti quando un prerequisito fallisce.
+Prossimo ordine: **1 → REST-01.1 (ricontrollo del FAIL); 2 → JOURNAL-01.3;
+3 → NPC-01.2; 4 → LANG-02.1**. [Istruzioni e condizioni di arresto](../source/manual-priority-tests-2026-11-15.md#quattro-controlli-in-ordine-di-dipendenza).
+La correzione del difetto riprodotto è installata per `start.sh`: durata visiva
+delle creature valida anche nel riposo accelerato. Native186, SDK21 e130
+controlli renderer/canonici PASS; **non chiudono il FAIL umano**.
+[Consegna e limiti](../fixes/rest-rate-feedback-2026-11-15.md).
+
+Riscontro umano 2026-11-15: **COMP-01.3, COMP-01.4, NPC-01.3 e READ-01.1 PASS**.
+**43 meno quattro =39 PENDING**, nessun nuovo test o FAIL. Richiesta UX separata
+**NPC-SCROLL-01 TODO**: dopo una scelta di dialogo, mostrare il fondo dello
+storico con l'ultima interazione. Non revoca il PASS e non aumenta il contatore.
+[Fonte, copertura e richiesta](../source/manual-priority-tests-2026-11-15.md#riscontro-umano-del-giro).
+
+Prossimo giro richiesto: **1 → REST-01.1; 2 → Raccolta sfusa diretta, punto2;
+3 → JOURNAL-01.2; 4 → DIS-01.2**. Tutti già pendenti; totale **39 PENDING**
+invariato fino ai nuovi risultati. La raccolta usa transfer-demo con30 munizioni,
+deposito7 e controllo della somma, su una casella senza altri oggetti.
+
+Secondo riscontro umano 2026-11-11: **LANG-02.2, DIS-01.1, JOURNAL-01.4 e
+COMP-01.2 PASS**. **47 meno quattro =43 PENDING**, senza nuovi test o FAIL.
+Le accettazioni seguono le quattro istruzioni proposte, senza estensione ad
+altri casi. Il tracker del diario usa la selezione nativa CDDA; nuova è la
+presentazione Luanti, non la meccanica o il formato di salvataggio.
+[Fonte e chiarimento](../source/manual-work-trade-crafting-validation-2026-11-11.md#secondo-riscontro-lingua-smontaggio-missioni-e-compagni).
+Il caso non riprodotto e il credito parzialmente provato restano pendenti;
+LIQ-FB-01 rimane OPEN. Le note sotto conservano i conteggi storici.
+
+Giro prioritario richiesto il 2026-11-15, poi accettato: **1 → COMP-01.3;
+2 → COMP-01.4; 3 → NPC-01.3; 4 → READ-01.1**.
+Allora tutti pendenti: **43 PENDING**. Il secondo segue il primo sulla
+stessa demo; prima di salvarla impostare Base Off / Override On per distinguere
+la persistenza dal ripristino dei valori iniziali Base On / Override Off.
+[Istruzioni e copertura](../source/manual-priority-tests-2026-11-15.md).
+
+Riscontro umano 2026-11-11: **WORK-FB-01.1 e Ricontrolli dopo i sette gate,
+punto2 PASS**. **READ-FB-01.1 non riprodotto**, ancora pendente senza nuovo
+FAIL. **TRADE-01.3 PASS parziale**: credito non provato; nessuna accettazione
+implicita di casi non proposti. Due punti chiusi: **49 meno due =47 PENDING**.
+[Fonte, scopo e chiarimenti su credito/crafting](../source/manual-work-trade-crafting-validation-2026-11-11.md).
+Prima di riproporre il credito serve una scena di rifiuto deterministica:
+la demo attuale parte con $1000 di saldo favorevole. Nessun nuovo test aggiunto.
+
+Giro di quattro controlli richiesto il 2026-11-11, poi accettato:
+**1 → LANG-02.2; 2 → DIS-01.1; 3 → JOURNAL-01.4; 4 → COMP-01.2**.
+Erano quattro punti già pendenti, con demo disponibili; il conteggio allora
+era **47 PENDING**. Per la lingua si usa una lettura abbastanza lunga; Esc nasconde il
+pannello, un secondo Esc apre la pausa. Per il diario, il riavvio è senza
+`--fresh`; per guardia/seguito uscire dal dialogo prima di osservare l'AI.
+
+Riscontro umano 2026-11-09: **TRADE-01.4, READ-01.3, READ-01.4 e SEAL-01.2 PASS**.
+I precedenti punti pendenti scendono da51 a47. Le segnalazioni del blocco sulla
+domanda di congelamento e dei pannelli incoerenti/non riapribili rimangono
+separate dai PASS, come READ-FB-01 / WORK-FB-01. Due nuovi ricontrolli rinviabili
+portano il totale a **49 PENDING**. LIQ-FB-01 resta OPEN.
+[Fonte e copertura](../source/manual-reading-feedback-2026-11-09.md).
+Correzioni del client installate in `start.sh`, con prove automatiche separate:
+[consegna e limiti](../fixes/reading-work-feedback-2026-11-09.md). I ricontrolli
+READ-FB-01.1 / WORK-FB-01.1 possono essere fatti in seguito.
+
+Giro prioritario proposto dopo le correzioni del 2026-11-09, riscontro sopra:
+**1 → READ-FB-01.1; 2 → WORK-FB-01.1; 3 → TRADE-01.3;
+4 → Ricontrolli dopo i sette gate, punto2 (ricette vere e lotto)**.
+Sono prove già pendenti: il totale resta **49 PENDING**. Per il punto1 non
+occorre provocare il freddo o insistere: se l'avviso non ricompare, registrare
+«non riprodotto», senza dedurre un PASS del recupero da quella distrazione.
+
+Secondo riscontro umano 2026-11-08: **REST-01.4, DIS-01.4, READ-01.2 e
+TRADE-01.2 PASS**. **55 meno quattro =51 PENDING**. I quattro PASS del giro
+precedente restano accettati; LIQ-FB-01 rimane OPEN. Nessun nuovo test aggiunto
+e nessuna accettazione implicita degli altri punti delle stesse funzionalità.
+[Fonte e corrispondenza del secondo giro](../source/manual-liquids-recovery-validation-2026-11-08.md#secondo-riscontro-umano-quattro-ulteriori-pass).
+Le note datate sotto conservano la cronologia dei risultati e dei conteggi.
+
+Giro proposto allora: **1 → TRADE-01.4;
+2 → READ-01.3; 3 → READ-01.4; 4 → SEAL-01.2**. Accettato il 2026-11-09.
+Per il primo riaprire la demo di scambio precedente senza `--fresh`; il terzo
+segue il secondo sulla stessa sessione di lettura, riavviata senza `--fresh`.
+Il totale rimane **51 PENDING**.
+
+Riscontro umano 2026-11-08: **SYNC-01.1, KEY-K-01.1, LIQ-01.3 e SEAL-01.4 PASS**.
+**59 meno quattro =55 PENDING**. I commenti sul travaso istantaneo e sull'acqua
+versata/non interagibile restano separati come **LIQ-FB-01 OPEN**, senza revocare
+il PASS o aggiungere test. Il primo PASS non dichiara una riproduzione del guasto
+iniziale; REST-01.4 resta pendente. [Fonte e limiti](../source/manual-liquids-recovery-validation-2026-11-08.md).
+Giro proposto allora: **1 → REST-01.4; 2 → DIS-01.4; 3 → READ-01.2; 4 → TRADE-01.2**.
+Queste quattro prove sono ora accettate dal secondo riscontro riportato sopra.
+
+Riscontro umano 2026-11-02: **MENU-01.1 e UF8-01.1 PASS**, con segnalazioni
+separate per K nel crafting e un episodio di sincronizzazione durante il sonno.
+**LIQ-01.3 e SEAL-01.4 rimangono PENDING.** [Fonte e corrispondenza](../source/manual-menu-rest-validation-2026-11-02.md).
+59 PENDING meno due più i due ricontrolli KEY-K-01.1 / SYNC-01.1 = **59 PENDING**.
+I PASS funzionali non vengono revocati; i due difetti sono tracciati separatamente.
+Le correzioni sono installate per `start.sh` e verificate automaticamente;
+[consegna e limiti](../fixes/manual-feedback-2026-11-02.md). I ricontrolli umani
+KEY-K e SYNC possono essere fatti in seguito.
+
+
 Ultimo riscontro umano (2026-10-26): **FB-01.1 e FB-01.2 PASS**, confermati
 anche dopo la nuova segnalazione sui passaggi dei menu. Chiusi entrambi i FAIL
 di avvio. **59 PENDING, nessun FAIL aperto**: i precedenti 58 invariati più
@@ -837,7 +992,7 @@ Prova isolata: `./medicine-demo.sh --fresh`; disponibile anche in start.sh.
    descrizioni inglesi dove manca la traduzione, ma stessi cuori e scelte.
 
 
-## UX-05 — 1, 3 e ripresa/persistenza 4 PASS; 2 PENDING (2026-10-18)
+## UX-05 — 1–4 PASS negli scenari provati (2 il 2026-11-17)
 
 Disponibile nel normale `./start.sh`; scena isolata `./crafting-demo.sh --fresh`.
 
@@ -846,7 +1001,7 @@ Disponibile nel normale `./start.sh`; scena isolata `./crafting-demo.sh --fresh`
    mostra quella ricetta. Rimuovila: non deve più comparire in quella scheda.
    Segnare/selezionare/leggere non consuma materiali né avvia attività; il tempo
    resta in pausa. Il preferito della ricetta è distinto dai componenti protetti.
-2. **Recenti reali:** scegli componenti/fonti e rispondi No: la ricetta non entra
+2. **PASS umano 2026-11-17 — Recenti reali.** Scegli componenti/fonti e rispondi No: la ricetta non entra
    nei Recenti. Approva poi un lavoro: Recenti la mostra senza dover cercare.
    Riaprendo K la scheda iniziale segue dati nativi: prima incompleti accessibili,
    poi recenti/preferite, altrimenti Tutte. I recenti indicano avvii, non completamenti.
@@ -895,19 +1050,19 @@ al consolidamento delle interfacce, ma queste prove possono ancora essere rinvia
 rinviata dopo F7. Non duplicare questo punto nei contatori. Il commento UX
 sul menu 9×3 per oggetti sfusi è nel seguito; non revoca il PASS funzionale.
 
-## Raccolta sfusa diretta — 1 e 3 PASS personali T5; 2 PENDING
+## Raccolta sfusa diretta — 1–3 PASS umani (2 il 2026-11-15)
 
 1. **Un oggetto:** nella partita o `./storage-demo.sh --fresh`, deposita un
    oggetto da solo ai piedi del personaggio, chiudi I e punta il drop. RMB lo
    raccoglie senza aprire il menu 9×3. Anche un singolo sasso è raccolta diretta.
-2. **Una pila:** deposita solo alcune munizioni (es. 7) su una casella vuota.
+2. **PASS umano 2026-11-15 — Una pila:** deposita solo alcune munizioni (es. 7) su una casella vuota.
    RMB raccoglie tutta quella pila senza menu, rispettando spazio/costo CDDA.
    Niente duplicazioni o perdita del resto rimasto nell'inventario.
 3. **Pausa e contenitori:** F7, prova RMB sul drop, riprendi senza cliccare:
    non parte una vecchia raccolta. Un nuovo clic funziona. Mobili, zaini a terra
    e più oggetti insieme mantengono il menu con quantità e contenuti nativi.
 
-## Modelli e materiali umanoidi — PENDING (3), rinviabili
+## Modelli e materiali umanoidi — 1, 2 PENDING, 3 PASS umano (2026-11-17)
 
 1. **NPC:** osserva l'NPC dello spawn da vicino, davanti e dietro. Pelle,
    volto, torso e arti devono appartenere a un omino voxel riconoscibile, senza
@@ -916,7 +1071,7 @@ sul menu 9×3 per oggetti sfusi è nel seguito; non revoca il PASS funzionale.
 2. **Zombie:** osserva uno zombie comune. Volto e vestiti devono essere
    riconoscibili, senza texture spalmata sul guscio dell'armatura. La bassa
    risoluzione pixel art è quella degli asset Mineclonia; non è un pack HD.
-3. **Terza persona:** premi C per vedere il personaggio dietro/davanti, poi
+3. **PASS umano 2026-11-17 — Terza persona.** Premi C per vedere il personaggio dietro/davanti, poi
    torna alla prima persona. Deve esserci un modello voxel, non una sagoma 2D
    verde; piedi e altezza devono risultare plausibili. I conserva l'anteprima.
 
@@ -935,7 +1090,7 @@ sul menu 9×3 per oggetti sfusi è nel seguito; non revoca il PASS funzionale.
    Creature che diventano visibili o tornano dopo il caricamento non devono
    percorrere una vecchia traiettoria invisibile o lasciare doppi modelli.
 
-## Feedback del core — dieci passi — PENDING (10), rinviabili
+## Feedback del core — 4 e 9 PASS umani (2026-11-17), 8 punti PENDING
 
 Nessun obbligo adesso. Avvio normale `./start.sh`; per una scena già pronta
 puoi usare `./combat-demo.sh --fresh` o `./ranged-demo.sh --fresh`. Aspetto dei
@@ -944,18 +1099,20 @@ vestiti e timbri audio sono ancora provvisori; bestiario completo non dichiarato
 1. **Attacchi:** osserva un attacco tuo in terza persona (C) e uno zombie che
    attacca davvero. Deve partire un gesto breve anche quando manca; non deve
    attaccare solo perché vicino. F7/I fermano la posa insieme alla simulazione.
-2. **Danni:** un colpo effettivo produce una breve reazione/tinta sul bersaglio;
+2. **Danni — PENDING con riscontro parziale.** Il 2026-11-17 lo zombie è
+   diventato rosso al colpo. Un colpo effettivo produce una breve tinta sul bersaglio;
    se vieni ferito compare una tinta lieve sullo schermo, senza scuotere la
    camera né spostarti. Un colpo mancato non deve simulare un danno riuscito.
 3. **Audio:** con volume attivo prova sparo, colpi e rumori di lavoro/movimento.
    Devono arrivare suoni e didascalie quando CDDA li rende udibili. Giudica anche
    il volume: il colpo d'arma usa ancora un timbro provvisorio. Niente ripetizione
    dei vecchi suoni dopo pausa/reconnect. La sordità nativa resta vincolante.
-4. **Prima persona:** impugna/disimpugna un oggetto e una pistola. Deve vedersi
+4. **PASS umano 2026-11-17 — Prima persona.** Impugna/disimpugna un oggetto e una pistola. Deve vedersi
    l'oggetto effettivo, usando l'icona estrusa come proxy, indipendente dallo slot
    rapido selezionato. Destro mantenuto alza la posa, sparare dà un breve rinculo
    visivo dell'oggetto; non deve sembrare il pugno/mining di Minecraft. Non è una
-   nuova regola di mira o un modello 3D definitivo di tutte le armi.
+   nuova regola di mira o un modello 3D definitivo di tutte le armi. Nota del
+   developer: scatto Glock visibile ma debole, aspetto da spada.
 5. **Canidi:** quando incontri cane/lupo/coyote nella partita, controlla modello
    a quattro zampe, scala, pelle e ciclo di cammino; in pausa rimane fermo.
    Forme mutate/zombie non incluse conservano il fallback. Prova rinviabile fino
@@ -969,7 +1126,7 @@ vestiti e timbri audio sono ancora provvisori; bestiario completo non dichiarato
 8. **Oscurità:** in una stanza buia compare un segnale «Low light» e una lieve
    velatura; uscendo alla luce si toglie. Nessuna creatura nascosta deve diventare
    visibile. È un'indicazione della luce nativa, non il futuro panorama/nebbia.
-9. **Immersione:** quando CDDA conferma che sei sott'acqua compare una tinta blu
+9. **PASS umano 2026-11-17 — Immersione.** Quando CDDA conferma che sei sott'acqua compare una tinta blu
    e l'indicazione «Underwater». Emergere li rimuove. Non promette visibilità
    dove CDDA non esporta terreno; il messaggio deve rendere comprensibile anche
    una zona completamente buia. Niente ossigeno/danno inventato dal client.
@@ -979,23 +1136,23 @@ vestiti e timbri audio sono ancora provvisori; bestiario completo non dichiarato
     anche a diagnostica spenta. Le vecchie configurazioni possono avere F5.
 
 
-## Ricontrolli dopo i sette gate — PENDING (4), rinviabili
+## Ricontrolli dopo i sette gate — 1–3 PASS umani, 4 PENDING (2026-11-17)
 
 I sette gate sono accettati; questi sono ricontrolli di modifiche successive,
 non PASS dedotti dalle prove automatiche. Disponibili anche in `./start.sh`.
 
-1. **Catalogo e ricerca dinamica:** `./crafting-demo.sh --fresh`, K, Tutte.
+1. **PASS umano 2026-11-17 — Catalogo e ricerca dinamica.** `./crafting-demo.sh --fresh`, K, Tutte.
    L'avviso dei troppi risultati resta nel margine inferiore e non copre le
    schede. Scrivi lentamente `band`: risultati aggiornati senza Invio, campo
    sempre modificabile. Inserisci/cancella un carattere nel mezzo: cursore e
    ricerca non saltano alla fine. Lo stesso filtro dinamico è disponibile in I.
-2. **Ricette vere e lotto:** cerca `bandage`: la categoria navigazionale senza
+2. **PASS umano 2026-11-11 — Ricette vere e lotto:** cerca `bandage`: la categoria navigazionale senza
    risultato non è più avviabile. Seleziona `makeshift bandage` senza utensile,
    cambia lotto a 2 o 4: la selezione resta, requisiti/durata si aggiornano e
    puoi creare senza riselezionare. Con i materiali della demo un lotto 4 dà
    otto makeshift bandages, dopo il lavoro nativo; nessun esito fantasma a 0%.
    La vera `bandages` richiede materiali sanitari, nastro e disinfettante.
-3. **Vano e chiusura esplicita:** punta una finestra chiusa e usa RMB. Senza
+3. **PASS umano 2026-11-17 — Vano e chiusura esplicita.** Punta una finestra chiusa e usa RMB. Senza
    abbassare la mira al davanzale, RMB deve richiedere la chiusura del vetro
    aperto. **O** richiede soltanto CLOSE, anche per tirare le tende di una
    finestra già chiusa; RMB le riapre dal lato consentito da CDDA. O è
@@ -1008,7 +1165,7 @@ non PASS dedotti dalle prove automatiche. Disponibili anche in `./start.sh`.
    e non aggiunge ancora illuminazione 3D laterale. Valuta il comfort visivo.
 
 
-## READ-01 — Libri cartacei e studio nativo — PENDING (4), rinviabili
+## READ-01 — Libri cartacei e studio nativo — 1–4 PASS umani (1 il 2026-11-15)
 
 Disponibile in `./start.sh` con libri realmente posseduti. Scena separata:
 `./reading-demo.sh --fresh`. Nello zaino ci sono un breve libro di svago sui
@@ -1017,26 +1174,26 @@ atomica assicura luce nella scena. Rilancia senza `--fresh` per riprendere il
 save della demo. Questa prima fetta esclude e-reader, libri con usi speciali e
 hint del guidebook; il menu ne indica il limite. Nessun gate personale oggi.
 
-1. **Sfogliare e conoscere:** I, seleziona il libro non identificato. Leggere
+1. **PASS umano 2026-11-15 — Sfogliare e conoscere:** I, seleziona il libro non identificato. Leggere
    i dettagli deve mantenere tempo fermo e non rivelare gratis il contenuto.
    Premi **Skim book / Sfoglia libro**: il lavoro richiede tempo; solo al
    termine il libro diventa noto e il pulsante cambia in **Read / Leggi**.
    Nome, icona e istruzioni devono essere comprensibili; la scelta non deve
    far sparire il libro o produrne uno nuovo.
-2. **Studiare davvero:** seleziona la rivista nota, Leggi. Nella scelta nativa
+2. **PASS umano 2026-11-08 — Studiare davvero:** seleziona la rivista nota, Leggi. Nella scelta nativa
    puoi annullare, leggere una volta oppure fino al livello teorico successivo.
    Annulla una volta: nessun capitolo completato o esperienza gratuita. Poi
    scegli un capitolo e completalo: nei dettagli cresce la progressione teorica
    nativa. La durata dipende dal lettore: circa sette minuti CDDA,
    circa 100–105 secondi a 4x nella scena;
    questa consegna non introduce ancora un'accelerazione dedicata alle attività.
-3. **Pausa e ripresa:** avvia lo studio, premi I e attendi: progresso e mondo
+3. **PASS umano 2026-11-09, riserva READ-FB/WORK-FB — Pausa e ripresa:** avvia lo studio, premi I e attendi: progresso e mondo
    restano fermi. Chiudi per riprendere, poi riapri e usa **Interrupt reading /
    Interrompi lettura**. Non si assegna un capitolo completo per un'interruzione.
    Leggendo di nuovo lo stesso libro con lo stesso modo, CDDA riprende il lavoro
    eleggibile già pagato, senza ricominciare da zero. F7 non deve accodare un
    vecchio clic di lettura da eseguire alla ripresa.
-4. **Save/load del capitolo:** esci con studio in corso e I aperto. Rilancia la
+4. **PASS umano 2026-11-09 — Save/load del capitolo:** esci con studio in corso e I aperto. Rilancia la
    demo senza `--fresh`: il vero capitolo riparte dal progresso salvato, non
    duplica libri o esperienza. Come per il crafting, I e la sua pausa non sono
    persistiti; puoi premere I di nuovo per fermarti. Prova anche i testi in
@@ -1061,16 +1218,16 @@ proprie prove LANG-02 e non eredita questo PASS.
    Questo è solo un controllo di chiarezza; la logica è già accettata dall'utente.
 
 
-## LANG-02 — Cambio lingua senza riavvio — PENDING (2), rinviabile
+## LANG-02 — Cambio lingua senza riavvio — 1–2 PASS umani (1 il 2026-11-17)
 
-1. In `./start.sh`, Esc → Italiano, poi English, ripetendo anche rapidamente.
+1. **PASS umano 2026-11-17.** In `./start.sh`, Esc → Italiano, poi English, ripetendo anche rapidamente.
    La partita e il menu restano aperti, il tempo fermo. Il menu Esc cambia
    subito lingua e indica quella attiva; WIP/incompletezza compaiono solo per
    Italiano. Chiudi Esc e controlla I/H/K: etichette e nomi nativi cambiano,
    oggetti/equipaggiamento e icone restano corretti. Una successiva domanda
    nativa usa la nuova lingua; annullare resta possibile senza eseguire l'azione.
    Descrizioni non tradotte possono restare inglesi con Italiano WIP.
-2. Con un lavoro lungo in corso, apri Esc, cambia lingua e attendi: il lavoro
+2. **PASS umano 2026-11-11.** Con un lavoro lungo in corso, apri Esc, cambia lingua e attendi: il lavoro
    resta fermo. Riprendi e verifica che continui dallo stesso punto senza
    duplicazioni o riavvii. Esci normalmente e rilancia: la lingua scelta è
    conservata. Le domande native già aperte conservano il testo originale fino
@@ -1097,24 +1254,24 @@ proprie prove LANG-02 e non eredita questo PASS.
    quella cartella per disinstallare il programma.
 
 
-## DIS-01 — Smontaggio nativo — 3 PASS umano; 1, 2, 4 PENDING (2026-10-25)
+## DIS-01 — Smontaggio nativo — 1–4 PASS umani (2 il 2026-11-15)
 
 `./disassembly-demo.sh --fresh` crea una copia isolata: fasce per piedi in
 pelliccia sintetica, lampada e zaino. Stesse azioni nel normale `./start.sh`
 con oggetti smontabili realmente posseduti. Non occorre fare queste prove ora.
 
-1. **PENDING — Consulta e annulla.** I → seleziona le fasce → Smonta / Disassemble.
+1. **PASS umano 2026-11-11 — Consulta e annulla.** I → seleziona le fasce → Smonta / Disassemble.
    Durante la consultazione il tempo resta fermo. Rifiuta la conferma nativa:
    oggetto ancora presente, nessun componente prodotto. F7 deve impedire
    l'avvio, senza eseguirlo dopo la ripresa.
-2. **PENDING — Lavoro e pausa.** Conferma lo smontaggio: compare il progresso.
+2. **PASS umano 2026-11-15 — Lavoro e pausa.** Conferma lo smontaggio: compare il progresso.
    Apri I durante il lavoro: progresso e mondo fermi. Chiudi I: riprende.
    Non è un'azione istantanea: il tempo e i requisiti sono quelli di CDDA.
 3. **PASS umano 2026-10-25 — Interrompi e riprendi.** I → Interrompi smontaggio. Rimane un
    oggetto di smontaggio incompleto. Selezionalo → Riprendi smontaggio:
    conserva il progresso già fatto. A fine lavoro appaiono nelle vicinanze
    due pezze di pelliccia sintetica; il vecchio oggetto non deve duplicarsi.
-4. **PENDING — Salva e ricarica.** In una nuova demo avvia lo smontaggio e
+4. **PASS umano 2026-11-08 — Salva e ricarica.** In una nuova demo avvia lo smontaggio e
    chiudi il gioco durante il lavoro. Rilancia senza `--fresh`: riprende il
    lavoro nativo, con progresso conservato e un solo risultato. Il menu I
    non viene salvato come pausa, coerentemente con lettura e crafting.
@@ -1136,27 +1293,27 @@ oggetti/attività, non conversazioni, missioni o commercio. Questi ultimi
 restano nella Fase 4.6 della roadmap e richiederanno una consegna distinta.
 
 
-## NPC-01 — Conversazioni native con gli NPC — 4 PENDING
+## NPC-01 — Conversazioni native con gli NPC — 1–4 PASS umani (1, 4 il 2026-11-17)
 
 `./conversation-demo.sh --fresh`: un NPC si trova direttamente davanti al
 personaggio, a pochi passi. La stessa interazione vale nel normale `./start.sh`.
 Questi controlli si possono fare insieme al resto del backlog, senza urgenza.
 
-1. **PENDING — Puntamento e ingresso.** Punta al corpo dell'NPC: compare l'hint
+1. **PASS umano 2026-11-17 — Puntamento e ingresso.** Punta al corpo dell'NPC: compare l'hint
    per parlare. Premi il tasto destro: si apre la conversazione con il suo nome
    e le risposte native. Non devi urtarlo né camminargli addosso. Con un'arma
    in mano il destro sull'NPC non ostile continua a servire per parlargli.
-2. **PENDING — Lettura e tempo fermo.** Lascia aperta la conversazione: il
+2. **PASS umano 2026-11-17 — Lettura e tempo fermo.** Lascia aperta la conversazione: il
    mondo rimane fermo. Leggi il testo corrente e lo storico; scorri le risposte
    e, quando presente, usa Next page / Previous page. Le opzioni non devono
    sparire e sfogliare non deve cambiare la battuta corrente o far passare tempo.
-3. **PENDING — Risposta, dettagli e uscita.** Scegli una domanda innocua
+3. **PASS umano 2026-11-15, nota NPC-SCROLL-01 — Risposta, dettagli e uscita.** Scegli una domanda innocua
    (per esempio “What are you doing?” nella demo), leggi la risposta e torna
    indietro. Prova una voce di osservazione/opinione e poi Esc / Leave
    conversation. Il gioco riprende senza scegliere una risposta nativa al tuo
-   posto. Se provi il commercio, per ora deve apparire l'avviso di funzione
-   rinviata: nessuno scambio, nessun blocco su terminale. Non è un trade completo.
-4. **PENDING — Salvataggio e rientro.** Parla, esci, chiudi il gioco e riapri
+   posto. Il commercio è disponibile dalla consegna TRADE-01 e ha controlli
+   separati; il precedente avviso di funzione rinviata non è più l'esito atteso.
+4. **PASS umano 2026-11-17 — Salvataggio e rientro.** Parla, esci, chiudi il gioco e riapri
    senza `--fresh`: stesso personaggio, NPC e mondo. Le conseguenze native
    effettivamente ottenute restano salvate. La finestra della conversazione non
    viene salvata come pausa; una nuova conversazione richiede un nuovo destro.
@@ -1164,33 +1321,39 @@ Questi controlli si possono fare insieme al resto del backlog, senza urgenza.
 
 Le risposte con prove sociali e avvisi di ostilità sono native: possono fallire
 per statistiche e condizioni del personaggio. Non occorre riuscire in una prova
-per validare l'interfaccia. Scambi, diario missioni e servizi NPC complessi
-restano fette successive; non si deduce che siano implementati da questi PASS.
+per validare l'interfaccia. Scambi, diario missioni e ordini ai compagni hanno
+ora consegne/checklist separate; gli altri servizi NPC complessi restano
+aperti. I PASS di conversazione non accettano automaticamente quelle funzioni.
 
 
-## TRADE-01 — Scambio NPC nativo — 4 PENDING
+## TRADE-01 — Scambio NPC nativo — 1, 2, 4 PASS; 3 PASS parziale/PENDING (2026-11-17)
 
 `./trade-demo.sh --fresh` crea una sessione isolata: NPC direttamente davanti,
 benda e lampada in vendita, due pile di munizioni da 20 e 30 e credito nativo
 iniziale. Funziona anche nella partita normale da `./start.sh`, con NPC nativi
 non ostili percepiti. Non usare i tuoi save ordinari per le prove distruttive.
 
-1. **PENDING** — Destro sull'NPC, scegli la risposta per commerciare. Due
+1. **PASS umano 2026-11-17** — Destro sull'NPC, scegli la risposta per commerciare. Due
    pannelli con icone, nomi/tooltip, quantità e saldo; tempo fermo. Seleziona
    qualcosa, poi **Cancel trade** o **Esc**: nessun trasferimento o debito variato.
    Riapri e verifica che l'offerta non sia già selezionata.
-2. **PENDING** — Richiedi la benda e offri 5 munizioni dalla pila da 30,
+2. **PASS umano 2026-11-08** — Richiedi la benda e offri 5 munizioni dalla pila da 30,
    trascinandola nell'altro pannello o usando quantità/**Update offer**.
    **Review and confirm**: prima rispondi **No**, l'offerta rimane modificabile;
    poi **Sì**. Benda ricevuta una volta, pila da 20 intatta, pila da 30 ridotta
    a 25 e saldo aggiornato. Shift-clic propone/rimuove l'intera pila; la
    selezione da sola non trasferisce nulla.
-3. **PENDING** — Prova quantità oltre il disponibile e, quando il credito non
+3. **PENDING per il credito; PASS umano parziale 2026-11-11 per i controlli provati** — Prova quantità oltre il disponibile e, quando il credito non
    basta, una richiesta troppo costosa: motivo visibile, nessuno scambio. Selezionare
    contenitore e suo contenuto insieme deve essere rifiutato. Esc da un'offerta
    e No dalla conferma non devono bloccare il gioco. F7 già attivo non deve
    accodare una conversazione/scambio da eseguire appena riprende il tempo.
-4. **PENDING** — Dopo uno scambio esci e riapri `./trade-demo.sh` senza
+   Il developer dichiara PASS del giro proposto, escludendo esplicitamente la
+   prova oltre il credito. Il caso contenitore+contenuto della checklist estesa
+   non era nel prompt ricevuto: nessuna sua accettazione viene dedotta.
+   Per il rifiuto finanziario usare la [variante con credito zero](../source/manual-priority-tests-2026-11-17-followup.md#quarto-riscontro-e-prossimo-giro).
+   La demo ordinaria assegna ancora $1000 di saldo favorevole.
+4. **PASS umano 2026-11-09** — Dopo uno scambio esci e riapri `./trade-demo.sh` senza
    `--fresh`: oggetti, quantità e debito persistono, nessuna copia aggiuntiva.
    Riaprire e annullare altre offerte non ripete lo scambio precedente.
 
@@ -1200,7 +1363,7 @@ certifica tutti i mercanti/mod/EOC o servizi speciali. I PASS NPC precedenti
 restano distinti dalle nuove prove TRADE-01. Nessun gate manuale richiesto oggi.
 
 
-## JOURNAL-01 — Diario delle missioni note — 4 PENDING
+## JOURNAL-01 — Diario delle missioni note — 2–4 PASS umani; 1 PENDING (2026-11-17)
 
 `./journal-demo.sh --fresh`: sessione isolata con due missioni attive, una
 completata, una fallita e una proposta NPC non ancora accettata. Il diario si
@@ -1211,17 +1374,17 @@ davanti e nessun orologio: le scadenze attive hanno precisione approssimata.
    obiettivi; il tempo e il personaggio restano fermi. La missione proposta
    dall'NPC e non accettata non deve comparire. In una partita senza missioni
    note il diario deve mostrare uno stato vuoto comprensibile.
-2. **PENDING** — Nella scheda Active seleziona Find Flag e premi **Track this
+2. **PASS umano 2026-11-15** — Nella scheda Active seleziona Find Flag e premi **Track this
    mission**; poi prova l'altra missione attiva. Il contrassegno segue la
    selezione esplicita. Consultare un'altra voce non deve cambiare la missione
    seguita, assegnare premi o completarla. La destinazione di Find Flag mostra
    coordinate native, incluso Z; la missione senza destinazione non ne inventa
    una. Le coordinate sono celle della mappa globale CDDA, non blocchi Luanti.
-3. **PENDING** — Le schede Completed/Failed sono consultabili senza pulsanti
+3. **PASS umano 2026-11-17** — Le schede Completed/Failed sono consultabili senza pulsanti
    per completare, riattivare o seguire quelle missioni. Controlla la scadenza
    approssimata in assenza di orologio. Esc chiude il diario; se prima avevi
    attivato F7, dopo la chiusura il gioco deve rimanere in pausa fino a F7.
-4. **PENDING** — Segui Find Flag, chiudi e riavvia `./journal-demo.sh` senza
+4. **PASS umano 2026-11-11** — Segui Find Flag, chiudi e riavvia `./journal-demo.sh` senza
    `--fresh`: missioni, stati e selezione persistono. Il diario non si riapre
    automaticamente e la pausa del suo menu non è salvata. Facoltativamente
    accetta una nuova missione parlando all'NPC e riapri J: deve comparire solo
@@ -1233,29 +1396,31 @@ mostrano un avviso esplicito. Indicazioni HUD/mappa 3D e compatibilità con ogni
 missione mod/EOC rimangono attività separate; nessun gate manuale richiesto ora.
 
 
-## COMP-01 — Ordini e regole individuali dei compagni — 4 PENDING
+## COMP-01 — Ordini e regole individuali dei compagni — 1–4 PASS umani (1 il 2026-11-17)
 
 `./companions-demo.sh --fresh` apre una sessione isolata con un alleato davanti.
 Nella partita normale usa un compagno effettivamente alleato, non uno sconosciuto.
 Il pannello è la prima voce **Companion orders and rules** nel dialogo amico.
 Non è un nuovo comando per reclutare né un controllo a distanza degli NPC.
 
-1. **PENDING — Accesso e consultazione.** Destro sull'alleato, apri il pannello,
+1. **PASS umano 2026-11-17 — Accesso e consultazione.** Destro sull'alleato, apri il pannello,
    visita Combat rules / Behavior rules, eventuali Next page / Previous page,
    politiche di combattimento, mira e bionica. Sono visibili solo impostazioni
    dell'alleato scelto. Il mondo resta fermo mentre leggi; Esc esce dal dialogo.
    Su uno sconosciuto non deve comparire il pannello per comandarlo.
-2. **PENDING — Guardia e seguito.** Guard this position, esci e allontanati
+   Il developer ha confermato l’apertura dei pannelli aggiuntivi.
+   [Passi concreti riscritti dopo il riscontro](../source/manual-priority-tests-2026-11-17-followup.md#1--comp-011-leggere-una-regola-senza-cambiarla).
+2. **PASS umano 2026-11-11 — Guardia e seguito.** Guard this position, esci e allontanati
    qualche passo: il compagno mantiene il comportamento di guardia CDDA.
    Parlaci di nuovo, Follow me, esci e cammina: l'AI nativa riprende a seguirti.
    Back to conversation torna al dialogo amico/guardia appropriato. Non deve
    reclutare NPC, teletrasportarli o cambiare assegnazioni di accampamenti.
-3. **PENDING — Regola e ordine temporaneo.** Nella demo Use firearms parte
+3. **PASS umano 2026-11-15 — Regola e ordine temporaneo.** Nella demo Use firearms parte
    con Base On ma Override Off. Modificare la base non cancella l'override:
    Effective resta Off fino a Use base rule (remove override). Prova una regola
    di comportamento e una politica di mira. Modifiche esplicite sul solo alleato;
    consultare non deve concedere energia, abilità, cure o oggetti.
-4. **PENDING — Persistenza.** Modifica una regola e un override, esci e chiudi;
+4. **PASS umano 2026-11-15 — Persistenza.** Modifica una regola e un override, esci e chiudi;
    riapri `./companions-demo.sh` senza --fresh. Stesso alleato, ordini e regole
    conservati. Il pannello non si riapre e la sua pausa non è salvata. Le azioni
    già accettate rimangono native, non vengono ripetute alla riapertura.
@@ -1265,13 +1430,13 @@ radio/comandi di gruppo e servizi/accampamenti complessi restano fette separate.
 Non è richiesto nessun gate manuale adesso; i precedenti PASS restano storici.
 
 
-## REST-01 — Riposo, sonno e attesa nativi — 2, 3 PASS umani; 1, 4 PENDING (2026-10-25)
+## REST-01 — Riposo, sonno e attesa nativi — 1–4 PASS umani (1 il 2026-11-17; nota REST-FB-02)
 
 **B** nella partita normale apre il menu di riposo; il tasto è configurabile.
 `./rest-demo.sh --fresh` prepara una sessione isolata con personaggio stanco,
 letto, stamina bassa, senza orologio o ostili vicini. Non modifica i tuoi mondi.
 
-1. **PENDING — Attesa e pausa.** B → Wait or catch your breath; prova l'attesa
+1. **PASS umano 2026-11-17 — Attesa e pausa; precedente FAIL del 2026-11-15 chiuso.** B → Wait or catch your breath; prova l'attesa
    breve e quella per riprendere fiato. Il tempo scorre, I/Esc lo ferma mentre
    leggi. B → Interrupt rest interrompe l'attesa. Annullare il primo menu non
    deve avviare attività; tenere premuto movimento durante l'attesa non deve
@@ -1288,7 +1453,7 @@ letto, stamina bassa, senza orologio o ostili vicini. Non modifica i tuoi mondi.
    I/Esc continua a fermare il mondo. Controlla che il ritorno al gioco dopo
    un risveglio nativo non provochi una raffica di passi/tempo arretrato.
    Rumori, danni e sveglie restano nativi; niente cure o stamina istantanee.
-4. **PENDING — Persistenza.** Esci durante sonno/attesa; riapri la stessa demo
+4. **PASS umano 2026-11-08 — Persistenza.** Esci durante sonno/attesa; riapri la stessa demo
    senza --fresh. La vera attività o l'effetto sonno prosegue dal salvataggio,
    senza un nuovo comando di avvio. Il menu e la sua pausa non vengono salvati;
    consulta B/I anche dopo il caricamento. Posizione e bisogni restano nativi.
@@ -1297,7 +1462,15 @@ Queste sono nuove prove personali rinviabili, non un gate richiesto adesso.
 Il riposo non completa i servizi avanzati NPC o l'accelerazione di ogni attività.
 
 
-## LIQ-01 — Fonti d’acqua e travasi nativi — 1, 2, 4 PASS umani; 3 PENDING (2026-10-25)
+Segnalazione storica del 2026-11-15, poi PASS umano il 2026-11-17: attesa/recupero del fiato a0.5x,1x,2x portavano a
+«CDDA state not synchronized» e Connect/Synchronizing; a4x non osservato.
+I ferma e riprende correttamente tempo/progresso; B e Interrupt rest funzionano.
+Allora questi sottocasi avevano riscontro positivo, ma il punto1 complessivo era FAIL.
+La correzione è stata consegnata e il successivo ricontrollo umano ha chiuso il FAIL;
+la nuova osservazione su recupero/immobilità rimane separata come REST-FB-02.
+I precedenti PASS del sonno/persistenza restano limitati agli scenari provati.
+
+## LIQ-01 — Fonti d’acqua e travasi nativi — 1–4 PASS umani (3 il 2026-11-08, commenti LIQ-FB-01)
 
 `./liquids-demo.sh --fresh`: sessione isolata con tanica impugnata, zaino,
 bottiglie piccole vuote, una pozza adiacente e un cubo di legno vicino che
@@ -1314,7 +1487,7 @@ Nella partita normale qualità e scorte sono quelle reali del mondo CDDA.
    si riempie entro la capacità nativa e il resto rimane nella tanica. Un travaso
    già applicato può mostrare tempo da pagare senza essere annullabile. Oggetti
    pieni, liquidi incompatibili, sigilli e liquidi congelati non vanno aggirati.
-3. **PENDING — Scorta finita e consumo.** Destro sul cubo vicino: il menu nativo
+3. **PASS umano 2026-11-08 — Scorta finita e consumo.** Destro sul cubo vicino: il menu nativo
    identifica la fonte. Riempi un’altra bottiglia e/o scegli Consume it: la scorta
    deve diminuire, senza diventare infinita. Il liquido mantiene il tipo nativo.
    Bere segue la fisiologia CDDA: la sete può migliorare dopo l’assorbimento,
@@ -1329,12 +1502,14 @@ Nella partita normale qualità e scorte sono quelle reali del mondo CDDA.
 Il riscontro del 2026-10-25 accetta riempimento/pausa/interruzione, travaso con
 capacità e resto conservati e la persistenza nel caso proposto. Congelamento,
 miscele incompatibili e annullamento del primo menu non sono automaticamente
-provati personalmente da quei PASS. LIQ-01.3 resta pendente. Crafting dei liquidi,
+provati personalmente da quei PASS. LIQ-01.3 è stato poi accettato il 2026-11-08,
+con commenti separati LIQ-FB-01 su esito/travaso immediato e acqua a terra.
+Crafting dei liquidi,
 purificazione e serbatoi veicoli restano fette distinte; l'apertura sigilli ha
 la propria sezione seguente.
 
 
-## SEAL-01 — Apertura tasche sigillate — 1, 3 PASS umani; 2, 4 PENDING (2026-10-25)
+## SEAL-01 — Apertura tasche sigillate — 1–4 PASS umani (2 il 2026-11-09)
 
 `./seals-demo.sh --fresh`: scena isolata con bottiglia sigillata in mano,
 zaino, bottiglia per condimenti sigillata e lattina sigillata. La funzione è
@@ -1344,7 +1519,7 @@ anche nella partita normale con `./start.sh`; non richiede un mondo nuovo.
    pocket... → Cancel: rimane sigillata. Ripeti confermando Open: sigillo rotto,
    stessa acqua e quantità, Pour liquid... disponibile dopo aggiornamento.
    Nessun tempo di apertura inventato; bere/travasare conserva i costi nativi.
-2. **PENDING — Accesso.** Non puoi consumare o trasferire direttamente il liquido
+2. **PASS umano 2026-11-09 — Accesso.** Non puoi consumare o trasferire direttamente il liquido
    attraverso un sigillo. Apri il contenitore prima; dopo l’apertura torna
    accessibile tramite le interfacce native. In contenitori annidati sigillati
    apri prima quello esterno. Leggere l’inventario non deve aprire nulla.
@@ -1352,7 +1527,7 @@ anche nella partita normale con `./start.sh`; non richiede un mondo nuovo.
    stagna; la gestione nativa propone cosa fare col liquido. Annullando quel
    travaso successivo può posare la lattina aperta a terra per non versarla.
    Il primo Cancel non rompe il sigillo; il Cancel dopo apertura non lo ricrea.
-4. **PENDING — Persistenza.** Apri la bottiglia in mano, lascia sigillata quella
+4. **PASS umano 2026-11-08 — Persistenza.** Apri la bottiglia in mano, lascia sigillata quella
    per condimenti. Esci e riapri la demo senza --fresh: entrambi gli stati e
    i contenuti restano corretti. Nessun comando ripetuto al caricamento.
 
@@ -1403,12 +1578,12 @@ quattro PASS precedenti. Proporli dopo la consegna verificata degli interventi.
    o nella partita normale; la pausa non deve far avanzare sole/luna.
 
 
-## UF8-01 — Unica velocità F8 contestuale — 1 PENDING
+## UF8-01 — Unica velocità F8 contestuale — PASS umano 2026-11-02, riserva SYNC-01
 
 La precedente prova FB-01.3 resta PASS della vecchia funzione, accompagnata
 alla richiesta di semplificarla. Questo è il ricontrollo della nuova funzione.
 
-1. **PENDING — Un solo F8, pause e ritorno al gioco.** `./rest-demo.sh --fresh`:
+1. **PASS umano 2026-11-02 — Un solo F8, pause e ritorno al gioco.** `./rest-demo.sh --fresh`:
    prima di dormire scegli con F8 una velocità ordinaria riconoscibile, per
    esempio 2x. B → Try to sleep → Yes. Appena compare il sonno, F8 cicla sulla
    scala ampliata 1/4/64/256/1024/4096x; seleziona 1x per leggere con calma,
@@ -1418,11 +1593,13 @@ alla richiesta di semplificarla. Questo è il ricontrollo della nuova funzione.
    torna la precedente velocità da svegli (2x nell'esempio), senza raffiche
    arretrate. Salva/riapri durante il sonno: continua l'attività nativa, non
    parte un nuovo tentativo; la velocità selezionata è una preferenza transitoria.
+   La persistenza resta da verificare con REST-01.4: non era inclusa nelle
+   istruzioni del giro accettato. L’episodio intermittente di blocco è SYNC-01.
 
 
-## MENU-01 — Continuità delle schermate e lavoro nativo — 1 PENDING
+## MENU-01 — Continuità delle schermate e lavoro nativo — PASS umano 2026-11-02, riserva K
 
-1. **PENDING — Nessun ritorno momentaneo al gioco tra menu correlati.**
+1. **PASS umano 2026-11-02 — Nessun ritorno momentaneo al gioco tra menu correlati.**
    `./liquid-recovery-demo.sh --fresh`: I → lattina → Open sealed pocket →
    conferma → Cancel del travaso; l'interfaccia passa direttamente tra scelte
    native, attesa e inventario, senza un fotogramma del solo gioco. Ripeti
@@ -1435,3 +1612,86 @@ alla richiesta di semplificarla. Questo è il ricontrollo della nuova funzione.
    rimangono validi; questo è un ricontrollo della nuova presentazione.
    Per indossa/togli usa `./equipment-demo.sh --fresh`; per il lavoro e
    l'interruzione da K usa `./crafting-demo.sh --fresh`.
+
+
+## KEY-K-01 — K nella finestra di lavoro del crafting — PASS umano 2026-11-08
+
+1. **PASS umano 2026-11-08 — Stessa pausa con K e I.** `./crafting-demo.sh --fresh`: avvia
+   makeshift bandage. Durante il progresso premi K: apre il catalogo in pausa,
+   senza chiudere la finestra sul mondo o avviare un’altra ricetta. Attendi e
+   verifica che il progresso sia fermo; riprendi/interrompi con le azioni native.
+   I e Pause and inspect restano funzionanti. Il binding del crafting rimane
+   riconfigurabile; il PASS MENU-01 è conservato.
+
+## SYNC-01 — Recupero da blocco del collegamento durante il sonno — PASS umano 2026-11-08
+
+1. **PASS umano 2026-11-08 — Ricontrollo del sonno e recupero.** `./rest-demo.sh --fresh`:
+   B → Try to sleep → Yes; prova F8 e I/B. Se torna il messaggio di mancata
+   sincronizzazione, attendi circa 10 secondi senza riavviare: il collegamento
+   deve tentare il recupero e B deve tornare utilizzabile dopo un vero stato
+   CDDA valido. Nessun nuovo sonno automatico o salto di posizione/oggetti.
+   Non è necessario provocare il difetto o ripetere molte volte la demo.
+   Se ricompare basta riferire testo e cartella log stampata dal launcher; la
+   causa originale intermittente resta non accertata dal solo test automatico.
+   Il PASS è quello dichiarato dal developer; non ha specificato se il guasto
+   sia ricomparso. Nessuna riproduzione manuale del guasto viene dedotta.
+
+## LIQ-FB-01 — Esito dei travasi e acqua versata — OPEN, commento senza nuovo test
+
+Nel giro LIQ-01.3 accettato il developer segnala trasferimento immediato,
+messaggio «no native liquid activity started» e acqua versata rappresentata
+come drop non interagibile. Verificare esito applicato/cancellato/fallito e
+gestione nativa dei liquidi a terra prima di dichiarare questo comportamento
+voluto. I travasi atomici possono avere un debito nativo senza attività lunga;
+non inventare animazioni cancellabili o purificazione.
+[Fonte, osservazioni e seguito](../source/manual-liquids-recovery-validation-2026-11-08.md).
+
+## READ-FB-01 — Domanda nativa durante la lettura — PASS umano 2026-11-17
+
+1. **PASS umano 2026-11-17 — Continuare dopo una distrazione.** Nella scena
+   fredda dedicata il developer ha visto anche l’avviso di ferita. Durante una lettura, se
+   compare un avviso nativo come quello di congelamento, scegli consapevolmente
+   di continuare: nessuna finestra bloccata; eventuali nuove domande restano
+   rispondibili e I torna utilizzabile. Non occorre esporsi al freddo o provocare
+   ripetutamente il difetto: la regressione automatica usa una fixture isolata.
+   No prosegue una volta; Ignore this distraction segue le regole native per
+   ignorare quella distrazione. Il PASS READ-01.3 resta conservato.
+
+## WORK-FB-01 — Unico pannello di progresso riapribile — PASS umano 2026-11-11
+
+1. **PASS umano 2026-11-11 — Lettura e bevuta.** Nelle rispettive demo, avvia il lavoro:
+   I apre la consultazione in pausa; chiudendola con I ritorna lo stesso tipo
+   di pannello di progresso dell'avvio. Esc/Return to game lo nasconde senza
+   annullare il lavoro; I e ancora I lo riaprono mentre l'attività è in corso.
+   Nessuna nuova azione o duplicazione; costi e interruzioni restano nativi.
+   Per osservare una bevuta breve puoi selezionare 0,5x con l'unico F8.
+
+## NPC-SCROLL-01 — Storico dei dialoghi sull'ultima interazione — TODO UX
+
+Dopo una scelta di dialogo portare lo scorrimento dello storico in fondo,
+mostrando l'ultima interazione. Il PASS NPC-01.3 resta accettato. Richiesta
+di implementazione separata; nessun nuovo test numerato o fix dichiarato qui.
+[Fonte](../source/manual-priority-tests-2026-11-15.md#riscontro-umano-del-giro).
+
+## REST-FB-02 — Ripresa dopo Catch your breath — OPEN, commento senza nuovo test
+
+Il 2026-11-17 il developer valida REST-01.1, ma segnala recupero quasi istantaneo
+partendo da1x e impossibilità di muoversi per qualche secondo dopo la fine.
+Il codice cambia da PLAY alla preferenza REST (default1024x) per ACT_WAIT_STAMINA;
+non è un secondo moltiplicatore. Se1x era già il valore REST effettivo, questa
+spiegazione non basta. L'immobilità va distinta da debito temporale nativo,
+pausa/minaccia e necessità di rilasciare WASD dopo un'attività. Causa non
+stabilita; nessun cooldown viene dichiarato normale e nessun fix rivendicato.
+Prima di chiedere una ripetizione generica, predisporre una misura controllata
+con velocità contestuale, fase nativa, debito e intento di movimento osservabili.
+
+## MENU-TOGGLE-01 — J/K coerenti con I — TODO, proposta UX
+
+Il developer chiede se rendere J e K apri/chiudi come I. Raccomandazione:
+una pressione apre il relativo pannello, una successiva lo richiude. Proteggere
+la digitazione quando il campo di ricerca ha il focus; evitare toggle da
+ripetizione automatica del tasto. Riutilizzare il percorso di chiusura esistente,
+con pause manuali/minaccia intatte e senza cancellare attività native o
+rispondere a conferme. Durante lavoro attivo K conserva il flusso di ispezione
+in pausa e ritorno al progresso. Proposta registrata, non implementata in
+questo turno; eventuale ricontrollo grafico alla consegna, non aggiunto ora.

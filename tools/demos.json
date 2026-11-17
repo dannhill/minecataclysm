@@ -1,0 +1,456 @@
+{
+  "body": {
+    "description": "Native body-status fixture, separate from pickup and ordinary user worlds.",
+    "fixture": "artifacts/playable-core-body-ui-20261008/fixture",
+    "directory": "artifacts/body-demo",
+    "missing_error": "Native body fixture missing; see docs/fixes/body-status-ui.md",
+    "player_name": "body_demo",
+    "header": "Prova corpo isolata:",
+    "messages": [
+      "Personaggio assetato/stanco, testa e braccio sinistro feriti. Nessuna raccolta necessaria.",
+      "H: scheda corporea in pausa. Esc o Torna al gioco: chiudi.",
+      "F7: pausa manuale; la scheda deve rispettarla anche dopo la chiusura.",
+      "Movimento continuo 4x. Rilancia senza --fresh per riprendere il save."
+    ]
+  },
+  "combat": {
+    "description": "Native melee fixture independent of pickup and body-sheet validation.",
+    "fixture": "artifacts/playable-core-melee-20261008/fixture",
+    "directory": "artifacts/combat-demo",
+    "missing_error": "Native melee fixture missing; see docs/fixes/pointed-melee.md",
+    "player_name": "combat_demo",
+    "header": "Prova melee isolata:",
+    "messages": [
+      "Mazza gia equipaggiata; zombie ostile immediatamente davanti, immobilizzato per questa prova.",
+      "Punta la creatura: clic sinistro per un colpo. Ogni colpo richiede un nuovo clic.",
+      "E: riconosci la minaccia. F7: pausa manuale/riprendi. Nessun attacco durante la pausa.",
+      "Movimento continuo 4x. Rilancia senza --fresh per riprendere il save."
+    ]
+  },
+  "consumption": {
+    "description": "Native food and drink in an isolated canonical scene.",
+    "fixture": "artifacts/native-consumption-20261008/fixture",
+    "directory": "artifacts/consumption-demo",
+    "missing_error": "Native consumption fixture missing; see docs/fixes/native-consumption.md",
+    "player_name": "consumption_demo",
+    "header": "Prova cibo/bevande isolata:",
+    "messages": [
+      "I: inventario nativo e tasche; clic sulle icone per dettagli e azioni.",
+      "Zaino con mele fresche, mela marcia, acqua pulita in bottiglia e un sasso.",
+      "Mangia/Bevi: una porzione e tempi CDDA; I durante il consumo permette di interrompere.",
+      "F7: pausa. Le azioni richiedono la ripresa; leggere resta possibile.",
+      "Movimento continuo 4x. Rilancia senza --fresh per riprendere il save."
+    ]
+  },
+  "controls": {
+    "description": "Control and presentation comparison in an isolated native shallow-water scene.",
+    "fixture": "artifacts/controls-hud-20261008/fixture-indoor",
+    "directory": "artifacts/controls-demo",
+    "missing_error": "Native ergonomics fixture missing; see docs/fixes/controls-and-survival-presentation.md",
+    "player_name": "controls_demo",
+    "header": "Prova comandi e HUD isolata:",
+    "messages": [
+      "Acqua bassa alla partenza, sasso davanti. H: scheda e pausa; controlla anche X nell’acqua.",
+      "Ctrl sinistro: tieni per correre. Shift: tieni per accovacciarti. X: a terra/cammino.",
+      "Visuale e velocita seguono la postura nativa. F7: pausa/riprendi.",
+      "Movimento continuo 4x. Rilancia senza --fresh per riprendere il save."
+    ]
+  },
+  "conversation": {
+    "description": "Native NPC conversations in an isolated canonical scene.",
+    "fixture": "artifacts/native-conversation-20261022/fixture",
+    "directory": "artifacts/conversation-demo",
+    "missing_error": "Native NPC fixture missing; see docs/design/native-trade.md",
+    "player_name": "conversation_demo",
+    "header": "Isolated conversation scene:",
+    "messages": [
+      "An NPC is directly ahead. Point at the character and right-click to talk.",
+      "Numbered responses and Esc: leave. Time pauses during the conversation.",
+      "Native text, trials and effects come from CDDA. Choose the native trade reply to exchange items.",
+      "F7: manual pause. Relaunch without --fresh to keep this demo save."
+    ]
+  },
+  "trade": {
+    "description": "Native NPC trade in an isolated canonical scene.",
+    "fixture": "artifacts/native-trade-20261022/fixture",
+    "directory": "artifacts/trade-demo",
+    "missing_error": "Native NPC fixture missing; see docs/design/native-trade.md",
+    "player_name": "conversation_demo",
+    "header": "Isolated conversation scene:",
+    "messages": [
+      "An NPC is directly ahead. Point at the character and right-click to talk.",
+      "Numbered responses and Esc: leave. Time pauses during the conversation.",
+      "Native text, trials and effects come from CDDA. Choose the native trade reply to exchange items.",
+      "Trade fixture: two separate ammo stacks (20 and 30), trader bandage and lamp, native starting credit.",
+      "F7: manual pause. Relaunch without --fresh to keep this demo save."
+    ]
+  },
+  "journal": {
+    "description": "Native mission journal in an isolated canonical scene.",
+    "fixture": "artifacts/native-journal-20261022/fixture-canonical",
+    "directory": "artifacts/journal-demo",
+    "missing_error": "Native NPC fixture missing; see docs/design/native-trade.md",
+    "player_name": "conversation_demo",
+    "header": "Isolated conversation scene:",
+    "messages": [
+      "An NPC is directly ahead. Point at the character and right-click to talk.",
+      "Numbered responses and Esc: leave. Time pauses during the conversation.",
+      "Native text, trials and effects come from CDDA. Choose the native trade reply to exchange items.",
+      "J: mission journal; active/completed/failed, native tracking and approximate deadlines without a watch.",
+      "F7: manual pause. Relaunch without --fresh to keep this demo save."
+    ]
+  },
+  "companions": {
+    "description": "Native companion orders in an isolated canonical scene.",
+    "fixture": "artifacts/native-companions-20261022/fixture",
+    "directory": "artifacts/companions-demo",
+    "missing_error": "Native NPC fixture missing; see docs/design/native-trade.md",
+    "player_name": "conversation_demo",
+    "header": "Isolated conversation scene:",
+    "messages": [
+      "An NPC is directly ahead. Point at the character and right-click to talk.",
+      "Numbered responses and Esc: leave. Time pauses during the conversation.",
+      "Native text, trials and effects come from CDDA. Choose the native trade reply to exchange items.",
+      "Ally directly ahead: right-click, Companion orders and rules. Native following, guard and individual settings.",
+      "F7: manual pause. Relaunch without --fresh to keep this demo save."
+    ]
+  },
+  "crafting": {
+    "description": "Guided native crafting in an isolated canonical scene.",
+    "fixture": "artifacts/native-crafting-20261008/fixture",
+    "directory": "artifacts/crafting-demo",
+    "missing_error": "Native crafting fixture missing; see docs/fixes/native-crafting.md",
+    "player_name": "crafting_demo",
+    "header": "Prova crafting isolata:",
+    "messages": [
+      "K: catalogo nativo, ricerca e lotto 1-20; clic su ricetta per requisiti e dettagli.",
+      "Otto fogli di cotone nello zaino, un preferito protetto e un materiale alternativo sul pavimento vicino.",
+      "Cerca bandage: scegli la ricetta senza utensile, componenti/fonti e conferma.",
+      "K o I durante il lavoro: pausa e interruzione. K: riprendi il lavoro incompleto marcato R.",
+      "F7: pausa manuale. Ricette liquide, pratiche e con sottoprodotti sono successive.",
+      "Movimento e tempo nativo 4x. Rilancia senza --fresh per riprendere il save."
+    ]
+  },
+  "disassembly": {
+    "description": "Native single-item disassembly in an isolated canonical scene.",
+    "fixture": "artifacts/native-disassembly-20261022/fixture",
+    "directory": "artifacts/disassembly-demo",
+    "missing_error": "Native disassembly fixture missing; see docs/design/native-disassembly.md",
+    "player_name": "disassembly_demo",
+    "header": "Isolated disassembly scene:",
+    "messages": [
+      "I: select faux-fur foot wraps, then Disassemble and confirm the native choice.",
+      "I pauses work; Interrupt preserves the unfinished item. Select it and Resume disassembly.",
+      "Recovered faux-fur patchwork sheets appear nearby, according to native rules.",
+      "F7: manual pause. Normal 4x global speed; no extra disassembly multiplier.",
+      "Relaunch without --fresh to load the canonical save, including active work."
+    ]
+  },
+  "equipment": {
+    "description": "Native inventory and equipment in an isolated canonical scene.",
+    "fixture": "artifacts/native-equipment-20261008/fixture",
+    "directory": "artifacts/equipment-demo",
+    "missing_error": "Native equipment fixture missing; see docs/fixes/native-equipment.md",
+    "player_name": "equipment_demo",
+    "header": "Prova inventario/equipaggiamento isolata:",
+    "messages": [
+      "I: inventario nativo e tasche; clic sulle icone per dettagli e azioni.",
+      "Mazza impugnata, zaino indossato; cappello, bandana e due sassi nelle tasche.",
+      "Impugna/Riponi/Indossa/Togli usano CDDA; le scelte native si confermano con i numeri.",
+      "F7: pausa. Le azioni richiedono la ripresa; leggere resta possibile.",
+      "Movimento continuo 4x. Rilancia senza --fresh per riprendere il save."
+    ]
+  },
+  "equipment_pages": {
+    "description": "Native stress fixture for inventory and layered-clothing pagination.",
+    "fixture": "artifacts/ux01-inventory-20261009/fixture",
+    "directory": "artifacts/inventory-pages-demo",
+    "missing_error": "Native equipment fixture missing; see docs/fixes/native-equipment.md",
+    "player_name": "equipment_demo",
+    "header": "Prova inventario/equipaggiamento isolata:",
+    "messages": [
+      "I: inventario nativo e tasche; clic sulle icone per dettagli e azioni.",
+      "Scena di stress: oltre 27 oggetti e oltre 10 indossati; gli strati sono predisposti dalla fixture debug.",
+      "Mazza impugnata, zaino indossato; cappello, bandana e due sassi nelle tasche.",
+      "Impugna/Riponi/Indossa/Togli usano CDDA; le scelte native si confermano con i numeri.",
+      "F7: pausa. Le azioni richiedono la ripresa; leggere resta possibile.",
+      "Movimento continuo 4x. Rilancia senza --fresh per riprendere il save."
+    ]
+  },
+  "liquid_recovery": {
+    "description": "Ground can recovery in an isolated canonical scene.",
+    "fixture": "artifacts/playtest-feedback-20261025/liquid-recovery",
+    "directory": "artifacts/liquid-recovery-demo",
+    "missing_error": "Native playtest fixture missing; see docs/design/playtest-feedback-2026-10-25.md",
+    "player_name": "recovery_demo",
+    "header": "Ground can recovery:",
+    "messages": [
+      "I: open the stashed can, then cancel liquid handling to set it on the ground.",
+      "Right click the can, select it and use Pour liquid... into the empty glass bottle.",
+      "Once empty, drag the can to your inventory in the storage view.",
+      "I / Esc pauses. Relaunch without --fresh to keep the canonical activity/effects."
+    ]
+  },
+  "liquids": {
+    "description": "Native water collection and liquid pouring in an isolated canonical scene.",
+    "fixture": "artifacts/native-liquids-20261023/fixture-warm",
+    "directory": "artifacts/liquids-demo",
+    "missing_error": "Native liquid fixture missing; see docs/design/native-liquids.md",
+    "player_name": "liquids_demo",
+    "header": "Isolated liquid scene:",
+    "messages": [
+      "Right click the adjacent pool or nearby wooden placeholder for the finite source.",
+      "I: select the jerrycan or liquid and use Pour liquid... to transfer into a small bottle.",
+      "I pauses filling; Interrupt transfer stops it while keeping already transferred water.",
+      "I / Esc pauses. Relaunch without --fresh to keep the canonical activity/effects."
+    ]
+  },
+  "medicine": {
+    "description": "Native wound treatment in an isolated canonical scene.",
+    "fixture": "artifacts/native-medicine-20261008/fixture",
+    "directory": "artifacts/medicine-demo",
+    "missing_error": "Native medicine fixture missing; see docs/fixes/native-medicine.md",
+    "player_name": "medicine_demo",
+    "header": "Prova medicina isolata:",
+    "messages": [
+      "I: inventario nativo e tasche; clic sulle icone per dettagli e azioni.",
+      "Braccio sinistro e torso feriti; tre bende, una salvietta disinfettante e una benda sporca nello zaino.",
+      "I: seleziona benda/salvietta, Medica..., scegli la parte con il numero mostrato, poi conferma.",
+      "I durante il trattamento: pausa e Interrompi trattamento. H: condizioni native.",
+      "F7: pausa. Le azioni richiedono la ripresa; leggere resta possibile.",
+      "Movimento continuo 4x. Rilancia senza --fresh per riprendere il save."
+    ]
+  },
+  "night": {
+    "description": "Native midnight sky in an isolated canonical scene.",
+    "fixture": "artifacts/playtest-feedback-20261025/night-release",
+    "directory": "artifacts/night-demo",
+    "missing_error": "Native playtest fixture missing; see docs/design/playtest-feedback-2026-10-25.md",
+    "player_name": "night_demo",
+    "header": "Native midnight sky:",
+    "messages": [
+      "Look up through the opening above the player: the sky follows native midnight.",
+      "F7 / Esc pauses the native clock and the sky.",
+      "I / Esc pauses. Relaunch without --fresh to keep the canonical activity/effects."
+    ]
+  },
+  "pickup": {
+    "description": "Launch the verified native item fixture in a persistent, isolated copy.",
+    "fixture": "artifacts/playable-core-item-ui-20261008/fixture",
+    "directory": "artifacts/pickup-demo",
+    "missing_error": "Native pickup fixture missing; see docs/fixes/ground-items-ui.md",
+    "player_name": "pickup_demo",
+    "verify_player_abs": [60, 60, 0],
+    "write_fixture_json": true,
+    "header": "Prova raccolta isolata — salvataggio:",
+    "messages": [
+      "Subito davanti alla partenza, guarda in basso: sasso + 7 munizioni 9mm.",
+      "Tasto destro sulla pila: GUI chest Mineclonia, tempo in pausa. Esc: annulla.",
+      "Trascina un oggetto dal pannello alto a quello basso: chiudi e raccogli con costo CDDA.",
+      "Il singolo oggetto rimasto si raccoglie direttamente con tasto destro.",
+      "Inventario/equipaggiamento sotto: sola lettura; le icone generiche sono fallback temporanei.",
+      "Movimento continuo 4x; F7 pausa/riprendi, F8 velocità. Rilancia per riprendere; --fresh per una nuova copia."
+    ]
+  },
+  "posture": {
+    "description": "Native posture fixture independent of pickup, body sheet and combat.",
+    "fixture": "artifacts/playable-core-postures-20261008/fixture",
+    "directory": "artifacts/posture-demo",
+    "missing_error": "Native posture fixture missing; see docs/fixes/native-postures.md",
+    "player_name": "posture_demo",
+    "header": "Prova posture isolata:",
+    "messages": [
+      "Scena senza nemici: nessuna raccolta, equipaggiamento o scheda H necessari.",
+      "Ctrl sinistro: tieni per correre. Shift: tieni per accovacciarti. X: a terra/cammino.",
+      "Visuale e velocita seguono la postura nativa. F7: pausa/riprendi.",
+      "Movimento continuo 4x. Rilancia senza --fresh per riprendere il save."
+    ]
+  },
+  "ranged": {
+    "description": "Native ranged combat in an isolated canonical scene.",
+    "fixture": "artifacts/native-ranged-20261008/fixture",
+    "directory": "artifacts/ranged-demo",
+    "missing_error": "Native ranged fixture missing; see docs/fixes/native-ranged.md",
+    "player_name": "ranged_demo",
+    "header": "Prova tiro/ricarica isolata:",
+    "messages": [
+      "Glock gia impugnata con 3 colpi, 30 munizioni 9mm nello zaino e una variante compatibile.",
+      "Zombie davanti a quattro caselle, immobilizzato solo in questa scena; cane amico sulla destra.",
+      "Punta lo zombie: F tenuto per mirare pagando tempo nativo, rinculo mostrato nel suggerimento.",
+      "Rilascia F e clic sinistro per sparare una volta; R per ricaricare con scelta e conferma native.",
+      "I durante la ricarica: pausa e Interrompi ricarica. H: scheda; F7: pausa manuale.",
+      "E riconosce la minaccia iniziale e riprende il tempo dopo l'autopausa.",
+      "Movimento e tempo nativo 4x. Rilancia senza --fresh per riprendere il save."
+    ]
+  },
+  "reading": {
+    "description": "Native paper-book reading in an isolated canonical scene.",
+    "fixture": "artifacts/native-reading-20261018/fixture",
+    "directory": "artifacts/reading-demo",
+    "missing_error": "Native reading fixture missing; see docs/design/native-reading.md",
+    "player_name": "reading_demo",
+    "header": "Isolated reading scene:",
+    "messages": [
+      "I: select a book, then Skim book / Read. Reading uses native time and conditions.",
+      "Unknown short leisure book and identified firearms magazine, in a hiking backpack.",
+      "Skimming identifies content; studying one chapter grants native theoretical experience.",
+      "I pauses the activity. Close resumes; Interrupt reading preserves native resume rules.",
+      "F7: manual pause. Normal 4x global speed; the magazine chapter is about 7 game minutes.",
+      "Relaunch without --fresh to load this canonical save, including active reading."
+    ]
+  },
+  "rest": {
+    "description": "Native resting and sleep in an isolated canonical scene.",
+    "fixture": "artifacts/native-rest-20261023/fixture",
+    "directory": "artifacts/rest-demo",
+    "missing_error": "Native rest fixture missing; see docs/design/native-rest.md",
+    "player_name": "rest_demo",
+    "header": "Isolated rest scene:",
+    "messages": [
+      "B: native rest menu. Sleep, wait and catch your breath.",
+      "Tired character on a bed; no watch/alarm, no nearby hostiles.",
+      "B during rest: interrupt a wait/attempt or change rest speed. Actual sleep ends natively.",
+      "I / Esc pauses. Relaunch without --fresh to keep the canonical activity/effects."
+    ]
+  },
+  "seals": {
+    "description": "Native sealed pocket opening in an isolated canonical scene.",
+    "fixture": "artifacts/native-seals-20261023/fixture",
+    "directory": "artifacts/seals-demo",
+    "missing_error": "Native seals fixture missing; see docs/design/native-seals.md",
+    "player_name": "seals_demo",
+    "header": "Isolated seals scene:",
+    "messages": [
+      "I: select a sealed bottle, use Open sealed pocket..., then confirm or Cancel.",
+      "Opening a stashed soda can may spill its contents or put it on the ground: native rules.",
+      "I / Esc pauses. Relaunch without --fresh to keep the canonical activity/effects."
+    ]
+  },
+  "storage": {
+    "description": "Native furniture and ground-container transfers in an isolated canonical scene.",
+    "fixture": "artifacts/external-20261012/fixture",
+    "directory": "artifacts/storage-demo",
+    "missing_error": "Native storage fixture missing; see docs/fixes/external-storage.md",
+    "player_name": "storage_demo",
+    "pass_port_arg": true,
+    "header": "Isolated storage scene:",
+    "messages": [
+      "Locker beside the road on your right: 30 rounds and a backpack containing a rock.",
+      "Locker on your left: empty. The low sealed crate has inaccessible contents.",
+      "Right click storage. Drag items between panels or onto a container icon.",
+      "Click an item, set Quantity, then drag that selected item for a partial transfer.",
+      "Transfers pay native costs; the menu reopens after completion. F7 pauses.",
+      "Restart without --fresh to check persistence."
+    ]
+  },
+  "transfer": {
+    "description": "Native owned-item quantity and container transfers in an isolated canonical scene.",
+    "fixture": "artifacts/native-transfer-20261009/fixture",
+    "directory": "artifacts/transfer-demo",
+    "missing_error": "Native transfer fixture missing; see docs/fixes/native-transfer.md",
+    "player_name": "transfer_demo",
+    "header": "Prova trasferimenti isolata:",
+    "messages": [
+      "I -> Quantita e trasferimenti: scegli oggetto, quantita e contenitore.",
+      "30 munizioni 9mm, sacchetto di plastica, bottiglia vuota, mazza e sasso nello zaino.",
+      "Deposita a terra usa la casella del personaggio; il contenitore sceglie la tasca nativamente.",
+      "I ferma il lavoro; Interrompi trasferimento lo annulla secondo le regole native.",
+      "F7: pausa. Rilancia senza --fresh per riprendere il save."
+    ]
+  },
+  "vertical": {
+    "description": "Launch a native vertical/actor fixture in a persistent isolated copy.",
+    "user_source": "artifacts/fnd04-vertical/fixture-user",
+    "baseline_file": "artifacts/fnd04-vertical/fixture-baseline.json",
+    "directory": "artifacts/vertical-demo",
+    "missing_error": "Native fixture missing; see docs/fixes/ for reproduction",
+    "player_name": "vertical_demo",
+    "verify_player_abs": [60, 60, 0],
+    "write_fixture_json": true,
+    "extra_client_conf": "keymap_jump = KEY_SPACE\nkeymap_sneak = KEY_LSHIFT\n",
+    "continuous": "0",
+    "realtime": null,
+    "header": "Prova verticale isolata — salvataggio:",
+    "messages": [
+      "Dal centro: nord scala su, sud cantina, est scala a pioli, due caselle est acqua.",
+      "Spazio: sali/emergi. Maiusc+Spazio: scendi/immergiti. Un passaggio per pressione.",
+      "Rilancia per riprendere questa prova; --fresh crea una copia nuova senza cancellarla."
+    ]
+  },
+  "actors": {
+    "description": "Launch a native actor lifecycle fixture in a persistent isolated copy.",
+    "user_source": "artifacts/fnd04-actors/demo-fixture-user",
+    "baseline_file": "artifacts/fnd04-actors/demo-fixture-baseline.json",
+    "directory": "artifacts/actor-demo",
+    "missing_error": "Native fixture missing; see docs/fixes/ for reproduction",
+    "player_name": "actor_demo",
+    "verify_player_abs": [60, 60, 0],
+    "write_fixture_json": true,
+    "extra_client_conf": "keymap_jump = KEY_SPACE\nkeymap_sneak = KEY_LSHIFT\n",
+    "continuous": "0",
+    "realtime": null,
+    "header": "Prova creature isolata — salvataggio:",
+    "messages": [
+      "Zombie/cane verso nord-est, NPC verso sud: innocui e immobilizzati per questa prova.",
+      "Scala a nord. Corridoio verso est: percorri circa 80 caselle e ritorna per scaricare/ricaricare le creature.",
+      "Spazio: sali/emergi. Maiusc+Spazio: scendi/immergiti. Un passaggio per pressione.",
+      "Rilancia per riprendere questa prova; --fresh crea una copia nuova senza cancellarla."
+    ]
+  },
+  "realtime": {
+    "description": "Launch the real-time scheduler fixture in a persistent isolated copy.",
+    "user_source": "artifacts/rt01-scheduler/demo-fixture-user",
+    "baseline_file": "artifacts/rt01-scheduler/demo-fixture-baseline.json",
+    "directory": "artifacts/realtime-demo",
+    "missing_error": "Native fixture missing; see docs/fixes/ for reproduction",
+    "player_name": "realtime_demo",
+    "verify_player_abs": [60, 60, 0],
+    "write_fixture_json": true,
+    "extra_client_conf": "keymap_jump = KEY_SPACE\nkeymap_sneak = KEY_LSHIFT\n",
+    "continuous": "0",
+    "realtime": "1",
+    "header": "Prova tempo reale isolata — salvataggio:",
+    "messages": [
+      "Il cane e il compagno possono muoversi mentre resti fermo. F7: pausa, F8: velocità globale.",
+      "Scala a gradini davanti alla partenza, a pioli subito a destra; stanza con porta chiusa più avanti a destra lungo la strada.",
+      "Apri la stanza: nuova minaccia percepita → autopausa. E riconosce e riprende; rilascia e ripremi WASD.",
+      "Prototipo su griglia: confronto con continuous-demo.sh; F8 seleziona 4x.",
+      "Spazio: sali/emergi. Maiusc+Spazio: scendi/immergiti. Un passaggio per pressione.",
+      "Rilancia per riprendere questa prova; --fresh crea una copia nuova senza cancellarla."
+    ]
+  },
+  "continuous": {
+    "description": "Native continuous movement at global 4x in a persistent isolated copy.",
+    "user_source": "artifacts/rt01-scheduler/demo-fixture-user",
+    "baseline_file": "artifacts/rt01-scheduler/demo-fixture-baseline.json",
+    "directory": "artifacts/continuous-demo",
+    "missing_error": "Native fixture missing; see docs/fixes/ for reproduction",
+    "player_name": "realtime_demo",
+    "verify_player_abs": [60, 60, 0],
+    "write_fixture_json": true,
+    "extra_client_conf": "keymap_jump = KEY_SPACE\nkeymap_sneak = KEY_LSHIFT\n",
+    "continuous": "1",
+    "realtime": "1",
+    "header": "Prova tempo reale isolata — salvataggio:",
+    "messages": [
+      "Il cane e il compagno possono muoversi mentre resti fermo. F7: pausa, F8: velocità globale.",
+      "Scala a gradini davanti alla partenza, a pioli subito a destra; stanza con porta chiusa più avanti a destra lungo la strada.",
+      "Apri la stanza: nuova minaccia percepita → autopausa. E riconosce e riprende; rilascia e ripremi WASD.",
+      "Movimento continuo autorevole CDDA, ritmo iniziale 4x globale. Prova brevi tocchi e direzioni oblique col mouse.",
+      "Scale e pioli: passaggio nativo con Spazio, da confrontare; salita automatica non ancora implementata.",
+      "Spazio: sali/emergi. Maiusc+Spazio: scendi/immergiti. Un passaggio per pressione.",
+      "Rilancia per riprendere questa prova; --fresh crea una copia nuova senza cancellarla."
+    ]
+  },
+  "terrain": {
+    "description": "Confronto terreno CDDA: campo, bosco, strada/casa e riva d'acqua.",
+    "ephemeral": true,
+    "directory": "artifacts/terrain-prototype/plays",
+    "player_name": "terrain_tester",
+    "world": "terrain_comparison",
+    "character": "",
+    "terrain_demo": "1",
+    "header": "Confronto terreno: F7 cambia A/B, F8 nebbia. Scena isolata:",
+    "messages": []
+  }
+}

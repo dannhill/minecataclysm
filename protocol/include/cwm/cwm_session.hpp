@@ -8,34 +8,153 @@
 #include <cmath>
 #include <deque>
 #include <limits>
+#include <optional>
 #include <random>
-#include <algorithm>
 #include <set>
+#include <string>
 #include <string_view>
 #include <tuple>
 #include <unordered_map>
 
 namespace cdda::cwm {
+
 inline uint64_t fresh_identity() {
     std::random_device random;
     const uint64_t value = (uint64_t(random()) << 32) ^ random();
     return value ? value : 1;
 }
+
+inline std::string_view fb_string_view(const flatbuffers::String* s) {
+    return s ? std::string_view(s->c_str(), s->size()) : std::string_view{};
+}
+
+inline bool valid_cwm_string(const flatbuffers::String* s, size_t max_len, bool allow_empty = true) {
+    return s && s->size() <= max_len && (allow_empty || s->size() > 0) &&
+           fb_string_view(s).find('\0') == std::string_view::npos;
+}
+
+struct CancelActivityInfo {
+    uint64_t command_id{0};
+    uint64_t activity_token{0};
+    CDDA::CWM::ActivityKind kind{CDDA::CWM::ActivityKind::NONE};
+};
+
+inline std::optional<CancelActivityInfo> extract_cancel_request(const CDDA::CWM::CwmMessage& msg) {
+    using CDDA::CWM::ActivityKind;
+    if (const auto* r = msg.payload_as_CancelActivityRequest())
+        return CancelActivityInfo{r->command_id(), r->activity_token(), r->kind()};
+    if (const auto* r = msg.payload_as_CancelConsumptionRequest())
+        return CancelActivityInfo{r->command_id(), r->activity_token(), ActivityKind::CONSUME};
+    if (const auto* r = msg.payload_as_CancelFirstAidRequest())
+        return CancelActivityInfo{r->command_id(), r->activity_token(), ActivityKind::FIRST_AID};
+    if (const auto* r = msg.payload_as_CancelCraftingRequest())
+        return CancelActivityInfo{r->command_id(), r->activity_token(), ActivityKind::CRAFT};
+    if (const auto* r = msg.payload_as_CancelReloadRequest())
+        return CancelActivityInfo{r->command_id(), r->activity_token(), ActivityKind::RELOAD};
+    if (const auto* r = msg.payload_as_CancelItemTransferRequest())
+        return CancelActivityInfo{r->command_id(), r->activity_token(), ActivityKind::ITEM_TRANSFER};
+    if (const auto* r = msg.payload_as_CancelReadingRequest())
+        return CancelActivityInfo{r->command_id(), r->activity_token(), ActivityKind::READ};
+    if (const auto* r = msg.payload_as_CancelDisassemblyRequest())
+        return CancelActivityInfo{r->command_id(), r->activity_token(), ActivityKind::DISASSEMBLE};
+    if (const auto* r = msg.payload_as_CancelLiquidTransferRequest())
+        return CancelActivityInfo{r->command_id(), r->activity_token(), ActivityKind::LIQUID_TRANSFER};
+    return std::nullopt;
+}
+
+struct ActiveWorkState {
+    CDDA::CWM::ActivityKind kind{CDDA::CWM::ActivityKind::NONE};
+    uint64_t token{0};
+    int32_t total{0};
+    int32_t remaining{0};
+    bool inserting{false};
+    bool skimming{false};
+    std::string name;
+    std::string progress_text;
+
+    bool active() const { return token != 0 && kind != CDDA::CWM::ActivityKind::NONE; }
+    bool is(CDDA::CWM::ActivityKind k) const { return active() && kind == k; }
+
+    const char* trace_label() const {
+        using CDDA::CWM::ActivityKind;
+        switch (kind) {
+            case ActivityKind::LIQUID_TRANSFER: return "filling_liquid";
+            case ActivityKind::DISASSEMBLE:     return "disassembling";
+            case ActivityKind::READ:            return "reading";
+            case ActivityKind::ITEM_TRANSFER:   return "transferring";
+            case ActivityKind::CRAFT:           return "crafting";
+            case ActivityKind::FIRST_AID:       return "first_aid";
+            case ActivityKind::RELOAD:          return "reloading";
+            case ActivityKind::CONSUME:         return "consuming";
+            default:                            return "none";
+        }
+    }
+};
+
+inline ActiveWorkState extract_active_work(const CDDA::CWM::WorldSnapshot& world) {
+    using CDDA::CWM::ActivityKind;
+    ActiveWorkState out;
+    if (const auto* liquid = world.liquid_transfer()) {
+        out.kind = ActivityKind::LIQUID_TRANSFER;
+        out.token = liquid->token();
+    } else if (const auto* dis = world.disassembly()) {
+        out.kind = ActivityKind::DISASSEMBLE;
+        out.token = dis->token();
+        out.total = 10000000;
+        out.remaining = 10000000 - dis->progress();
+        if (dis->name()) out.name = dis->name()->str();
+    } else if (const auto* read = world.reading()) {
+        out.kind = ActivityKind::READ;
+        out.token = read->token();
+        out.total = read->total_moves();
+        out.remaining = read->remaining_moves();
+        out.skimming = read->skimming();
+        if (read->book_name()) out.name = read->book_name()->str();
+        if (read->progress()) out.progress_text = read->progress()->str();
+    } else if (const auto* tr = world.item_transfer()) {
+        out.kind = ActivityKind::ITEM_TRANSFER;
+        out.token = tr->token();
+        out.total = tr->total_moves();
+        out.remaining = tr->remaining_moves();
+        out.inserting = tr->inserting();
+    } else if (const auto* cr = world.crafting()) {
+        out.kind = ActivityKind::CRAFT;
+        out.token = cr->token();
+        out.total = 10000000;
+        out.remaining = 10000000 - cr->progress();
+    } else if (const auto* aid = world.first_aid()) {
+        out.kind = ActivityKind::FIRST_AID;
+        out.token = aid->token();
+        out.total = aid->total_moves();
+        out.remaining = aid->remaining_moves();
+    } else if (const auto* rel = world.reload()) {
+        out.kind = ActivityKind::RELOAD;
+        out.token = rel->token();
+        out.total = rel->total_moves();
+        out.remaining = rel->remaining_moves();
+    } else if (const auto* con = world.consumption()) {
+        out.kind = ActivityKind::CONSUME;
+        out.token = con->token();
+        out.total = con->total_moves();
+        out.remaining = con->remaining_moves();
+    }
+    return out;
+}
+
 inline bool valid_rest(const CDDA::CWM::RestState* rest) {
     return rest && rest->speed_multiplier()==1 && rest->token() && int(rest->phase())>=0 && int(rest->phase())<=2 && rest->progress()>=-1 && rest->progress()<=100 &&
         (rest->phase()==CDDA::CWM::RestPhase::WAITING || rest->progress()==-1) &&
         (rest->phase()!=CDDA::CWM::RestPhase::SLEEPING || !rest->interruptible());
 }
 inline bool valid_missions(const CDDA::CWM::MissionView* v) {
-    const auto text=[](const auto* s,size_t bound){return s && s->size()<=bound && s->str().find('\0')==std::string::npos;};
-    if(!v || !v->query_id() || v->tracked_id() < -1 || !v->entries() || v->entries()->size()>2048 || !text(v->error(),4096))return false;
+    if(!v || !v->query_id() || v->tracked_id() < -1 || !v->entries() || v->entries()->size()>2048 || !valid_cwm_string(v->error(),4096))return false;
     if(v->error()->size())return !v->view_id() && !v->entries()->size() && v->tracked_id()==-1 && !v->truncated();
     if(!v->view_id())return false;
     std::set<int> ids;unsigned tracked=0;
     for(const auto* e:*v->entries()) {
         if(!e || e->id()<0 || !ids.insert(e->id()).second || unsigned(e->state())>2 ||
-           !text(e->title(),4096) || !e->title()->size() || !text(e->description(),16384) || !text(e->objective(),4096) ||
-           !text(e->giver(),4096) || !text(e->deadline(),4096) || !text(e->remaining(),4096) || !text(e->target_text(),4096) ||
+           !valid_cwm_string(e->title(),4096,false) || !valid_cwm_string(e->description(),16384) || !valid_cwm_string(e->objective(),4096) ||
+           !valid_cwm_string(e->giver(),4096) || !valid_cwm_string(e->deadline(),4096) || !valid_cwm_string(e->remaining(),4096) || !valid_cwm_string(e->target_text(),4096) ||
            (!e->deadline()->size() && e->remaining()->size()) || (!e->target() && e->target_text()->size()) ||
            (e->target() && !e->target_text()->size()))return false;
         if(e->tracked() && (e->state()!=CDDA::CWM::MissionState::ACTIVE || e->id()!=v->tracked_id() || ++tracked>1))return false;
@@ -43,9 +162,8 @@ inline bool valid_missions(const CDDA::CWM::MissionView* v) {
     return v->tracked_id()==-1 ? !tracked : tracked==1 || v->truncated();
 }
 inline bool valid_trade(const CDDA::CWM::TradeView* v) {
-    const auto text=[](const auto* s,size_t n){return s && s->size()<=n && s->str().find('\0')==std::string::npos;};
     if(!v || !v->trade_id() || !v->quote_id() || !(v->npc_id()>>63) ||
-       !text(v->name(),4096) || !v->name()->size() || !text(v->title(),4096) || !text(v->error(),4096) ||
+       !valid_cwm_string(v->name(),4096,false) || !valid_cwm_string(v->title(),4096) || !valid_cwm_string(v->error(),4096) ||
        !v->entries() || v->entries()->size()>2048 || v->your_value()<0 || v->your_value()>INT32_MAX ||
        v->their_value()<0 || v->their_value()>INT32_MAX || v->balance()<INT32_MIN || v->balance()>INT32_MAX ||
        v->remembered_balance()<INT32_MIN || v->remembered_balance()>INT32_MAX || v->credit_limit()<0 ||
@@ -53,8 +171,8 @@ inline bool valid_trade(const CDDA::CWM::TradeView* v) {
     uint32_t id=0;
     for(const auto* e:*v->entries()) {
         if(!e || e->id()!=++id || e->parent_id()>v->entries()->size() || e->parent_id()==id ||
-           !text(e->type_id(),1024) || !e->type_id()->size() || !text(e->name(),16384) || !e->name()->size() ||
-           !text(e->category(),1024) || !text(e->source(),4096) || !text(e->reason(),4096) ||
+           !valid_cwm_string(e->type_id(),1024,false) || !valid_cwm_string(e->name(),16384,false) ||
+           !valid_cwm_string(e->category(),1024) || !valid_cwm_string(e->source(),4096) || !valid_cwm_string(e->reason(),4096) ||
            e->available()<=0 || e->selected()<0 || e->selected()>e->available() || e->unit_price()<0 || e->unit_price()>INT32_MAX)return false;
     }
     // Parent links must stay in one party and cannot form cycles.
@@ -69,23 +187,22 @@ inline bool valid_trade(const CDDA::CWM::TradeView* v) {
     return true;
 }
 inline bool valid_decision(const CDDA::CWM::DecisionPrompt* prompt) {
-    const auto text=[](const auto* s,size_t bound){return s && s->size()<=bound && s->str().find('\0')==std::string::npos;};
-    if(!prompt || !prompt->decision_id() || !text(prompt->text(),16384) || !prompt->choices() ||
+    if(!prompt || !prompt->decision_id() || !valid_cwm_string(prompt->text(),16384) || !prompt->choices() ||
         !prompt->choices()->size() || prompt->choices()->size()>9 || prompt->cancel_choice() < -1 ||
         prompt->cancel_choice()>=int(prompt->choices()->size()))return false;
-    for(const auto* label:*prompt->choices())if(!text(label,16384) || !label->size())return false;
+    for(const auto* label:*prompt->choices())if(!valid_cwm_string(label,16384,false))return false;
     if (const auto* c = prompt->conversation()) {
         if (prompt->medical() || !(c->npc_id() & (uint64_t(1)<<63)) ||
-            !text(c->speaker(),4096) || !c->speaker()->size() ||
-            !text(c->topic(),1024) || !c->topic()->size() || !text(c->history(),262144) ||
+            !valid_cwm_string(c->speaker(),4096,false) ||
+            !valid_cwm_string(c->topic(),1024,false) || !valid_cwm_string(c->history(),262144) ||
             prompt->cancel_choice()!=int(prompt->choices()->size())-1) return false;
     }
     if (prompt->medical()) {
         if (prompt->medical()->size() > 128) return false;
-        std::set<std::string> ids; std::set<int> choices;
+        std::set<std::string_view> ids; std::set<int> choices;
         for (const auto* p : *prompt->medical()) {
-            if (!p || !text(p->body_id(),128) || !p->body_id()->size() || !ids.insert(p->body_id()->str()).second ||
-                !text(p->name(),512) || !p->name()->size() || !text(p->description(),16384) || !text(p->health_text(),512) ||
+            if (!p || !valid_cwm_string(p->body_id(),128,false) || !ids.insert(fb_string_view(p->body_id())).second ||
+                !valid_cwm_string(p->name(),512,false) || !valid_cwm_string(p->description(),16384) || !valid_cwm_string(p->health_text(),512) ||
                 p->choice() < -1 || p->choice() >= int(prompt->choices()->size()) || (p->choice() >= 0 && p->choice() == prompt->cancel_choice()) ||
                 (p->choice() >= 0 && !choices.insert(p->choice()).second) || p->health_quarters() < -1 || p->health_quarters() > 20 ||
                 p->hp_current() < -1 || p->hp_max() < -1 || (p->hp_current() == -1) != (p->hp_max() == -1) ||
@@ -95,20 +212,19 @@ inline bool valid_decision(const CDDA::CWM::DecisionPrompt* prompt) {
     return true;
 }
 inline bool valid_inventory(const CDDA::CWM::InventoryView* view) {
-    const auto text = [](const auto* s, size_t limit, bool empty = true) {
-        return s && s->size() <= limit && (empty || s->size()) && s->str().find('\0') == std::string::npos;
-    };
     if (!view || !view->query_id() || !view->entries() || !view->pockets() ||
-        view->entries()->size() > 2048 || view->pockets()->size() > 8192 || !text(view->error(), 2048)) return false;
+        view->entries()->size() > 2048 || view->pockets()->size() > 8192 || !valid_cwm_string(view->error(), 2048)) return false;
     if (view->error()->size()) return !view->view_id() && !view->entries()->size() && !view->pockets()->size();
     if (!view->view_id() || view->weight_grams() < 0 || view->weight_capacity_grams() < 0 ||
         view->volume_ml() < 0 || view->volume_capacity_ml() < 0) return false;
     if (view->external_coord()) {
-        if (!text(view->external_label(),2048,false) || view->external_coord()->z() < -1024 || view->external_coord()->z()>1024 ||
+        if (!valid_cwm_string(view->external_label(),2048,false) || view->external_coord()->z() < -1024 || view->external_coord()->z()>1024 ||
             view->external_capacity_ml()<0 || view->external_remaining_ml()<0 || view->external_remaining_ml()>view->external_capacity_ml())return false;
     } else if (view->external_capacity_ml() || view->external_remaining_ml()) return false;
     std::vector<unsigned> depths(1, 0);
     std::vector<bool> external(1,false);
+    depths.reserve(view->entries()->size() + 1);
+    external.reserve(view->entries()->size() + 1);
     uint32_t id = 0;
     for (const auto* entry : *view->entries()) {
         if (!entry || entry->id() != ++id || entry->parent_id() >= id || entry->pocket_index() < -1 ||
@@ -116,23 +232,23 @@ inline bool valid_inventory(const CDDA::CWM::InventoryView* view) {
             (entry->parent_id() && (entry->worn() || entry->wielded())) ||
             (entry->worn() && entry->wielded()) || entry->quick_slot() > 9 || entry->ui_order() > 2048 ||
             entry->weight_grams() < 0 || entry->volume_ml() < 0 || entry->length_mm() < 0 || entry->access_moves() < 0 ||
-            !text(entry->type_id(), 1024, false) || !text(entry->name(), 16384, false) || !text(entry->category(), 1024) ||
+            !valid_cwm_string(entry->type_id(), 1024, false) || !valid_cwm_string(entry->name(), 16384, false) || !valid_cwm_string(entry->category(), 1024) ||
             !entry->reasons() || entry->reasons()->size() != 8 || entry->consume_moves() < 0 ||
-            !text(entry->consume_label(), 128) || !text(entry->consume_warning(), 2048) || !text(entry->transfer_reason(), 2048)) return false;
+            !valid_cwm_string(entry->consume_label(), 128) || !valid_cwm_string(entry->consume_warning(), 2048) || !valid_cwm_string(entry->transfer_reason(), 2048)) return false;
         for (unsigned i = 0; i < 8; ++i)
-            if (!text(entry->reasons()->Get(i), 2048) ||
+            if (!valid_cwm_string(entry->reasons()->Get(i), 2048) ||
                 bool(entry->actions() & (1 << i)) == bool(entry->reasons()->Get(i)->size())) return false;
         if ((entry->actions() & 16) && (!entry->consume_moves() || !entry->consume_label()->size())) return false;
         if ((entry->actions() & 64) && (!entry->book() || !entry->book()->chapter_moves())) return false;
         if ((entry->actions() & 128) && !entry->disassembly()) return false;
-        if(entry->seal() && (!text(entry->seal()->reason(),2048) || entry->external() || !entry->container()))return false;
-        if(entry->liquid() && (!text(entry->liquid()->reason(),2048)))return false;
+        if(entry->seal() && (!valid_cwm_string(entry->seal()->reason(),2048) || entry->external() || !entry->container()))return false;
+        if(entry->liquid() && (!valid_cwm_string(entry->liquid()->reason(),2048)))return false;
         if (const auto* work=entry->disassembly())
             if (work->estimated_moves()<0 || work->progress()<0 || work->progress()>10000000 ||
                 (!work->resume() && work->progress()) ||
                 ((entry->actions() & 128) && work->estimated_moves()>INT32_MAX)) return false;
         if (const auto* book=entry->book())
-            if(book->chapter_moves()<0 || !text(book->summary(),2048,false))return false;
+            if(book->chapter_moves()<0 || !valid_cwm_string(book->summary(),2048,false))return false;
         if (entry->external() && (!view->external_coord() || entry->worn() || entry->wielded() || entry->actions() || entry->quick_slot() || entry->ui_order())) return false;
         if(entry->parent_id() && entry->external()!=external[entry->parent_id()])return false;
         external.push_back(entry->external());
@@ -142,7 +258,7 @@ inline bool valid_inventory(const CDDA::CWM::InventoryView* view) {
     std::set<std::pair<uint32_t,uint32_t>> pockets;
     for (const auto* pocket : *view->pockets()) {
         if (!pocket || !pocket->owner_id() || pocket->owner_id() > id || pocket->index() >= 8192 ||
-            !text(pocket->name(), 2048) || pocket->capacity_ml() < 0 || pocket->capacity_grams() < 0 ||
+            !valid_cwm_string(pocket->name(), 2048) || pocket->capacity_ml() < 0 || pocket->capacity_grams() < 0 ||
             pocket->max_length_mm() < 0 || pocket->access_moves() < 0 ||
             !pockets.emplace(pocket->owner_id(), pocket->index()).second) return false;
     }
@@ -151,17 +267,14 @@ inline bool valid_inventory(const CDDA::CWM::InventoryView* view) {
     return true;
 }
 inline bool valid_crafting(const CDDA::CWM::CraftingView* view) {
-    const auto text = [](const auto* s, size_t bound, bool empty = true) {
-        return s && s->size() <= bound && (empty || s->size()) && std::string_view(s->c_str(), s->size()).find('\0') == std::string::npos;
-    };
     if (!view || !view->query_id() || !view->batch() || view->batch() > 20 || !view->entries() ||
-        view->entries()->size() > 256 || int(view->filter()) > 3 || !text(view->error(), 2048)) return false;
+        view->entries()->size() > 256 || int(view->filter()) > 3 || !valid_cwm_string(view->error(), 2048)) return false;
     if (view->error()->size()) return !view->view_id() && !view->entries()->size();
     if (!view->view_id()) return false;
     uint32_t id = 0;
     for (const auto* e : *view->entries())
-        if (!e || e->id() != ++id || !text(e->recipe_id(), 1024, false) || !text(e->result_type(), 1024, false) ||
-            !text(e->name(), 16384, false) || !text(e->requirements(), 16384) || !text(e->reason(), 2048) ||
+        if (!e || e->id() != ++id || !valid_cwm_string(e->recipe_id(), 1024, false) || !valid_cwm_string(e->result_type(), 1024, false) ||
+            !valid_cwm_string(e->name(), 16384, false) || !valid_cwm_string(e->requirements(), 16384) || !valid_cwm_string(e->reason(), 2048) ||
             e->recent_rank() > 20 || (view->filter()==CDDA::CWM::CraftingFilter::UNFINISHED && !e->resume()) || (view->filter()==CDDA::CWM::CraftingFilter::FAVORITES && !e->favorite()) ||
             (view->filter()==CDDA::CWM::CraftingFilter::RECENT && !e->recent_rank()) || e->expected_moves() < 0 || e->progress() < 0 || e->progress() > 10000000 || (!e->resume() && e->progress())) return false;
     return true;
@@ -176,9 +289,8 @@ inline bool valid_presentation(const CDDA::CWM::WorldSnapshot* world) {
     for (const auto* cue : *cues) {
         if (!cue || cue->id()<=previous || cue->kind()<CDDA::CWM::PresentationKind::ATTACK ||
             cue->kind()>CDDA::CWM::PresentationKind::SOUND || cue->heard_volume()>200 ||
-            !cue->description() || cue->description()->size()>4096 || !cue->sound_category() ||
-            cue->sound_category()->size()>128 || cue->description()->str().find('\0')!=std::string::npos ||
-            cue->sound_category()->str().find('\0')!=std::string::npos) return false;
+            !valid_cwm_string(cue->description(), 4096) ||
+            !valid_cwm_string(cue->sound_category(), 128)) return false;
         if (cue->kind()==CDDA::CWM::PresentationKind::SOUND ? cue->actor()!=0 : cue->actor()==0) return false;
         previous=cue->id();
     }
@@ -194,21 +306,20 @@ inline bool valid_world(const CDDA::CWM::WorldSnapshot* world) {
         world->inventory_work()->remaining_time_ms() > world->inventory_work()->total_time_ms())) return false;
     if (const auto* slots = world->quick_slots()) {
         if (slots->size() != 9) return false;
-        std::set<std::string> identities;
+        std::set<std::string_view> identities;
         unsigned n = 0;
         for (const auto* slot : *slots) {
-            if (!slot || slot->slot() != ++n || !slot->binding_id() || !slot->type_id() ||
-                !slot->name() || !slot->category() || (slot->actions() & ~127) ||
-                (slot->worn() && slot->wielded()) || slot->type_id()->size() > 1024 ||
-                slot->category()->size() > 1024 || slot->name()->size() > 16384) return false;
-            const auto id = slot->binding_id()->str();
+            if (!slot || slot->slot() != ++n || !slot->binding_id() ||
+                !valid_cwm_string(slot->type_id(), 1024) ||
+                !valid_cwm_string(slot->name(), 16384) ||
+                !valid_cwm_string(slot->category(), 1024) ||
+                (slot->actions() & ~127) || (slot->worn() && slot->wielded())) return false;
+            const auto id = fb_string_view(slot->binding_id());
             if (!id.empty() && (id.size() != 32 || !std::all_of(id.begin(), id.end(), [](char c) {
                 return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f');
             }) || !identities.insert(id).second || !slot->type_id()->size() || !slot->name()->size())) return false;
             if (id.empty() && (slot->type_id()->size() || slot->name()->size() || slot->category()->size() ||
                 slot->charges() || slot->count_by_charges() || slot->worn() || slot->wielded() || slot->actions() || slot->rotten())) return false;
-            for (const auto* str : {slot->type_id(), slot->name(), slot->category()})
-                if (str->str().find('\0') != std::string::npos) return false;
         }
     }
     const auto valid_items = [](const auto* items) {
@@ -216,7 +327,7 @@ inline bool valid_world(const CDDA::CWM::WorldSnapshot* world) {
         uint32_t index = 0;
         for (const auto* item : *items) {
             if (!item || item->stack_index() != index++ || !item->type_id() ||
-                item->type_id()->str().empty() || item->type_id()->size() > 1024 ||
+                item->type_id()->size() == 0 || item->type_id()->size() > 1024 ||
                 !item->name() || item->name()->size() > 16384) return false;
         }
         return true;
@@ -230,16 +341,12 @@ inline bool valid_world(const CDDA::CWM::WorldSnapshot* world) {
     if (int(bool(world->consumption())) + int(bool(world->first_aid())) + int(bool(world->crafting())) + int(bool(world->reload())) + int(bool(world->item_transfer())) + int(bool(world->reading())) + int(bool(world->disassembly())) + int(bool(world->rest())) + int(bool(world->liquid_transfer())) > 1) return false;
     if (const auto* work=world->disassembly()) {
         if (!work->token() || work->progress()<0 || work->progress()>10000000 ||
-            !work->name() || !work->name()->size() || work->name()->size()>16384 ||
-            work->name()->str().find('\0')!=std::string::npos) return false;
+            !valid_cwm_string(work->name(), 16384, false)) return false;
     }
     if (const auto* reading=world->reading()) {
-        const auto text=[](const auto* value,size_t max,bool empty=true) {
-            return value && value->size()<=max && (empty || value->size()) && value->str().find('\0')==std::string::npos;
-        };
         if(!reading->token() || reading->total_moves()<=0 || reading->remaining_moves()<0 ||
-            reading->remaining_moves()>reading->total_moves() || !text(reading->book_name(),16384,false) ||
-            !text(reading->progress(),2048))return false;
+            reading->remaining_moves()>reading->total_moves() || !valid_cwm_string(reading->book_name(),16384,false) ||
+            !valid_cwm_string(reading->progress(),2048))return false;
     }
     if (const auto* transfer = world->item_transfer()) {
         if (!transfer->token() || transfer->total_moves() < 0 || transfer->remaining_moves() < 0 ||
@@ -250,11 +357,7 @@ inline bool valid_world(const CDDA::CWM::WorldSnapshot* world) {
             reload->remaining_moves() > reload->total_moves()) return false;
     }
     if (const auto* gun = world->ranged_weapon()) {
-        const auto text = [](const auto* s, size_t max, bool empty = true) {
-            return s && s->size() <= max && (empty || s->size()) &&
-                std::string_view(s->c_str(), s->size()).find('\0') == std::string_view::npos;
-        };
-        if (!gun->token() || !text(gun->name(), 16384, false) || !text(gun->reason(), 16384) ||
+        if (!gun->token() || !valid_cwm_string(gun->name(), 16384, false) || !valid_cwm_string(gun->reason(), 16384) ||
             gun->ammo() < 0 || gun->range() < 0 || !std::isfinite(gun->recoil()) ||
             gun->recoil() < 0 || gun->recoil() > 1000000) return false;
     }
@@ -267,30 +370,26 @@ inline bool valid_world(const CDDA::CWM::WorldSnapshot* world) {
     }
     if (world->owned_items() && !valid_items(world->owned_items())) return false;
     if (const auto* status = world->avatar_status()) {
-        const auto valid_text = [](const auto* text, size_t max, bool empty = true) {
-            if (!text || text->size() > max || (!empty && !text->size())) return false;
-            return text->str().find('\0') == std::string::npos;
-        };
         const auto valid_value = [&](const auto* value) {
-            return value && valid_text(value->id(), 128, false) &&
-                valid_text(value->label(), 256, false) && valid_text(value->text(), 2048) &&
-                valid_text(value->color(), 64, false) &&
+            return value && valid_cwm_string(value->id(), 128, false) &&
+                valid_cwm_string(value->label(), 256, false) && valid_cwm_string(value->text(), 2048) &&
+                valid_cwm_string(value->color(), 64, false) &&
                 value->perceived_level() >= -1 && value->perceived_level() <= 10;
         };
-        if (!valid_value(status->stamina()) || status->stamina()->id()->str() != "stamina" ||
+        if (!valid_value(status->stamina()) || fb_string_view(status->stamina()->id()) != "stamina" ||
             !status->needs() || status->needs()->size() > 32 ||
             !status->body_parts() || status->body_parts()->size() > 64) return false;
-        std::set<std::string> needs, parts;
+        std::set<std::string_view> needs, parts;
         for (const auto* need : *status->needs())
-            if (!valid_value(need) || !needs.insert(need->id()->str()).second) return false;
+            if (!valid_value(need) || !needs.insert(fb_string_view(need->id())).second) return false;
         for (const auto* part : *status->body_parts())
-            if (!part || !valid_text(part->id(), 128, false) ||
-                !valid_text(part->label(), 256, false) || !valid_value(part->health()) ||
-                !valid_value(part->temperature()) || !parts.insert(part->id()->str()).second) return false;
+            if (!part || !valid_cwm_string(part->id(), 128, false) ||
+                !valid_cwm_string(part->label(), 256, false) || !valid_value(part->health()) ||
+                !valid_value(part->temperature()) || !parts.insert(fb_string_view(part->id())).second) return false;
         for (const auto* part : *status->body_parts()) if (part->conditions()) {
             if (part->conditions()->size() > 64) return false;
             for (const auto* condition : *part->conditions())
-                if (!valid_text(condition, 2048, false)) return false;
+                if (!valid_cwm_string(condition, 2048, false)) return false;
         }
     }
     if (world->ground_item_tiles()) {
@@ -298,7 +397,7 @@ inline bool valid_world(const CDDA::CWM::WorldSnapshot* world) {
         std::set<std::tuple<int, int, int>> coords;
         for (const auto* tile : *world->ground_item_tiles()) {
             if (!tile || !tile->coord() || !valid_items(tile->items()) ||
-                (tile->storage() && (!tile->storage_label() || !tile->storage_label()->size() || tile->storage_label()->size()>2048 || tile->storage_label()->str().find('\0')!=std::string::npos))) return false;
+                (tile->storage() && !valid_cwm_string(tile->storage_label(), 2048, false))) return false;
             const auto* p = tile->coord();
             if (p->x() < 0 || p->x() >= 132 || p->y() < 0 || p->y() >= 132 ||
                 p->z() < -1024 || p->z() > 1024 ||
@@ -314,12 +413,11 @@ inline bool valid_world(const CDDA::CWM::WorldSnapshot* world) {
     }
     if(world->clock() && world->rest() && world->rest()->accelerated()!=
         (world->clock()->speed_context()==CDDA::CWM::SpeedContext::REST && world->clock()->time_scale()>4.f))return false;
-    std::set<uint64_t> ids;
     std::unordered_map<uint64_t, const CDDA::CWM::EntityState*> actor_states;
     actor_states.reserve(world->entities()->size());
     bool player = false;
     for (const auto* actor : *world->entities()) {
-        if (!actor || !actor->id() || !actor->pos() || !ids.insert(actor->id()).second) return false;
+        if (!actor || !actor->id() || !actor->pos() || !actor_states.emplace(actor->id(), actor).second) return false;
         if (actor->type() < CDDA::CWM::EntityType::PLAYER || actor->type() > CDDA::CWM::EntityType::MONSTER ||
             (actor->id() == 1) != (actor->type() == CDDA::CWM::EntityType::PLAYER) ||
             !std::isfinite(actor->rotation()) || actor->hp_percent() > 100 ||
@@ -330,7 +428,6 @@ inline bool valid_world(const CDDA::CWM::WorldSnapshot* world) {
         const uint32_t posture = actor->state_flags() & (RUNNING | CROUCHING | PRONE);
         if (posture && ((posture & (posture - 1)) || actor->id() != 1)) return false;
         if (actor->id() == 1) player = true;
-        actor_states.emplace(actor->id(), actor);
     }
     if (!player) return false;
     if (world->chunks()) for (const auto* chunk : *world->chunks()) {
@@ -356,12 +453,12 @@ inline bool valid_world(const CDDA::CWM::WorldSnapshot* world) {
     if ((world->spawned() && world->spawned()->size() > world->entities()->size()) ||
         (world->removed() && world->removed()->size() > 8192)) return false;
     if (world->spawned()) for (const auto* spawn : *world->spawned()) {
-        if (!spawn || !spawn->state() || !ids.count(spawn->state()->id()) ||
+        if (!spawn || !spawn->state() || !actor_states.count(spawn->state()->id()) ||
             !spawned_ids.insert(spawn->state()->id()).second) return false;
         const auto* declared = spawn->state();
         const auto* actor = actor_states.at(declared->id());
         const auto string_equal = [](const auto* a, const auto* b) {
-            return a && b ? a->str() == b->str() : a == b;
+            return a && b ? fb_string_view(a) == fb_string_view(b) : a == b;
         };
         if (!declared->pos() || actor->type() != declared->type() ||
             actor->pos()->x() != declared->pos()->x() || actor->pos()->y() != declared->pos()->y() ||
@@ -372,7 +469,7 @@ inline bool valid_world(const CDDA::CWM::WorldSnapshot* world) {
             !string_equal(actor->type_id(), declared->type_id()) || !string_equal(actor->name(), declared->name())) return false;
     }
     if (world->removed()) for (const auto* removed : *world->removed())
-        if (!removed || !removed->id() || ids.count(removed->id()) ||
+        if (!removed || !removed->id() || actor_states.count(removed->id()) ||
             !removed_ids.insert(removed->id()).second) return false;
     return true;
 }
@@ -465,8 +562,7 @@ public:
             const auto* value = msg.payload_as_LanguageState();
             if (!value || !value->request_id() || !value->code() ||
                 !::cwm::product_language(value->code()->str()) ||
-                !value->error() || value->error()->size() > 2048 ||
-                value->error()->str().find('\0') != std::string::npos ||
+                !valid_cwm_string(value->error(), 2048) ||
                 value->accepted() == bool(value->error()->size())) {
                 request_resync(channel); return false;
             }
@@ -483,7 +579,7 @@ public:
         }
         if (ready() && msg.payload_type() == Payload::TradeClosed) {
             const auto* v=msg.payload_as_TradeClosed();
-            if(!v || !v->trade_id() || !v->error() || v->error()->size()>4096 || v->error()->str().find('\0')!=std::string::npos) {
+            if(!v || !v->trade_id() || !valid_cwm_string(v->error(), 4096)) {
                 request_resync(channel);return false;
             }
             return true;
@@ -549,4 +645,4 @@ private:
     std::unordered_map<uint64_t, Entry> entries_;
     std::deque<uint64_t> order_;
 };
-}
+} // namespace cdda::cwm

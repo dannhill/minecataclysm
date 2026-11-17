@@ -1,6 +1,177 @@
 # Implementation status
 
-Current Linux scoped delivery: **continuous action-menu presentation**,
+Fourth human feedback on 2026-11-17. **READ-FB-01.1, window recheck 3,
+immersion feedback 9 and held item feedback 4 PASS. 21 pending manual checks.**
+The player also saw a native injury prompt during cold reading. The Glock
+kick is visible but subtle and the generic weapon art looks like a sword.
+Zombie hit tint observed. The player-injury tint remains a pending part of
+feedback 2. Next checks are the credit rejection, mission journal contents
+and empty state, zombie materials, and audible combat/movement feedback.
+The credit and empty journal scenes are fresh local copies.
+[Feedback, aim controls and instructions](docs/source/manual-priority-tests-2026-11-17-followup.md#quarto-riscontro-e-prossimo-giro).
+
+Third human feedback on 2026-11-17. **COMP-01.1, post-gate search 1,
+UX-05.2 and player model 3 PASS. 25 pending manual checks** after four
+closures. The companion result covers opening the extra panels. The search
+recheck covers edits in the middle of the field. Next order is the cold
+reading prompt, window/curtain controls, immersion cues and first-person held
+item presentation. The first two use fresh local test copies.
+[Human feedback and next instructions](docs/source/manual-priority-tests-2026-11-17-followup.md#terzo-riscontro-e-quattro-prove-successive).
+
+Second human feedback2026-11-17: **NPC-01.1, TRADE-01.1 and NPC-01.4 PASS**.
+**29 PENDING** (32 minus three); COMP-01.1 was not understood/performed and
+remains PENDING, not FAIL. No new test or runtime/build/save change.
+[Exact source and rewritten checks](docs/source/manual-priority-tests-2026-11-17-followup.md).
+The developer requests clearer manual instructions; AGENTS.md now requires an
+exact launcher, concrete ordered actions and visible acceptance criteria.
+Next group: COMP-01.1 clarified → post-seven-gates search1 → UX-05.2 recents →
+humanoid models3 (third person/preview). The first was not executed; the other
+three are existing pending checks. REST-FB-02 and MENU-TOGGLE-01 remain OPEN/TODO.
+JOURNAL-01.1 empty-state setup requires preparation: a baseline with empty lists
+does not prove an empty loaded game; the most recent conversation save has one
+active mission. Do not ask the developer to reject that as an empty-state failure.
+
+Human feedback2026-11-17: **REST-01.1, JOURNAL-01.3, NPC-01.2 and LANG-02.1
+PASS**. Rest failure closed by the developer's actual retry. **32 manual cases
+PENDING**, no open checklist FAIL:35 pending minus three, plus the one failure
+closed. No new case. Separate REST-FB-02 OPEN: near-instant breath recovery
+from1x and several seconds unable to move afterwards; rest-context default1024x
+can explain the speed change if1x was PLAY, but the movement delay is unproven.
+MENU-TOGGLE-01 TODO/proposal: J/K open-close shortcuts, protecting text focus,
+key repeat and native work/pause ownership. No runtime/build/save change.
+[Human source, analysis and next ordered cases](docs/source/manual-priority-tests-2026-11-17.md):
+NPC-01.1 → TRADE-01.1 → COMP-01.1 → NPC-01.4. Historical counts below remain
+historical; scoped PASS does not close other OPEN comments or conformance gates.
+
+Human feedback2026-11-15, second set: **REST-01.1 FAIL** at0.5x/1x/2x
+(not observed at4x), with I pause/resume and B interruption confirmed separately.
+Direct loose-stack pickup2, JOURNAL-01.2 and DIS-01.2 **PASS**.
+**35 PENDING +1 FAIL =36 unresolved manual cases**; no new test added.
+The shared time/synchronization gate takes priority before downstream tests.
+[Source and dependency-first testing directive](docs/source/manual-priority-tests-2026-11-15.md#secondo-riscontro-umano-e-cambio-di-priorità).
+Earlier dated counts and scoped PASS results remain historical evidence.
+Scoped fix installed: accelerated rest exported nonplayer interpolation below
+the protocol minimum; the copied failed save reproduces it with17 actors.
+Clamp the presentation duration only. Native186/74,099 assertions, SDK21 and
+130 renderer/canonical checks in6 runs PASS, including the installed pair.
+Ordinary0.5/1/2/4 rates measured from real traces; REST-01.1 remains human FAIL
+until retry. [Delivery and exact evidence](docs/fixes/rest-rate-feedback-2026-11-15.md).
+Next order: REST-01.1 → JOURNAL-01.3 → NPC-01.2 → LANG-02.1; stop downstream
+checks when their prerequisite fails. No new manual case or whole-gate claim.
+
+Requested outlook 2026-11-15: **85–90% estimated for the minimum Linux core
+including final verification**; approximately95% functional presence remains
+a separate estimate excluding that closure work. **39 manual cases pending**,
+including the latest proposed four. Rough planning:4–7 substantial technical
+steps and2–4 feedback/fix cycles, not a release date or PASS claim.
+[Scope, remaining work and explicit testing-time assumptions](docs/progress/core-outlook-2026-11-15.md).
+Essential item uses, safe mandatory liquid outputs/purification and final
+normal-world/save/recovery/performance checks remain. Full SAVE-001 OPEN and
+historical M5.5 FAILED are not superseded; Windows needs an updated package
+and its three existing personal checks. This outlook changes no code/build.
+
+Human feedback 2026-11-15: **COMP-01.3, COMP-01.4, NPC-01.3 and READ-01.1
+PASS**. **39 PENDING** (43 minus four), no new tests or failures. Separate
+**NPC-SCROLL-01 TODO**: scroll dialogue history to the latest interaction
+after an explicit dialogue choice. Recorded UX request, not an implemented
+fix or a reason to revoke NPC-01.3. [Human source and scope](docs/source/manual-priority-tests-2026-11-15.md#riscontro-umano-del-giro).
+Next proposed existing cases: REST-01.1, direct loose-stack pickup2,
+JOURNAL-01.2 and DIS-01.2. Documentation update only; runtime/build unchanged.
+
+Second human feedback set 2026-11-11: **LANG-02.2, DIS-01.1, JOURNAL-01.4 and
+COMP-01.2 PASS**. **43 PENDING** (47 minus four), no new tests or runtime/build
+changes. Scope is the proposed activity-language, cancelled disassembly,
+journal persistence and guard/follow scenarios. Mission tracking is upstream
+CDDA active-mission selection and canonical persistence; the J GUI/Track button
+and validated CWM projection are the presentation adaptation.
+[Human source and native-code clarification](docs/source/manual-work-trade-crafting-validation-2026-11-11.md#secondo-riscontro-lingua-smontaggio-missioni-e-compagni).
+Cold non-reproduction, partially tested credit case and LIQ-FB-01 OPEN retained.
+
+Human feedback 2026-11-11: **WORK-FB-01.1 and post-gates recipe/batch recheck2
+PASS**, explicitly confirming eight makeshift bandages. READ-FB-01.1 was not
+reproduced and remains pending; TRADE-01.3 is partially accepted, with the
+over-credit test explicitly unperformed. **47 PENDING** (49 minus two complete
+closures). The ordinary trade fixture starts with $1000 owed to the player;
+prepare a deterministic denial scene before asking for its financial-negative
+test. [Human source and explanations](docs/source/manual-work-trade-crafting-validation-2026-11-11.md).
+No code/build changes, new manual tests or inferred acceptance. LIQ-FB-01
+remains OPEN; core implementation work can continue with this scoped backlog.
+
+Human feedback 2026-11-09: **TRADE-01.4, READ-01.3, READ-01.4 and SEAL-01.2
+PASS**, with separate READ-FB-01 / WORK-FB-01 issues: frozen UI after a native
+cold distraction, inconsistent progress presentation, and hidden progress
+not reopenable for reading/drinking. Existing pending cases: 51 minus four=47;
+two scoped rechecks give **49 PENDING**. Earlier PASS and LIQ-FB-01 OPEN retained.
+The cold-choice UI lock is reproduced on the previous installed pair using
+an isolated cold fixture. [Human source and scope](docs/source/manual-reading-feedback-2026-11-09.md).
+The local client fixes are installed for normal `start.sh`: native decisions
+invalidate cached progress, closing inspection returns to the same work modal,
+and Esc-hidden progress can be reopened with I then I without replaying work.
+The previous HUD overlay is suppressed while that modal is visible.
+[Delivery and limits](docs/fixes/reading-work-feedback-2026-11-09.md),
+[exact evidence](docs/fixes/reading-work-feedback-2026-11-09-evidence.json).
+Client309/47 modules plus648 Catch assertions/4 cases and SDK21 PASS.
+Renderer checks include actual cold No/Ignore/damage decisions, drinking,
+inspection/hiding/reopening, native read save/reload and independent canonical
+readback: **163 renderer/canonical checks across six runs PASS**, including
+both repair scenarios on the installed pair. Runtime source capture
+`804628bb9fd689f5e647cb0cff6f409e0576ee22`; final regression drivers hashed
+separately. Incremental captured build, pre-existing local refactors preserved,
+no root commit/push. No new CDDA/wire/save-rule change. Existing running games
+use their original binary until relaunched. The two manual rechecks remain
+pending; Windows CWM2.26 and historical M5.5 FAILED / SAVE-001 OPEN unchanged.
+
+Second human feedback set 2026-11-08: **REST-01.4, DIS-01.4, READ-01.2 and
+TRADE-01.2 PASS**. Backlog **51 PENDING** (55 minus four), without new tests.
+These accept sleeping/disassembly save reload, actual chapter progression and
+partial native trade in the proposed scenarios; no other pending cases are
+inferred accepted. Previous human PASS and LIQ-FB-01 OPEN retained. Documentation
+only; runtime/builds and core estimate unchanged.
+[Human source](docs/source/manual-liquids-recovery-validation-2026-11-08.md#secondo-riscontro-umano-quattro-ulteriori-pass).
+
+Human feedback 2026-11-08: **SYNC-01.1, KEY-K-01.1, LIQ-01.3 and SEAL-01.4
+PASS**. Backlog **55 PENDING** (59 minus four). No runtime/build changes.
+The sync PASS does not establish that the original fault recurred; exact
+initial cause remains unknown. Separate **LIQ-FB-01 OPEN**: immediate pour,
+generic no-native-activity message and non-interactive spilled-water drop.
+Immediate carried pours can debit native moves without an activity; the
+message and ground-liquid interaction need scoped investigation, not assumed
+acceptance. [Human source](docs/source/manual-liquids-recovery-validation-2026-11-08.md).
+The then-proposed manual set REST-01.4, DIS-01.4, READ-01.2, TRADE-01.2 was
+subsequently accepted in the second set above. Dated counts remain historical.
+
+Human feedback 2026-11-02: **MENU-01.1 and UF8-01.1 PASS**, with separate
+K-crafting inspection and intermittent sleep synchronization issues. I and the
+Pause and inspect button work; one further sleep run did not reproduce the
+block. LIQ-01.3 / SEAL-01.4 remain pending. **59 PENDING** after closing two
+cases and adding KEY-K-01.1 / SYNC-01.1; prior PASS results retained.
+[Source and scope](docs/source/manual-menu-rest-validation-2026-11-02.md).
+The subsequent local source refactors and this follow-up are distinct from the
+historical CWM2.37 delivery evidence below.
+
+Previous local Linux follow-up, installed for normal `start.sh`: configured K
+now inspects and pauses active crafting through the same path as I. Connection
+recovery has a five-second monotonic wall deadline, independent of engine pause
+and repeated reset/resync state changes, followed by a two-second reconnect
+interval. Rejections and disconnections have diagnostic metadata. Native sleep
+is preserved rather than restarted; the exact cause of the reported rare
+incident remains unknown. CWM2.37 and canonical save rules are unchanged by
+these fixes. [Delivery](docs/fixes/manual-feedback-2026-11-02.md),
+[source identity and evidence](docs/fixes/manual-feedback-2026-11-02-evidence.json).
+
+Scoped checks PASS: 185 native cases /73,766 assertions; client 309 tests /47
+modules plus 648 Catch assertions /4 cases; SDK21. Two GUI scenarios pass both
+on reconstructed sources and on the installed pair: **116 renderer/canonical
+checks**, including 34 rejected snapshots per recovery run while engine-paused,
+fresh B after reconnect, frozen native time and independent native save readback.
+Incremental builds of private snapshot `e1875ce701a71dca841ef6279733ea934e43180a`,
+including pre-existing local refactors; original branch/index unchanged, no
+commit/push of those refactors. KEY-K/SYNC human rechecks remain pending.
+Mapping batch60, Windows CWM2.26, historical M5.5 FAILED / full SAVE-001 OPEN
+remain unchanged. Next core work remains essential native item uses and safe
+liquid outputs/purification, then non-demo consolidation.
+
+Previous Linux scoped delivery: **continuous action-menu presentation**,
 paired **CWM2.37**, in normal `start.sh`. Related inventory/external storage,
 native choice, crafting, progress and result screens reuse one live modal.
 Only an explicitly selected native operation releases Menu pause while its

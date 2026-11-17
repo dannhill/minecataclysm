@@ -36947,7 +36947,7 @@
   {
     "path": "src/character.cpp",
     "mode": "100644",
-    "sha256": "0448fddb6430931c614cf26a84bb16bad4206859b9dd88eb2e3f083c17e6a944"
+    "sha256": "d2382ffb6f743eb599036456e0a1108279f784309a80767a39128f013aea9053"
   },
   {
     "path": "src/character.h",
@@ -37332,7 +37332,7 @@
   {
     "path": "src/cwm/cwm_crafting.h",
     "mode": "100644",
-    "sha256": "455e4561f7336e3956bf3b599a326b2696bceca53676b8717dfd825ed0c33aca"
+    "sha256": "4aa96a22b7b1b4f4f9575334d98978f09f0640b8de102d6f9365415991f454e1"
   },
   {
     "path": "src/cwm/cwm_disassembly.h",
@@ -37347,7 +37347,7 @@
   {
     "path": "src/cwm/cwm_inventory.h",
     "mode": "100644",
-    "sha256": "8c040a14b91b887fe7d1fdbec9c08e166b992308892b0b19119455aefe501ebb"
+    "sha256": "d11a5b14bd40262e252eb596fe1814f0e52889b498f14efd8c9dcff050e4d9a8"
   },
   {
     "path": "src/cwm/cwm_liquids.h",
@@ -37357,17 +37357,17 @@
   {
     "path": "src/cwm/cwm_main.cpp",
     "mode": "100644",
-    "sha256": "cfabb493cccaf1bca7424d5956a6321e943bfb29ad4434d571277601243c913b"
+    "sha256": "3bc533a372e1c0843ac8de798c997e2e8a6a3d436ce3a28bf2a253917e7f7188"
   },
   {
     "path": "src/cwm/cwm_map_exporter.cpp",
     "mode": "100644",
-    "sha256": "cf357e1fc039d2ada4f25ec8d01bd034d7d531083ab3fa9042a28e974374a35d"
+    "sha256": "4a9a5f25dd0071363a397c2c0a860b881077cfb92d650bb34029ba5a6411b13c"
   },
   {
     "path": "src/cwm/cwm_map_exporter.h",
     "mode": "100644",
-    "sha256": "66c14f71b91c768d14a3f76a483644f776e76316e1b4f1f521cd75b3af2800ef"
+    "sha256": "cf781f6fd26fece1324625eaf4a189ac2978d9d3ad3dbbccf572b734e634020a"
   },
   {
     "path": "src/cwm/cwm_missions.h",
@@ -37402,7 +37402,7 @@
   {
     "path": "src/cwm/cwm_server.cpp",
     "mode": "100644",
-    "sha256": "8c13d09ef271e22a330045042a6fdfbca86a88e43d38d8f1a2094e2361e585ae"
+    "sha256": "c427a737d4679c6c4b3594dd78cfdc8bf7b1aa59b79f89574f381ef37ad31e8d"
   },
   {
     "path": "src/cwm/cwm_server.h",
@@ -37427,7 +37427,7 @@
   {
     "path": "src/cwm_motion.cpp",
     "mode": "100644",
-    "sha256": "174c114a9f46176354689c0f53dfb7e5ee050a81c95d3d1376d666302bedabca"
+    "sha256": "e32bfa52dc4af89529d69766a04d9a0090c041efed49eae2b80023d1f68f8faa"
   },
   {
     "path": "src/cwm_motion.h",
@@ -38087,7 +38087,7 @@
   {
     "path": "src/inventory_ui.cpp",
     "mode": "100644",
-    "sha256": "146377d318d40a552149eb70440b8f7c2cb8e95956f495b01c9ea045b39dc8cb"
+    "sha256": "b85eecc3f57262c45375903f7c1ccb6c4870abf25aee3d4d7c04afc9223b1035"
   },
   {
     "path": "src/inventory_ui.h",
@@ -40297,7 +40297,7 @@
   {
     "path": "src/trade_ui.cpp",
     "mode": "100644",
-    "sha256": "71949816da42fa9acc866c12804eb51eb6dfdc63090b0b10d0e15046c61cd129"
+    "sha256": "730c794ab95410828724da14ea49e7315212a1bf23700d33b84533c9567efb84"
   },
   {
     "path": "src/trade_ui.h",
@@ -40972,7 +40972,7 @@
   {
     "path": "tests/cwm_projection_test.cpp",
     "mode": "100644",
-    "sha256": "e74b5279e954425ddda515edad8fee40a070f8b5407d61e9cb1ba65f4af89f82"
+    "sha256": "b4d991db5a70a975dd7e9c111f712af93c49966ae285d2e35cec10b2f748b84b"
   },
   {
     "path": "tests/cwm_runtime_test.cpp",

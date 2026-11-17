@@ -64,3 +64,4 @@ class Payload(object):
     MissionTrackRequest = 58
     RestRequest = 59
     CancelLiquidTransferRequest = 60
+    CancelActivityRequest = 61

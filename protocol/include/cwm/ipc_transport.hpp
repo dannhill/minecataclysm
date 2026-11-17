@@ -1,4 +1,4 @@
-// CDDA-Mineclonia IPC Transport (POSIX Unix Domain Socket)
+// CDDA-Mineclonia IPC Transport (POSIX Unix Domain Socket — Linux, macOS, BSD)
 // Licensed under Apache-2.0
 #pragma once
 #include "ipc_limits.hpp"
@@ -8,7 +8,7 @@
 
 #include <algorithm>
 #include <cerrno>
-#include <deque>
+#include <cstring>
 #include <memory>
 #include <string>
 #include <utility>
@@ -18,20 +18,31 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <poll.h>
-#include "cwm_framing.hpp"
-#include "cwm_transport.hpp"
 #include <arpa/inet.h>
 #include <sys/stat.h>
+#include "framed_transport_base.hpp"
 
 namespace cdda::cwm {
 
+#ifdef MSG_NOSIGNAL
+constexpr int kIpcSendFlags = MSG_NOSIGNAL;
+#else
+constexpr int kIpcSendFlags = 0;
+#endif
 
 inline bool configure_ipc_fd(int fd) {
     const int flags = ::fcntl(fd, F_GETFL, 0);
     const int fdflags = ::fcntl(fd, F_GETFD, 0);
-    return flags >= 0 && fdflags >= 0 &&
-           ::fcntl(fd, F_SETFL, flags | O_NONBLOCK) == 0 &&
-           ::fcntl(fd, F_SETFD, fdflags | FD_CLOEXEC) == 0;
+    if (flags < 0 || fdflags < 0 ||
+        ::fcntl(fd, F_SETFL, flags | O_NONBLOCK) != 0 ||
+        ::fcntl(fd, F_SETFD, fdflags | FD_CLOEXEC) != 0) {
+        return false;
+    }
+#if defined(SO_NOSIGPIPE) && !defined(MSG_NOSIGNAL)
+    const int one = 1;
+    (void)::setsockopt(fd, SOL_SOCKET, SO_NOSIGPIPE, &one, sizeof(one));
+#endif
+    return true;
 }
 
 inline bool ipc_would_block(int error) {
@@ -42,79 +53,41 @@ inline bool ipc_would_block(int error) {
 #endif
 }
 
-class IpcConnection : public CwmTransport {
+class IpcConnection : public FramedTransportBase {
 public:
     explicit IpcConnection(int fd, IpcLimits limits = {}) try
-        : fd_(fd), limits_(limits), decoder_(limits.max_frame_bytes, limits.max_input_bytes) {
-        if (!limits.max_output_bytes || !limits.max_output_frames ||
-            !limits.read_bytes_per_pump || !limits.write_bytes_per_pump ||
-            !limits.frames_per_pump || !limits.dispatch_bytes_per_pump ||
-            !limits.syscalls_per_direction)
-            throw std::invalid_argument("Invalid CWM transport limits");
+        : FramedTransportBase(limits), fd_(fd) {
         if (fd_ >= 0 && !configure_ipc_fd(fd_)) close_fd(IpcCloseReason::IoError);
     } catch (...) {
         if (fd >= 0) ::close(fd);
         throw;
     }
-    ~IpcConnection() { close_fd(); }
+    ~IpcConnection() override { close_fd(); }
     IpcConnection(const IpcConnection&) = delete;
     IpcConnection& operator=(const IpcConnection&) = delete;
 
     IpcConnection(IpcConnection&& other) noexcept
-        : fd_(std::exchange(other.fd_, -1)), limits_(other.limits_),
-          decoder_(std::move(other.decoder_)), output_(std::move(other.output_)),
-          output_bytes_(std::exchange(other.output_bytes_, 0)),
-          output_offset_(std::exchange(other.output_offset_, 0)),
-          read_eof_(other.read_eof_), write_failed_(other.write_failed_),
-          dispatch_blocked_(other.dispatch_blocked_), reason_(other.reason_), work_(other.work_) {
-        other.decoder_.reset();
-    }
+        : FramedTransportBase(std::move(other)),
+          fd_(std::exchange(other.fd_, -1)) {}
+
     IpcConnection& operator=(IpcConnection&& other) noexcept {
         if (this != &other) {
             IpcConnection moved(std::move(other));
             using std::swap;
-            swap(fd_, moved.fd_); swap(limits_, moved.limits_);
-            swap(decoder_, moved.decoder_); swap(output_, moved.output_);
-            swap(output_bytes_, moved.output_bytes_); swap(output_offset_, moved.output_offset_);
-            swap(read_eof_, moved.read_eof_); swap(write_failed_, moved.write_failed_);
-            swap(dispatch_blocked_, moved.dispatch_blocked_);
-            swap(reason_, moved.reason_); swap(work_, moved.work_);
+            static_cast<FramedTransportBase&>(*this) = std::move(static_cast<FramedTransportBase&>(moved));
+            swap(fd_, moved.fd_);
         }
         return *this;
     }
 
     bool is_valid() const override { return fd_ >= 0; }
     int native_handle() const { return fd_; }
-    IpcCloseReason close_reason() const override { return reason_; }
-    size_t pending_input_bytes() const override { return decoder_.pending_bytes(); }
-    // Counts retained allocations, including the already-written part of the head frame.
-    size_t queued_output_bytes() const override { return output_bytes_; }
-    size_t queued_output_frames() const override { return output_.size(); }
-    const IpcWork& last_work() const override { return work_; }
 
     void close(IpcCloseReason reason = IpcCloseReason::LocalClose) override { close_fd(reason); }
     void close_fd(IpcCloseReason reason = IpcCloseReason::LocalClose) {
         if (fd_ >= 0 || reason != IpcCloseReason::LocalClose) reason_ = reason;
         if (fd_ >= 0) { ::close(fd_); fd_ = -1; }
-        decoder_.reset(); output_.clear(); output_bytes_ = output_offset_ = 0;
-    }
-
-    // True means accepted into the bounded FIFO, not delivered to the peer.
-    // Only poll_and_receive pumps socket writes. No peer-dependent wait here.
-    bool send_message(const uint8_t* data, size_t size) override {
-        if (!is_valid() || read_eof_ || write_failed_) return false;
-        if (!data || !size || size > limits_.max_frame_bytes) {
-            close_fd(IpcCloseReason::InvalidFrame); return false;
-        }
-        const size_t wire_size = size + sizeof(uint32_t);
-        if (output_.size() >= limits_.max_output_frames ||
-            wire_size > limits_.max_output_bytes - output_bytes_) {
-            // Never discard a delta while keeping the session apparently coherent.
-            close_fd(IpcCloseReason::OutputLimit); return false;
-        }
-        output_.push_back(FrameEncoder::encode(data, size));
-        output_bytes_ += wire_size;
-        return true;
+        reset_framed_state();
     }
 
     // Bounded nonblocking I/O when timeout_ms == 0 (both runtime callers).
@@ -143,8 +116,6 @@ public:
                            work_.read_calls < limits_.syscalls_per_direction) {
                         size_t count = std::min({sizeof(buf), decoder_.remaining_capacity(),
                             limits_.read_bytes_per_pump - work_.read_bytes});
-                        if (decoder_.pending_bytes() < 4)
-                            count = std::min(count, 4 - decoder_.pending_bytes());
                         if (!count) throw FramingError("CWM input buffer exhausted");
                         ++work_.read_calls;
                         const ssize_t n = ::recv(fd_, buf, count, 0);
@@ -170,8 +141,6 @@ public:
                 return false;
             }
             if (!read_eof_ && !write_failed_) flush_output();
-            // On a failed write retain inbound bytes until recv drains them;
-            // a large final frame may require several bounded pumps.
             return is_valid();
         } catch (const FramingError&) {
             close_fd(IpcCloseReason::InvalidFrame);
@@ -180,26 +149,6 @@ public:
     }
 
 private:
-    bool dispatch_full() const {
-        return dispatch_blocked_ || work_.delivered_frames >= limits_.frames_per_pump ||
-               work_.delivered_bytes >= limits_.dispatch_bytes_per_pump;
-    }
-    void drain(std::vector<std::vector<uint8_t>>& frames) {
-        while (!dispatch_full()) {
-            const size_t size = decoder_.next_frame_size();
-            if (!size) return;
-            // Permit one legal large frame, otherwise bound the dispatch bytes.
-            if (work_.delivered_frames && size > limits_.dispatch_bytes_per_pump - work_.delivered_bytes) {
-                dispatch_blocked_ = true;
-                return;
-            }
-            std::vector<uint8_t> payload;
-            decoder_.pop_frame(payload);
-            frames.push_back(std::move(payload));
-            ++work_.delivered_frames;
-            work_.delivered_bytes += size;
-        }
-    }
     void flush_output() {
         while (!output_.empty() && work_.written_bytes < limits_.write_bytes_per_pump &&
                work_.write_calls < limits_.syscalls_per_direction) {
@@ -207,7 +156,7 @@ private:
             const size_t count = std::min(head.size() - output_offset_,
                 limits_.write_bytes_per_pump - work_.written_bytes);
             ++work_.write_calls;
-            const ssize_t n = ::send(fd_, head.data() + output_offset_, count, MSG_NOSIGNAL);
+            const ssize_t n = ::send(fd_, head.data() + output_offset_, count, kIpcSendFlags);
             if (n > 0) {
                 output_offset_ += static_cast<size_t>(n);
                 work_.written_bytes += static_cast<size_t>(n);
@@ -217,28 +166,19 @@ private:
             } else if (n < 0 && ipc_would_block(errno)) return;
             else if (n < 0 && errno == EINTR) continue;
             else {
-                write_failed_ = true;
-                output_.clear(); output_bytes_ = output_offset_ = 0;
+                clear_output_on_write_error();
                 return;
             }
         }
     }
     int fd_{-1};
-    IpcLimits limits_;
-    FrameDecoder decoder_;
-    std::deque<std::vector<uint8_t>> output_;
-    size_t output_bytes_{0}, output_offset_{0};
-    bool read_eof_{false}, write_failed_{false};
-    bool dispatch_blocked_{false};
-    IpcCloseReason reason_{IpcCloseReason::None};
-    IpcWork work_;
 };
 
 class IpcServer : public CwmListener {
 public:
     explicit IpcServer(const std::string& socket_path, IpcLimits limits = {})
         : socket_path_(socket_path), limits_(limits) {}
-    ~IpcServer() { stop(); }
+    ~IpcServer() override { stop(); }
     bool start() override {
         stop();
         sockaddr_un addr{};
@@ -287,8 +227,8 @@ private:
 
 class IpcClient {
 public:
-    static std::unique_ptr<IpcConnection> connect_unix(const std::string& socket_path,
-                                                     int timeout_ms = 2000) {
+    static std::unique_ptr<IpcConnection> connect(const std::string& socket_path,
+                                                  int timeout_ms = 2000) {
         sockaddr_un addr{};
         if (socket_path.empty() || socket_path.size() >= sizeof(addr.sun_path)) return nullptr;
         const int fd = ::socket(AF_UNIX, SOCK_STREAM, 0);
@@ -305,6 +245,11 @@ public:
         socklen_t size = sizeof(error);
         if (::getsockopt(fd, SOL_SOCKET, SO_ERROR, &error, &size) < 0 || error) return nullptr;
         return connection;
+    }
+
+    static std::unique_ptr<IpcConnection> connect_unix(const std::string& socket_path,
+                                                       int timeout_ms = 2000) {
+        return connect(socket_path, timeout_ms);
     }
 };
 

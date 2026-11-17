@@ -1,0 +1,342 @@
+{
+  "status": "SCOPED_AUTOMATED_PASS; human REST-01.1 remains FAIL pending retry",
+  "date": "2026-11-15",
+  "protocol": "CWM2.37 unchanged",
+  "source": {
+    "commit": "aaa88d1eed4b6edf59816779f4f98782e60120a3",
+    "source": "artifacts/rest-rate-feedback-20261115/source-final",
+    "original_head": "0a41352e5c04d3dc9d599c662c93a501d1772f86",
+    "files": 808,
+    "scope": "Tracked current working files plus explicit source directories, preserving pre-existing changes. User branch/index/HEAD untouched. Private history file excluded."
+  },
+  "manifest": {
+    "format_version": 1,
+    "repositories": {
+      "cdda": {
+        "url": "https://github.com/CleverRaven/Cataclysm-DDA.git",
+        "commit": "2478ae876eb1439be387d0e117808d33c9d6afa4",
+        "shallow": true,
+        "patch": "baseline/patches/cdda.patch",
+        "patch_sha256": "669d417837965776cb6acb22cd1e068c2ef44aff421a8a5f7ec04b5b79a1c0f5",
+        "tree_inventory": "baseline/trees/cdda.json",
+        "tree_sha256": "f30801443388b0bb10c2457b4759729a487a4915280752ac74c464031d7a523d",
+        "file_count": 8601,
+        "original_status": " M CMakeLists.txt\n M src/CMakeLists.txt\n M src/activity_actor.cpp\n M src/avatar.cpp\n M src/avatar_action.cpp\n M src/avatar_action.h\n M src/character.cpp\n M src/character_body.cpp\n M src/character_inventory.cpp\n M src/craft_command.cpp\n M src/craft_command.h\n M src/crafting.cpp\n M src/crafting.h\n M src/creature.cpp\n M src/dialogue_win.cpp\n M src/dialogue_win.h\n M src/do_turn.cpp\n M src/do_turn.h\n M src/filesystem.cpp\n M src/game.cpp\n M src/game.h\n M src/game_inventory.cpp\n M src/handle_action.cpp\n M src/handle_liquid.cpp\n M src/iexamine.cpp\n M src/inventory.cpp\n M src/inventory.h\n M src/inventory_ui.cpp\n M src/item.cpp\n M src/iuse_actor.cpp\n M src/melee.cpp\n M src/monster.cpp\n M src/npctalk.cpp\n M src/npctrade.cpp\n M src/output.cpp\n M src/pickup.cpp\n M src/player_activity.h\n M src/popup.cpp\n M src/ranged.cpp\n M src/ranged.h\n M src/recipe.cpp\n M src/recipe.h\n M src/requirements.cpp\n M src/sounds.cpp\n M src/string_input_popup.cpp\n M src/trade_ui.cpp\n M src/trade_ui.h\n M src/translations.cpp\n M src/ui.cpp\n M src/vehicle_use.cpp\n M src/vpart_position.h\n M src/wincurse.cpp\n M tests/CMakeLists.txt\n M tests/melee_test.cpp\n M tests/test_main.cpp\n?? src/cwm/cwm_companions.h\n?? src/cwm/cwm_conversation.h\n?? src/cwm/cwm_crafting.h\n?? src/cwm/cwm_disassembly.h\n?? src/cwm/cwm_hotbar.h\n?? src/cwm/cwm_inventory.h\n?? src/cwm/cwm_liquids.h\n?? src/cwm/cwm_main.cpp\n?? src/cwm/cwm_map_exporter.cpp\n?? src/cwm/cwm_map_exporter.h\n?? src/cwm/cwm_missions.h\n?? src/cwm/cwm_presentation.h\n?? src/cwm/cwm_ranged.h\n?? src/cwm/cwm_reading.h\n?? src/cwm/cwm_rest.h\n?? src/cwm/cwm_seals.h\n?? src/cwm/cwm_server.cpp\n?? src/cwm/cwm_server.h\n?? src/cwm/cwm_status_gauges.h\n?? src/cwm/cwm_trade.h\n?? src/cwm/cwm_windows.rc\n?? src/cwm_motion.cpp\n?? src/cwm_motion.h\n?? src/external_conversation.h\n?? src/external_liquids.h\n?? src/external_trade.h\n?? src/safe_mode_actions.h\n?? tests/cwm_pickup_test.cpp\n?? tests/cwm_projection_test.cpp\n?? tests/cwm_runtime_test.cpp\n"
+      },
+      "luanti": {
+        "url": "https://github.com/luanti-org/luanti.git",
+        "commit": "568f7a8e8fb457c7b7bcfd3211c7f3f0481ed2e7",
+        "shallow": true,
+        "patch": "baseline/patches/luanti.patch",
+        "patch_sha256": "1620552115a496d8645c313ff97faea48d4c5fb46f5d27cd71899b49455975be",
+        "tree_inventory": "baseline/trees/luanti.json",
+        "tree_sha256": "bbabe7f752cf223a94505ef10b2fcc05b1f9b4e49933d99832ce64ac3584822f",
+        "file_count": 2272,
+        "original_status": " M builtin/mainmenu/settings/dlg_settings.lua\n M builtin/settingtypes.txt\n M src/CMakeLists.txt\n M src/client/CMakeLists.txt\n M src/client/camera.cpp\n M src/client/camera.h\n M src/client/client.cpp\n M src/client/clientenvironment.cpp\n M src/client/content_cao.cpp\n M src/client/game.cpp\n M src/client/hud.cpp\n M src/client/inputhandler.cpp\n M src/client/keys.h\n M src/client/mesh_generator_thread.cpp\n M src/client/mesh_generator_thread.h\n M src/defaultsettings.cpp\n M src/filesys.cpp\n M src/gettext.cpp\n M src/gettext.h\n M src/gui/guiFormSpecMenu.cpp\n M src/gui/guiFormSpecMenu.h\n M src/gui/guiScene.cpp\n M src/network/clientpackethandler.cpp\n M src/server/player_sao.cpp\n M src/unittest/test_mapblock.cpp\n M src/util/string.cpp\n?? builtin/mainmenu/settings/product_languages.lua\n?? src/cdda/action_menu.h\n?? src/cdda/aim_input.h\n?? src/cdda/avatar_status.h\n?? src/cdda/cdda_bridge.cpp\n?? src/cdda/cdda_bridge.h\n?? src/cdda/connection_watchdog.h\n?? src/cdda/crafting_inventory.h\n?? src/cdda/creature_visual.h\n?? src/cdda/decision_dialog.h\n?? src/cdda/decision_input.h\n?? src/cdda/decision_model.h\n?? src/cdda/decision_text.h\n?? src/cdda/equipment_inventory.h\n?? src/cdda/ground_item_formspec.h\n?? src/cdda/ground_item_projection.h\n?? src/cdda/ground_item_visual.h\n?? src/cdda/humanoid_animation.h\n?? src/cdda/mission_journal.h\n?? src/cdda/posture_input.h\n?? src/cdda/presentation_theme.h\n?? src/cdda/quickbar.h\n?? src/cdda/trade_dialog.h\n"
+      },
+      "mineclonia": {
+        "url": "https://github.com/mark-wiemer/mineclonia.git",
+        "commit": "209ec2dc96adbf7f5ba083816d90596492ec53b5",
+        "shallow": true,
+        "patch": "baseline/patches/mineclonia.patch",
+        "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "tree_inventory": "baseline/trees/mineclonia.json",
+        "tree_sha256": "3fb0713d18c8b865b426b617b3eb02fd24bf4497a22d1790a6171c7ceb787e36",
+        "file_count": 9359,
+        "original_status": ""
+      }
+    }
+  },
+  "baseline_check": {
+    "path": "artifacts/rest-rate-feedback-20261115/baseline-check-final.log",
+    "sha256": "c949bb433596171b54fc5b1574b4790aa0b10ffe05062466be86f503fe7fa1d6"
+  },
+  "source_scope": "Runtime snapshot includes pre-existing local changes. Root HEAD unchanged; no root commit/push. Incremental builds in refreshed owned reconstructions; not a cold conformance build.",
+  "refreshes": [
+    {
+      "path": "artifacts/rest-rate-feedback-20261115/refresh-native.json",
+      "sha256": "ad553465bd36d9d5f8d5eb09051a38796f51c702e87a9cb73d93c3691d0d4759"
+    },
+    {
+      "path": "artifacts/rest-rate-feedback-20261115/refresh-client.json",
+      "sha256": "d802d411415ae0bd2f0b1149a65cea0b814eb61c63ff2cdc5da8430215a8b9ec"
+    }
+  ],
+  "installation": {
+    "native": {
+      "source": "artifacts/fnd03-session/workspace/cdda/build/src/cdda-server",
+      "installed": "cdda/build/src/cdda-server",
+      "previous": "artifacts/rest-rate-feedback-20261115/previous-installed-cdda-server",
+      "sha256": "8d7ccfc723ceed4b3095918d75b5960a289de20b59447c89155e71db62952a4f",
+      "previous_sha256": "73b0e71b27fdceb70d8708c87ffc95d0c39933ff2da7e91269fba0485b9fad97"
+    },
+    "client": {
+      "installed": "luanti/bin/luanti",
+      "sha256": "57be307090c5b9cded613ecb2205ab627e7dfeb31a074793b6cdfa6ba77a3812",
+      "unchanged": true
+    },
+    "atomic_replace": true
+  },
+  "build": {
+    "path": "artifacts/rest-rate-feedback-20261115/build-native.log",
+    "sha256": "c2ae85da1a1ee5f0e68e0b15673800991aacbc6977b1f4ae981023ffcd2d1c5d"
+  },
+  "native_tests": {
+    "cases": 186,
+    "assertions": 74099,
+    "log": {
+      "path": "artifacts/rest-rate-feedback-20261115/native-tests.log",
+      "sha256": "b98cd502d42cfb4d00153ae0e501236860ffb3f28b01a9aae26ab1e922a8f805"
+    },
+    "filter": "[cwm],[reading]~[.],[melee]~[.],[ranged]~[.],[disassembly]~[.],[npc_talk]~[.],[mission]",
+    "rng_seed": 42
+  },
+  "protocol_tests": {
+    "passed": 21,
+    "log": {
+      "path": "artifacts/rest-rate-feedback-20261115/protocol-tests.log",
+      "sha256": "b4e3d8ae31a94e2c16cb7593dee111d05dfdd58005a8344011834ed1693394ec"
+    }
+  },
+  "renderer": {
+    "checks_total": 130,
+    "runs": [
+      {
+        "name": "rate-half",
+        "checks": 25,
+        "runner": {
+          "path": "artifacts/rest-rate-feedback-20261115/rate-half-runner-result.json",
+          "sha256": "1f25775a690e51e5b1a2cac948f3373859ccb9d6834cef54950a4cfb3d392201"
+        },
+        "summary": {
+          "path": "artifacts/rest-rate-feedback-20261115/rate-half/summary.json",
+          "sha256": "0128682bc3fff97eb2a4ae13e85591cb7c22ba7920e4ef5945dae9b79698b659"
+        },
+        "wire": {
+          "path": "artifacts/rest-rate-feedback-20261115/rate-half/server-wire.bin",
+          "sha256": "883ba233b257ad94553ae4fa2a5875b11089b2bf5c3d5a872fbe4d15b6bed138"
+        },
+        "trace": {
+          "path": "artifacts/rest-rate-feedback-20261115/rate-half/camera.csv",
+          "sha256": "394a8936db5fc11366ca7be4fbe87beb2d6badc1683d33503cc721851a7edb4b"
+        },
+        "canonical_readback": {
+          "path": "artifacts/rest-rate-feedback-20261115/rate-half/native.json",
+          "sha256": "5adba8e144c0c773504b82a508f98ed0fd27ab460815590a12fe38c000cd1522"
+        },
+        "installed_pair": false
+      },
+      {
+        "name": "rate-one",
+        "checks": 25,
+        "runner": {
+          "path": "artifacts/rest-rate-feedback-20261115/rate-one-runner-result.json",
+          "sha256": "6dede1353aa326db8037adc4b42d507ba98232f97ebcc8a24ad02618c33cf235"
+        },
+        "summary": {
+          "path": "artifacts/rest-rate-feedback-20261115/rate-one/summary.json",
+          "sha256": "4a5e7baad7bd8b7416f5ac47fb93b4389b216e17a72a7b4b3e2b211fbaba2c57"
+        },
+        "wire": {
+          "path": "artifacts/rest-rate-feedback-20261115/rate-one/server-wire.bin",
+          "sha256": "6ddff74616e2e50de271bd2a5f4ac7d3905c22af9543947e9997a8922a8e9696"
+        },
+        "trace": {
+          "path": "artifacts/rest-rate-feedback-20261115/rate-one/camera.csv",
+          "sha256": "9e521665fb70a4053230d5a4c936cec30b2ea92188028c552c1d1cd0d25d6c85"
+        },
+        "canonical_readback": {
+          "path": "artifacts/rest-rate-feedback-20261115/rate-one/native.json",
+          "sha256": "58fa316fdd9a414c3521cabaa23eccb0a51e0e8e7990638fcbaca01a85f7986e"
+        },
+        "installed_pair": false
+      },
+      {
+        "name": "rate-two",
+        "checks": 25,
+        "runner": {
+          "path": "artifacts/rest-rate-feedback-20261115/rate-two-runner-result.json",
+          "sha256": "9d5dc7d241422476229c5f4fc577bfd6f7a76c03c1ffff0822d7b9fb5880364d"
+        },
+        "summary": {
+          "path": "artifacts/rest-rate-feedback-20261115/rate-two/summary.json",
+          "sha256": "b92f22a4f679d1532882474df5c7bd67f23256389fc63433ec35cb10520c8ff0"
+        },
+        "wire": {
+          "path": "artifacts/rest-rate-feedback-20261115/rate-two/server-wire.bin",
+          "sha256": "e24214a4813b50a16cf784730b05c56cf286871c43f4156fed401f402ae8703e"
+        },
+        "trace": {
+          "path": "artifacts/rest-rate-feedback-20261115/rate-two/camera.csv",
+          "sha256": "301046dc5205c8aa3a7e18ecab365182536790d5ed87f0ae5e8dd0dbe7ecfa16"
+        },
+        "canonical_readback": {
+          "path": "artifacts/rest-rate-feedback-20261115/rate-two/native.json",
+          "sha256": "67f869f1ccf7e05df14bdc97cebfc7c9d6b04fc93f8c55e43e4ee5464da0a7b8"
+        },
+        "installed_pair": false
+      },
+      {
+        "name": "rate-four",
+        "checks": 25,
+        "runner": {
+          "path": "artifacts/rest-rate-feedback-20261115/rate-four-runner-result.json",
+          "sha256": "09c021723d415cc294af185c8edbeaf437f37b764bc31c4f29fe461b5995196b"
+        },
+        "summary": {
+          "path": "artifacts/rest-rate-feedback-20261115/rate-four/summary.json",
+          "sha256": "171134c5786d5531c86ce71b56771865a174bfd8dc8aec073b091e435d7d199b"
+        },
+        "wire": {
+          "path": "artifacts/rest-rate-feedback-20261115/rate-four/server-wire.bin",
+          "sha256": "fbbb4503fff4e2e3941a75e74feac72ef39e2099914679057ed0c8929748977d"
+        },
+        "trace": {
+          "path": "artifacts/rest-rate-feedback-20261115/rate-four/camera.csv",
+          "sha256": "c9eae47259ddc46519129c6e9376954b563c7ee152d580c5ec20a14700fbe838"
+        },
+        "canonical_readback": {
+          "path": "artifacts/rest-rate-feedback-20261115/rate-four/native.json",
+          "sha256": "f548aeadc0ef04b313ca9d00bdbdb00d4e5ed1c3ab3c46a3c6ab4a9f4715c4e5"
+        },
+        "installed_pair": false
+      },
+      {
+        "name": "recovered-failed-save",
+        "checks": 15,
+        "runner": {
+          "path": "artifacts/rest-rate-feedback-20261115/recovered-failed-save-runner-result.json",
+          "sha256": "99dd0c412f1689b6ad7c72034237ee9ec58f8f9ab4a4b1e93bcb709d16a7f2f4"
+        },
+        "summary": {
+          "path": "artifacts/rest-rate-feedback-20261115/recovered-failed-save/summary.json",
+          "sha256": "88c4275e733b48d937eec09929b589083fa6fa8383e104c3107ad424a98ccea3"
+        },
+        "wire": {
+          "path": "artifacts/rest-rate-feedback-20261115/recovered-failed-save/server-wire.bin",
+          "sha256": "acce486fa03962fbd50fccc05736e6e3b671b3fe9284dc68eceab6e3c981ce32"
+        },
+        "trace": {
+          "path": "artifacts/rest-rate-feedback-20261115/recovered-failed-save/camera.csv",
+          "sha256": "586c52893f794e12c7c62f2cb855be378a6c9fd1bc171835d7d06fd65efaf032"
+        },
+        "canonical_readback": {
+          "path": "artifacts/rest-rate-feedback-20261115/recovered-failed-save/native.json",
+          "sha256": "491ac606968b3a580173fe08ab8186a160aaa769ac122be3c010a83a936b6acb"
+        },
+        "installed_pair": false
+      },
+      {
+        "name": "installed-recovery",
+        "checks": 15,
+        "runner": {
+          "path": "artifacts/rest-rate-feedback-20261115/installed-recovery-runner-result.json",
+          "sha256": "0a392fb25da8560e4f548c6207c71561b5847c43600456445a42b13d93155126"
+        },
+        "summary": {
+          "path": "artifacts/rest-rate-feedback-20261115/installed-recovery/summary.json",
+          "sha256": "a13105acd8d887d38eac28cd035c37aaeb59c2866f05c08bb1794803f170753e"
+        },
+        "wire": {
+          "path": "artifacts/rest-rate-feedback-20261115/installed-recovery/server-wire.bin",
+          "sha256": "cffacf930c6a80f829cabd0e72dc6ec7737723c8f3e554b8e66d7afdd5ae113c"
+        },
+        "trace": {
+          "path": "artifacts/rest-rate-feedback-20261115/installed-recovery/camera.csv",
+          "sha256": "cadb1b279127f202c630fd9d6268c1ec888523e5ec99a37941ad64af87427064"
+        },
+        "canonical_readback": {
+          "path": "artifacts/rest-rate-feedback-20261115/installed-recovery/native.json",
+          "sha256": "f2bfe500c313dc584b7f7b3191a91290f67b55caf8a276edd3fff7ac80c6f183"
+        },
+        "installed_pair": true
+      }
+    ],
+    "independent_reader": {
+      "path": "artifacts/playtest-feedback-20261025/native-save-reader-final",
+      "sha256": "6a94c8e6ead08981df06ebcd6b4adc07b36c79c96932e0b78af51c07d938e033"
+    },
+    "driver": {
+      "path": "tests/rest_gui_test.py",
+      "sha256": "d8fb816ff7d83eb9ff5d9d5ea47cbb1c1b389efb450a740a1830e5a5e87f4e66"
+    },
+    "recovery_driver": {
+      "path": "artifacts/rest-rate-feedback-20261115/recover-failed-save.py",
+      "sha256": "f9fac563fc67c254fc81c35111fce32a27747e21789e9c067f53e95e96fe80cc"
+    },
+    "projection_diagnostics": {
+      "path": "artifacts/rest-rate-feedback-20261115/projection-diagnostics.json",
+      "sha256": "b83c3cecf701d33ace155bd2986611c6c5b604773f0828a807bbe19cb0bbd304"
+    },
+    "measured_rates": {
+      "path": "artifacts/rest-rate-feedback-20261115/measured-rates.json",
+      "sha256": "0cbf8de4d4fef0c48eae2acfa6bb56daff539241ea2082b6f0a6438e190175e5"
+    }
+  },
+  "before_failure": {
+    "runner": {
+      "path": "artifacts/rest-rate-feedback-20261115/before-failed-save-runner-result.json",
+      "sha256": "8717429609ceee8fd7be07cafdaafd36265ec2d1f609119295528e93d19a6138"
+    },
+    "wire": {
+      "path": "artifacts/rest-rate-feedback-20261115/before-failed-save/server-wire.bin",
+      "sha256": "608666aad4be33e61bdffbbc9d00859c9b857abbd0aa571c6ba7876b0622539d"
+    },
+    "native_sha256": "73b0e71b27fdceb70d8708c87ffc95d0c39933ff2da7e91269fba0485b9fad97",
+    "source_world_copied_only": "artifacts/rest-demo/session-h6sd_sq6/user",
+    "initial_snapshot": {
+      "actors": 17,
+      "rest": "WAITING",
+      "rate": 1024,
+      "nonplayer_motion_seconds": 0.0009765625,
+      "contract_minimum": 0.01
+    },
+    "expected_failure": "Invalid actor duration in first full snapshot, repeated recovery cannot install it. Diagnostic line425; actual renderer never reaches ready."
+  },
+  "excluded_exploration": [
+    "before-rest-default and before-rest-default-2: wrong fixture parent rather than fixture/user; missing config / generated-world attempt, not native rest-fixture evidence.",
+    "before-rest-repro and before-rest-hold: wrong fixture level generated a new character with alarm/watch; harness failed on different native wait menus. Excluded.",
+    "before-rate-two-breath: proper native breath recovery completed at1024x between trace frames; driver incorrectly required observing transient rest_phase. Corrected regression observes authoritative wire state.",
+    "before-rest-fixture and before-rate-half: old pair passed no-creature cases; these do not disprove the user failure."
+  ],
+  "task_patch": {
+    "path": "artifacts/rest-rate-feedback-20261115/task-only.patch",
+    "sha256": "8a1b065d3fc10fb27683a82b027c8bb697ee625f5977e5f9e2ca7b0cfb3c9f95"
+  },
+  "human_validation": {
+    "pass": [
+      "direct loose-stack pickup2",
+      "JOURNAL-01.2",
+      "DIS-01.2"
+    ],
+    "fail": [
+      "REST-01.1"
+    ],
+    "pending": 35,
+    "unresolved_total": 36,
+    "new_tests": 0,
+    "decomposition_pending": {
+      "explicit_feature_cases": 9,
+      "legacy_cases": 26
+    },
+    "next_order": [
+      "REST-01.1",
+      "JOURNAL-01.3",
+      "NPC-01.2",
+      "LANG-02.1"
+    ],
+    "agent_automation_does_not_grant_human_acceptance": true
+  },
+  "environment": {
+    "platform": "Linux-7.0.11-76070011-generic-x86_64-with-glibc2.35",
+    "compiler": "c++ (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0",
+    "renderer": "Private Xvfb1280x800, llvmpipe, OpenALnull; isolated saves/configs"
+  },
+  "limitations": [
+    "No original user world modified. Only copied saves used.",
+    "Ordinary rate correlation alone is not proof of every possible cause of synchronization failures; this report fixes the captured accelerated-rest actor-duration defect.",
+    "Client unchanged and matches the Nov9 tested binary; no unnecessary client rebuild.",
+    "Native rules, clock scale, protocol limits and canonical format unchanged.",
+    "Full SAVE-001 OPEN, historical M5.5 FAILED, Windows old package and unrelated backlog remain."
+  ]
+}

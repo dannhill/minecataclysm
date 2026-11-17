@@ -116,21 +116,49 @@ public:
         auto req = CDDA::CWM::CreateRangedRequest(fbb_, id, weapon, target, action);
         return finish_message(CDDA::CWM::Payload::RangedRequest, req.Union());
     }
+    std::vector<uint8_t> build_cancel_activity(uint64_t id, uint64_t token, CDDA::CWM::ActivityKind kind) {
+        using CDDA::CWM::ActivityKind;
+        switch (kind) {
+            case ActivityKind::CONSUME:
+                return finish_message(CDDA::CWM::Payload::CancelConsumptionRequest,
+                    CDDA::CWM::CreateCancelConsumptionRequest(fbb_, id, token).Union());
+            case ActivityKind::FIRST_AID:
+                return finish_message(CDDA::CWM::Payload::CancelFirstAidRequest,
+                    CDDA::CWM::CreateCancelFirstAidRequest(fbb_, id, token).Union());
+            case ActivityKind::CRAFT:
+                return finish_message(CDDA::CWM::Payload::CancelCraftingRequest,
+                    CDDA::CWM::CreateCancelCraftingRequest(fbb_, id, token).Union());
+            case ActivityKind::RELOAD:
+                return finish_message(CDDA::CWM::Payload::CancelReloadRequest,
+                    CDDA::CWM::CreateCancelReloadRequest(fbb_, id, token).Union());
+            case ActivityKind::ITEM_TRANSFER:
+                return finish_message(CDDA::CWM::Payload::CancelItemTransferRequest,
+                    CDDA::CWM::CreateCancelItemTransferRequest(fbb_, id, token).Union());
+            case ActivityKind::READ:
+                return finish_message(CDDA::CWM::Payload::CancelReadingRequest,
+                    CDDA::CWM::CreateCancelReadingRequest(fbb_, id, token).Union());
+            case ActivityKind::DISASSEMBLE:
+                return finish_message(CDDA::CWM::Payload::CancelDisassemblyRequest,
+                    CDDA::CWM::CreateCancelDisassemblyRequest(fbb_, id, token).Union());
+            case ActivityKind::LIQUID_TRANSFER:
+                return finish_message(CDDA::CWM::Payload::CancelLiquidTransferRequest,
+                    CDDA::CWM::CreateCancelLiquidTransferRequest(fbb_, id, token).Union());
+            default:
+                return finish_message(CDDA::CWM::Payload::CancelActivityRequest,
+                    CDDA::CWM::CreateCancelActivityRequest(fbb_, id, token, kind).Union());
+        }
+    }
     std::vector<uint8_t> build_cancel_reload(uint64_t id, uint64_t token) {
-        auto req = CDDA::CWM::CreateCancelReloadRequest(fbb_, id, token);
-        return finish_message(CDDA::CWM::Payload::CancelReloadRequest, req.Union());
+        return build_cancel_activity(id, token, CDDA::CWM::ActivityKind::RELOAD);
     }
     std::vector<uint8_t> build_cancel_liquid_transfer(uint64_t id, uint64_t token) {
-        return finish_message(CDDA::CWM::Payload::CancelLiquidTransferRequest,
-            CDDA::CWM::CreateCancelLiquidTransferRequest(fbb_,id,token).Union());
+        return build_cancel_activity(id, token, CDDA::CWM::ActivityKind::LIQUID_TRANSFER);
     }
     std::vector<uint8_t> build_cancel_disassembly(uint64_t id, uint64_t token) {
-        auto req = CDDA::CWM::CreateCancelDisassemblyRequest(fbb_, id, token);
-        return finish_message(CDDA::CWM::Payload::CancelDisassemblyRequest, req.Union());
+        return build_cancel_activity(id, token, CDDA::CWM::ActivityKind::DISASSEMBLE);
     }
     std::vector<uint8_t> build_cancel_reading(uint64_t id, uint64_t token) {
-        auto req = CDDA::CWM::CreateCancelReadingRequest(fbb_, id, token);
-        return finish_message(CDDA::CWM::Payload::CancelReadingRequest, req.Union());
+        return build_cancel_activity(id, token, CDDA::CWM::ActivityKind::READ);
     }
     std::vector<uint8_t> build_trade_offer(uint64_t request, uint64_t trade, uint64_t quote, uint32_t item, int quantity) {
         return finish_message(CDDA::CWM::Payload::TradeOfferRequest,CDDA::CWM::CreateTradeOfferRequest(fbb_,request,trade,quote,item,quantity).Union());
@@ -164,8 +192,7 @@ public:
         return finish_message(CDDA::CWM::Payload::CraftingRequest, request.Union());
     }
     std::vector<uint8_t> build_cancel_crafting(uint64_t id, uint64_t token) {
-        const auto request = CDDA::CWM::CreateCancelCraftingRequest(fbb_, id, token);
-        return finish_message(CDDA::CWM::Payload::CancelCraftingRequest, request.Union());
+        return build_cancel_activity(id, token, CDDA::CWM::ActivityKind::CRAFT);
     }
     std::vector<uint8_t> build_item_transfer(uint64_t command, uint64_t view, uint32_t item,
             int quantity, uint32_t destination, CDDA::CWM::ItemTransferAction action) {
@@ -173,8 +200,7 @@ public:
         return finish_message(CDDA::CWM::Payload::ItemTransferRequest, request.Union());
     }
     std::vector<uint8_t> build_cancel_item_transfer(uint64_t command, uint64_t token) {
-        auto request = CDDA::CWM::CreateCancelItemTransferRequest(fbb_, command, token);
-        return finish_message(CDDA::CWM::Payload::CancelItemTransferRequest, request.Union());
+        return build_cancel_activity(command, token, CDDA::CWM::ActivityKind::ITEM_TRANSFER);
     }
     std::vector<uint8_t> build_inventory_query(uint64_t query_id, const CDDA::CWM::Coord3i* external = nullptr) {
         const auto request = CDDA::CWM::CreateInventoryQueryRequest(fbb_, query_id, external);
@@ -187,13 +213,11 @@ public:
     }
 
     std::vector<uint8_t> build_cancel_first_aid(uint64_t command_id, uint64_t token) {
-        const auto request = CDDA::CWM::CreateCancelFirstAidRequest(fbb_, command_id, token);
-        return finish_message(CDDA::CWM::Payload::CancelFirstAidRequest, request.Union());
+        return build_cancel_activity(command_id, token, CDDA::CWM::ActivityKind::FIRST_AID);
     }
 
     std::vector<uint8_t> build_cancel_consumption(uint64_t command_id, uint64_t token) {
-        const auto request = CDDA::CWM::CreateCancelConsumptionRequest(fbb_, command_id, token);
-        return finish_message(CDDA::CWM::Payload::CancelConsumptionRequest, request.Union());
+        return build_cancel_activity(command_id, token, CDDA::CWM::ActivityKind::CONSUME);
     }
     std::vector<uint8_t> build_command_ack(uint64_t command_id, bool accepted, const std::string& err_msg = "", uint64_t result_revision = 0) {
         auto err = fbb_.CreateString(err_msg);

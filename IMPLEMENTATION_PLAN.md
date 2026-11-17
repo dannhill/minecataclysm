@@ -10,6 +10,170 @@ un panorama più ampio; nebbia, memoria distante e rilievo restano da scegliere.
 Lo [stato implementato](IMPLEMENTATION_STATUS.md) e le evidenze restano separati
 dagli obiettivi. La roadmap originale M0–M9 conserva i propri significati.
 
+## Quarto riscontro e prossimo giro — 2026-11-17
+
+READ-FB-01.1, finestra/tende, immersione e oggetto impugnato PASS umani.
+**21 PENDING**. La Glock ha ancora il segnaposto da arma generica e uno
+scatto poco marcato. Annotato per il seguito della presentazione di armi.
+Prossime prove: credito insufficiente, contenuto e stato vuoto del diario,
+modello dello zombie e feedback audio. Per le prime due si usano copie
+delle scene predisposte in locale.
+[Istruzioni e chiarimento mira/tiro](docs/source/manual-priority-tests-2026-11-17-followup.md#quarto-riscontro-e-prossimo-giro).
+
+## Terzo riscontro e prossime prove — 2026-11-17
+
+COMP-01.1, ricerca/cursore (ricontrollo 1), UX-05.2 e modello del giocatore
+(punto 3) PASS umani. **25 PENDING**. Prima verificare la risposta al freddo
+durante un lavoro e il comando dedicato a finestra/tende. Seguono segnale
+di immersione e visualizzazione dell'oggetto impugnato, prima delle prove
+più ampie di feedback.
+[Passi e risultati attesi](docs/source/manual-priority-tests-2026-11-17-followup.md#terzo-riscontro-e-quattro-prove-successive).
+
+## Secondo riscontro e chiarezza delle istruzioni — 2026-11-17
+
+NPC-01.1, TRADE-01.1 e NPC-01.4 PASS umani: **29 PENDING**. COMP-01.1 non
+eseguito perché poco chiaro, non FAIL. [Fonte e passi riscritti](docs/source/manual-priority-tests-2026-11-17-followup.md).
+Preservare la richiesta del developer in AGENTS.md: comando esatto, azioni
+ordinate, risultato visibile e distinzione fra consultazione e modifica.
+Prossimo gruppo: COMP-01.1 rispiegato, ricerca dinamica post-gate1, UX-05.2,
+modello giocatore/anteprima3. Nessun nuovo caso o modifica di runtime/build.
+Preparare prima le scene dei casi non ancora deterministici: credito negativo,
+distrazione da freddo e diario veramente vuoto dopo caricamento nativo.
+REST-FB-02 e MENU-TOGGLE-01 restano separati. Non aumentare stima core o
+certificazioni automaticamente per questi PASS.
+
+## Riscontro e prossimo ordine per dipendenze — 2026-11-17
+
+REST-01.1, JOURNAL-01.3, NPC-01.2 e LANG-02.1 PASS umani: chiuso il FAIL del
+riposo, **32 PENDING**, nessun nuovo caso. [Fonte e istruzioni](docs/source/manual-priority-tests-2026-11-17.md).
+Prossimo ordine: NPC-01.1 → TRADE-01.1 → COMP-01.1 → NPC-01.4: ingresso,
+annullamento senza effetti, consultazione e infine persistenza del dialogo.
+REST-FB-02 OPEN separato: distinguere PLAY1x da REST1x e misurare debito,
+pausa e movimento/rilascio dopo il recupero; non dichiarare un cooldown normale.
+MENU-TOGGLE-01 TODO/proposta UX: J/K aprono e richiudono i propri pannelli,
+proteggendo ricerca con focus, auto-repeat, binding e proprietà delle pause;
+nessuna cancellazione implicita del lavoro o risposta a una decisione nativa.
+Non implementato da questa registrazione; eventuale ricontrollo alla consegna.
+Runtime, salvataggi e stima core invariati; i commenti OPEN non sono PASS impliciti.
+
+## Secondo riscontro e ordine per dipendenze — 2026-11-15
+
+REST-01.1 FAIL ripetibile a0.5x/1x/2x; I e B funzionano separatamente.
+Raccolta sfusa punto2, JOURNAL-01.2 e DIS-01.2 PASS umani: **35 PENDING
++1 FAIL**,36 punti aperti. [Fonte](docs/source/manual-priority-tests-2026-11-15.md#secondo-riscontro-umano-e-cambio-di-priorità).
+Prima il gate tempo/sincronizzazione, poi proprietà delle pause/menu, poi
+consultazioni/azioni che dipendono da quelle fondamenta. Non riproporre prove
+a valle di un prerequisito fallito; non chiudere il FAIL con soli test automatici.
+Corretto e installato il difetto riprodotto: durate di interpolazione delle
+creature sotto il limite del protocollo durante riposo accelerato. Solo
+presentazione; native186/74.099 asserzioni, SDK21 e130 verifiche renderer/canoniche
+in6 run PASS. [Consegna](docs/fixes/rest-rate-feedback-2026-11-15.md).
+Ordine personale: REST-01.1 → JOURNAL-01.3 → NPC-01.2 → LANG-02.1. Il FAIL resta
+aperto fino al ricontrollo umano; stima core e altri gate non vengono promossi.
+
+## Stima richiesta: core minimo anche testato — 2026-11-15
+
+[Stima e criteri di chiusura](docs/progress/core-outlook-2026-11-15.md): **85–90%**
+per il core minimo Linux con verifica finale inclusa; la precedente stima di
+presenza funzionale intorno al95% escludeva quella chiusura. **39 PENDING**
+invariati. Restano usi essenziali, output liquidi/purificazione sicuri, LIQ-FB-01
+e consolidamento del ciclo normale con gate salvataggi/recovery e prestazioni.
+Budget indicativo4–7 interventi tecnici sostanziali e2–4 cicli di riscontro/fix,
+con incertezza sui difetti strutturali. Non è una nuova certificazione, un
+incremento automatico per i PASS o una scadenza. Windows va allineato separatamente.
+
+## Validazioni compagni, dialoghi e libri — 2026-11-15
+
+COMP-01.3, COMP-01.4, NPC-01.3 e READ-01.1 PASS umani: **39 PENDING**, nessun
+nuovo test o FAIL. [Fonte e richiesta UX](docs/source/manual-priority-tests-2026-11-15.md#riscontro-umano-del-giro).
+**NPC-SCROLL-01 TODO:** dopo la scelta di una risposta, portare lo storico
+del dialogo all'ultima interazione. Conservare l'ispezione dei messaggi vecchi
+mentre si legge; agganciare il fondo all'arrivo della nuova interazione scelta.
+Intervento di presentazione, distinto dalla logica di dialogo/effetti nativi;
+questa registrazione non dichiara una sua implementazione.
+Prossime quattro prove esistenti: REST-01.1, raccolta sfusa di una pila2,
+JOURNAL-01.2, DIS-01.2. Nessuna modifica a runtime, build o stima core.
+
+## Secondo giro di validazioni — 2026-11-11
+
+LANG-02.2, DIS-01.1, JOURNAL-01.4 e COMP-01.2 hanno il PASS umano: **43 PENDING**,
+nessun nuovo test o FAIL. [Fonte e copertura](docs/source/manual-work-trade-crafting-validation-2026-11-11.md#secondo-riscontro-lingua-smontaggio-missioni-e-compagni).
+Il tracker resta la selezione della missione nativa CDDA, esposta dal nuovo
+diario grafico J; non è una nuova meccanica o un nuovo save. I casi residui
+degli stessi moduli restano distinti. Nessuna modifica a runtime, build o stima
+core; seguito essenziale e LIQ-FB-01 rimangono nella roadmap sotto.
+
+## Riscontro pannelli, scambi e crafting — 2026-11-11
+
+WORK-FB-01.1 e ricontrollo lotto/ricetta hanno il PASS umano; non riprodotto
+READ-FB-01.1, TRADE-01.3 parzialmente provato senza superamento del credito.
+**47 PENDING**, nessun nuovo test o FAIL. [Fonte e chiarimenti](docs/source/manual-work-trade-crafting-validation-2026-11-11.md).
+Prima di riproporre il credito, preparare una scena di rifiuto deterministica:
+il saldo favorevole di $1000 della fixture corrente agevola lo scambio positivo.
+La chiusura del core prosegue con usi nativi essenziali, LIQ-FB-01 e gestione
+sicura degli output liquidi/purificazione; i controlli personali residui restano
+separati. Nessuna variazione di runtime o percentuale core da questo riscontro.
+
+## Seguito dei playtest lettura e pannelli — 2026-11-09
+
+TRADE-01.4, READ-01.3, READ-01.4 e SEAL-01.2 PASS umani, con tre segnalazioni
+separate: blocco dopo la risposta a una distrazione nativa, progresso diverso
+prima/dopo I, pannello nascosto con Esc non riapribile anche durante la bevuta.
+[Fonte e limiti](docs/source/manual-reading-feedback-2026-11-09.md).
+Riprodotto il blocco sui binari precedenti in fixture fredda isolata; correggere
+il ritorno dalla decisione e riusare un unico pannello di lavoro, riapribile
+attraverso la consultazione senza reinviare comandi o cambiare regole native.
+47 vecchi punti pendenti più READ-FB-01.1 / WORK-FB-01.1 = **49 PENDING**;
+ricontrolli rinviabili, nessun PASS precedente revocato. LIQ-FB-01 resta OPEN.
+Correzioni installate per start.sh/CWM2.37: invalidazione della cache al passaggio
+alla decisione nativa e unico pannello del lavoro anche dopo I e dopo Esc → I → I.
+Client309, SDK21 e prove renderer/canoniche comprendono il vero avviso di freddo,
+bevuta e persistenza della lettura; [consegna/evidenze](docs/fixes/reading-work-feedback-2026-11-09.md).
+Nessuna risposta automatica o nuova attività; controlli personali separati.
+
+## Secondo giro di playtest — 2026-11-08
+
+REST-01.4, DIS-01.4, READ-01.2 e TRADE-01.2 hanno il PASS umano: **51 PENDING**,
+nessun nuovo test. [Fonte e copertura](docs/source/manual-liquids-recovery-validation-2026-11-08.md#secondo-riscontro-umano-quattro-ulteriori-pass).
+Accettati gli scenari proposti di salvataggio del sonno/smontaggio, progressione
+del capitolo e scambio parziale; le altre prove delle stesse feature rimangono
+distinte. LIQ-FB-01 resta OPEN per il seguito del loop acqua. Questo è un
+aggiornamento dei risultati personali, senza modifiche a runtime, build o stima core.
+
+## Playtest recupero e liquidi — 2026-11-08
+
+SYNC-01.1, KEY-K-01.1, LIQ-01.3 e SEAL-01.4 hanno il PASS umano; restano
+**55 PENDING**. [Fonte e limiti](docs/source/manual-liquids-recovery-validation-2026-11-08.md).
+Commento **LIQ-FB-01 OPEN** prima di ampliare il loop acqua/purificazione:
+chiarire esito del travaso immediato, messaggio no-native-activity e acqua
+versata non interagibile, verificando la semantica nativa e senza inventare
+un'attività cancellabile per un effetto già applicato. Nessun fix o nuova
+build viene dichiarato da questo aggiornamento dei risultati personali.
+Le quattro prove proposte allora, REST-01.4, DIS-01.4, READ-01.2, TRADE-01.2,
+sono accettate nel secondo giro riportato sopra.
+Roadmap, stima core e gate storici restano distinti dai PASS di questo giro.
+
+## Seguito dei playtest menu e sonno — 2026-11-02
+
+MENU-01.1 e UF8-01.1 hanno il PASS umano, conservato separatamente dai due
+difetti segnalati. K durante il lavoro del crafting ora usa lo stesso percorso
+di ispezione/pausa di I. Il recupero della connessione usa un limite di cinque
+secondi reali senza mondo autorevole installato, non rinnovato dai cambi di
+stato resync e attivo anche con Esc in pausa; poi ritenta dopo due secondi.
+Nessun riavvio automatico del sonno o inferenza dello stato. Migliorate le
+diagnostiche; la causa esatta dell'episodio originale non è dimostrata.
+[Fonte umana](docs/source/manual-menu-rest-validation-2026-11-02.md),
+[consegna e prove](docs/fixes/manual-feedback-2026-11-02.md).
+
+Fix installati per start.sh/CWM2.37; 185 casi nativi, client309, SDK21 e
+116 controlli renderer/salvataggio PASS su ricostruzione e binari installati.
+Ricontrolli KEY-K-01.1 e SYNC-01.1 nel backlog, **59 PENDING** complessivi;
+LIQ-01.3 e SEAL-01.4 restano da provare, REST-01.4 non è accettato per deduzione.
+Nessun incremento automatico della percentuale core; prossima fetta invariata:
+usi nativi essenziali e output liquidi/purificazione con recovery sicura, poi
+consolidamento non-demo. Fotografia locale verificata include i refactor già
+presenti; non vengono pubblicati come parte di queste correzioni.
+
 ## Continuità delle schermate — direttiva 2026-10-26
 
 FB-01.1 e .2 PASS confermati; i due FAIL di avvio sono chiusi. Nuova direttiva:

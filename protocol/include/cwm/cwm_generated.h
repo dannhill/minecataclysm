@@ -103,6 +103,9 @@ struct InteractRequestBuilder;
 struct MovementModeRequest;
 struct MovementModeRequestBuilder;
 
+struct CancelActivityRequest;
+struct CancelActivityRequestBuilder;
+
 struct ConsumptionState;
 struct ConsumptionStateBuilder;
 
@@ -589,6 +592,57 @@ inline const char *EnumNameMovementMode(MovementMode e) {
   return EnumNamesMovementMode()[index];
 }
 
+enum class ActivityKind : uint8_t {
+  NONE = 0,
+  CONSUME = 1,
+  FIRST_AID = 2,
+  CRAFT = 3,
+  RELOAD = 4,
+  ITEM_TRANSFER = 5,
+  READ = 6,
+  DISASSEMBLE = 7,
+  LIQUID_TRANSFER = 8,
+  MIN = NONE,
+  MAX = LIQUID_TRANSFER
+};
+
+inline const ActivityKind (&EnumValuesActivityKind())[9] {
+  static const ActivityKind values[] = {
+    ActivityKind::NONE,
+    ActivityKind::CONSUME,
+    ActivityKind::FIRST_AID,
+    ActivityKind::CRAFT,
+    ActivityKind::RELOAD,
+    ActivityKind::ITEM_TRANSFER,
+    ActivityKind::READ,
+    ActivityKind::DISASSEMBLE,
+    ActivityKind::LIQUID_TRANSFER
+  };
+  return values;
+}
+
+inline const char * const *EnumNamesActivityKind() {
+  static const char * const names[10] = {
+    "NONE",
+    "CONSUME",
+    "FIRST_AID",
+    "CRAFT",
+    "RELOAD",
+    "ITEM_TRANSFER",
+    "READ",
+    "DISASSEMBLE",
+    "LIQUID_TRANSFER",
+    nullptr
+  };
+  return names;
+}
+
+inline const char *EnumNameActivityKind(ActivityKind e) {
+  if (::flatbuffers::IsOutRange(e, ActivityKind::NONE, ActivityKind::LIQUID_TRANSFER)) return "";
+  const size_t index = static_cast<size_t>(e);
+  return EnumNamesActivityKind()[index];
+}
+
 enum class CraftingFilter : uint8_t {
   ALL = 0,
   FAVORITES = 1,
@@ -879,11 +933,12 @@ enum class Payload : uint8_t {
   MissionTrackRequest = 58,
   RestRequest = 59,
   CancelLiquidTransferRequest = 60,
+  CancelActivityRequest = 61,
   MIN = NONE,
-  MAX = CancelLiquidTransferRequest
+  MAX = CancelActivityRequest
 };
 
-inline const Payload (&EnumValuesPayload())[61] {
+inline const Payload (&EnumValuesPayload())[62] {
   static const Payload values[] = {
     Payload::NONE,
     Payload::HelloRequest,
@@ -945,13 +1000,14 @@ inline const Payload (&EnumValuesPayload())[61] {
     Payload::MissionView,
     Payload::MissionTrackRequest,
     Payload::RestRequest,
-    Payload::CancelLiquidTransferRequest
+    Payload::CancelLiquidTransferRequest,
+    Payload::CancelActivityRequest
   };
   return values;
 }
 
 inline const char * const *EnumNamesPayload() {
-  static const char * const names[62] = {
+  static const char * const names[63] = {
     "NONE",
     "HelloRequest",
     "HelloResponse",
@@ -1013,13 +1069,14 @@ inline const char * const *EnumNamesPayload() {
     "MissionTrackRequest",
     "RestRequest",
     "CancelLiquidTransferRequest",
+    "CancelActivityRequest",
     nullptr
   };
   return names;
 }
 
 inline const char *EnumNamePayload(Payload e) {
-  if (::flatbuffers::IsOutRange(e, Payload::NONE, Payload::CancelLiquidTransferRequest)) return "";
+  if (::flatbuffers::IsOutRange(e, Payload::NONE, Payload::CancelActivityRequest)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesPayload()[index];
 }
@@ -1266,6 +1323,10 @@ template<> struct PayloadTraits<CDDA::CWM::RestRequest> {
 
 template<> struct PayloadTraits<CDDA::CWM::CancelLiquidTransferRequest> {
   static const Payload enum_value = Payload::CancelLiquidTransferRequest;
+};
+
+template<> struct PayloadTraits<CDDA::CWM::CancelActivityRequest> {
+  static const Payload enum_value = Payload::CancelActivityRequest;
 };
 
 bool VerifyPayload(::flatbuffers::Verifier &verifier, const void *obj, Payload type);
@@ -4513,6 +4574,76 @@ inline ::flatbuffers::Offset<MovementModeRequest> CreateMovementModeRequest(
   MovementModeRequestBuilder builder_(_fbb);
   builder_.add_command_id(command_id);
   builder_.add_mode(mode);
+  return builder_.Finish();
+}
+
+struct CancelActivityRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef CancelActivityRequestBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_COMMAND_ID = 4,
+    VT_ACTIVITY_TOKEN = 6,
+    VT_KIND = 8
+  };
+  uint64_t command_id() const {
+    return GetField<uint64_t>(VT_COMMAND_ID, 0);
+  }
+  bool mutate_command_id(uint64_t _command_id = 0) {
+    return SetField<uint64_t>(VT_COMMAND_ID, _command_id, 0);
+  }
+  uint64_t activity_token() const {
+    return GetField<uint64_t>(VT_ACTIVITY_TOKEN, 0);
+  }
+  bool mutate_activity_token(uint64_t _activity_token = 0) {
+    return SetField<uint64_t>(VT_ACTIVITY_TOKEN, _activity_token, 0);
+  }
+  CDDA::CWM::ActivityKind kind() const {
+    return static_cast<CDDA::CWM::ActivityKind>(GetField<uint8_t>(VT_KIND, 0));
+  }
+  bool mutate_kind(CDDA::CWM::ActivityKind _kind = static_cast<CDDA::CWM::ActivityKind>(0)) {
+    return SetField<uint8_t>(VT_KIND, static_cast<uint8_t>(_kind), 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_COMMAND_ID, 8) &&
+           VerifyField<uint64_t>(verifier, VT_ACTIVITY_TOKEN, 8) &&
+           VerifyField<uint8_t>(verifier, VT_KIND, 1) &&
+           verifier.EndTable();
+  }
+};
+
+struct CancelActivityRequestBuilder {
+  typedef CancelActivityRequest Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_command_id(uint64_t command_id) {
+    fbb_.AddElement<uint64_t>(CancelActivityRequest::VT_COMMAND_ID, command_id, 0);
+  }
+  void add_activity_token(uint64_t activity_token) {
+    fbb_.AddElement<uint64_t>(CancelActivityRequest::VT_ACTIVITY_TOKEN, activity_token, 0);
+  }
+  void add_kind(CDDA::CWM::ActivityKind kind) {
+    fbb_.AddElement<uint8_t>(CancelActivityRequest::VT_KIND, static_cast<uint8_t>(kind), 0);
+  }
+  explicit CancelActivityRequestBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<CancelActivityRequest> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<CancelActivityRequest>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<CancelActivityRequest> CreateCancelActivityRequest(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint64_t command_id = 0,
+    uint64_t activity_token = 0,
+    CDDA::CWM::ActivityKind kind = CDDA::CWM::ActivityKind::NONE) {
+  CancelActivityRequestBuilder builder_(_fbb);
+  builder_.add_activity_token(activity_token);
+  builder_.add_command_id(command_id);
+  builder_.add_kind(kind);
   return builder_.Finish();
 }
 
@@ -11392,6 +11523,9 @@ struct CwmMessage FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const CDDA::CWM::CancelLiquidTransferRequest *payload_as_CancelLiquidTransferRequest() const {
     return payload_type() == CDDA::CWM::Payload::CancelLiquidTransferRequest ? static_cast<const CDDA::CWM::CancelLiquidTransferRequest *>(payload()) : nullptr;
   }
+  const CDDA::CWM::CancelActivityRequest *payload_as_CancelActivityRequest() const {
+    return payload_type() == CDDA::CWM::Payload::CancelActivityRequest ? static_cast<const CDDA::CWM::CancelActivityRequest *>(payload()) : nullptr;
+  }
   void *mutable_payload() {
     return GetPointer<void *>(VT_PAYLOAD);
   }
@@ -11666,6 +11800,10 @@ template<> inline const CDDA::CWM::RestRequest *CwmMessage::payload_as<CDDA::CWM
 
 template<> inline const CDDA::CWM::CancelLiquidTransferRequest *CwmMessage::payload_as<CDDA::CWM::CancelLiquidTransferRequest>() const {
   return payload_as_CancelLiquidTransferRequest();
+}
+
+template<> inline const CDDA::CWM::CancelActivityRequest *CwmMessage::payload_as<CDDA::CWM::CancelActivityRequest>() const {
+  return payload_as_CancelActivityRequest();
 }
 
 struct CwmMessageBuilder {
@@ -11972,6 +12110,10 @@ inline bool VerifyPayload(::flatbuffers::Verifier &verifier, const void *obj, Pa
     }
     case Payload::CancelLiquidTransferRequest: {
       auto ptr = reinterpret_cast<const CDDA::CWM::CancelLiquidTransferRequest *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::CancelActivityRequest: {
+      auto ptr = reinterpret_cast<const CDDA::CWM::CancelActivityRequest *>(obj);
       return verifier.VerifyTable(ptr);
     }
     default: return true;

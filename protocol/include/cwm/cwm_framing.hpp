@@ -44,7 +44,7 @@ public:
 
     void append(const uint8_t* data, size_t size) {
         if (!size) return;
-        if (!data || size > remaining_capacity())
+        if (!data)
             throw FramingError("CWM input buffer limit exceeded");
         if (pending_bytes() < 4 && pending_bytes() + size >= 4) {
             uint8_t prefix[4];
@@ -55,6 +55,8 @@ public:
             if (!length || length > max_frame_)
                 throw FramingError("Invalid CWM frame length");
         }
+        if (size > remaining_capacity())
+            throw FramingError("CWM input buffer limit exceeded");
         // Compact only when necessary; do not shift the tail after every frame.
         if (buffer_.size() + size > max_buffer_) compact();
         if (buffer_.size() + size > buffer_.capacity())

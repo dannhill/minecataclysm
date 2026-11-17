@@ -27,6 +27,7 @@ def main():
         parser.add_argument('--' + name, type=Path, required=True)
     parser.add_argument('--resume-only', action='store_true')
     parser.add_argument('--save-active', action='store_true')
+    parser.add_argument('--work-feedback', action='store_true', help='Verify one reopenable progress modal across inspection and native cold distractions')
     args = parser.parse_args()
     ws, out = args.workspace.resolve(), args.artifacts.resolve()
     out.mkdir(parents=True, exist_ok=False)
@@ -35,6 +36,17 @@ def main():
     (user / 'config/options.json').write_text(json.dumps([
         {'name': 'SAFEMODE', 'value': 'false'}, {'name': 'AUTOSAFEMODE', 'value': 'false'},
         {'name': 'AUTOSAVE', 'value': 'false'}]))
+    if args.work_feedback:
+        # Only this copied canonical test save is cold; never touch a demo save.
+        save=next((user/'save/audit_fixture').glob('*.sav'))
+        header,body=save.read_text().split('\n',1);data=json.loads(body)
+        for part in data['player']['body'].values():
+            # 1800 legacy units =30.6 C: below the native 31 C warning,
+            # above the 28 C aggressive-cold threshold. Target the distraction
+            # without adding unrelated damage warnings from a 27 C fixture.
+            part['temp_cur']=part['temp_conv']=1800
+        save.write_text(header+'\n'+json.dumps(data)+'\n')
+        args.save_active=True
     checks = {}
     def check(name, ok):
         checks[name] = bool(ok)
@@ -117,12 +129,15 @@ def main():
             return [r for r in csv.DictReader(stream) if r.get('scene_origin_y') is not None]
     def latest():
         return rows()[-1]
+    extra_distraction_handler=None
     def wait(predicate, timeout=12):
         deadline = time.monotonic() + timeout
         while time.monotonic() < deadline and proc.poll() is None:
             data = rows()
             if data and predicate(data[-1]):
                 return data[-1]
+            if data and extra_distraction_handler and int(data[-1]['pending_decision']):
+                extra_distraction_handler()
             time.sleep(.05)
         raise RuntimeError('GUI condition not reached; inspect trace/logs')
     def xdo(*argv):
@@ -204,6 +219,7 @@ def main():
                     if v.ViewId()==int(latest()['inventory_view']):return v
                 raise RuntimeError('No matching inventory view')
             def inventory():
+                if extra_distraction_handler:wait(lambda r:int(r['pending_decision'])==0)
                 if not int(latest()['equipment_form']):tap('i')
                 wait(lambda r:int(r['equipment_form'])==1 and int(r['inventory_view'])>0 and int(r['pending_move'])==0)
                 return view()
@@ -234,7 +250,60 @@ def main():
                 check('native_study_choices_are_exposed','Read once' in options[0] and options[-1]=='Cancel' and len(options)>=3)
                 shot('native-study-choices.png');tap(str((len(options)-1 if index<0 else index)+1))
                 wait(lambda r:int(r['pending_decision'])==0 and int(r['pending_move'])==0)
-            if args.resume_only:
+            if args.work_feedback:
+                def prompt():
+                    wait(lambda r:int(r['pending_decision'])>0)
+                    msg=messages(Payload.DecisionPrompt)[-1]
+                    p=DecisionPrompt();p.Init(msg.Payload().Bytes,msg.Payload().Pos)
+                    return p,[p.Choices(n).decode() for n in range(p.ChoicesLength())]
+                select_book('mag_guns');start()
+                study,options=prompt();study_id=study.DecisionId()
+                check('actual_native_study_choice_available','Read once' in options[0])
+                tap('1')
+                wait(lambda r:int(r['pending_decision'])>0 and int(r['pending_decision'])!=study_id)
+                cold,options=prompt()
+                check('actual_native_freezing_distraction','freezing' in cold.Text().decode().lower())
+                (out/'cold-choices.json').write_text(json.dumps(options,indent=2)+'\n')
+                shot('freezing-native-choice.png')
+                # NO preserves the native activity for this turn; IGNORE on
+                # the next warning suppresses this distraction for this work.
+                no=next(n for n,label in enumerate(options) if label.lower().strip()=='no')
+                first=cold.DecisionId();tap(str(no+1))
+                wait(lambda r:int(r['pending_decision'])>0 and int(r['pending_decision'])!=first)
+                cold,options=prompt()
+                check('native_continue_once_remains_interactive','freezing' in cold.Text().decode().lower())
+                ignore=next(n for n,label in enumerate(options) if 'ignore' in label.lower())
+                tap(str(ignore+1))
+                extra_distractions=[]
+                def answer_additional_warning():
+                    warning,labels=prompt()
+                    text=warning.Text().decode().lower()
+                    check('additional_native_distraction_remains_interactive','hurt' in text or 'freezing' in text)
+                    extra_distractions.append({'id':warning.DecisionId(),'text':text,'choices':labels})
+                    (out/'additional-distractions.json').write_text(json.dumps(extra_distractions,indent=2)+'\n')
+                    selected=next(n for n,label in enumerate(labels) if 'ignore' in label.lower())
+                    tap(str(selected+1))
+                extra_distraction_handler=answer_additional_warning
+                wait(lambda r:int(r['pending_decision'])==0 and int(r['action_menu'])==1 and int(r['reading_token'])>0)
+                before=int(latest()['reading_remaining'])
+                wait(lambda r:int(r['reading_remaining'])<before,timeout=12)
+                check('native_ignore_returns_to_advancing_work_without_stuck_decision',int(latest()['decision_waiting'])==0)
+                shot('reading-progress-before-inspection.png')
+                native_sent=latest()['equipment_sent'];span_start=len(rows())
+                inventory();frozen=latest()['reading_remaining'];clock=latest()['simulation_time'];time.sleep(.7)
+                check('inspection_still_freezes_native_work',latest()['reading_remaining']==frozen and latest()['simulation_time']==clock)
+                tap('i');wait(lambda r:int(r['equipment_form'])==0 and int(r['action_menu'])==1 and int(r['modal_count'])==1)
+                wait(lambda r:int(r['reading_remaining'])<int(frozen))
+                check('inspection_returns_to_same_progress_modal',all(int(r['modal_count'])>0 for r in rows()[span_start:]))
+                shot('reading-progress-after-inspection.png')
+                tap('Escape');wait(lambda r:int(r['action_menu'])==0 and int(r['modal_count'])==0)
+                check('escape_hides_progress_without_stopping_native_reading',int(latest()['reading_token'])>0)
+                inventory();tap('i')
+                wait(lambda r:int(r['action_menu'])==1 and int(r['modal_count'])==1)
+                check('hidden_progress_reopens_without_another_read_command',latest()['equipment_sent']==native_sent)
+                shot('reading-progress-reopened.png')
+                inventory();check('quit_will_preserve_partial_native_chapter',0<int(latest()['reading_remaining'])<int(latest()['reading_total']))
+            elif args.resume_only:
                 check('canonical_loaded_actor_is_native_reading',int(latest()['reading_token'])>0 and int(latest()['reading_remaining'])<int(latest()['reading_total']))
                 remaining=latest()['reading_remaining'];clock=latest()['simulation_time'];time.sleep(.7)
                 check('inspection_freezes_loaded_native_reading',latest()['reading_remaining']==remaining and latest()['simulation_time']==clock)
@@ -318,7 +387,7 @@ def main():
             for child in value:yield from items(child)
     carried=list(items(player));books=[x for x in carried if x.get('item_vars',{}).get('uid') in ('reading-unknown','reading-skill')]
     check('canonical_books_are_preserved_exactly_once',len(books)==2 and len({x['item_vars']['uid'] for x in books})==2)
-    check('native_skim_knowledge_is_canonical','book_fict_soft_satire_cats' in player['items_identified'])
+    if not args.work_feedback:check('native_skim_knowledge_is_canonical','book_fict_soft_satire_cats' in player['items_identified'])
     skill=player['skills']['gun']
     if args.save_active:
         check('canonical_save_contains_native_read_actor',player['activity']['type']=='ACT_READ')

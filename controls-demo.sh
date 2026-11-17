@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
-set -euo pipefail
-cd -- "$(dirname -- "${BASH_SOURCE[0]}")"
-exec python3 tools/launch_controls_demo.py "$@"
+set -Eeuo pipefail
+PROJECT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+exec python3 "$PROJECT_DIR/tools/launch_demo.py" controls "$@"

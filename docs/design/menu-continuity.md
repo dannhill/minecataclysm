@@ -51,3 +51,26 @@ Canonical saves own native activities/effects/items, not open windows or return
 intent. The trace appends actual modal count and action-view state, so renderer
 tests can check every sampled frame between related screens. Automated results
 are separate from MENU-01.1 personal acceptance in the manual ledger.
+
+## Reading/work follow-up — 2026-11-09
+
+A spontaneous native decision also replaces the progress view. Its arrival
+invalidates the cached progress rendering: after an answer, the same progress
+text must still replace the submitted-decision view. Retaining a live modal
+must never retain an obsolete waiting screen or turn it into a Menu pause.
+The native No, Ignore and Stop choices keep their distinct CDDA semantics.
+
+Closing inventory/crafting inspection while authoritative work is active now
+returns to the same ActionMenu presentation used at its start. The bridge
+observes the current activity or outstanding native work identity; it never
+issues another start command. This also applies after Esc/Return to game hid
+the panel and to canonical loaded activities without a transient start ID.
+I opens paused inspection; closing it reopens progress. Esc/Return to game
+can hide that panel again without cancelling work. Existing native pauses,
+debt and cancellation rules remain. Explicit exit still disarms automatic
+return until the player inspects and reopens the panel.
+
+The reading title and theoretical-progress text come from the authoritative
+reading projection in both cases. The legacy HUD progress overlay is hidden
+while the ActionMenu is visible. Window replacement reuses the live modal,
+including the inspection-to-work transition, without a gameplay flash.

@@ -21,8 +21,9 @@ class DemoLauncherTests(unittest.TestCase):
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
         (self.root/'tools').mkdir()
-        self.script = self.root/'tools/launch_liquid_recovery_demo.py'
-        shutil.copy2(ROOT/'tools/launch_liquid_recovery_demo.py', self.script)
+        self.script = self.root/'tools/launch_demo.py'
+        shutil.copy2(ROOT/'tools/launch_demo.py', self.script)
+        shutil.copy2(ROOT/'tools/demos.json', self.root/'tools/demos.json')
         self.fixture = self.root/'artifacts/playtest-feedback-20261025/liquid-recovery'
         (self.fixture/'user/config').mkdir(parents=True)
         (self.fixture/'before.json').write_text('{}')
@@ -33,7 +34,7 @@ class DemoLauncherTests(unittest.TestCase):
         env = dict(os.environ)
         env.pop('CDDA_DEMO_SESSIONS', None)
         if sessions is not None:env['CDDA_DEMO_SESSIONS'] = str(sessions)
-        with patch.dict(os.environ,env,clear=True), patch.object(sys,'argv',[str(self.script),*args]), \
+        with patch.dict(os.environ,env,clear=True), patch.object(sys,'argv',[str(self.script),'liquid_recovery',*args]), \
              patch('os.execve') as execute, contextlib.redirect_stdout(io.StringIO()):
             runpy.run_path(str(self.script),run_name='__main__')
         return execute.call_args.args

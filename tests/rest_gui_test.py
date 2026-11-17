@@ -28,7 +28,12 @@ def main():
     for name in ('workspace', 'fixture', 'native-reader', 'artifacts'):
         parser.add_argument('--' + name, type=Path, required=True)
     parser.add_argument('--reload-sleep', action='store_true')
+    parser.add_argument('--rate-check', type=float, choices=(.5,1,2,4),
+                        help='Exercise ordinary waits, breath recovery and paused reconnect at this awake rate')
+    parser.add_argument('--sync-flap', action='store_true', help='Corrupt recovery clock states until the wall-time watchdog reconnects')
     args = parser.parse_args()
+    if args.rate_check is not None and (args.reload_sleep or args.sync_flap):parser.error('--rate-check is a separate awake/wait scenario')
+    if args.sync_flap and not args.reload_sleep:parser.error('--sync-flap requires a canonical sleeping save and --reload-sleep')
     ws, out = args.workspace.resolve(), args.artifacts.resolve()
     sys.path.insert(0,str(ws/'protocol/python'))
     from CDDA.CWM.CwmMessage import CwmMessage
@@ -58,6 +63,7 @@ def main():
                       'vsync = false\nenable_clouds = false\ngui_scaling = 1\n'
                       f'port = {port}\ncwm_trace_file = {trace}\n')
     env = dict(os.environ, CDDA_USERDIR=str(user), CDDA_WORLD='audit_fixture',
+               CDDA_CHARACTER='Audit Survivor',
                LUANTI_WORLD=str(out / 'luanti'), LUANTI_CONFIG=str(config),
                LOG_DIR=str(out / 'logs'), CDDA_BIN=str(ws / 'cdda/build/src/cdda-server'),
                LUANTI_BIN=str(ws / 'luanti/bin/luanti'), CDDA_CONTINUOUS='1')
@@ -72,6 +78,12 @@ def main():
     shutting_down = threading.Event()
     expected_shutdown_errors = []
     relay_errors = []
+    sync_fault=threading.Event()
+    fault_stats={'corruptions':0,'disconnects':0}
+    def fault_disconnect():
+        if sync_fault.is_set() and fault_stats['corruptions']>=3:
+            sync_fault.clear();fault_stats['disconnects']+=1;return True
+        return False
     listener = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     listener.bind(str(relay_path)); listener.listen(1); listener.settimeout(.1)
     def relay():
@@ -83,7 +95,7 @@ def main():
                     continue
                 with client_socket, socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as server_socket:
                     server_socket.connect(native_path.read_text().strip())
-                    native_sequence=0;client_buffer=bytearray()
+                    native_sequence=0;client_buffer=bytearray();server_buffer=bytearray()
                     def forward_client(packet):
                         nonlocal native_sequence
                         body=bytearray(packet[4:]);message=CwmMessage.GetRootAs(body)
@@ -103,7 +115,8 @@ def main():
                         closed=False
                         for source in readable:
                             data=source.recv(1<<20)
-                            if not data:closed=True;break
+                            if not data:
+                                fault_disconnect();closed=True;break
                             if source is client_socket:
                                 client_buffer.extend(data)
                                 while len(client_buffer)>=4:
@@ -111,8 +124,31 @@ def main():
                                     if len(client_buffer)<size+4:break
                                     forward_client(bytes(client_buffer[:size+4]));del client_buffer[:size+4]
                             else:
-                                with (out/'server-wire.bin').open('ab') as capture:capture.write(data)
-                                client_socket.sendall(data)
+                                if not args.sync_flap:
+                                    with (out/'server-wire.bin').open('ab') as capture:capture.write(data)
+                                    client_socket.sendall(data)
+                                else:
+                                    from CDDA.CWM.Payload import Payload
+                                    from CDDA.CWM.WorldSnapshot import WorldSnapshot
+                                    with (out/'native-wire.bin').open('ab') as capture:capture.write(data)
+                                    server_buffer.extend(data)
+                                    while len(server_buffer)>=4:
+                                        size=struct.unpack('>I',server_buffer[:4])[0]
+                                        if len(server_buffer)<size+4:break
+                                        body=bytearray(server_buffer[4:size+4]);del server_buffer[:size+4]
+                                        msg=CwmMessage.GetRootAs(body)
+                                        if sync_fault.is_set() and msg.PayloadType()==Payload.WorldSnapshot:
+                                            table=msg.Payload();world=WorldSnapshot();world.Init(table.Bytes,table.Pos)
+                                            clock=world.Clock();offset=clock._tab.Offset(6)
+                                            if not offset:raise AssertionError('Recovery snapshot must explicitly carry its pause flags')
+                                            struct.pack_into('<I',body,clock._tab.Pos+offset,1<<31)
+                                            fault_stats['corruptions']+=1
+                                        packet=struct.pack('>I',len(body))+body
+                                        with (out/'server-wire.bin').open('ab') as capture:capture.write(packet)
+                                        try:client_socket.sendall(packet)
+                                        except (BrokenPipeError,ConnectionResetError):
+                                            if not fault_disconnect():raise
+                                            closed=True;break
                         if closed:break
         except (ConnectionResetError, BrokenPipeError) as error:
             if shutting_down.is_set(): expected_shutdown_errors.append(str(error))
@@ -262,74 +298,154 @@ def main():
                     previous=latest()['time_scale'];tap('F8')
                     wait(lambda row:row['time_scale']!=previous)
                 raise AssertionError('F8 did not reach requested speed')
-            if not args.reload_sleep:
-                check('fixture_starts_awake',phase()==-1)
-                speed(2);check('awake_F8_selects_single_play_rate',float(latest()['time_scale'])==2 and int(latest()['rest_speed_context'])==0)
-                values=rest_menu();check('rest_offers_native_sleep_and_wait',any('Try to sleep' in x for x in values) and any('Wait or catch' in x for x in values))
-                frozen=latest()['simulation_time'];time.sleep(.5)
-                check('rest_menu_pauses_world',latest()['simulation_time']==frozen)
-                leave();check('cancel_rest_keeps_avatar_awake',phase()==-1)
-                rest_menu();pick('Wait or catch your breath');pick('Wait 20 heartbeats')
-                wait(lambda r:int(r['rest_phase'])==0);idle()
-                check('short_native_wait_stays_unaccelerated',int(latest()['rest_accelerated'])==0)
-                paused_reading();rest_menu();pick('Interrupt rest');idle();wait(lambda r:int(r['rest_phase'])==-1)
-                check('native_wait_cancels_through_rest_menu',phase()==-1)
-                command=messages(Payload.RestRequest,'client')[-1];request=RestRequest();request.Init(command.Payload().Bytes,command.Payload().Pos)
-                def acks():
-                    result=[]
-                    for msg in messages(Payload.CommandAck):
-                        a=CommandAck();a.Init(msg.Payload().Bytes,msg.Payload().Pos)
-                        if a.CommandId()==request.CommandId():result.append(a)
-                    return result
-                snapshots=len(messages(Payload.SnapshotAck,'client'));count=len(acks());data=bytes(command._tab.Bytes);injections.put(struct.pack('>I',len(data))+data)
-                deadline=time.monotonic()+10
-                while len(acks())<=count and time.monotonic()<deadline:time.sleep(.05)
-                check('rest_replay_returns_cached_outcome_without_restart',len(acks())>count and acks()[-1].Accepted() and phase()==-1 and int(latest()['pending_decision'])==0)
-                deadline=time.monotonic()+10
-                while len(messages(Payload.SnapshotAck,'client'))<=snapshots and time.monotonic()<deadline:time.sleep(.05)
-                check('cached_full_state_installed_before_next_command',len(messages(Payload.SnapshotAck,'client'))>snapshots)
-                # Native interruption can leave a paid turn to settle. At the
-                # deliberately slower awake 2x rate a fixed .3s is insufficient;
-                # a rejected "Finish the current action" is correct behavior.
+            if args.rate_check is not None:
+                # A loaded wait may finish before the window becomes visible.
+                # Read its real first projection, not an inferred local state.
+                first=messages(Payload.WorldSnapshot)[0]
+                table=first.Payload();initial=WorldSnapshot();initial.Init(table.Bytes,table.Pos)
+                avatar=next(initial.Entities(n) for n in range(initial.EntitiesLength()) if initial.Entities(n).Id()==1)
+                initial_abs=[round(initial.Origin().X()+avatar.Pos().X()),
+                             round(initial.Origin().Y()+avatar.Pos().Y()), round(avatar.Pos().Z())]
+                wait(lambda r:int(r['rest_phase'])==-1,timeout=30)
+                speed(args.rate_check)
+                check('awake_rate_selected',float(latest()['time_scale'])==args.rate_check)
+                def start_wait(label):
+                    rest_menu();pick('Wait or catch your breath')
+                    if any('Wait a while' in x for x in labels(prompt())):pick('Wait a while')
+                    pick(label)
+                start_wait('20 heartbeats')
+                wait(lambda r:int(r['rest_phase'])==0)
+                start=float(latest()['simulation_time'])
+                wait(lambda r:float(r['simulation_time'])>=start+4,timeout=18)
+                check('short_wait_keeps_selected_awake_rate',float(latest()['time_scale'])==args.rate_check and int(latest()['rest_speed_context'])==0)
+                paused_reading()
+                tap('F7');wait(lambda r:int(r['pause_reasons'])&1)
+                connection=latest()['connection_id'];frozen=latest()['simulation_time']
+                sent=len(messages(Payload.RestRequest,'client'));drop.set()
+                wait(lambda r:r['connection_id']!=connection and int(r['input_ready'])==1 and int(r['pending_decision'])==0,timeout=25)
+                check('paused_reconnect_keeps_native_wait_and_time',phase()==0 and latest()['simulation_time']==frozen)
+                check('paused_reconnect_does_not_replay_rest',len(messages(Payload.RestRequest,'client'))==sent)
+                check('manual_pause_survives_wait_reconnect',bool(int(latest()['pause_reasons'])&1))
+                tap('F7');wait(lambda r:int(r['pause_reasons'])==0)
+                rest_menu();pick('Interrupt rest');idle();wait(lambda r:int(r['rest_phase'])==-1)
+                check('wait_interrupt_keeps_awake_rate',float(latest()['time_scale'])==args.rate_check)
                 resumed=float(latest()['simulation_time'])
-                wait(lambda r:int(r['input_ready'])==1 and int(r['pause_reasons'])==0 and float(r['simulation_time'])>=resumed+3)
-                rest_menu();pick('Wait or catch your breath');pick('Wait till daylight');idle()
-                wait(lambda row:int(row['rest_speed_context'])==1);speed(1)
-                rest_menu();pick('Interrupt rest');idle();wait(lambda row:int(row['rest_phase'])==-1)
-                check('ending_long_rest_restores_previous_awake_F8_rate',float(latest()['time_scale'])==2 and int(latest()['rest_speed_context'])==0)
+                wait(lambda r:float(r['simulation_time'])>=resumed+3,timeout=10)
+                start_wait('20 heartbeats')
+                wait(lambda r:int(r['rest_phase'])==0)
+                start=float(latest()['simulation_time'])
+                wait(lambda r:int(r['rest_phase'])==-1,timeout=55)
+                check('short_wait_completes_without_desync',float(latest()['simulation_time'])>=start+15 and int(latest()['input_ready'])==1)
                 resumed=float(latest()['simulation_time'])
-                wait(lambda r:float(r['simulation_time'])>=resumed+3)
-                rest_menu();pick('Try to sleep');shot('sleep-confirmation.png');pick('No.');idle()
-                check('native_sleep_decline_stays_awake',phase()==-1)
-                rest_menu();pick('Try to sleep');pick('Yes.');idle()
-                wait(lambda r:int(r['rest_phase'])==2,timeout=25)
-                check('native_sleep_attempt_reaches_actual_sleep',phase()==2)
+                wait(lambda r:float(r['simulation_time'])>=resumed+3,timeout=10)
+                before=len(messages(Payload.WorldSnapshot))
+                start_wait('catch your breath')
+                def exported_breath():
+                    for message in messages(Payload.WorldSnapshot)[before:]:
+                        table=message.Payload();world=WorldSnapshot();world.Init(table.Bytes,table.Pos)
+                        if world.Rest() and world.Rest().Phase()==0 and world.Clock().SpeedContext()==1:return True
+                    return False
+                deadline=time.monotonic()+15
+                while time.monotonic()<deadline and not exported_breath():time.sleep(.05)
+                check('breath_recovery_exports_real_native_rest',exported_breath())
+                wait(lambda r:int(r['rest_phase'])==-1 and int(r['input_ready'])==1,timeout=30)
+                check('breath_recovery_restores_selected_awake_rate',float(latest()['time_scale'])==args.rate_check)
+                tap('i');wait(lambda r:int(r['pause_reasons'])&2)
+                frozen=latest()['simulation_time'];time.sleep(.6)
+                check('final_inspection_freezes_native_clock',latest()['simulation_time']==frozen)
+                shot('wait-rates.png')
             else:
-                wait(lambda r:int(r['rest_phase'])==2)
-                check('canonical_reload_restores_sleep_without_start_command',not messages(Payload.RestRequest,'client'))
-            values=rest_menu();check('actual_sleep_has_no_forced_wake_override',not any('Interrupt rest' in x for x in values))
-            check('B_has_no_separate_speed_controls',not any('acceleration' in x or 'normal speed' in x or 'Fast-forward' in x for x in values))
-            pick('Keep resting');idle()
-            check('sleep_uses_single_absolute_rate',int(latest()['rest_speed_context'])==1 and int(latest()['rest_multiplier'])==1)
-            speed(1);check('F8_alone_selects_normal_sleep_rate',float(latest()['time_scale'])==1)
-            pos=position();xdo('keydown','--window',window,'w');time.sleep(.7);xdo('keyup','--window',window,'w');time.sleep(.3)
-            check('sleep_blocks_held_movement',phase()==2 and position()==pos)
-            check('sleep_does_not_retry_native_prone_as_walking_input',len(messages(Payload.MovementModeRequest,'client'))<4)
-            paused_reading();shot('sleeping.png')
-            speed(1024);check('F8_alone_selects_1024_without_multiplication',float(latest()['time_scale'])==1024 and int(latest()['rest_multiplier'])==1)
-            wait(lambda r:int(r['rest_accelerated'])==1,timeout=15);shot('single-speed-fast-forward.png')
-            start=float(latest()['simulation_time']);time.sleep(.8);advanced=float(latest()['simulation_time'])-start
-            check('long_rest_advances_native_turns_faster_than_normal',advanced>12)
-            speed(1);start=float(latest()['simulation_time']);time.sleep(.8)
-            check('return_to_normal_discards_fast_credit',float(latest()['simulation_time'])-start<5)
-            paused_reading()
-            values=rest_menu();connection=latest()['connection_id'];sent=len(messages(Payload.RestRequest,'client'));drop.set()
-            wait(lambda r:r['connection_id']!=connection and int(r['input_ready'])==1 and int(r['pending_move'])==0 and int(r['pending_decision'])==0,timeout=25)
-            check('reconnect_retains_single_selected_rate',float(latest()['time_scale'])==1 and int(latest()['rest_speed_context'])==1)
-            check('reconnect_preserves_sleep_without_replaying_rest_command',phase()==2 and len(messages(Payload.RestRequest,'client'))==sent)
-            values=rest_menu();check('reopened_rest_uses_actual_sleep_state',not any('Interrupt rest' in x for x in values))
-            pick('Keep resting');idle();shot('sleep-reconnected.png')
-            final=latest();(out/'final-trace.json').write_text(json.dumps(final,indent=2)+'\n')
+                if not args.reload_sleep:
+                    check('fixture_starts_awake',phase()==-1)
+                    speed(2);check('awake_F8_selects_single_play_rate',float(latest()['time_scale'])==2 and int(latest()['rest_speed_context'])==0)
+                    values=rest_menu();check('rest_offers_native_sleep_and_wait',any('Try to sleep' in x for x in values) and any('Wait or catch' in x for x in values))
+                    frozen=latest()['simulation_time'];time.sleep(.5)
+                    check('rest_menu_pauses_world',latest()['simulation_time']==frozen)
+                    leave();check('cancel_rest_keeps_avatar_awake',phase()==-1)
+                    rest_menu();pick('Wait or catch your breath');pick('Wait 20 heartbeats')
+                    wait(lambda r:int(r['rest_phase'])==0);idle()
+                    check('short_native_wait_stays_unaccelerated',int(latest()['rest_accelerated'])==0)
+                    paused_reading();rest_menu();pick('Interrupt rest');idle();wait(lambda r:int(r['rest_phase'])==-1)
+                    check('native_wait_cancels_through_rest_menu',phase()==-1)
+                    command=messages(Payload.RestRequest,'client')[-1];request=RestRequest();request.Init(command.Payload().Bytes,command.Payload().Pos)
+                    def acks():
+                        result=[]
+                        for msg in messages(Payload.CommandAck):
+                            a=CommandAck();a.Init(msg.Payload().Bytes,msg.Payload().Pos)
+                            if a.CommandId()==request.CommandId():result.append(a)
+                        return result
+                    snapshots=len(messages(Payload.SnapshotAck,'client'));count=len(acks());data=bytes(command._tab.Bytes);injections.put(struct.pack('>I',len(data))+data)
+                    deadline=time.monotonic()+10
+                    while len(acks())<=count and time.monotonic()<deadline:time.sleep(.05)
+                    check('rest_replay_returns_cached_outcome_without_restart',len(acks())>count and acks()[-1].Accepted() and phase()==-1 and int(latest()['pending_decision'])==0)
+                    deadline=time.monotonic()+10
+                    while len(messages(Payload.SnapshotAck,'client'))<=snapshots and time.monotonic()<deadline:time.sleep(.05)
+                    check('cached_full_state_installed_before_next_command',len(messages(Payload.SnapshotAck,'client'))>snapshots)
+                    # Native interruption can leave a paid turn to settle. At the
+                    # deliberately slower awake 2x rate a fixed .3s is insufficient;
+                    # a rejected "Finish the current action" is correct behavior.
+                    resumed=float(latest()['simulation_time'])
+                    wait(lambda r:int(r['input_ready'])==1 and int(r['pause_reasons'])==0 and float(r['simulation_time'])>=resumed+3)
+                    rest_menu();pick('Wait or catch your breath');pick('Wait till daylight');idle()
+                    wait(lambda row:int(row['rest_speed_context'])==1);speed(1)
+                    rest_menu();pick('Interrupt rest');idle();wait(lambda row:int(row['rest_phase'])==-1)
+                    check('ending_long_rest_restores_previous_awake_F8_rate',float(latest()['time_scale'])==2 and int(latest()['rest_speed_context'])==0)
+                    resumed=float(latest()['simulation_time'])
+                    wait(lambda r:float(r['simulation_time'])>=resumed+3)
+                    rest_menu();pick('Try to sleep');shot('sleep-confirmation.png');pick('No.');idle()
+                    check('native_sleep_decline_stays_awake',phase()==-1)
+                    rest_menu();pick('Try to sleep');pick('Yes.');idle()
+                    wait(lambda r:int(r['rest_phase'])==2,timeout=25)
+                    check('native_sleep_attempt_reaches_actual_sleep',phase()==2)
+                else:
+                    wait(lambda r:int(r['rest_phase'])==2)
+                    check('canonical_reload_restores_sleep_without_start_command',not messages(Payload.RestRequest,'client'))
+                if args.sync_flap:
+                    speed(1);tap('Escape')
+                    wait(lambda r:int(r['pause_reasons'])&2 and int(r['modal_count'])>0)
+                    frozen=latest()['simulation_time'];old_connection=latest()['connection_id'];started=time.monotonic()
+                    # Request a reset outside the client's own correlation, then
+                    # deliver invalid full clock states on this connection. Each
+                    # legitimate reset is followed by another rejected full state.
+                    # A transition-reset dtime timer would remain stuck indefinitely
+                    # here, especially with the engine pause menu holding dtime=0.
+                    import flatbuffers,importlib
+                    Wire=importlib.import_module('CDDA.CWM.CwmMessage')
+                    Reset=importlib.import_module('CDDA.CWM.ResyncRequest')
+                    b=flatbuffers.Builder(256);Reset.Start(b);Reset.AddRequestId(b,0xBAD1);request=Reset.End(b)
+                    Wire.Start(b);Wire.AddSequenceNumber(b,1);Wire.AddWorldRevision(b,int(latest()['revision']))
+                    Wire.AddSessionId(b,int(latest()['session_id']));Wire.AddPlayerId(b,int(latest()['player_id']));Wire.AddConnectionId(b,int(old_connection))
+                    Wire.AddPayloadType(b,Payload.ResyncRequest);Wire.AddPayload(b,request);b.Finish(Wire.End(b));data=bytes(b.Output())
+                    sync_fault.set();injections.put(struct.pack('>I',len(data))+data)
+                    wait(lambda r:r['connection_id']!=old_connection and int(r['input_ready'])==1,timeout=20)
+                    wait(lambda r:int(r['pause_reasons'])&2)
+                    check('flapping_sync_has_bounded_reconnect_while_engine_paused',fault_stats['corruptions']>=3 and fault_stats['disconnects']==1 and time.monotonic()-started>=4.5)
+                    check('paused_recovery_preserves_native_sleep_and_time',phase()==2 and latest()['simulation_time']==frozen)
+                    tap('Escape');wait(lambda r:int(r['pause_reasons'])==0)
+                values=rest_menu();check('actual_sleep_has_no_forced_wake_override',not any('Interrupt rest' in x for x in values))
+                if args.sync_flap:check('fresh_B_works_after_recovery_without_replaying_sleep',len(messages(Payload.RestRequest,'client'))==1)
+                check('B_has_no_separate_speed_controls',not any('acceleration' in x or 'normal speed' in x or 'Fast-forward' in x for x in values))
+                pick('Keep resting');idle()
+                check('sleep_uses_single_absolute_rate',int(latest()['rest_speed_context'])==1 and int(latest()['rest_multiplier'])==1)
+                speed(1);check('F8_alone_selects_normal_sleep_rate',float(latest()['time_scale'])==1)
+                pos=position();xdo('keydown','--window',window,'w');time.sleep(.7);xdo('keyup','--window',window,'w');time.sleep(.3)
+                check('sleep_blocks_held_movement',phase()==2 and position()==pos)
+                check('sleep_does_not_retry_native_prone_as_walking_input',len(messages(Payload.MovementModeRequest,'client'))<4)
+                paused_reading();shot('sleeping.png')
+                speed(1024);check('F8_alone_selects_1024_without_multiplication',float(latest()['time_scale'])==1024 and int(latest()['rest_multiplier'])==1)
+                wait(lambda r:int(r['rest_accelerated'])==1,timeout=15);shot('single-speed-fast-forward.png')
+                start=float(latest()['simulation_time']);time.sleep(.8);advanced=float(latest()['simulation_time'])-start
+                check('long_rest_advances_native_turns_faster_than_normal',advanced>12)
+                speed(1);start=float(latest()['simulation_time']);time.sleep(.8)
+                check('return_to_normal_discards_fast_credit',float(latest()['simulation_time'])-start<5)
+                paused_reading()
+                values=rest_menu();connection=latest()['connection_id'];sent=len(messages(Payload.RestRequest,'client'));drop.set()
+                wait(lambda r:r['connection_id']!=connection and int(r['input_ready'])==1 and int(r['pending_move'])==0 and int(r['pending_decision'])==0,timeout=25)
+                check('reconnect_retains_single_selected_rate',float(latest()['time_scale'])==1 and int(latest()['rest_speed_context'])==1)
+                check('reconnect_preserves_sleep_without_replaying_rest_command',phase()==2 and len(messages(Payload.RestRequest,'client'))==sent)
+                values=rest_menu();check('reopened_rest_uses_actual_sleep_state',not any('Interrupt rest' in x for x in values))
+                pick('Keep resting');idle();shot('sleep-reconnected.png')
+                final=latest();(out/'final-trace.json').write_text(json.dumps(final,indent=2)+'\n')
         finally:
             shutting_down.set()
             if proc.poll() is None:
@@ -342,14 +458,21 @@ def main():
     check('relay_completed_without_errors',not relay_errors)
     logs='\n'.join(p.read_text(errors='replace') for p in (out/'logs').rglob('*.log'))
     check('rest_dialogs_accepted_by_actual_renderer','Invalid formspec' not in logs)
+    if args.sync_flap:
+        check('recovery_failure_is_diagnosed_and_wall_deadline_logged','Projection rejected:' in logs and 'Synchronization exceeded 5 wall seconds' in logs)
+        (out/'fault-stats.json').write_text(json.dumps(fault_stats,indent=2)+'\n')
     output=out/'native.json'
     with (out/'native.log').open('w') as log:
         result=subprocess.run([str(args.native_reader.resolve()),'--userdir',str(user),'--datadir',str(ws/'cdda/data'),'--output',str(output)],stdout=log,stderr=subprocess.STDOUT,timeout=180)
     check('rest_save_readable_by_independent_pinned_core',result.returncode==0)
     native=json.loads(output.read_text());player=native['player']
-    check('canonical_native_position_preserved',native['player_abs']==[60,60,0])
-    check('actual_sleep_is_an_effect_not_an_invented_activity',player['activity']['type']=='ACT_NULL' and 'sleep' in player['effects'])
-    check('native_sleep_preserves_prone_posture',player['move_mode']=='prone')
+    check('canonical_native_position_preserved',native['player_abs']==(initial_abs if args.rate_check is not None else [60,60,0]))
+    if args.rate_check is not None:
+        check('completed_waits_leave_no_fabricated_activity',player['activity']['type']=='ACT_NULL' and 'sleep' not in player['effects'])
+        check('valid_rates_never_reject_projection_or_reconnect_spontaneously','Projection rejected:' not in logs and 'Synchronization exceeded' not in logs)
+    else:
+        check('actual_sleep_is_an_effect_not_an_invented_activity',player['activity']['type']=='ACT_NULL' and 'sleep' in player['effects'])
+        check('native_sleep_preserves_prone_posture',player['move_mode']=='prone')
     (out/'summary.json').write_text(json.dumps({'checks':checks,'native_save':str(output)},indent=2)+'\n')
 
 if __name__=='__main__':main()
